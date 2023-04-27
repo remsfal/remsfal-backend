@@ -2,7 +2,7 @@ package de.remsfal.core;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

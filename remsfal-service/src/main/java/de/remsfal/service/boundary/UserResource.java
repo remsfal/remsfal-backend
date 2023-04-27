@@ -32,7 +32,7 @@ public class UserResource implements UserEndpoint {
     @Override
     public List<UserJson> getUsers() {
         final List<UserJson> users = new ArrayList<>();
-        controller.getUsers().forEach(user -> users.add(new UserJson(user)));
+        controller.getUsers().forEach(user -> users.add(UserJson.valueOf(user)));
         return users;
     }
 
@@ -47,7 +47,7 @@ public class UserResource implements UserEndpoint {
     public UserJson getUser(final String userId) {
         try {
             final UserModel user = controller.getUser(userId);
-            return new UserJson(user);
+            return UserJson.valueOf(user);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Invalid user id", e);
         }
@@ -58,10 +58,10 @@ public class UserResource implements UserEndpoint {
         if (user.getId() != null) {
             throw new BadRequestException("User ID should not be set in payload");
         } else {
-            user.setId(userId);
+            //user.setId(userId);
         }
         final UserModel updatedUser = controller.updateUser(user);
-        return new UserJson(updatedUser);
+        return UserJson.valueOf(updatedUser);
     }
 
     @Override

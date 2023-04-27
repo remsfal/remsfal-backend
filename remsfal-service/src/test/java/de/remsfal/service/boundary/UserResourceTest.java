@@ -10,6 +10,7 @@ import io.restassured.response.Response;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.dto.UserJson;
 import de.remsfal.service.AbstractTest;
 
@@ -47,9 +48,10 @@ class UserResourceTest extends AbstractTest {
 
     @Test
     void testCreateAndGet() {
-        final UserJson user = new UserJson();
-        user.setName("Test");
-        user.setEmail("any@example.org");
+        final UserJson user = ImmutableUserJson.builder()
+            .name("Test")
+            .email("any@example.org")
+            .build();
         final Response res = given()
             .when()
             .contentType(MediaType.APPLICATION_JSON)

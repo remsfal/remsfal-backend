@@ -2,84 +2,56 @@ package de.remsfal.core.dto;
 
 import java.time.LocalDate;
 
-import javax.json.bind.annotation.JsonbDateFormat;
-import javax.json.bind.annotation.JsonbProperty;
-import javax.json.bind.annotation.JsonbTransient;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Null;
-import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Size;
+import jakarta.annotation.Nullable;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.UserModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public class UserJson implements UserModel {
+@Value.Immutable
+@Schema(description = "Security check to perform")
+@JsonDeserialize(as = ImmutableUserJson.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public abstract class UserJson implements UserModel {
 
     @Null
-    private String id;
+    @Nullable
+    public abstract String getId();
 
-    @JsonbProperty("user_name")
     @Size(min = 3, max = 99, message = "The name must be between 3 and 99 characters")
-    private String name;
+    @JsonProperty("user_name")
+    public abstract String getName();
 
-    @JsonbProperty("user_email")
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
     @Email(message = "Email should be valid")
-    private String email;
+    @JsonProperty("user_email")
+    public abstract String getEmail();
 
-    @JsonbProperty("registered_date")
-    @JsonbDateFormat("dd-MM-yyyy")
+    @Null
+    @Nullable
     @PastOrPresent
-    private LocalDate registeredDate;
+    @JsonProperty("registered_date")
+    public abstract LocalDate getRegisteredDate();
 
-    @JsonbTransient
-    private Integer age;
-    
-    public UserJson() {
-        // do nothing
+    public static UserJson valueOf(final UserModel model) {
+        return ImmutableUserJson.builder()
+            .id(model.getId())
+            .name(model.getName())
+            .email(model.getEmail())
+            .build();
     }
-
-    public UserJson(UserModel user) {
-        this.id = user.getId();
-        this.name = user.getName();
-        this.email = user.getEmail();
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    public void setId(final String id) {
-        this.id = id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(final String email) {
-        this.email = email;
-    }
-
-    public LocalDate getRegisteredDate() {
-        return registeredDate;
-    }
-
-    public void setRegisteredDate(final LocalDate registeredDate) {
-        this.registeredDate = registeredDate;
-    }
-
 }
