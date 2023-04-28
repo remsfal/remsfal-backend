@@ -28,7 +28,7 @@ import de.remsfal.core.dto.UserJson;
 public interface UserEndpoint {
 
     final static String CONTEXT = "api";
-    final static String VERSION = "v2";
+    final static String VERSION = "v1";
     final static String SERVICE = "users";
 
     @GET
