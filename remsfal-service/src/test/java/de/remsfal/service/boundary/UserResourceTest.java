@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response.Status;
 @QuarkusTest
 class UserResourceTest extends AbstractTest {
 
-    static final String BASE_PATH = "/api/v2/users";
+    static final String BASE_PATH = "/api/v1/users";
 
     static {
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
@@ -61,7 +61,7 @@ class UserResourceTest extends AbstractTest {
 
         res.then()
             .statusCode(Status.CREATED.getStatusCode())
-            .header("location", Matchers.startsWith("http://localhost:8081/api/v2/users"));
+            .header("location", Matchers.startsWith("http://localhost:8081/api/v1/users"));
 
         final String userResourceUrl = res.header("location");
 
@@ -70,8 +70,8 @@ class UserResourceTest extends AbstractTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("user_name", Matchers.equalTo("Test"))
-            .and().body("user_email", Matchers.equalTo("any@example.org"));
+            .and().body("name", Matchers.equalTo("Test"))
+            .and().body("email", Matchers.equalTo("any@example.org"));
     }
 
 }

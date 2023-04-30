@@ -42,8 +42,17 @@ public abstract class UserJson implements UserModel {
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
     public abstract String getEmail();
 
+    @Nullable
+    public abstract UserRole getRole();
+
+    @Nullable
     @PastOrPresent
     public abstract LocalDate getRegisteredDate();
+    
+    @Nullable
+    @PastOrPresent
+    public abstract LocalDateTime getLastLoginDate();
+
 
     public static UserJson valueOf(final UserModel model) {
         return ImmutableUserJson.builder()
