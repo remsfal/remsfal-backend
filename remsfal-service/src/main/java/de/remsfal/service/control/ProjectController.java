@@ -11,7 +11,11 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.UserModel.UserRole;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.ProjectEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -23,7 +27,10 @@ public class ProjectController {
     Logger logger;
     
     @Inject
-    ProjectRepository repository;
+    UserRepository userRepository;
+
+    @Inject
+    ProjectRepository projectRepository;
 
     public List<? extends ProjectModel> getProjects(final UserModel user) {
         return null;
@@ -32,12 +39,19 @@ public class ProjectController {
     @Transactional
     public ProjectModel createProject(final UserModel user, final ProjectModel project) {
         logger.infov("Creating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
-        return null;
+        UserEntity userEntity = userRepository.get(user.getId());
+        
+        ProjectEntity entity = new ProjectEntity();
+        entity.generateId();
+        entity.setTitle(project.getTitle());
+        entity.addMember(userEntity, UserRole.MANAGER);
+        projectRepository.persistAndFlush(entity);
+        return entity;
     }
 
     public ProjectModel getProject(final UserModel user, final String projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
-        final ProjectModel project = repository.find(user.getId());
+        final ProjectModel project = projectRepository.find(user.getId());
         if(project == null) {
             throw new NotFoundException("Project not exist");
         }
@@ -53,7 +67,7 @@ public class ProjectController {
     @Transactional
     public boolean deleteProject(final String projectId) {
         logger.infov("Deleting a project (id = {0})", projectId);
-        return repository.delete(projectId);
+        return projectRepository.delete(projectId);
     }
 
     @Transactional

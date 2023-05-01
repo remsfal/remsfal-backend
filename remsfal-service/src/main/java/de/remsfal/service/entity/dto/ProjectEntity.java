@@ -1,8 +1,10 @@
 package de.remsfal.service.entity.dto;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +16,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import de.remsfal.core.model.ProjectModel;
+import de.remsfal.core.model.UserModel.UserRole;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -32,7 +35,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     @Column(name = "ID", nullable = false, length = 36)
     private UUID id;
     
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<ProjectMembershipEntity> memberships;
     
     @Column(name = "TITLE")
@@ -62,6 +65,17 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void addMember(UserEntity userEntity, UserRole role) {
+        if(memberships == null) {
+            memberships = new HashSet<>();
+        }
+        ProjectMembershipEntity member = new ProjectMembershipEntity();
+        member.setProject(this);
+        member.setUser(userEntity);
+        member.setRole(role);
+        this.memberships.add(member);
     }
 
 }

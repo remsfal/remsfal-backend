@@ -8,6 +8,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.Table;
 
+import de.remsfal.core.model.UserModel.UserRole;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -16,7 +18,7 @@ import javax.persistence.Table;
 public class ProjectMembershipEntity extends AbstractEntity {
 
     @EmbeddedId
-    private ProjectMembershipKey id;
+    private ProjectMembershipKey id = new ProjectMembershipKey();
 
     @ManyToOne
     @MapsId("projectId")
@@ -26,10 +28,10 @@ public class ProjectMembershipEntity extends AbstractEntity {
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "USER_ID")
-    ProjectEntity user;
+    UserEntity user;
     
-    @Column(name = "ROLE")
-    private String role;
+    @Column(name = "USER_ROLE")
+    private UserRole role;
 
     public ProjectMembershipKey getId() {
         return id;
@@ -37,6 +39,11 @@ public class ProjectMembershipEntity extends AbstractEntity {
 
     public void setId(ProjectMembershipKey id) {
         this.id = id;
+    }
+
+    @Override
+    public void setId(String id) {
+        throw new IllegalArgumentException("This entiy uses a composite key!");
     }
 
     public ProjectEntity getProject() {
@@ -47,19 +54,19 @@ public class ProjectMembershipEntity extends AbstractEntity {
         this.project = project;
     }
 
-    public ProjectEntity getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(ProjectEntity user) {
+    public void setUser(UserEntity user) {
         this.user = user;
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(UserRole role) {
         this.role = role;
     }
     

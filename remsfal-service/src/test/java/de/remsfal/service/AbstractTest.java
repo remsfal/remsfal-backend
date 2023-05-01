@@ -19,10 +19,10 @@ import de.remsfal.service.entity.dto.UserEntity;
 public abstract class AbstractTest {
 
     @Inject
-    EntityManager entityManager;
+    protected EntityManager entityManager;
     
     @Inject
-    UserTransaction userTransaction;
+    protected UserTransaction userTransaction;
 
     @BeforeEach
     void cleanDB() {
