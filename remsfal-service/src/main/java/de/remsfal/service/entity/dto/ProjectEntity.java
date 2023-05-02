@@ -2,18 +2,13 @@ package de.remsfal.service.entity.dto;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel.UserRole;
@@ -26,14 +21,8 @@ import de.remsfal.core.model.UserModel.UserRole;
 public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-        name = "UUID",
-        strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Type(type = "org.hibernate.type.UUIDCharType")
     @Column(name = "ID", nullable = false, length = 36)
-    private UUID id;
+    private String id;
     
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<ProjectMembershipEntity> memberships;
@@ -43,11 +32,11 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     
     @Override
     public String getId() {
-        return id.toString();
+        return id;
     }
 
     public void setId(String id) {
-        this.id = UUID.fromString(id);
+        this.id = id;
     }
 
     public Set<ProjectMembershipEntity> getMemberships() {

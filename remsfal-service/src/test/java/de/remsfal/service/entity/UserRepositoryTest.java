@@ -48,6 +48,7 @@ class UserRepositoryTest extends AbstractTest {
     @Test
     void testAddAndGet() throws Exception {
         final UserEntity entity = new UserEntity();
+        entity.generateId();
         entity.setName(NAME);
         entity.setEmail(EMAIL);
 
@@ -65,6 +66,7 @@ class UserRepositoryTest extends AbstractTest {
     @Test
     void testValidationOnAdd() throws Exception {
         final UserEntity entity = new UserEntity();
+        entity.generateId();
         entity.setName(EMAIL);
         entity.setEmail(NAME);
 

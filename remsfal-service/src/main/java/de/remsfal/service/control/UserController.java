@@ -39,6 +39,7 @@ public class UserController {
     public String createUser(final UserModel user) {
         logger.infov("Creating a new user (name={0}, email={1})", user.getName(), user.getEmail());
         final UserEntity entity = new UserEntity();
+        entity.generateId();
         entity.setName(user.getName());
         entity.setEmail(user.getEmail());
         try {

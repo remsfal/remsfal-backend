@@ -2,12 +2,9 @@ package de.remsfal.service.entity.dto;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-
-import org.hibernate.annotations.Type;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -17,27 +14,25 @@ public class ProjectMembershipKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Type(type = "org.hibernate.type.UUIDCharType")
     @Column(name = "PROJECT_ID", nullable = false, length = 36)
-    public UUID projectId;
+    public String projectId;
     
-    @Type(type = "org.hibernate.type.UUIDCharType")
     @Column(name = "USER_ID", nullable = false, length = 36)
-    public UUID userId;
+    public String userId;
 
-    public UUID getProjectId() {
+    public String getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(UUID projectId) {
+    public void setProjectId(String projectId) {
         this.projectId = projectId;
     }
 
-    public UUID getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(UUID userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
     

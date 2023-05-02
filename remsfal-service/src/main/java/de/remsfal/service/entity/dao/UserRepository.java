@@ -1,7 +1,6 @@
 package de.remsfal.service.entity.dao;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
@@ -38,8 +37,7 @@ public class UserRepository {
 
     @Transactional(TxType.SUPPORTS)
     public UserEntity get(final String userId) {
-        final UUID id = UUID.fromString(userId);
-        return entityManager.find(UserEntity.class, id);
+        return entityManager.find(UserEntity.class, userId);
     }
 
     public String add(@Valid final UserEntity user) {
@@ -52,9 +50,8 @@ public class UserRepository {
     }
 
     public boolean remove(final String userId) {
-        final UUID id = UUID.fromString(userId);
         return entityManager.createNamedQuery("UserEntity.deleteById")
-            .setParameter("id", id)
+            .setParameter("id", userId)
             .executeUpdate() > 0;
     }
 

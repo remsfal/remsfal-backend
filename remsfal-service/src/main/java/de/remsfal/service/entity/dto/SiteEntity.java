@@ -1,15 +1,9 @@
 package de.remsfal.service.entity.dto;
 
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 
 import de.remsfal.core.model.SiteModel;
 
@@ -21,25 +15,20 @@ import de.remsfal.core.model.SiteModel;
 public class SiteEntity extends AbstractEntity implements SiteModel {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-        name = "UUID",
-        strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Type(type = "org.hibernate.type.UUIDCharType")
     @Column(name = "ID", nullable = false, length = 36)
-    private UUID id;
+    private String id;
     
     @Column(name = "TITLE")
     private String title;
     
     @Override
     public String getId() {
-        return id.toString();
+        return id;
     }
 
+    @Override
     public void setId(String id) {
-        this.id = UUID.fromString(id);
+        this.id = id;
     }
 
     @Override

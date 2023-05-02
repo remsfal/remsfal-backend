@@ -4,19 +4,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 
 import de.remsfal.core.model.UserModel;
 
@@ -29,14 +24,8 @@ import de.remsfal.core.model.UserModel;
 public class UserEntity extends AbstractEntity implements UserModel {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-        name = "UUID",
-        strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Type(type = "org.hibernate.type.UUIDCharType")
     @Column(name = "ID", nullable = false, length = 36)
-    private UUID id;
+    private String id;
     
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
@@ -50,11 +39,12 @@ public class UserEntity extends AbstractEntity implements UserModel {
 
     @Override
     public String getId() {
-        return id.toString();
+        return id;
     }
 
+    @Override
     public void setId(String id) {
-        this.id = UUID.fromString(id);
+        this.id = id;
     }
 
     public Set<ProjectMembershipEntity> getMemberships() {
