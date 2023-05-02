@@ -43,7 +43,7 @@ class UserResourceTest extends AbstractTest {
         given()
             .when().get(BASE_PATH + "/anyId")
             .then()
-            .statusCode(Status.BAD_REQUEST.getStatusCode());
+            .statusCode(Status.NOT_FOUND.getStatusCode());
     }
 
     @Test

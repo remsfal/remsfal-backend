@@ -19,36 +19,11 @@ import de.remsfal.service.entity.dto.UserEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @ApplicationScoped
-@Transactional(TxType.MANDATORY)
-public class UserRepository {
+public class UserRepository extends AbstractRepository<UserEntity> {
 
     @PersistenceContext
     EntityManager entityManager;
     
-    @Transactional(TxType.NEVER)
-    public List<UserEntity> getAll() {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<UserEntity> cq = cb.createQuery(UserEntity.class);
-        Root<UserEntity> rootEntry = cq.from(UserEntity.class);
-        CriteriaQuery<UserEntity> all = cq.select(rootEntry);
-        TypedQuery<UserEntity> allQuery = entityManager.createQuery(all);
-        return allQuery.getResultList();
-    }
-
-    @Transactional(TxType.SUPPORTS)
-    public UserEntity get(final String userId) {
-        return entityManager.find(UserEntity.class, userId);
-    }
-
-    public String add(@Valid final UserEntity user) {
-        entityManager.persist(user);
-        return user.getId();
-    }
-
-    public UserEntity set(@Valid final UserEntity user) {
-        return entityManager.merge(user);
-    }
-
     public boolean remove(final String userId) {
         return entityManager.createNamedQuery("UserEntity.deleteById")
             .setParameter("id", userId)

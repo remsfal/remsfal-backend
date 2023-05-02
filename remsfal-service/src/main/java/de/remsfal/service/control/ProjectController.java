@@ -39,7 +39,7 @@ public class ProjectController {
     @Transactional
     public ProjectModel createProject(final UserModel user, final ProjectModel project) {
         logger.infov("Creating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
-        UserEntity userEntity = userRepository.get(user.getId());
+        UserEntity userEntity = userRepository.findById(user.getId());
         
         ProjectEntity entity = new ProjectEntity();
         entity.generateId();
@@ -51,7 +51,7 @@ public class ProjectController {
 
     public ProjectModel getProject(final UserModel user, final String projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
-        final ProjectModel project = projectRepository.find(user.getId());
+        final ProjectModel project = projectRepository.findById(user.getId());
         if(project == null) {
             throw new NotFoundException("Project not exist");
         }
@@ -67,7 +67,7 @@ public class ProjectController {
     @Transactional
     public boolean deleteProject(final String projectId) {
         logger.infov("Deleting a project (id = {0})", projectId);
-        return projectRepository.delete(projectId);
+        return projectRepository.deleteById(projectId);
     }
 
     @Transactional

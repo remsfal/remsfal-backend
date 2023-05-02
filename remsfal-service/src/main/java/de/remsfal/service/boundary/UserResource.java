@@ -1,8 +1,6 @@
 package de.remsfal.service.boundary;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -30,16 +28,9 @@ public class UserResource implements UserEndpoint {
     UserController controller;
 
     @Override
-    public List<UserJson> getUsers() {
-        final List<UserJson> users = new ArrayList<>();
-        controller.getUsers().forEach(user -> users.add(UserJson.valueOf(user)));
-        return users;
-    }
-
-    @Override
     public Response createUser(final UserJson user) {
-        final String userId = controller.createUser(user);
-        final URI location = uri.getAbsolutePathBuilder().path(userId).build();
+        final UserModel userModel = controller.createUser(user);
+        final URI location = uri.getAbsolutePathBuilder().path(userModel.getId()).build();
         return Response.created(location).build();
     }
 

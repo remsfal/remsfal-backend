@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.UserModel.UserRole;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

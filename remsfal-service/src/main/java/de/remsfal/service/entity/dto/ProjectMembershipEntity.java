@@ -3,6 +3,8 @@ package de.remsfal.service.entity.dto;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
@@ -31,6 +33,7 @@ public class ProjectMembershipEntity extends AbstractEntity {
     UserEntity user;
     
     @Column(name = "USER_ROLE")
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     public ProjectMembershipKey getId() {

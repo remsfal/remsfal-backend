@@ -32,36 +32,24 @@ public class UserController {
     @Inject
     UserTransaction transaction;
 
-    public List<? extends UserModel> getUsers() {
-        return repository.getAll();
-    }
-
-    public String createUser(final UserModel user) {
+    @Transactional
+    public UserModel createUser(final UserModel user) {
         logger.infov("Creating a new user (name={0}, email={1})", user.getName(), user.getEmail());
         final UserEntity entity = new UserEntity();
         entity.generateId();
         entity.setName(user.getName());
         entity.setEmail(user.getEmail());
         try {
-            transaction.begin();
-            String userId = repository.add(entity);
-            transaction.commit();
-            return userId;
+            repository.persistAndFlush(entity);
+            return entity;
         } catch (EntityExistsException e) {
             throw new AlreadyExistsException("Unable to create user", e);
-        } catch (Exception e) {
-            try {
-                transaction.rollback();
-            } catch (Exception ex) {
-                throw new InternalServerErrorException("Unable to rollback on create user", ex);
-            }
-            throw new InternalServerErrorException("Unable to create user", e);
         }
     }
 
     public UserModel getUser(final String userId) {
         logger.infov("Retrieving an existing user (id = {0})", userId);
-        final UserModel user = repository.get(userId);
+        final UserModel user = repository.findById(userId);
         if(user == null) {
             throw new NotFoundException("User not exist");
         }
@@ -71,14 +59,14 @@ public class UserController {
     @Transactional
     public UserModel updateUser(final UserModel user) {
         logger.infov("Updating an existing user ({0})", user);
-        final UserEntity entity = repository.get(user.getId());
+        final UserEntity entity = repository.findById(user.getId());
         if(user.getName() != null) {
             entity.setName(user.getName());
         }
         if(user.getEmail() != null) {
             entity.setEmail(user.getEmail());
         }
-        return repository.set(entity);
+        return repository.merge(entity);
     }
 
     @Transactional
