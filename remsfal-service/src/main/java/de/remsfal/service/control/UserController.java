@@ -1,13 +1,10 @@
 package de.remsfal.service.control;
 
-import java.util.List;
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.persistence.EntityExistsException;
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
@@ -42,7 +39,7 @@ public class UserController {
         try {
             repository.persistAndFlush(entity);
             return entity;
-        } catch (EntityExistsException e) {
+        } catch (PersistenceException e) {
             throw new AlreadyExistsException("Unable to create user", e);
         }
     }

@@ -1,10 +1,13 @@
 package de.remsfal.service.control;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
@@ -15,6 +18,7 @@ import de.remsfal.core.model.UserModel.UserRole;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ProjectEntity;
+import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 
 /**
@@ -32,8 +36,13 @@ public class ProjectController {
     @Inject
     ProjectRepository projectRepository;
 
-    public List<? extends ProjectModel> getProjects(final UserModel user) {
-        return null;
+    public List<ProjectModel> getProjects(final UserModel user) {
+        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId());
+        List<ProjectModel> projects = new ArrayList<>();
+        for(ProjectMembershipEntity projectMembership : memberships) {
+            projects.add(projectMembership.getProject());
+        }
+        return projects;
     }
 
     @Transactional
@@ -51,23 +60,41 @@ public class ProjectController {
 
     public ProjectModel getProject(final UserModel user, final String projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
-        final ProjectModel project = projectRepository.findById(user.getId());
+        final ProjectEntity project = projectRepository.findById(projectId);
         if(project == null) {
             throw new NotFoundException("Project not exist");
+        } else if(project.isMember(user)) {
+            return project;
+        } else {
+            throw new ForbiddenException("User is not a member of this project");
         }
-        return project;
     }
 
     @Transactional
     public ProjectModel updateProject(final UserModel user, final ProjectModel project) {
         logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
-        return null;
+        final ProjectEntity entity = projectRepository.findById(project.getId());
+        if(entity == null) {
+            throw new NotFoundException("Project not exist");
+        } else if(entity.isMember(user)) {
+            entity.setTitle(project.getTitle());
+            return projectRepository.merge(entity);
+        } else {
+            throw new ForbiddenException("User is not a member of this project");
+        }
     }
 
     @Transactional
-    public boolean deleteProject(final String projectId) {
+    public boolean deleteProject(final UserModel user, final String projectId) {
         logger.infov("Deleting a project (id = {0})", projectId);
-        return projectRepository.deleteById(projectId);
+        final ProjectEntity entity = projectRepository.findById(projectId);
+        if(entity == null) {
+            return false;
+        } else if(entity.isMember(user)) {
+            return projectRepository.deleteById(projectId);
+        } else {
+            throw new ForbiddenException("User is not a member of this project");
+        }
     }
 
     @Transactional
@@ -77,7 +104,19 @@ public class ProjectController {
     }
 
     @Transactional
+    public Set<ProjectModel> getProjectMembers(final UserModel user, final ProjectModel project, final UserModel member) {
+        logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
+        return null;
+    }
+
+    @Transactional
     public ProjectModel removeProjectMember(final UserModel user, final ProjectModel project, final UserModel member) {
+        logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
+        return null;
+    }
+
+    @Transactional
+    public ProjectModel changeProjectMemberRole(final UserModel user, final ProjectModel project, final UserModel member) {
         logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
         return null;
     }

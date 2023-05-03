@@ -8,6 +8,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import de.remsfal.core.model.UserModel.UserRole;
@@ -16,6 +17,7 @@ import de.remsfal.core.model.UserModel.UserRole;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
+@NamedQuery(name = "ProjectMembershipEntity.findByUserId", query = "SELECT m FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
 @Table(name = "PROJECT_MEMBERSHIP")
 public class ProjectMembershipEntity extends AbstractEntity {
 

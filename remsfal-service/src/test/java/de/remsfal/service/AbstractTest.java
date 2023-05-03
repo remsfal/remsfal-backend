@@ -14,8 +14,6 @@ import javax.transaction.UserTransaction;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import de.remsfal.service.entity.dto.UserEntity;
-
 public abstract class AbstractTest {
 
     @Inject
@@ -26,8 +24,10 @@ public abstract class AbstractTest {
 
     @BeforeEach
     void cleanDB() {
-        final String query = String.format("DELETE FROM %s", UserEntity.class.getSimpleName());
-        runInTransaction(() -> entityManager.createQuery(query).executeUpdate());
+        runInTransaction(() -> {
+            entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM ProjectEntity").executeUpdate();
+        });
     }
     
     /**
