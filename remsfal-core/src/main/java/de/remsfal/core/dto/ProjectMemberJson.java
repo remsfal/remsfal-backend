@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import jakarta.annotation.Nullable;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -17,19 +19,18 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.model.ProjectMemberModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "User information globally")
-@JsonDeserialize(as = ImmutableUserJson.class)
+@Schema(description = "Project member information in context of a project")
+@JsonDeserialize(as = ImmutableProjectMemberJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public abstract class UserJson implements CustomerModel {
+public abstract class ProjectMemberJson implements ProjectMemberModel {
 
-    @Null
-    @Nullable
+    @NotBlank
     public abstract String getId();
     
     @Null
@@ -38,25 +39,19 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getName();
 
     @Email
+    @NotBlank
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
     public abstract String getEmail();
 
-    @Nullable
-    @PastOrPresent
-    public abstract LocalDate getRegisteredDate();
-    
-    @Nullable
-    @PastOrPresent
-    public abstract LocalDateTime getLastLoginDate();
+    @NotNull
+    public abstract UserRole getRole();
 
-
-    public static UserJson valueOf(final CustomerModel model) {
-        return ImmutableUserJson.builder()
+    public static ProjectMemberJson valueOf(final ProjectMemberModel model) {
+        return ImmutableProjectMemberJson.builder()
             .id(model.getId())
+            .role(model.getRole())
             .name(model.getName())
             .email(model.getEmail())
-            .registeredDate(model.getRegisteredDate())
-            .lastLoginDate(model.getLastLoginDate())
             .build();
     }
 }

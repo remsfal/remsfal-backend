@@ -13,6 +13,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 
+import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 
 /**
@@ -21,7 +22,7 @@ import de.remsfal.core.model.UserModel;
 @NamedQuery(name = "UserEntity.deleteById", query = "delete from UserEntity user where user.id = :id")
 @Entity
 @Table(name = "USER")
-public class UserEntity extends AbstractEntity implements UserModel {
+public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Id
     @Column(name = "ID", nullable = false, length = 36)
@@ -53,11 +54,6 @@ public class UserEntity extends AbstractEntity implements UserModel {
 
     public void setMemberships(Set<ProjectMembershipEntity> memberships) {
         this.memberships = memberships;
-    }
-
-    @Override
-    public UserRole getRole() {
-        return null;
     }
 
     @Override

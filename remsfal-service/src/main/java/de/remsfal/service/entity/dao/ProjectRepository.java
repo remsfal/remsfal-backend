@@ -19,4 +19,14 @@ public class ProjectRepository extends AbstractRepository<ProjectEntity> {
             .getResultList();
     }
 
+    public ProjectEntity findProjectByUserId(final String userId, final String projectId) {
+        final ProjectMembershipEntity membership = getEntityManager()
+            .createNamedQuery("ProjectMembershipEntity.findByProjectIdAndUserId", ProjectMembershipEntity.class)
+            .setParameter(PARAM_PROJECT_ID, projectId)
+            .setParameter(PARAM_USER_ID, userId)
+            .getSingleResult();
+        
+        return membership.getProject();
+    }
+
 }

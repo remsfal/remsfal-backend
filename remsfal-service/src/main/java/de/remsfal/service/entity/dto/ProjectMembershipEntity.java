@@ -11,15 +11,19 @@ import javax.persistence.MapsId;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
-import de.remsfal.core.model.UserModel.UserRole;
+import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.core.model.ProjectMemberModel.UserRole;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@NamedQuery(name = "ProjectMembershipEntity.findByUserId", query = "SELECT m FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
+@NamedQuery(name = "ProjectMembershipEntity.findByUserId",
+    query = "SELECT m FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
+@NamedQuery(name = "ProjectMembershipEntity.findByProjectIdAndUserId",
+    query = "SELECT m FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
 @Table(name = "PROJECT_MEMBERSHIP")
-public class ProjectMembershipEntity extends AbstractEntity {
+public class ProjectMembershipEntity extends AbstractEntity implements ProjectMemberModel {
 
     @EmbeddedId
     private ProjectMembershipKey id = new ProjectMembershipKey();
@@ -38,12 +42,9 @@ public class ProjectMembershipEntity extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    public ProjectMembershipKey getId() {
-        return id;
-    }
-
-    public void setId(ProjectMembershipKey id) {
-        this.id = id;
+    @Override
+    public String getId() {
+        return user.getId();
     }
 
     @Override
@@ -67,12 +68,23 @@ public class ProjectMembershipEntity extends AbstractEntity {
         this.user = user;
     }
 
+    @Override
     public UserRole getRole() {
         return role;
     }
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    @Override
+    public String getName() {
+        return user.getName();
+    }
+
+    @Override
+    public String getEmail() {
+        return user.getEmail();
     }
     
 }

@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 
 import org.junit.jupiter.api.Test;
 
@@ -141,13 +141,13 @@ class ProjectControllerTest extends AbstractTest {
         assertEquals(project3.getId(), retrievedProject.getId());
         assertEquals(project3.getTitle(), retrievedProject.getTitle());
 
-        assertThrows(ForbiddenException.class,
+        assertThrows(NotFoundException.class,
             () -> projectController.getProject(user2, project1.getId()));
 
-        assertThrows(ForbiddenException.class,
+        assertThrows(NotFoundException.class,
             () -> projectController.getProject(user1, project3.getId()));
 
-        assertThrows(ForbiddenException.class,
+        assertThrows(NotFoundException.class,
             () -> projectController.getProject(user3, project2.getId()));
 
         List<ProjectModel> retrievedProjects = projectController.getProjects(user1);
@@ -209,7 +209,7 @@ class ProjectControllerTest extends AbstractTest {
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
         assertNotNull(project);
 
-        assertThrows(ForbiddenException.class,
+        assertThrows(NotFoundException.class,
             () -> projectController.updateProject(user2, 
                 ImmutableProjectJson.builder().id(project.getId()).title(TestData.PROJECT_TITLE_2).build()));
     }

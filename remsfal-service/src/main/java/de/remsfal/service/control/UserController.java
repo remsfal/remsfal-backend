@@ -9,6 +9,7 @@ import javax.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.AlreadyExistsException;
 import de.remsfal.service.entity.dao.UserRepository;
@@ -30,7 +31,7 @@ public class UserController {
     UserTransaction transaction;
 
     @Transactional
-    public UserModel createUser(final UserModel user) {
+    public CustomerModel createUser(final UserModel user) {
         logger.infov("Creating a new user (name={0}, email={1})", user.getName(), user.getEmail());
         final UserEntity entity = new UserEntity();
         entity.generateId();
@@ -44,9 +45,9 @@ public class UserController {
         }
     }
 
-    public UserModel getUser(final String userId) {
+    public CustomerModel getUser(final String userId) {
         logger.infov("Retrieving an existing user (id = {0})", userId);
-        final UserModel user = repository.findById(userId);
+        final UserEntity user = repository.findById(userId);
         if(user == null) {
             throw new NotFoundException("User not exist");
         }
@@ -54,7 +55,7 @@ public class UserController {
     }
 
     @Transactional
-    public UserModel updateUser(final UserModel user) {
+    public CustomerModel updateUser(final UserModel user) {
         logger.infov("Updating an existing user ({0})", user);
         final UserEntity entity = repository.findById(user.getId());
         if(user.getName() != null) {

@@ -5,6 +5,8 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
+import java.util.Set;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
@@ -29,5 +31,9 @@ public abstract class ProjectJson implements ProjectModel {
 
     @NotNull
     public abstract String getTitle();
+
+    @Null
+    @Nullable
+    public abstract Set<ProjectMemberJson> getMembers();
 
 }

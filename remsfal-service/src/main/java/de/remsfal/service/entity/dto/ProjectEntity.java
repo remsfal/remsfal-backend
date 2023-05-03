@@ -11,9 +11,9 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.UserModel.UserRole;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -41,14 +41,6 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         this.id = id;
     }
 
-    public Set<ProjectMembershipEntity> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(Set<ProjectMembershipEntity> memberships) {
-        this.memberships = memberships;
-    }
-
     @Override
     public String getTitle() {
         return title;
@@ -56,6 +48,15 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public Set<ProjectMembershipEntity> getMembers() {
+        return memberships;
+    }
+
+    public void setMembers(Set<ProjectMembershipEntity> memberships) {
+        this.memberships = memberships;
     }
 
     public void addMember(UserEntity userEntity, UserRole role) {

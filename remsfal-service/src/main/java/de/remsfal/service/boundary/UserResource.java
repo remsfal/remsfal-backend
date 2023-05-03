@@ -12,7 +12,7 @@ import javax.ws.rs.core.UriInfo;
 
 import de.remsfal.core.UserEndpoint;
 import de.remsfal.core.dto.UserJson;
-import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.CustomerModel;
 import de.remsfal.service.control.UserController;
 
 /**
@@ -29,7 +29,7 @@ public class UserResource implements UserEndpoint {
 
     @Override
     public Response createUser(final UserJson user) {
-        final UserModel userModel = controller.createUser(user);
+        final CustomerModel userModel = controller.createUser(user);
         final URI location = uri.getAbsolutePathBuilder().path(userModel.getId()).build();
         return Response.created(location).build();
     }
@@ -37,7 +37,7 @@ public class UserResource implements UserEndpoint {
     @Override
     public UserJson getUser(final String userId) {
         try {
-            final UserModel user = controller.getUser(userId);
+            final CustomerModel user = controller.getUser(userId);
             return UserJson.valueOf(user);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Invalid user id", e);
@@ -51,7 +51,7 @@ public class UserResource implements UserEndpoint {
         } else {
             //user.setId(userId);
         }
-        final UserModel updatedUser = controller.updateUser(user);
+        final CustomerModel updatedUser = controller.updateUser(user);
         return UserJson.valueOf(updatedUser);
     }
 
