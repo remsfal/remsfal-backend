@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
@@ -37,7 +38,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -46,7 +47,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         return title;
     }
 
-    public void setTitle(String title) {
+    public void setTitle(final String title) {
         this.title = title;
     }
 
@@ -55,11 +56,11 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         return memberships;
     }
 
-    public void setMembers(Set<ProjectMembershipEntity> memberships) {
+    public void setMembers(final Set<ProjectMembershipEntity> memberships) {
         this.memberships = memberships;
     }
 
-    public void addMember(UserEntity userEntity, UserRole role) {
+    public void addMember(final UserEntity userEntity, final UserRole role) {
         if(memberships == null) {
             memberships = new HashSet<>();
         }
@@ -70,7 +71,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         this.memberships.add(member);
     }
 
-    public boolean isMember(UserModel user) {
+    public boolean isMember(final UserModel user) {
         Iterator<ProjectMembershipEntity> iter = memberships.iterator();
         while(iter.hasNext()) {
             if(iter.next().getUser().getId().equals(user.getId())) {
@@ -78,6 +79,26 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
             }
         }
         return false;
+    }
+
+    public void removeMember(final UserModel member) {
+        Iterator<ProjectMembershipEntity> iter = memberships.iterator();
+        while(iter.hasNext()) {
+            ProjectMembershipEntity entity = iter.next();
+            if(entity.getUser().getId().equals(member.getId())) {
+                memberships.remove(entity);
+            }
+        }
+    }
+
+    public void changeMemberRole(ProjectMemberModel member) {
+        Iterator<ProjectMembershipEntity> iter = memberships.iterator();
+        while(iter.hasNext()) {
+            ProjectMembershipEntity entity = iter.next();
+            if(entity.getUser().getId().equals(member.getId())) {
+                entity.setRole(member.getRole());
+            }
+        }
     }
 
 }

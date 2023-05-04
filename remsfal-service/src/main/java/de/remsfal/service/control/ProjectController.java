@@ -8,11 +8,13 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
@@ -37,6 +39,9 @@ public class ProjectController {
     @Inject
     ProjectRepository projectRepository;
 
+    @Inject
+    NotificationController notificationController;
+    
     public List<ProjectModel> getProjects(final UserModel user) {
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId());
         List<ProjectModel> projects = new ArrayList<>();
@@ -94,26 +99,66 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectModel addProjectMember(final UserModel user, final ProjectModel project, final UserModel member) {
-        logger.infov("Adding a project membership (title={0}, email={1})", project.getTitle(), user.getEmail());
-        return null;
+    public ProjectModel addProjectMember(final UserModel user, final String projectId, final ProjectMemberModel member) {
+        logger.infov("Adding a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+        try {
+            final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId);
+            UserEntity userEntity;
+            if(member.getId() != null) {
+                userEntity = userRepository.findById(member.getId());
+            } else if (member.getEmail() != null) {
+                try {
+                    userEntity = userRepository.findByEmail(member.getEmail());
+                } catch (final NoResultException e) {
+                    userEntity = new UserEntity();
+                    userEntity.generateId();
+                    userEntity.setEmail(member.getEmail());
+                    userRepository.persist(userEntity);
+                    notificationController.informUserAboutRegistration(userEntity);
+                }
+            } else {
+                throw new BadRequestException("Project member's email is missing");
+            }
+            projectEntity.addMember(userEntity, member.getRole());
+            notificationController.informUserAboutProjectMembership(userEntity);
+            return projectRepository.merge(projectEntity);
+        } catch (final NoResultException e) {
+            throw new NotFoundException("Project not exist or user has no membership", e);
+        }
     }
 
-    public Set<ProjectModel> getProjectMembers(final UserModel user, final ProjectModel project, final UserModel member) {
-        logger.infov("Retrieving project membership (title={0}, email={1})", project.getTitle(), user.getEmail());
-        return null;
+    public Set<? extends ProjectMemberModel> getProjectMembers(final UserModel user, final String projectId) {
+        logger.infov("Retrieving project membership (user={0}, project={1})", user.getId(), projectId);
+        try {
+            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
+            return entity.getMembers();
+        } catch (final NoResultException e) {
+            throw new NotFoundException("Project not exist or user has no membership", e);
+        }
     }
 
     @Transactional
-    public ProjectModel removeProjectMember(final UserModel user, final ProjectModel project, final UserModel member) {
-        logger.infov("Removing a project membership (title={0}, email={1})", project.getTitle(), user.getEmail());
-        return null;
+    public ProjectModel removeProjectMember(final UserModel user, final String projectId, final UserModel member) {
+        logger.infov("Removing a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+        try {
+            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
+            entity.removeMember(member);
+            return projectRepository.merge(entity);
+        } catch (final NoResultException e) {
+            throw new NotFoundException("Project not exist or user has no membership", e);
+        }
     }
 
     @Transactional
-    public ProjectModel changeProjectMemberRole(final UserModel user, final ProjectModel project, final UserModel member) {
-        logger.infov("Updating a project membership (title={0}, email={1})", project.getTitle(), user.getEmail());
-        return null;
+    public ProjectModel changeProjectMemberRole(final UserModel user, final String projectId, final ProjectMemberModel member) {
+        logger.infov("Updating a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+        try {
+            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
+            entity.changeMemberRole(member);
+            return projectRepository.merge(entity);
+        } catch (final NoResultException e) {
+            throw new NotFoundException("Project not exist or user has no membership", e);
+        }
     }
 
 }

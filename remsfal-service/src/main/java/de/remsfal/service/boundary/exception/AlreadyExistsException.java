@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.exception;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response;

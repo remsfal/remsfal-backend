@@ -8,15 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.dto.ImmutableProjectJson;
+import de.remsfal.core.dto.ImmutableProjectMemberJson;
 import de.remsfal.core.dto.ImmutableUserJson;
+import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractTest;
@@ -239,12 +245,139 @@ class ProjectControllerTest extends AbstractTest {
 
     @Test
     void addProjectMember_SUCCESS_addSecondUser() {
+        final UserModel user1 = userController
+            .createUser(ImmutableUserJson
+                .builder()
+                .name(TestData.USER_NAME_1)
+                .email(TestData.USER_EMAIL_1)
+                .build());
 
+        final UserModel user2 = userController
+            .createUser(ImmutableUserJson
+                .builder()
+                .name(TestData.USER_NAME_2)
+                .email(TestData.USER_EMAIL_2)
+                .build());
+
+        final ProjectModel project = projectController.createProject(user1, 
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        assertNotNull(project);
+        final long enties = entityManager
+            .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
+            .getSingleResult();
+        assertEquals(1, enties);
+
+        final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
+            .id(user2.getId())
+            .email(user2.getEmail())
+            .role(UserRole.CARETAKER)
+            .build();
+        projectController.addProjectMember(user1, project.getId(), member2);
+        
+        final String userRole = entityManager
+            .createNativeQuery(
+                "SELECT USER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
+            .setParameter("projectId", project.getId())
+            .setParameter("userId", member2.getId())
+            .getSingleResult()
+            .toString();
+        assertEquals("CARETAKER", userRole);
+        final long members = entityManager
+            .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
+            .getSingleResult();
+        assertEquals(2, members);
+
+        ProjectModel retrievedProject = projectController.getProject(user2, project.getId());
+        assertNotNull(retrievedProject);
+        assertEquals(project.getId(), retrievedProject.getId());
+        assertEquals(project.getTitle(), retrievedProject.getTitle());
+    }
+
+    @Test
+    void getProjectMembers_SUCCESS_multipleUsers() {
+        final UserModel user = userController
+            .createUser(ImmutableUserJson
+                .builder()
+                .name(TestData.USER_NAME_1)
+                .email(TestData.USER_EMAIL_1)
+                .build());
+
+        final ProjectModel project = projectController.createProject(user, 
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        assertNotNull(project);
+
+        final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
+            .email(TestData.USER_EMAIL_2)
+            .role(UserRole.PROPRIETOR)
+            .build();
+        projectController.addProjectMember(user, project.getId(), member2);
+        
+        final ProjectMemberModel member3 = ImmutableProjectMemberJson.builder()
+            .email(TestData.USER_EMAIL_3)
+            .role(UserRole.LESSEE)
+            .build();
+        projectController.addProjectMember(user, project.getId(), member3);
+        
+        final ProjectMemberModel member4 = ImmutableProjectMemberJson.builder()
+            .email(TestData.USER_EMAIL_4)
+            .role(UserRole.LESSOR)
+            .build();
+        projectController.addProjectMember(user, project.getId(), member4);
+        
+        final long enties = entityManager
+            .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
+            .getSingleResult();
+        assertEquals(4, enties);
+        assertEquals(4, projectController.getProjectMembers(user, project.getId()).size());
     }
 
     @Test
     void removeProjectMember_SUCCESS_removeAnotherUser() {
+        final UserModel user = userController
+            .createUser(ImmutableUserJson
+                .builder()
+                .name(TestData.USER_NAME_1)
+                .email(TestData.USER_EMAIL_1)
+                .build());
 
+        final ProjectModel project = projectController.createProject(user, 
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        assertNotNull(project);
+
+        final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
+            .email(TestData.USER_EMAIL_2)
+            .role(UserRole.LESSEE)
+            .build();
+        projectController.addProjectMember(user, project.getId(), member2);
+                
+        long enties = entityManager
+            .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
+            .getSingleResult();
+        assertEquals(2, enties);
+
+        Set<? extends ProjectMemberModel> members = projectController.getProjectMembers(user, project.getId());
+        Iterator<? extends ProjectMemberModel> iter = members.iterator();
+        ProjectMemberModel model = iter.next();
+        if(model.getEmail().equals(TestData.USER_EMAIL_1)) {
+            model = iter.next();
+        }
+        assertEquals(TestData.USER_EMAIL_2, model.getEmail());
+        final UserModel user2 = model;
+        
+        assertThrows(ForbiddenException.class,
+            () -> projectController.removeProjectMember(user2, project.getId(), user));
+
+        assertNotNull(projectController.removeProjectMember(user, project.getId(), member2));
+        enties = entityManager
+            .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
+            .getSingleResult();
+        assertEquals(1, enties);
+
+    }
+    
+    @Test
+    void changeProjectMemberRole_SUCCESS_addSecondUser() {
+        
     }
 
 }

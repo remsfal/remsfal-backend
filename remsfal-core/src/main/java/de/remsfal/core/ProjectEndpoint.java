@@ -1,7 +1,5 @@
 package de.remsfal.core;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -20,7 +18,9 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.dto.ProjectJson;
-import de.remsfal.core.dto.UserJson;
+import de.remsfal.core.dto.ProjectListJson;
+import de.remsfal.core.dto.ProjectMemberJson;
+import de.remsfal.core.dto.ProjectMemberListJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -35,7 +35,7 @@ public interface ProjectEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of all users.")
-    List<ProjectJson> getProjects();
+    ProjectListJson getProjects();
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -60,7 +60,7 @@ public interface ProjectEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a project.")
     @APIResponse(responseCode = "404", description = "The project does not exist")
-    UserJson updateProject(
+    ProjectJson updateProject(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
         @Parameter(description = "Project information", required = true) @Valid ProjectJson project);
 
@@ -70,5 +70,43 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "204", description = "The project was deleted successfully")
     void deleteProject(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId);
+
+    @POST
+    @Path("/{projectId}/members")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Add a member to project.")
+    @APIResponse(responseCode = "200", description = "Member added successfully")
+    @APIResponse(responseCode = "400", description = "Invalid request message")
+    Response addProjectMember(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
+        @Parameter(description = "Project member information", required = true) @Valid ProjectMemberJson member);
+
+    @GET
+    @Path("/{projectId}/members")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Retrieve information of all project members.")
+    @APIResponse(responseCode = "404", description = "The project does not exist")
+    ProjectMemberListJson getProjectMembers(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId);
+
+    @PATCH
+    @Path("/{projectId}/members/{memberId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Update role of a project member.")
+    @APIResponse(responseCode = "404", description = "The project or the member does not exist")
+    ProjectJson updateProjectMember(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
+        @Parameter(description = "ID of the member", required = true) @PathParam("memberId") String memberId,
+        @Parameter(description = "Project information", required = true) @Valid ProjectJson project);
+
+    @DELETE
+    @Path("/{projectId}/members/{memberId}")
+    @Operation(summary = "Delete an existing project member.")
+    @APIResponse(responseCode = "204", description = "The project member was deleted successfully")
+    @APIResponse(responseCode = "404", description = "The project or the member does not exist")
+    void deleteProjectMember(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
+        @Parameter(description = "ID of the member", required = true) @PathParam("memberId") String memberId);
 
 }

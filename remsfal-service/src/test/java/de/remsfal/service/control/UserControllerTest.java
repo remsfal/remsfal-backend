@@ -19,7 +19,7 @@ import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
-import de.remsfal.service.boundary.AlreadyExistsException;
+import de.remsfal.service.boundary.exception.AlreadyExistsException;
 
 @QuarkusTest
 class UserControllerTest extends AbstractTest {
