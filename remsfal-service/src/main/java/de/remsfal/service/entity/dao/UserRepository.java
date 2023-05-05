@@ -10,6 +10,10 @@ import de.remsfal.service.entity.dto.UserEntity;
 @ApplicationScoped
 public class UserRepository extends AbstractRepository<UserEntity> {
 
+    public UserEntity findByTokenId(final String tokenId) {
+        return find("tokenId", tokenId).singleResult();
+    }
+
     public UserEntity findByEmail(final String email) {
         return find("email", email).singleResult();
     }

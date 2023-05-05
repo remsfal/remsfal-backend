@@ -14,7 +14,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.Email;
 
 import de.remsfal.core.model.CustomerModel;
-import de.remsfal.core.model.UserModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -28,9 +27,9 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Column(name = "ID", nullable = false, length = 36)
     private String id;
     
-    @OneToMany(mappedBy = "user")
-    private Set<ProjectMembershipEntity> memberships;
-    
+    @Column(name = "TOKEN_ID", unique = true)
+    private String tokenId;
+
     @Column(name = "NAME")
     private String name;
     
@@ -38,6 +37,9 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Column(name = "EMAIL", nullable = false, unique = true)
     private String email;
 
+    @OneToMany(mappedBy = "user")
+    private Set<ProjectMembershipEntity> memberships;
+    
     @Override
     public String getId() {
         return id;
@@ -48,12 +50,12 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         this.id = id;
     }
 
-    public Set<ProjectMembershipEntity> getMemberships() {
-        return memberships;
+    public String getTokenId() {
+        return tokenId;
     }
 
-    public void setMemberships(Set<ProjectMembershipEntity> memberships) {
-        this.memberships = memberships;
+    public void setTokenId(String tokenId) {
+        this.tokenId = tokenId;
     }
 
     @Override
@@ -72,6 +74,14 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Set<ProjectMembershipEntity> getMemberships() {
+        return memberships;
+    }
+
+    public void setMemberships(Set<ProjectMembershipEntity> memberships) {
+        this.memberships = memberships;
     }
 
     @Override

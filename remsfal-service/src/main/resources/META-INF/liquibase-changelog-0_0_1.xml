@@ -22,7 +22,7 @@
             <column name="ID" type="char(36)">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="OAUTH_ID" type="varchar(255)" />
+            <column name="TOKEN_ID" type="varchar(255)" />
             <column name="NAME" type="varchar(255)" />
             <column name="EMAIL" type="varchar(255)">
                 <constraints nullable="false" />
@@ -36,9 +36,13 @@
         </createTable>
 
         <addUniqueConstraint tableName="USER" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
+        <addUniqueConstraint tableName="USER" columnNames="TOKEN_ID" constraintName="UNIQUE_TOKEN_ID" />
 
         <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="USER">
             <column name="EMAIL" type="varchar(255)" />
+        </createIndex>
+        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="USER">
+            <column name="TOKEN_ID" type="varchar(255)" />
         </createIndex>
     </changeSet>
 
