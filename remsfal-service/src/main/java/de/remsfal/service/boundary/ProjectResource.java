@@ -47,16 +47,6 @@ public class ProjectResource implements ProjectEndpoint {
     @Inject
     ProjectController controller;
 
-    @GET
-    @Path("/test")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
-        logger.info("Yes it is called");
-        String resp = "Yes it is " + principal.getName();
-        logger.info(resp);
-        return resp;
-    }
-
     @Override
     public ProjectListJson getProjects() {
         logger.info("Yes itis called");
