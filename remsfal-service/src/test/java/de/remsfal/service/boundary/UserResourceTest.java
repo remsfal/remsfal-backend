@@ -1,9 +1,6 @@
 package de.remsfal.service.boundary;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
@@ -12,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.dto.UserJson;
-import de.remsfal.service.AbstractTest;
 
 import static io.restassured.RestAssured.given;
 
@@ -22,13 +18,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 @QuarkusTest
-class UserResourceTest extends AbstractTest {
+class UserResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/users";
-
-    static {
-        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
-    }
 
     @Test
     void testNotFound() {
