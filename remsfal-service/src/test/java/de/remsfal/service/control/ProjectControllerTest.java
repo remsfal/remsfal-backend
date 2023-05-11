@@ -182,7 +182,7 @@ class ProjectControllerTest extends AbstractTest {
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
         assertNotNull(project);
 
-        final ProjectModel updatedProject = projectController.updateProject(user, 
+        final ProjectModel updatedProject = projectController.updateProject(user, project.getId(),
             ImmutableProjectJson.builder().id(project.getId()).title(TestData.PROJECT_TITLE_2).build());
         assertNotNull(updatedProject);
         assertEquals(TestData.PROJECT_TITLE_2, updatedProject.getTitle());
@@ -216,7 +216,7 @@ class ProjectControllerTest extends AbstractTest {
         assertNotNull(project);
 
         assertThrows(NotFoundException.class,
-            () -> projectController.updateProject(user2, 
+            () -> projectController.updateProject(user2, project.getId(),
                 ImmutableProjectJson.builder().id(project.getId()).title(TestData.PROJECT_TITLE_2).build()));
     }
 
@@ -328,6 +328,7 @@ class ProjectControllerTest extends AbstractTest {
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
             .getSingleResult();
         assertEquals(4, enties);
+        entityManager.clear();
         assertEquals(4, projectController.getProjectMembers(user, project.getId()).size());
     }
 
@@ -355,10 +356,12 @@ class ProjectControllerTest extends AbstractTest {
             .getSingleResult();
         assertEquals(2, enties);
 
+        entityManager.clear();
         Set<? extends ProjectMemberModel> members = projectController.getProjectMembers(user, project.getId());
+        assertEquals(2, members.size());
         Iterator<? extends ProjectMemberModel> iter = members.iterator();
         ProjectMemberModel model = iter.next();
-        if(model.getEmail().equals(TestData.USER_EMAIL_1)) {
+        if(model.getEmail().equals(TestData.USER_EMAIL_1) && iter.hasNext()) {
             model = iter.next();
         }
         assertEquals(TestData.USER_EMAIL_2, model.getEmail());

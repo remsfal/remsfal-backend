@@ -74,12 +74,15 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectModel updateProject(final UserModel user, final ProjectModel project) {
+    public ProjectModel updateProject(final UserModel user, final String projectId, final ProjectModel project) {
         logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
         try {
-            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), project.getId());
+            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
             entity.setTitle(project.getTitle());
             return projectRepository.merge(entity);
+            // fetch eager project members
+            //entity.getMembers().size();
+            // return entity;
         } catch (final NoResultException e) {
             throw new NotFoundException("Project not exist or user has no membership", e);
         }

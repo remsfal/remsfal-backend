@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -14,6 +15,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.UserEndpoint;
 import de.remsfal.core.model.CustomerModel;
 
 import de.remsfal.service.entity.dao.UserRepository;
@@ -24,6 +26,9 @@ import de.remsfal.service.entity.dao.UserRepository;
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class PrincipalRequestFilter implements ContainerRequestFilter {
+
+    private static final String REGISTRATION_PATH = "/" + UserEndpoint.CONTEXT + "/"
+        + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE;
 
     @Inject
     Logger logger;
@@ -51,13 +56,21 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
                 logger.error("Authorization header is not valid");
                 throw new NotAuthorizedException("Bearer");
             }
-            final CustomerModel user = repository.findByTokenId(token.getId());
-            if (user == null) {
-                logger.errorv("User with token id={0} not found in database", token.getId());
-                throw new NotAuthorizedException("Bearer");
+            logger.info("method:" + requestContext.getMethod());
+            logger.info("path:" + requestContext.getUriInfo().getPath());
+            if (HttpMethod.POST.equals(requestContext.getMethod()) &&
+                REGISTRATION_PATH.equalsIgnoreCase(requestContext.getUriInfo().getPath())) {
+                // set token principal
+                principal.setUserModel(token);
+            } else {
+                final CustomerModel user = repository.findByTokenId(token.getId());
+                if (user == null) {
+                    logger.errorv("User with token id={0} not found in database", token.getId());
+                    throw new NotAuthorizedException("Bearer");
+                }
+                // set DB principal
+                principal.setUserModel(user);
             }
-            // set principal
-            principal.setUserModel(user);
             // rebuild security context
             SecurityContext securityContext = requestContext.getSecurityContext();
             securityContext = RemsfalSecurityContext.extendSecurityContext(securityContext, principal);

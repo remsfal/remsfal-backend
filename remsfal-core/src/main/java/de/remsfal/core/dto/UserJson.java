@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
 
 import jakarta.annotation.Nullable;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Size;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Null;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -32,7 +32,6 @@ public abstract class UserJson implements CustomerModel {
     @Nullable
     public abstract String getId();
     
-    @Null
     @Nullable
     @Size(min = 3, max = 99, message = "The name must be between 3 and 99 characters")
     public abstract String getName();

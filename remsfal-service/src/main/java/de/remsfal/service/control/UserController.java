@@ -31,12 +31,13 @@ public class UserController {
     UserTransaction transaction;
 
     @Transactional
-    public CustomerModel createUser(final UserModel user) {
-        logger.infov("Creating a new user (name={0}, email={1})", user.getName(), user.getEmail());
+    public CustomerModel createUser(final UserModel tokenInfo) {
+        logger.infov("Creating a new user (name={0}, email={1})", tokenInfo.getName(), tokenInfo.getEmail());
         final UserEntity entity = new UserEntity();
         entity.generateId();
-        entity.setName(user.getName());
-        entity.setEmail(user.getEmail());
+        entity.setTokenId(tokenInfo.getId());
+        entity.setName(tokenInfo.getName());
+        entity.setEmail(tokenInfo.getEmail().toLowerCase());
         try {
             repository.persistAndFlush(entity);
             return entity;

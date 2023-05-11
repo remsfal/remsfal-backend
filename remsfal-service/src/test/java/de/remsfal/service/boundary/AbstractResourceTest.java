@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 public abstract class AbstractResourceTest extends AbstractTest {
 
     @InjectMock
-    TokenValidator tokenValidator;
+    protected TokenValidator tokenValidator;
 
     static {
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());

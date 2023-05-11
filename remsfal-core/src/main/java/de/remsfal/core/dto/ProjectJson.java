@@ -2,8 +2,8 @@ package de.remsfal.core.dto;
 
 import jakarta.annotation.Nullable;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 
 import java.util.Set;
 
@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectModel;
 
 /**
@@ -35,5 +36,15 @@ public abstract class ProjectJson implements ProjectModel {
     @Null
     @Nullable
     public abstract Set<ProjectMemberJson> getMembers();
+
+    public static ProjectJson valueOf(ProjectModel model) {
+        final ImmutableProjectJson.Builder builder = ImmutableProjectJson.builder()
+            .id(model.getId())
+            .title(model.getTitle());
+        for(ProjectMemberModel member : model.getMembers()) {
+            builder.addMembers(ProjectMemberJson.valueOf(member));
+        }
+        return builder.build();
+    }
 
 }

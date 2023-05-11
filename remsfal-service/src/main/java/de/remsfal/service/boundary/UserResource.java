@@ -13,6 +13,7 @@ import javax.ws.rs.core.UriInfo;
 import de.remsfal.core.UserEndpoint;
 import de.remsfal.core.dto.UserJson;
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.UserController;
 
 /**
@@ -25,11 +26,15 @@ public class UserResource implements UserEndpoint {
     UriInfo uri;
 
     @Inject
+    RemsfalPrincipal principal;
+    
+    @Inject
     UserController controller;
 
     @Override
     public Response createUser(final UserJson user) {
-        final CustomerModel userModel = controller.createUser(user);
+        // TODO: validate user
+        final CustomerModel userModel = controller.createUser(principal);
         final URI location = uri.getAbsolutePathBuilder().path(userModel.getId()).build();
         return Response.created(location).build();
     }
