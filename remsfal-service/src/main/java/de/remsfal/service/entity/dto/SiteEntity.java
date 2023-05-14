@@ -15,7 +15,7 @@ import de.remsfal.core.model.SiteModel;
 public class SiteEntity extends AbstractEntity implements SiteModel {
 
     @Id
-    @Column(name = "ID", nullable = false, length = 36)
+    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
     private String id;
     
     @Column(name = "TITLE")

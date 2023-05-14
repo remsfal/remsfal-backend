@@ -1,5 +1,7 @@
 package de.remsfal.service.entity.dto;
 
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -12,7 +14,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectMemberModel.UserRole;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -22,6 +23,8 @@ import de.remsfal.core.model.ProjectMemberModel.UserRole;
     query = "SELECT m FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
 @NamedQuery(name = "ProjectMembershipEntity.findByProjectIdAndUserId",
     query = "SELECT m FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
+@NamedQuery(name = "ProjectMembershipEntity.removeByProjectIdAndUserId",
+    query = "DELETE FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
 @Table(name = "PROJECT_MEMBERSHIP")
 public class ProjectMembershipEntity extends AbstractEntity implements ProjectMemberModel {
 
@@ -30,12 +33,12 @@ public class ProjectMembershipEntity extends AbstractEntity implements ProjectMe
 
     @ManyToOne
     @MapsId("projectId")
-    @JoinColumn(name = "PROJECT_ID")
+    @JoinColumn(name = "PROJECT_ID", columnDefinition = "char")
     ProjectEntity project;
     
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "USER_ID")
+    @JoinColumn(name = "USER_ID", columnDefinition = "char")
     UserEntity user;
     
     @Column(name = "USER_ROLE")
@@ -87,4 +90,35 @@ public class ProjectMembershipEntity extends AbstractEntity implements ProjectMe
         return user.getEmail();
     }
     
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!(o instanceof ProjectMembershipEntity)) {
+            return false;
+        }
+        final ProjectMembershipEntity entity = (ProjectMembershipEntity) o;
+        return Objects.equals(project, entity.project) &&
+            Objects.equals(user, entity.user) &&
+            Objects.equals(role, entity.role);
+    }
+
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProjectMembershipEntity: {");
+        sb.append("id=").append(getId()).append(", ");
+        sb.append("email=").append(getEmail()).append(", ");
+        sb.append("name=").append(getName()).append(", ");
+        sb.append("role=").append(getRole());
+        return sb.append("}").toString();
+    }
+
 }

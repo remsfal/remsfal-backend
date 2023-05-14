@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  mysql:
+    image: percona:8.0
+    ports:
+     - "3306:3306"
+    environment:
+     - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+     - MYSQL_DATABASE=REMSFAL
+

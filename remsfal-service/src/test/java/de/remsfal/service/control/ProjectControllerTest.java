@@ -294,7 +294,7 @@ class ProjectControllerTest extends AbstractTest {
     }
 
     @Test
-    void getProjectMembers_SUCCESS_multipleUsers() {
+    void getProjectMembers_SUCCESS_multipleUsers() throws InterruptedException {
         final UserModel user = userController
             .createUser(ImmutableUserJson
                 .builder()
@@ -302,7 +302,7 @@ class ProjectControllerTest extends AbstractTest {
                 .email(TestData.USER_EMAIL_1)
                 .build());
 
-        final ProjectModel project = projectController.createProject(user, 
+        ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
 
@@ -310,22 +310,26 @@ class ProjectControllerTest extends AbstractTest {
             .email(TestData.USER_EMAIL_2)
             .role(UserRole.PROPRIETOR)
             .build();
-        projectController.addProjectMember(user, project.getId(), member2);
+        project = projectController.addProjectMember(user, project.getId(), member2);
+        assertEquals(2, project.getMembers().size());
         
         final ProjectMemberModel member3 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_3)
             .role(UserRole.LESSEE)
             .build();
-        projectController.addProjectMember(user, project.getId(), member3);
+        project = projectController.addProjectMember(user, project.getId(), member3);
+        assertEquals(3, project.getMembers().size());
         
         final ProjectMemberModel member4 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_4)
             .role(UserRole.LESSOR)
             .build();
-        projectController.addProjectMember(user, project.getId(), member4);
+        project = projectController.addProjectMember(user, project.getId(), member4);
+        assertEquals(4, project.getMembers().size());
         
         final long enties = entityManager
-            .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
+            .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership where membership.project.id = :projectId", Long.class)
+            .setParameter("projectId", project.getId())
             .getSingleResult();
         assertEquals(4, enties);
         entityManager.clear();
@@ -369,18 +373,15 @@ class ProjectControllerTest extends AbstractTest {
         
         assertThrows(ForbiddenException.class,
             () -> projectController.removeProjectMember(user2, project.getId(), user));
+        assertNotNull(user2.getId());
 
-        assertNotNull(projectController.removeProjectMember(user, project.getId(), member2));
+        final ProjectModel updatedProject = projectController.removeProjectMember(user, project.getId(), user2);
+        assertNotNull(updatedProject);
+        assertEquals(1, updatedProject.getMembers().size());
         enties = entityManager
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
             .getSingleResult();
         assertEquals(1, enties);
-
     }
     
-    @Test
-    void changeProjectMemberRole_SUCCESS_addSecondUser() {
-        
-    }
-
 }

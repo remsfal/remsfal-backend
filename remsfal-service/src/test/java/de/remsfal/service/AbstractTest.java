@@ -1,5 +1,6 @@
 package de.remsfal.service;
 
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -12,15 +13,35 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 
 public abstract class AbstractTest {
+
+    @Inject
+    protected Logger logger;
 
     @Inject
     protected EntityManager entityManager;
     
     @Inject
     protected UserTransaction userTransaction;
+
+    @BeforeEach
+    void printTestMethod(final TestInfo testInfo) {
+        String method = testInfo.getDisplayName();
+        if (method.length() > 100) {
+            method = method.substring(0, 100);
+        }
+        final String line = String.join("", Collections.nCopies(104, "#"));
+        final String title = "# " +
+            method + String.join("", Collections.nCopies(100 - method.length(), " ")) +
+            " #";
+        logger.info(line);
+        logger.info(title);
+        logger.info(line);
+    }
 
     @BeforeEach
     void cleanDB() {

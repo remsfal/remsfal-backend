@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
@@ -124,7 +125,7 @@ public class ProjectController {
             }
             projectEntity.addMember(userEntity, member.getRole());
             notificationController.informUserAboutProjectMembership(userEntity);
-            return projectRepository.merge(projectEntity);
+            return projectRepository.mergeAndFlush(projectEntity);
         } catch (final NoResultException e) {
             throw new NotFoundException("Project not exist or user has no membership", e);
         }
@@ -144,9 +145,16 @@ public class ProjectController {
     public ProjectModel removeProjectMember(final UserModel user, final String projectId, final UserModel member) {
         logger.infov("Removing a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
         try {
-            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
-            entity.removeMember(member);
-            return projectRepository.merge(entity);
+            final ProjectMembershipEntity membership = projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId);
+            if(!membership.isPrivileged()) {
+                throw new ForbiddenException("The user is not privileged to delete this project.");
+            }
+            if(projectRepository.removeMembershipByUserIdAndProjectId(member.getId(), projectId)) {
+                projectRepository.getEntityManager().clear();
+                return projectRepository.findProjectByUserId(user.getId(), projectId);
+            } else {
+                return membership.getProject();
+            }
         } catch (final NoResultException e) {
             throw new NotFoundException("Project not exist or user has no membership", e);
         }

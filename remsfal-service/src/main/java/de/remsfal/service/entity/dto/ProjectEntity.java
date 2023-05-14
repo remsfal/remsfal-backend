@@ -2,6 +2,7 @@ package de.remsfal.service.entity.dto;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -25,20 +26,21 @@ import de.remsfal.core.model.UserModel;
 public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     @Id
-    @Column(name = "ID", nullable = false, length = 36)
+    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
     private String id;
-    
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<ProjectMembershipEntity> memberships;
     
     @Column(name = "TITLE")
     private String title;
+    
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<ProjectMembershipEntity> memberships;
     
     @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(final String id) {
         this.id = id;
     }
@@ -82,16 +84,6 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         return false;
     }
 
-    public void removeMember(final UserModel member) {
-        Iterator<ProjectMembershipEntity> iter = memberships.iterator();
-        while(iter.hasNext()) {
-            ProjectMembershipEntity entity = iter.next();
-            if(entity.getUser().getId().equals(member.getId())) {
-                memberships.remove(entity);
-            }
-        }
-    }
-
     public void changeMemberRole(ProjectMemberModel member) {
         Iterator<ProjectMembershipEntity> iter = memberships.iterator();
         while(iter.hasNext()) {
@@ -100,6 +92,28 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
                 entity.setRole(member.getRole());
             }
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!(o instanceof ProjectEntity)) {
+            return false;
+        }
+        final ProjectEntity entity = (ProjectEntity) o;
+        return Objects.equals(id, entity.id) &&
+            Objects.equals(title, entity.title) &&
+            Objects.equals(memberships, entity.memberships);
     }
 
 }

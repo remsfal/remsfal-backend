@@ -3,6 +3,7 @@ package de.remsfal.service.entity.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -24,7 +25,7 @@ import de.remsfal.core.model.CustomerModel;
 public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Id
-    @Column(name = "ID", nullable = false, length = 36)
+    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
     private String id;
     
     @Column(name = "TOKEN_ID", unique = true)
@@ -100,4 +101,27 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
             .toLocalDateTime();
     }
     
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!(o instanceof UserEntity)) {
+            return false;
+        }
+        final UserEntity entity = (UserEntity) o;
+        return Objects.equals(id, entity.id) &&
+            Objects.equals(tokenId, entity.tokenId) &&
+            Objects.equals(name, entity.name) &&
+            Objects.equals(email, entity.email);
+    }
+
 }

@@ -22,8 +22,24 @@ public interface ProjectMemberModel extends UserModel {
         public int getLeadershipLevel() {
             return leadership;
         }
+
+        public boolean isPrivileged() {
+            if(leadership <= 30) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     UserRole getRole();
+
+    default boolean isPrivileged() {
+        if(getRole() == null) {
+            return false;
+        } else {
+            return getRole().isPrivileged();
+        }
+    }
 
 }

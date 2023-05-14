@@ -15,7 +15,7 @@ import de.remsfal.core.model.GarageModel;
 public class GarageEntity extends AbstractEntity implements GarageModel {
 
     @Id
-    @Column(name = "ID", nullable = false, length = 36)
+    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
     private String id;
     
     @Column(name = "TITLE")

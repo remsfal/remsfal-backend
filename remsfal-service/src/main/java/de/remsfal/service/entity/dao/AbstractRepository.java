@@ -14,4 +14,10 @@ abstract class AbstractRepository<Entity extends AbstractEntity> implements Pana
     public Entity merge(final Entity entity) {
         return getEntityManager().merge(entity);
     }
+
+    public Entity mergeAndFlush(final Entity entity) {
+        final Entity e = getEntityManager().merge(entity);
+        getEntityManager().flush();
+        return e;
+    }
 }
