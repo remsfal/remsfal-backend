@@ -1,5 +1,5 @@
 # Simple workflow for building quarkus app for production
-name: Build Vue.js App
+name: remsfal service
 
 on:
   # Runs on pushes targeting the default branch

@@ -1,5 +1,6 @@
 package de.remsfal.service;
 
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -12,22 +13,42 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
-
-import de.remsfal.service.entity.dto.UserEntity;
+import org.junit.jupiter.api.TestInfo;
 
 public abstract class AbstractTest {
 
     @Inject
-    EntityManager entityManager;
+    protected Logger logger;
+
+    @Inject
+    protected EntityManager entityManager;
     
     @Inject
-    UserTransaction userTransaction;
+    protected UserTransaction userTransaction;
+
+    @BeforeEach
+    void printTestMethod(final TestInfo testInfo) {
+        String method = testInfo.getDisplayName();
+        if (method.length() > 100) {
+            method = method.substring(0, 100);
+        }
+        final String line = String.join("", Collections.nCopies(104, "#"));
+        final String title = "# " +
+            method + String.join("", Collections.nCopies(100 - method.length(), " ")) +
+            " #";
+        logger.info(line);
+        logger.info(title);
+        logger.info(line);
+    }
 
     @BeforeEach
     void cleanDB() {
-        final String query = String.format("DELETE FROM %s", UserEntity.class.getSimpleName());
-        runInTransaction(() -> entityManager.createQuery(query).executeUpdate());
+        runInTransaction(() -> {
+            entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM ProjectEntity").executeUpdate();
+        });
     }
     
     /**

@@ -10,12 +10,19 @@ import javax.persistence.Version;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @MappedSuperclass
 public abstract class AbstractEntity {
+
+    public abstract void setId(String id);
+    
+    public void generateId() {
+        setId(UUID.randomUUID().toString());
+    }
 
     @Column(name = "CREATED_AT", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

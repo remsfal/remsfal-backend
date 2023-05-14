@@ -6,9 +6,9 @@ package de.remsfal.core.model;
 public interface UserModel {
 
     String getId();
-
+    
     String getName();
 
     String getEmail();
-
+    
 }

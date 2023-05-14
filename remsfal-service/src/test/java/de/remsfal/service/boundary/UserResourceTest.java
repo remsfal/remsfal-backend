@@ -1,9 +1,6 @@
 package de.remsfal.service.boundary;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
@@ -12,9 +9,11 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.dto.UserJson;
-import de.remsfal.service.AbstractTest;
+import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.authentication.TokenInfo;
 
 import static io.restassured.RestAssured.given;
+import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
@@ -22,38 +21,54 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 @QuarkusTest
-class UserResourceTest extends AbstractTest {
+class UserResourceTest extends AbstractResourceTest {
 
-    static final String BASE_PATH = "/api/v2/users";
-
-    static {
-        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
-    }
+    static final String BASE_PATH = "/api/v1/users";
 
     @Test
-    void testNotFound() {
+    void getUser_FAILED_userNotExist() {
         given()
+            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
             .when().get(BASE_PATH + "/" + UUID.randomUUID())
             .then()
-            .statusCode(Status.NOT_FOUND.getStatusCode());
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
 
     @Test
-    void testInvalidUserId() {
+    void getUser_FAILED_noAuthentication() {
         given()
+            .contentType(ContentType.JSON)
             .when().get(BASE_PATH + "/anyId")
             .then()
-            .statusCode(Status.BAD_REQUEST.getStatusCode());
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getProjects_FAILED_noAuthentication() {
+        given()
+            .contentType(ContentType.JSON)
+            .when().get("/api/v1/projects")
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
 
     @Test
     void testCreateAndGet() {
         final UserJson user = ImmutableUserJson.builder()
-            .name("Test")
-            .email("any@example.org")
+            .name(TestData.USER_NAME)
+            .email(TestData.USER_EMAIL)
             .build();
+
+        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN))
+            .thenReturn(new TokenInfo(ImmutableUserJson.builder()
+                .id(TestData.USER_TOKEN)
+                .email(TestData.USER_EMAIL)
+                .name(TestData.USER_NAME)
+                .build()));
+
         final Response res = given()
             .when()
+            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
             .body(user)
             .post(BASE_PATH)
@@ -61,17 +76,19 @@ class UserResourceTest extends AbstractTest {
 
         res.then()
             .statusCode(Status.CREATED.getStatusCode())
-            .header("location", Matchers.startsWith("http://localhost:8081/api/v2/users"));
+            .header("location", Matchers.startsWith("http://localhost:8081/api/v1/users"));
 
         final String userResourceUrl = res.header("location");
 
         given()
-            .when().get(userResourceUrl)
+            .when()
+            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .get(userResourceUrl)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("user_name", Matchers.equalTo("Test"))
-            .and().body("user_email", Matchers.equalTo("any@example.org"));
+            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
     }
 
 }

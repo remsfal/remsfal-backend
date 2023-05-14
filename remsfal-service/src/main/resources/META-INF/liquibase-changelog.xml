@@ -8,29 +8,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="verteilte-anwendungen-0.0.1" author="alexander.stanik@htw-berlin.de">
-
-        <createTable tableName="USER">
-            <column name="ID" type="char(36)">
-                <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="NAME" type="varchar(255)" />
-            <column name="EMAIL" type="varchar(255)">
-                <constraints nullable="false" />
-            </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-        <addUniqueConstraint tableName="USER" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
-
-        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="USER">
-            <column name="EMAIL" type="varchar(255)" />
-        </createIndex>
-
-    </changeSet>
+    <include file="META-INF/liquibase-changelog-0_0_1.xml"/>
+    <include file="META-INF/liquibase-changelog-0_1_0.xml"/>
+    <include file="META-INF/liquibase-changelog-1_0_0.xml"/>
 
 </databaseChangeLog>
