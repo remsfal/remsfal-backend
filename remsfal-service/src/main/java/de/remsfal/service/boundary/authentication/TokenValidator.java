@@ -1,54 +1,49 @@
 package de.remsfal.service.boundary.authentication;
 
-import java.io.IOException;
-import java.net.URI;
-import javax.enterprise.context.ApplicationScoped;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.model.UserModel;
-import org.json.JSONObject;
 
-/**
- * @author Alexander Stanik [stanik@htw-berlin.de]
- */
+import javax.enterprise.context.ApplicationScoped;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
+
 @ApplicationScoped
 public class TokenValidator {
+    private static final String CLIENT_ID = "821093255871-m7fg18oh8je55vaknjur9pgrh8sh4atb.apps.googleusercontent.com";
 
     public TokenInfo validate(final String authorizationHeader) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        String responseString = "";
+        String idTokenString = authorizationHeader.replace("Bearer ", "");
+
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new JacksonFactory())
+                .setAudience(Collections.singletonList(CLIENT_ID))
+                .build();
+
         try {
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://www.googleapis.com/oauth2/v1/userinfo"))
-                    .header("Authorization", "Bearer " + accessToken)
-                    .GET()
-                    .build();
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            if (idToken != null) {
+                GoogleIdToken.Payload payload = idToken.getPayload();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            responseString = response.body();
+                String userId = payload.getSubject();
+                String email = payload.getEmail();
+                String name = (String) payload.get("name");
+            System.out.println("payload " + payload);
+                final UserModel user = ImmutableUserJson.builder()
+                        .id(userId)
+                        .email(email)
+                        .name(name)
+                        .build();
 
-            System.out.println(response.statusCode());
-            System.out.println("Google API response: " + response.body());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+                return new TokenInfo(user);
+            }
+        } catch (GeneralSecurityException | IOException e) {
+            System.out.println("Invalid ID token.");
         }
 
-        JSONObject responseJson = new JSONObject(responseString);
-        System.out.println("Google API response: " + responseJson.toString());
-        String id = responseJson.getString("id");
-        String userName = responseJson.getString("name");
-        String userEmail = responseJson.getString("email");
-
-        final UserModel user = ImmutableUserJson.builder()
-                .id(id)
-                .email(userEmail)
-                .name(userName)
-                .build();
-        return new TokenInfo(user);
+        return null;
     }
 }
