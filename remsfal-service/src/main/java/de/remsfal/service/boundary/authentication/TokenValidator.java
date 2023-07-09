@@ -3,7 +3,7 @@ package de.remsfal.service.boundary.authentication;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.model.UserModel;
 
@@ -19,7 +19,7 @@ public class TokenValidator {
     public TokenInfo validate(final String authorizationHeader) {
         String idTokenString = authorizationHeader.replace("Bearer ", "");
 
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new JacksonFactory())
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
                 .setAudience(Collections.singletonList(CLIENT_ID))
                 .build();
 
