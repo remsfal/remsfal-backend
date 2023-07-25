@@ -1,6 +1,8 @@
 package de.remsfal.service.boundary.authentication;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -10,6 +12,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
@@ -47,8 +50,12 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
         throws IOException {
         try {
             final String authorizationHeader = requestContext.getHeaderString("Authorization");
+            String remsfalJwt = validator.generateJWT(authorizationHeader);
+            requestContext.getHeaders().remove("Authorization");
+            requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, remsfalJwt);
+            logger.error("Authorization header new" + requestContext.getHeaderString("Authorization"));
             if (authorizationHeader == null) {
-                logger.error("Authorization header was not provided");
+                logger.error("Authorization header was not provided" + authorizationHeader);
                 throw new NotAuthorizedException("Bearer");
             }
             final TokenInfo token = validator.validate(authorizationHeader);

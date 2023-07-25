@@ -46,4 +46,9 @@ public class TokenValidator {
 
         return null;
     }
+
+    String generateJWT(String authorizationHeader){
+        String idTokenString = authorizationHeader.replace("Bearer ", "");
+        return "Bearer ey123456789";
+    }
 }
