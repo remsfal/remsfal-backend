@@ -1,8 +1,10 @@
 package de.remsfal.service.boundary;
 
 import java.net.URI;
+import java.util.ArrayList;
 
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -10,6 +12,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import de.remsfal.core.UserEndpoint;
 import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.dto.UserJson;
@@ -39,19 +43,18 @@ public class UserResource implements UserEndpoint {
 
     @Override
     public UserJson authenticate(String authHeader) {
-        System.out.println("authenticateHeader" + authHeader);
-        authController.getClaimsFromJWT(authHeader.replace("Bearer ", ""));
-        final UserModel userModel = ImmutableUserJson.builder()
-                .id("123")
-                .email("email@test.de")
-                .name("Test User")
-                .build();
+        DecodedJWT jwt =  authController.getDecodedJWT(authHeader);
         try {
-            CustomerModel user = controller.getUser(userModel.getId());
+            CustomerModel user = controller.getUserByTokenId(jwt.getSubject());
             return UserJson.valueOf(user);
-        } catch (IllegalArgumentException e) {
-            final CustomerModel newUser;
-            newUser = controller.createUser(userModel);
+        } catch (NoResultException e) {
+            System.out.println("emailll" + jwt.getClaim("email").asString());
+            final UserModel userModel = ImmutableUserJson.builder()
+                    .id(jwt.getSubject())
+                    .email(jwt.getClaim("email").asString())
+                    .name(jwt.getClaim("name").asString())
+                    .build();
+            final CustomerModel newUser = controller.createUser(userModel);
             return UserJson.valueOf(newUser);
         }
     }

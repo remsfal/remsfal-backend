@@ -54,7 +54,14 @@ public class UserController {
         }
         return user;
     }
-
+    public CustomerModel getUserByTokenId(final String tokenId) {
+        logger.infov("Retrieving an existing user (tokenId = {0})", tokenId);
+        final UserEntity user = repository.findByTokenId(tokenId);
+        if(user == null) {
+            throw new NotFoundException("User not exist");
+        }
+        return user;
+    }
     @Transactional
     public CustomerModel updateUser(final UserModel user) {
         logger.infov("Updating an existing user ({0})", user);

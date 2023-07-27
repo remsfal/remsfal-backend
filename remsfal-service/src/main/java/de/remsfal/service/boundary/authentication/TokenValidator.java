@@ -22,15 +22,13 @@ public class TokenValidator {
     private static final String CLIENT_ID = "821093255871-m7fg18oh8je55vaknjur9pgrh8sh4atb.apps.googleusercontent.com";
 
     public TokenInfo validate(final String authorizationHeader) {
-        System.out.println("authHeader" + authorizationHeader);
-        String idTokenString = authorizationHeader.replace("Bearer ", "");
 
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
                 .setAudience(Collections.singletonList(CLIENT_ID))
                 .build();
 
         try {
-            GoogleIdToken idToken = verifier.verify(idTokenString);
+            GoogleIdToken idToken = verifier.verify(authorizationHeader);
 
             if (idToken != null) {
                 GoogleIdToken.Payload payload = idToken.getPayload();
@@ -43,8 +41,6 @@ public class TokenValidator {
                         .email(email)
                         .name(name)
                         .build();
-
-                System.out.println("uname" +user.getEmail());
 
                 return new TokenInfo(user);
             }

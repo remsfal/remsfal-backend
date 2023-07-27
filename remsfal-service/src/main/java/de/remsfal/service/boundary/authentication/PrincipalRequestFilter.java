@@ -32,7 +32,7 @@ import de.remsfal.service.entity.dao.UserRepository;
 public class PrincipalRequestFilter implements ContainerRequestFilter {
 
     private static final String REGISTRATION_PATH = "/" + UserEndpoint.CONTEXT + "/"
-        + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE;
+        + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE + "/authenticate";
 
     @Inject
     Logger logger;
@@ -53,24 +53,26 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext)
         throws IOException {
         try {
-            final String authorizationHeader = requestContext.getHeaderString("Authorization");
+            final String authorizationHeader = requestContext.getHeaderString("Authorization").replace("Bearer ", "");
 
             if (authorizationHeader == null) {
                 logger.error("Authorization header was not provided" + authorizationHeader);
                 throw new NotAuthorizedException("Bearer");
             }
             final TokenInfo token = validator.validate(authorizationHeader);
-//            String remsfalJwt = authController.generateJWT(authorizationHeader);
-//            requestContext.getHeaders().remove("Authorization");
-//            requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, remsfalJwt);
-//            logger.error("Authorization header new" + requestContext.getHeaderString("Authorization"));
+
             if (token == null) {
                 logger.error("Authorization header is not valid");
                 throw new NotAuthorizedException("Bearer");
             }
+            String remsfalJwt = authController.generateJWT(token);
+            requestContext.getHeaders().remove("Authorization");
+            requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, remsfalJwt);
+
             logger.info("method:" + requestContext.getMethod());
             logger.info("path:" + requestContext.getUriInfo().getPath());
-            if (HttpMethod.POST.equals(requestContext.getMethod()) &&
+
+            if (HttpMethod.GET.equals(requestContext.getMethod()) &&
                 REGISTRATION_PATH.equalsIgnoreCase(requestContext.getUriInfo().getPath())) {
                 // set token principal
                 principal.setUserModel(token);
