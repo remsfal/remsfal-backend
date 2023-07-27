@@ -101,7 +101,11 @@
             <artifactId>google-oauth-client</artifactId>
             <version>1.33.3</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.18.2</version> <!-- please make sure this is the latest version -->
+        </dependency>
     </dependencies>
     <build>
         <finalName>remsfal-service</finalName>
