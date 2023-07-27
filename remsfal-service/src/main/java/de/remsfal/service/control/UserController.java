@@ -46,9 +46,10 @@ public class UserController {
         }
     }
 
-    public CustomerModel getUser(final String userId) {
-        logger.infov("Retrieving an existing user (id = {0})", userId);
-        final UserEntity user = repository.findById(userId);
+    public CustomerModel getUser(final String tokenId) {
+        System.out.println("token Used to access");
+        logger.infov("Retrieving an existing user (tokenid = {0})", tokenId);
+        final UserEntity user = repository.findByTokenId(tokenId);
         if(user == null) {
             throw new NotFoundException("User not exist");
         }
