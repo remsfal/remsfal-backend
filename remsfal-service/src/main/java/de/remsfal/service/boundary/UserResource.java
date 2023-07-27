@@ -11,9 +11,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import de.remsfal.core.UserEndpoint;
+import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.dto.UserJson;
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
+import de.remsfal.service.control.AuthController;
 import de.remsfal.service.control.UserController;
 
 /**
@@ -27,27 +30,32 @@ public class UserResource implements UserEndpoint {
 
     @Inject
     RemsfalPrincipal principal;
-    
+
     @Inject
     UserController controller;
 
-    @Override
-    public Response createUser(final UserJson user) {
-        // TODO: validate user
-        final CustomerModel userModel = controller.createUser(principal);
-        final URI location = uri.getAbsolutePathBuilder().path(userModel.getId()).build();
-        return Response.created(location).build();
-    }
+    @Inject
+    AuthController authController;
 
     @Override
-    public UserJson getUser(final String userId) {
+    public UserJson authenticate(String authHeader) {
+        System.out.println("authenticateHeader" + authHeader);
+        authController.getClaimsFromJWT(authHeader.replace("Bearer ", ""));
+        final UserModel userModel = ImmutableUserJson.builder()
+                .id("123")
+                .email("email@test.de")
+                .name("Test User")
+                .build();
         try {
-            final CustomerModel user = controller.getUser(userId);
+            CustomerModel user = controller.getUser(userModel.getId());
             return UserJson.valueOf(user);
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid user id", e);
+            final CustomerModel newUser;
+            newUser = controller.createUser(userModel);
+            return UserJson.valueOf(newUser);
         }
     }
+
 
     @Override
     public UserJson updateUser(final String userId, final UserJson user) {

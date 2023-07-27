@@ -16,6 +16,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
+import de.remsfal.service.control.AuthController;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.UserEndpoint;
@@ -37,6 +38,9 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     Logger logger;
 
     @Inject
+    AuthController authController;
+
+    @Inject
     TokenValidator validator;
 
     @Inject
@@ -50,15 +54,16 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
         throws IOException {
         try {
             final String authorizationHeader = requestContext.getHeaderString("Authorization");
-            String remsfalJwt = validator.generateJWT(authorizationHeader);
-            requestContext.getHeaders().remove("Authorization");
-            requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, remsfalJwt);
-            logger.error("Authorization header new" + requestContext.getHeaderString("Authorization"));
+
             if (authorizationHeader == null) {
                 logger.error("Authorization header was not provided" + authorizationHeader);
                 throw new NotAuthorizedException("Bearer");
             }
             final TokenInfo token = validator.validate(authorizationHeader);
+//            String remsfalJwt = authController.generateJWT(authorizationHeader);
+//            requestContext.getHeaders().remove("Authorization");
+//            requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, remsfalJwt);
+//            logger.error("Authorization header new" + requestContext.getHeaderString("Authorization"));
             if (token == null) {
                 logger.error("Authorization header is not valid");
                 throw new NotAuthorizedException("Bearer");
