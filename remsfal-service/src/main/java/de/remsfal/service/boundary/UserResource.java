@@ -43,9 +43,10 @@ public class UserResource implements UserEndpoint {
 
     @Override
     public UserJson authenticate(String authHeader) {
+        System.out.println("autHeader2 " + authHeader);
         DecodedJWT jwt =  authController.getDecodedJWT(authHeader);
         try {
-            CustomerModel user = controller.getUserByTokenId(jwt.getSubject());
+            CustomerModel user = controller.getUser(jwt.getSubject());
             return UserJson.valueOf(user);
         } catch (NoResultException e) {
             System.out.println("emailll" + jwt.getClaim("email").asString());

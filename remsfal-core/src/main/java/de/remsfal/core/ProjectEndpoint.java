@@ -51,7 +51,7 @@ public interface ProjectEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a project.")
     @APIResponse(responseCode = "404", description = "The project does not exist")
-    ProjectJson getProject(
+    Response getProject(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId);
 
     @PATCH

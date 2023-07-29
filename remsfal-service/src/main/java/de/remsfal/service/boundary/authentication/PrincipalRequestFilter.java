@@ -52,6 +52,7 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext)
         throws IOException {
+
         try {
             final String authorizationHeader = requestContext.getHeaderString("Authorization").replace("Bearer ", "");
 
@@ -65,11 +66,17 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
                 logger.error("Authorization header is not valid");
                 throw new NotAuthorizedException("Bearer");
             }
+            logger.error("reached1" + token.getEmail());
+
             String remsfalJwt = authController.generateJWT(token);
+            logger.error("reached2" + remsfalJwt);
+
             requestContext.getHeaders().remove("Authorization");
             requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, remsfalJwt);
 
             logger.info("method:" + requestContext.getMethod());
+            logger.info("header:" + requestContext.getHeaderString("Authorization"));
+
             logger.info("path:" + requestContext.getUriInfo().getPath());
 
             if (HttpMethod.GET.equals(requestContext.getMethod()) &&

@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import de.remsfal.service.control.AuthController;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.ProjectEndpoint;
@@ -40,6 +41,9 @@ public class ProjectResource implements ProjectEndpoint {
     @Inject
     ProjectController controller;
 
+    @Inject
+    AuthController authController;
+
     @Override
     public ProjectListJson getProjects() {
         List<ProjectModel> projects = controller.getProjects(principal);
@@ -63,13 +67,26 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public ProjectJson getProject(final String projectId) {
-        if(projectId == null) {
-            throw new BadRequestException("Invalid project ID");
+    public Response getProject(final String projectId) {
+        boolean isAdmin = authController.isAdminForProject(projectId, authController.getJwt());
+        System.out.println("isAdmin "+ isAdmin );
+
+        if(!isAdmin) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity("You don't have admin rights to access this project.")
+                    .build();
         }
+
+        if(projectId == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid project ID")
+                    .build();
+        }
+
         final ProjectModel model = controller.getProject(principal, projectId);
-        return ProjectJson.valueOf(model);
+        return Response.ok(ProjectJson.valueOf(model)).build();
     }
+
 
     @Override
     public ProjectJson updateProject(final String projectId, @Valid final ProjectJson project) {
