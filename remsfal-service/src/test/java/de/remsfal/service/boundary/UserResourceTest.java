@@ -17,8 +17,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 @QuarkusTest
 class UserResourceTest extends AbstractResourceTest {

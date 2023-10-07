@@ -3,13 +3,14 @@ package de.remsfal.service.boundary;
 import java.net.URI;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.jboss.logging.Logger;
 
@@ -21,7 +22,6 @@ import de.remsfal.core.dto.ProjectMemberListJson;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.ProjectController;
-import javax.validation.Valid;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

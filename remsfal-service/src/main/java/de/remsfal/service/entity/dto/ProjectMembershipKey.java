@@ -3,8 +3,8 @@ package de.remsfal.service.entity.dto;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

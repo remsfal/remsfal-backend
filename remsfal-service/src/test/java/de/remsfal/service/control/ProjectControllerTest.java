@@ -12,9 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 
 import org.junit.jupiter.api.Test;
 

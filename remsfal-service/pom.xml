@@ -15,7 +15,7 @@
 
 
     <properties>
-        <quarkus.version>2.16.6.Final</quarkus.version>
+        <quarkus.version>3.4.2</quarkus.version>
         <quarkus.package.type>uber-jar</quarkus.package.type>
         <skipITs>true</skipITs>
     </properties>
@@ -84,6 +84,11 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jacoco</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

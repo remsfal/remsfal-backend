@@ -1,0 +1,20 @@
+name: "RELEASE Build"
+
+on:
+  # Only run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Build Release (JDK17)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build with Maven (package)
+        run: mvn --batch-mode --update-snapshots package
