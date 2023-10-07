@@ -3,7 +3,7 @@ package de.remsfal.service;
 import java.util.Collections;
 import java.util.function.Supplier;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
