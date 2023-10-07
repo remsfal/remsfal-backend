@@ -13,8 +13,8 @@
     <properties>
         <version.immutables>2.9.3</version.immutables>
         <version.jackson>2.14.2</version.jackson>
-        <version.validation>2.0.2</version.validation>
-        <version.jax-rs>2.1.1</version.jax-rs>
+        <version.validation>3.0.2</version.validation>
+        <version.jax-rs>3.1.0</version.jax-rs>
         <version.open-api>3.1</version.open-api>
     </properties>
     <dependencies>
@@ -42,9 +42,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <!-- jakarta.ws.rs-api is not supported by quarkus -->
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${version.jax-rs}</version>
             <scope>provided</scope>
         </dependency>

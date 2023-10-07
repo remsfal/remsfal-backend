@@ -2,16 +2,16 @@ package de.remsfal.service.boundary.authentication;
 
 import java.io.IOException;
 
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.ext.Provider;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 

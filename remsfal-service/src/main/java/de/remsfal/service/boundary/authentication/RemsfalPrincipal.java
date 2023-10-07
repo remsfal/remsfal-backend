@@ -2,7 +2,7 @@ package de.remsfal.service.boundary.authentication;
 
 import java.security.Principal;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 import de.remsfal.core.model.UserModel;
 

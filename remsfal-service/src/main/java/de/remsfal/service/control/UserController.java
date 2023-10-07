@@ -1,11 +1,11 @@
 package de.remsfal.service.control;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.persistence.PersistenceException;
-import javax.transaction.Transactional;
-import javax.transaction.UserTransaction;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.UserTransaction;
+import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 

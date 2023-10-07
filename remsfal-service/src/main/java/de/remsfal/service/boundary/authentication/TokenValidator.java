@@ -7,7 +7,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.core.model.UserModel;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;

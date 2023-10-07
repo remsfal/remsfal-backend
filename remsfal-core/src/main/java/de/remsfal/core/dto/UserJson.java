@@ -4,11 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.annotation.Nullable;
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Null;
-import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;

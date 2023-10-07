@@ -1,0 +1,57 @@
+name: "CI Build"
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+  workflow_dispatch:
+
+jobs:
+  jdk17-build:
+    name: "JDK 17 Build"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Build with Maven (package)
+        run: mvn --batch-mode --update-snapshots package
+  jdk21-build:
+    name: "JDK 21 Build"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          # TODO: change to temurin after jdk 21 release
+          distribution: 'zulu'
+      - name: Build with Maven (package)
+        run: mvn --batch-mode --update-snapshots package
+  sonar-cloud-analysis:
+    name: "Sonar Cloud Build"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Build with Maven (package)
+        run: mvn verify
