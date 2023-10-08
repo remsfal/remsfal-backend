@@ -22,6 +22,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <surefire-plugin.version>3.0.0</surefire-plugin.version>
+        <sonar.organization>remsfal</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <build>
@@ -45,10 +50,10 @@
                                 org.jboss.logmanager.LogManager</java.util.logging.manager>
                             <maven.home>${maven.home}</maven.home>
                             <quarkus.jacoco.data-file>
-                                ${maven.multiModuleProjectDirectory}/target/jacoco.exec</quarkus.jacoco.data-file>
+                                ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec</quarkus.jacoco.data-file>
                             <quarkus.jacoco.reuse-data-file>true</quarkus.jacoco.reuse-data-file>
                             <quarkus.jacoco.report-location>
-                                ${maven.multiModuleProjectDirectory}/target/coverage</quarkus.jacoco.report-location>
+                                ${maven.multiModuleProjectDirectory}/target/site/jacoco</quarkus.jacoco.report-location>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
