@@ -15,6 +15,8 @@ import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
+import com.google.common.net.HttpHeaders;
+
 import de.remsfal.core.api.UserEndpoint;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
@@ -46,7 +48,7 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext)
         throws IOException {
         try {
-            final String authorizationHeader = requestContext.getHeaderString("Authorization");
+            final String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
             if (authorizationHeader == null) {
                 logger.error("Authorization header was not provided");
                 throw new UnauthorizedException();

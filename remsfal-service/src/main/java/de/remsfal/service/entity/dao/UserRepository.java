@@ -1,7 +1,6 @@
 package de.remsfal.service.entity.dao;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.ObservesAsync;
 import jakarta.transaction.Transactional;
 
 import java.util.Date;

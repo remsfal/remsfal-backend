@@ -9,7 +9,7 @@ import de.remsfal.core.model.UserModel;
  */
 public class TokenInfo implements UserModel {
 
-    final private Payload payload;
+    private final Payload payload;
     
     public TokenInfo(final Payload payload) {
         this.payload = payload;

@@ -14,6 +14,8 @@ import java.util.Collections;
 
 @ApplicationScoped
 public class TokenValidator {
+    
+    // TODO: make this configurable
     private static final String CLIENT_ID = "821093255871-m7fg18oh8je55vaknjur9pgrh8sh4atb.apps.googleusercontent.com";
     
     /**

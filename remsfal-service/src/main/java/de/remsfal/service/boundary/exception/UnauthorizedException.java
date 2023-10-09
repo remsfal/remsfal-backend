@@ -1,5 +1,6 @@
 package de.remsfal.service.boundary.exception;
 
+import de.remsfal.service.boundary.authentication.RemsfalSecurityContext;
 import jakarta.ws.rs.NotAuthorizedException;
 
 /**
@@ -13,7 +14,7 @@ public class UnauthorizedException extends NotAuthorizedException {
      * Construct a new "unauthorized" exception.
      */
     public UnauthorizedException() {
-        super("Bearer");
+        super(RemsfalSecurityContext.BEARER);
     }
 
     /**
@@ -23,7 +24,7 @@ public class UnauthorizedException extends NotAuthorizedException {
      *                by the {@link #getMessage()} method).
      */
     public UnauthorizedException(String message) {
-        super(message, "Bearer");
+        super(message, RemsfalSecurityContext.BEARER);
     }
 
     /**
@@ -34,7 +35,7 @@ public class UnauthorizedException extends NotAuthorizedException {
      * @param cause   the underlying cause of the exception.
      */
     public UnauthorizedException(String message, Throwable cause) {
-        super(message, cause, "Bearer");
+        super(message, cause, RemsfalSecurityContext.BEARER);
     }
 
 }
