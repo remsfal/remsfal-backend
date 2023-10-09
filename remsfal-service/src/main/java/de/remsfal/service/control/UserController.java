@@ -56,7 +56,7 @@ public class UserController {
     }
 
     @Transactional
-    public CustomerModel updateUser(final UserModel user) {
+    public CustomerModel updateUser(final String userId, final UserModel user) {
         logger.infov("Updating an existing user ({0})", user);
         final UserEntity entity = repository.findById(user.getId());
         if(user.getName() != null) {

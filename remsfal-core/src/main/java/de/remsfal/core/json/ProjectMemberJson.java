@@ -1,4 +1,4 @@
-package de.remsfal.core.dto;
+package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Email;
@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.json.ImmutableProjectMemberJson;
 import de.remsfal.core.model.ProjectMemberModel;
 
 /**

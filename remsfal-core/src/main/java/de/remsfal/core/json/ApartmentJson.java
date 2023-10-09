@@ -1,4 +1,4 @@
-package de.remsfal.core.dto;
+package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
 
@@ -12,16 +12,17 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.GarageModel;
+import de.remsfal.core.json.ImmutableApartmentJson;
+import de.remsfal.core.model.ApartmentModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "A garage inside a building")
-@JsonDeserialize(as = ImmutableGarageJson.class)
+@Schema(description = "An apartment inside a building")
+@JsonDeserialize(as = ImmutableApartmentJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public abstract class GarageJson implements GarageModel {
+public abstract class ApartmentJson implements ApartmentModel {
 
     @Null
     @Nullable

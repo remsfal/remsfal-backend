@@ -1,7 +1,6 @@
-package de.remsfal.core.dto;
+package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
-
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
@@ -12,16 +11,17 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.BuildingModel;
+import de.remsfal.core.json.ImmutableTaskJson;
+import de.remsfal.core.model.TaskModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "A building as part of a property")
-@JsonDeserialize(as = ImmutableBuildingJson.class)
+@Schema(description = "A task")
+@JsonDeserialize(as = ImmutableTaskJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public abstract class BuildingJson implements BuildingModel {
+public abstract class TaskJson implements TaskModel {
 
     @Null
     @Nullable

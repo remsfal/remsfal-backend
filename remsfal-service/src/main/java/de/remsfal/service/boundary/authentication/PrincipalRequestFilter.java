@@ -6,7 +6,7 @@ import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -15,13 +15,13 @@ import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.core.UserEndpoint;
+import de.remsfal.core.api.UserEndpoint;
 import de.remsfal.core.model.CustomerModel;
-
+import de.remsfal.service.boundary.exception.UnauthorizedException;
 import de.remsfal.service.entity.dao.UserRepository;
 
 /**
- * @author Alexander Stanik [stanik@htw-berlin.de]
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Provider
 @Priority(Priorities.AUTHENTICATION)
@@ -49,12 +49,12 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
             final String authorizationHeader = requestContext.getHeaderString("Authorization");
             if (authorizationHeader == null) {
                 logger.error("Authorization header was not provided");
-                throw new NotAuthorizedException("Bearer");
+                throw new UnauthorizedException();
             }
             final TokenInfo token = validator.validate(authorizationHeader);
             if (token == null) {
                 logger.error("Authorization header is not valid");
-                throw new NotAuthorizedException("Bearer");
+                throw new UnauthorizedException();
             }
             logger.info("method:" + requestContext.getMethod());
             logger.info("path:" + requestContext.getUriInfo().getPath());
@@ -66,7 +66,7 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
                 final CustomerModel user = repository.findByTokenId(token.getId());
                 if (user == null) {
                     logger.errorv("User with token id={0} not found in database", token.getId());
-                    throw new NotAuthorizedException("Bearer");
+                    throw new NotFoundException();
                 }
                 // set DB principal
                 principal.setUserModel(user);
@@ -77,7 +77,7 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
             requestContext.setSecurityContext(securityContext);
         } catch (NoResultException e) {
             logger.error("User not found in database");
-            throw new NotAuthorizedException("Bearer");
+            throw new NotFoundException();
         }
     }
 

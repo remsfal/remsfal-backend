@@ -1,4 +1,4 @@
-package de.remsfal.core.dto;
+package de.remsfal.core.json;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.json.ImmutableProjectListJson;
 import de.remsfal.core.model.ProjectModel;
 
 /**

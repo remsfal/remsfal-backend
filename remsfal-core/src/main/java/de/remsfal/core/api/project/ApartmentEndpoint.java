@@ -1,4 +1,4 @@
-package de.remsfal.core;
+package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -15,7 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.dto.GarageJson;
+import de.remsfal.core.json.ApartmentJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -23,28 +23,28 @@ import de.remsfal.core.dto.GarageJson;
 @Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/" 
  + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
  + "/{propertyId}/" + BuildingEndpoint.SERVICE
- + "/{buildingId}/" + GarageEndpoint.SERVICE)
-public interface GarageEndpoint {
+ + "/{buildingId}/" + ApartmentEndpoint.SERVICE)
+public interface ApartmentEndpoint {
 
-    final static String SERVICE = "garages";
+    final static String SERVICE = "apartments";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new garage.")
-    @APIResponse(responseCode = "201", description = "Garage created successfully",
-        headers = @Header(name = "Location", description = "URL of the new garage"))
-    Response createGarage(
-        @Parameter(description = "Garage information", required = true) @Valid GarageJson garage);
+    @Operation(summary = "Create a new apartment.")
+    @APIResponse(responseCode = "201", description = "Apartment created successfully",
+        headers = @Header(name = "Location", description = "URL of the new apartment"))
+    Response createApartment(
+        @Parameter(description = "Apartment information", required = true) @Valid ApartmentJson apartment);
 
     @GET
-    @Path("/{garageId}")
+    @Path("/{apartmentId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of a garage.")
-    @APIResponse(responseCode = "404", description = "The garage does not exist")
-    GarageJson getGarage(
+    @Operation(summary = "Retrieve information of a apartment.")
+    @APIResponse(responseCode = "404", description = "The apartment does not exist")
+    ApartmentJson getApartment(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") String propertyId,
         @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") String buildingId,
-        @Parameter(description = "ID of the garage", required = true) @PathParam("garageId") String garageId);
+        @Parameter(description = "ID of the apartment", required = true) @PathParam("apartmentId") String apartmentId);
 
 }

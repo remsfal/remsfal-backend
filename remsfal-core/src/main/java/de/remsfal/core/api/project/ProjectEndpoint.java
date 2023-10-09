@@ -1,4 +1,4 @@
-package de.remsfal.core;
+package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -17,10 +17,10 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.dto.ProjectJson;
-import de.remsfal.core.dto.ProjectListJson;
-import de.remsfal.core.dto.ProjectMemberJson;
-import de.remsfal.core.dto.ProjectMemberListJson;
+import de.remsfal.core.json.ProjectJson;
+import de.remsfal.core.json.ProjectListJson;
+import de.remsfal.core.json.ProjectMemberJson;
+import de.remsfal.core.json.ProjectMemberListJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

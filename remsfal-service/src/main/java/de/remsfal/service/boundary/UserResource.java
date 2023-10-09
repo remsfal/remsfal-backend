@@ -1,17 +1,11 @@
 package de.remsfal.service.boundary;
 
-import java.net.URI;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
-
-import de.remsfal.core.UserEndpoint;
-import de.remsfal.core.dto.UserJson;
+import de.remsfal.core.api.UserEndpoint;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.UserController;
@@ -22,9 +16,6 @@ import de.remsfal.service.control.UserController;
 @Path(UserEndpoint.CONTEXT + "/" + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE)
 public class UserResource implements UserEndpoint {
 
-    @Context
-    UriInfo uri;
-
     @Inject
     RemsfalPrincipal principal;
     
@@ -32,17 +23,17 @@ public class UserResource implements UserEndpoint {
     UserController controller;
 
     @Override
-    public Response createUser(final UserJson user) {
+    public UserJson registerUser(final UserJson user) {
         // TODO: validate user
         final CustomerModel userModel = controller.createUser(principal);
-        final URI location = uri.getAbsolutePathBuilder().path(userModel.getId()).build();
-        return Response.created(location).build();
+        return UserJson.valueOf(userModel);
     }
 
     @Override
-    public UserJson getUser(final String userId) {
+    public UserJson getUser() {
         try {
-            final CustomerModel user = controller.getUser(userId);
+            final CustomerModel user = controller.getUser(principal.getId());
+            // TODO: update authentication date
             return UserJson.valueOf(user);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Invalid user id", e);
@@ -50,19 +41,14 @@ public class UserResource implements UserEndpoint {
     }
 
     @Override
-    public UserJson updateUser(final String userId, final UserJson user) {
-        if (user.getId() != null) {
-            throw new BadRequestException("User ID should not be set in payload");
-        } else {
-            //user.setId(userId);
-        }
-        final CustomerModel updatedUser = controller.updateUser(user);
+    public UserJson updateUser(final UserJson user) {
+        final CustomerModel updatedUser = controller.updateUser(principal.getId(), user);
         return UserJson.valueOf(updatedUser);
     }
 
     @Override
-    public void deleteUser(final String userId) {
-        if (!controller.deleteUser(userId)) {
+    public void deleteUser() {
+        if (!controller.deleteUser(principal.getId())) {
             throw new NotFoundException();
         }
     }

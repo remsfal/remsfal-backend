@@ -6,7 +6,6 @@ import java.util.Set;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
