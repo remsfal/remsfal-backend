@@ -1,7 +1,12 @@
 package de.remsfal.service.entity.dao;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.ObservesAsync;
+import jakarta.transaction.Transactional;
 
+import java.util.Date;
+
+import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.entity.dto.UserEntity;
 
 /**
@@ -22,6 +27,19 @@ public class UserRepository extends AbstractRepository<UserEntity> {
         return getEntityManager().createNamedQuery("UserEntity.deleteById")
             .setParameter("id", userId)
             .executeUpdate() > 0;
+    }
+
+    public boolean updateAuthenticatedAt(String userId) {
+        return getEntityManager().createNamedQuery("UserEntity.updateAuthenticatedAt")
+            .setParameter("timestamp", new Date())
+            .setParameter("id", userId)
+            .executeUpdate() > 0;
+    }
+
+    @Transactional
+    public void onPrincipalAuthentication(@ObservesAsync final RemsfalPrincipal principal) {
+        //logger.infov("Updating authentication timestamp of user (id = {0})", principal.getId());
+        updateAuthenticatedAt(principal.getId());
     }
 
 }

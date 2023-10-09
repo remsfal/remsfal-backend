@@ -35,7 +35,6 @@ public abstract class AbstractEntity {
 
     @PrePersist
     public void created() {
-
         final Date now = new Date();
         createdAt = now;
         modifiedAt = now;
@@ -43,7 +42,6 @@ public abstract class AbstractEntity {
 
     @PreUpdate
     public void modified() {
-
         modifiedAt = new Date();
     }
 

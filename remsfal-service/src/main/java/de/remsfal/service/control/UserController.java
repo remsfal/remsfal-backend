@@ -7,6 +7,8 @@ import jakarta.transaction.Transactional;
 import jakarta.transaction.UserTransaction;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.Date;
+
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.CustomerModel;
@@ -38,6 +40,7 @@ public class UserController {
         entity.setTokenId(tokenInfo.getId());
         entity.setName(tokenInfo.getName());
         entity.setEmail(tokenInfo.getEmail().toLowerCase());
+        entity.setAuthenticatedAt(new Date());
         try {
             repository.persistAndFlush(entity);
             return entity;
@@ -58,7 +61,7 @@ public class UserController {
     @Transactional
     public CustomerModel updateUser(final String userId, final UserModel user) {
         logger.infov("Updating an existing user ({0})", user);
-        final UserEntity entity = repository.findById(user.getId());
+        final UserEntity entity = repository.findById(userId);
         if(user.getName() != null) {
             entity.setName(user.getName());
         }

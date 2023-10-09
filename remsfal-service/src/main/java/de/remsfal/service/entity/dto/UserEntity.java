@@ -3,6 +3,7 @@ package de.remsfal.service.entity.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Email;
 
 import de.remsfal.core.model.CustomerModel;
@@ -19,7 +22,10 @@ import de.remsfal.core.model.CustomerModel;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@NamedQuery(name = "UserEntity.deleteById", query = "delete from UserEntity user where user.id = :id")
+@NamedQuery(name = "UserEntity.updateAuthenticatedAt", 
+    query = "update UserEntity user set user.authenticatedAt = :timestamp where user.id = :id")
+@NamedQuery(name = "UserEntity.deleteById", 
+    query = "delete from UserEntity user where user.id = :id")
 @Entity
 @Table(name = "USER")
 public class UserEntity extends AbstractEntity implements CustomerModel {
@@ -38,6 +44,10 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Column(name = "EMAIL", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "AUTHENTICATED_AT", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date authenticatedAt;
+
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
     
@@ -47,7 +57,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -55,7 +65,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         return tokenId;
     }
 
-    public void setTokenId(String tokenId) {
+    public void setTokenId(final String tokenId) {
         this.tokenId = tokenId;
     }
 
@@ -64,7 +74,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -73,15 +83,23 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email;
+    }
+
+    public Date getAuthenticatedAt() {
+        return authenticatedAt;
+    }
+
+    public void setAuthenticatedAt(final Date authenticatedAt) {
+        this.authenticatedAt = authenticatedAt;
     }
 
     public Set<ProjectMembershipEntity> getMemberships() {
         return memberships;
     }
 
-    public void setMemberships(Set<ProjectMembershipEntity> memberships) {
+    public void setMemberships(final Set<ProjectMembershipEntity> memberships) {
         this.memberships = memberships;
     }
 
@@ -95,7 +113,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Override
     public LocalDateTime getLastLoginDate() {
-        return this.getModifiedAt()
+        return this.getAuthenticatedAt()
             .toInstant()
             .atZone(ZoneId.systemDefault())
             .toLocalDateTime();

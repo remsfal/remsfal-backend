@@ -27,12 +27,11 @@ public interface UserEndpoint {
     final static String SERVICE = "user";
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Registers a new user identified by the token.")
     @APIResponse(responseCode = "200", description = "User created successfully")
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "409", description = "Another user with the same email already exist")
-    UserJson registerUser(@Parameter(description = "User information", required = true) @Valid UserJson user);
+    UserJson registerUser();
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

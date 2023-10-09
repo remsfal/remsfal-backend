@@ -1,9 +1,11 @@
 package de.remsfal.service.boundary;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
+
+import jakarta.enterprise.event.Event;
+
 import de.remsfal.core.api.UserEndpoint;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
@@ -22,22 +24,20 @@ public class UserResource implements UserEndpoint {
     @Inject
     UserController controller;
 
+    @Inject
+    private Event<RemsfalPrincipal> authenticatedPrincipals;
+    
     @Override
-    public UserJson registerUser(final UserJson user) {
-        // TODO: validate user
+    public UserJson registerUser() {
         final CustomerModel userModel = controller.createUser(principal);
         return UserJson.valueOf(userModel);
     }
 
     @Override
     public UserJson getUser() {
-        try {
-            final CustomerModel user = controller.getUser(principal.getId());
-            // TODO: update authentication date
-            return UserJson.valueOf(user);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid user id", e);
-        }
+        final CustomerModel user = controller.getUser(principal.getId());
+        authenticatedPrincipals.fireAsync(principal);
+        return UserJson.valueOf(user);
     }
 
     @Override

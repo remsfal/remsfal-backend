@@ -27,6 +27,9 @@
             <column name="EMAIL" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
+            <column name="AUTHENTICATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="true" />
+            </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
