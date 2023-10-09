@@ -15,7 +15,7 @@ import jakarta.ws.rs.NotFoundException;
 
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.dto.ImmutableUserJson;
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
@@ -97,7 +97,7 @@ class UserControllerTest extends AbstractTest {
         final String newUserName = "Dr. " + TestData.USER_NAME;
         UserModel updatedUser =
             ImmutableUserJson.builder().id(user.getId()).name(newUserName).email(TestData.USER_EMAIL).build();
-        updatedUser = controller.updateUser(updatedUser);
+        updatedUser = controller.updateUser(user.getId(), updatedUser);
         assertEquals(user.getId(), updatedUser.getId());
         assertEquals(user.getEmail(), updatedUser.getEmail());
         assertEquals(newUserName, updatedUser.getName());

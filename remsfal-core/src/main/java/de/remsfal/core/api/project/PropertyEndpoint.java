@@ -1,4 +1,4 @@
-package de.remsfal.core;
+package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -15,7 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.dto.PropertyJson;
+import de.remsfal.core.json.PropertyJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -24,7 +24,7 @@ import de.remsfal.core.dto.PropertyJson;
  + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE)
 public interface PropertyEndpoint {
 
-    final static String SERVICE = "properties";
+    static final String SERVICE = "properties";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

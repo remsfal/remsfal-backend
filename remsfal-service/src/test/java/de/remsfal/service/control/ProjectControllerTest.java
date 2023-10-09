@@ -18,9 +18,9 @@ import jakarta.ws.rs.NotFoundException;
 
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.dto.ImmutableProjectJson;
-import de.remsfal.core.dto.ImmutableProjectMemberJson;
-import de.remsfal.core.dto.ImmutableUserJson;
+import de.remsfal.core.json.ImmutableProjectJson;
+import de.remsfal.core.json.ImmutableProjectMemberJson;
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.ProjectModel;
@@ -270,7 +270,7 @@ class ProjectControllerTest extends AbstractTest {
         final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .id(user2.getId())
             .email(user2.getEmail())
-            .role(UserRole.CARETAKER)
+            .role(UserRole.MANAGER)
             .build();
         projectController.addProjectMember(user1, project.getId(), member2);
         
@@ -281,7 +281,7 @@ class ProjectControllerTest extends AbstractTest {
             .setParameter("userId", member2.getId())
             .getSingleResult()
             .toString();
-        assertEquals("CARETAKER", userRole);
+        assertEquals("MANAGER", userRole);
         final long members = entityManager
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
             .getSingleResult();
@@ -315,7 +315,7 @@ class ProjectControllerTest extends AbstractTest {
         
         final ProjectMemberModel member3 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_3)
-            .role(UserRole.LESSEE)
+            .role(UserRole.MANAGER)
             .build();
         project = projectController.addProjectMember(user, project.getId(), member3);
         assertEquals(3, project.getMembers().size());
@@ -351,7 +351,7 @@ class ProjectControllerTest extends AbstractTest {
 
         final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_2)
-            .role(UserRole.LESSEE)
+            .role(UserRole.LESSOR)
             .build();
         projectController.addProjectMember(user, project.getId(), member2);
                 

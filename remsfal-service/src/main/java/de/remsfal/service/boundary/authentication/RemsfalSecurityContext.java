@@ -8,6 +8,8 @@ import jakarta.ws.rs.core.SecurityContext;
  * @author Alexander Stanik [stanik@htw-berlin.de]
  */
 public class RemsfalSecurityContext implements SecurityContext {
+    
+    public static final String BEARER = "Bearer";
 
     private final SecurityContext context;
 
@@ -43,7 +45,7 @@ public class RemsfalSecurityContext implements SecurityContext {
 
     @Override
     public String getAuthenticationScheme() {
-        return "RemsfalSecurity";
+        return BEARER + "RemsfalSecurity";
     }
 
 }

@@ -1,4 +1,4 @@
-package de.remsfal.core.dto;
+package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;

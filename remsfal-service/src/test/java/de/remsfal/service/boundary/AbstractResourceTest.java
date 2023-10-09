@@ -1,17 +1,18 @@
 package de.remsfal.service.boundary;
 
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 
-import de.remsfal.core.dto.ImmutableUserJson;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.authentication.TokenInfo;
 import de.remsfal.service.boundary.authentication.TokenValidator;
 
 import static org.mockito.Mockito.when;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 
 public abstract class AbstractResourceTest extends AbstractTest {
 
@@ -53,29 +54,25 @@ public abstract class AbstractResourceTest extends AbstractTest {
             .executeUpdate());
 
         when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_1))
-            .thenReturn(new TokenInfo(ImmutableUserJson.builder()
-                .id(TestData.USER_TOKEN_1)
-                .email(TestData.USER_EMAIL_1)
-                .name(TestData.USER_NAME_1)
-                .build()));
+            .thenReturn(new TokenInfo(new Payload()
+                .setSubject(TestData.USER_TOKEN_1)
+                .setEmail(TestData.USER_EMAIL_1)
+                .set("name", TestData.USER_NAME_1)));
         when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_2))
-            .thenReturn(new TokenInfo(ImmutableUserJson.builder()
-                .id(TestData.USER_TOKEN_2)
-                .email(TestData.USER_EMAIL_2)
-                .name(TestData.USER_NAME_2)
-                .build()));
+            .thenReturn(new TokenInfo(new Payload()
+                .setSubject(TestData.USER_TOKEN_2)
+                .setEmail(TestData.USER_EMAIL_2)
+                .set("name", TestData.USER_NAME_2)));
         when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_3))
-            .thenReturn(new TokenInfo(ImmutableUserJson.builder()
-                .id(TestData.USER_TOKEN_3)
-                .email(TestData.USER_EMAIL_3)
-                .name(TestData.USER_NAME_3)
-                .build()));
+            .thenReturn(new TokenInfo(new Payload()
+                .setSubject(TestData.USER_TOKEN_3)
+                .setEmail(TestData.USER_EMAIL_3)
+                .set("name", TestData.USER_NAME_3)));
         when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_4))
-            .thenReturn(new TokenInfo(ImmutableUserJson.builder()
-                .id(TestData.USER_TOKEN_4)
-                .email(TestData.USER_EMAIL_4)
-                .name(TestData.USER_NAME_4)
-                .build()));
+            .thenReturn(new TokenInfo(new Payload()
+                .setSubject(TestData.USER_TOKEN_4)
+                .setEmail(TestData.USER_EMAIL_4)
+                .set("name", TestData.USER_NAME_4)));
     }
 
 }

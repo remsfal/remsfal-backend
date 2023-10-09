@@ -1,4 +1,4 @@
-package de.remsfal.core.dto;
+package de.remsfal.core.json;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +36,7 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getName();
 
     @Email
+    @Nullable
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
     public abstract String getEmail();
 

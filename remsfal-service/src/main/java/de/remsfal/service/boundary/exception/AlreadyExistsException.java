@@ -3,6 +3,9 @@ package de.remsfal.service.boundary.exception;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
 public class AlreadyExistsException extends ClientErrorException {
 
     private static final long serialVersionUID = 1L;
