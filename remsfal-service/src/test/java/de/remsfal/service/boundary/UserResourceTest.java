@@ -13,7 +13,10 @@ import de.remsfal.service.boundary.authentication.TokenInfo;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
 
 import jakarta.ws.rs.core.Response.Status;
 
@@ -106,7 +109,7 @@ class UserResourceTest extends AbstractResourceTest {
     }
     
     @Test
-    void registerUser_SUCCESS_getUser() {
+    void registerUser_SUCCESS_getUser() throws InterruptedException {
         when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_2))
             .thenReturn(new TokenInfo(new Payload()
                 .setSubject(TestData.USER_TOKEN_2)
@@ -120,7 +123,9 @@ class UserResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode());
 
-        given()
+        Thread.sleep(3000);
+        
+        final String firtLoginDate = given()
             .when()
             .header("Authorization", "Bearer " + TestData.USER_TOKEN_2)
             .get(BASE_PATH)
@@ -128,7 +133,20 @@ class UserResourceTest extends AbstractResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("name", Matchers.equalTo(TestData.USER_NAME_2))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2));
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2))
+            .extract().path("lastLoginDate");
+        
+        Thread.sleep(3000);
+        
+        final String secondLoginDate = given()
+            .when()
+            .header("Authorization", "Bearer " + TestData.USER_TOKEN_2)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .extract().path("lastLoginDate");
+        // check authentication event
+        assertTrue(LocalDateTime.parse(secondLoginDate).isAfter(LocalDateTime.parse(firtLoginDate)));
     }
 
     @Test

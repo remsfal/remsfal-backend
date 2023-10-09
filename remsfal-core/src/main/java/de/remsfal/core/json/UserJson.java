@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.CustomerModel;
 
 /**

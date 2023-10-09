@@ -24,7 +24,7 @@ import de.remsfal.core.json.PropertyJson;
  + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE)
 public interface PropertyEndpoint {
 
-    final static String SERVICE = "properties";
+    static final String SERVICE = "properties";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

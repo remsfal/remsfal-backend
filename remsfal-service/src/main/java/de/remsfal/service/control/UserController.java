@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
@@ -13,6 +14,7 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.service.boundary.authentication.AuthenticationEvent;
 import de.remsfal.service.boundary.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserEntity;
@@ -69,6 +71,15 @@ public class UserController {
             entity.setEmail(user.getEmail());
         }
         return repository.merge(entity);
+    }
+    
+    public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
+        logger.infov("Updating authentication timestamp of user ({0})", event.getUser());
+        try {
+            repository.updateAuthenticatedAt(event.getUser().getId(), event.getAuthenticatedAt());
+        } catch (Exception e) {
+            logger.error("Unable to update authentication timestamp", e);
+        }
     }
 
     @Transactional

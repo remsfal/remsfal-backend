@@ -26,7 +26,7 @@ import de.remsfal.core.json.ApartmentJson;
  + "/{buildingId}/" + ApartmentEndpoint.SERVICE)
 public interface ApartmentEndpoint {
 
-    final static String SERVICE = "apartments";
+    static final String SERVICE = "apartments";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

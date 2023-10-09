@@ -26,7 +26,7 @@ import de.remsfal.core.json.GarageJson;
  + "/{buildingId}/" + GarageEndpoint.SERVICE)
 public interface GarageEndpoint {
 
-    final static String SERVICE = "garages";
+    static final String SERVICE = "garages";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

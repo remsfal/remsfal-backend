@@ -22,9 +22,9 @@ import de.remsfal.core.json.UserJson;
 @Path(UserEndpoint.CONTEXT + "/" + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE)
 public interface UserEndpoint {
 
-    final static String CONTEXT = "api";
-    final static String VERSION = "v1";
-    final static String SERVICE = "user";
+    static final String CONTEXT = "api";
+    static final String VERSION = "v1";
+    static final String SERVICE = "user";
 
     @POST
     @Operation(summary = "Registers a new user identified by the token.")

@@ -28,9 +28,9 @@ import de.remsfal.core.json.ProjectMemberListJson;
 @Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/" + ProjectEndpoint.SERVICE)
 public interface ProjectEndpoint {
 
-    final static String CONTEXT = "api";
-    final static String VERSION = "v1";
-    final static String SERVICE = "projects";
+    static final String CONTEXT = "api";
+    static final String VERSION = "v1";
+    static final String SERVICE = "projects";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

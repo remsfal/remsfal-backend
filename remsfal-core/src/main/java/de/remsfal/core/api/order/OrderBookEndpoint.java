@@ -14,9 +14,9 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 @Path(OrderBookEndpoint.CONTEXT + "/" + OrderBookEndpoint.VERSION + "/" + OrderBookEndpoint.SERVICE)
 public interface OrderBookEndpoint {
 
-    final static String CONTEXT = "api";
-    final static String VERSION = "v1";
-    final static String SERVICE = "order-book";
+    static final String CONTEXT = "api";
+    static final String VERSION = "v1";
+    static final String SERVICE = "order-book";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

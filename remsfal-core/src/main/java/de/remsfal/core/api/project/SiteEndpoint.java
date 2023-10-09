@@ -25,7 +25,7 @@ import de.remsfal.core.json.SiteJson;
  + "/{propertyId}/" + SiteEndpoint.SERVICE)
 public interface SiteEndpoint {
 
-    final static String SERVICE = "sites";
+    static final String SERVICE = "sites";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

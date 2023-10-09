@@ -6,7 +6,6 @@ import jakarta.transaction.Transactional;
 
 import java.util.Date;
 
-import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.entity.dto.UserEntity;
 
 /**
@@ -29,17 +28,12 @@ public class UserRepository extends AbstractRepository<UserEntity> {
             .executeUpdate() > 0;
     }
 
-    public boolean updateAuthenticatedAt(String userId) {
+    @Transactional
+    public boolean updateAuthenticatedAt(final String userId, final Date date) {
         return getEntityManager().createNamedQuery("UserEntity.updateAuthenticatedAt")
-            .setParameter("timestamp", new Date())
+            .setParameter("timestamp", date)
             .setParameter("id", userId)
             .executeUpdate() > 0;
-    }
-
-    @Transactional
-    public void onPrincipalAuthentication(@ObservesAsync final RemsfalPrincipal principal) {
-        //logger.infov("Updating authentication timestamp of user (id = {0})", principal.getId());
-        updateAuthenticatedAt(principal.getId());
     }
 
 }
