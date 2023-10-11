@@ -18,7 +18,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
     private String id;
     
-    @Id
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String projectId;
 

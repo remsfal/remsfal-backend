@@ -4,6 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import java.util.Objects;
+
 import de.remsfal.core.model.AddressModel;
 
 /**
@@ -80,6 +83,28 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof AddressEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(street, e.street)
+                && Objects.equals(city, e.city)
+                && Objects.equals(province, e.province)
+                && Objects.equals(zip, e.zip)
+                && Objects.equals(country, e.country);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 }
