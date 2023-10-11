@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Null;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -27,7 +28,36 @@ public abstract class ApartmentJson implements ApartmentModel {
     @Nullable
     public abstract String getId();
 
+    @Null
+    @Nullable
+    @JsonIgnore
+    public abstract String getBuildingId();
+
     @NotNull
     public abstract String getTitle();
+
+    @Null
+    @Nullable
+    public abstract String getLocation();
+
+    @Null
+    @Nullable
+    public abstract String getDescription();
+
+    @Null
+    @Nullable
+    public abstract Float getLivingSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getUsableSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getHeatingSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getRent();
 
 }

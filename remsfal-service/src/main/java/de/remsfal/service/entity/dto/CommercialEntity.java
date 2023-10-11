@@ -5,14 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-import de.remsfal.core.model.ApartmentModel;
+import de.remsfal.core.model.CommercialModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "APARTMENT")
-public class ApartmentEntity extends AbstractEntity implements ApartmentModel {
+@Table(name = "COMMERCIAL")
+public class CommercialEntity extends AbstractEntity implements CommercialModel {
 
     @Id
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
@@ -35,8 +35,8 @@ public class ApartmentEntity extends AbstractEntity implements ApartmentModel {
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
-    private Float livingSpace;
+    @Column(name = "COMMERCIAL_SPACE", columnDefinition = "decimal")
+    private Float commercialSpace;
 
     @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
     private Float usableSpace;
@@ -102,12 +102,12 @@ public class ApartmentEntity extends AbstractEntity implements ApartmentModel {
     }
 
     @Override
-    public Float getLivingSpace() {
-        return livingSpace;
+    public Float getCommercialSpace() {
+        return commercialSpace;
     }
 
-    public void setLivingSpace(Float livingSpace) {
-        this.livingSpace = livingSpace;
+    public void setCommercialSpace(Float commercialSpace) {
+        this.commercialSpace = commercialSpace;
     }
 
     @Override
