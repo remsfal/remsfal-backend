@@ -28,11 +28,6 @@ public abstract class ApartmentJson implements ApartmentModel {
     @Nullable
     public abstract String getId();
 
-    @Null
-    @Nullable
-    @JsonIgnore
-    public abstract String getBuildingId();
-
     @NotNull
     public abstract String getTitle();
 

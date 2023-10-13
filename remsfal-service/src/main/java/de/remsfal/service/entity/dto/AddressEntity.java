@@ -41,7 +41,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -49,7 +49,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         return street;
     }
 
-    public void setStreet(String street) {
+    public void setStreet(final String street) {
         this.street = street;
     }
 
@@ -57,7 +57,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         return city;
     }
 
-    public void setCity(String city) {
+    public void setCity(final String city) {
         this.city = city;
     }
 
@@ -65,7 +65,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         return province;
     }
 
-    public void setProvince(String province) {
+    public void setProvince(final String province) {
         this.province = province;
     }
 
@@ -73,7 +73,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         return zip;
     }
 
-    public void setZip(String zip) {
+    public void setZip(final String zip) {
         this.zip = zip;
     }
 
@@ -81,7 +81,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         return country;
     }
 
-    public void setCountry(String country) {
+    public void setCountry(final String country) {
         this.country = country;
     }
 
@@ -105,6 +105,17 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public static AddressEntity fromModel(final AddressModel address) {
+        final AddressEntity entity = new AddressEntity();
+        entity.setId(address.getId());
+        entity.setStreet(address.getStreet());
+        entity.setCity(address.getCity());
+        entity.setProvince(address.getProvince());
+        entity.setZip(address.getZip());
+        entity.setCountry(address.getCountry());
+        return entity;
     }
 
 }

@@ -7,8 +7,6 @@ public interface PropertyModel {
 
     String getId();
 
-    String getProjectId();
-
     String getTitle();
 
     String getLandRegisterEntry();

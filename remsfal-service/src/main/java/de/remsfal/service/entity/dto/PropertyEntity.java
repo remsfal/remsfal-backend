@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.Objects;
+
 import de.remsfal.core.model.PropertyModel;
 
 /**
@@ -43,7 +45,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
         this.id = id;
     }
 
-    @Override
     public String getProjectId() {
         return projectId;
     }
@@ -92,6 +93,38 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
     public Float getEffectiveSpace() {
         // TODO calculate living space + usable space + commercial space
         return null;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof PropertyEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(projectId, e.projectId)
+                && Objects.equals(title, e.title)
+                && Objects.equals(landRegisterEntry, e.landRegisterEntry)
+                && Objects.equals(description, e.description)
+                && Objects.equals(plotArea, e.plotArea);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static PropertyEntity fromModel(PropertyModel property) {
+        final PropertyEntity entity = new PropertyEntity();
+        entity.setId(property.getId());
+        entity.setTitle(property.getTitle());
+        entity.setLandRegisterEntry(property.getLandRegisterEntry());
+        entity.setDescription(property.getDescription());
+        entity.setPlotArea(property.getPlotArea());
+        return entity;
     }
 
 }

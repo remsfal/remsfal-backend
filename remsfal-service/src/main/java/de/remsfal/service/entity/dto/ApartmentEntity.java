@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.Objects;
+
 import de.remsfal.core.model.ApartmentModel;
 
 /**
@@ -40,7 +42,6 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
         this.id = id;
     }
 
-    @Override
     public String getBuildingId() {
         return buildingId;
     }
@@ -74,6 +75,40 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
 
     public void setHeatingSpace(Float heatingSpace) {
         this.heatingSpace = heatingSpace;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof ApartmentEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(buildingId, e.buildingId)
+                && Objects.equals(location, e.location)
+                && Objects.equals(livingSpace, e.livingSpace)
+                && Objects.equals(heatingSpace, e.heatingSpace);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static ApartmentEntity fromModel(ApartmentModel apartment) {
+        final ApartmentEntity entity = new ApartmentEntity();
+        entity.setId(apartment.getId());
+        entity.setTitle(apartment.getTitle());
+        entity.setLocation(apartment.getLocation());
+        entity.setDescription(apartment.getDescription());
+        entity.setLivingSpace(apartment.getLivingSpace());
+        entity.setUsableSpace(apartment.getUsableSpace());
+        entity.setHeatingSpace(apartment.getHeatingSpace());
+        entity.setRent(apartment.getRent());
+        return entity;
     }
 
 }

@@ -7,8 +7,6 @@ public interface CommercialModel {
 
     String getId();
 
-    String getBuildingId();
-
     String getTitle();
 
     String getLocation();

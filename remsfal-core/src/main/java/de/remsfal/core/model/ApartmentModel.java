@@ -7,8 +7,6 @@ public interface ApartmentModel {
 
     String getId();
 
-    String getBuildingId();
-
     String getTitle();
 
     String getLocation();

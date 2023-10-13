@@ -7,8 +7,6 @@ public interface GarageModel {
 
     String getId();
 
-    String getBuildingId();
-
     String getTitle();
 
     String getLocation();

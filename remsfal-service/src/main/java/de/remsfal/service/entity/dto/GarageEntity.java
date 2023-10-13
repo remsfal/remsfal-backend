@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.Objects;
+
 import de.remsfal.core.model.GarageModel;
 
 /**
@@ -34,7 +36,6 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
         this.id = id;
     }
 
-    @Override
     public String getBuildingId() {
         return buildingId;
     }
@@ -50,6 +51,36 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof GarageEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(buildingId, e.buildingId)
+                && Objects.equals(location, e.location);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static GarageEntity fromModel(GarageModel garage) {
+        final GarageEntity entity = new GarageEntity();
+        entity.setId(garage.getId());
+        entity.setTitle(garage.getTitle());
+        entity.setLocation(garage.getLocation());
+        entity.setDescription(garage.getDescription());
+        entity.setUsableSpace(garage.getUsableSpace());
+        entity.setRent(garage.getRent());
+        return entity;
     }
 
 }

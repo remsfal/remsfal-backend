@@ -8,6 +8,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
+import java.util.Objects;
+
 import de.remsfal.core.model.SiteModel;
 
 /**
@@ -38,7 +40,6 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
         this.id = id;
     }
 
-    @Override
     public String getPropertyId() {
         return propertyId;
     }
@@ -54,6 +55,36 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
 
     public void setAddress(AddressEntity address) {
         this.address = address;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof SiteEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(propertyId, e.propertyId)
+                && Objects.equals(address, e.address);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static SiteEntity fromModel(SiteModel site) {
+        final SiteEntity entity = new SiteEntity();
+        entity.setId(site.getId());
+        entity.setTitle(site.getTitle());
+        entity.setAddress(AddressEntity.fromModel(site.getAddress()));
+        entity.setDescription(site.getDescription());
+        entity.setUsableSpace(site.getUsableSpace());
+        entity.setRent(site.getRent());
+        return entity;
     }
 
 }

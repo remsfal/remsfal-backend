@@ -7,8 +7,6 @@ public interface SiteModel {
 
     String getId();
 
-    String getPropertyId();
-
     String getTitle();
 
     AddressModel getAddress();

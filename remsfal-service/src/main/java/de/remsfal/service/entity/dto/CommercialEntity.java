@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.Objects;
+
 import de.remsfal.core.model.CommercialModel;
 
 /**
@@ -40,7 +42,6 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         this.id = id;
     }
 
-    @Override
     public String getBuildingId() {
         return buildingId;
     }
@@ -74,6 +75,40 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
 
     public void setHeatingSpace(Float heatingSpace) {
         this.heatingSpace = heatingSpace;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof CommercialEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(buildingId, e.buildingId)
+                && Objects.equals(location, e.location)
+                && Objects.equals(commercialSpace, e.commercialSpace)
+                && Objects.equals(heatingSpace, e.heatingSpace);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static CommercialEntity fromModel(CommercialModel commercial) {
+        final CommercialEntity entity = new CommercialEntity();
+        entity.setId(commercial.getId());
+        entity.setTitle(commercial.getTitle());
+        entity.setLocation(commercial.getLocation());
+        entity.setDescription(commercial.getDescription());
+        entity.setCommercialSpace(commercial.getCommercialSpace());
+        entity.setUsableSpace(commercial.getUsableSpace());
+        entity.setHeatingSpace(commercial.getHeatingSpace());
+        entity.setRent(commercial.getRent());
+        return entity;
     }
 
 }

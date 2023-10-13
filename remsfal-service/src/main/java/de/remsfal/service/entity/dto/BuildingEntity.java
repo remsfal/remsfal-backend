@@ -7,6 +7,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
+import java.util.Objects;
+
 import de.remsfal.core.model.BuildingModel;
 
 /**
@@ -46,7 +49,6 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         this.id = id;
     }
 
-    @Override
     public String getPropertyId() {
         return propertyId;
     }
@@ -89,6 +91,42 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
     public void setHeatingSpace(Float heatingSpace) {
         this.heatingSpace = heatingSpace;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof BuildingEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(propertyId, e.propertyId)
+                && Objects.equals(address, e.address)
+                && Objects.equals(livingSpace, e.livingSpace)
+                && Objects.equals(commercialSpace, e.commercialSpace)
+                && Objects.equals(heatingSpace, e.heatingSpace);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static BuildingEntity fromModel(BuildingModel building) {
+        final BuildingEntity entity = new BuildingEntity();
+        entity.setId(building.getId());
+        entity.setTitle(building.getTitle());
+        entity.setAddress(AddressEntity.fromModel(building.getAddress()));
+        entity.setDescription(building.getDescription());
+        entity.setLivingSpace(building.getLivingSpace());
+        entity.setCommercialSpace(building.getCommercialSpace());
+        entity.setUsableSpace(building.getUsableSpace());
+        entity.setHeatingSpace(building.getHeatingSpace());
+        entity.setRent(building.getRent());
+        return entity;
     }
 
 }
