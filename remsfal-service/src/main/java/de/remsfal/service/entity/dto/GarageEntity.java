@@ -73,6 +73,9 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
     }
 
     public static GarageEntity fromModel(GarageModel garage) {
+        if(garage == null) {
+            return null;
+        }
         final GarageEntity entity = new GarageEntity();
         entity.setId(garage.getId());
         entity.setTitle(garage.getTitle());

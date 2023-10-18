@@ -116,6 +116,9 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     }
 
     public static BuildingEntity fromModel(BuildingModel building) {
+        if(building == null) {
+            return null;
+        }
         final BuildingEntity entity = new BuildingEntity();
         entity.setId(building.getId());
         entity.setTitle(building.getTitle());

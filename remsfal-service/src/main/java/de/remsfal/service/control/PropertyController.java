@@ -69,7 +69,7 @@ public class PropertyController {
         logger.infov("Retrieving a property (projectId = {0}, propertyId = {1})", projectId, propertyId);
         try {
             PropertyEntity entity = propertyRepository.findById(propertyId);
-            if(entity.getProjectId().equals(projectId)) {
+            if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
                 throw new NoResultException("Invalid project ID");
@@ -94,7 +94,7 @@ public class PropertyController {
         logger.infov("Retrieving a site (projectId = {0}, propertyId = {1}, siteId={2})", projectId, propertyId, siteId);
         try {
             SiteEntity entity = siteRepository.findById(siteId);
-            if(entity.getProjectId().equals(projectId)) {
+            if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
                 throw new NoResultException("Invalid project ID");
@@ -120,7 +120,7 @@ public class PropertyController {
         logger.infov("Retrieving a building (projectId = {0}, propertyId = {1}, buildingId={2})", projectId, propertyId, buildingId);
         try {
             BuildingEntity entity = buildingRepository.findById(buildingId);
-            if(entity.getProjectId().equals(projectId)) {
+            if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
                 throw new NoResultException("Invalid project ID");
@@ -145,7 +145,7 @@ public class PropertyController {
         logger.infov("Retrieving a apartment (projectId = {0}, buildingId = {1}, apartmentId={2})", projectId, buildingId, apartmentId);
         try {
             ApartmentEntity entity = apartmentRepository.findById(apartmentId);
-            if(entity.getProjectId().equals(projectId)) {
+            if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
                 throw new NoResultException("Invalid project ID");
@@ -171,7 +171,7 @@ public class PropertyController {
         logger.infov("Retrieving a commercial (projectId = {0}, buildingId = {1}, commercialId={2})", projectId, buildingId, commercialId);
         try {
             CommercialEntity entity = commercialRepository.findById(commercialId);
-            if(entity.getProjectId().equals(projectId)) {
+            if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
                 throw new NoResultException("Invalid project ID");
@@ -197,7 +197,7 @@ public class PropertyController {
         logger.infov("Retrieving a garage (projectId = {0}, buildingId = {1}, garageId={2})", projectId, buildingId, garageId);
         try {
             GarageEntity entity = garageRepository.findById(garageId);
-            if(entity.getProjectId().equals(projectId)) {
+            if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
                 throw new NoResultException("Invalid project ID");

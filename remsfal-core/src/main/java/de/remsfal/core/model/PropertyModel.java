@@ -15,6 +15,4 @@ public interface PropertyModel {
 
     Integer getPlotArea();
 
-    Float getEffectiveSpace(); // living space + usable space + commercial space
-
 }

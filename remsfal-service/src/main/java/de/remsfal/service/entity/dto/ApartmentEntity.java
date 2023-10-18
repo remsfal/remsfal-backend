@@ -99,6 +99,9 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
     }
 
     public static ApartmentEntity fromModel(ApartmentModel apartment) {
+        if(apartment == null) {
+            return null;
+        }
         final ApartmentEntity entity = new ApartmentEntity();
         entity.setId(apartment.getId());
         entity.setTitle(apartment.getTitle());

@@ -99,6 +99,9 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
     }
 
     public static CommercialEntity fromModel(CommercialModel commercial) {
+        if(commercial == null) {
+            return null;
+        }
         final CommercialEntity entity = new CommercialEntity();
         entity.setId(commercial.getId());
         entity.setTitle(commercial.getTitle());

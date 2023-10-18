@@ -1,0 +1,197 @@
+package de.remsfal.service.control;
+
+import io.quarkus.test.junit.QuarkusTest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
+
+import org.hibernate.exception.ConstraintViolationException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.remsfal.core.json.ImmutablePropertyJson;
+import de.remsfal.core.json.ImmutableSiteJson;
+import de.remsfal.core.model.PropertyModel;
+import de.remsfal.core.model.SiteModel;
+import de.remsfal.service.AbstractTest;
+import de.remsfal.service.TestData;
+
+@QuarkusTest
+class PropertyControllerTest extends AbstractTest {
+
+    @Inject
+    PropertyController propertyController;
+
+    @BeforeEach
+    void setupTestProjects() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_1)
+            .setParameter(2, TestData.PROJECT_TITLE_1)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_2)
+            .setParameter(2, TestData.PROJECT_TITLE_2)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_3)
+            .setParameter(2, TestData.PROJECT_TITLE_3)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_4)
+            .setParameter(2, TestData.PROJECT_TITLE_4)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_5)
+            .setParameter(2, TestData.PROJECT_TITLE_5)
+            .executeUpdate());
+    }
+
+    @Test
+    void createProperty_FAILED_noProject() {
+        final PropertyModel property = TestData.propertyBuilder().build();
+        
+        assertThrows(ConstraintViolationException.class,
+            () -> propertyController.createProperty(null, property));
+    }
+    
+    @Test
+    void createProperty_SUCCESS_idGenerated() {
+        final PropertyModel property = TestData.propertyBuilder().build();
+        
+        final PropertyModel result = propertyController.createProperty(TestData.PROJECT_ID, property);
+        
+        assertNotEquals(property.getId(), result.getId());
+        assertEquals(property.getTitle(), result.getTitle());
+        assertEquals(property.getLandRegisterEntry(), result.getLandRegisterEntry());
+        assertEquals(property.getDescription(), result.getDescription());
+        assertEquals(property.getPlotArea(), result.getPlotArea());
+        
+        final String propertyId = entityManager
+            .createQuery("SELECT p.id FROM PropertyEntity p where p.title = :title", String.class)
+            .setParameter("title", TestData.PROPERTY_TITLE)
+            .getSingleResult();
+        assertEquals(result.getId(), propertyId);
+    }
+    
+    @Test
+    void getProperty_SUCCESS_propertyRetrieved() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .setParameter(1, TestData.PROPERTY_ID)
+            .setParameter(2, TestData.PROJECT_ID)
+            .setParameter(3, TestData.PROPERTY_TITLE)
+            .setParameter(4, TestData.PROPERTY_REG_ENTRY)
+            .setParameter(5, TestData.PROPERTY_DESCRIPTION)
+            .setParameter(6, 22)
+            .executeUpdate());
+        
+        final PropertyModel result = propertyController.getProperty(TestData.PROJECT_ID, TestData.PROPERTY_ID);
+        
+        assertEquals(TestData.PROPERTY_ID, result.getId());
+        assertEquals(TestData.PROPERTY_TITLE, result.getTitle());
+        assertEquals(TestData.PROPERTY_REG_ENTRY, result.getLandRegisterEntry());
+        assertEquals(TestData.PROPERTY_DESCRIPTION, result.getDescription());
+        assertEquals(22, result.getPlotArea());
+    }
+    
+    @Test
+    void getProperty_FAILED_wrongProjectId() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .setParameter(1, TestData.PROPERTY_ID)
+            .setParameter(2, TestData.PROJECT_ID_1)
+            .setParameter(3, TestData.PROPERTY_TITLE)
+            .setParameter(4, TestData.PROPERTY_REG_ENTRY)
+            .setParameter(5, TestData.PROPERTY_DESCRIPTION)
+            .setParameter(6, 22)
+            .executeUpdate());
+        
+        assertThrows(NotFoundException.class,
+            () -> propertyController.getProperty(TestData.PROJECT_ID_2, TestData.PROPERTY_ID));
+    }
+    
+    @Test
+    void createSite_FAILED_noProjectNoProperty() {
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+
+        final SiteModel site = TestData.siteBuilder().build();
+        
+        assertThrows(ConstraintViolationException.class,
+            () -> propertyController.createSite(null, property.getId(), site));
+        assertThrows(ConstraintViolationException.class,
+            () -> propertyController.createSite(TestData.PROJECT_ID, null, site));
+    }
+    
+    @Test
+    void createSite_SUCCESS_idGenerated() {
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+
+        final SiteModel site = TestData.siteBuilder()
+            .address(TestData.addressBuilder().build())
+            .build();
+        
+        final SiteModel result = propertyController.createSite(TestData.PROJECT_ID, property.getId(), site);
+        
+        assertNotEquals(site.getId(), result.getId());
+        assertEquals(site.getTitle(), result.getTitle());
+        assertEquals(site.getAddress().getStreet(), result.getAddress().getStreet());
+        assertEquals(site.getAddress().getCity(), result.getAddress().getCity());
+        assertEquals(site.getAddress().getProvince(), result.getAddress().getProvince());
+        assertEquals(site.getAddress().getZip(), result.getAddress().getZip());
+        assertEquals(site.getDescription(), result.getDescription());
+        assertEquals(site.getUsableSpace(), result.getUsableSpace());
+        assertEquals(site.getRent(), result.getRent());
+        
+        final String siteId = entityManager
+            .createQuery("SELECT s.id FROM SiteEntity s where s.title = :title", String.class)
+            .setParameter("title", TestData.SITE_TITLE)
+            .getSingleResult();
+        assertEquals(result.getId(), siteId);
+    }
+    
+    @Test
+    void getSite_SUCCESS_propertyRetrieved() {
+        assertNotNull(TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+        final SiteModel site = propertyController.createSite(TestData.PROJECT_ID, property.getId(),
+            TestData.siteBuilder().address(TestData.addressBuilder().build()).build());
+        assertNotNull(site.getId());
+
+        final SiteModel result = propertyController.getSite(TestData.PROJECT_ID, property.getId(), site.getId());
+        
+        assertEquals(site.getId(), result.getId());
+        assertEquals(site.getTitle(), result.getTitle());
+        assertEquals(site.getAddress().getId(), result.getAddress().getId());
+        assertEquals(site.getDescription(), result.getDescription());
+        assertEquals(site.getUsableSpace(), result.getUsableSpace());
+        assertEquals(site.getRent(), result.getRent());
+    }
+    
+    @Test
+    void getSite_FAILED_wrongProjectId() {
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+        final SiteModel site = propertyController.createSite(TestData.PROJECT_ID, property.getId(),
+            TestData.siteBuilder().address(TestData.addressBuilder().build()).build());
+        assertNotNull(site.getId());
+        
+        assertThrows(NotFoundException.class,
+            () -> propertyController.getSite(TestData.PROJECT_ID_2, property.getId(), site.getId()));
+    }
+    
+}

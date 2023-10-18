@@ -90,12 +90,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
     }
 
     @Override
-    public Float getEffectiveSpace() {
-        // TODO calculate living space + usable space + commercial space
-        return null;
-    }
-
-    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;

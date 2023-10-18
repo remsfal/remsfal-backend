@@ -108,6 +108,9 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     }
 
     public static AddressEntity fromModel(final AddressModel address) {
+        if(address == null) {
+            return null;
+        }
         final AddressEntity entity = new AddressEntity();
         entity.setId(address.getId());
         entity.setStreet(address.getStreet());
