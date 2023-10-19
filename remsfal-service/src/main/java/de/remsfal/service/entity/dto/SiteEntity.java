@@ -1,9 +1,15 @@
 package de.remsfal.service.entity.dto;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
+import java.util.Objects;
 
 import de.remsfal.core.model.SiteModel;
 
@@ -12,15 +18,19 @@ import de.remsfal.core.model.SiteModel;
  */
 @Entity
 @Table(name = "SITE")
-public class SiteEntity extends AbstractEntity implements SiteModel {
+public class SiteEntity extends RentalUnitEntity implements SiteModel {
 
     @Id
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
     private String id;
-    
-    @Column(name = "TITLE")
-    private String title;
-    
+
+    @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    private String propertyId;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "ADDRESS_ID")
+    private AddressEntity address;
+
     @Override
     public String getId() {
         return id;
@@ -31,19 +41,54 @@ public class SiteEntity extends AbstractEntity implements SiteModel {
         this.id = id;
     }
 
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
     public String getPropertyId() {
-        // TODO Auto-generated method stub
-        return null;
+        return propertyId;
+    }
+
+    public void setPropertyId(String propertyId) {
+        this.propertyId = propertyId;
+    }
+
+    @Override
+    public AddressEntity getAddress() {
+        return address;
+    }
+
+    public void setAddress(AddressEntity address) {
+        this.address = address;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof SiteEntity e) {
+            return super.equals(e)
+                && Objects.equals(id, e.id)
+                && Objects.equals(propertyId, e.propertyId)
+                && Objects.equals(address, e.address);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static SiteEntity fromModel(SiteModel site) {
+        if(site == null) {
+            return null;
+        }
+        final SiteEntity entity = new SiteEntity();
+        entity.setId(site.getId());
+        entity.setTitle(site.getTitle());
+        entity.setAddress(AddressEntity.fromModel(site.getAddress()));
+        entity.setDescription(site.getDescription());
+        entity.setUsableSpace(site.getUsableSpace());
+        entity.setRent(site.getRent());
+        return entity;
     }
 
 }

@@ -30,4 +30,28 @@ public abstract class ApartmentJson implements ApartmentModel {
     @NotNull
     public abstract String getTitle();
 
+    @Null
+    @Nullable
+    public abstract String getLocation();
+
+    @Null
+    @Nullable
+    public abstract String getDescription();
+
+    @Null
+    @Nullable
+    public abstract Float getLivingSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getUsableSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getHeatingSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getRent();
+
 }

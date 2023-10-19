@@ -7,14 +7,14 @@ import jakarta.persistence.Table;
 
 import java.util.Objects;
 
-import de.remsfal.core.model.ApartmentModel;
+import de.remsfal.core.model.CommercialModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "APARTMENT")
-public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel {
+@Table(name = "COMMERCIAL")
+public class CommercialEntity extends RentalUnitEntity implements CommercialModel {
 
     @Id
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
@@ -26,8 +26,8 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
     @Column(name = "LOCATION")
     private String location;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
-    private Float livingSpace;
+    @Column(name = "COMMERCIAL_SPACE", columnDefinition = "decimal")
+    private Float commercialSpace;
 
     @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
     private Float heatingSpace;
@@ -60,12 +60,12 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
     }
 
     @Override
-    public Float getLivingSpace() {
-        return livingSpace;
+    public Float getCommercialSpace() {
+        return commercialSpace;
     }
 
-    public void setLivingSpace(Float livingSpace) {
-        this.livingSpace = livingSpace;
+    public void setCommercialSpace(Float commercialSpace) {
+        this.commercialSpace = commercialSpace;
     }
 
     @Override
@@ -82,12 +82,12 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
         if (this == o) {
             return true;
         }
-        if (o instanceof ApartmentEntity e) {
+        if (o instanceof CommercialEntity e) {
             return super.equals(e)
                 && Objects.equals(id, e.id)
                 && Objects.equals(buildingId, e.buildingId)
                 && Objects.equals(location, e.location)
-                && Objects.equals(livingSpace, e.livingSpace)
+                && Objects.equals(commercialSpace, e.commercialSpace)
                 && Objects.equals(heatingSpace, e.heatingSpace);
         }
         return false;
@@ -98,19 +98,19 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
         return Objects.hash(id);
     }
 
-    public static ApartmentEntity fromModel(ApartmentModel apartment) {
-        if(apartment == null) {
+    public static CommercialEntity fromModel(CommercialModel commercial) {
+        if(commercial == null) {
             return null;
         }
-        final ApartmentEntity entity = new ApartmentEntity();
-        entity.setId(apartment.getId());
-        entity.setTitle(apartment.getTitle());
-        entity.setLocation(apartment.getLocation());
-        entity.setDescription(apartment.getDescription());
-        entity.setLivingSpace(apartment.getLivingSpace());
-        entity.setUsableSpace(apartment.getUsableSpace());
-        entity.setHeatingSpace(apartment.getHeatingSpace());
-        entity.setRent(apartment.getRent());
+        final CommercialEntity entity = new CommercialEntity();
+        entity.setId(commercial.getId());
+        entity.setTitle(commercial.getTitle());
+        entity.setLocation(commercial.getLocation());
+        entity.setDescription(commercial.getDescription());
+        entity.setCommercialSpace(commercial.getCommercialSpace());
+        entity.setUsableSpace(commercial.getUsableSpace());
+        entity.setHeatingSpace(commercial.getHeatingSpace());
+        entity.setRent(commercial.getRent());
         return entity;
     }
 

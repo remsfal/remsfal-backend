@@ -64,11 +64,10 @@ public abstract class AbstractEntity {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AbstractEntity)) {
-            return false;
+        if (o instanceof AbstractEntity e) {
+            return Objects.equals(createdAt, e.createdAt);
         }
-        final AbstractEntity that = (AbstractEntity) o;
-        return Objects.equals(createdAt, that.createdAt);
+        return false;
     }
 
     @Override

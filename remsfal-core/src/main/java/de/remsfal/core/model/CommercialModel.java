@@ -3,7 +3,7 @@ package de.remsfal.core.model;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface GarageModel {
+public interface CommercialModel {
 
     String getId();
 
@@ -13,7 +13,11 @@ public interface GarageModel {
 
     String getDescription();
 
+    Float getCommercialSpace();
+
     Float getUsableSpace();
+
+    Float getHeatingSpace();
 
     Float getRent();
 

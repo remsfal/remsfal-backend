@@ -18,6 +18,42 @@
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.1-user" author="alexander.stanik@htw-berlin.de">
+        <createTable tableName="ADDRESS">
+            <column name="ID" type="char(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="STREET" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="CITY" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="PROVINCE" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="ZIP" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="COUNTRY" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="ADDRESS" columnNames="STREET,ZIP,COUNTRY" constraintName="UNIQUE_STREET_PER_ZIP" />
+
+        <createIndex indexName="IDX_STREET_LOOKUP" tableName="ADDRESS">
+            <column name="STREET" type="varchar(255)" />
+        </createIndex>
+        <createIndex indexName="IDX_ZIP_LOOKUP" tableName="ADDRESS">
+            <column name="ZIP" type="varchar(255)" />
+        </createIndex>
+
         <createTable tableName="USER">
             <column name="ID" type="char(36)">
                 <constraints nullable="false" primaryKey="true" />
