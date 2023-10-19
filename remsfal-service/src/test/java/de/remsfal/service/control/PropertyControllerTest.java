@@ -186,14 +186,18 @@ class PropertyControllerTest extends AbstractTest {
     
     @Test
     void getSite_FAILED_wrongProjectId() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build());
-        assertNotNull(property.getId());
-        final SiteModel site = propertyController.createSite(TestData.PROJECT_ID, property.getId(),
-            TestData.siteBuilder().address(TestData.addressBuilder().build()).build());
-        assertNotNull(site.getId());
+        final String propertyId = propertyController
+            .createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build())
+            .getId();
+        assertNotNull(propertyId);
+        final String siteId = propertyController
+            .createSite(TestData.PROJECT_ID, propertyId,
+            TestData.siteBuilder().address(TestData.addressBuilder().build()).build())
+            .getId();
+        assertNotNull(siteId);
         
         assertThrows(NotFoundException.class,
-            () -> propertyController.getSite(TestData.PROJECT_ID_2, property.getId(), site.getId()));
+            () -> propertyController.getSite(TestData.PROJECT_ID_2, propertyId, siteId));
     }
     
     @Test
@@ -266,14 +270,18 @@ class PropertyControllerTest extends AbstractTest {
     
     @Test
     void getBuilding_FAILED_wrongProjectId() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build());
-        assertNotNull(property.getId());
-        final BuildingModel building = propertyController.createBuilding(TestData.PROJECT_ID, property.getId(),
-            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build());
-        assertNotNull(building.getId());
+        final String propertyId = propertyController
+            .createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build())
+            .getId();
+        assertNotNull(propertyId);
+        final String buildingId = propertyController
+            .createBuilding(TestData.PROJECT_ID, propertyId,
+            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build())
+            .getId();
+        assertNotNull(buildingId);
         
         assertThrows(NotFoundException.class,
-            () -> propertyController.getBuilding(TestData.PROJECT_ID_2, property.getId(), building.getId()));
+            () -> propertyController.getBuilding(TestData.PROJECT_ID_2, propertyId, buildingId));
     }
     
     @Test
@@ -312,13 +320,7 @@ class PropertyControllerTest extends AbstractTest {
         final ApartmentModel getResult = propertyController
             .getApartment(TestData.PROJECT_ID, buildingId, apartmentId);
         
-        assertEquals(result.getId(), getResult.getId());
-        assertEquals(result.getTitle(), getResult.getTitle());
-        assertEquals(result.getLocation(), getResult.getLocation());
-        assertEquals(result.getDescription(), getResult.getDescription());
-        assertEquals(result.getLivingSpace(), getResult.getLivingSpace());
-        assertEquals(result.getUsableSpace(), getResult.getUsableSpace());
-        assertEquals(result.getRent(), getResult.getRent());
+        assertEquals(result, getResult);
     }
 
     @Test
@@ -357,13 +359,7 @@ class PropertyControllerTest extends AbstractTest {
         final CommercialModel getResult = propertyController
             .getCommercial(TestData.PROJECT_ID, buildingId, commercialId);
         
-        assertEquals(result.getId(), getResult.getId());
-        assertEquals(result.getTitle(), getResult.getTitle());
-        assertEquals(result.getLocation(), getResult.getLocation());
-        assertEquals(result.getDescription(), getResult.getDescription());
-        assertEquals(result.getCommercialSpace(), getResult.getCommercialSpace());
-        assertEquals(result.getUsableSpace(), getResult.getUsableSpace());
-        assertEquals(result.getRent(), getResult.getRent());
+        assertEquals(result, getResult);
     }
 
     @Test
@@ -401,12 +397,7 @@ class PropertyControllerTest extends AbstractTest {
         final GarageModel getResult = propertyController
             .getGarage(TestData.PROJECT_ID, buildingId, garageId);
         
-        assertEquals(result.getId(), getResult.getId());
-        assertEquals(result.getTitle(), getResult.getTitle());
-        assertEquals(result.getLocation(), getResult.getLocation());
-        assertEquals(result.getDescription(), getResult.getDescription());
-        assertEquals(result.getUsableSpace(), getResult.getUsableSpace());
-        assertEquals(result.getRent(), getResult.getRent());
+        assertEquals(result, getResult);
     }
 
 }
