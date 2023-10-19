@@ -23,6 +23,9 @@ import de.remsfal.core.model.PropertyModel;
 import de.remsfal.core.model.SiteModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
+import de.remsfal.service.entity.dto.BuildingEntity;
+import de.remsfal.service.entity.dto.PropertyEntity;
+import de.remsfal.service.entity.dto.SiteEntity;
 
 @QuarkusTest
 class PropertyControllerTest extends AbstractTest {
@@ -79,11 +82,11 @@ class PropertyControllerTest extends AbstractTest {
         assertEquals(property.getDescription(), result.getDescription());
         assertEquals(property.getPlotArea(), result.getPlotArea());
         
-        final String propertyId = entityManager
-            .createQuery("SELECT p.id FROM PropertyEntity p where p.title = :title", String.class)
+        final PropertyEntity entity = entityManager
+            .createQuery("SELECT p FROM PropertyEntity p where p.title = :title", PropertyEntity.class)
             .setParameter("title", TestData.PROPERTY_TITLE)
             .getSingleResult();
-        assertEquals(result.getId(), propertyId);
+        assertEquals(result, entity);
     }
     
     @Test
@@ -159,11 +162,11 @@ class PropertyControllerTest extends AbstractTest {
         assertEquals(site.getUsableSpace(), result.getUsableSpace());
         assertEquals(site.getRent(), result.getRent());
         
-        final String siteId = entityManager
-            .createQuery("SELECT s.id FROM SiteEntity s where s.title = :title", String.class)
+        final SiteEntity entity = entityManager
+            .createQuery("SELECT s FROM SiteEntity s where s.title = :title", SiteEntity.class)
             .setParameter("title", TestData.SITE_TITLE)
             .getSingleResult();
-        assertEquals(result.getId(), siteId);
+        assertEquals(result, entity);
     }
     
     @Test
@@ -241,11 +244,11 @@ class PropertyControllerTest extends AbstractTest {
         assertEquals(building.getUsableSpace(), result.getUsableSpace());
         assertEquals(building.getRent(), result.getRent());
         
-        final String buildingId = entityManager
-            .createQuery("SELECT b.id FROM BuildingEntity b where b.title = :title", String.class)
+        final BuildingEntity entity = entityManager
+            .createQuery("SELECT b FROM BuildingEntity b where b.title = :title", BuildingEntity.class)
             .setParameter("title", TestData.BUILDING_TITLE)
             .getSingleResult();
-        assertEquals(result.getId(), buildingId);
+        assertEquals(result, entity);
     }
     
     @Test
@@ -399,6 +402,7 @@ class PropertyControllerTest extends AbstractTest {
             .getGarage(TestData.PROJECT_ID, buildingId, garageId);
         
         assertTrue(result.equals(getResult));
+        assertEquals(result, getResult);
     }
 
 }
