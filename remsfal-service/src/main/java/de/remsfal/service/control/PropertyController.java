@@ -62,7 +62,8 @@ public class PropertyController {
         entity.generateId();
         entity.setProjectId(projectId);
         propertyRepository.persistAndFlush(entity);
-        return entity;
+        propertyRepository.getEntityManager().refresh(entity);
+        return getProperty(projectId, entity.getId());
     }
 
     public PropertyModel getProperty(final String projectId, final String propertyId) {
@@ -87,7 +88,8 @@ public class PropertyController {
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
         siteRepository.persistAndFlush(entity);
-        return entity;
+        siteRepository.getEntityManager().refresh(entity);
+        return getSite(projectId, propertyId, entity.getId());
     }
 
     public SiteModel getSite(final String projectId, final String propertyId, final String siteId) {
@@ -113,7 +115,8 @@ public class PropertyController {
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
         buildingRepository.persistAndFlush(entity);
-        return entity;
+        buildingRepository.getEntityManager().refresh(entity);
+        return getBuilding(projectId, propertyId, entity.getId());
     }
 
     public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
@@ -138,7 +141,8 @@ public class PropertyController {
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
         apartmentRepository.persistAndFlush(entity);
-        return entity;
+        apartmentRepository.getEntityManager().refresh(entity);
+        return getApartment(projectId, buildingId, entity.getId());
     }
 
     public ApartmentModel getApartment(final String projectId, final String buildingId, final String apartmentId) {
@@ -164,7 +168,8 @@ public class PropertyController {
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
         commercialRepository.persistAndFlush(entity);
-        return entity;
+        commercialRepository.getEntityManager().refresh(entity);
+        return getCommercial(projectId, buildingId, entity.getId());
     }
 
     public CommercialModel getCommercial(final String projectId, final String buildingId, final String commercialId) {
@@ -190,7 +195,8 @@ public class PropertyController {
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
         garageRepository.persistAndFlush(entity);
-        return entity;
+        garageRepository.getEntityManager().refresh(entity);
+        return getGarage(projectId, buildingId, entity.getId());
     }
 
     public GarageModel getGarage(final String projectId, final String buildingId, final String garageId) {

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -320,7 +321,7 @@ class PropertyControllerTest extends AbstractTest {
         final ApartmentModel getResult = propertyController
             .getApartment(TestData.PROJECT_ID, buildingId, apartmentId);
         
-        assertEquals(result, getResult);
+        assertTrue(result.equals(getResult));
     }
 
     @Test
@@ -359,7 +360,7 @@ class PropertyControllerTest extends AbstractTest {
         final CommercialModel getResult = propertyController
             .getCommercial(TestData.PROJECT_ID, buildingId, commercialId);
         
-        assertEquals(result, getResult);
+        assertTrue(result.equals(getResult));
     }
 
     @Test
@@ -397,7 +398,7 @@ class PropertyControllerTest extends AbstractTest {
         final GarageModel getResult = propertyController
             .getGarage(TestData.PROJECT_ID, buildingId, garageId);
         
-        assertEquals(result, getResult);
+        assertTrue(result.equals(getResult));
     }
 
 }
