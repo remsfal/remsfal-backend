@@ -72,7 +72,7 @@ public class PropertyController {
             if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
-                throw new NoResultException("Invalid project ID");
+                throw new NoResultException("Unable to find property, because the project ID is invalid");
             }
         } catch (final NoResultException e) {
             throw new NotFoundException("Property not exist", e);
@@ -97,7 +97,7 @@ public class PropertyController {
             if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
-                throw new NoResultException("Invalid project ID");
+                throw new NoResultException("Unable to find site, because the project ID is invalid");
             }
         } catch (final NoResultException e) {
             throw new NotFoundException("Site not exist", e);
@@ -123,7 +123,7 @@ public class PropertyController {
             if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
-                throw new NoResultException("Invalid project ID");
+                throw new NoResultException("Unable to find building, because the project ID is invalid");
             }
         } catch (final NoResultException e) {
             throw new NotFoundException("Building not exist", e);
@@ -148,7 +148,7 @@ public class PropertyController {
             if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
-                throw new NoResultException("Invalid project ID");
+                throw new NoResultException("Unable to find apartment, because the project ID is invalid");
             }
         } catch (final NoResultException e) {
             throw new NotFoundException("Apartment not exist", e);
@@ -174,7 +174,7 @@ public class PropertyController {
             if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
-                throw new NoResultException("Invalid project ID");
+                throw new NoResultException("Unable to find commercial, because the project ID is invalid");
             }
         } catch (final NoResultException e) {
             throw new NotFoundException("Commercial not exist", e);
@@ -200,7 +200,7 @@ public class PropertyController {
             if(entity != null && entity.getProjectId().equals(projectId)) {
                 return entity;
             } else {
-                throw new NoResultException("Invalid project ID");
+                throw new NoResultException("Unable to find garage, because the project ID is invalid");
             }
         } catch (final NoResultException e) {
             throw new NotFoundException("Garage not exist", e);

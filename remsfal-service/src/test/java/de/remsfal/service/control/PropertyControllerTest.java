@@ -3,11 +3,9 @@ package de.remsfal.service.control;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -16,8 +14,10 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.json.ImmutablePropertyJson;
-import de.remsfal.core.json.ImmutableSiteJson;
+import de.remsfal.core.model.ApartmentModel;
+import de.remsfal.core.model.BuildingModel;
+import de.remsfal.core.model.CommercialModel;
+import de.remsfal.core.model.GarageModel;
 import de.remsfal.core.model.PropertyModel;
 import de.remsfal.core.model.SiteModel;
 import de.remsfal.service.AbstractTest;
@@ -124,13 +124,15 @@ class PropertyControllerTest extends AbstractTest {
     
     @Test
     void createSite_FAILED_noProjectNoProperty() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
-        assertNotNull(property.getId());
+        final String propertyId = propertyController
+            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+            .getId();
+        assertNotNull(propertyId);
 
         final SiteModel site = TestData.siteBuilder().build();
         
         assertThrows(ConstraintViolationException.class,
-            () -> propertyController.createSite(null, property.getId(), site));
+            () -> propertyController.createSite(null, propertyId, site));
         assertThrows(ConstraintViolationException.class,
             () -> propertyController.createSite(TestData.PROJECT_ID, null, site));
     }
@@ -164,7 +166,7 @@ class PropertyControllerTest extends AbstractTest {
     }
     
     @Test
-    void getSite_SUCCESS_propertyRetrieved() {
+    void getSite_SUCCESS_siteRetrieved() {
         assertNotNull(TestData.propertyBuilder().build());
         final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
@@ -194,4 +196,217 @@ class PropertyControllerTest extends AbstractTest {
             () -> propertyController.getSite(TestData.PROJECT_ID_2, property.getId(), site.getId()));
     }
     
+    @Test
+    void createBuilding_FAILED_noProjectNoProperty() {
+        final String buildingId = propertyController
+            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+            .getId();
+        assertNotNull(buildingId);
+
+        final BuildingModel building = TestData.buildingBuilder()
+            .address(TestData.addressBuilder().build())
+            .build();
+        
+        assertThrows(ConstraintViolationException.class,
+            () -> propertyController.createBuilding(null, buildingId, building));
+        assertThrows(ConstraintViolationException.class,
+            () -> propertyController.createBuilding(TestData.PROJECT_ID, null, building));
+    }
+    
+    @Test
+    void createBuilding_SUCCESS_idGenerated() {
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+
+        final BuildingModel building = TestData.buildingBuilder()
+            .address(TestData.addressBuilder().build())
+            .build();
+        
+        final BuildingModel result = propertyController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+        
+        assertNotEquals(building.getId(), result.getId());
+        assertEquals(building.getTitle(), result.getTitle());
+        assertEquals(building.getAddress().getStreet(), result.getAddress().getStreet());
+        assertEquals(building.getAddress().getCity(), result.getAddress().getCity());
+        assertEquals(building.getAddress().getProvince(), result.getAddress().getProvince());
+        assertEquals(building.getAddress().getZip(), result.getAddress().getZip());
+        assertEquals(building.getDescription(), result.getDescription());
+        assertEquals(building.getLivingSpace(), result.getLivingSpace());
+        assertEquals(building.getCommercialSpace(), result.getCommercialSpace());
+        assertEquals(building.getUsableSpace(), result.getUsableSpace());
+        assertEquals(building.getRent(), result.getRent());
+        
+        final String buildingId = entityManager
+            .createQuery("SELECT b.id FROM BuildingEntity b where b.title = :title", String.class)
+            .setParameter("title", TestData.BUILDING_TITLE)
+            .getSingleResult();
+        assertEquals(result.getId(), buildingId);
+    }
+    
+    @Test
+    void getBuilding_SUCCESS_buildingRetrieved() {
+        assertNotNull(TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+        final BuildingModel building = propertyController.createBuilding(TestData.PROJECT_ID, property.getId(),
+            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build());
+        assertNotNull(building.getId());
+
+        final BuildingModel result = propertyController.getBuilding(TestData.PROJECT_ID, property.getId(), building.getId());
+        
+        assertEquals(building.getId(), result.getId());
+        assertEquals(building.getTitle(), result.getTitle());
+        assertEquals(building.getAddress().getId(), result.getAddress().getId());
+        assertEquals(building.getDescription(), result.getDescription());
+        assertEquals(building.getLivingSpace(), result.getLivingSpace());
+        assertEquals(building.getCommercialSpace(), result.getCommercialSpace());
+        assertEquals(building.getUsableSpace(), result.getUsableSpace());
+        assertEquals(building.getRent(), result.getRent());
+    }
+    
+    @Test
+    void getBuilding_FAILED_wrongProjectId() {
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+        final BuildingModel building = propertyController.createBuilding(TestData.PROJECT_ID, property.getId(),
+            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build());
+        assertNotNull(building.getId());
+        
+        assertThrows(NotFoundException.class,
+            () -> propertyController.getBuilding(TestData.PROJECT_ID_2, property.getId(), building.getId()));
+    }
+    
+    @Test
+    void createApartment_SUCCESS_getApartment() {
+        final String propertyId = propertyController
+            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+            .getId();
+        assertNotNull(propertyId);
+
+        final String buildingId = propertyController
+            .createBuilding(TestData.PROJECT_ID, propertyId,
+                TestData.buildingBuilder()
+                .address(TestData.addressBuilder().build())
+                .build())
+            .getId();
+        assertNotNull(buildingId);
+        
+        final ApartmentModel apartment = TestData.apartmentBuilder().build();
+        final ApartmentModel result = propertyController
+            .createApartment(TestData.PROJECT_ID, buildingId, apartment);
+        
+        assertNotEquals(apartment.getId(), result.getId());
+        assertEquals(apartment.getTitle(), result.getTitle());
+        assertEquals(apartment.getLocation(), result.getLocation());
+        assertEquals(apartment.getDescription(), result.getDescription());
+        assertEquals(apartment.getLivingSpace(), result.getLivingSpace());
+        assertEquals(apartment.getUsableSpace(), result.getUsableSpace());
+        assertEquals(apartment.getRent(), result.getRent());
+        
+        final String apartmentId = entityManager
+            .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", String.class)
+            .setParameter("title", TestData.APARTMENT_TITLE)
+            .getSingleResult();
+        assertEquals(result.getId(), apartmentId);
+
+        final ApartmentModel getResult = propertyController
+            .getApartment(TestData.PROJECT_ID, buildingId, apartmentId);
+        
+        assertEquals(result.getId(), getResult.getId());
+        assertEquals(result.getTitle(), getResult.getTitle());
+        assertEquals(result.getLocation(), getResult.getLocation());
+        assertEquals(result.getDescription(), getResult.getDescription());
+        assertEquals(result.getLivingSpace(), getResult.getLivingSpace());
+        assertEquals(result.getUsableSpace(), getResult.getUsableSpace());
+        assertEquals(result.getRent(), getResult.getRent());
+    }
+
+    @Test
+    void createCommercial_SUCCESS_getCommercial() {
+        final String propertyId = propertyController
+            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+            .getId();
+        assertNotNull(propertyId);
+
+        final String buildingId = propertyController
+            .createBuilding(TestData.PROJECT_ID, propertyId,
+                TestData.buildingBuilder()
+                .address(TestData.addressBuilder().build())
+                .build())
+            .getId();
+        assertNotNull(buildingId);
+        
+        final CommercialModel commercial = TestData.commercialBuilder().build();
+        final CommercialModel result = propertyController
+            .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
+        
+        assertNotEquals(commercial.getId(), result.getId());
+        assertEquals(commercial.getTitle(), result.getTitle());
+        assertEquals(commercial.getLocation(), result.getLocation());
+        assertEquals(commercial.getDescription(), result.getDescription());
+        assertEquals(commercial.getCommercialSpace(), result.getCommercialSpace());
+        assertEquals(commercial.getUsableSpace(), result.getUsableSpace());
+        assertEquals(commercial.getRent(), result.getRent());
+        
+        final String commercialId = entityManager
+            .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+            .setParameter("title", TestData.COMMERCIAL_TITLE)
+            .getSingleResult();
+        assertEquals(result.getId(), commercialId);
+
+        final CommercialModel getResult = propertyController
+            .getCommercial(TestData.PROJECT_ID, buildingId, commercialId);
+        
+        assertEquals(result.getId(), getResult.getId());
+        assertEquals(result.getTitle(), getResult.getTitle());
+        assertEquals(result.getLocation(), getResult.getLocation());
+        assertEquals(result.getDescription(), getResult.getDescription());
+        assertEquals(result.getCommercialSpace(), getResult.getCommercialSpace());
+        assertEquals(result.getUsableSpace(), getResult.getUsableSpace());
+        assertEquals(result.getRent(), getResult.getRent());
+    }
+
+    @Test
+    void createGarage_SUCCESS_getGarage() {
+        final String propertyId = propertyController
+            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+            .getId();
+        assertNotNull(propertyId);
+
+        final String buildingId = propertyController
+            .createBuilding(TestData.PROJECT_ID, propertyId,
+                TestData.buildingBuilder()
+                .address(TestData.addressBuilder().build())
+                .build())
+            .getId();
+        assertNotNull(buildingId);
+        
+        final GarageModel garage = TestData.garageBuilder().build();
+        final GarageModel result = propertyController
+            .createGarage(TestData.PROJECT_ID, buildingId, garage);
+        
+        assertNotEquals(garage.getId(), result.getId());
+        assertEquals(garage.getTitle(), result.getTitle());
+        assertEquals(garage.getLocation(), result.getLocation());
+        assertEquals(garage.getDescription(), result.getDescription());
+        assertEquals(garage.getUsableSpace(), result.getUsableSpace());
+        assertEquals(garage.getRent(), result.getRent());
+        
+        final String garageId = entityManager
+            .createQuery("SELECT g.id FROM GarageEntity g where g.title = :title", String.class)
+            .setParameter("title", TestData.GARAGE_TITLE)
+            .getSingleResult();
+        assertEquals(result.getId(), garageId);
+
+        final GarageModel getResult = propertyController
+            .getGarage(TestData.PROJECT_ID, buildingId, garageId);
+        
+        assertEquals(result.getId(), getResult.getId());
+        assertEquals(result.getTitle(), getResult.getTitle());
+        assertEquals(result.getLocation(), getResult.getLocation());
+        assertEquals(result.getDescription(), getResult.getDescription());
+        assertEquals(result.getUsableSpace(), getResult.getUsableSpace());
+        assertEquals(result.getRent(), getResult.getRent());
+    }
+
 }
