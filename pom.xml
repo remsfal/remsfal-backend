@@ -16,6 +16,17 @@
         <module>remsfal-service</module>
     </modules>
 
+    <scm>
+        <connection>scm:git:git@github.com:remsfal/remsfal-backend.git</connection>
+        <developerConnection>scm:git:git@github.com:remsfal/remsfal-backend.git</developerConnection>
+        <url>https://github.com/remsfal/remsfal-backend</url>
+    </scm>
+    
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/remsfal/remsfal-backend/issues</url>
+    </issueManagement>
+
     <properties>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
