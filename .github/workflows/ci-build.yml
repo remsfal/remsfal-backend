@@ -10,6 +10,7 @@ on:
     paths-ignore:
       - '**.md'
       - '.gitignore'
+  pull_request_target:
   workflow_dispatch:
 
 jobs:
