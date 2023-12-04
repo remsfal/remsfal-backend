@@ -6,7 +6,7 @@ on:
     paths-ignore:
       - '**.md'
       - '.gitignore'
-  pull_request_target:
+  pull_request:
     paths-ignore:
       - '**.md'
       - '.gitignore'
@@ -49,6 +49,8 @@ jobs:
   sonar-cloud-analysis:
     name: "Sonar Cloud Build"
     runs-on: ubuntu-latest
+    # dependabot should not have SONAR_TOKEN
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
