@@ -10,17 +10,16 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
-import com.google.common.net.HttpHeaders;
-
-import de.remsfal.core.api.UserEndpoint;
-import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.api.AuthenticationEndpoint;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.UserEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -29,15 +28,13 @@ import de.remsfal.service.entity.dao.UserRepository;
 @Priority(Priorities.AUTHENTICATION)
 public class PrincipalRequestFilter implements ContainerRequestFilter {
 
-    private static final String REGISTRATION_PATH = "/" + UserEndpoint.CONTEXT + "/"
-        + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE;
-
     @Inject
     Logger logger;
 
     @Inject
-    TokenValidator validator;
+    SessionManager sessionManager;
 
+    // TODO: use the controller!
     @Inject
     UserRepository repository;
 
@@ -48,31 +45,33 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext)
         throws IOException {
         try {
-            final String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-            if (authorizationHeader == null) {
-                logger.error("Authorization header was not provided");
+            if(HttpMethod.GET.equals(requestContext.getMethod()) &&
+                AuthenticationEndpoint.isAuthenticationPath(requestContext.getUriInfo().getPath())) {
+                return;
+            }
+            
+            final Cookie sessionCookie = sessionManager.findSessionCookie(requestContext.getCookies());
+            if (sessionCookie == null) {
+                logger.error("Session cookie was not provided");
                 throw new UnauthorizedException();
             }
-            final TokenInfo token = validator.validate(authorizationHeader);
-            if (token == null) {
-                logger.error("Authorization header is not valid");
+
+            final SessionInfo sessionInfo = sessionManager.decryptSessionCookie(sessionCookie);
+            if (sessionInfo == null || !sessionInfo.isValid()) {
+                logger.error("Invalid session info");
                 throw new UnauthorizedException();
             }
+            
             logger.info("method:" + requestContext.getMethod());
             logger.info("path:" + requestContext.getUriInfo().getPath());
-            if (HttpMethod.POST.equals(requestContext.getMethod()) &&
-                REGISTRATION_PATH.equalsIgnoreCase(requestContext.getUriInfo().getPath())) {
-                // set token principal
-                principal.setUserModel(token);
-            } else {
-                final CustomerModel user = repository.findByTokenId(token.getId());
-                if (user == null) {
-                    logger.errorv("User with token id={0} not found in database", token.getId());
-                    throw new NotFoundException();
-                }
-                // set DB principal
-                principal.setUserModel(user);
+            final UserEntity user = repository.findById(sessionInfo.getUserId());
+            if(user == null) {
+                logger.errorv("User (id={0}) not found in database", sessionInfo.getUserId());
+                throw new UnauthorizedException();
             }
+            
+            // set DB principal
+            principal.setUserModel(user);
             // rebuild security context
             SecurityContext securityContext = requestContext.getSecurityContext();
             securityContext = RemsfalSecurityContext.extendSecurityContext(securityContext, principal);

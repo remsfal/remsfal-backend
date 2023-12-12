@@ -106,7 +106,11 @@
             <artifactId>google-oauth-client</artifactId>
             <version>1.34.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>9.37.3</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>remsfal-service</finalName>

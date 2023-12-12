@@ -4,12 +4,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 
-import jakarta.enterprise.event.Event;
-
 import de.remsfal.core.api.UserEndpoint;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
-import de.remsfal.service.boundary.authentication.AuthenticationEvent;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.UserController;
 
@@ -25,19 +22,9 @@ public class UserResource implements UserEndpoint {
     @Inject
     UserController controller;
 
-    @Inject
-    private Event<AuthenticationEvent> authenticatedUser;
-    
-    @Override
-    public UserJson registerUser() {
-        final CustomerModel userModel = controller.createUser(principal);
-        return UserJson.valueOf(userModel);
-    }
-
     @Override
     public UserJson getUser() {
         final CustomerModel user = controller.getUser(principal.getId());
-        authenticatedUser.fireAsync(new AuthenticationEvent(user));
         return UserJson.valueOf(user);
     }
 

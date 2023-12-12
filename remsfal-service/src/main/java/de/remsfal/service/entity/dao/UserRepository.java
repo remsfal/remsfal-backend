@@ -20,7 +20,7 @@ public class UserRepository extends AbstractRepository<UserEntity> {
     public UserEntity findByEmail(final String email) {
         return find("email", email).singleResult();
     }
-    
+
     public boolean remove(final String userId) {
         return getEntityManager().createNamedQuery("UserEntity.deleteById")
             .setParameter("id", userId)
@@ -28,10 +28,10 @@ public class UserRepository extends AbstractRepository<UserEntity> {
     }
 
     @Transactional
-    public boolean updateAuthenticatedAt(final String userId, final Date date) {
+    public boolean updateAuthenticatedAt(final String googleId, final Date date) {
         return getEntityManager().createNamedQuery("UserEntity.updateAuthenticatedAt")
             .setParameter("timestamp", date)
-            .setParameter("id", userId)
+            .setParameter("tokenId", googleId)
             .executeUpdate() > 0;
     }
 

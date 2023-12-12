@@ -23,7 +23,7 @@ import de.remsfal.core.model.CustomerModel;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @NamedQuery(name = "UserEntity.updateAuthenticatedAt", 
-    query = "update UserEntity user set user.authenticatedAt = :timestamp where user.id = :id")
+    query = "update UserEntity user set user.authenticatedAt = :timestamp where user.tokenId = :tokenId")
 @NamedQuery(name = "UserEntity.deleteById", 
     query = "delete from UserEntity user where user.id = :id")
 @Entity

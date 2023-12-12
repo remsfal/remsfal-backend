@@ -1,11 +1,12 @@
 package de.remsfal.service.control;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.UserTransaction;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.Date;
@@ -32,16 +33,27 @@ public class UserController {
     UserRepository repository;
     
     @Inject
-    UserTransaction transaction;
+    private Event<AuthenticationEvent> authenticatedUser;
 
     @Transactional
-    public CustomerModel createUser(final UserModel tokenInfo) {
-        logger.infov("Creating a new user (name={0}, email={1})", tokenInfo.getName(), tokenInfo.getEmail());
+    public UserModel authenticateUser(final String googleId, final String email) {
+        logger.infov("Authenticating a user (googleId={0}, email={1})", googleId, email);
+        try {
+            final UserEntity entity = repository.findByTokenId(googleId);
+            authenticatedUser.fireAsync(new AuthenticationEvent(googleId, email));
+            return entity;
+        } catch (NoResultException e) {
+            return createUser(googleId, email);
+        }
+    }
+
+    @Transactional
+    protected UserModel createUser(final String googleId, final String email) {
+        logger.infov("Creating a new user (googleId={0}, email={1})", googleId, email);
         final UserEntity entity = new UserEntity();
         entity.generateId();
-        entity.setTokenId(tokenInfo.getId());
-        entity.setName(tokenInfo.getName());
-        entity.setEmail(tokenInfo.getEmail().toLowerCase());
+        entity.setTokenId(googleId);
+        entity.setEmail(email.toLowerCase());
         entity.setAuthenticatedAt(new Date());
         try {
             repository.persistAndFlush(entity);
@@ -74,9 +86,9 @@ public class UserController {
     }
     
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
-        logger.infov("Updating authentication timestamp of user ({0})", event.getUser());
+        logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})", event.getGoogleId(), event.getEmail());
         try {
-            repository.updateAuthenticatedAt(event.getUser().getId(), event.getAuthenticatedAt());
+            repository.updateAuthenticatedAt(event.getGoogleId(), event.getAuthenticatedAt());
         } catch (Exception e) {
             logger.error("Unable to update authentication timestamp", e);
         }
