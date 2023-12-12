@@ -16,6 +16,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 import de.remsfal.service.boundary.authentication.SessionInfo;
 import de.remsfal.service.boundary.authentication.SessionManager;
+import de.remsfal.service.boundary.exception.UnauthorizedException;
 import de.remsfal.service.control.UserController;
 
 /**
@@ -45,6 +46,12 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Override
     public Response session(final String code, final String state, final String error) {
+      if(error != null) {
+        throw new UnauthorizedException("Error during Google authentication: " + error);
+      }
+      if(code == null) {
+        throw new UnauthorizedException("Invalid authentication code");
+      }
         final GoogleIdToken idToken = authenticator.getIdToken(code, uri.getAbsolutePath());
         if (idToken == null || idToken.getPayload() == null) {
             throw new ForbiddenException("Invalid ID token");

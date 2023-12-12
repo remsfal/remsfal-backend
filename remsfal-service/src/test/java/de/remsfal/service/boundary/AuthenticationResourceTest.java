@@ -8,7 +8,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-
+import com.google.api.client.json.webtoken.JsonWebSignature;
 import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 
@@ -84,7 +84,7 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .set("name", TestData.USER_NAME_1);
 
         when(authenticator.getIdToken(eq(code), any()))
-            .thenReturn(new GoogleIdToken(null, idTokenPayload, null, null));
+            .thenReturn(new GoogleIdToken(new JsonWebSignature.Header(), idTokenPayload, new byte[1], new byte[1]));
 
         long enties = entityManager
             .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
