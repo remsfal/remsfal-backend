@@ -79,7 +79,13 @@ class UserResourceTest extends AbstractResourceTest {
             .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
-            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(TestData.USER_ID))
+            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
+            .and().body("registeredDate", Matchers.is(Matchers.notNullValue()))
+            .and().body("lastLoginDate", Matchers.is(Matchers.notNullValue()));
     }
 
 //    @Test
