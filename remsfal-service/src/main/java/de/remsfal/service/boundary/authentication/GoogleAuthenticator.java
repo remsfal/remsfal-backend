@@ -11,7 +11,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriBuilder;
 
@@ -20,7 +19,6 @@ import java.net.URI;
 import java.security.GeneralSecurityException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class GoogleAuthenticator {
@@ -40,9 +38,6 @@ public class GoogleAuthenticator {
     @ConfigProperty(name = "de.remsfal.auth.oidc.client-secret")
     private String authClientSecret;
 
-    @Inject
-    Logger logger;
-
     /**
      * For maximum efficiency, a single globally-shared instance of the HTTP transport.
      */
@@ -61,7 +56,6 @@ public class GoogleAuthenticator {
         .build();
 
     public URI getAuthorizationCodeURI(final String redirectUri, final String state) {
-        logger.debug("Authentication redirect URI is builed: {0}");
         return UriBuilder.fromUri(authServerURL)
             .queryParam("response_type", authResponseType)
             .queryParam("client_id", authClientId)

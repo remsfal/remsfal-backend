@@ -102,7 +102,8 @@ public class SessionManager {
         final String sessionObject = encryptSessionObject(sessionInfo);
         return new NewCookie.Builder(COOKIE_NAME)
             .value(sessionObject)
-            .path(sessionCookiePath)
+            .path(sessionCookiePath + getSameSiteWorkaround())
+            // sameSite is currently not supported
             .sameSite(sessionCookieSameSite)
             .maxAge((int) sessionCookieTimeout.getSeconds())
             .build();
@@ -118,7 +119,8 @@ public class SessionManager {
     public NewCookie removalSessionCookie() {
         return new NewCookie.Builder(COOKIE_NAME)
             .value("")
-            .path(sessionCookiePath)
+            .path(sessionCookiePath + getSameSiteWorkaround())
+            // sameSite is currently not supported
             .sameSite(sessionCookieSameSite)
             .maxAge(0)
             .build();
@@ -131,6 +133,13 @@ public class SessionManager {
     public SessionInfo.Builder sessionInfoBuilder() {
         return SessionInfo.builder()
             .expireAfter(sessionCookieTimeout);
+    }
+
+    private String getSameSiteWorkaround() {
+        // see: https://github.com/jakartaee/rest/issues/862
+        return ";SameSite="
+            + sessionCookieSameSite.name().substring(0,1).toUpperCase()
+            + sessionCookieSameSite.name().substring(1).toLowerCase();
     }
 
 }

@@ -2,7 +2,6 @@ package de.remsfal.service.boundary;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.Path;
 
 import de.remsfal.core.api.UserEndpoint;
 import de.remsfal.core.json.UserJson;
@@ -13,7 +12,6 @@ import de.remsfal.service.control.UserController;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Path(UserEndpoint.CONTEXT + "/" + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE)
 public class UserResource implements UserEndpoint {
 
     @Inject

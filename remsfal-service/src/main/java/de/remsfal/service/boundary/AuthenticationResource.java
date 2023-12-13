@@ -41,17 +41,17 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         final String redirectUri = uri.getAbsolutePath()
             .toASCIIString().replace("/login", "/session");
         final URI redirectUrl = authenticator.getAuthorizationCodeURI(redirectUri, route);
-        return Response.temporaryRedirect(redirectUrl).build();
+        return redirect(redirectUrl).build();
     }
 
     @Override
     public Response session(final String code, final String state, final String error) {
-      if(error != null) {
-        throw new UnauthorizedException("Error during Google authentication: " + error);
-      }
-      if(code == null) {
-        throw new UnauthorizedException("Invalid authentication code");
-      }
+        if (error != null) {
+            throw new UnauthorizedException("Error during Google authentication: " + error);
+        }
+        if (code == null) {
+            throw new UnauthorizedException("Invalid authentication code");
+        }
         final GoogleIdToken idToken = authenticator.getIdToken(code, uri.getAbsolutePath());
         if (idToken == null || idToken.getPayload() == null) {
             throw new ForbiddenException("Invalid ID token");
@@ -69,7 +69,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
             .userId(user.getId())
             .userEmail(user.getEmail())
             .build();
-        return Response.temporaryRedirect(redirectUri)
+        return redirect(redirectUri)
             .cookie(sessionManager.encryptSessionCookie(sessionInfo))
             .build();
     }
@@ -79,9 +79,14 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         final URI redirectUri = uri.getAbsolutePathBuilder()
             .replacePath("/")
             .build();
-        return Response.temporaryRedirect(redirectUri)
+        return redirect(redirectUri)
             .cookie(sessionManager.removalSessionCookie())
             .build();
+    }
+
+    private Response.ResponseBuilder redirect(final URI redirectUrl) {
+        return Response.status(302)
+            .header("location", redirectUrl);
     }
 
 }

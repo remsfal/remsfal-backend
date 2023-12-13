@@ -58,7 +58,7 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
 
             final SessionInfo sessionInfo = sessionManager.decryptSessionCookie(sessionCookie);
             if (sessionInfo == null || !sessionInfo.isValid()) {
-                logger.error("Invalid session info");
+                logger.errorv("Invalid session info: {0}", sessionInfo);
                 throw new UnauthorizedException();
             }
             

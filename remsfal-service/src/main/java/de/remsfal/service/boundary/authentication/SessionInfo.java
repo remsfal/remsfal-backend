@@ -39,7 +39,7 @@ public class SessionInfo {
         if(expirationTime == null) {
             return true;
         }
-        return expirationTime.after(new Date());
+        return expirationTime.before(new Date());
     }
     
     public boolean isValid() {
@@ -50,6 +50,11 @@ public class SessionInfo {
     
     public Payload toPayload() {
         return new Payload(claimsSet.toJSONObject());
+    }
+    
+    @Override
+    public String toString() {
+        return claimsSet.toString();
     }
 
     public static Builder builder() {

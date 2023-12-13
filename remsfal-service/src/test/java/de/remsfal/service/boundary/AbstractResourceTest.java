@@ -1,24 +1,25 @@
 package de.remsfal.service.boundary;
 
-import io.quarkus.test.InjectMock;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
-
+import io.restassured.http.Cookie;
+import jakarta.inject.Inject;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
-import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 import de.remsfal.service.boundary.authentication.SessionInfo;
+import de.remsfal.service.boundary.authentication.SessionManager;
 
-import static org.mockito.Mockito.when;
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import java.time.Duration;
 
 public abstract class AbstractResourceTest extends AbstractTest {
 
     static {
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
     }
+
+    @Inject
+    SessionManager sessionManager;
 
     void setupTestUsers() {
         runInTransaction(() -> entityManager
@@ -49,28 +50,18 @@ public abstract class AbstractResourceTest extends AbstractTest {
             .setParameter(3, TestData.USER_NAME_4)
             .setParameter(4, TestData.USER_EMAIL_4)
             .executeUpdate());
-/*
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_1))
-            .thenReturn(new SessionInfo(new Payload()
-                .setSubject(TestData.USER_TOKEN_1)
-                .setEmail(TestData.USER_EMAIL_1)
-                .set("name", TestData.USER_NAME_1)));
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_2))
-            .thenReturn(new SessionInfo(new Payload()
-                .setSubject(TestData.USER_TOKEN_2)
-                .setEmail(TestData.USER_EMAIL_2)
-                .set("name", TestData.USER_NAME_2)));
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_3))
-            .thenReturn(new SessionInfo(new Payload()
-                .setSubject(TestData.USER_TOKEN_3)
-                .setEmail(TestData.USER_EMAIL_3)
-                .set("name", TestData.USER_NAME_3)));
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_4))
-            .thenReturn(new SessionInfo(new Payload()
-                .setSubject(TestData.USER_TOKEN_4)
-                .setEmail(TestData.USER_EMAIL_4)
-                .set("name", TestData.USER_NAME_4)));
-*/
+    }
+
+    protected Cookie buildCookie(final String userId, final String userEmail, final Duration ttl) {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .expireAfter(ttl)
+            .userId(userId)
+            .userEmail(userEmail)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        return new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(ttl.toSeconds())
+            .build();
     }
 
 }

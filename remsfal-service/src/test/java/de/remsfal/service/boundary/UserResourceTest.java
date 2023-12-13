@@ -30,9 +30,6 @@ class UserResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/user";
     
-    @Inject
-    SessionManager sessionManager;
-
 //    @Test
 //    void getUser_FAILED_userNotExist() {
 //        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN))
@@ -60,18 +57,6 @@ class UserResourceTest extends AbstractResourceTest {
 //            .statusCode(Status.UNAUTHORIZED.getStatusCode());
 //    }
 
-    protected Cookie buildCookie(final String userId, final String userEmail, final Duration ttl) {
-        final SessionInfo sessionInfo = SessionInfo.builder()
-            .expireAfter(ttl)
-            .userId(userId)
-            .userEmail(userEmail)
-            .build();
-        final String value = sessionManager.encryptSessionObject(sessionInfo);
-        return new Cookie.Builder("remsfal_session", value)
-            .setMaxAge(ttl.toSeconds())
-            .build();
-    }
-    
     @Test
     void getUser_FAILED_noAuthentication() {
         given()
