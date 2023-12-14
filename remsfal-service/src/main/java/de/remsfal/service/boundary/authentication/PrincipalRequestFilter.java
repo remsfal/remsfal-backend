@@ -17,9 +17,9 @@ import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.AuthenticationEndpoint;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
-import de.remsfal.service.entity.dao.UserRepository;
-import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.control.UserController;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -34,9 +34,8 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     @Inject
     SessionManager sessionManager;
 
-    // TODO: use the controller!
     @Inject
-    UserRepository repository;
+    UserController controller;
 
     @Inject
     RemsfalPrincipal principal;
@@ -45,11 +44,11 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext)
         throws IOException {
         try {
-            if(HttpMethod.GET.equals(requestContext.getMethod()) &&
+            if (HttpMethod.GET.equals(requestContext.getMethod()) &&
                 AuthenticationEndpoint.isAuthenticationPath(requestContext.getUriInfo().getPath())) {
                 return;
             }
-            
+
             final Cookie sessionCookie = sessionManager.findSessionCookie(requestContext.getCookies());
             if (sessionCookie == null) {
                 logger.error("Session cookie was not provided");
@@ -61,24 +60,24 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
                 logger.errorv("Invalid session info: {0}", sessionInfo);
                 throw new UnauthorizedException();
             }
-            
+
             logger.info("method:" + requestContext.getMethod());
             logger.info("path:" + requestContext.getUriInfo().getPath());
-            final UserEntity user = repository.findById(sessionInfo.getUserId());
-            if(user == null) {
+            final UserModel user = controller.getUser(sessionInfo.getUserId());
+            if (user == null) {
                 logger.errorv("User (id={0}) not found in database", sessionInfo.getUserId());
                 throw new UnauthorizedException();
             }
-            
+
             // set DB principal
             principal.setUserModel(user);
             // rebuild security context
             SecurityContext securityContext = requestContext.getSecurityContext();
             securityContext = RemsfalSecurityContext.extendSecurityContext(securityContext, principal);
             requestContext.setSecurityContext(securityContext);
-        } catch (NoResultException e) {
-            logger.error("User not found in database");
-            throw new NotFoundException();
+        } catch (NoResultException | NotFoundException e) {
+            logger.error("Authenticated user not found in database", e);
+            throw new UnauthorizedException();
         }
     }
 

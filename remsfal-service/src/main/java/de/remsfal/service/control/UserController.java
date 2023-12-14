@@ -64,7 +64,7 @@ public class UserController {
     }
 
     public CustomerModel getUser(final String userId) {
-        logger.infov("Retrieving an existing user (id = {0})", userId);
+        logger.infov("Retrieving a user (id = {0})", userId);
         final UserEntity user = repository.findById(userId);
         if(user == null) {
             throw new NotFoundException("User not exist");
@@ -74,7 +74,7 @@ public class UserController {
 
     @Transactional
     public CustomerModel updateUser(final String userId, final UserModel user) {
-        logger.infov("Updating an existing user ({0})", user);
+        logger.infov("Updating a user ({0})", user);
         final UserEntity entity = repository.findById(userId);
         if(user.getName() != null) {
             entity.setName(user.getName());
@@ -96,7 +96,7 @@ public class UserController {
 
     @Transactional
     public boolean deleteUser(final String userId) {
-        logger.infov("Deleting an existing user (id = {0})", userId);
+        logger.infov("Deleting a user (id = {0})", userId);
         return repository.remove(userId);
     }
 
