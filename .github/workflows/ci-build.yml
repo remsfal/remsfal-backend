@@ -11,6 +11,7 @@ on:
       - '**.md'
       - '.gitignore'
   pull_request_target:
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
