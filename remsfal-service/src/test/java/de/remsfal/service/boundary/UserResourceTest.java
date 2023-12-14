@@ -34,7 +34,7 @@ class UserResourceTest extends AbstractResourceTest {
     void getUser_FAILED_invalidCookie() {
         final String value = "any.invalid.jwe.as.cookie";
         final Cookie cookie = new Cookie.Builder("remsfal_session", value)
-            .setMaxAge(60)
+            .setMaxAge(600)
             .build();
 
         given()
@@ -54,7 +54,64 @@ class UserResourceTest extends AbstractResourceTest {
             .build();
         final String value = sessionManager.encryptSessionObject(sessionInfo);
         final Cookie cookie = new Cookie.Builder("remsfal_session", value)
-            .setMaxAge(60)
+            .setMaxAge(600)
+            .build();
+
+        given()
+            .when()
+            .cookie(cookie)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getUser_FAILED_noExpirationTime() {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .userId(TestData.USER_ID)
+            .userEmail(TestData.USER_EMAIL)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
+            .build();
+
+        given()
+            .when()
+            .cookie(cookie)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getUser_FAILED_noUserId() {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .expireAfter(Duration.ofMinutes(10))
+            .userEmail(TestData.USER_EMAIL)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
+            .build();
+
+        given()
+            .when()
+            .cookie(cookie)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getUser_FAILED_noUserEmail() {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .expireAfter(Duration.ofMinutes(10))
+            .userId(TestData.USER_ID)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
             .build();
 
         given()

@@ -117,13 +117,26 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
     }
 
     @Test
-    void session_FAILED_ErrorIsProvided() {
+    void session_FAILED_errorIsProvided() {
         given()
             .queryParam("error", "Any Error from Google")
             .when()
             .get(BASE_PATH + "/session")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void session_FAILED_invalidToken() {
+        when(authenticator.getIdToken(any(), any()))
+            .thenReturn(null);
+
+        given()
+            .when()
+            .queryParam("code", "anyValidCode")
+            .get(BASE_PATH + "/session")
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
 }
