@@ -1,0 +1,77 @@
+package de.remsfal.service.boundary;
+
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.matcher.RestAssuredMatchers;
+
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given;
+import jakarta.ws.rs.core.Response.Status;
+
+@QuarkusTest
+class AuthenticationResourceTest extends AbstractResourceTest {
+
+    static final String BASE_PATH = "/api/v1/authentication";
+    
+    static final String REDIRECT_URI_URL = "http%3A%2F%2Flocalhost%3A8081%2Fapi%2Fv1%2Fauthentication%2Fsession";
+
+    @Test
+    void login_SUCCESS_userIsRedirected() {
+        given()
+            .redirects().follow(false)
+            .when().get(BASE_PATH + "/login")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .header("location", Matchers.startsWith("https://accounts.google.com/o/oauth2/auth?"))
+            .header("location", Matchers.containsString("response_type=code"))
+            .header("location", Matchers.containsString("client_id="))
+            .header("location", Matchers.containsString("redirect_uri="))
+            .header("location", Matchers.containsString(REDIRECT_URI_URL))
+            .header("location", Matchers.containsString("scope=openid+email"))
+            .header("location", Matchers.containsString("state=%2F"));
+    }
+
+    @Test
+    void login_SUCCESS_userProvidesState() {
+        final String route = "%2Fmy%2Fcallback%2Froute";
+
+        given()
+            .queryParam("route", route)
+            .redirects().follow(false)
+            .when().get(BASE_PATH + "/login")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .header("location", Matchers.startsWith("https://accounts.google.com/o/oauth2/auth?"))
+            .header("location", Matchers.containsString("response_type=code"))
+            .header("location", Matchers.containsString("client_id="))
+            .header("location", Matchers.containsString("redirect_uri="))
+            .header("location", Matchers.containsString(REDIRECT_URI_URL))
+            .header("location", Matchers.containsString("scope=openid+email"))
+            .header("location", Matchers.containsString("state=" + route));
+    }
+
+    @Test
+    void login_FAILED_parentDirectoryRelativePath() {
+        given()
+            .when().get(BASE_PATH + "/login/../../user")
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void logout_SUCCESS_CookieIsRemoved() {
+        given()
+            .redirects().follow(false)
+            .when().get(BASE_PATH + "/logout")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .header("location", Matchers.equalTo("http://localhost:8081/"))
+            .cookie("remsfal_session", RestAssuredMatchers.detailedCookie()
+                .value("")
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(0));
+    }
+
+}

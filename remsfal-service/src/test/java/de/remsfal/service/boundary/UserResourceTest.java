@@ -2,21 +2,19 @@ package de.remsfal.service.boundary;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.http.Cookie;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
-
 import de.remsfal.service.TestData;
-import de.remsfal.service.boundary.authentication.TokenInfo;
+import de.remsfal.service.boundary.authentication.SessionInfo;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.util.Date;
 
 import jakarta.ws.rs.core.Response.Status;
 
@@ -24,33 +22,6 @@ import jakarta.ws.rs.core.Response.Status;
 class UserResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/user";
-
-    @Test
-    void getUser_FAILED_userNotExist() {
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN))
-            .thenReturn(new TokenInfo(new Payload()
-                .setSubject(TestData.USER_TOKEN)
-                .setEmail(TestData.USER_EMAIL)
-                .set("name", TestData.USER_NAME)));
-        
-        given()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
-            .when().get(BASE_PATH)
-            .then()
-            .statusCode(Status.NOT_FOUND.getStatusCode());
-    }
-
-    @Test
-    void getUser_FAILED_invalidSignature() {
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN))
-            .thenReturn(null);
-        
-        given()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
-            .when().get(BASE_PATH)
-            .then()
-            .statusCode(Status.UNAUTHORIZED.getStatusCode());
-    }
 
     @Test
     void getUser_FAILED_noAuthentication() {
@@ -61,185 +32,150 @@ class UserResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getProjects_FAILED_noAuthentication() {
+    void getUser_FAILED_invalidCookie() {
+        final String value = "any.invalid.jwe.as.cookie";
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
+            .build();
+
         given()
-            .when().get("/api/v1/projects")
+            .when()
+            .cookie(cookie)
+            .get(BASE_PATH)
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
 
     @Test
-    void registerUser_FAILED_noAuthentication() {
+    void getUser_FAILED_expiredCookie() {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .expireAfter(Duration.ofMinutes(-10))
+            .userId(TestData.USER_ID)
+            .userEmail(TestData.USER_EMAIL)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
+            .build();
+
         given()
-            .when().post(BASE_PATH)
+            .when()
+            .cookie(cookie)
+            .get(BASE_PATH)
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
 
     @Test
-    void registerUser_SUCCESS_userCreated() {
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_1))
-            .thenReturn(new TokenInfo(new Payload()
-            .setSubject(TestData.USER_TOKEN_1)
-            .setEmail(TestData.USER_EMAIL_1)
-            .set("name", TestData.USER_NAME_1)));
-
-        long enties = entityManager
-            .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
-            .setParameter("email", TestData.USER_EMAIL_1)
-            .getSingleResult();
-        assertEquals(0, enties);
+    void getUser_FAILED_noExpirationTime() {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .userId(TestData.USER_ID)
+            .userEmail(TestData.USER_EMAIL)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
+            .build();
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
-            .post(BASE_PATH)
+            .cookie(cookie)
+            .get(BASE_PATH)
             .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo(TestData.USER_NAME_1))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_1));
-
-        enties = entityManager
-            .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email AND user.name = :name", Long.class)
-            .setParameter("email", TestData.USER_EMAIL_1)
-            .setParameter("name", TestData.USER_NAME_1)
-            .getSingleResult();
-        assertEquals(1, enties);
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
-    
+
     @Test
-    void registerUser_SUCCESS_getUser() throws InterruptedException {
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_2))
-            .thenReturn(new TokenInfo(new Payload()
-                .setSubject(TestData.USER_TOKEN_2)
-                .setEmail(TestData.USER_EMAIL_2)
-                .set("name", TestData.USER_NAME_2)));
+    void getUser_FAILED_noUserId() {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .expireAfter(Duration.ofMinutes(10))
+            .userEmail(TestData.USER_EMAIL)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
+            .build();
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_2)
-            .post(BASE_PATH)
+            .cookie(cookie)
+            .get(BASE_PATH)
             .then()
-            .statusCode(Status.OK.getStatusCode());
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
 
-        Thread.sleep(3000);
-        
-        final String firtLoginDate = given()
+    @Test
+    void getUser_FAILED_noUserEmail() {
+        final SessionInfo sessionInfo = SessionInfo.builder()
+            .expireAfter(Duration.ofMinutes(10))
+            .userId(TestData.USER_ID)
+            .build();
+        final String value = sessionManager.encryptSessionObject(sessionInfo);
+        final Cookie cookie = new Cookie.Builder("remsfal_session", value)
+            .setMaxAge(600)
+            .build();
+
+        given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_2)
+            .cookie(cookie)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getUser_FAILED_userNotExists() {
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getUser_SUCCESS_userIsReturned() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO USER (ID, NAME, EMAIL, AUTHENTICATED_AT) VALUES (?,?,?,?)")
+            .setParameter(1, TestData.USER_ID)
+            .setParameter(2, TestData.USER_NAME)
+            .setParameter(3, TestData.USER_EMAIL)
+            .setParameter(4, new Date())
+            .executeUpdate());
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo(TestData.USER_NAME_2))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2))
-            .extract().path("lastLoginDate");
-        
-        Thread.sleep(3000);
-        
-        final String secondLoginDate = given()
+            .and().body("id", Matchers.equalTo(TestData.USER_ID))
+            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
+            .and().body("registeredDate", Matchers.is(Matchers.notNullValue()))
+            .and().body("lastLoginDate", Matchers.is(Matchers.notNullValue()));
+    }
+
+    @Test
+    void updateUser_SUCCESS_userNameChanged() {
+        setupTestUsers();
+
+        given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_2)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
-            .extract().path("lastLoginDate");
-        // check authentication event
-        assertTrue(LocalDateTime.parse(secondLoginDate).isAfter(LocalDateTime.parse(firtLoginDate)));
-    }
-
-    @Test
-    void registerUser_FAILED_alreadyExist() {
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_3))
-            .thenReturn(new TokenInfo(new Payload()
-            .setSubject(TestData.USER_TOKEN_3)
-            .setEmail(TestData.USER_EMAIL_3)
-            .set("name", TestData.USER_NAME_3)));
-
-        given()
-            .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_3)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo(TestData.USER_NAME_3))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_3));
-
-        given()
-            .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_3)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(Status.CONFLICT.getStatusCode());
-    }
-    
-    @Test
-    void registerUser_SUCCESS_userDeleted() {
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_4))
-            .thenReturn(new TokenInfo(new Payload()
-            .setSubject(TestData.USER_TOKEN_4)
-            .setEmail(TestData.USER_EMAIL_4)
-            .set("name", TestData.USER_NAME_4)));
-
-        long enties = entityManager
-            .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
-            .setParameter("email", TestData.USER_EMAIL_4)
-            .getSingleResult();
-        assertEquals(0, enties);
-
-        given()
-            .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_4)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON);
-
-        enties = entityManager
-            .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
-            .setParameter("email", TestData.USER_EMAIL_4)
-            .getSingleResult();
-        assertEquals(1, enties);
-
-        given()
-            .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_4)
-            .delete(BASE_PATH)
-            .then()
-            .statusCode(Status.NO_CONTENT.getStatusCode());
-
-        enties = entityManager
-            .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
-            .setParameter("email", TestData.USER_EMAIL_4)
-            .getSingleResult();
-        assertEquals(0, enties);
-    }
-    
-    @Test
-    void registerUser_SUCCESS_updateUser() {
-        when(tokenValidator.validate("Bearer " + TestData.USER_TOKEN_4))
-            .thenReturn(new TokenInfo(new Payload()
-                .setSubject(TestData.USER_TOKEN_4)
-                .setEmail(TestData.USER_EMAIL_4)
-                .set("name", TestData.USER_NAME_4)));
-
-        given()
-            .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_4)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo(TestData.USER_NAME_4))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_4));
+            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
 
         final String update = "{ \"name\":\"" + "john" + "\"}";
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_4)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(update)
             .patch(BASE_PATH)
@@ -250,13 +186,41 @@ class UserResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_4)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("name", Matchers.equalTo("john"))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_4));
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
+    }
+
+    @Test
+    void deleteUser_SUCCESS_userDeleted() {
+        setupTestUsers();
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(BASE_PATH)
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        long enties = entityManager
+            .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
+            .setParameter("email", TestData.USER_EMAIL)
+            .getSingleResult();
+        assertEquals(0, enties);
     }
 
 }

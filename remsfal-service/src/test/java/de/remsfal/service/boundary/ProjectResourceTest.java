@@ -9,9 +9,10 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.service.TestData;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.contains;
+
+import java.time.Duration;
+
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
@@ -40,7 +41,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH)
@@ -66,7 +67,7 @@ class ProjectResourceTest extends AbstractResourceTest {
             + "\"id\":\"anyId\"}";
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH)
@@ -91,7 +92,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         
         final Response res = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH)
@@ -109,7 +110,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(projectUrl)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -131,7 +132,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void getProjects_SUCCESS_multiUser() {
         final String user1projectId1 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
             .post(BASE_PATH)
@@ -141,7 +142,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String user1projectId2 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_2 + "\"}")
             .post(BASE_PATH)
@@ -151,7 +152,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String user2projectId3 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_2)
+            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_3 + "\"}")
             .post(BASE_PATH)
@@ -161,7 +162,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -172,7 +173,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
         .when()
-        .header("Authorization", "Bearer " + TestData.USER_TOKEN_2)
+        .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
         .get(BASE_PATH)
         .then()
         .statusCode(Status.OK.getStatusCode())
@@ -186,7 +187,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void updateProject_SUCCESS_changedTitle() {
         final String projectId = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
             .post(BASE_PATH)
@@ -196,7 +197,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_2 + "\"}")
             .patch(BASE_PATH + "/" + projectId)
@@ -211,7 +212,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void deleteProject_SUCCESS_singleProject() {
         final String projectId = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
             .post(BASE_PATH)
@@ -221,7 +222,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN)
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(BASE_PATH + "/" + projectId)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
@@ -237,7 +238,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void addProjectMemeber_SUCCESS_multiUser() {
         final String user1projectId1 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
             .post(BASE_PATH)
@@ -247,7 +248,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String user1projectId2 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_2 + "\"}")
             .post(BASE_PATH)
@@ -257,7 +258,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String user1projectId3 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_3 + "\"}")
             .post(BASE_PATH)
@@ -267,7 +268,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String user1projectId4 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_4 + "\"}")
             .post(BASE_PATH)
@@ -277,7 +278,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String user1projectId5 = given()
             .when()
-            .header("Authorization", "Bearer " + TestData.USER_TOKEN_1)
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_5 + "\"}")
             .post(BASE_PATH)
