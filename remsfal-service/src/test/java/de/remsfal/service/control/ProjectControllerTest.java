@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.json.ImmutableProjectJson;
 import de.remsfal.core.json.ImmutableProjectMemberJson;
-import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.ProjectModel;
@@ -44,11 +43,7 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void createProject_SUCCESS_defaultProjectCreated() {
         final UserModel user = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME)
-                .email(TestData.USER_EMAIL)
-                .build());
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         ProjectModel projectRequest =
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build();
@@ -83,11 +78,7 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void getProject_SUCCESS_getSingleUser() {
         final UserModel user = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME)
-                .email(TestData.USER_EMAIL)
-                .build());
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ProjectModel project = projectController.createProject(user, ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
@@ -101,25 +92,13 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void getProjects_SUCCESS_getMultipleUsers() {
         final UserModel user1 = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_1)
-                .email(TestData.USER_EMAIL_1)
-                .build());
+            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final UserModel user2 = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_2)
-                .email(TestData.USER_EMAIL_2)
-                .build());
+            .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
         final UserModel user3 = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_3)
-                .email(TestData.USER_EMAIL_3)
-                .build());
+            .createUser(TestData.USER_TOKEN_3, TestData.USER_EMAIL_3);
 
         final ProjectModel project1 = projectController
             .createProject(user1, ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
@@ -172,11 +151,7 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void updateProject_SUCCESS_changeTitle() {
         final UserModel user = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME)
-                .email(TestData.USER_EMAIL)
-                .build());
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
@@ -198,18 +173,10 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void updateProject_FAILED_changeTitle() {
         final UserModel user1 = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_1)
-                .email(TestData.USER_EMAIL_1)
-                .build());
+            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final UserModel user2 = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_2)
-                .email(TestData.USER_EMAIL_2)
-                .build());
+            .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
         final ProjectModel project = projectController.createProject(user1, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
@@ -223,11 +190,7 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void deleteProject_SUCCESS_deleteSingleProject() {
         final UserModel user = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME)
-                .email(TestData.USER_EMAIL)
-                .build());
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -246,18 +209,10 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void addProjectMember_SUCCESS_addSecondUser() {
         final UserModel user1 = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_1)
-                .email(TestData.USER_EMAIL_1)
-                .build());
+            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final UserModel user2 = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_2)
-                .email(TestData.USER_EMAIL_2)
-                .build());
+            .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
         final ProjectModel project = projectController.createProject(user1, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -296,11 +251,7 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void getProjectMembers_SUCCESS_multipleUsers() throws InterruptedException {
         final UserModel user = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_1)
-                .email(TestData.USER_EMAIL_1)
-                .build());
+            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -339,11 +290,7 @@ class ProjectControllerTest extends AbstractTest {
     @Test
     void removeProjectMember_SUCCESS_removeAnotherUser() {
         final UserModel user = userController
-            .createUser(ImmutableUserJson
-                .builder()
-                .name(TestData.USER_NAME_1)
-                .email(TestData.USER_EMAIL_1)
-                .build());
+            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());

@@ -29,13 +29,9 @@ class UserControllerTest extends AbstractTest {
 
     @Test
     void createUser_SUCCESS_simpleUserCreated() {
-        final UserModel userRequest =
-            ImmutableUserJson.builder().name(TestData.USER_NAME).email(TestData.USER_EMAIL).build();
-
-        UserModel user = controller.createUser(userRequest);
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user);
         assertEquals(36, user.getId().length());
-        assertEquals(TestData.USER_NAME, user.getName());
         assertEquals(TestData.USER_EMAIL, user.getEmail());
 
         final String userId = entityManager
@@ -47,14 +43,11 @@ class UserControllerTest extends AbstractTest {
 
     @Test
     void createUser_FAILED_userAlreadyExist() {
-        final UserModel userRequest =
-            ImmutableUserJson.builder().name(TestData.USER_NAME).email(TestData.USER_EMAIL).build();
-
-        assertNotNull(controller.createUser(userRequest));
+        assertNotNull(controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL));
 
         assertThrows(
             AlreadyExistsException.class,
-            () -> controller.createUser(userRequest));
+            () -> controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL));
     }
 
     @Test
@@ -83,10 +76,7 @@ class UserControllerTest extends AbstractTest {
 
     @Test
     void updateUser_SUCCESS_changedUserName() {
-        UserModel user =
-            ImmutableUserJson.builder().name(TestData.USER_NAME).email(TestData.USER_EMAIL).build();
-
-        user = controller.createUser(user);
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         final String email = entityManager
             .createQuery("SELECT user.email FROM UserEntity user where user.id = :userId", String.class)
             .setParameter("userId", user.getId())
@@ -111,10 +101,7 @@ class UserControllerTest extends AbstractTest {
 
     @Test
     void deleteUser_SUCCESS_repeatedRemove() {
-        UserModel user =
-            ImmutableUserJson.builder().name(TestData.USER_NAME).email(TestData.USER_EMAIL).build();
-
-        user = controller.createUser(user);
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
 
         assertTrue(controller.deleteUser(user.getId()));

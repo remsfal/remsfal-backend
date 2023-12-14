@@ -22,9 +22,9 @@ import de.remsfal.core.model.CustomerModel;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@NamedQuery(name = "UserEntity.updateAuthenticatedAt", 
-    query = "update UserEntity user set user.authenticatedAt = :timestamp where user.id = :id")
-@NamedQuery(name = "UserEntity.deleteById", 
+@NamedQuery(name = "UserEntity.updateAuthenticatedAt",
+    query = "update UserEntity user set user.authenticatedAt = :timestamp where user.tokenId = :tokenId")
+@NamedQuery(name = "UserEntity.deleteById",
     query = "delete from UserEntity user where user.id = :id")
 @Entity
 @Table(name = "USER")
@@ -33,24 +33,24 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Id
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
     private String id;
-    
+
     @Column(name = "TOKEN_ID", unique = true)
     private String tokenId;
 
     @Column(name = "NAME")
     private String name;
-    
+
     @Email
     @Column(name = "EMAIL", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "AUTHENTICATED_AT", nullable = false)
+    @Column(name = "AUTHENTICATED_AT")
     @Temporal(TemporalType.TIMESTAMP)
     private Date authenticatedAt;
 
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
-    
+
     @Override
     public String getId() {
         return id;
@@ -113,17 +113,20 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Override
     public LocalDateTime getLastLoginDate() {
-        return this.getAuthenticatedAt()
+        if (authenticatedAt == null) {
+            return null;
+        }
+        return authenticatedAt
             .toInstant()
             .atZone(ZoneId.systemDefault())
             .toLocalDateTime();
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hash(id);
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
