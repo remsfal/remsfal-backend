@@ -14,6 +14,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
+import java.util.Date;
 
 import jakarta.ws.rs.core.Response.Status;
 
@@ -135,10 +136,11 @@ class UserResourceTest extends AbstractResourceTest {
     @Test
     void getUser_SUCCESS_userIsReturned() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, NAME, EMAIL) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO USER (ID, NAME, EMAIL, AUTHENTICATED_AT) VALUES (?,?,?,?)")
             .setParameter(1, TestData.USER_ID)
             .setParameter(2, TestData.USER_NAME)
             .setParameter(3, TestData.USER_EMAIL)
+            .setParameter(4, new Date())
             .executeUpdate());
 
         given()
