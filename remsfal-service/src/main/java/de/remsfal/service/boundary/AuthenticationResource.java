@@ -3,10 +3,15 @@ package de.remsfal.service.boundary;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
@@ -24,8 +29,15 @@ import de.remsfal.service.control.UserController;
  */
 public class AuthenticationResource implements AuthenticationEndpoint {
 
+    // fix of issue https://github.com/quarkusio/quarkus/pull/8316
+    @ConfigProperty(name = "quarkus.http.proxy.enable-forwarded-host", defaultValue = "false")
+    public boolean enableForwardedHost;
+
     @Context
     UriInfo uri;
+    
+    @Context
+    HttpHeaders headers;
 
     @Inject
     GoogleAuthenticator authenticator;
@@ -36,9 +48,12 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     @Inject
     UserController controller;
 
+    @Inject
+    Logger logger;
+
     @Override
     public Response login(final String route) {
-        final String redirectUri = uri.getAbsolutePath()
+        final String redirectUri = getAbsoluteUri()
             .toASCIIString().replace("/login", "/session");
         final URI redirectUrl = authenticator.getAuthorizationCodeURI(redirectUri, route);
         return redirect(redirectUrl).build();
@@ -52,7 +67,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         if (code == null) {
             throw new UnauthorizedException("Invalid authentication code");
         }
-        final GoogleIdToken idToken = authenticator.getIdToken(code, uri.getAbsolutePath());
+        final GoogleIdToken idToken = authenticator.getIdToken(code, getAbsoluteUri());
         if (idToken == null || idToken.getPayload() == null) {
             throw new ForbiddenException("Invalid ID token");
         }
@@ -62,7 +77,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     }
 
     private Response createSession(final UserModel user, final String route) {
-        final URI redirectUri = uri.getAbsolutePathBuilder()
+        final URI redirectUri = getAbsoluteUriBuilder()
             .replacePath(route)
             .build();
         final SessionInfo sessionInfo = sessionManager.sessionInfoBuilder()
@@ -76,7 +91,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Override
     public Response logout() {
-        final URI redirectUri = uri.getAbsolutePathBuilder()
+        final URI redirectUri = getAbsoluteUriBuilder()
             .replacePath("/")
             .build();
         return redirect(redirectUri)
@@ -89,4 +104,23 @@ public class AuthenticationResource implements AuthenticationEndpoint {
             .header("location", redirectUrl);
     }
 
+    private URI getAbsoluteUri() {
+        return getAbsoluteUriBuilder().build();
+    }
+
+    private UriBuilder getAbsoluteUriBuilder() {
+        logger.info("enable-forwarded-host:" + enableForwardedHost);
+        if(enableForwardedHost) {
+            final String header = headers.getHeaderString("X-Forwarded-Host");
+            logger.info("X-Forwarded-Host:" + header);
+            final String host = header.split(":")[0];
+            logger.info("Host:" + host);
+            final String port = header.split(":")[1];
+            logger.info("Port:" + port);
+            return uri.getAbsolutePathBuilder()
+                .host(host)
+                .port(Integer.parseUnsignedInt(port));
+        }
+        return uri.getAbsolutePathBuilder();
+    }
 }
