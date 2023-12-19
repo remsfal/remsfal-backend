@@ -109,17 +109,24 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     }
 
     private UriBuilder getAbsoluteUriBuilder() {
-        logger.info("enable-forwarded-host:" + enableForwardedHost);
-        if(enableForwardedHost) {
-            final String header = headers.getHeaderString("X-Forwarded-Host");
-            logger.info("X-Forwarded-Host:" + header);
-            final String host = header.split(":")[0];
-            logger.info("Host:" + host);
-            final String port = header.split(":")[1];
-            logger.info("Port:" + port);
-            return uri.getAbsolutePathBuilder()
-                .host(host)
-                .port(Integer.parseUnsignedInt(port));
+        final String forwardedHostHeader = headers.getHeaderString("X-Forwarded-Host");
+        if(enableForwardedHost && forwardedHostHeader != null) {
+            logger.infov("Proxy is enabled. X-Forwarded-Host: {0}", forwardedHostHeader);
+            final UriBuilder builder = uri.getAbsolutePathBuilder();
+            final String[] parts = forwardedHostHeader.split(":");
+            if(parts.length > 0) {
+                logger.debugv("Host: {0}", parts[0]);
+                builder.host(parts[0]);
+            }
+            if(parts.length > 1) {
+                try {
+                    logger.debugv("Port: {0}", parts[1]);
+                    builder.port(Integer.parseUnsignedInt(parts[1]));
+                } catch(NumberFormatException e) {
+                    logger.errorv("Invalid port in X-Forwarded-Host header {0}", parts[1], e);
+                }
+            }
+            return builder;
         }
         return uri.getAbsolutePathBuilder();
     }

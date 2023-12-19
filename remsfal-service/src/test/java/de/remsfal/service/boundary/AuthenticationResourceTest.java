@@ -52,6 +52,28 @@ class AuthenticationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void login_SUCCESS_proxyConfiguration() {
+        final String proxyRedirectUri = REDIRECT_URI_URL
+            .replace("localhost", "example.org")
+            .replace("8081", "8899");
+
+        given()
+            .redirects().follow(false)
+            .when()
+            .header("X-Forwarded-Host", "example.org:8899")
+            .get(BASE_PATH + "/login")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .header("location", Matchers.startsWith("https://accounts.google.com/o/oauth2/auth?"))
+            .header("location", Matchers.containsString("response_type=code"))
+            .header("location", Matchers.containsString("client_id="))
+            .header("location", Matchers.containsString("redirect_uri="))
+            .header("location", Matchers.containsString(proxyRedirectUri))
+            .header("location", Matchers.containsString("scope=openid+email"))
+            .header("location", Matchers.containsString("state=%2F"));
+    }
+
+    @Test
     void login_FAILED_parentDirectoryRelativePath() {
         given()
             .when().get(BASE_PATH + "/login/../../user")
