@@ -10,8 +10,10 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
@@ -40,10 +42,16 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
     @Inject
     RemsfalPrincipal principal;
 
+    @Context
+    UriInfo uri;
+
+
     @Override
     public void filter(ContainerRequestContext requestContext)
         throws IOException {
         try {
+            logger.info("UriInfo:" + uri.getAbsolutePath());
+            logger.info("X-Forwarded-Host:" + requestContext.getHeaderString("X-Forwarded-Host"));
             if (HttpMethod.GET.equals(requestContext.getMethod()) &&
                 AuthenticationEndpoint.isAuthenticationPath(requestContext.getUriInfo().getPath())) {
                 return;
