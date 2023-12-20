@@ -42,13 +42,17 @@ public class ProjectController {
     @Inject
     NotificationController notificationController;
     
-    public List<ProjectModel> getProjects(final UserModel user) {
-        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId());
+    public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
+        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(), offset, limit);
         List<ProjectModel> projects = new ArrayList<>();
         for (ProjectMembershipEntity projectMembership : memberships) {
             projects.add(projectMembership.getProject());
         }
         return projects;
+    }
+
+    public long countProjects(final UserModel user) {
+        return projectRepository.countMembershipByUserId(user.getId());
     }
 
     @Transactional

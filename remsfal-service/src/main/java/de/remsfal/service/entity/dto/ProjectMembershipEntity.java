@@ -23,6 +23,8 @@ import de.remsfal.core.model.ProjectMemberModel;
     query = "SELECT m FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
 @NamedQuery(name = "ProjectMembershipEntity.findByProjectIdAndUserId",
     query = "SELECT m FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
+@NamedQuery(name = "ProjectMembershipEntity.countByUserId",
+    query = "SELECT count(m) FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
 @NamedQuery(name = "ProjectMembershipEntity.removeByProjectIdAndUserId",
     query = "DELETE FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
 @Table(name = "PROJECT_MEMBERSHIP")

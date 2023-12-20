@@ -135,15 +135,15 @@ class ProjectControllerTest extends AbstractTest {
         assertThrows(NotFoundException.class,
             () -> projectController.getProject(user3, project2.getId()));
 
-        List<ProjectModel> retrievedProjects = projectController.getProjects(user1);
+        List<ProjectModel> retrievedProjects = projectController.getProjects(user1, 0, 10);
         assertNotNull(retrievedProjects);
         assertEquals(2, retrievedProjects.size());
 
-        retrievedProjects = projectController.getProjects(user2);
+        retrievedProjects = projectController.getProjects(user2, 0, 10);
         assertNotNull(retrievedProjects);
         assertEquals(3, retrievedProjects.size());
 
-        retrievedProjects = projectController.getProjects(user3);
+        retrievedProjects = projectController.getProjects(user3, 0, 10);
         assertNotNull(retrievedProjects);
         assertTrue(retrievedProjects.isEmpty());
     }

@@ -89,7 +89,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     @Test
     void getProject_SUCCESS_sameProjectIsReturned() {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
-        
+
         final Response res = given()
             .when()
             .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -99,8 +99,8 @@ class ProjectResourceTest extends AbstractResourceTest {
             .thenReturn();
 
         final String projectId = res.then()
-          .contentType(MediaType.APPLICATION_JSON)
-          .extract().path("id");
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
 
         final String projectUrl = res.then()
             .statusCode(Status.CREATED.getStatusCode())
@@ -126,6 +126,79 @@ class ProjectResourceTest extends AbstractResourceTest {
             .get(BASE_PATH + "/anyId")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getProjects_FAILED_requestedNumberToHigh() {
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .queryParam("limit", 120)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void getProjects_FAILED_negativeOffset() {
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .queryParam("offset", -3)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void getProjects_FAILED_negativeLimit() {
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .queryParam("limit", -12)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void getProjects_SUCCESS_pagination() {
+        for (int i = 0; i < 20; i++) {
+            given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + i + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode());
+        }
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("first", Matchers.is(0))
+            .and().body("size", Matchers.is(10))
+            .and().body("total", Matchers.is(20))
+            .and().body("projects.size()", Matchers.is(10));
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .queryParam("offset", 6)
+            .queryParam("limit", 12)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("first", Matchers.is(6))
+            .and().body("size", Matchers.is(12))
+            .and().body("total", Matchers.is(20))
+            .and().body("projects.size()", Matchers.is(12));
     }
 
     @Test
@@ -167,20 +240,26 @@ class ProjectResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
+            .and().body("first", Matchers.is(0))
+            .and().body("size", Matchers.is(2))
+            .and().body("total", Matchers.is(2))
             .and().body("projects.size()", Matchers.is(2))
             .and().body("projects.id", Matchers.hasItems(user1projectId1, user1projectId2))
             .and().body("projects.title", Matchers.hasItems(TestData.PROJECT_TITLE_1, TestData.PROJECT_TITLE_2));
 
         given()
-        .when()
-        .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-        .get(BASE_PATH)
-        .then()
-        .statusCode(Status.OK.getStatusCode())
-        .contentType(ContentType.JSON)
-        .and().body("projects.size()", Matchers.is(1))
-        .and().body("projects.id", Matchers.hasItems(user2projectId3))
-        .and().body("projects.title", Matchers.hasItems(TestData.PROJECT_TITLE_3));
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("first", Matchers.is(0))
+            .and().body("size", Matchers.is(1))
+            .and().body("total", Matchers.is(1))
+            .and().body("projects.size()", Matchers.is(1))
+            .and().body("projects.id", Matchers.hasItems(user2projectId3))
+            .and().body("projects.title", Matchers.hasItems(TestData.PROJECT_TITLE_3));
     }
 
     @Test
