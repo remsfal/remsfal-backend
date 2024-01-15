@@ -33,7 +33,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.style.configDirectory>src/main/style</project.style.configDirectory>
-        <surefire-plugin.version>3.2.3</surefire-plugin.version>
+        <surefire-plugin.version>3.2.5</surefire-plugin.version>
         <failsafe-plugin.version>3.2.3</failsafe-plugin.version>
         <checkstyle-plugin.version>3.3.1</checkstyle-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
