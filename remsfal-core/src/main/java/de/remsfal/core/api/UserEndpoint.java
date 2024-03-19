@@ -28,6 +28,7 @@ public interface UserEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of this user identified by the cookie.")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
     UserJson getUser();
 
@@ -35,12 +36,14 @@ public interface UserEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of this user identified by the cookie.")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
     UserJson updateUser(@Parameter(description = "User information", required = true) @Valid UserJson user);
 
     @DELETE
     @Operation(summary = "Delete this user identified by the cookie.")
     @APIResponse(responseCode = "204", description = "The user was deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
     void deleteUser();
 

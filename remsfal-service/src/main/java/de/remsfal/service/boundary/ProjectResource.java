@@ -6,7 +6,6 @@ import java.util.List;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -41,12 +40,9 @@ public class ProjectResource implements ProjectEndpoint {
     ProjectController controller;
 
     @Override
-    public ProjectListJson getProjects() {
-        List<ProjectModel> projects = controller.getProjects(principal);
-        if(projects.isEmpty()) {
-            throw new NotFoundException("No projects for this user fond");
-        }
-        return ProjectListJson.valueOf(projects);
+    public ProjectListJson getProjects(final Integer offset, final Integer limit) {
+        List<ProjectModel> projects = controller.getProjects(principal, offset, limit);
+        return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal));
     }
 
     @Override

@@ -13,10 +13,19 @@ import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 @ApplicationScoped
 public class ProjectRepository extends AbstractRepository<ProjectEntity> {
 
-    public List<ProjectMembershipEntity> findMembershipByUserId(final String userId) {
+    public List<ProjectMembershipEntity> findMembershipByUserId(final String userId, final int offset, final int limit) {
         return getEntityManager().createNamedQuery("ProjectMembershipEntity.findByUserId", ProjectMembershipEntity.class)
             .setParameter(PARAM_USER_ID, userId)
+            .setFirstResult(offset)
+            .setMaxResults(limit)
             .getResultList();
+    }
+
+    public long countMembershipByUserId(final String userId) {
+        return getEntityManager()
+            .createNamedQuery("ProjectMembershipEntity.countByUserId", Long.class)
+            .setParameter(PARAM_USER_ID, userId)
+            .getSingleResult();
     }
 
     public ProjectMembershipEntity findMembershipByUserIdAndProjectId(final String userId, final String projectId) {

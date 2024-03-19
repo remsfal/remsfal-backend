@@ -1,7 +1,5 @@
 package de.remsfal.core.json;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -22,17 +20,29 @@ import de.remsfal.core.model.ProjectModel;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class ProjectListJson {
 
-    @NotNull
+    @Schema(description = "Index of the first element in projects list of total available entries, starting at 1",
+        required = true, example = "1")
+    public abstract Integer getFirst();
+
+    @Schema(description = "Number of elements in projects list", minimum = "1", maximum = "100",
+        defaultValue = "10", required = true)
+    public abstract Integer getSize();
+
+    @Schema(description = "Total number of available projects", required = true)
+    public abstract Long getTotal();
+
     public abstract List<ProjectJson> getProjects();
 
-    // TODO: pagination
-
-    public static ProjectListJson valueOf(final List<ProjectModel> projects) {
+    public static ProjectListJson valueOf(final List<ProjectModel> projects, final int first, final long total) {
         final ImmutableProjectListJson.Builder builder = ImmutableProjectListJson.builder();
         for(ProjectModel model : projects) {
             builder.addProjects(ProjectJson.valueOf(model));
         }
-        return builder.build();
+        return builder
+            .size(projects.size())
+            .first(first)
+            .total(total)
+            .build();
     }
 
 }
