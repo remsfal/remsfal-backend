@@ -34,6 +34,17 @@ jobs:
           restore-keys: ${{ runner.os }}-maven
       - name: Build with Maven (package)
         run: mvn --batch-mode --update-snapshots package checkstyle::check
+      - name: Save PR number to file for subsequently Sonar Analysis
+        if: github.event_name == 'pull_request'
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: echo $PR_NUMBER > PR_NUMBER.txt
+      - name: Archive PR number for subsequently Sonar Analysis
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PR_NUMBER
+          path: PR_NUMBER.txt
   jdk21-build:
     name: "JDK 21 Build"
     runs-on: ubuntu-latest
@@ -48,33 +59,3 @@ jobs:
           distribution: 'zulu'
       - name: Build with Maven (package)
         run: mvn --batch-mode --update-snapshots package checkstyle::check
-  sonar-cloud-analysis:
-    name: "Sonar Cloud Build"
-    runs-on: ubuntu-latest
-    # dependabot should not have SONAR_TOKEN
-    if: github.actor != 'dependabot[bot]'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven
-      - name: Build and analyze (verify)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=remsfal_remsfal-backend
