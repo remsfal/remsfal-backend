@@ -116,7 +116,7 @@ public interface ProjectEndpoint {
     ProjectJson updateProjectMember(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
         @Parameter(description = "ID of the member", required = true) @PathParam("memberId") String memberId,
-        @Parameter(description = "Project information", required = true) @Valid ProjectJson project);
+        @Parameter(description = "Project member information", required = true) @Valid ProjectMemberJson project);
 
     @DELETE
     @Path("/{projectId}/members/{memberId}")

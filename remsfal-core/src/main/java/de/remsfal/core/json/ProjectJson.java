@@ -2,8 +2,10 @@ package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
@@ -31,6 +33,8 @@ public abstract class ProjectJson implements ProjectModel {
     public abstract String getId();
 
     @NotNull
+    @NotBlank
+    @Size(min = 1, max = 99, message = "The title must be between 1 and 255 characters")
     public abstract String getTitle();
 
     @Null

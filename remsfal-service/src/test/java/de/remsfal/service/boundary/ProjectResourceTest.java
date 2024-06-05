@@ -87,6 +87,18 @@ class ProjectResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void createProject_FAILED_noTitle() {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .body("{ \"title\":\" \"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
     void getProject_SUCCESS_sameProjectIsReturned() {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
 
@@ -245,7 +257,8 @@ class ProjectResourceTest extends AbstractResourceTest {
             .and().body("total", Matchers.is(2))
             .and().body("projects.size()", Matchers.is(2))
             .and().body("projects.id", Matchers.hasItems(user1projectId1, user1projectId2))
-            .and().body("projects.title", Matchers.hasItems(TestData.PROJECT_TITLE_1, TestData.PROJECT_TITLE_2));
+            .and().body("projects.name", Matchers.hasItems(TestData.PROJECT_TITLE_1, TestData.PROJECT_TITLE_2))
+            .and().body("projects.memberRole", Matchers.hasItems("MANAGER", "MANAGER"));
 
         given()
             .when()
@@ -259,7 +272,7 @@ class ProjectResourceTest extends AbstractResourceTest {
             .and().body("total", Matchers.is(1))
             .and().body("projects.size()", Matchers.is(1))
             .and().body("projects.id", Matchers.hasItems(user2projectId3))
-            .and().body("projects.title", Matchers.hasItems(TestData.PROJECT_TITLE_3));
+            .and().body("projects.name", Matchers.hasItems(TestData.PROJECT_TITLE_3));
     }
 
     @Test
