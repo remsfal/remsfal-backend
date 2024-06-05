@@ -42,7 +42,7 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
         List<ProjectModel> projects = controller.getProjects(principal, offset, limit);
-        return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal));
+        return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal), principal);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public ProjectJson updateProjectMember(final String projectId, final String memberId, final ProjectJson project) {
+    public ProjectJson updateProjectMember(final String projectId, final String memberId, final ProjectMemberJson project) {
         if(projectId == null || projectId.isBlank()) {
             throw new BadRequestException("Invalid project ID");
         }

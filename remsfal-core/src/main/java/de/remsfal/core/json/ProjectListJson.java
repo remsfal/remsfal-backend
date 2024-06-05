@@ -2,6 +2,7 @@ package de.remsfal.core.json;
 
 import java.util.List;
 
+import de.remsfal.core.model.UserModel;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
@@ -31,12 +32,12 @@ public abstract class ProjectListJson {
     @Schema(description = "Total number of available projects", required = true)
     public abstract Long getTotal();
 
-    public abstract List<ProjectJson> getProjects();
+    public abstract List<ProjectItemJson> getProjects();
 
-    public static ProjectListJson valueOf(final List<ProjectModel> projects, final int first, final long total) {
+    public static ProjectListJson valueOf(final List<ProjectModel> projects, final int first, final long total, final UserModel user) {
         final ImmutableProjectListJson.Builder builder = ImmutableProjectListJson.builder();
         for(ProjectModel model : projects) {
-            builder.addProjects(ProjectJson.valueOf(model));
+            builder.addProjects(ProjectItemJson.valueOf(model, user));
         }
         return builder
             .size(projects.size())
