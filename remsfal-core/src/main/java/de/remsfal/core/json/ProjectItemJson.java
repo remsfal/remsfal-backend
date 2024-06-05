@@ -6,13 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
-
-import java.util.Set;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -31,14 +27,6 @@ public abstract class ProjectItemJson {
 
     @NotNull
     public abstract ProjectMemberModel.UserRole getMemberRole();
-
-    boolean isPrivileged() {
-        if(getMemberRole() == null) {
-            return false;
-        } else {
-            return getMemberRole().isPrivileged();
-        }
-    }
 
     public static ProjectItemJson valueOf(ProjectModel model, final UserModel user) {
         final ImmutableProjectItemJson.Builder builder = ImmutableProjectItemJson.builder()
