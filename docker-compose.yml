@@ -1,3 +1,5 @@
+name: remsfal-backend
+
 services:
   mysql:
     image: mysql:lts
