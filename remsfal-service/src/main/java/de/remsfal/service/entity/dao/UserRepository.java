@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import java.util.Date;
+import java.util.Optional;
 
 import de.remsfal.service.entity.dto.UserEntity;
 
@@ -13,12 +14,12 @@ import de.remsfal.service.entity.dto.UserEntity;
 @ApplicationScoped
 public class UserRepository extends AbstractRepository<UserEntity> {
 
-    public UserEntity findByTokenId(final String tokenId) {
-        return find("tokenId", tokenId).singleResult();
+    public Optional<UserEntity> findByTokenId(final String tokenId) {
+        return find("tokenId", tokenId).singleResultOptional();
     }
 
-    public UserEntity findByEmail(final String email) {
-        return find("email", email).singleResult();
+    public Optional<UserEntity> findByEmail(final String email) {
+        return find("email", email).singleResultOptional();
     }
 
     public boolean remove(final String userId) {
