@@ -18,7 +18,6 @@ public class TestData {
     public static final String USER_TOKEN = TestData.USER_TOKEN_1;
     public static final String USER_NAME = TestData.USER_NAME_1;
     public static final String USER_EMAIL = TestData.USER_EMAIL_1;
-    
     // Test user 1
     public static final String USER_ID_1 = "b9440c43-b5c0-4951-9c29-000000000001";
     public static final String USER_TOKEN_1 = "tokenOfMaxMustermann";

@@ -34,7 +34,8 @@ public abstract class ProjectListJson {
 
     public abstract List<ProjectItemJson> getProjects();
 
-    public static ProjectListJson valueOf(final List<ProjectModel> projects, final int first, final long total, final UserModel user) {
+    public static ProjectListJson valueOf(final List<ProjectModel> projects,
+                                          final int first, final long total, final UserModel user) {
         final ImmutableProjectListJson.Builder builder = ImmutableProjectListJson.builder();
         for(ProjectModel model : projects) {
             builder.addProjects(ProjectItemJson.valueOf(model, user));
