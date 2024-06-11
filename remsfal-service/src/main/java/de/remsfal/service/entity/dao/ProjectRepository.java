@@ -13,8 +13,10 @@ import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 @ApplicationScoped
 public class ProjectRepository extends AbstractRepository<ProjectEntity> {
 
-    public List<ProjectMembershipEntity> findMembershipByUserId(final String userId, final int offset, final int limit) {
-        return getEntityManager().createNamedQuery("ProjectMembershipEntity.findByUserId", ProjectMembershipEntity.class)
+    public List<ProjectMembershipEntity> findMembershipByUserId(final String userId,
+                                                                final int offset, final int limit) {
+        return getEntityManager().createNamedQuery("ProjectMembershipEntity.findByUserId",
+                        ProjectMembershipEntity.class)
             .setParameter(PARAM_USER_ID, userId)
             .setFirstResult(offset)
             .setMaxResults(limit)
@@ -30,7 +32,8 @@ public class ProjectRepository extends AbstractRepository<ProjectEntity> {
 
     public ProjectMembershipEntity findMembershipByUserIdAndProjectId(final String userId, final String projectId) {
         return getEntityManager()
-            .createNamedQuery("ProjectMembershipEntity.findByProjectIdAndUserId", ProjectMembershipEntity.class)
+            .createNamedQuery("ProjectMembershipEntity.findByProjectIdAndUserId",
+                    ProjectMembershipEntity.class)
             .setParameter(PARAM_PROJECT_ID, projectId)
             .setParameter(PARAM_USER_ID, userId)
             .getSingleResult();

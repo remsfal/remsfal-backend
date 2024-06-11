@@ -43,7 +43,8 @@ public class ProjectController {
     NotificationController notificationController;
     
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
-        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(), offset, limit);
+        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(),
+                offset, limit);
         List<ProjectModel> projects = new ArrayList<>();
         for (ProjectMembershipEntity projectMembership : memberships) {
             projects.add(projectMembership.getProject());
@@ -106,8 +107,10 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectModel addProjectMember(final UserModel user, final String projectId, final ProjectMemberModel member) {
-        logger.infov("Adding a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+    public ProjectModel addProjectMember(final UserModel user,
+                                         final String projectId, final ProjectMemberModel member) {
+        logger.infov("Adding a project membership (user={0}, project={1}, member={2})",
+                user.getId(), projectId, member.getEmail());
         try {
             final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId);
             UserEntity userEntity;
@@ -146,9 +149,11 @@ public class ProjectController {
 
     @Transactional
     public ProjectModel removeProjectMember(final UserModel user, final String projectId, final UserModel member) {
-        logger.infov("Removing a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+        logger.infov("Removing a project membership (user={0}, project={1}, member={2})",
+                user.getId(), projectId, member.getEmail());
         try {
-            final ProjectMembershipEntity membership = projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId);
+            final ProjectMembershipEntity membership =
+                    projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId);
             if(!membership.isPrivileged()) {
                 throw new ForbiddenException("The user is not privileged to delete this project.");
             }
@@ -164,8 +169,10 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectModel changeProjectMemberRole(final UserModel user, final String projectId, final ProjectMemberModel member) {
-        logger.infov("Updating a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+    public ProjectModel changeProjectMemberRole(final UserModel user,
+                                                final String projectId, final ProjectMemberModel member) {
+        logger.infov("Updating a project membership (user={0}, project={1}, member={2})",
+                user.getId(), projectId, member.getEmail());
         try {
             final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
             entity.changeMemberRole(member);
