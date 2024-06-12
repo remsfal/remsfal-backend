@@ -35,11 +35,19 @@ jobs:
           full_name: ${{ github.event.repository.full_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout
+      - name: Checkout push branch
+        if: github.event.workflow_run.event != 'pull_request'
         uses: actions/checkout@v4
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+      - name: Checkout PR branch
+        if: github.event.workflow_run.event == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          ref: ${{ fromJson(steps.get_pr_data.outputs.data).head.ref }}
           fetch-depth: 0
       - name: Checkout base branch
         if: github.event.workflow_run.event == 'pull_request'
@@ -73,7 +81,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B verify sonar:sonar -Dsonar.projectKey=remsfal_remsfal-backend -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }} -Dsonar.branch.name=${{ github.event.workflow_run.head_branch }} -Dsonar.pullrequest.key=${{ fromJson(steps.get_pr_data.outputs.data).number }} -Dsonar.pullrequest.branch=${{ fromJson(steps.get_pr_data.outputs.data).head.ref }} -Dsonar.pullrequest.base=${{ fromJson(steps.get_pr_data.outputs.data).base.ref }}
+        run: mvn -B verify sonar:sonar -Dsonar.projectKey=remsfal_remsfal-backend -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }} -Dsonar.pullrequest.key=${{ fromJson(steps.get_pr_data.outputs.data).number }} -Dsonar.pullrequest.branch=${{ fromJson(steps.get_pr_data.outputs.data).head.ref }} -Dsonar.pullrequest.base=${{ fromJson(steps.get_pr_data.outputs.data).base.ref }}
       - name: SonarCloud Scan on push
         if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.event.repository.full_name
         env:
