@@ -1,19 +1,16 @@
-<?xml version="1.0"?>
-<project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.remsfal</groupId>
     <artifactId>remsfal-backend</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-
     <packaging>pom</packaging>
     <name>remsfal - Backend</name>
 
     <modules>
         <module>remsfal-core</module>
         <module>remsfal-service</module>
+        <module>microprofile-metrics-quickstart</module>
     </modules>
 
     <scm>
@@ -21,7 +18,7 @@
         <developerConnection>scm:git:git@github.com:remsfal/remsfal-backend.git</developerConnection>
         <url>https://github.com/remsfal/remsfal-backend</url>
     </scm>
-    
+
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/remsfal/remsfal-backend/issues</url>
@@ -39,9 +36,7 @@
         <sonar-plugin.version>3.11.0.3922</sonar-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.coverage.jacoco.xmlReportPaths>
-            ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <build>
@@ -61,14 +56,11 @@
                     <version>${surefire-plugin.version}</version>
                     <configuration>
                         <systemPropertyVariables>
-                            <java.util.logging.manager>
-                                org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                             <maven.home>${maven.home}</maven.home>
-                            <quarkus.jacoco.data-file>
-                                ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec</quarkus.jacoco.data-file>
+                            <quarkus.jacoco.data-file>${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec</quarkus.jacoco.data-file>
                             <quarkus.jacoco.reuse-data-file>true</quarkus.jacoco.reuse-data-file>
-                            <quarkus.jacoco.report-location>
-                                ${maven.multiModuleProjectDirectory}/target/site/jacoco</quarkus.jacoco.report-location>
+                            <quarkus.jacoco.report-location>${maven.multiModuleProjectDirectory}/target/site/jacoco</quarkus.jacoco.report-location>
                         </systemPropertyVariables>
                         <!-- includes>
                             <include>AuthenticationResourceMockitoTest.java</include>
@@ -86,10 +78,8 @@
                             </goals>
                             <configuration>
                                 <systemPropertyVariables>
-                                    <native.image.path>
-                                        ${project.build.directory}/${project.build.finalName}-runner</native.image.path>
-                                    <java.util.logging.manager>
-                                        org.jboss.logmanager.LogManager</java.util.logging.manager>
+                                    <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                                    <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                                     <maven.home>${maven.home}</maven.home>
                                 </systemPropertyVariables>
                             </configuration>
