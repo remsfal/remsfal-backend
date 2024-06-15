@@ -153,27 +153,20 @@ class UserResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.USER_ID))
             .and().body("firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
+            .and().body("lastName", Matchers.equalTo(TestData.USER_LAST_NAME))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
             .and().body("registeredDate", Matchers.is(Matchers.notNullValue()))
             .and().body("lastLoginDate", Matchers.is(Matchers.notNullValue()));
     }
 
     @Test
-    void updateUser_SUCCESS_userNameChanged() {
+    void updateUser_SUCCESS_userInfoChanged() {
         setupTestUsers();
 
-        given()
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
-
-        final String update = "{ \"firstName\":\"" + "john" + "\"}";
-
+        final String update = "{ \"firstName\":\"john\","
+            + "\"mobilePhoneNumber\":\"+491773289245\","
+            + "\"businessPhoneNumber\":\"+49302278349\","
+            + "\"privatePhoneNumber\":\"+4933012345611\"}";
         given()
             .when()
             .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -183,7 +176,12 @@ class UserResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("firstName", Matchers.equalTo("john"));
+            .and().body("firstName", Matchers.equalTo("john"))
+            .and().body("lastName", Matchers.equalTo(TestData.USER_LAST_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
+            .and().body("mobilePhoneNumber", Matchers.equalTo("+491773289245"))
+            .and().body("businessPhoneNumber", Matchers.equalTo("+49302278349"))
+            .and().body("privatePhoneNumber", Matchers.equalTo("+4933012345611"));
 
         given()
             .when()
@@ -193,7 +191,95 @@ class UserResourceTest extends AbstractResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("firstName", Matchers.equalTo("john"))
-            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
+            .and().body("lastName", Matchers.equalTo(TestData.USER_LAST_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
+            .and().body("mobilePhoneNumber", Matchers.equalTo("+491773289245"))
+            .and().body("businessPhoneNumber", Matchers.equalTo("+49302278349"))
+            .and().body("privatePhoneNumber", Matchers.equalTo("+4933012345611"));
+    }
+
+    @Test
+    void updateUser_FAILED_invalidMobilePhoneNumber() {
+        setupTestUsers();
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body("{\"mobilePhoneNumber\":\"491773289245\"}")
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void updateUser_FAILED_invalidBusinessPhoneNumber() {
+        setupTestUsers();
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body("{\"businessPhoneNumber\":\"+49 177 3289245\"}")
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void updateUser_FAILED_invalidPrivatePhoneNumber() {
+        setupTestUsers();
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body("{\"privatePhoneNumber\":\"+4930\"}")
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void updateUser_SUCCESS_addressChanged() {
+        setupTestUsers();
+
+        final String update = "{ \"address\":{"
+            + "\"street\":\"" + TestData.ADDRESS_STREET + "\","
+            + "\"city\":\"" + TestData.ADDRESS_CITY + "\","
+            + "\"province\":\"" + TestData.ADDRESS_PROVINCE + "\","
+            + "\"zip\":\"" + TestData.ADDRESS_ZIP + "\","
+            + "\"countryCode\":\"" + TestData.ADDRESS_COUNTRY + "\"}}";
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body(update)
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
+            .and().body("lastName", Matchers.equalTo(TestData.USER_LAST_NAME))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
+            .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET))
+            .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
+            .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
+            .and().body("address.zip", Matchers.equalTo(TestData.ADDRESS_ZIP))
+            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY));
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET))
+            .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
+            .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
+            .and().body("address.zip", Matchers.equalTo(TestData.ADDRESS_ZIP))
+            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY));
     }
 
     @Test

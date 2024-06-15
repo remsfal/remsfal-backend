@@ -38,32 +38,16 @@ public class AddressValidationEntity {
         return city;
     }
 
-    public void setCity(final String city) {
-        this.city = city;
-    }
-
     public String getProvince() {
         return province;
-    }
-
-    public void setProvince(final String province) {
-        this.province = province;
     }
 
     public String getZip() {
         return zip;
     }
 
-    public void setZip(final String zip) {
-        this.zip = zip;
-    }
-
     public Locale getCountry() {
         return new Locale("", country);
-    }
-
-    public void setCountry(final Locale country) {
-        this.country = country.getCountry();
     }
 
     @Override

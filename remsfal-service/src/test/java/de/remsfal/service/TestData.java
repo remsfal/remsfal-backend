@@ -51,7 +51,6 @@ public class TestData {
     public static final String USER_LAST_NAME_4 = "Dennsiewillja";
 
     // Default test address
-    public static final String ADDRESS_ID = TestData.ADDRESS_ID_1;
     public static final String ADDRESS_STREET = TestData.ADDRESS_STREET_1;
     public static final String ADDRESS_CITY = TestData.ADDRESS_CITY_1;
     public static final String ADDRESS_PROVINCE = TestData.ADDRESS_PROVINCE_1;
@@ -63,7 +62,6 @@ public class TestData {
     }
 
     // Test address 1
-    public static final String ADDRESS_ID_1 = "b9440c43-b5c0-4951-abcd-000000000001";
     public static final String ADDRESS_STREET_1 = "Maximiliankorso 9901";
     public static final String ADDRESS_CITY_1 = "Berlin";
     public static final String ADDRESS_PROVINCE_1 = "Berlin";

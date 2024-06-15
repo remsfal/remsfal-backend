@@ -7,12 +7,14 @@ import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.Date;
 
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.AuthenticationEvent;
@@ -84,7 +86,7 @@ public class UserController {
             entity.setLastName(user.getLastName());
         }
         if(user.getAddress() != null) {
-            entity.setAddress(AddressEntity.fromModel(user.getAddress()));
+            updateAddress(entity, user.getAddress());
         }
         if(user.getMobilePhoneNumber() != null) {
             entity.setMobilePhoneNumber(user.getMobilePhoneNumber());
@@ -96,6 +98,28 @@ public class UserController {
             entity.setPrivatePhoneNumber(user.getPrivatePhoneNumber());
         }
         return repository.merge(entity);
+    }
+    
+    private void updateAddress(final UserEntity user, final AddressModel address) {
+        if(user.getAddress() == null) {
+            user.setAddress(new AddressEntity());
+            user.getAddress().generateId();
+        }
+        if(address.getStreet() != null) {
+            user.getAddress().setStreet(address.getStreet());
+        }
+        if(address.getCity() != null) {
+            user.getAddress().setCity(address.getCity());
+        }
+        if(address.getProvince() != null) {
+            user.getAddress().setProvince(address.getProvince());
+        }
+        if(address.getZip() != null) {
+            user.getAddress().setZip(address.getZip());
+        }
+        if(address.getCountry() != null) {
+            user.getAddress().setCountry(address.getCountry());
+        }
     }
     
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {

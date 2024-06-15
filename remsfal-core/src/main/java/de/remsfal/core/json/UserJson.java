@@ -63,17 +63,17 @@ public abstract class UserJson implements CustomerModel {
 
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers")
+    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getMobilePhoneNumber();
 
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers")
+    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getBusinessPhoneNumber();
 
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers")
+    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getPrivatePhoneNumber();
 
     @Nullable
