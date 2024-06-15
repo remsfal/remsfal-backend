@@ -24,38 +24,38 @@ import de.remsfal.core.model.AddressModel;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class AddressJson implements AddressModel {
 
-	@NotNull
-	@NotBlank
+    @NotNull
+    @NotBlank
     @Nullable
-	public abstract String getStreet();
+    public abstract String getStreet();
 
-	@NotNull
-	@NotBlank
-	public abstract String getCity();
+    @NotNull
+    @NotBlank
+    public abstract String getCity();
 
-	@NotNull
-	@NotBlank
-	public abstract String getProvince();
+    @NotNull
+    @NotBlank
+    public abstract String getProvince();
 
-	@NotNull
-	@NotBlank
-	public abstract String getZip();
+    @NotNull
+    @NotBlank
+    public abstract String getZip();
 
-	@NotNull
-	@NotBlank
-	public abstract Locale getCountry();
-    
-	public static AddressJson valueOf(final AddressModel model) {
-		if(model == null) {
-			return null;
-		}
-		return ImmutableAddressJson.builder()
+    @NotNull
+    @NotBlank
+    public abstract Locale getCountry();
+
+    public static AddressJson valueOf(final AddressModel model) {
+        if (model == null) {
+            return null;
+        }
+        return ImmutableAddressJson.builder()
             .street(model.getStreet())
             .city(model.getCity())
             .province(model.getProvince())
             .zip(model.getZip())
             .country(model.getCountry())
             .build();
-	}
+    }
 
 }

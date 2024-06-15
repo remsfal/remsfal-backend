@@ -58,7 +58,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "ADDRESS_ID", referencedColumnName = "id")
     private AddressEntity address;
-    
+
     @Column(name = "MOBILE_PHONE_NUMBER")
     private String mobilePhoneNumber;
 
@@ -108,59 +108,59 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Override
     public String getFirstName() {
-		return firstName;
-	}
+        return firstName;
+    }
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-    @Override
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
     @Override
-	public AddressEntity getAddress() {
-		return address;
-	}
+    public String getLastName() {
+        return lastName;
+    }
 
-	public void setAddress(AddressEntity address) {
-		this.address = address;
-	}
-
-    @Override
-	public String getMobilePhoneNumber() {
-		return mobilePhoneNumber;
-	}
-
-	public void setMobilePhoneNumber(String mobilePhoneNumber) {
-		this.mobilePhoneNumber = mobilePhoneNumber;
-	}
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
     @Override
-	public String getBusinessPhoneNumber() {
-		return businessPhoneNumber;
-	}
+    public AddressEntity getAddress() {
+        return address;
+    }
 
-	public void setBusinessPhoneNumber(String businessPhoneNumber) {
-		this.businessPhoneNumber = businessPhoneNumber;
-	}
+    public void setAddress(AddressEntity address) {
+        this.address = address;
+    }
 
     @Override
-	public String getPrivatePhoneNumber() {
-		return privatePhoneNumber;
-	}
+    public String getMobilePhoneNumber() {
+        return mobilePhoneNumber;
+    }
 
-	public void setPrivatePhoneNumber(String privatePhoneNumber) {
-		this.privatePhoneNumber = privatePhoneNumber;
-	}
+    public void setMobilePhoneNumber(String mobilePhoneNumber) {
+        this.mobilePhoneNumber = mobilePhoneNumber;
+    }
 
-	public Set<ProjectMembershipEntity> getMemberships() {
+    @Override
+    public String getBusinessPhoneNumber() {
+        return businessPhoneNumber;
+    }
+
+    public void setBusinessPhoneNumber(String businessPhoneNumber) {
+        this.businessPhoneNumber = businessPhoneNumber;
+    }
+
+    @Override
+    public String getPrivatePhoneNumber() {
+        return privatePhoneNumber;
+    }
+
+    public void setPrivatePhoneNumber(String privatePhoneNumber) {
+        this.privatePhoneNumber = privatePhoneNumber;
+    }
+
+    public Set<ProjectMembershipEntity> getMemberships() {
         return memberships;
     }
 

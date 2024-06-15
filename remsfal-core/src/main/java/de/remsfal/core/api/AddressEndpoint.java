@@ -4,7 +4,10 @@ import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.CountryListJson;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -35,7 +38,6 @@ public interface AddressEndpoint {
     @Operation(summary = "Retrieve supported countries.")
     @APIResponse(responseCode = "200", description = "A list of suggested cities")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    List<AddressJson> getPossibleCities(@Parameter(description = "A zip code to map the city")
-                      @QueryParam("zip") @NotNull @Size(min = 4, max = 5) String zipCode);
+    List<AddressJson> getPossibleCities(@Parameter(description = "A zip code to map the city") @QueryParam("zip") @NotNull @Size(min = 4, max = 5) String zipCode);
 
 }

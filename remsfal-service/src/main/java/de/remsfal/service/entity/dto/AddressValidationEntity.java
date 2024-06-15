@@ -1,16 +1,20 @@
 package de.remsfal.service.entity.dto;
 
-import jakarta.persistence.*;
-
 import java.util.Locale;
 import java.util.Objects;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
 @NamedQuery(name = "AddressValidationEntity.findByZip",
-        query = "SELECT a FROM AddressValidationEntity a WHERE a.zip = :zip")
+    query = "SELECT a FROM AddressValidationEntity a WHERE a.zip = :zip")
 @Table(name = "ADDRESS_VALIDATION")
 public class AddressValidationEntity {
 

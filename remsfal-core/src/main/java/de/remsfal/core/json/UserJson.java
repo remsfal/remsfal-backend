@@ -34,7 +34,7 @@ public abstract class UserJson implements CustomerModel {
     @Nullable
     @Override
     public abstract String getId();
-    
+
     @Email
     @Nullable
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
@@ -51,41 +51,40 @@ public abstract class UserJson implements CustomerModel {
     @Size(min = 3, max = 255, message = "The name must be between 3 and 255 characters")
     @Override
     public abstract String getFirstName();
-	
+
     @Nullable
     @Size(min = 3, max = 255, message = "The name must be between 3 and 255 characters")
     @Override
     public abstract String getLastName();
-	
+
     @Nullable
     @Override
     public abstract AddressJson getAddress();
-	
+
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers") 
+    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getMobilePhoneNumber();
-	
+
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers") 
+    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getBusinessPhoneNumber();
-	
+
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers") 
+    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getPrivatePhoneNumber();
-	
+
     @Nullable
     @PastOrPresent
     @Override
     public abstract LocalDate getRegisteredDate();
-    
+
     @Nullable
     @PastOrPresent
     @Override
     public abstract LocalDateTime getLastLoginDate();
-
 
     public static UserJson valueOf(final CustomerModel model) {
         return ImmutableUserJson.builder()
