@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.SiteModel;
 
 /**
@@ -28,5 +29,8 @@ public abstract class SiteJson implements SiteModel {
 
     @NotNull
     public abstract String getTitle();
+
+    @NotNull
+    public abstract AddressModel getAddress();
 
 }

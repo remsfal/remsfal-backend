@@ -1,5 +1,7 @@
 package de.remsfal.service;
 
+import java.util.Locale;
+
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.ImmutableApartmentJson;
 import de.remsfal.core.json.ImmutableBuildingJson;
@@ -16,32 +18,37 @@ public class TestData {
     // Default test user
     public static final String USER_ID = TestData.USER_ID_1;
     public static final String USER_TOKEN = TestData.USER_TOKEN_1;
-    public static final String USER_NAME = TestData.USER_NAME_1;
     public static final String USER_EMAIL = TestData.USER_EMAIL_1;
+    public static final String USER_FIRST_NAME = TestData.USER_FIRST_NAME_1;
+    public static final String USER_LAST_NAME = TestData.USER_LAST_NAME_1;
     
     // Test user 1
     public static final String USER_ID_1 = "b9440c43-b5c0-4951-9c29-000000000001";
     public static final String USER_TOKEN_1 = "tokenOfMaxMustermann";
-    public static final String USER_NAME_1 = "Max Mustermann";
     public static final String USER_EMAIL_1 = "max.mustermann@example.org";
+    public static final String USER_FIRST_NAME_1 = "Max";
+    public static final String USER_LAST_NAME_1 = "Mustermann";
 
     // Test user 2
     public static final String USER_ID_2 = "b9440c43-b5c0-4951-9c29-000000000002";
     public static final String USER_TOKEN_2 = "tokenOfLieschenMueller";
-    public static final String USER_NAME_2 = "Lieschen Müller";
     public static final String USER_EMAIL_2 = "lieschen.mueller@example.org";
+    public static final String USER_FIRST_NAME_2 = "Lieschen";
+    public static final String USER_LAST_NAME_2 = "Müller";
 
     // Test user 3
     public static final String USER_ID_3 = "b9440c43-b5c0-4951-9c29-000000000003";
     public static final String USER_TOKEN_3 = "tokenOfOttoNormalverbraucher";
-    public static final String USER_NAME_3 = "Otto Normalverbraucher";
     public static final String USER_EMAIL_3 = "otto.normalverbraucher@example.org";
+    public static final String USER_FIRST_NAME_3 = "Otto";
+    public static final String USER_LAST_NAME_3 = "Normalverbraucher";
 
     // Test user 4
     public static final String USER_ID_4 = "b9440c43-b5c0-4951-9c29-000000000004";
     public static final String USER_TOKEN_4 = "tokenOfLassmirandaDennsiewillja";
-    public static final String USER_NAME_4 = "Lassmiranda Dennsiewillja";
     public static final String USER_EMAIL_4 = "l.m.r.d-d.s.w.j@simsons.org";
+    public static final String USER_FIRST_NAME_4 = "Lassmiranda";
+    public static final String USER_LAST_NAME_4 = "Dennsiewillja";
 
     // Default test address
     public static final String ADDRESS_ID = TestData.ADDRESS_ID_1;
@@ -61,17 +68,16 @@ public class TestData {
     public static final String ADDRESS_CITY_1 = "Berlin";
     public static final String ADDRESS_PROVINCE_1 = "Berlin";
     public static final String ADDRESS_ZIP_1 = "13467";
-    public static final String ADDRESS_COUNTRY_1 = "Germany";
+    public static final String ADDRESS_COUNTRY_1 = "DE";
     
     public static final ImmutableAddressJson.Builder addressBuilder1() {
         return ImmutableAddressJson
             .builder()
-            .id(ADDRESS_ID_1)
             .street(ADDRESS_STREET_1)
             .city(ADDRESS_CITY_1)
             .province(ADDRESS_PROVINCE_1)
             .zip(ADDRESS_ZIP_1)
-            .country(ADDRESS_COUNTRY_1);
+            .country(new Locale("", ADDRESS_COUNTRY_1));
     }
 
     // Default test project

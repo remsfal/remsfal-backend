@@ -4,6 +4,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
+import jakarta.persistence.Column;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
@@ -18,6 +19,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.AuthenticationEvent;
 import de.remsfal.service.boundary.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 
 /**
@@ -73,14 +75,26 @@ public class UserController {
     }
 
     @Transactional
-    public CustomerModel updateUser(final String userId, final UserModel user) {
+    public CustomerModel updateUser(final String userId, final CustomerModel user) {
         logger.infov("Updating a user ({0})", user);
         final UserEntity entity = repository.findById(userId);
-        if(user.getName() != null) {
-            entity.setName(user.getName());
+        if(user.getFirstName() != null) {
+            entity.setFirstName(user.getFirstName());
         }
-        if(user.getEmail() != null) {
-            entity.setEmail(user.getEmail());
+        if(user.getLastName() != null) {
+            entity.setLastName(user.getLastName());
+        }
+        if(user.getAddress() != null) {
+            entity.setAddress(AddressEntity.fromModel(user.getAddress()));
+        }
+        if(user.getMobilePhoneNumber() != null) {
+            entity.setMobilePhoneNumber(user.getMobilePhoneNumber());
+        }
+        if(user.getBusinessPhoneNumber() != null) {
+            entity.setBusinessPhoneNumber(user.getBusinessPhoneNumber());
+        }
+        if(user.getPrivatePhoneNumber() != null) {
+            entity.setPrivatePhoneNumber(user.getPrivatePhoneNumber());
         }
         return repository.merge(entity);
     }

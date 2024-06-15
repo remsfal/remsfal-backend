@@ -136,11 +136,12 @@ class UserResourceTest extends AbstractResourceTest {
     @Test
     void getUser_SUCCESS_userIsReturned() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, NAME, EMAIL, AUTHENTICATED_AT) VALUES (?,?,?,?)")
+            .createNativeQuery("INSERT INTO USER (ID, EMAIL, AUTHENTICATED_AT, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID)
-            .setParameter(2, TestData.USER_NAME)
-            .setParameter(3, TestData.USER_EMAIL)
-            .setParameter(4, new Date())
+            .setParameter(2, TestData.USER_EMAIL)
+            .setParameter(3, new Date())
+            .setParameter(4, TestData.USER_FIRST_NAME)
+            .setParameter(5, TestData.USER_LAST_NAME)
             .executeUpdate());
 
         given()
@@ -151,7 +152,7 @@ class UserResourceTest extends AbstractResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.USER_ID))
-            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
+            .and().body("firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
             .and().body("registeredDate", Matchers.is(Matchers.notNullValue()))
             .and().body("lastLoginDate", Matchers.is(Matchers.notNullValue()));
@@ -168,10 +169,10 @@ class UserResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
+            .and().body("firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
 
-        final String update = "{ \"name\":\"" + "john" + "\"}";
+        final String update = "{ \"firstName\":\"" + "john" + "\"}";
 
         given()
             .when()
@@ -182,7 +183,7 @@ class UserResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo("john"));
+            .and().body("firstName", Matchers.equalTo("john"));
 
         given()
             .when()
@@ -191,7 +192,7 @@ class UserResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo("john"))
+            .and().body("firstName", Matchers.equalTo("john"))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
     }
 
@@ -206,7 +207,6 @@ class UserResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("name", Matchers.equalTo(TestData.USER_NAME))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
 
         given()

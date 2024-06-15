@@ -28,9 +28,9 @@ public class RemsfalPrincipal implements Principal, UserModel {
         return user.getEmail();
     }
 
-    @Override
-    public String getName() {
-        return user.getName();
-    }
+	@Override
+	public String getName() {
+		return user.getName();
+	}
 
 }

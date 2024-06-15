@@ -1,8 +1,10 @@
 package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-import jakarta.validation.constraints.Null;
+import java.util.Locale;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -22,8 +24,38 @@ import de.remsfal.core.model.AddressModel;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class AddressJson implements AddressModel {
 
-    @Null
+	@NotNull
+	@NotBlank
     @Nullable
-    public abstract String getId();
+	public abstract String getStreet();
+
+	@NotNull
+	@NotBlank
+	public abstract String getCity();
+
+	@NotNull
+	@NotBlank
+	public abstract String getProvince();
+
+	@NotNull
+	@NotBlank
+	public abstract String getZip();
+
+	@NotNull
+	@NotBlank
+	public abstract Locale getCountry();
+    
+	public static AddressJson valueOf(final AddressModel model) {
+		if(model == null) {
+			return null;
+		}
+		return ImmutableAddressJson.builder()
+            .street(model.getStreet())
+            .city(model.getCity())
+            .province(model.getProvince())
+            .zip(model.getZip())
+            .country(model.getCountry())
+            .build();
+	}
 
 }

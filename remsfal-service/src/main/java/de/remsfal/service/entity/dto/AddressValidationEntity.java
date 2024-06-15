@@ -1,28 +1,22 @@
 package de.remsfal.service.entity.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.Locale;
 import java.util.Objects;
-
-import de.remsfal.core.model.AddressModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "ADDRESS")
-public class AddressEntity extends AbstractEntity implements AddressModel {
+@NamedQuery(name = "AddressValidationEntity.findByZip",
+        query = "SELECT a FROM AddressValidationEntity a WHERE a.zip = :zip")
+@Table(name = "ADDRESS_VALIDATION")
+public class AddressValidationEntity {
 
     @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
-
-    @Column(name = "STREET", nullable = false)
-    private String street;
+    @Column(name = "ID", nullable = false)
+    private Integer id;
 
     @Column(name = "CITY", nullable = false)
     private String city;
@@ -35,23 +29,6 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
 
     @Column(name = "COUNTRY", nullable = false)
     private Locale country;
-
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
-
-    public String getStreet() {
-        return street;
-    }
-
-    public void setStreet(final String street) {
-        this.street = street;
-    }
 
     public String getCity() {
         return city;
@@ -90,9 +67,8 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         if (this == o) {
             return true;
         }
-        if (o instanceof AddressEntity e) {
+        if (o instanceof AddressValidationEntity e) {
             return Objects.equals(id, e.id)
-                && Objects.equals(street, e.street)
                 && Objects.equals(city, e.city)
                 && Objects.equals(province, e.province)
                 && Objects.equals(zip, e.zip)
@@ -104,19 +80,6 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    public static AddressEntity fromModel(final AddressModel address) {
-        if(address == null) {
-            return null;
-        }
-        final AddressEntity entity = new AddressEntity();
-        entity.setStreet(address.getStreet());
-        entity.setCity(address.getCity());
-        entity.setProvince(address.getProvince());
-        entity.setZip(address.getZip());
-        entity.setCountry(address.getCountry());
-        return entity;
     }
 
 }
