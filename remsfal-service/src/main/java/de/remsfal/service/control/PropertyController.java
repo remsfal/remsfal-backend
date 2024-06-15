@@ -4,6 +4,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
@@ -81,10 +82,11 @@ public class PropertyController {
     }
 
     @Transactional
-    public SiteModel createSite(final String projectId, final String propertyId, final SiteModel site) {
+    public SiteModel createSite(final String projectId, final String propertyId, @Valid final SiteModel site) {
         logger.infov("Creating a site (projectId={0}, propertyId = {1}, site={2})", projectId, propertyId, site);
         SiteEntity entity = SiteEntity.fromModel(site);
         entity.generateId();
+        entity.getAddress().generateId();
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
         siteRepository.persistAndFlush(entity);
@@ -108,10 +110,11 @@ public class PropertyController {
 
 
     @Transactional
-    public BuildingModel createBuilding(final String projectId, final String propertyId, final BuildingModel building) {
+    public BuildingModel createBuilding(final String projectId, final String propertyId, @Valid final BuildingModel building) {
         logger.infov("Creating a building (projectId={0}, propertyId = {1}, building={2})", projectId, propertyId, building);
         BuildingEntity entity = BuildingEntity.fromModel(building);
         entity.generateId();
+        entity.getAddress().generateId();
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
         buildingRepository.persistAndFlush(entity);

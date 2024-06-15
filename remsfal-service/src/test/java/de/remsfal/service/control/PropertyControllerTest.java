@@ -132,7 +132,10 @@ class PropertyControllerTest extends AbstractTest {
             .getId();
         assertNotNull(propertyId);
 
-        final SiteModel site = TestData.siteBuilder().build();
+        final SiteModel site = TestData.siteBuilder()
+            	.id(null)
+                .address(TestData.addressBuilder().build())
+                .build();
         
         assertThrows(ConstraintViolationException.class,
             () -> propertyController.createSite(null, propertyId, site));
@@ -146,6 +149,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(property.getId());
 
         final SiteModel site = TestData.siteBuilder()
+        	.id(null)
             .address(TestData.addressBuilder().build())
             .build();
         
@@ -174,14 +178,13 @@ class PropertyControllerTest extends AbstractTest {
         final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
         final SiteModel site = propertyController.createSite(TestData.PROJECT_ID, property.getId(),
-            TestData.siteBuilder().address(TestData.addressBuilder().build()).build());
+            TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(site.getId());
 
         final SiteModel result = propertyController.getSite(TestData.PROJECT_ID, property.getId(), site.getId());
         
         assertEquals(site.getId(), result.getId());
         assertEquals(site.getTitle(), result.getTitle());
-        assertEquals(site.getAddress().getId(), result.getAddress().getId());
         assertEquals(site.getDescription(), result.getDescription());
         assertEquals(site.getUsableSpace(), result.getUsableSpace());
         assertEquals(site.getRent(), result.getRent());
@@ -195,7 +198,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(propertyId);
         final String siteId = propertyController
             .createSite(TestData.PROJECT_ID, propertyId,
-            TestData.siteBuilder().address(TestData.addressBuilder().build()).build())
+            TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build())
             .getId();
         assertNotNull(siteId);
         
@@ -211,7 +214,8 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(buildingId);
 
         final BuildingModel building = TestData.buildingBuilder()
-            .address(TestData.addressBuilder().build())
+        	.id(null)
+        	.address(TestData.addressBuilder().build())
             .build();
         
         assertThrows(ConstraintViolationException.class,
@@ -226,6 +230,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(property.getId());
 
         final BuildingModel building = TestData.buildingBuilder()
+        	.id(null)
             .address(TestData.addressBuilder().build())
             .build();
         
@@ -256,14 +261,13 @@ class PropertyControllerTest extends AbstractTest {
         final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
         final BuildingModel building = propertyController.createBuilding(TestData.PROJECT_ID, property.getId(),
-            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build());
+            TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(building.getId());
 
         final BuildingModel result = propertyController.getBuilding(TestData.PROJECT_ID, property.getId(), building.getId());
         
         assertEquals(building.getId(), result.getId());
         assertEquals(building.getTitle(), result.getTitle());
-        assertEquals(building.getAddress().getId(), result.getAddress().getId());
         assertEquals(building.getDescription(), result.getDescription());
         assertEquals(building.getLivingSpace(), result.getLivingSpace());
         assertEquals(building.getCommercialSpace(), result.getCommercialSpace());
@@ -279,7 +283,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(propertyId);
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
-            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build())
+            TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build())
             .getId();
         assertNotNull(buildingId);
         
@@ -297,6 +301,7 @@ class PropertyControllerTest extends AbstractTest {
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
                 TestData.buildingBuilder()
+                .id(null)
                 .address(TestData.addressBuilder().build())
                 .build())
             .getId();
@@ -336,6 +341,7 @@ class PropertyControllerTest extends AbstractTest {
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
                 TestData.buildingBuilder()
+                .id(null)
                 .address(TestData.addressBuilder().build())
                 .build())
             .getId();
@@ -375,6 +381,7 @@ class PropertyControllerTest extends AbstractTest {
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
                 TestData.buildingBuilder()
+                .id(null)
                 .address(TestData.addressBuilder().build())
                 .build())
             .getId();

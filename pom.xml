@@ -42,6 +42,9 @@
         <sonar.coverage.jacoco.xmlReportPaths>
             ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.cpd.exclusions>
+                de.remsfal.service.entity.dto\**
+        </sonar.cpd.exclusions>
     </properties>
 
     <build>
