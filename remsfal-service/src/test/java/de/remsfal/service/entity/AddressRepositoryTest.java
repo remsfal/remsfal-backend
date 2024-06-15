@@ -28,7 +28,7 @@ class AddressRepositoryTest extends AbstractTest {
     void hashCode_SUCCESS_addressValidationEntity() {
         final List<AddressValidationEntity> entities = repository.findAddressByZip(TestData.ADDRESS_ZIP);
         assertNotNull(entities);
-        assertNotNull(entities.get(0).hashCode());
+        assertTrue(entities.get(0).hashCode() > 0);
     }
     
     @Test
@@ -39,7 +39,7 @@ class AddressRepositoryTest extends AbstractTest {
         
         final Optional<AddressValidationEntity> copy = repository.findAddressByParameters(TestData.addressBuilder().build());
         assertTrue(copy.isPresent());
-        assertTrue(copy.get().equals(entities.get(0)));
+        assertEquals(copy.get(), entities.get(0));
     }
     
 }

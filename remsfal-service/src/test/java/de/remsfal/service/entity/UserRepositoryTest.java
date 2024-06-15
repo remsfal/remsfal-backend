@@ -3,7 +3,6 @@ package de.remsfal.service.entity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Objects;
 
@@ -45,7 +44,7 @@ class UserRepositoryTest extends AbstractTest {
         copy.setFirstName(TestData.USER_FIRST_NAME);
         copy.setLastName(TestData.USER_LAST_NAME);
         
-        assertTrue(entity.equals(copy));
+        assertEquals(entity, copy);
     }
     
 }
