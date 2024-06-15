@@ -1,7 +1,5 @@
 package de.remsfal.service;
 
-import java.util.Locale;
-
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.ImmutableApartmentJson;
 import de.remsfal.core.json.ImmutableBuildingJson;
@@ -9,9 +7,6 @@ import de.remsfal.core.json.ImmutableCommercialJson;
 import de.remsfal.core.json.ImmutableGarageJson;
 import de.remsfal.core.json.ImmutablePropertyJson;
 import de.remsfal.core.json.ImmutableSiteJson;
-import de.remsfal.core.model.ApartmentModel;
-import de.remsfal.core.model.CommercialModel;
-import de.remsfal.core.model.GarageModel;
 
 public class TestData {
 

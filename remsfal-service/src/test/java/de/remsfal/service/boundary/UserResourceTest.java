@@ -6,6 +6,8 @@ import io.restassured.http.Cookie;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.authentication.SessionInfo;
@@ -198,43 +200,20 @@ class UserResourceTest extends AbstractResourceTest {
             .and().body("privatePhoneNumber", Matchers.equalTo("+4933012345611"));
     }
 
-    @Test
-    void updateUser_FAILED_invalidMobilePhoneNumber() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "{\"mobilePhoneNumber\":\"491773289245\"}",
+        "{\"businessPhoneNumber\":\"+49 177 3289245\"}",
+        "{\"privatePhoneNumber\":\"+4930\"}"
+        })
+    void updateUser_FAILED_invalidPhoneNumber(String invalidPatch) {
         setupTestUsers();
 
         given()
             .when()
             .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .body("{\"mobilePhoneNumber\":\"491773289245\"}")
-            .patch(BASE_PATH)
-            .then()
-            .statusCode(Status.BAD_REQUEST.getStatusCode());
-    }
-
-    @Test
-    void updateUser_FAILED_invalidBusinessPhoneNumber() {
-        setupTestUsers();
-
-        given()
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(ContentType.JSON)
-            .body("{\"businessPhoneNumber\":\"+49 177 3289245\"}")
-            .patch(BASE_PATH)
-            .then()
-            .statusCode(Status.BAD_REQUEST.getStatusCode());
-    }
-
-    @Test
-    void updateUser_FAILED_invalidPrivatePhoneNumber() {
-        setupTestUsers();
-
-        given()
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(ContentType.JSON)
-            .body("{\"privatePhoneNumber\":\"+4930\"}")
+            .body(invalidPatch)
             .patch(BASE_PATH)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
@@ -280,6 +259,26 @@ class UserResourceTest extends AbstractResourceTest {
             .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
             .and().body("address.zip", Matchers.equalTo(TestData.ADDRESS_ZIP))
             .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY));
+    }
+
+    @Test
+    void updateUser_FAILED_invalidZipCityCombination() {
+        setupTestUsers();
+
+        final String update = "{ \"address\":{"
+            + "\"street\":\"" + TestData.ADDRESS_STREET + "\","
+            + "\"city\":\"" + TestData.ADDRESS_CITY + "\","
+            + "\"province\":\"" + TestData.ADDRESS_PROVINCE + "\","
+            + "\"zip\":\"20359\","
+            + "\"countryCode\":\"" + TestData.ADDRESS_COUNTRY + "\"}}";
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body(update)
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test

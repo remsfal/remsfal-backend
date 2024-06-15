@@ -1,5 +1,6 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.model.AddressModel;
 import de.remsfal.service.entity.dao.AddressRepository;
 import de.remsfal.service.entity.dto.AddressValidationEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -23,6 +24,10 @@ public class AddressController {
 
     public List<AddressValidationEntity> getPossibleCities(final String zipCode) {
         return repository.findAddressByZip(zipCode);
+    }
+
+    public boolean isValidAddress(AddressModel address) {
+        return repository.findAddressByParameters(address).isPresent();
     }
 
 }

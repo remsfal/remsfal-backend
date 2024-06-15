@@ -185,7 +185,6 @@ class PropertyControllerTest extends AbstractTest {
         
         assertEquals(site.getId(), result.getId());
         assertEquals(site.getTitle(), result.getTitle());
-//        assertEquals(site.getAddress().getId(), result.getAddress().getId());
         assertEquals(site.getDescription(), result.getDescription());
         assertEquals(site.getUsableSpace(), result.getUsableSpace());
         assertEquals(site.getRent(), result.getRent());
@@ -269,7 +268,6 @@ class PropertyControllerTest extends AbstractTest {
         
         assertEquals(building.getId(), result.getId());
         assertEquals(building.getTitle(), result.getTitle());
-//        assertEquals(building.getAddress().getId(), result.getAddress().getId());
         assertEquals(building.getDescription(), result.getDescription());
         assertEquals(building.getLivingSpace(), result.getLivingSpace());
         assertEquals(building.getCommercialSpace(), result.getCommercialSpace());

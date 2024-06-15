@@ -7,7 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.Date;
@@ -34,6 +34,9 @@ public class UserController {
 
     @Inject
     UserRepository repository;
+    
+    @Inject
+    AddressController addressController;
     
     @Inject
     private Event<AuthenticationEvent> authenticatedUser;
@@ -119,6 +122,9 @@ public class UserController {
         }
         if(address.getCountry() != null) {
             user.getAddress().setCountry(address.getCountry());
+        }
+        if(!addressController.isValidAddress(user.getAddress())) {
+            throw new BadRequestException("Invalid address");
         }
     }
     
