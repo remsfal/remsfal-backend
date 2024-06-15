@@ -77,7 +77,7 @@ public class TestData {
             .city(ADDRESS_CITY_1)
             .province(ADDRESS_PROVINCE_1)
             .zip(ADDRESS_ZIP_1)
-            .country(new Locale("", ADDRESS_COUNTRY_1));
+            .countryCode(ADDRESS_COUNTRY_1);
     }
 
     // Default test project

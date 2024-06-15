@@ -33,8 +33,8 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     @Column(name = "ZIP", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", nullable = false)
-    private Locale country;
+    @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
+    private String country;
 
     public String getId() {
         return id;
@@ -78,11 +78,11 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     }
 
     public Locale getCountry() {
-        return country;
+        return new Locale("", country);
     }
 
     public void setCountry(final Locale country) {
-        this.country = country;
+        this.country = country.getCountry();
     }
 
     @Override

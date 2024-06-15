@@ -31,8 +31,8 @@ public class AddressValidationEntity {
     @Column(name = "ZIP", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", nullable = false)
-    private Locale country;
+    @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
+    private String country;
 
     public String getCity() {
         return city;
@@ -59,11 +59,11 @@ public class AddressValidationEntity {
     }
 
     public Locale getCountry() {
-        return country;
+        return new Locale("", country);
     }
 
     public void setCountry(final Locale country) {
-        this.country = country;
+        this.country = country.getCountry();
     }
 
     @Override

@@ -25,14 +25,13 @@ public class AddressResource implements AddressEndpoint {
 
     @Override
     public List<AddressJson> getPossibleCities(final String zipCode) {
-        // List<AddressJson> possibleCities = new ArrayList;
         return controller.getPossibleCities(zipCode)
             .stream()
             .map(address -> ImmutableAddressJson.builder()
                 .city(address.getCity())
                 .province(address.getProvince())
                 .zip(address.getZip())
-                .country(address.getCountry())
+                .countryCode(address.getCountry().getCountry())
                 .build())
             .collect(Collectors.toList());
     }

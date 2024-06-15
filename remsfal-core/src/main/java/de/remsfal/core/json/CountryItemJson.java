@@ -3,9 +3,6 @@ package de.remsfal.core.json;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectModel;
-import de.remsfal.core.model.UserModel;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -34,7 +31,7 @@ public abstract class CountryItemJson {
     public static CountryItemJson valueOf(final Locale country) {
         return ImmutableCountryItemJson.builder()
             .countryCode(country.getCountry())
-            .name(country.getDisplayCountry())
+            .name(country.getDisplayCountry(Locale.GERMAN))
             .build();
     }
 

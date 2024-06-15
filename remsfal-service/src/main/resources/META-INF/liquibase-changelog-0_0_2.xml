@@ -13,7 +13,7 @@
             <column name="ID" type="int" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="COUNTRY" type="varchar(3)">
+            <column name="COUNTRY" type="char(2)">
                 <constraints nullable="false" />
             </column>
             <column name="PROVINCE" type="varchar(255)">

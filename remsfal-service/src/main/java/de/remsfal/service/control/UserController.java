@@ -4,7 +4,6 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
-import jakarta.persistence.Column;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;

@@ -3,12 +3,14 @@ package de.remsfal.core.json;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 
 import java.util.Locale;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -41,9 +43,16 @@ public abstract class AddressJson implements AddressModel {
     @NotBlank
     public abstract String getZip();
 
+    @JsonIgnore
+    @Null
+    @Nullable
+    public Locale getCountry() {
+        return new Locale("", getCountryCode());
+    }
+
     @NotNull
     @NotBlank
-    public abstract Locale getCountry();
+    public abstract String getCountryCode();
 
     public static AddressJson valueOf(final AddressModel model) {
         if (model == null) {
@@ -54,7 +63,7 @@ public abstract class AddressJson implements AddressModel {
             .city(model.getCity())
             .province(model.getProvince())
             .zip(model.getZip())
-            .country(model.getCountry())
+            .countryCode(model.getCountry().getCountry())
             .build();
     }
 

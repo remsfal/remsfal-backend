@@ -34,7 +34,7 @@
             <column name="PROVINCE" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="COUNTRY" type="varchar(3)">
+            <column name="COUNTRY" type="char(2)">
                 <constraints nullable="false" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
