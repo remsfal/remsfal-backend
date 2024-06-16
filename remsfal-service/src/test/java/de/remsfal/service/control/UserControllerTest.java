@@ -16,10 +16,12 @@ import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.exception.AlreadyExistsException;
+import de.remsfal.service.entity.dto.AddressEntity;
 
 @QuarkusTest
 class UserControllerTest extends AbstractTest {
@@ -54,17 +56,19 @@ class UserControllerTest extends AbstractTest {
     void getUser_SUCCESS_retrieveUser() {
         final String userId = UUID.randomUUID().toString();
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, NAME, EMAIL) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO USER (ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?)")
             .setParameter(1, userId)
-            .setParameter(2, TestData.USER_NAME)
-            .setParameter(3, TestData.USER_EMAIL)
+            .setParameter(2, TestData.USER_EMAIL)
+            .setParameter(3, TestData.USER_FIRST_NAME)
+            .setParameter(4, TestData.USER_LAST_NAME)
             .executeUpdate());
 
-        UserModel user = controller.getUser(userId);
+        CustomerModel user = controller.getUser(userId);
         assertNotNull(user);
         assertEquals(userId, user.getId());
-        assertEquals(TestData.USER_NAME, user.getName());
         assertEquals(TestData.USER_EMAIL, user.getEmail());
+        assertEquals(TestData.USER_FIRST_NAME, user.getFirstName());
+        assertEquals(TestData.USER_LAST_NAME, user.getLastName());
     }
 
     @Test
@@ -75,7 +79,7 @@ class UserControllerTest extends AbstractTest {
     }
 
     @Test
-    void updateUser_SUCCESS_changedUserName() {
+    void updateUser_SUCCESS_userNameChanged() {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         final String email = entityManager
             .createQuery("SELECT user.email FROM UserEntity user where user.id = :userId", String.class)
@@ -84,19 +88,71 @@ class UserControllerTest extends AbstractTest {
         assertEquals(TestData.USER_EMAIL, email);
         assertEquals(user.getEmail(), email);
 
-        final String newUserName = "Dr. " + TestData.USER_NAME;
-        UserModel updatedUser =
-            ImmutableUserJson.builder().id(user.getId()).name(newUserName).email(TestData.USER_EMAIL).build();
+        final String newUserName = "Dr. " + TestData.USER_LAST_NAME;
+        CustomerModel updatedUser =
+            ImmutableUserJson.builder().id(user.getId()).lastName(newUserName).email(TestData.USER_EMAIL).build();
         updatedUser = controller.updateUser(user.getId(), updatedUser);
         assertEquals(user.getId(), updatedUser.getId());
         assertEquals(user.getEmail(), updatedUser.getEmail());
-        assertEquals(newUserName, updatedUser.getName());
+        assertEquals(newUserName, updatedUser.getLastName());
 
         final String name = entityManager
-            .createQuery("SELECT user.name FROM UserEntity user where user.id = :userId", String.class)
+            .createQuery("SELECT user.lastName FROM UserEntity user where user.id = :userId", String.class)
             .setParameter("userId", user.getId())
             .getSingleResult();
         assertEquals(newUserName, name);
+    }
+
+    @Test
+    void updateUser_SUCCESS_addressInserted() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        assertNotNull(user.getId());
+
+        CustomerModel updatedUser =
+            ImmutableUserJson.builder().address(TestData.addressBuilder().build()).build();
+        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        assertEquals(user.getId(), updatedUser.getId());
+        assertNotNull(updatedUser.getAddress());
+        assertEquals(TestData.ADDRESS_STREET, updatedUser.getAddress().getStreet());
+        assertEquals(TestData.ADDRESS_CITY, updatedUser.getAddress().getCity());
+        assertEquals(TestData.ADDRESS_PROVINCE, updatedUser.getAddress().getProvince());
+        assertEquals(TestData.ADDRESS_ZIP, updatedUser.getAddress().getZip());
+        assertEquals(TestData.ADDRESS_COUNTRY, updatedUser.getAddress().getCountry().getCountry());
+
+        final AddressEntity address = entityManager
+            .createQuery("SELECT user.address FROM UserEntity user where user.id = :userId", AddressEntity.class)
+            .setParameter("userId", user.getId())
+            .getSingleResult();
+        assertEquals(updatedUser.getAddress(), address);
+    }
+
+    @Test
+    void updateUser_SUCCESS_addressChanged() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        assertNotNull(user.getId());
+
+        CustomerModel updatedUser =
+            ImmutableUserJson.builder().address(TestData.addressBuilder().build()).build();
+        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        assertEquals(user.getId(), updatedUser.getId());
+
+        updatedUser =
+            ImmutableUserJson.builder().address(TestData.addressBuilder().street("Berliner Str. 101").build()).build();
+        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        assertEquals(user.getId(), updatedUser.getId());
+        assertEquals("Berliner Str. 101", updatedUser.getAddress().getStreet());
+
+        final String addressId = entityManager
+            .createQuery("SELECT user.address.id FROM UserEntity user where user.id = :userId", String.class)
+            .setParameter("userId", user.getId())
+            .getSingleResult();
+        assertNotNull(addressId);
+        
+        final String street = entityManager
+            .createQuery("SELECT a.street FROM AddressEntity a where a.id = :addressId", String.class)
+            .setParameter("addressId", addressId)
+            .getSingleResult();
+        assertEquals("Berliner Str. 101", street);
     }
 
     @Test

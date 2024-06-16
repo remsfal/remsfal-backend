@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.BuildingModel;
 
 /**
@@ -29,5 +30,8 @@ public abstract class BuildingJson implements BuildingModel {
 
     @NotNull
     public abstract String getTitle();
+
+    @NotNull
+    public abstract AddressModel getAddress();
 
 }

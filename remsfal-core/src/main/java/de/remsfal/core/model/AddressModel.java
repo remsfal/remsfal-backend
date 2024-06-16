@@ -1,11 +1,11 @@
 package de.remsfal.core.model;
 
+import java.util.Locale;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface AddressModel {
-
-    String getId();
 
     String getStreet();
 
@@ -15,6 +15,6 @@ public interface AddressModel {
 
     String getZip();
 
-    String getCountry();
+    Locale getCountry();
 
 }
