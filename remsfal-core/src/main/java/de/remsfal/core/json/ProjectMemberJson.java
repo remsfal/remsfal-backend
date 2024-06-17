@@ -30,7 +30,6 @@ public abstract class ProjectMemberJson implements ProjectMemberModel {
     
     @Null
     @Nullable
-    @Size(min = 3, max = 99, message = "The name must be between 3 and 99 characters")
     public abstract String getName();
 
     @Email

@@ -33,7 +33,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.style.configDirectory>src/main/style</project.style.configDirectory>
-        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+        <surefire-plugin.version>3.3.0</surefire-plugin.version>
         <failsafe-plugin.version>3.2.5</failsafe-plugin.version>
         <checkstyle-plugin.version>3.4.0</checkstyle-plugin.version>
         <sonar-plugin.version>3.11.0.3922</sonar-plugin.version>
@@ -43,6 +43,9 @@
             ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <sonar.externalIssuesReportPaths>${project.basedir}/sonar-custom-rules.xml</sonar.externalIssuesReportPaths>
+        <sonar.cpd.exclusions>
+                de.remsfal.service.entity.dto\**
+        </sonar.cpd.exclusions>
     </properties>
 
     <build>

@@ -7,8 +7,8 @@ public interface UserModel {
 
     String getId();
     
-    String getName();
-
     String getEmail();
+    
+    String getName();
     
 }
