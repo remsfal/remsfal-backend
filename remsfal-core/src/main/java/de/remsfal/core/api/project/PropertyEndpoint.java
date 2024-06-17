@@ -20,8 +20,6 @@ import de.remsfal.core.json.PropertyJson;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/" 
- + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE)
 public interface PropertyEndpoint {
 
     static final String SERVICE = "properties";
@@ -32,6 +30,7 @@ public interface PropertyEndpoint {
     @APIResponse(responseCode = "201", description = "Property created successfully",
         headers = @Header(name = "Location", description = "URL of the new property"))
     Response createProperty(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
         @Parameter(description = "Property information", required = true) @Valid PropertyJson property);
 
     @GET

@@ -39,4 +39,9 @@ public abstract class PropertyJson implements PropertyModel {
     @Nullable
     public abstract Float getEffectiveSpace(); // living space + usable space + commercial space
 
+    public static PropertyJson valueOf(PropertyModel model) {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
 }

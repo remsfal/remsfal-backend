@@ -3,9 +3,11 @@ package de.remsfal.service.boundary;
 import java.net.URI;
 import java.util.List;
 
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -29,6 +31,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Context
     UriInfo uri;
+    
+    @Context
+    ResourceContext context;
 
     @Inject
     RemsfalPrincipal principal;
@@ -38,6 +43,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     ProjectController controller;
+    
+    @Inject
+    Instance<PropertyResource> propertyResource;
 
     @Override
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
@@ -118,6 +126,11 @@ public class ProjectResource implements ProjectEndpoint {
         }
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public PropertyResource getPropertyResource() {
+	return context.initResource(propertyResource.get());
     }
 
 }

@@ -128,4 +128,7 @@ public interface ProjectEndpoint {
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
         @Parameter(description = "ID of the member", required = true) @PathParam("memberId") String memberId);
 
+    @Path("/{projectId}/" + PropertyEndpoint.SERVICE)
+    PropertyEndpoint getPropertyResource();
+
 }
