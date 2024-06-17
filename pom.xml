@@ -33,14 +33,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.style.configDirectory>src/main/style</project.style.configDirectory>
-        <surefire-plugin.version>3.2.5</surefire-plugin.version>
-        <failsafe-plugin.version>3.2.5</failsafe-plugin.version>
-        <checkstyle-plugin.version>3.3.1</checkstyle-plugin.version>
+        <surefire-plugin.version>3.3.0</surefire-plugin.version>
+        <failsafe-plugin.version>3.3.0</failsafe-plugin.version>
+        <checkstyle-plugin.version>3.4.0</checkstyle-plugin.version>
+        <sonar-plugin.version>3.11.0.3922</sonar-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>
             ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.cpd.exclusions>
+                de.remsfal.service.entity.dto\**
+        </sonar.cpd.exclusions>
     </properties>
 
     <build>
@@ -94,6 +98,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

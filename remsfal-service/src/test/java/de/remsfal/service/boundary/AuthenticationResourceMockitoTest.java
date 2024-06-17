@@ -33,8 +33,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
         final String code = "anyRandomCode";
         final GoogleIdToken.Payload idTokenPayload = new GoogleIdToken.Payload()
             .setSubject(TestData.USER_TOKEN_1)
-            .setEmail(TestData.USER_EMAIL_1)
-            .set("name", TestData.USER_NAME_1);
+            .setEmail(TestData.USER_EMAIL_1);
 
         when(authenticator.getIdToken(eq(code), any()))
             .thenReturn(new GoogleIdToken(new JsonWebSignature.Header(), idTokenPayload, new byte[1], new byte[1]));
@@ -72,8 +71,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
         final String code = "anyRandomCode";
         final GoogleIdToken.Payload idTokenPayload = new GoogleIdToken.Payload()
             .setSubject(TestData.USER_TOKEN_1)
-            .setEmail(TestData.USER_EMAIL_1)
-            .set("name", TestData.USER_NAME_1);
+            .setEmail(TestData.USER_EMAIL_1);
 
         when(authenticator.getIdToken(eq(code), any()))
             .thenReturn(new GoogleIdToken(new JsonWebSignature.Header(), idTokenPayload, new byte[1], new byte[1]));

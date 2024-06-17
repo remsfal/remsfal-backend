@@ -15,7 +15,7 @@
 
 
     <properties>
-        <quarkus.version>3.11.0</quarkus.version>
+        <quarkus.version>3.11.2</quarkus.version>
         <quarkus.package.type>uber-jar</quarkus.package.type>
         <skipITs>true</skipITs>
     </properties>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.39.3</version>
+            <version>9.40</version>
         </dependency>
 
         <!-- TEST dependencies -->

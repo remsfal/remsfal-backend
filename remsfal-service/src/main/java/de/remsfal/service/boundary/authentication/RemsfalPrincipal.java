@@ -13,7 +13,7 @@ import de.remsfal.core.model.UserModel;
 public class RemsfalPrincipal implements Principal, UserModel {
 
     private UserModel user;
-    
+
     public void setUserModel(final UserModel user) {
         this.user = user;
     }
