@@ -66,7 +66,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Check PR branches
         run: |
-          if [ ${{ github.head_ref }} != "main" ] && [ ${{ github.base_ref }} == "main" ]; then
+          if [ ${{ github.head_ref }} == "main" ] && [ ${{ github.base_ref }} == "main" ]; then
             echo "Pull Requests to main branch are only allowed from developer branches that are not named <main>."
             exit 1
           fi
