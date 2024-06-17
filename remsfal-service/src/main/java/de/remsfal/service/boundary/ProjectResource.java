@@ -130,7 +130,7 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Override
     public PropertyResource getPropertyResource() {
-	return context.initResource(propertyResource.get());
+        return context.initResource(propertyResource.get());
     }
 
 }
