@@ -1,4 +1,4 @@
-package de.remsfal.core.api.project;
+package de.remsfal.core.api;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
