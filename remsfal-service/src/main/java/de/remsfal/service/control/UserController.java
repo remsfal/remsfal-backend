@@ -4,13 +4,13 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.Date;
+import java.util.Optional;
 
 import org.jboss.logging.Logger;
 
@@ -37,20 +37,21 @@ public class UserController {
     
     @Inject
     AddressController addressController;
-    
+
     @Inject
     private Event<AuthenticationEvent> authenticatedUser;
 
     @Transactional
     public UserModel authenticateUser(final String googleId, final String email) {
         logger.infov("Authenticating a user (googleId={0}, email={1})", googleId, email);
-        try {
-            final UserEntity entity = repository.findByTokenId(googleId);
+
+        final Optional<UserEntity> entity = repository.findByTokenId(googleId);
+        if(entity.isPresent()) {
             authenticatedUser.fireAsync(new AuthenticationEvent(googleId, email));
-            return entity;
-        } catch (NoResultException e) {
-            return createUser(googleId, email);
+            return entity.get();
         }
+
+        return createUser(googleId, email);
     }
 
     @Transactional
@@ -71,17 +72,15 @@ public class UserController {
 
     public CustomerModel getUser(final String userId) {
         logger.infov("Retrieving a user (id = {0})", userId);
-        final UserEntity user = repository.findById(userId);
-        if(user == null) {
-            throw new NotFoundException("User not exist");
-        }
-        return user;
+        return repository.findByIdOptional(userId).orElseThrow(() -> new NotFoundException("User does not exist"));
     }
 
     @Transactional
     public CustomerModel updateUser(final String userId, final CustomerModel user) {
         logger.infov("Updating a user ({0})", user);
-        final UserEntity entity = repository.findById(userId);
+        final UserEntity entity = repository.findByIdOptional(userId)
+                .orElseThrow(() -> new NotFoundException("User not exist"));
+
         if(user.getFirstName() != null) {
             entity.setFirstName(user.getFirstName());
         }
@@ -127,7 +126,7 @@ public class UserController {
             throw new BadRequestException("Invalid address");
         }
     }
-    
+
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
         logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})", event.getGoogleId(), event.getEmail());
         try {

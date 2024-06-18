@@ -2,11 +2,12 @@ package de.remsfal.service.control;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
@@ -70,26 +71,20 @@ public class ProjectController {
 
     public ProjectModel getProject(final UserModel user, final String projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
-        try {
-            return projectRepository.findProjectByUserId(user.getId(), projectId);
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Project not exist or user has no membership", e);
-        }
+        return projectRepository.findProjectByUserId(user.getId(), projectId)
+                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
     }
 
     @Transactional
     public ProjectModel updateProject(final UserModel user, final String projectId, final ProjectModel project) {
         logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
-        try {
-            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
-            entity.setTitle(project.getTitle());
-            return projectRepository.merge(entity);
-            // fetch eager project members
-            //entity.getMembers().size();
-            // return entity;
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Project not exist or user has no membership", e);
-        }
+        final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
+                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        entity.setTitle(project.getTitle());
+        return projectRepository.merge(entity);
+        // fetch eager project members
+        //entity.getMembers().size();
+        // return entity;
     }
 
     @Transactional
@@ -108,71 +103,73 @@ public class ProjectController {
     @Transactional
     public ProjectModel addProjectMember(final UserModel user, final String projectId, final ProjectMemberModel member) {
         logger.infov("Adding a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
-        try {
-            final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId);
-            UserEntity userEntity;
-            if(member.getId() != null) {
-                userEntity = userRepository.findById(member.getId());
-            } else if (member.getEmail() != null) {
-                try {
-                    userEntity = userRepository.findByEmail(member.getEmail());
-                } catch (final NoResultException e) {
-                    userEntity = new UserEntity();
-                    userEntity.generateId();
-                    userEntity.setEmail(member.getEmail());
-                    userRepository.persist(userEntity);
-                    notificationController.informUserAboutRegistration(userEntity);
-                }
-            } else {
-                throw new BadRequestException("Project member's email is missing");
+        final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
+                .orElseThrow(() ->new NotFoundException("Project not exist or user has no membership"));
+
+        UserEntity userEntity = findOrCreateUser(member);
+        projectEntity.addMember(userEntity, member.getRole());
+        notificationController.informUserAboutProjectMembership(userEntity);
+        return projectRepository.mergeAndFlush(projectEntity);
+    }
+
+    @Nonnull
+    private UserEntity findOrCreateUser(ProjectMemberModel member) {
+        if(member.getId() != null) {
+            return userRepository.findByIdOptional(member.getId())
+                    .orElseThrow(() -> new NotFoundException("User does not exist"));
+        } else if (member.getEmail() != null) {
+            Optional<UserEntity> userByEmail = userRepository.findByEmail(member.getEmail());
+            if(userByEmail.isPresent()) {
+                return userByEmail.get();
             }
-            projectEntity.addMember(userEntity, member.getRole());
-            notificationController.informUserAboutProjectMembership(userEntity);
-            return projectRepository.mergeAndFlush(projectEntity);
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Project not exist or user has no membership", e);
+
+            UserEntity userEntity = new UserEntity();
+            userEntity.generateId();
+            userEntity.setEmail(member.getEmail());
+            userRepository.persist(userEntity);
+            notificationController.informUserAboutRegistration(userEntity);
+            return userEntity;
+        } else {
+            throw new BadRequestException("Project member's email is missing");
         }
     }
 
     public Set<? extends ProjectMemberModel> getProjectMembers(final UserModel user, final String projectId) {
         logger.infov("Retrieving project membership (user={0}, project={1})", user.getId(), projectId);
-        try {
-            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
-            return entity.getMembers();
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Project not exist or user has no membership", e);
-        }
+        final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
+                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        return entity.getMembers();
     }
 
     @Transactional
     public ProjectModel removeProjectMember(final UserModel user, final String projectId, final UserModel member) {
         logger.infov("Removing a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
-        try {
-            final ProjectMembershipEntity membership = projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId);
-            if(!membership.isPrivileged()) {
-                throw new ForbiddenException("The user is not privileged to delete this project.");
+        final ProjectMembershipEntity membership = projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId)
+                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+
+        if(!membership.isPrivileged()) {
+            throw new ForbiddenException("The user is not privileged to delete this project.");
+        }
+
+        if(projectRepository.removeMembershipByUserIdAndProjectId(member.getId(), projectId)) {
+            projectRepository.getEntityManager().clear();
+            Optional<ProjectEntity> projectByUserId = projectRepository.findProjectByUserId(user.getId(), projectId);
+            if(projectByUserId.isEmpty()) {
+                throw new NotFoundException("Project not exist or user has no membership");
             }
-            if(projectRepository.removeMembershipByUserIdAndProjectId(member.getId(), projectId)) {
-                projectRepository.getEntityManager().clear();
-                return projectRepository.findProjectByUserId(user.getId(), projectId);
-            } else {
-                return membership.getProject();
-            }
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Project not exist or user has no membership", e);
+
+            return projectByUserId.get();
+        } else {
+            return membership.getProject();
         }
     }
 
     @Transactional
     public ProjectModel changeProjectMemberRole(final UserModel user, final String projectId, final ProjectMemberModel member) {
         logger.infov("Updating a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
-        try {
-            final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId);
-            entity.changeMemberRole(member);
-            return projectRepository.merge(entity);
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Project not exist or user has no membership", e);
-        }
+        final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
+                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        entity.changeMemberRole(member);
+        return projectRepository.merge(entity);
     }
-
 }
