@@ -23,7 +23,6 @@
         <system>GitHub</system>
         <url>https://github.com/remsfal/remsfal-backend/issues</url>
     </issueManagement>
-
     <properties>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
