@@ -16,7 +16,7 @@
 
     <properties>
         <quarkus.version>3.11.2</quarkus.version>
-        <quarkus.package.type>uber-jar</quarkus.package.type>
+        <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
     </properties>
     <dependencyManagement>
@@ -84,6 +84,12 @@
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
             <version>9.40</version>
+            <exclusions>
+		        <exclusion>
+        			<groupId>com.google.code.gson</groupId>
+          			<artifactId>gson</artifactId>
+	        	</exclusion>
+    	  	</exclusions>
         </dependency>
 
         <!-- TEST dependencies -->

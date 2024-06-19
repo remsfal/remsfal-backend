@@ -1,7 +1,9 @@
 package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -21,10 +23,12 @@ import de.remsfal.core.model.PropertyModel;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class PropertyJson implements PropertyModel {
 
+    @Null
     @Nullable
     public abstract String getId();
 
     @NotNull
+    @NotBlank
     public abstract String getTitle();
 
     @Nullable
@@ -38,5 +42,15 @@ public abstract class PropertyJson implements PropertyModel {
 
     @Nullable
     public abstract Float getEffectiveSpace(); // living space + usable space + commercial space
+
+    public static PropertyJson valueOf(PropertyModel model) {
+        return ImmutablePropertyJson.builder()
+                .id(model.getId())
+                .title(model.getTitle())
+                .landRegisterEntry(model.getLandRegisterEntry())
+                .description(model.getDescription())
+                .plotArea(model.getPlotArea())
+                .build();
+    }
 
 }
