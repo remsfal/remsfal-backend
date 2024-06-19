@@ -23,7 +23,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/projects";
 
     @BeforeEach
-    void setupTestUsers() {
+    protected void setupTestUsers() {
         super.setupTestUsers();
     }
 

@@ -32,7 +32,7 @@ public class ProjectResource implements ProjectEndpoint {
     UriInfo uri;
     
     @Context
-    ResourceContext context;
+    ResourceContext resourceContext;
 
     @Inject
     RemsfalPrincipal principal;
@@ -104,7 +104,7 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Override
     public PropertyResource getPropertyResource() {
-        return context.initResource(propertyResource.get());
+        return resourceContext.initResource(propertyResource.get());
     }
 
 }

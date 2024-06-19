@@ -4,7 +4,6 @@ import java.net.URI;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -33,9 +32,6 @@ public class PropertyResource implements PropertyEndpoint {
 
     @Override
     public Response createProperty(final String projectId, final PropertyJson property) {
-        if(property.getId() != null) {
-            throw new BadRequestException("ID should not be provided by the client");
-        }
         final PropertyModel model = controller.createProperty(projectId, property);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -46,9 +42,6 @@ public class PropertyResource implements PropertyEndpoint {
 
     @Override
     public PropertyJson getProperty(final String projectId, final String propertyId) {
-        if(projectId == null || propertyId == null) {
-            throw new BadRequestException("Invalid project or property ID");
-        }
         final PropertyModel model = controller.getProperty(projectId, propertyId);
         return PropertyJson.valueOf(model);
     }

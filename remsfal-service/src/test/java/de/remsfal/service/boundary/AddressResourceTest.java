@@ -20,7 +20,7 @@ class AddressResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/address";
 
     @BeforeEach
-    void setupTestUsers() {
+    protected void setupTestUsers() {
         super.setupTestUsers();
     }
 

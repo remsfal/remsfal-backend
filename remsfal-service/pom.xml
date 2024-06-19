@@ -84,6 +84,12 @@
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
             <version>9.40</version>
+            <exclusions>
+		        <exclusion>
+        			<groupId>com.google.code.gson</groupId>
+          			<artifactId>gson</artifactId>
+	        	</exclusion>
+    	  	</exclusions>
         </dependency>
 
         <!-- TEST dependencies -->
