@@ -2,7 +2,9 @@ package de.remsfal.service.boundary;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
+import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ResourceContext;
@@ -81,25 +83,29 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Override
     public Response addProjectMember(final String projectId, final ProjectMemberJson member) {
-        // TODO Auto-generated method stub
-        return null;
+        final ProjectModel model =  controller.addProjectMember(principal, projectId, member);
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        return Response.created(location)
+                .type(MediaType.APPLICATION_JSON)
+                .entity(ProjectJson.valueOf(model))
+                .build();
     }
 
     @Override
     public ProjectMemberListJson getProjectMembers(final String projectId) {
-        return null;
+        final Set<? extends ProjectMemberModel> model = controller.getProjectMembers(principal, projectId);
+        return ProjectMemberListJson.valueOfSet(model);
     }
 
     @Override
     public ProjectJson updateProjectMember(final String projectId, final String memberId, final ProjectMemberJson project) {
-        // TODO Auto-generated method stub
-        return null;
+        final ProjectModel model = controller.changeProjectMemberRole(principal, projectId, project);
+        return ProjectJson.valueOf(model);
     }
 
     @Override
     public void deleteProjectMember(final String projectId, final String memberId) {
-        // TODO Auto-generated method stub
-        
+        controller.removeProjectMember(principal, projectId, memberId);
     }
 
     @Override
