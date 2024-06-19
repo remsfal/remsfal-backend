@@ -14,13 +14,17 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ProjectEndpoint;
+import de.remsfal.core.api.project.DefectEndpoint;
+import de.remsfal.core.api.project.TaskEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.json.ProjectMemberJson;
 import de.remsfal.core.json.ProjectMemberListJson;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
+import de.remsfal.service.boundary.project.DefectResource;
 import de.remsfal.service.boundary.project.PropertyResource;
+import de.remsfal.service.boundary.project.TaskResource;
 import de.remsfal.service.control.ProjectController;
 
 /**
@@ -45,6 +49,12 @@ public class ProjectResource implements ProjectEndpoint {
     
     @Inject
     Instance<PropertyResource> propertyResource;
+
+    @Inject
+    Instance<TaskResource> taskResource;
+
+    @Inject
+    Instance<DefectResource> defectResource;
 
     @Override
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
@@ -105,6 +115,16 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public PropertyResource getPropertyResource() {
         return resourceContext.initResource(propertyResource.get());
+    }
+
+    @Override
+    public TaskEndpoint getTaskResource() {
+        return resourceContext.initResource(taskResource.get());
+    }
+
+    @Override
+    public DefectEndpoint getDefectResource() {
+        return resourceContext.initResource(defectResource.get());
     }
 
 }

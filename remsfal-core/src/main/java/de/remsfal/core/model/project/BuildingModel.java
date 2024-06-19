@@ -1,17 +1,21 @@
-package de.remsfal.core.model;
+package de.remsfal.core.model.project;
+
+import de.remsfal.core.model.AddressModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface CommercialModel {
+public interface BuildingModel {
 
     String getId();
 
     String getTitle();
 
-    String getLocation();
+    AddressModel getAddress();
 
     String getDescription();
+
+    Float getLivingSpace();
 
     Float getCommercialSpace();
 

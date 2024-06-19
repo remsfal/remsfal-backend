@@ -1,4 +1,4 @@
-package de.remsfal.core.model;
+package de.remsfal.core.model.project;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

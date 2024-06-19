@@ -1,6 +1,7 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
@@ -11,17 +12,16 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.AddressModel;
-import de.remsfal.core.model.SiteModel;
+import de.remsfal.core.model.project.CommercialModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "A site as part of a property")
-@JsonDeserialize(as = ImmutableSiteJson.class)
+@Schema(description = "An commercial inside a building")
+@JsonDeserialize(as = ImmutableCommercialJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public abstract class SiteJson implements SiteModel {
+public abstract class CommercialJson implements CommercialModel {
 
     @Null
     @Nullable
@@ -30,7 +30,28 @@ public abstract class SiteJson implements SiteModel {
     @NotNull
     public abstract String getTitle();
 
-    @NotNull
-    public abstract AddressModel getAddress();
+    @Null
+    @Nullable
+    public abstract String getLocation();
+
+    @Null
+    @Nullable
+    public abstract String getDescription();
+
+    @Null
+    @Nullable
+    public abstract Float getCommercialSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getUsableSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getHeatingSpace();
+
+    @Null
+    @Nullable
+    public abstract Float getRent();
 
 }

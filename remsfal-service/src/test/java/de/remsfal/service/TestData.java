@@ -1,12 +1,12 @@
 package de.remsfal.service;
 
 import de.remsfal.core.json.ImmutableAddressJson;
-import de.remsfal.core.json.ImmutableApartmentJson;
-import de.remsfal.core.json.ImmutableBuildingJson;
-import de.remsfal.core.json.ImmutableCommercialJson;
-import de.remsfal.core.json.ImmutableGarageJson;
-import de.remsfal.core.json.ImmutablePropertyJson;
-import de.remsfal.core.json.ImmutableSiteJson;
+import de.remsfal.core.json.project.ImmutableApartmentJson;
+import de.remsfal.core.json.project.ImmutableBuildingJson;
+import de.remsfal.core.json.project.ImmutableCommercialJson;
+import de.remsfal.core.json.project.ImmutableGarageJson;
+import de.remsfal.core.json.project.ImmutablePropertyJson;
+import de.remsfal.core.json.project.ImmutableSiteJson;
 
 public class TestData {
 

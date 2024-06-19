@@ -23,7 +23,9 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.api.project.DefectEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.api.project.TaskEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.json.ProjectMemberJson;
@@ -42,8 +44,8 @@ public interface ProjectEndpoint {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @Operation(summary = "Retrieve information for all projects.")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     ProjectListJson getProjects(
         @Parameter(description = "Offset of the first project to return")
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
@@ -132,5 +134,11 @@ public interface ProjectEndpoint {
 
     @Path("/{projectId}/" + PropertyEndpoint.SERVICE)
     PropertyEndpoint getPropertyResource();
+
+    @Path("/{projectId}/" + TaskEndpoint.SERVICE)
+    TaskEndpoint getTaskResource();
+
+    @Path("/{projectId}/" + DefectEndpoint.SERVICE)
+    DefectEndpoint getDefectResource();
 
 }

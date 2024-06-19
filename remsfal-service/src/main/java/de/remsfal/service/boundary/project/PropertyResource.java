@@ -10,8 +10,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 import de.remsfal.core.api.project.PropertyEndpoint;
-import de.remsfal.core.json.PropertyJson;
-import de.remsfal.core.model.PropertyModel;
+import de.remsfal.core.json.project.PropertyJson;
+import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.PropertyController;
 

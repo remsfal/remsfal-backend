@@ -1,4 +1,4 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.PropertyModel;
+import de.remsfal.core.model.project.PropertyModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

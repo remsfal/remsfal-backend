@@ -16,7 +16,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.api.ProjectEndpoint;
-import de.remsfal.core.json.GarageJson;
+import de.remsfal.core.json.project.GarageJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
