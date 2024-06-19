@@ -111,8 +111,10 @@ public class PropertyController {
 
 
     @Transactional
-    public BuildingModel createBuilding(final String projectId, final String propertyId, @Valid final BuildingModel building) {
-        logger.infov("Creating a building (projectId={0}, propertyId = {1}, building={2})", projectId, propertyId, building);
+    public BuildingModel createBuilding(final String projectId, final String propertyId,
+                                        @Valid final BuildingModel building) {
+        logger.infov("Creating a building (projectId={0}, propertyId = {1}, building={2})",
+                projectId, propertyId, building);
         BuildingEntity entity = BuildingEntity.fromModel(building);
         entity.generateId();
         entity.getAddress().generateId();
