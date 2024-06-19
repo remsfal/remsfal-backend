@@ -12,7 +12,6 @@ on:
       - '.gitignore'
   pull_request_target:
     branches: ["main"]
-  workflow_dispatch:
 
 jobs:
   jdk17-build:
@@ -58,3 +57,16 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven (package)
         run: mvn --batch-mode --update-snapshots package checkstyle::check
+  check-branches:
+    name: "Check Pull Request Conditions"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check PR branches
+        run: |
+          if [ "${{ github.head_ref }}" == "main" ] && [ "${{ github.base_ref }}" == "main" ]; then
+            echo "Pull Requests to main branch are only allowed from developer branches that are not named <main>."
+            exit 1
+          fi
