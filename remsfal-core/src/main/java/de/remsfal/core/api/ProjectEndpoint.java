@@ -23,10 +23,12 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.api.project.PropertyEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.json.ProjectMemberJson;
 import de.remsfal.core.json.ProjectMemberListJson;
+import de.remsfal.core.validation.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -65,7 +67,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson getProject(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId);
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId);
 
     @PATCH
     @Path("/{projectId}")
@@ -75,7 +77,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson updateProject(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "Project information", required = true) @Valid ProjectJson project);
 
     @DELETE
@@ -84,7 +86,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "204", description = "The project was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteProject(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId);
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId);
 
     @POST
     @Path("/{projectId}/members")
@@ -94,7 +96,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response addProjectMember(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "Project member information", required = true) @Valid ProjectMemberJson member);
 
     @GET
@@ -104,7 +106,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectMemberListJson getProjectMembers(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId);
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId);
 
     @PATCH
     @Path("/{projectId}/members/{memberId}")
@@ -114,8 +116,8 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or the member does not exist")
     ProjectJson updateProjectMember(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
-        @Parameter(description = "ID of the member", required = true) @PathParam("memberId") String memberId,
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the member", required = true) @PathParam("memberId") @NotNull @UUID String memberId,
         @Parameter(description = "Project member information", required = true) @Valid ProjectMemberJson project);
 
     @DELETE
@@ -125,8 +127,8 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or the member does not exist")
     void deleteProjectMember(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
-        @Parameter(description = "ID of the member", required = true) @PathParam("memberId") String memberId);
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the member", required = true) @PathParam("memberId") @NotNull @UUID String memberId);
 
     @Path("/{projectId}/" + PropertyEndpoint.SERVICE)
     PropertyEndpoint getPropertyResource();

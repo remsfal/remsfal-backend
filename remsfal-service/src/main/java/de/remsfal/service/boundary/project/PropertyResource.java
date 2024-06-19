@@ -1,10 +1,9 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.project;
 
 import java.net.URI;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -33,7 +32,7 @@ public class PropertyResource implements PropertyEndpoint {
     PropertyController controller;
 
     @Override
-    public Response createProperty(final String projectId, @Valid final PropertyJson property) {
+    public Response createProperty(final String projectId, final PropertyJson property) {
         if(property.getId() != null) {
             throw new BadRequestException("ID should not be provided by the client");
         }

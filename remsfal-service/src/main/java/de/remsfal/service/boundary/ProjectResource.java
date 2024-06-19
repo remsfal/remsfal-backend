@@ -5,8 +5,6 @@ import java.util.List;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -22,6 +20,7 @@ import de.remsfal.core.json.ProjectMemberJson;
 import de.remsfal.core.json.ProjectMemberListJson;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
+import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.control.ProjectController;
 
 /**
@@ -55,9 +54,6 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Override
     public Response createProject(final ProjectJson project) {
-        if(project.getId() != null) {
-            throw new BadRequestException("ID should not be provided by the client");
-        }
         final ProjectModel model = controller.createProject(principal, project);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -68,62 +64,40 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Override
     public ProjectJson getProject(final String projectId) {
-        if(projectId == null) {
-            throw new BadRequestException("Invalid project ID");
-        }
         final ProjectModel model = controller.getProject(principal, projectId);
         return ProjectJson.valueOf(model);
     }
 
     @Override
-    public ProjectJson updateProject(final String projectId, @Valid final ProjectJson project) {
-        if(projectId == null || projectId.isBlank()) {
-            throw new BadRequestException("Invalid project ID");
-        }
+    public ProjectJson updateProject(final String projectId, final ProjectJson project) {
         final ProjectModel model = controller.updateProject(principal, projectId, project);
         return ProjectJson.valueOf(model);
     }
 
     @Override
     public void deleteProject(final String projectId) {
-        if(projectId == null || projectId.isBlank()) {
-            throw new BadRequestException("Invalid project ID");
-        }
         controller.deleteProject(principal, projectId);
     }
 
     @Override
     public Response addProjectMember(final String projectId, final ProjectMemberJson member) {
-        if(projectId == null || projectId.isBlank()) {
-            throw new BadRequestException("Invalid project ID");
-        }
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProjectMemberListJson getProjectMembers(final String projectId) {
-        if(projectId == null || projectId.isBlank()) {
-            throw new BadRequestException("Invalid project ID");
-        }
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProjectJson updateProjectMember(final String projectId, final String memberId, final ProjectMemberJson project) {
-        if(projectId == null || projectId.isBlank()) {
-            throw new BadRequestException("Invalid project ID");
-        }
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public void deleteProjectMember(final String projectId, final String memberId) {
-        if(projectId == null || projectId.isBlank()) {
-            throw new BadRequestException("Invalid project ID");
-        }
         // TODO Auto-generated method stub
         
     }
