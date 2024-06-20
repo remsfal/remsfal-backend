@@ -142,8 +142,8 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectModel removeProjectMember(final UserModel user, final String projectId, final UserModel member) {
-        logger.infov("Removing a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+    public ProjectModel removeProjectMember(final UserModel user, final String projectId, final String member) {
+        logger.infov("Removing a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member);
         final ProjectMembershipEntity membership = projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId)
                 .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
 
@@ -151,7 +151,7 @@ public class ProjectController {
             throw new ForbiddenException("The user is not privileged to delete this project.");
         }
 
-        if(projectRepository.removeMembershipByUserIdAndProjectId(member.getId(), projectId)) {
+        if(projectRepository.removeMembershipByUserIdAndProjectId(member, projectId)) {
             projectRepository.getEntityManager().clear();
             Optional<ProjectEntity> projectByUserId = projectRepository.findProjectByUserId(user.getId(), projectId);
             if(projectByUserId.isEmpty()) {

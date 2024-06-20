@@ -105,7 +105,7 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Override
     public void deleteProjectMember(final String projectId, final String memberId) {
-        controller.removeProjectMember(principal, projectId, memberId);
+       controller.removeProjectMember(principal, projectId, memberId);
     }
 
     @Override
