@@ -1,25 +1,16 @@
 package de.remsfal.service.boundary.project;
 
-import java.net.URI;
-
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import de.remsfal.core.api.project.DefectEndpoint;
-import de.remsfal.core.api.project.PropertyEndpoint;
 import de.remsfal.core.json.ProjectJson;
-import de.remsfal.core.json.project.PropertyJson;
 import de.remsfal.core.json.project.TaskJson;
 import de.remsfal.core.json.project.TaskListJson;
-import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.core.model.project.TaskModel.Status;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
-import de.remsfal.service.control.PropertyController;
 import de.remsfal.service.control.TaskController;
 
 /**
