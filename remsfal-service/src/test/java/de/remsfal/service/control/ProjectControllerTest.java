@@ -291,7 +291,6 @@ class ProjectControllerTest extends AbstractTest {
     void removeProjectMember_SUCCESS_removeAnotherUser() {
         final UserModel user = userController
             .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
-        final String userId = "123";
 
         final ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -302,7 +301,6 @@ class ProjectControllerTest extends AbstractTest {
             .role(UserRole.LESSOR)
             .build();
         projectController.addProjectMember(user, project.getId(), member2);
-                
         long enties = entityManager
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
             .getSingleResult();
@@ -320,10 +318,10 @@ class ProjectControllerTest extends AbstractTest {
         final UserModel user2 = model;
         
         assertThrows(ForbiddenException.class,
-            () -> projectController.removeProjectMember(user2, project.getId(), userId));
+            () -> projectController.removeProjectMember(user2, project.getId(), member2.getId()));
         assertNotNull(user2.getId());
 
-        final ProjectModel updatedProject = projectController.removeProjectMember(user, project.getId(), userId);
+        final ProjectModel updatedProject = projectController.removeProjectMember(user, project.getId(), user2.getId());
         assertNotNull(updatedProject);
         assertEquals(1, updatedProject.getMembers().size());
         enties = entityManager
