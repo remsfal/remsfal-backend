@@ -13,7 +13,6 @@ class ProjectMemberListJsonTest {
 
     @Test
     void testValueOfSet() {
-        MockitoAnnotations.initMocks(this);
         Set<ProjectMemberModel> models = new HashSet<>();
         ProjectMemberModel model1 = new EntityProjectMemberModel("1", "John", "john@example.com", ProjectMemberModel.UserRole.LESSOR);
         models.add(model1);
