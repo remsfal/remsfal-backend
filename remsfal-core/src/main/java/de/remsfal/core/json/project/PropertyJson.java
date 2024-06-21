@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -29,6 +30,7 @@ public abstract class PropertyJson implements PropertyModel {
 
     @NotNull
     @NotBlank
+    @Size(max=255)
     public abstract String getTitle();
 
     @Nullable

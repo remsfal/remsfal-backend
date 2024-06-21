@@ -200,7 +200,7 @@ class UserResourceTest extends AbstractResourceTest {
             .and().body("privatePhoneNumber", Matchers.equalTo("+4933012345611"));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = {
         "{\"mobilePhoneNumber\":\"491773289245\"}",
         "{\"businessPhoneNumber\":\"+49 177 3289245\"}",
