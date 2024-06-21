@@ -1,5 +1,6 @@
 package de.remsfal.core.json;
 
+import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
@@ -33,4 +34,14 @@ public abstract class SiteJson implements SiteModel {
     @NotNull
     public abstract AddressModel getAddress();
 
+    public static SiteJson valueOf(SiteModel model) {
+        return ImmutableSiteJson.builder()
+                .id(model.getId())
+                .title(model.getTitle())
+                .address(AddressJson.valueOf(model.getAddress()))
+                .description(model.getDescription())
+                .rent(model.getRent())
+                .usableSpace(model.getUsableSpace())
+                .build();
+    }
 }
