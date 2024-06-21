@@ -21,7 +21,7 @@ public abstract class AbstractResourceTest extends AbstractTest {
     @Inject
     SessionManager sessionManager;
 
-    void setupTestUsers() {
+    protected void setupTestUsers() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID_1)

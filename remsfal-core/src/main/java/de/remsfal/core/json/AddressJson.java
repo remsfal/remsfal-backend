@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.validation.Zip;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -39,6 +40,7 @@ public abstract class AddressJson implements AddressModel {
     @NotBlank
     public abstract String getProvince();
 
+    @Zip
     @NotNull
     @NotBlank
     public abstract String getZip();

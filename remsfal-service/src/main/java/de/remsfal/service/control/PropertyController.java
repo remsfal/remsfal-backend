@@ -69,16 +69,14 @@ public class PropertyController {
 
     public PropertyModel getProperty(final String projectId, final String propertyId) {
         logger.infov("Retrieving a property (projectId = {0}, propertyId = {1})", projectId, propertyId);
-        try {
-            PropertyEntity entity = propertyRepository.findById(propertyId);
-            if(entity != null && entity.getProjectId().equals(projectId)) {
-                return entity;
-            } else {
-                throw new NoResultException("Unable to find property, because the project ID is invalid");
-            }
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Property not exist", e);
+        PropertyEntity entity = propertyRepository.findByIdOptional(propertyId)
+                .orElseThrow(() -> new NotFoundException("Property not exist"));
+
+        if (!entity.getProjectId().equals(projectId)) {
+            throw new NotFoundException("Unable to find property, because the project ID is invalid");
         }
+
+        return entity;
     }
 
     @Transactional
@@ -95,20 +93,17 @@ public class PropertyController {
     }
 
     public SiteModel getSite(final String projectId, final String propertyId, final String siteId) {
-        logger.infov("Retrieving a site (projectId = {0}, propertyId = {1}, siteId={2})",
-                projectId, propertyId, siteId);
-        try {
-            SiteEntity entity = siteRepository.findById(siteId);
-            if(entity != null && entity.getProjectId().equals(projectId)) {
-                return entity;
-            } else {
-                throw new NoResultException("Unable to find site, because the project ID is invalid");
-            }
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Site not exist", e);
-        }
-    }
+        logger.infov("Retrieving a site (projectId = {0}, propertyId = {1}, 
+                     siteId={2})", projectId, propertyId, siteId);
+        SiteEntity entity = siteRepository.findByIdOptional(siteId)
+                .orElseThrow(() -> new NotFoundException("Site not exist"));
 
+        if (!entity.getProjectId().equals(projectId)) {
+            throw new NotFoundException("Unable to find site, because the project ID is invalid");
+        }
+
+        return entity;
+    }
 
     @Transactional
     public BuildingModel createBuilding(final String projectId, final String propertyId,
@@ -126,18 +121,16 @@ public class PropertyController {
     }
 
     public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
-        logger.infov("Retrieving a building (projectId = {0}, propertyId = {1}, buildingId={2})",
-                projectId, propertyId, buildingId);
-        try {
-            BuildingEntity entity = buildingRepository.findById(buildingId);
-            if(entity != null && entity.getProjectId().equals(projectId)) {
-                return entity;
-            } else {
-                throw new NoResultException("Unable to find building, because the project ID is invalid");
-            }
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Building not exist", e);
+        logger.infov("Retrieving a building (projectId = {0}, propertyId = {1}, 
+                     buildingId={2})", projectId, propertyId, buildingId);
+        BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
+                .orElseThrow(() -> new NotFoundException("Building not exist"));
+
+        if (!entity.getProjectId().equals(projectId)) {
+            throw new NotFoundException("Unable to find building, because the project ID is invalid");
         }
+
+        return entity;
     }
 
     @Transactional
@@ -154,20 +147,18 @@ public class PropertyController {
         return getApartment(projectId, buildingId, entity.getId());
     }
 
-    public ApartmentModel getApartment(final String projectId,
-                                       final String buildingId, final String apartmentId) {
-        logger.infov("Retrieving a apartment (projectId = {0}, buildingId = {1}, apartmentId={2})",
-                projectId, buildingId, apartmentId);
-        try {
-            ApartmentEntity entity = apartmentRepository.findById(apartmentId);
-            if(entity != null && entity.getProjectId().equals(projectId)) {
-                return entity;
-            } else {
-                throw new NoResultException("Unable to find apartment, because the project ID is invalid");
-            }
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Apartment not exist", e);
+
+    public ApartmentModel getApartment(final String projectId, final String buildingId, final String apartmentId) {
+        logger.infov("Retrieving a apartment (projectId = {0}, buildingId = {1}, 
+                     apartmentId={2})", projectId, buildingId, apartmentId);
+        ApartmentEntity entity = apartmentRepository.findByIdOptional(apartmentId)
+                .orElseThrow(() -> new NotFoundException("Apartment not exist"));
+
+        if (!entity.getProjectId().equals(projectId)) {
+            throw new NoResultException("Unable to find apartment, because the project ID is invalid");
         }
+
+        return entity;
     }
 
 
@@ -185,20 +176,19 @@ public class PropertyController {
         return getCommercial(projectId, buildingId, entity.getId());
     }
 
-    public CommercialModel getCommercial(final String projectId,
+
+    public CommercialModel getCommercial(final String projectId, 
                                          final String buildingId, final String commercialId) {
-        logger.infov("Retrieving a commercial (projectId = {0}, buildingId = {1}, commercialId={2})",
-                projectId, buildingId, commercialId);
-        try {
-            CommercialEntity entity = commercialRepository.findById(commercialId);
-            if(entity != null && entity.getProjectId().equals(projectId)) {
-                return entity;
-            } else {
-                throw new NoResultException("Unable to find commercial, because the project ID is invalid");
-            }
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Commercial not exist", e);
+        logger.infov("Retrieving a commercial (projectId = {0}, buildingId = {1}, 
+                     commercialId={2})", projectId, buildingId, commercialId);
+        CommercialEntity entity = commercialRepository.findByIdOptional(commercialId)
+                .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+
+        if (!entity.getProjectId().equals(projectId)) {
+            throw new NoResultException("Unable to find commercial, because the project ID is invalid");
         }
+
+        return entity;
     }
 
 
@@ -216,18 +206,16 @@ public class PropertyController {
     }
 
     public GarageModel getGarage(final String projectId, final String buildingId, final String garageId) {
-        logger.infov("Retrieving a garage (projectId = {0}, buildingId = {1}, garageId={2})",
-                projectId, buildingId, garageId);
-        try {
-            GarageEntity entity = garageRepository.findById(garageId);
-            if(entity != null && entity.getProjectId().equals(projectId)) {
-                return entity;
-            } else {
-                throw new NoResultException("Unable to find garage, because the project ID is invalid");
-            }
-        } catch (final NoResultException e) {
-            throw new NotFoundException("Garage not exist", e);
-        }
-    }
 
+        logger.infov("Retrieving a garage (projectId = {0}, 
+                     buildingId = {1}, garageId={2})", projectId, buildingId, garageId);
+        GarageEntity entity = garageRepository.findByIdOptional(garageId)
+                .orElseThrow(() -> new NotFoundException("Garage not exist"));
+
+        if (!entity.getProjectId().equals(projectId)) {
+            throw new NoResultException("Unable to find garage, because the project ID is invalid");
+        }
+
+        return entity;
+    }
 }
