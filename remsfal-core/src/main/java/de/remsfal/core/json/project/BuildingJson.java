@@ -1,5 +1,6 @@
 package de.remsfal.core.json.project;
 
+import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.annotation.Nullable;
 
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +34,17 @@ public abstract class BuildingJson implements BuildingModel {
 
     @NotNull
     public abstract AddressModel getAddress();
+
+    public static BuildingJson valueOf(final BuildingModel model) {
+        if (model == null) {
+            return null;
+        }
+        return ImmutableBuildingJson.builder()
+                .id(model.getId())
+                .address(model.getAddress())
+                .title(model.getTitle())
+                .build();
+    }
 
     @Nullable
     public abstract String getDescription();

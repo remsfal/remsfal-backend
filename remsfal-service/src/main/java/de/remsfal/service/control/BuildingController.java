@@ -1,5 +1,41 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.BuildingJson;
+import de.remsfal.core.model.*;
+import de.remsfal.service.entity.dao.BuildingRepository;
+import de.remsfal.service.entity.dto.*;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+
+
+public class BuildingController {
+    @Inject
+    Logger logger;
+
+    @Inject
+    BuildingRepository buildingRepository;
+
+    public BuildingModel getBuilding(String buildingId) {
+        return buildingRepository.findById(buildingId);
+    }
+
+    @Transactional
+    public BuildingModel createBuilding(BuildingJson property) {
+        logger.infov("Creating a building (title={0}, address={1})", property.getTitle(), property.getAddress());
+        BuildingEntity buildingEntity = new BuildingEntity();
+        buildingEntity.generateId();
+        buildingEntity.setTitle(property.getTitle());
+        AddressEntity address = new AddressEntity();
+        address.setCountry(property.getAddress().getCountry());
+        address.setProvince(property.getAddress().getProvince());
+        address.setCity(property.getAddress().getCity());
+        address.setStreet(property.getAddress().getStreet());
+        address.setZip(property.getAddress().getZip());
+        buildingEntity.setAddress(address);
+        buildingRepository.persistAndFlush(buildingEntity);
+        return buildingEntity;
+    }
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.CommercialModel;
@@ -24,22 +60,22 @@ import org.jboss.logging.Logger;
  */
 @RequestScoped
 public class BuildingController {
-    
+
     @Inject
     Logger logger;
-    
+
     @Inject
     BuildingRepository buildingRepository;
-    
+
     @Inject
     ApartmentRepository apartmentRepository;
-    
+
     @Inject
     CommercialRepository commercialRepository;
-    
+
     @Inject
     GarageRepository garageRepository;
-    
+
     @Transactional
     public BuildingModel createBuilding(final String projectId, final String propertyId, final BuildingModel building) {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
@@ -109,7 +145,7 @@ public class BuildingController {
     }
 
 
-    public CommercialModel getCommercial(final String projectId, 
+    public CommercialModel getCommercial(final String projectId,
                                          final String buildingId, final String commercialId) {
         logger.infov("Retrieving a commercial (projectId={0}, buildingId={1}, commercialId={2})",
                 projectId, buildingId, commercialId);
