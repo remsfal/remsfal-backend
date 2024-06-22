@@ -115,7 +115,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .statusCode(Status.CREATED.getStatusCode())
             .and().body("id", Matchers.equalTo(taskId))
             .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
-            .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION))
+            .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")))
             .header("location", Matchers.startsWith("http://localhost:8081/api/v1/projects"))
             .header("location", Matchers.endsWith(taskId))
             .extract().header("location");
@@ -129,7 +129,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(taskId))
             .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
-            .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION));
+            .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
     }
 
 }

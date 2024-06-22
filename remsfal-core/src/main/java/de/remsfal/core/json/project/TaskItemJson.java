@@ -25,15 +25,19 @@ public abstract class TaskItemJson {
     public abstract String getName();
 
     @NotNull
+    public abstract String getTitle();
+
+    @NotNull
     public abstract Status getStatus();
 
     @NotNull
     public abstract String getOwner();
 
-    public static TaskItemJson valueOf(TaskModel model) {
+    public static TaskItemJson valueOf(final TaskModel model) {
         return ImmutableTaskItemJson.builder()
             .id(model.getId())
             .name(model.getTitle())
+            .title(model.getTitle())
             .status(model.getStatus())
             .owner(model.getOwnerId())
             .build();

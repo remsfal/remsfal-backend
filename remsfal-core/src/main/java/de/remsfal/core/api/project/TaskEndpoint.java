@@ -19,7 +19,6 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.project.TaskJson;
 import de.remsfal.core.json.project.TaskListJson;
 import de.remsfal.core.model.project.TaskModel.Status;
@@ -68,7 +67,7 @@ public interface TaskEndpoint {
     @Operation(summary = "Update information of a task.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The task does not exist")
-    ProjectJson updateTask(
+    TaskJson updateTask(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the task", required = true) @PathParam("taskId") @NotNull @UUID String taskId,
         @Parameter(description = "Task information", required = true) @Valid TaskJson task);

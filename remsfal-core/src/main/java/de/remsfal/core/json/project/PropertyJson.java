@@ -45,7 +45,7 @@ public abstract class PropertyJson implements PropertyModel {
     @Nullable
     public abstract Float getEffectiveSpace(); // living space + usable space + commercial space
 
-    public static PropertyJson valueOf(PropertyModel model) {
+    public static PropertyJson valueOf(final PropertyModel model) {
         return ImmutablePropertyJson.builder()
                 .id(model.getId())
                 .title(model.getTitle())

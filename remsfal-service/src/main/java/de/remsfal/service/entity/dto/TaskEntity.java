@@ -30,13 +30,13 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Enumerated(EnumType.STRING)
     private TaskType type;
 
-    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, length = 36)
+    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable=false, length = 36)
     private String projectId;
 
     @Column(name = "TITLE", nullable = false)
     private String title;
 
-    @Column(name = "STATUS", nullable = false)
+    @Column(name = "STATUS")
     @Enumerated(EnumType.STRING)
     private Status status;
 

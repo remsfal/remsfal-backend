@@ -65,26 +65,59 @@ public class TaskController {
         }
     }
 
+    @Transactional
     public TaskModel createTask(final String projectId, final UserModel user, final TaskModel task) {
-        logger.infov("Creating a task (projectId={0}, creator={1})",projectId, user.getEmail());
-        return null;
+        logger.infov("Creating a task (projectId={0}, creator={1})", projectId, user.getEmail());
+        final TaskEntity entity = new TaskEntity();
+        entity.generateId();
+        entity.setType(TaskType.TASK);
+        entity.setProjectId(projectId);
+        entity.setCreatedBy(user.getId());
+        entity.setTitle(task.getTitle());
+        if(task.getStatus() == null) {
+            entity.setStatus(Status.OPEN);
+        } else {
+            entity.setStatus(task.getStatus());            
+        }
+        entity.setOwnerId(task.getOwnerId());
+        entity.setDescription(task.getDescription());
+        repository.persistAndFlush(entity);
+        return entity;
     }
 
+    @Transactional
     public TaskModel createDefect(final String projectId, final UserModel user, final TaskModel task) {
         logger.infov("Creating a defect (projectId={0}, creator={1})",projectId, user.getEmail());
-        return null;
+        final TaskEntity entity = new TaskEntity();
+        entity.generateId();
+        entity.setType(TaskType.DEFECT);
+        entity.setProjectId(projectId);
+        entity.setCreatedBy(user.getId());
+        entity.setTitle(task.getTitle());
+        if(task.getStatus() == null) {
+            entity.setStatus(Status.PENDING);
+        } else {
+            entity.setStatus(task.getStatus());            
+        }
+        entity.setOwnerId(task.getOwnerId());
+        entity.setDescription(task.getDescription());
+        repository.persistAndFlush(entity);
+        return entity;
     }
 
     public TaskModel getTask(final String projectId, final String taskId) {
         logger.infov("Retrieving a task (projectId = {0}, taskId = {1})", projectId, taskId);
-        return null;
+        return repository.findTaskById(TaskType.TASK, projectId, taskId)
+            .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
     }
 
     public TaskModel getDefect(final String projectId, final String taskId) {
         logger.infov("Retrieving a defect (projectId = {0}, defectId = {1})", projectId, taskId);
-        return null;
+        return repository.findTaskById(TaskType.DEFECT, projectId, taskId)
+            .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
     }
 
+    @Transactional
     public TaskModel updateTask(final String projectId, final String taskId, final TaskModel task) {
         logger.infov("Updating a task (projectId={0}, taskId={1})", projectId, taskId);
         final TaskEntity entity = repository.findTaskById(TaskType.TASK, projectId, taskId)
@@ -92,6 +125,7 @@ public class TaskController {
         return entity;
     }
 
+    @Transactional
     public TaskModel updateDefect(final String projectId, final String taskId, final TaskModel task) {
         logger.infov("Updating a defect (projectId={0}, defectId={1})", projectId, taskId);
         final TaskEntity entity = repository.findTaskById(TaskType.DEFECT, projectId, taskId)

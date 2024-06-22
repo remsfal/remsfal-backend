@@ -34,19 +34,19 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Context
     UriInfo uri;
-    
+
     @Context
     ResourceContext resourceContext;
 
     @Inject
     RemsfalPrincipal principal;
-    
+
     @Inject
     Logger logger;
 
     @Inject
     ProjectController controller;
-    
+
     @Inject
     Instance<PropertyResource> propertyResource;
 
@@ -109,7 +109,7 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public void deleteProjectMember(final String projectId, final String memberId) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override

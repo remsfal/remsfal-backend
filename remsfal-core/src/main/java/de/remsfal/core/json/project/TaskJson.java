@@ -37,7 +37,7 @@ public abstract class TaskJson implements TaskModel {
 
     @NotNull
     @NotBlank
-    @Size(max=255)
+    @Size(max = 255)
     public abstract String getTitle();
 
     @Nullable
@@ -69,5 +69,21 @@ public abstract class TaskJson implements TaskModel {
     @Null
     @Nullable
     public abstract Date getModifiedAt();
+
+    public static TaskJson valueOf(final TaskModel model) {
+        return ImmutableTaskJson.builder()
+                .id(model.getId())
+                .projectId(model.getProjectId())
+                .title(model.getTitle())
+                .status(model.getStatus())
+                .ownerId(model.getOwnerId())
+                .description(model.getDescription())
+                .blockedBy(model.getBlockedBy())
+                .relatedTo(model.getRelatedTo())
+                .duplicateOf(model.getDuplicateOf())
+                .createdAt(model.getCreatedAt())
+                .modifiedAt(model.getModifiedAt())
+                .build();
+    }
 
 }
