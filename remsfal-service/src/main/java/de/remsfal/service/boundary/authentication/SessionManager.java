@@ -88,7 +88,11 @@ public class SessionManager {
 
             // Decrypt it
             jweObject.decrypt(new DirectDecrypter(secretKey));
-            
+
+            /*DirectDecrypter dd = new DirectDecrypter(secretKey);
+            System.out.println("test key : " + dd.getKey());
+            jweObject.decrypt(dd);*/
+
             // convert to session info object
             return new SessionInfo(jweObject.getPayload());
         } catch (ParseException e) {

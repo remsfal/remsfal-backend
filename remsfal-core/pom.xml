@@ -16,8 +16,14 @@
         <version.validation>3.1.0</version.validation>
         <version.jax-rs>4.0.0</version.jax-rs>
         <version.open-api>3.1.1</version.open-api>
+        <version.metrics>3.11.1</version.metrics>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-metrics</artifactId>
+            <version>${version.metrics}</version>
+        </dependency>
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>

@@ -9,6 +9,9 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -30,6 +33,8 @@ public interface UserEndpoint {
     @Operation(summary = "Retrieve information of this user identified by the cookie.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
+    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "performedChecks", description = "How many primality checks have been performed.")
     UserJson getUser();
 
     @PATCH
@@ -38,6 +43,8 @@ public interface UserEndpoint {
     @Operation(summary = "Update information of this user identified by the cookie.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
+    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "performedChecks", description = "How many primality checks have been performed.")
     UserJson updateUser(@Parameter(description = "User information", required = true) @Valid UserJson user);
 
     @DELETE
@@ -45,6 +52,9 @@ public interface UserEndpoint {
     @APIResponse(responseCode = "204", description = "The user was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
+    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "performedChecks", description = "How many primality checks have been performed.")
     void deleteUser();
+
 
 }

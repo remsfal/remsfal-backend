@@ -6,6 +6,9 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -34,6 +37,8 @@ public interface AuthenticationEndpoint {
     @Path("/login")
     @Operation(summary = "Login user via oauth flow.")
     @APIResponse(responseCode = "302", description = "Redirect user to the identity provider")
+    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "performedChecks", description = "How many primality checks have been performed.")
     Response login(@DefaultValue("/") @QueryParam("route") String route);
 
     @GET
@@ -48,6 +53,8 @@ public interface AuthenticationEndpoint {
     @Path("/logout")
     @Operation(summary = "Logout user identified by the session cookie.")
     @APIResponse(responseCode = "302", description = "Redirect user to the logout page")
+    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "performedChecks")
     Response logout();
 
 }

@@ -56,7 +56,6 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
                 AuthenticationEndpoint.isAuthenticationPath(requestContext.getUriInfo().getPath())) {
                 return;
             }
-
             final Cookie sessionCookie = sessionManager.findSessionCookie(requestContext.getCookies());
             if (sessionCookie == null) {
                 logger.error("Session cookie was not provided");
@@ -72,6 +71,7 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
             logger.info("method:" + requestContext.getMethod());
             logger.info("path:" + requestContext.getUriInfo().getPath());
             final UserModel user = controller.getUser(sessionInfo.getUserId());
+            //System.out.println("test user "+ sessionCookie.getValue());
             if (user == null) {
                 logger.errorv("User (id={0}) not found in database", sessionInfo.getUserId());
                 throw new UnauthorizedException();
