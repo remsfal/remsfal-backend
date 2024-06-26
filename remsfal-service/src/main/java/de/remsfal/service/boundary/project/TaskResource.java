@@ -44,9 +44,9 @@ public class TaskResource implements TaskEndpoint {
             throw new ForbiddenException("inadequate user rights");
         }
         if(ownerId == null || ownerId.isBlank()) {
-            return TaskListJson.valueOf(taskController.getTasks(projectId, Optional.of(status)));
+            return TaskListJson.valueOf(taskController.getTasks(projectId, Optional.ofNullable(status)));
         } else {
-            return TaskListJson.valueOf(taskController.getTasks(projectId, ownerId, Optional.of(status)));
+            return TaskListJson.valueOf(taskController.getTasks(projectId, ownerId, Optional.ofNullable(status)));
         }
     }
 

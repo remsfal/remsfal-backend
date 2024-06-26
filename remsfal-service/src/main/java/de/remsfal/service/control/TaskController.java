@@ -122,7 +122,7 @@ public class TaskController {
         logger.infov("Updating a task (projectId={0}, taskId={1})", projectId, taskId);
         final TaskEntity entity = repository.findTaskById(TaskType.TASK, projectId, taskId)
                 .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
-        return entity;
+        return updateTaskEntity(entity, task);
     }
 
     @Transactional
@@ -130,7 +130,32 @@ public class TaskController {
         logger.infov("Updating a defect (projectId={0}, defectId={1})", projectId, taskId);
         final TaskEntity entity = repository.findTaskById(TaskType.DEFECT, projectId, taskId)
                 .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
-        return entity;
+        return updateTaskEntity(entity, task);
+    }
+
+    private TaskModel updateTaskEntity(final TaskEntity entity, final TaskModel task) {
+        if(task.getTitle() != null) {
+            entity.setTitle(task.getTitle());
+        }
+        if(task.getStatus() != null) {
+            entity.setStatus(task.getStatus());
+        }
+        if(task.getOwnerId() != null) {
+            entity.setOwnerId(task.getOwnerId());
+        }
+        if(task.getDescription() != null) {
+            entity.setDescription(task.getDescription());
+        }
+        if(task.getBlockedBy() != null) {
+            entity.setBlockedBy(task.getBlockedBy());
+        }
+        if(task.getRelatedTo() != null) {
+            entity.setRelatedTo(task.getRelatedTo());
+        }
+        if(task.getDuplicateOf() != null) {
+            entity.setDuplicateOf(task.getDuplicateOf());
+        }
+        return repository.merge(entity);
     }
 
     @Transactional

@@ -44,9 +44,9 @@ public class DefectResource implements DefectEndpoint {
             throw new ForbiddenException("inadequate user rights");
         }
         if(ownerId == null || ownerId.isBlank()) {
-            return TaskListJson.valueOf(defectController.getDefects(projectId, Optional.of(status)));
+            return TaskListJson.valueOf(defectController.getDefects(projectId, Optional.ofNullable(status)));
         } else {
-            return TaskListJson.valueOf(defectController.getDefects(projectId, ownerId, Optional.of(status)));
+            return TaskListJson.valueOf(defectController.getDefects(projectId, ownerId, Optional.ofNullable(status)));
         }
     }
 

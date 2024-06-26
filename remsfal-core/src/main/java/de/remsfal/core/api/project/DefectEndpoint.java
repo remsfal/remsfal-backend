@@ -2,6 +2,7 @@ package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -22,6 +23,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import de.remsfal.core.json.project.TaskJson;
 import de.remsfal.core.json.project.TaskListJson;
 import de.remsfal.core.model.project.TaskModel.Status;
+import de.remsfal.core.validation.PatchValidation;
+import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 
 /**
@@ -48,7 +51,7 @@ public interface DefectEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createDefects(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "Defect information", required = true) @Valid TaskJson defect);
+        @Parameter(description = "Defect information", required = true) @Valid @ConvertGroup(to = PostValidation.class) TaskJson defect);
 
     @GET
     @Path("/{defectId}")
@@ -70,7 +73,7 @@ public interface DefectEndpoint {
     TaskJson updateDefect(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the defect", required = true) @PathParam("defectId") @NotNull @UUID String defectId,
-        @Parameter(description = "Defect information", required = true) @Valid TaskJson defect);
+        @Parameter(description = "Defect information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) TaskJson defect);
 
     @DELETE
     @Path("/{defectId}")

@@ -2,7 +2,6 @@ package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
@@ -16,6 +15,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.core.validation.NullOrNotBlank;
+import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 
 /**
@@ -31,13 +32,14 @@ public abstract class TaskJson implements TaskModel {
     @Nullable
     public abstract String getId();
 
-    @UUID
+    @Null
     @Nullable
     public abstract String getProjectId();
 
-    @NotNull
-    @NotBlank
+    @NullOrNotBlank
+    @NotBlank(groups = PostValidation.class)
     @Size(max = 255)
+    @Nullable
     public abstract String getTitle();
 
     @Nullable
