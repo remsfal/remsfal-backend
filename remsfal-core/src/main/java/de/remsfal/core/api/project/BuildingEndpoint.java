@@ -1,6 +1,7 @@
 package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -17,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.api.ProjectEndpoint;
 import de.remsfal.core.json.project.BuildingJson;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -34,7 +36,7 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "201", description = "Building created successfully",
         headers = @Header(name = "Location", description = "URL of the new building"))
     Response createBuilding(
-        @Parameter(description = "Building information", required = true) @Valid BuildingJson property);
+        @Parameter(description = "Building information", required = true) @Valid @ConvertGroup(to = PostValidation.class) BuildingJson property);
 
     @GET
     @Path("/{buildingId}")

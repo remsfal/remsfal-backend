@@ -69,6 +69,19 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
+    void createTask_FAILED_userIsNotMember(String path) {
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
+            .post(path, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
     void createTask_FAILED_idIsProvided(String path) {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
             + "\"id\":\"anyId\"}";
@@ -224,6 +237,29 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
     }
+    
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
+    void updateTask_FAILED_userIsNotMember(String path) {
+        final String taskId = given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
+            .post(path, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"description\":\"" + TestData.TASK_DESCRIPTION + "\"}")
+            .patch(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
@@ -251,6 +287,28 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
+    void deleteTask_FAILED_userIsNotMember(String path) {
+        final String taskId = given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
+            .post(path, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .delete(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
@@ -327,6 +385,103 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_2))
             .and().body("tasks.status", Matchers.hasItems("OPEN"))
             .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_2));
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @CsvSource({ TASK_PATH + ",TASK", DEFECT_PATH + ",DEFECT" })
+    void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(2, type)
+            .setParameter(3, TestData.PROJECT_ID)
+            .setParameter(4, TestData.TASK_TITLE_1)
+            .setParameter(5, "OPEN")
+            .setParameter(6, TestData.USER_ID_1)
+            .setParameter(7, TestData.USER_ID_1)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(2, type)
+            .setParameter(3, TestData.PROJECT_ID)
+            .setParameter(4, TestData.TASK_TITLE_2)
+            .setParameter(5, "OPEN")
+            .setParameter(6, TestData.USER_ID_2)
+            .setParameter(7, TestData.USER_ID_1)
+            .executeUpdate());
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .queryParam("status", "OPEN")
+            .queryParam("owner", TestData.USER_ID_1)
+            .get(path, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("tasks.size()", Matchers.is(1))
+            .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
+            .and().body("tasks.status", Matchers.hasItems("OPEN"))
+            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1));
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @CsvSource({ TASK_PATH + ",TASK", DEFECT_PATH + ",DEFECT" })
+    void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(2, type)
+            .setParameter(3, TestData.PROJECT_ID)
+            .setParameter(4, TestData.TASK_TITLE_1)
+            .setParameter(5, "CLOSED")
+            .setParameter(6, TestData.USER_ID_1)
+            .setParameter(7, TestData.USER_ID_1)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(2, type)
+            .setParameter(3, TestData.PROJECT_ID)
+            .setParameter(4, TestData.TASK_TITLE_2)
+            .setParameter(5, "OPEN")
+            .setParameter(6, TestData.USER_ID_2)
+            .setParameter(7, TestData.USER_ID_1)
+            .executeUpdate());
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(path, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("tasks.size()", Matchers.is(2))
+            .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1, TestData.TASK_TITLE_2))
+            .and().body("tasks.status", Matchers.hasItems("CLOSED", "OPEN"))
+            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1, TestData.USER_ID_2));
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
+    void getTasks_FAILED_userIsNotMember(String path) {
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
+            .post(path, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(path, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
 }

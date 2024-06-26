@@ -1,6 +1,7 @@
 package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -17,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.api.ProjectEndpoint;
 import de.remsfal.core.json.project.GarageJson;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -35,7 +37,7 @@ public interface GarageEndpoint {
     @APIResponse(responseCode = "201", description = "Garage created successfully",
         headers = @Header(name = "Location", description = "URL of the new garage"))
     Response createGarage(
-        @Parameter(description = "Garage information", required = true) @Valid GarageJson garage);
+        @Parameter(description = "Garage information", required = true) @Valid @ConvertGroup(to = PostValidation.class) GarageJson garage);
 
     @GET
     @Path("/{garageId}")
