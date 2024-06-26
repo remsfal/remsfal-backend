@@ -105,31 +105,32 @@ public class TaskController {
         return entity;
     }
 
+    protected TaskEntity getTask(final TaskType type, final String projectId, final String taskId) {
+        return repository.findTaskById(type, projectId, taskId)
+            .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
+    }
+
     public TaskModel getTask(final String projectId, final String taskId) {
         logger.infov("Retrieving a task (projectId = {0}, taskId = {1})", projectId, taskId);
-        return repository.findTaskById(TaskType.TASK, projectId, taskId)
-            .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
+        return this.getTask(TaskType.TASK, projectId, taskId);
     }
 
     public TaskModel getDefect(final String projectId, final String taskId) {
         logger.infov("Retrieving a defect (projectId = {0}, defectId = {1})", projectId, taskId);
-        return repository.findTaskById(TaskType.DEFECT, projectId, taskId)
-            .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
+        return this.getTask(TaskType.DEFECT, projectId, taskId);
     }
 
     @Transactional
     public TaskModel updateTask(final String projectId, final String taskId, final TaskModel task) {
         logger.infov("Updating a task (projectId={0}, taskId={1})", projectId, taskId);
-        final TaskEntity entity = repository.findTaskById(TaskType.TASK, projectId, taskId)
-                .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
+        final TaskEntity entity = this.getTask(TaskType.TASK, projectId, taskId);
         return updateTaskEntity(entity, task);
     }
 
     @Transactional
     public TaskModel updateDefect(final String projectId, final String taskId, final TaskModel task) {
         logger.infov("Updating a defect (projectId={0}, defectId={1})", projectId, taskId);
-        final TaskEntity entity = repository.findTaskById(TaskType.DEFECT, projectId, taskId)
-                .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
+        final TaskEntity entity = this.getTask(TaskType.DEFECT, projectId, taskId);
         return updateTaskEntity(entity, task);
     }
 
