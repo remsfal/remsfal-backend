@@ -9,12 +9,12 @@ import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.core.model.ApartmentModel;
-import de.remsfal.core.model.BuildingModel;
-import de.remsfal.core.model.CommercialModel;
-import de.remsfal.core.model.GarageModel;
-import de.remsfal.core.model.PropertyModel;
-import de.remsfal.core.model.SiteModel;
+import de.remsfal.core.model.project.ApartmentModel;
+import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;

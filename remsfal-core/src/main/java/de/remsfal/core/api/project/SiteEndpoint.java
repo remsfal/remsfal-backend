@@ -1,6 +1,7 @@
 package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -16,7 +17,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.api.ProjectEndpoint;
-import de.remsfal.core.json.SiteJson;
+import de.remsfal.core.json.project.SiteJson;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -34,7 +36,7 @@ public interface SiteEndpoint {
     @APIResponse(responseCode = "201", description = "Site created successfully",
         headers = @Header(name = "Location", description = "URL of the new site"))
     Response createSite(
-        @Parameter(description = "Site information", required = true) @Valid SiteJson site);
+        @Parameter(description = "Site information", required = true) @Valid @ConvertGroup(to = PostValidation.class) SiteJson site);
 
     @GET
     @Path("/{siteId}")

@@ -1,6 +1,7 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
@@ -11,16 +12,16 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.TaskModel;
+import de.remsfal.core.model.project.GarageModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "A task")
-@JsonDeserialize(as = ImmutableTaskJson.class)
+@Schema(description = "A garage inside a building")
+@JsonDeserialize(as = ImmutableGarageJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public abstract class TaskJson implements TaskModel {
+public abstract class GarageJson implements GarageModel {
 
     @Null
     @Nullable

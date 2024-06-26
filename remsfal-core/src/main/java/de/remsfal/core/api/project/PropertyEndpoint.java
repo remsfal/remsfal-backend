@@ -2,6 +2,7 @@ package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -16,7 +17,8 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.PropertyJson;
+import de.remsfal.core.json.project.PropertyJson;
+import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 
 /**
@@ -33,7 +35,7 @@ public interface PropertyEndpoint {
         headers = @Header(name = "Location", description = "URL of the new property"))
     Response createProperty(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "Property information", required = true) @Valid PropertyJson property);
+        @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PostValidation.class) PropertyJson property);
 
     @GET
     @Path("/{propertyId}")
