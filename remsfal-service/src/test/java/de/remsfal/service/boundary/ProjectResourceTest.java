@@ -378,7 +378,118 @@ class ProjectResourceTest extends AbstractResourceTest {
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
 
-        // TODO
+        long entries1 = entityManager
+                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
+                .setParameter("projectTitle", TestData.PROJECT_TITLE_1)
+                .getSingleResult();
+        assertEquals(1, entries1);
+
+        long entries2 = entityManager
+                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
+                .setParameter("projectTitle", TestData.PROJECT_TITLE_2)
+                .getSingleResult();
+        assertEquals(1, entries2);
+
+        long entries3 = entityManager
+                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
+                .setParameter("projectTitle", TestData.PROJECT_TITLE_4)
+                .getSingleResult();
+        assertEquals(1, entries3);
+
+        long entries4 = entityManager
+                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
+                .setParameter("projectTitle", TestData.PROJECT_TITLE_5)
+                .getSingleResult();
+        assertEquals(1, entries4);
+
+        long entries5 = entityManager
+                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
+                .setParameter("projectTitle", TestData.PROJECT_TITLE_5)
+                .getSingleResult();
+        assertEquals(1, entries5);
     }
 
+    @Test
+    void getProjectMembersTest(){
+        final String user1projectId1 = given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        final String user1projectId2 = given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .get(BASE_PATH)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("size", Matchers.is(2))
+                .and().body("total", Matchers.is(2))
+                .and().body("projects.members", Matchers.hasItems(user1projectId1, user1projectId2))
+                .and().body("projects.name", Matchers.hasItems(TestData.PROJECT_TITLE_1));
+    }
+
+    @Test
+    void updateProjectMemberTest() {
+        final String user1projectId1 = given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"projectId\":\" " + user1projectId1 + "\",  \"id\":\"" + TestData.USER_ID_1 + "\", \"role\":\"LESSOR\", \"email\":\"max.mustermann@example.org\", \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+                .patch(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_1)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(user1projectId1))
+                .and().body("title", Matchers.equalTo(TestData.PROJECT_TITLE_1))
+                .and().body("members[0].role", Matchers.equalTo("LESSOR"));
+    }
+
+    @Test
+    void removeProjectMemberTest(){
+        final String user1projectId1 = given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"projectId\":\" " + user1projectId1 + "\",  \"id\":\"" + TestData.USER_ID_1 + "\", \"role\":\"MANAGER\", \"email\":\"max.mustermann@example.org\", \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+                .patch(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_1)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON);
+    }
 }
