@@ -41,7 +41,7 @@ public abstract class ProjectJson implements ProjectModel {
     @Nullable
     public abstract Set<ProjectMemberJson> getMembers();
 
-    public static ProjectJson valueOf(ProjectModel model) {
+    public static ProjectJson valueOf(final ProjectModel model) {
         final ImmutableProjectJson.Builder builder = ImmutableProjectJson.builder()
             .id(model.getId())
             .title(model.getTitle());

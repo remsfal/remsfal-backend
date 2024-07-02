@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 
 import java.util.Objects;
 
-import de.remsfal.core.model.GarageModel;
+import de.remsfal.core.model.project.GarageModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
