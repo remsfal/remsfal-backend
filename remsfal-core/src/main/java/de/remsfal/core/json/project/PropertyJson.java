@@ -42,6 +42,7 @@ public abstract class PropertyJson implements PropertyModel {
     @Nullable
     public abstract Integer getPlotArea();
 
+    @Null
     @Nullable
     public abstract Float getEffectiveSpace(); // living space + usable space + commercial space
 
@@ -52,6 +53,7 @@ public abstract class PropertyJson implements PropertyModel {
                 .landRegisterEntry(model.getLandRegisterEntry())
                 .description(model.getDescription())
                 .plotArea(model.getPlotArea())
+                .effectiveSpace(0F)
                 .build();
     }
 
