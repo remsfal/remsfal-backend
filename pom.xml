@@ -27,6 +27,14 @@
         <url>https://github.com/remsfal/remsfal-backend/issues</url>
     </issueManagement>
 
+    <distributionManagement>
+      <repository>
+        <id>github</id>
+        <name>GitHub Calipee Apache Maven Packages</name>
+        <url>https://maven.pkg.github.com/calipee/remsfal-backend</url>
+      </repository>
+    </distributionManagement>
+
     <properties>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
@@ -46,6 +54,19 @@
                 de.remsfal.service.entity.dto\**
         </sonar.cpd.exclusions>
     </properties>
+
+    <profiles>
+      <profile>
+        <id>githubDeploy</id>
+        <distributionManagement>
+          <repository>
+            <id>github</id>
+            <name>GitHub calipee Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/calipee/remsfal-backend</url>
+          </repository>
+        </distributionManagement>
+        </profile>
+    </profiles>
 
     <build>
         <pluginManagement>
