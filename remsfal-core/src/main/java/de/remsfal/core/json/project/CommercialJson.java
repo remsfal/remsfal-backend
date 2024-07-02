@@ -1,4 +1,4 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 
@@ -12,16 +12,16 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.ApartmentModel;
+import de.remsfal.core.model.project.CommercialModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "An apartment inside a building")
-@JsonDeserialize(as = ImmutableApartmentJson.class)
+@Schema(description = "An commercial inside a building")
+@JsonDeserialize(as = ImmutableCommercialJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public abstract class ApartmentJson implements ApartmentModel {
+public abstract class CommercialJson implements CommercialModel {
 
     @Null
     @Nullable
@@ -40,7 +40,7 @@ public abstract class ApartmentJson implements ApartmentModel {
 
     @Null
     @Nullable
-    public abstract Float getLivingSpace();
+    public abstract Float getCommercialSpace();
 
     @Null
     @Nullable

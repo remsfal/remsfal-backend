@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -23,11 +24,15 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.api.project.DefectEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.api.project.TaskEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.json.ProjectMemberJson;
 import de.remsfal.core.json.ProjectMemberListJson;
+import de.remsfal.core.validation.PatchValidation;
+import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 
 /**
@@ -42,8 +47,8 @@ public interface ProjectEndpoint {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @Operation(summary = "Retrieve information for all projects.")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     ProjectListJson getProjects(
         @Parameter(description = "Offset of the first project to return")
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
@@ -58,7 +63,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createProject(
-        @Parameter(description = "Project information", required = true) @Valid ProjectJson project);
+        @Parameter(description = "Project information", required = true) @Valid @ConvertGroup(to = PostValidation.class) ProjectJson project);
 
     @GET
     @Path("/{projectId}")
@@ -78,7 +83,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson updateProject(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "Project information", required = true) @Valid ProjectJson project);
+        @Parameter(description = "Project information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) ProjectJson project);
 
     @DELETE
     @Path("/{projectId}")
@@ -132,5 +137,11 @@ public interface ProjectEndpoint {
 
     @Path("/{projectId}/" + PropertyEndpoint.SERVICE)
     PropertyEndpoint getPropertyResource();
+
+    @Path("/{projectId}/" + TaskEndpoint.SERVICE)
+    TaskEndpoint getTaskResource();
+
+    @Path("/{projectId}/" + DefectEndpoint.SERVICE)
+    DefectEndpoint getDefectResource();
 
 }

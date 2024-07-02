@@ -1,19 +1,17 @@
-package de.remsfal.core.model;
+package de.remsfal.core.model.project;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface BuildingModel {
+public interface CommercialModel {
 
     String getId();
 
     String getTitle();
 
-    AddressModel getAddress();
+    String getLocation();
 
     String getDescription();
-
-    Float getLivingSpace();
 
     Float getCommercialSpace();
 

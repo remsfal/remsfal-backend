@@ -1,5 +1,6 @@
-package de.remsfal.core.model;
+package de.remsfal.core.model.project;
 
+import de.remsfal.core.model.AddressModel;
 import jakarta.annotation.Nullable;
 
 /**

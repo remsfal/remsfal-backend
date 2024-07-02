@@ -1,18 +1,20 @@
-package de.remsfal.core.model;
+package de.remsfal.core.model.project;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface PropertyModel {
+public interface GarageModel {
 
     String getId();
 
     String getTitle();
 
-    String getLandRegisterEntry();
+    String getLocation();
 
     String getDescription();
 
-    Integer getPlotArea();
+    Float getUsableSpace();
+
+    Float getRent();
 
 }

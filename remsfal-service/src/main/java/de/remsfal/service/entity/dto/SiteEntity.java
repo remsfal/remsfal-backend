@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 
 import java.util.Objects;
 
-import de.remsfal.core.model.SiteModel;
+import de.remsfal.core.model.project.SiteModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

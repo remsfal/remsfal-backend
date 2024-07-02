@@ -14,12 +14,12 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.model.ApartmentModel;
-import de.remsfal.core.model.BuildingModel;
-import de.remsfal.core.model.CommercialModel;
-import de.remsfal.core.model.GarageModel;
-import de.remsfal.core.model.PropertyModel;
-import de.remsfal.core.model.SiteModel;
+import de.remsfal.core.model.project.ApartmentModel;
+import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
 import de.remsfal.service.entity.dto.BuildingEntity;
