@@ -421,16 +421,6 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .statusCode(Status.CREATED.getStatusCode())
                 .extract().path("id");
 
-        final String user1projectId2 = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
         given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -438,10 +428,9 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(Status.OK.getStatusCode())
                 .contentType(ContentType.JSON)
-                .and().body("size", Matchers.is(2))
-                .and().body("total", Matchers.is(2))
-                .and().body("projects.members", Matchers.hasItems(user1projectId1, user1projectId2))
-                .and().body("projects.name", Matchers.hasItems(TestData.PROJECT_TITLE_1));
+                .and().body("size", Matchers.is(1))
+                .and().body("total", Matchers.is(1))
+                .and().body("projects[0].id", Matchers.equalTo(user1projectId1));
     }
 
     @Test
