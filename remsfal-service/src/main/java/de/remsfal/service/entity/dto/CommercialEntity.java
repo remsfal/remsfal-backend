@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 
 import java.util.Objects;
 
-import de.remsfal.core.model.CommercialModel;
+import de.remsfal.core.model.project.CommercialModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

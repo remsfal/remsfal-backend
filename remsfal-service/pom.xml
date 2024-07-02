@@ -15,7 +15,8 @@
 
 
     <properties>
-        <quarkus.version>3.11.2</quarkus.version>
+        <quarkus.version>3.11.3</quarkus.version>
+        <google.version>2.6.0</google.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
     </properties>
@@ -78,12 +79,11 @@
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
-            <version>2.6.0</version>
+            <version>${google.version}</version>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.40</version>
             <exclusions>
 		        <exclusion>
         			<groupId>com.google.code.gson</groupId>

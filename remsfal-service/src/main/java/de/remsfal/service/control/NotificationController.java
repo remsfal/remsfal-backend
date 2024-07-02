@@ -6,7 +6,6 @@ import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.UserModel;
-import de.remsfal.service.entity.dto.UserEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

@@ -77,21 +77,21 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
     @Test
     void createProperty_FAILED_noTitle() {
         given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body("{ \"title\":\" \"}")
-                .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
-                .then()
-                .statusCode(Status.BAD_REQUEST.getStatusCode());
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body("{ \"title\":\" \"}")
+            .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test
     void getProperty_SUCCESS_samePropertyIsReturned() {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\","
-        	+ "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY + "\","
-        	+ "\"description\":\"" + TestData.PROPERTY_DESCRIPTION + "\","
-        	+ "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA + "\"}";
+            + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY + "\","
+            + "\"description\":\"" + TestData.PROPERTY_DESCRIPTION + "\","
+            + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA + "\"}";
 
         final Response res = given()
             .when()
