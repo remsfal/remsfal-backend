@@ -101,10 +101,11 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public ProjectJson updateProjectMember(final String projectId, final String memberId, final ProjectMemberJson project) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public ProjectJson updateProjectMember(final String projectId, final String memberId,
+                                           final ProjectMemberJson project) {
+        if(projectId == null || projectId.isBlank()) {
+            throw new BadRequestException("Invalid project ID");
+        }
 
     @Override
     public void deleteProjectMember(final String projectId, final String memberId) {

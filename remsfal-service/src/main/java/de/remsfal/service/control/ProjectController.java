@@ -44,7 +44,8 @@ public class ProjectController {
     NotificationController notificationController;
 
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
-        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(), offset, limit);
+        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(),
+                offset, limit);
         List<ProjectModel> projects = new ArrayList<>();
         for (ProjectMembershipEntity projectMembership : memberships) {
             projects.add(projectMembership.getProject());
@@ -172,8 +173,10 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectModel changeProjectMemberRole(final UserModel user, final String projectId, final ProjectMemberModel member) {
-        logger.infov("Updating a project membership (user={0}, project={1}, member={2})", user.getId(), projectId, member.getEmail());
+    public ProjectModel changeProjectMemberRole(final UserModel user, 
+                                                final String projectId, final ProjectMemberModel member) {
+        logger.infov("Updating a project membership (user={0}, project={1}, member={2})", 
+                     user.getId(), projectId, member.getEmail());
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
         entity.changeMemberRole(member);
