@@ -3,9 +3,15 @@ name: "CD Build"
 on:
   push:
     branches: ["main"]
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  id-token: write
+  attestations: write
+
 jobs:
   jdk17-build-and-push-to-registry:
     name: "JDK 17 Build and push image to registry"
@@ -24,9 +30,9 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven
-      - name: Build with Maven (package)
+      - name: Build with Maven (uber-jar)
         run: mvn --batch-mode --update-snapshots package
-      - name: Verify JAR file
+      - name: Verify JAR artifact exists
         run: ls -l remsfal-service/target/remsfal-service-runner.jar
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -51,6 +57,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
       - name: Generate artifact attestation
+        id: attest
         uses: actions/attest-build-provenance@v1
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
