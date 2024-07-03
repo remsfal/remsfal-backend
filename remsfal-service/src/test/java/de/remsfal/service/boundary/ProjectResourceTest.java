@@ -338,6 +338,16 @@ class ProjectResourceTest extends AbstractResourceTest {
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
 
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/" + user1projectId1 + "/members")
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
+
         final String user1projectId2 = given()
             .when()
             .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -347,6 +357,15 @@ class ProjectResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/" + user1projectId2 + "/members")
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
 
         final String user1projectId3 = given()
             .when()
@@ -358,6 +377,15 @@ class ProjectResourceTest extends AbstractResourceTest {
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
 
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/" + user1projectId3 + "/members")
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
+
         final String user1projectId4 = given()
             .when()
             .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -368,6 +396,15 @@ class ProjectResourceTest extends AbstractResourceTest {
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
 
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/" + user1projectId4 + "/members")
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
+
         final String user1projectId5 = given()
             .when()
             .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -377,6 +414,15 @@ class ProjectResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/" + user1projectId5 + "/members")
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
 
         long entries1 = entityManager
                 .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
@@ -424,13 +470,11 @@ class ProjectResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-                .get(BASE_PATH)
+                .get(BASE_PATH + "/" + user1projectId1 + "/members")
                 .then()
                 .statusCode(Status.OK.getStatusCode())
                 .contentType(ContentType.JSON)
-                .and().body("size", Matchers.is(1))
-                .and().body("total", Matchers.is(1))
-                .and().body("projects[0].id", Matchers.equalTo(user1projectId1));
+                .body("members.id", Matchers.hasItem(TestData.USER_ID_1));
     }
 
     @Test
@@ -460,7 +504,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void removeProjectMemberTest(){
+    void deleteProjectMemberTest(){
         final String user1projectId1 = given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -479,6 +523,7 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .patch(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_1)
                 .then()
                 .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON);
+                .contentType(ContentType.JSON)
+                .and().body("members[0].id", Matchers.equalTo(TestData.USER_ID));
     }
 }
