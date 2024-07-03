@@ -1,6 +1,5 @@
 package de.remsfal.service.control;
 
-import java.util.*;
 
 import jakarta.annotation.Nonnull;
 import jakarta.enterprise.context.RequestScoped;
@@ -21,6 +20,11 @@ import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

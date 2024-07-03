@@ -2,12 +2,12 @@ package de.remsfal.core.json;
 
 import de.remsfal.core.model.ProjectMemberModel;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 class ProjectMemberListJsonTest {
 
