@@ -9,8 +9,10 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 permissions:
-  id-token: write
+  contents: read
   attestations: write
+  id-token: write
+  packages: write
 
 jobs:
   jdk17-build-and-push-to-registry:
