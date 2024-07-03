@@ -329,5 +329,37 @@ class ProjectControllerTest extends AbstractTest {
             .getSingleResult();
         assertEquals(1, enties);
     }
+
+    @Test
+    void changeProjectMemberRole(){
+        final UserModel user = userController
+                .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+
+        final ProjectModel project = projectController.createProject(user,
+                ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        assertNotNull(project);
+
+        final ProjectMemberModel memberRequest = ImmutableProjectMemberJson.builder()
+                .email(TestData.USER_EMAIL_2)
+                .role(UserRole.LESSOR)
+                .build();
+
+        final ProjectMemberModel memberExpected = ImmutableProjectMemberJson.builder()
+                .email(TestData.USER_EMAIL_2)
+                .role(UserRole.MANAGER)
+                .build();
+
+        projectController.addProjectMember(user, project.getId(), memberRequest);
+
+        final ProjectModel projectResponse = projectController.changeProjectMemberRole(user, project.getId(), memberExpected);
+        Set<? extends ProjectMemberModel> projectMemberModel = projectResponse.getMembers();
+
+        Iterator<? extends ProjectMemberModel> iter = projectMemberModel.iterator();
+        ProjectMemberModel model = iter.next();
+        if(model.getEmail().equals(TestData.USER_EMAIL_2) && iter.hasNext()) {
+            model = iter.next();
+        }
+        assertEquals(UserRole.MANAGER, model.getRole());
+    }
     
 }
