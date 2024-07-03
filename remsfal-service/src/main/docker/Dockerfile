@@ -2,7 +2,7 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
-COPY target/remsfal-service-runner.jar ./remsfal-service-runner.jar
+COPY remsfal-service/target/remsfal-service-runner.jar ./remsfal-service-runner.jar
 
 EXPOSE 8080
 
