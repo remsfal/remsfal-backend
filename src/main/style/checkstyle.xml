@@ -20,6 +20,11 @@
         <module name="Indentation">
             <property name="forceStrictCondition" value="true"/>
         </module>
+        <module name="AnnotationLocation">
+            <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
+            <property name="allowSamelineParameterizedAnnotation" value="false"/>
+            <property name="allowSamelineMultipleAnnotations" value="false"/>
+        </module>
     </module>
 
 </module>
