@@ -17,6 +17,9 @@
 
     <module name="TreeWalker">
         <module name="AvoidStarImport" />
+        <module name="Indentation">
+            <property name="forceStrictCondition" value="true"/>
+        </module>
     </module>
 
 </module>

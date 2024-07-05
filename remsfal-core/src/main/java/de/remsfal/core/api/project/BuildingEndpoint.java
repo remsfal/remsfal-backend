@@ -24,8 +24,8 @@ import de.remsfal.core.validation.PostValidation;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/" 
- + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
- + "/{propertyId}/" + BuildingEndpoint.SERVICE)
+    + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
+    + "/{propertyId}/" + BuildingEndpoint.SERVICE)
 public interface BuildingEndpoint {
 
     static final String SERVICE = "buildings";
