@@ -110,6 +110,7 @@
                     <version>${checkstyle-plugin.version}</version>
                     <configuration>
                         <configLocation>${project.style.configDirectory}/checkstyle.xml</configLocation>
+                        <excludes>**/generated-sources/**/*</excludes>
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <linkXRef>false</linkXRef>
