@@ -67,10 +67,9 @@ public class GoogleAuthenticator {
 
     public GoogleIdToken getIdToken(final String code, final URI redirectUri) {
         try {
-            final GoogleTokenResponse response =
-                new GoogleAuthorizationCodeTokenRequest(transport, jsonFactory,
-                    authClientId, authClientSecret, code, redirectUri.toASCIIString())
-                        .execute();
+            final GoogleTokenResponse response = new GoogleAuthorizationCodeTokenRequest(transport, jsonFactory,
+                authClientId, authClientSecret, code, redirectUri.toASCIIString())
+                .execute();
             return verifyIdToken(response.getIdToken());
         } catch (IOException e) {
             throw new ForbiddenException("Unable to extract ID token", e);

@@ -70,7 +70,7 @@ public class PropertyController {
     public PropertyModel getProperty(final String projectId, final String propertyId) {
         logger.infov("Retrieving a property (projectId = {0}, propertyId = {1})", projectId, propertyId);
         PropertyEntity entity = propertyRepository.findByIdOptional(propertyId)
-                .orElseThrow(() -> new NotFoundException("Property not exist"));
+            .orElseThrow(() -> new NotFoundException("Property not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NotFoundException("Unable to find property, because the project ID is invalid");
@@ -95,7 +95,7 @@ public class PropertyController {
     public SiteModel getSite(final String projectId, final String propertyId, final String siteId) {
         logger.infov("Retrieving a site (projectId = {0}, propertyId = {1}, siteId={2})", projectId, propertyId, siteId);
         SiteEntity entity = siteRepository.findByIdOptional(siteId)
-                .orElseThrow(() -> new NotFoundException("Site not exist"));
+            .orElseThrow(() -> new NotFoundException("Site not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NotFoundException("Unable to find site, because the project ID is invalid");
@@ -120,7 +120,7 @@ public class PropertyController {
     public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
         logger.infov("Retrieving a building (projectId = {0}, propertyId = {1}, buildingId={2})", projectId, propertyId, buildingId);
         BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
-                .orElseThrow(() -> new NotFoundException("Building not exist"));
+            .orElseThrow(() -> new NotFoundException("Building not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NotFoundException("Unable to find building, because the project ID is invalid");
@@ -144,7 +144,7 @@ public class PropertyController {
     public ApartmentModel getApartment(final String projectId, final String buildingId, final String apartmentId) {
         logger.infov("Retrieving a apartment (projectId = {0}, buildingId = {1}, apartmentId={2})", projectId, buildingId, apartmentId);
         ApartmentEntity entity = apartmentRepository.findByIdOptional(apartmentId)
-                .orElseThrow(() -> new NotFoundException("Apartment not exist"));
+            .orElseThrow(() -> new NotFoundException("Apartment not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NoResultException("Unable to find apartment, because the project ID is invalid");
@@ -169,7 +169,7 @@ public class PropertyController {
     public CommercialModel getCommercial(final String projectId, final String buildingId, final String commercialId) {
         logger.infov("Retrieving a commercial (projectId = {0}, buildingId = {1}, commercialId={2})", projectId, buildingId, commercialId);
         CommercialEntity entity = commercialRepository.findByIdOptional(commercialId)
-                .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+            .orElseThrow(() -> new NotFoundException("Commercial not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NoResultException("Unable to find commercial, because the project ID is invalid");
@@ -194,7 +194,7 @@ public class PropertyController {
     public GarageModel getGarage(final String projectId, final String buildingId, final String garageId) {
         logger.infov("Retrieving a garage (projectId = {0}, buildingId = {1}, garageId={2})", projectId, buildingId, garageId);
         GarageEntity entity = garageRepository.findByIdOptional(garageId)
-                .orElseThrow(() -> new NotFoundException("Garage not exist"));
+            .orElseThrow(() -> new NotFoundException("Garage not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NoResultException("Unable to find garage, because the project ID is invalid");
