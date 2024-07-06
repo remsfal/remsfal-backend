@@ -94,9 +94,9 @@ public class PropertyController {
     @Transactional
     public PropertyModel updateProperty(final String projectId, final String propertyId, final PropertyModel property) {
         logger.infov("Updating a property (title={0}, description={1}, landRegisterEntry={2}, plotArea={3})",
-                property.getTitle(), property.getDescription(), property.getLandRegisterEntry(), property.getPlotArea());
+            property.getTitle(), property.getDescription(), property.getLandRegisterEntry(), property.getPlotArea());
         final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
-                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
         entity.setTitle(property.getTitle());
         entity.setDescription(property.getDescription());
         entity.setLandRegisterEntry(property.getLandRegisterEntry());

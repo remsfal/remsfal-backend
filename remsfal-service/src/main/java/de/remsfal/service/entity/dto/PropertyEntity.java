@@ -15,7 +15,7 @@ import de.remsfal.core.model.project.PropertyModel;
  */
 @Entity
 @NamedQuery(name = "PropertyEntity.findByProjectId",
-        query = "SELECT p FROM PropertyEntity p WHERE p.projectId = :projectId")
+    query = "SELECT p FROM PropertyEntity p WHERE p.projectId = :projectId")
 @Table(name = "PROPERTY")
 public class PropertyEntity extends AbstractEntity implements PropertyModel {
 
