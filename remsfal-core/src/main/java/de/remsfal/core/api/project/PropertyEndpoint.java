@@ -58,11 +58,11 @@ public interface PropertyEndpoint {
     @Operation(summary = "Retrieve information for all properties.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     PropertyListJson getProperties(
-            @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "Offset of the first property to return")
-            @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
-            @Parameter(description = "Maximum number of properties to return")
-            @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit);
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "Offset of the first property to return")
+        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
+        @Parameter(description = "Maximum number of properties to return")
+        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit);
 
     @DELETE
     @Path("/{propertyId}")
@@ -70,8 +70,8 @@ public interface PropertyEndpoint {
     @APIResponse(responseCode = "204", description = "The property was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteProperty(
-            @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
 
     @PATCH
     @Path("/{propertyId}")
@@ -81,8 +81,8 @@ public interface PropertyEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The property does not exist")
     PropertyJson updateProperty(
-            @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
-            @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) PropertyJson property);
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
+        @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) PropertyJson property);
 
 }
