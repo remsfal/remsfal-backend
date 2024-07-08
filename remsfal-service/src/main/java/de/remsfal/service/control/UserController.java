@@ -79,7 +79,7 @@ public class UserController {
     public CustomerModel updateUser(final String userId, final CustomerModel user) {
         logger.infov("Updating a user ({0})", user);
         final UserEntity entity = repository.findByIdOptional(userId)
-                .orElseThrow(() -> new NotFoundException("User not exist"));
+            .orElseThrow(() -> new NotFoundException("User not exist"));
 
         if(user.getFirstName() != null) {
             entity.setFirstName(user.getFirstName());

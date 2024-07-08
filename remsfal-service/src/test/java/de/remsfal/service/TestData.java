@@ -114,7 +114,14 @@ public class TestData {
     public static final String PROPERTY_REG_ENTRY_1 = "Amtsgericht Schönestadt, Grundbuch von Kleinesiedlung, Blatt 4711";
     public static final String PROPERTY_DESCRIPTION_1 = "Example description of Kleinesiedlung";
     public static final Integer PROPERTY_PLOT_AREA_1 = 1234;
-    
+
+    // Test property 2
+    public static final String PROPERTY_ID_2 = "8b4f2703-94ca-490f-ae08-a787c716415f";
+    public static final String PROPERTY_TITLE_2 = "Test-Siedling Bremen";
+    public static final String PROPERTY_REG_ENTRY_2 = "Amtsgericht Bremen";
+    public static final String PROPERTY_DESCRIPTION_2 = "Example description of Test-Siedling";
+    public static final Integer PROPERTY_PLOT_AREA_2 = 4444;
+
     public static final ImmutablePropertyJson.Builder propertyBuilder1() {
         return ImmutablePropertyJson
             .builder()

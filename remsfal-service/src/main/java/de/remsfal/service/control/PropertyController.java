@@ -1,14 +1,5 @@
 package de.remsfal.service.control;
 
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.NotFoundException;
-
-import org.jboss.logging.Logger;
-
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.CommercialModel;
@@ -27,6 +18,16 @@ import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
 import de.remsfal.service.entity.dto.PropertyEntity;
 import de.remsfal.service.entity.dto.SiteEntity;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.NotFoundException;
+import org.jboss.logging.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -70,13 +71,45 @@ public class PropertyController {
     public PropertyModel getProperty(final String projectId, final String propertyId) {
         logger.infov("Retrieving a property (projectId = {0}, propertyId = {1})", projectId, propertyId);
         PropertyEntity entity = propertyRepository.findByIdOptional(propertyId)
-                .orElseThrow(() -> new NotFoundException("Property not exist"));
+            .orElseThrow(() -> new NotFoundException("Property not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NotFoundException("Unable to find property, because the project ID is invalid");
         }
 
         return entity;
+    }
+
+    public List<PropertyModel> getProperties(final String projectId, final Integer offset, final Integer limit) {
+        List<PropertyEntity> propertyEntities = propertyRepository.findPropertyByProjectId(projectId, offset, limit);
+        return new ArrayList<>(propertyEntities);
+    }
+
+    @Transactional
+    public boolean deleteProperty(final String projectId, final String propertyId) {
+        logger.infov("Deleting a property (projectId={0}, taskId={1})", projectId, propertyId);
+        return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
+    }
+
+    @Transactional
+    public PropertyModel updateProperty(final String projectId, final String propertyId, final PropertyModel property) {
+        logger.infov("Updating a property (title={0}, description={1}, landRegisterEntry={2}, plotArea={3})",
+            property.getTitle(), property.getDescription(), property.getLandRegisterEntry(), property.getPlotArea());
+        final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
+            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        if(property.getTitle() != null) {
+            entity.setTitle(property.getTitle());
+        }
+        if(property.getDescription() != null) {
+            entity.setDescription(property.getDescription());
+        }
+        if(property.getLandRegisterEntry() != null) {
+            entity.setLandRegisterEntry(property.getLandRegisterEntry());
+        }
+        if(property.getPlotArea() != null) {
+            entity.setPlotArea(property.getPlotArea());
+        }
+        return propertyRepository.merge(entity);
     }
 
     @Transactional
@@ -96,7 +129,7 @@ public class PropertyController {
         logger.infov("Retrieving a site (projectId = {0}, propertyId = {1}, 
                      siteId={2})", projectId, propertyId, siteId);
         SiteEntity entity = siteRepository.findByIdOptional(siteId)
-                .orElseThrow(() -> new NotFoundException("Site not exist"));
+            .orElseThrow(() -> new NotFoundException("Site not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NotFoundException("Unable to find site, because the project ID is invalid");
@@ -124,7 +157,7 @@ public class PropertyController {
         logger.infov("Retrieving a building (projectId = {0}, propertyId = {1}, 
                      buildingId={2})", projectId, propertyId, buildingId);
         BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
-                .orElseThrow(() -> new NotFoundException("Building not exist"));
+            .orElseThrow(() -> new NotFoundException("Building not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NotFoundException("Unable to find building, because the project ID is invalid");
@@ -152,7 +185,7 @@ public class PropertyController {
         logger.infov("Retrieving a apartment (projectId = {0}, buildingId = {1}, 
                      apartmentId={2})", projectId, buildingId, apartmentId);
         ApartmentEntity entity = apartmentRepository.findByIdOptional(apartmentId)
-                .orElseThrow(() -> new NotFoundException("Apartment not exist"));
+            .orElseThrow(() -> new NotFoundException("Apartment not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NoResultException("Unable to find apartment, because the project ID is invalid");
@@ -182,7 +215,7 @@ public class PropertyController {
         logger.infov("Retrieving a commercial (projectId = {0}, buildingId = {1}, 
                      commercialId={2})", projectId, buildingId, commercialId);
         CommercialEntity entity = commercialRepository.findByIdOptional(commercialId)
-                .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+            .orElseThrow(() -> new NotFoundException("Commercial not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NoResultException("Unable to find commercial, because the project ID is invalid");
@@ -210,7 +243,7 @@ public class PropertyController {
         logger.infov("Retrieving a garage (projectId = {0}, 
                      buildingId = {1}, garageId={2})", projectId, buildingId, garageId);
         GarageEntity entity = garageRepository.findByIdOptional(garageId)
-                .orElseThrow(() -> new NotFoundException("Garage not exist"));
+            .orElseThrow(() -> new NotFoundException("Garage not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {
             throw new NoResultException("Unable to find garage, because the project ID is invalid");

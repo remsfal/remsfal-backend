@@ -48,6 +48,19 @@
         </sonar.cpd.exclusions>
     </properties>
 
+    <profiles>
+      <profile>
+        <id>githubDeploy</id>
+        <distributionManagement>
+          <repository>
+            <id>github</id>
+            <name>GitHub Remsfal Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/remsfal/remsfal-backend</url>
+          </repository>
+        </distributionManagement>
+        </profile>
+    </profiles>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -111,6 +124,7 @@
                     <version>${checkstyle-plugin.version}</version>
                     <configuration>
                         <configLocation>${project.style.configDirectory}/checkstyle.xml</configLocation>
+                        <excludeGeneratedSources>true</excludeGeneratedSources>
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <linkXRef>false</linkXRef>
