@@ -32,17 +32,13 @@ public abstract class PropertyItemJson {
     @NotNull
     public abstract Integer getPlotArea();
 
-    @NotNull
-    public abstract Float getEffectiveSpace();  // living space + usable space + commercial space
-
     public static PropertyItemJson valueOf(final PropertyModel model) {
         final ImmutablePropertyItemJson.Builder builder = ImmutablePropertyItemJson.builder()
             .id(model.getId())
             .title(model.getTitle())
             .landRegisterEntry(model.getLandRegisterEntry())
             .description(model.getDescription())
-            .plotArea(model.getPlotArea())
-            .effectiveSpace(0F);
+            .plotArea(model.getPlotArea());
         return builder.build();
     }
 

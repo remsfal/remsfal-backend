@@ -29,6 +29,7 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public Response createProperty(final String projectId, final PropertyJson property) {
+        checkPrivileges(projectId);
         final PropertyModel model = controller.createProperty(projectId, property);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -39,12 +40,14 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public PropertyJson getProperty(final String projectId, final String propertyId) {
+        checkPrivileges(projectId);
         final PropertyModel model = controller.getProperty(projectId, propertyId);
         return PropertyJson.valueOf(model);
     }
 
     @Override
     public PropertyListJson getProperties(String projectId, Integer offset, Integer limit) {
+        checkPrivileges(projectId);
         List<PropertyModel> properties = controller.getProperties(projectId, offset, limit);
         return PropertyListJson.valueOf(properties, offset, properties.size());
     }

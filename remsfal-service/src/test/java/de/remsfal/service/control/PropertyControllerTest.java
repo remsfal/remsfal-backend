@@ -99,13 +99,14 @@ class PropertyControllerTest extends AbstractTest {
         // Arrange
         final PropertyModel property = TestData.propertyBuilder().build();
         final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
+        String propertyId = createdProperty.getId();
         // Act
-        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, createdProperty.getId());
+        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, propertyId);
         // Assert
         assertTrue(deleted);
         assertThrows(NoResultException.class, () -> entityManager
                 .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
-                .setParameter("id", property.getId())
+                .setParameter("id", propertyId)
                 .getSingleResult());
     }
 
@@ -145,7 +146,6 @@ class PropertyControllerTest extends AbstractTest {
     void updateProperty_FAILED_propertyNotFound() {
         // Arrange
         String notExistingPropertyId = "bfbada15-d3d5-4925-a438-260821532b54";
-        final PropertyModel property = TestData.propertyBuilder().build();
         // act + Assert
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
                 .title("new title")
@@ -178,7 +178,7 @@ class PropertyControllerTest extends AbstractTest {
         // Act
         List<PropertyModel> properties = propertyController.getProperties(TestData.PROJECT_ID, 0, 100);
         // Assert
-        assertEquals(properties.size(), 2);
+        assertEquals(2, properties.size());
         assertProperty(property1, createdProperty1);
         assertProperty(property2, createdProperty2);
     }

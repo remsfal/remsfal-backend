@@ -53,7 +53,6 @@ public abstract class PropertyJson implements PropertyModel {
                 .landRegisterEntry(model.getLandRegisterEntry())
                 .description(model.getDescription())
                 .plotArea(model.getPlotArea())
-                .effectiveSpace(0F)
                 .build();
     }
 
