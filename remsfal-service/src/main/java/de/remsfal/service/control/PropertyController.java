@@ -97,10 +97,18 @@ public class PropertyController {
             property.getTitle(), property.getDescription(), property.getLandRegisterEntry(), property.getPlotArea());
         final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
-        entity.setTitle(property.getTitle());
-        entity.setDescription(property.getDescription());
-        entity.setLandRegisterEntry(property.getLandRegisterEntry());
-        entity.setPlotArea(property.getPlotArea());
+        if(property.getTitle() != null) {
+            entity.setTitle(property.getTitle());
+        }
+        if(property.getDescription() != null) {
+            entity.setDescription(property.getDescription());
+        }
+        if(property.getLandRegisterEntry() != null) {
+            entity.setLandRegisterEntry(property.getLandRegisterEntry());
+        }
+        if(property.getPlotArea() != null) {
+            entity.setPlotArea(property.getPlotArea());
+        }
         return propertyRepository.merge(entity);
     }
 

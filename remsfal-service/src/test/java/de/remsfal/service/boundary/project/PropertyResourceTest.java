@@ -124,6 +124,71 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
     }
 
     @Test
+    void deleteProperty_SUCCESS_propertyIsdeleted() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
+            .setParameter(1, TestData.PROPERTY_ID_1)
+            .setParameter(2, TestData.PROJECT_ID)
+            .setParameter(3, TestData.PROPERTY_TITLE_1)
+            .executeUpdate());
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void updateProperty_SUCCESS_propertyCorrectlyUpdated() {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
+                .setParameter(1, TestData.PROPERTY_ID_1)
+                .setParameter(2, TestData.PROJECT_ID)
+                .setParameter(3, TestData.PROPERTY_TITLE_1)
+                .executeUpdate());
+        final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE_2 + "\","
+                + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY_2 + "\","
+                + "\"description\":\"" + TestData.PROPERTY_DESCRIPTION_2 + "\","
+                + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA_2 + "\"}";
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json)
+                .patch(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
+                .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+                .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+                .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
+                .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
+                .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+                .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+                .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
+                .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
+    }
+
+    @Test
     void getProperty_SUCCESS_samePropertyIsReturned() {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\","
             + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY + "\","
