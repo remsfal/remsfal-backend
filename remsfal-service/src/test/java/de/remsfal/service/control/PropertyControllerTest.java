@@ -104,10 +104,14 @@ class PropertyControllerTest extends AbstractTest {
         boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, propertyId);
         // Assert
         assertTrue(deleted);
-        assertThrows(NoResultException.class, () -> entityManager
-                .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
-                .setParameter("id", propertyId)
-                .getSingleResult());
+        assertThrows(NoResultException.class, () -> findPropertyById(propertyId));
+    }
+
+    private PropertyEntity findPropertyById(String propertyId) {
+        return entityManager
+            .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
+            .setParameter("id", propertyId)
+            .getSingleResult();
     }
 
     @Test
@@ -127,17 +131,17 @@ class PropertyControllerTest extends AbstractTest {
         final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
         // Act
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
-                .title(TestData.PROPERTY_ID_2)
-                .landRegisterEntry(TestData.PROPERTY_REG_ENTRY_2)
-                .description(TestData.PROPERTY_DESCRIPTION_2)
-                .plotArea(TestData.PROPERTY_PLOT_AREA_2)
-                .build();
+            .title(TestData.PROPERTY_ID_2)
+            .landRegisterEntry(TestData.PROPERTY_REG_ENTRY_2)
+            .description(TestData.PROPERTY_DESCRIPTION_2)
+            .plotArea(TestData.PROPERTY_PLOT_AREA_2)
+            .build();
         PropertyModel updatedProperty = propertyController.updateProperty(TestData.PROJECT_ID, createdProperty.getId(), newPropertyValues);
         // Assert
         PropertyModel updatedPropertyFromDb = entityManager
-                .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
-                .setParameter("id", updatedProperty.getId())
-                .getSingleResult();
+            .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
+            .setParameter("id", updatedProperty.getId())
+            .getSingleResult();
         assertEquals(updatedProperty.getId(), updatedPropertyFromDb.getId());
         assertProperty(newPropertyValues, updatedPropertyFromDb);
     }
@@ -148,30 +152,30 @@ class PropertyControllerTest extends AbstractTest {
         String notExistingPropertyId = "bfbada15-d3d5-4925-a438-260821532b54";
         // act + Assert
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
-                .title("new title")
-                .landRegisterEntry("new register entry")
-                .description("new description")
-                .plotArea(999)
-                .build();
+            .title("new title")
+            .landRegisterEntry("new register entry")
+            .description("new description")
+            .plotArea(999)
+            .build();
         assertThrows(NotFoundException.class,
-                () -> propertyController.updateProperty(TestData.PROJECT_ID, notExistingPropertyId, newPropertyValues));
+            () -> propertyController.updateProperty(TestData.PROJECT_ID, notExistingPropertyId, newPropertyValues));
     }
 
     @Test
     void getProperties_SUCCESS_correctlyReturned() {
         // Arrange
         final PropertyModel property1 = ImmutablePropertyJson.builder()
-                .title("Property 1")
-                .landRegisterEntry("register entry 1")
-                .description("description 1")
-                .plotArea(111)
-                .build();
+            .title("Property 1")
+            .landRegisterEntry("register entry 1")
+            .description("description 1")
+            .plotArea(111)
+            .build();
         final PropertyModel property2 = ImmutablePropertyJson.builder()
-                .title("Property 2")
-                .landRegisterEntry("register entry 2")
-                .description("description 2")
-                .plotArea(999)
-                .build();
+            .title("Property 2")
+            .landRegisterEntry("register entry 2")
+            .description("description 2")
+            .plotArea(999)
+            .build();
 
         final PropertyModel createdProperty1 = propertyController.createProperty(TestData.PROJECT_ID, property1);
         final PropertyModel createdProperty2 = propertyController.createProperty(TestData.PROJECT_ID, property2);
