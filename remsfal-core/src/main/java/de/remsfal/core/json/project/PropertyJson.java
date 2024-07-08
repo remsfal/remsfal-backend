@@ -1,8 +1,9 @@
 package de.remsfal.core.json.project;
 
+import de.remsfal.core.validation.NullOrNotBlank;
+import de.remsfal.core.validation.PostValidation;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
@@ -28,8 +29,8 @@ public abstract class PropertyJson implements PropertyModel {
     @Nullable
     public abstract String getId();
 
-    @NotNull
-    @NotBlank
+    @NullOrNotBlank
+    @NotBlank(groups = PostValidation.class)
     @Size(max=255)
     public abstract String getTitle();
 
@@ -42,6 +43,7 @@ public abstract class PropertyJson implements PropertyModel {
     @Nullable
     public abstract Integer getPlotArea();
 
+    @Null
     @Nullable
     public abstract Float getEffectiveSpace(); // living space + usable space + commercial space
 

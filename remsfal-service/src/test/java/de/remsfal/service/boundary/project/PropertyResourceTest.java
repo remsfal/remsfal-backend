@@ -87,6 +87,108 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
     }
 
     @Test
+    void getProperties_SUCCESS_propertiesCorrectlyReturned() {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+                .setParameter(1, TestData.PROPERTY_ID_1)
+                .setParameter(2, TestData.PROJECT_ID)
+                .setParameter(3, TestData.PROPERTY_TITLE_1)
+                .setParameter(4, TestData.PROPERTY_REG_ENTRY_1)
+                .setParameter(5, TestData.PROPERTY_DESCRIPTION_1)
+                .setParameter(6, TestData.PROPERTY_PLOT_AREA_1)
+                .executeUpdate());
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+                .setParameter(1, TestData.PROPERTY_ID_2)
+                .setParameter(2, TestData.PROJECT_ID)
+                .setParameter(3, TestData.PROPERTY_TITLE_2)
+                .setParameter(4, TestData.PROPERTY_REG_ENTRY_2)
+                .setParameter(5, TestData.PROPERTY_DESCRIPTION_2)
+                .setParameter(6, TestData.PROPERTY_PLOT_AREA_2)
+                .executeUpdate());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .queryParam("status", "OPEN")
+                .get(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("properties.size()", Matchers.is(2))
+                .and().body("properties.id", Matchers.hasItems(TestData.PROPERTY_ID_1, TestData.PROPERTY_ID_2))
+                .and().body("properties.title", Matchers.hasItems(TestData.PROPERTY_TITLE_1, TestData.PROPERTY_TITLE_2))
+                .and().body("properties.landRegisterEntry", Matchers.hasItems(TestData.PROPERTY_REG_ENTRY_1, TestData.PROPERTY_REG_ENTRY_2))
+                .and().body("properties.description", Matchers.hasItems(TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_DESCRIPTION_2))
+                .and().body("properties.plotArea", Matchers.hasItems(TestData.PROPERTY_PLOT_AREA_1, TestData.PROPERTY_PLOT_AREA_2));
+    }
+
+    @Test
+    void deleteProperty_SUCCESS_propertyIsdeleted() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
+            .setParameter(1, TestData.PROPERTY_ID_1)
+            .setParameter(2, TestData.PROJECT_ID)
+            .setParameter(3, TestData.PROPERTY_TITLE_1)
+            .executeUpdate());
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void updateProperty_SUCCESS_propertyCorrectlyUpdated() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
+            .setParameter(1, TestData.PROPERTY_ID_1)
+            .setParameter(2, TestData.PROJECT_ID)
+            .setParameter(3, TestData.PROPERTY_TITLE_1)
+            .executeUpdate());
+        final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE_2 + "\","
+            + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY_2 + "\","
+            + "\"description\":\"" + TestData.PROPERTY_DESCRIPTION_2 + "\","
+            + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA_2 + "\"}";
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
+            .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+            .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
+            .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
+            .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+            .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
+            .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
+    }
+
+    @Test
     void getProperty_SUCCESS_samePropertyIsReturned() {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\","
             + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY + "\","

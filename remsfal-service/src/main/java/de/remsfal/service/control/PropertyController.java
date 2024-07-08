@@ -1,14 +1,5 @@
 package de.remsfal.service.control;
 
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.NotFoundException;
-
-import org.jboss.logging.Logger;
-
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.CommercialModel;
@@ -27,6 +18,16 @@ import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
 import de.remsfal.service.entity.dto.PropertyEntity;
 import de.remsfal.service.entity.dto.SiteEntity;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.NotFoundException;
+import org.jboss.logging.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -77,6 +78,38 @@ public class PropertyController {
         }
 
         return entity;
+    }
+
+    public List<PropertyModel> getProperties(final String projectId, final Integer offset, final Integer limit) {
+        List<PropertyEntity> propertyEntities = propertyRepository.findPropertyByProjectId(projectId, offset, limit);
+        return new ArrayList<>(propertyEntities);
+    }
+
+    @Transactional
+    public boolean deleteProperty(final String projectId, final String propertyId) {
+        logger.infov("Deleting a property (projectId={0}, taskId={1})", projectId, propertyId);
+        return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
+    }
+
+    @Transactional
+    public PropertyModel updateProperty(final String projectId, final String propertyId, final PropertyModel property) {
+        logger.infov("Updating a property (title={0}, description={1}, landRegisterEntry={2}, plotArea={3})",
+            property.getTitle(), property.getDescription(), property.getLandRegisterEntry(), property.getPlotArea());
+        final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
+            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        if(property.getTitle() != null) {
+            entity.setTitle(property.getTitle());
+        }
+        if(property.getDescription() != null) {
+            entity.setDescription(property.getDescription());
+        }
+        if(property.getLandRegisterEntry() != null) {
+            entity.setLandRegisterEntry(property.getLandRegisterEntry());
+        }
+        if(property.getPlotArea() != null) {
+            entity.setPlotArea(property.getPlotArea());
+        }
+        return propertyRepository.merge(entity);
     }
 
     @Transactional
