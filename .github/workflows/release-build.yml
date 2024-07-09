@@ -50,23 +50,22 @@ jobs:
       - name: Build with Maven
         run: mvn clean install
 
-        
-      - name: Publish to GitHub Packages Apache Maven
-        # Disable tests because they were already run in previous build step
-        run: mvn --batch-mode  deploy -PgithubDeploy -Dmaven.test.skip=true 
-        env:
-          GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
-
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.4
-        with: 
+        with:
           add: '["pom.xml", "remsfal-core/pom.xml", "remsfal-service/pom.xml"]'
           message: "Release version ${{env.RELEASE_VERSION}}"
           author_name: "Release Bot"
           author_email: "info@remsfal.de"
           tag: "v${{env.RELEASE_VERSION}}"
           push: "--tags --force"
-  
+
+      - name: Publish to GitHub Packages Apache Maven
+        # Disable tests because they were already run in previous build step
+        run: mvn --batch-mode  deploy -PgithubDeploy -Dmaven.test.skip=true 
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+
       - name: Create Release
         uses: ncipollo/release-action@v1.14.0
         with: 
