@@ -65,6 +65,7 @@ jobs:
           author_name: "Release Bot"
           author_email: "info@remsfal.de"
           tag: "v${{env.RELEASE_VERSION}}"
+          push: "--tags --force"
   
       - name: Create Release
         uses: ncipollo/release-action@v1.14.0
