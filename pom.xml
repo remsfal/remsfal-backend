@@ -42,7 +42,7 @@
         <sonar.coverage.jacoco.xmlReportPaths>
             ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.externalIssuesReportPaths>${project.basedir}/sonar-custom-rules.xml</sonar.externalIssuesReportPaths>
+        <sonar.java.checkstyle.reportPaths>${project.build.directory}/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
         <sonar.cpd.exclusions>
                 de.remsfal.service.entity.dto\**
         </sonar.cpd.exclusions>

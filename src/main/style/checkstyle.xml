@@ -33,10 +33,4 @@
         <property name="max" value="120"/>
     </module>
 
-    <!-- Suppressions -->
-    <module name="SuppressionFilter">
-        <property name="file" value="suppressions.xml"/>
-    </module>
-
-
 </module>
