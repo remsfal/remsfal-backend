@@ -642,16 +642,6 @@ class ProjectResourceTest extends AbstractResourceTest {
            .statusCode(Status.CREATED.getStatusCode())
            .extract().path("id");
 
-        final String user2projectId1 = given()
-           .when()
-           .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-           .contentType(MediaType.APPLICATION_JSON)
-           .body("{ \"projectId\":\" " + TestData.PROJECT_ID_1 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-           .post(BASE_PATH + "/" + user1projectId1 + "/members")
-           .then()
-           .statusCode(Status.CREATED.getStatusCode())
-           .extract().path("id");
-
         given()
            .when()
            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
