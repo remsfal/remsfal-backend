@@ -81,14 +81,12 @@ public class PropertyController {
     }
 
     public List<PropertyModel> getProperties(final String projectId, final Integer offset, final Integer limit) {
-        List<PropertyEntity> propertyEntities = propertyRepository.findPropertyByProjectId(projectId, offset, limit);
+        List<PropertyEntity> propertyEntities = propertyRepository.findPropertiesByProjectId(projectId, offset, limit);
         return new ArrayList<>(propertyEntities);
     }
 
-    @Transactional
-    public boolean deleteProperty(final String projectId, final String propertyId) {
-        logger.infov("Deleting a property (projectId={0}, taskId={1})", projectId, propertyId);
-        return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
+    public long countProperties(final String projectId) {
+        return propertyRepository.countPropertiesByProjectId(projectId);
     }
 
     @Transactional
@@ -110,6 +108,12 @@ public class PropertyController {
             entity.setPlotArea(property.getPlotArea());
         }
         return propertyRepository.merge(entity);
+    }
+
+    @Transactional
+    public boolean deleteProperty(final String projectId, final String propertyId) {
+        logger.infov("Deleting a property (projectId={0}, taskId={1})", projectId, propertyId);
+        return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
     @Transactional
@@ -251,4 +255,5 @@ public class PropertyController {
 
         return entity;
     }
+
 }

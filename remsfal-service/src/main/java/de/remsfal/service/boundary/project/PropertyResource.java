@@ -33,7 +33,7 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
     public PropertyListJson getProperties(String projectId, Integer offset, Integer limit) {
         checkPrivileges(projectId);
         List<PropertyModel> properties = controller.getProperties(projectId, offset, limit);
-        return PropertyListJson.valueOf(properties, offset, properties.size());
+        return PropertyListJson.valueOf(properties, offset, controller.countProperties(projectId));
     }
 
     @Override

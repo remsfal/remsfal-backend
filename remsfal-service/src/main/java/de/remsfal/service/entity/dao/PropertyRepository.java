@@ -13,12 +13,16 @@ import java.util.Optional;
 @ApplicationScoped
 public class PropertyRepository extends AbstractRepository<PropertyEntity> {
 
-    public List<PropertyEntity> findPropertyByProjectId(final String projectId, final int offset, final int limit) {
+    public List<PropertyEntity> findPropertiesByProjectId(final String projectId, final int offset, final int limit) {
         return getEntityManager().createNamedQuery("PropertyEntity.findByProjectId", PropertyEntity.class)
                 .setParameter(PARAM_PROJECT_ID, projectId)
                 .setFirstResult(offset)
                 .setMaxResults(limit)
                 .getResultList();
+    }
+
+    public long countPropertiesByProjectId(final String projectId) {
+        return count(PARAM_PROJECT_ID, projectId);
     }
 
     public long deletePropertyById(final String projectId, final String propertyId) {
