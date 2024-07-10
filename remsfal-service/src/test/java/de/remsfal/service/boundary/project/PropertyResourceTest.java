@@ -23,6 +23,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects";
 
+    @Override
     @BeforeEach
     protected void setupTestProjects() {
         super.setupTestProjects();
