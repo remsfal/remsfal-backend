@@ -45,7 +45,8 @@ public class ProjectController {
     NotificationController notificationController;
 
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
-        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(), offset, limit);
+        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(),
+                offset, limit);
         List<ProjectModel> projects = new ArrayList<>();
         for (ProjectMembershipEntity projectMembership : memberships) {
             projects.add(projectMembership.getProject());

@@ -37,9 +37,11 @@ public class TaskRepository extends AbstractRepository<TaskEntity> {
             .list();
     }
 
-    public List<TaskEntity> findTaskByOwnerId(final TaskType type, final String projectId, final String ownerId, final Status status) {
+    public List<TaskEntity> findTaskByOwnerId(final TaskType type, final String projectId, final String ownerId,
+                                              final Status status) {
         return find("type = :type and projectId = :projectId and ownerId = :ownerId and status = :status",
-            Parameters.with(PARAM_TYPE, type).and(PARAM_PROJECT_ID, projectId).and(PARAM_OWNER_ID, ownerId).and(PARAM_STATUS, status))
+            Parameters.with(PARAM_TYPE, type).and(PARAM_PROJECT_ID, projectId).and(PARAM_OWNER_ID, ownerId).
+                    and(PARAM_STATUS, status))
             .list();
     }
 

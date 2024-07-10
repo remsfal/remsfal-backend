@@ -91,6 +91,12 @@ mvn compile quarkus:dev -pl remsfal-service
 ```
 It will automatically recompile when you change something.
 
+### Stylecheck
+
+To run the stylecheck use the following command:
+```sh
+mvn checkstyle:checkstyle
+```
 
 ## Copyright
 All licenses in this repository are copyrighted by their respective authors.   

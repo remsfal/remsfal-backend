@@ -20,7 +20,8 @@ public class RemsfalSecurityContext implements SecurityContext {
         this.principal = principal;
     }
 
-    public static RemsfalSecurityContext extendSecurityContext(final SecurityContext context, final RemsfalPrincipal principal) {
+    public static RemsfalSecurityContext extendSecurityContext(final SecurityContext context,
+                                                               final RemsfalPrincipal principal) {
         return new RemsfalSecurityContext(context, principal);
     }
     

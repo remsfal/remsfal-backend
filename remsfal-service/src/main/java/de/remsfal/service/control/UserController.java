@@ -128,7 +128,8 @@ public class UserController {
     }
 
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
-        logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})", event.getGoogleId(), event.getEmail());
+        logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})",
+                event.getGoogleId(), event.getEmail());
         try {
             repository.updateAuthenticatedAt(event.getGoogleId(), event.getAuthenticatedAt());
         } catch (Exception e) {
