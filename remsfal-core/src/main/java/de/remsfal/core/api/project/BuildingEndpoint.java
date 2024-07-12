@@ -36,7 +36,7 @@ public interface BuildingEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all bujildings.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    BuildingListJson getProperties(
+    BuildingListJson getBuildings(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
 
@@ -67,18 +67,18 @@ public interface BuildingEndpoint {
     @Operation(summary = "Update information of a building.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The building does not exist")
-    BuildingJson updateProperty(
+    BuildingJson updateBuilding(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId,
-        @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) BuildingJson property);
+        @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) BuildingJson building);
 
     @DELETE
     @Path("/{buildingId}")
     @Operation(summary = "Delete an existing building.")
     @APIResponse(responseCode = "204", description = "The building was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    void deleteProperty(
+    void deleteBuilding(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId);

@@ -71,4 +71,9 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
         throw new InternalServerErrorException("Not implemented");
     }
 
+    @Override
+    public BuildingEndpoint getSiteResource() {
+      throw new InternalServerErrorException("Not implemented");
+    }
+
 }
