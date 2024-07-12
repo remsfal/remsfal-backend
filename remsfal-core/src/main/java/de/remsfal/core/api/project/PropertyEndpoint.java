@@ -88,4 +88,7 @@ public interface PropertyEndpoint {
     @Path("/{propertyId}/" + BuildingEndpoint.SERVICE)
     BuildingEndpoint getBuildingResource();
 
+    @Path("/{propertyId}/" + SiteEndpoint.SERVICE)
+    BuildingEndpoint getSiteResource();
+
 }
