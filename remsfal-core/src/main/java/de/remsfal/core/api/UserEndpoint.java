@@ -33,9 +33,17 @@ public interface UserEndpoint {
     @Operation(summary = "Retrieve information of this user identified by the cookie.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
-    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
-    @Counted(name = "performedChecks", description = "How many primality checks have been performed.")
+
     UserJson getUser();
+
+
+
+    @DELETE
+    @Operation(summary = "Delete this user identified by the cookie.")
+    @APIResponse(responseCode = "204", description = "The user was deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The user does not exist")
+    void deleteUser();
 
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
@@ -43,18 +51,8 @@ public interface UserEndpoint {
     @Operation(summary = "Update information of this user identified by the cookie.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
-    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
-    @Counted(name = "performedChecks", description = "How many primality checks have been performed.")
     UserJson updateUser(@Parameter(description = "User information", required = true) @Valid UserJson user);
 
-    @DELETE
-    @Operation(summary = "Delete this user identified by the cookie.")
-    @APIResponse(responseCode = "204", description = "The user was deleted successfully")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "The user does not exist")
-    @Timed(name = "checksTimer",unit = MetricUnits.MILLISECONDS)
-    @Counted(name = "performedChecks", description = "How many primality checks have been performed.")
-    void deleteUser();
 
 
 }
