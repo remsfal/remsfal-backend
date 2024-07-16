@@ -5,28 +5,23 @@ import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.core.model.project.GarageModel;
 import de.remsfal.core.model.project.PropertyModel;
-import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dao.PropertyRepository;
-import de.remsfal.service.entity.dao.SiteRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
 import de.remsfal.service.entity.dto.PropertyEntity;
-import de.remsfal.service.entity.dto.SiteEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,9 +37,6 @@ public class PropertyController {
     PropertyRepository propertyRepository;
 
     @Inject
-    SiteRepository siteRepository;
-    
-    @Inject
     BuildingRepository buildingRepository;
     
     @Inject
@@ -59,13 +51,18 @@ public class PropertyController {
     
     @Transactional
     public PropertyModel createProperty(final String projectId, final PropertyModel property) {
-        logger.infov("Creating a property (projectId={0}, property={1})", projectId, property);
+        logger.infov("Creating a property (projectId={0})", projectId);
         PropertyEntity entity = PropertyEntity.fromModel(property);
         entity.generateId();
         entity.setProjectId(projectId);
         propertyRepository.persistAndFlush(entity);
         propertyRepository.getEntityManager().refresh(entity);
         return getProperty(projectId, entity.getId());
+    }
+
+    public List<? extends PropertyModel> getProperties(final String projectId, final Integer offset, final Integer limit) {
+        logger.infov("Retrieving up to {1} properties (projectId = {0})", projectId, limit);
+        return propertyRepository.findPropertiesByProjectId(projectId, offset, limit);
     }
 
     public PropertyModel getProperty(final String projectId, final String propertyId) {
@@ -78,11 +75,6 @@ public class PropertyController {
         }
 
         return entity;
-    }
-
-    public List<PropertyModel> getProperties(final String projectId, final Integer offset, final Integer limit) {
-        List<PropertyEntity> propertyEntities = propertyRepository.findPropertiesByProjectId(projectId, offset, limit);
-        return new ArrayList<>(propertyEntities);
     }
 
     public long countProperties(final String projectId) {
@@ -112,40 +104,13 @@ public class PropertyController {
 
     @Transactional
     public boolean deleteProperty(final String projectId, final String propertyId) {
-        logger.infov("Deleting a property (projectId={0}, taskId={1})", projectId, propertyId);
+        logger.infov("Deleting a property (projectId={0}, propertyId={1})", projectId, propertyId);
         return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
     @Transactional
-    public SiteModel createSite(final String projectId, final String propertyId, @Valid final SiteModel site) {
-        logger.infov("Creating a site (projectId={0}, propertyId = {1}, site={2})", projectId, propertyId, site);
-        SiteEntity entity = SiteEntity.fromModel(site);
-        entity.generateId();
-        entity.getAddress().generateId();
-        entity.setProjectId(projectId);
-        entity.setPropertyId(propertyId);
-        siteRepository.persistAndFlush(entity);
-        siteRepository.getEntityManager().refresh(entity);
-        return getSite(projectId, propertyId, entity.getId());
-    }
-
-    public SiteModel getSite(final String projectId, final String propertyId, final String siteId) {
-        logger.infov("Retrieving a site (projectId = {0}, propertyId = {1}, siteId={2})",
-                projectId, propertyId, siteId);
-        SiteEntity entity = siteRepository.findByIdOptional(siteId)
-            .orElseThrow(() -> new NotFoundException("Site not exist"));
-
-        if (!entity.getProjectId().equals(projectId)) {
-            throw new NotFoundException("Unable to find site, because the project ID is invalid");
-        }
-
-        return entity;
-    }
-
-    @Transactional
-    public BuildingModel createBuilding(final String projectId, final String propertyId,
-                                        @Valid final BuildingModel building) {
-        logger.infov("Creating a building (projectId={0}, propertyId = {1}, building={2})",
+    public BuildingModel createBuilding(final String projectId, final String propertyId, final BuildingModel building) {
+        logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
                 projectId, propertyId, building);
         BuildingEntity entity = BuildingEntity.fromModel(building);
         entity.generateId();
@@ -158,7 +123,7 @@ public class PropertyController {
     }
 
     public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
-        logger.infov("Retrieving a building (projectId = {0}, propertyId = {1}, buildingId={2})",
+        logger.infov("Retrieving a building (projectId={0}, propertyId={1}, buildingId={2})",
                 projectId, propertyId, buildingId);
         BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
             .orElseThrow(() -> new NotFoundException("Building not exist"));
@@ -171,9 +136,8 @@ public class PropertyController {
     }
 
     @Transactional
-    public ApartmentModel createApartment(final String projectId,
-                                          final String buildingId, final ApartmentModel apartment) {
-        logger.infov("Creating a apartment (projectId={0}, buildingId = {1}, apartment={2})",
+    public ApartmentModel createApartment(final String projectId, final String buildingId, final ApartmentModel apartment) {
+        logger.infov("Creating a apartment (projectId={0}, buildingId={1}, apartment={2})",
                 projectId, buildingId, apartment);
         ApartmentEntity entity = ApartmentEntity.fromModel(apartment);
         entity.generateId();
@@ -186,7 +150,7 @@ public class PropertyController {
 
 
     public ApartmentModel getApartment(final String projectId, final String buildingId, final String apartmentId) {
-        logger.infov("Retrieving a apartment (projectId = {0}, buildingId = {1}, apartmentId={2})",
+        logger.infov("Retrieving a apartment (projectId={0}, buildingId={1}, apartmentId={2})",
                 projectId, buildingId, apartmentId);
         ApartmentEntity entity = apartmentRepository.findByIdOptional(apartmentId)
             .orElseThrow(() -> new NotFoundException("Apartment not exist"));
@@ -200,9 +164,8 @@ public class PropertyController {
 
 
     @Transactional
-    public CommercialModel createCommercial(final String projectId,
-                                            final String buildingId, final CommercialModel commercial) {
-        logger.infov("Creating a commercial (projectId={0}, buildingId = {1}, commercial={2})",
+    public CommercialModel createCommercial(final String projectId, final String buildingId, final CommercialModel commercial) {
+        logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
                 projectId, buildingId, commercial);
         CommercialEntity entity = CommercialEntity.fromModel(commercial);
         entity.generateId();
@@ -216,7 +179,7 @@ public class PropertyController {
 
     public CommercialModel getCommercial(final String projectId, 
                                          final String buildingId, final String commercialId) {
-        logger.infov("Retrieving a commercial (projectId = {0}, buildingId = {1}, commercialId={2})",
+        logger.infov("Retrieving a commercial (projectId={0}, buildingId={1}, commercialId={2})",
                 projectId, buildingId, commercialId);
         CommercialEntity entity = commercialRepository.findByIdOptional(commercialId)
             .orElseThrow(() -> new NotFoundException("Commercial not exist"));
@@ -231,7 +194,7 @@ public class PropertyController {
 
     @Transactional
     public GarageModel createGarage(final String projectId, final String buildingId, final GarageModel garage) {
-        logger.infov("Creating a garage (projectId={0}, buildingId = {1}, garage={2})",
+        logger.infov("Creating a garage (projectId={0}, buildingId={1}, garage={2})",
                 projectId, buildingId, garage);
         GarageEntity entity = GarageEntity.fromModel(garage);
         entity.generateId();
@@ -243,8 +206,7 @@ public class PropertyController {
     }
 
     public GarageModel getGarage(final String projectId, final String buildingId, final String garageId) {
-
-        logger.infov("Retrieving a garage (projectId = {0}, buildingId = {1}, garageId={2})",
+        logger.infov("Retrieving a garage (projectId={0}, buildingId={1}, garageId={2})",
                 projectId, buildingId, garageId);
         GarageEntity entity = garageRepository.findByIdOptional(garageId)
             .orElseThrow(() -> new NotFoundException("Garage not exist"));

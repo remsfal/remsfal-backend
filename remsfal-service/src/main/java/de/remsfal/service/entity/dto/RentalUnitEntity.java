@@ -1,5 +1,7 @@
 package de.remsfal.service.entity.dto;
 
+import de.remsfal.core.model.project.RentalUnitModel;
+
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -9,7 +11,7 @@ import jakarta.persistence.MappedSuperclass;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @MappedSuperclass
-public abstract class RentalUnitEntity extends AbstractEntity {
+public abstract class RentalUnitEntity extends AbstractEntity implements RentalUnitModel {
 
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String projectId;

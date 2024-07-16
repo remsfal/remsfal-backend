@@ -33,4 +33,10 @@ public abstract class SiteJson implements SiteModel {
     @NotNull
     public abstract AddressModel getAddress();
 
+    public static SiteJson valueOf(SiteModel model) {
+
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
