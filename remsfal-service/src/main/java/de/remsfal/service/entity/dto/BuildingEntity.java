@@ -40,6 +40,9 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
     private Float heatingSpace;
 
+    @Column(name = "DIFFERENT_HEATING_SPACE", columnDefinition = "TINYINT")
+    private Boolean differentHeatingSpace;
+
     @Override
     public String getId() {
         return id;
@@ -95,6 +98,15 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     }
 
     @Override
+    public Boolean isDifferentHeatingSpace() {
+        return differentHeatingSpace;
+    }
+
+    public void setDifferentHeatingSpace(Boolean differentHeatingSpace) {
+        this.differentHeatingSpace = differentHeatingSpace;
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -106,7 +118,8 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
                 && Objects.equals(address, e.address)
                 && Objects.equals(livingSpace, e.livingSpace)
                 && Objects.equals(commercialSpace, e.commercialSpace)
-                && Objects.equals(heatingSpace, e.heatingSpace);
+                && Objects.equals(heatingSpace, e.heatingSpace)
+                && Objects.equals(differentHeatingSpace, e.differentHeatingSpace);
         }
         return false;
     }
@@ -129,7 +142,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         entity.setCommercialSpace(building.getCommercialSpace());
         entity.setUsableSpace(building.getUsableSpace());
         entity.setHeatingSpace(building.getHeatingSpace());
-        entity.setRent(building.getRent());
+        entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
         return entity;
     }
 

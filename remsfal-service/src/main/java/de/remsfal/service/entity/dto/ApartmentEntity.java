@@ -110,7 +110,6 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
         entity.setLivingSpace(apartment.getLivingSpace());
         entity.setUsableSpace(apartment.getUsableSpace());
         entity.setHeatingSpace(apartment.getHeatingSpace());
-        entity.setRent(apartment.getRent());
         return entity;
     }
 

@@ -13,4 +13,6 @@ public interface RentalUnitModel {
 
     TenancyModel getTenancy();
 
+    Float getUsableSpace();
+
 }

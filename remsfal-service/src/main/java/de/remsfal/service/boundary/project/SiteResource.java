@@ -26,7 +26,7 @@ public class SiteResource extends ProjectSubResource implements SiteEndpoint {
     @Override
     public SiteListJson getSites(final String projectId, final String propertyId) {
         checkPrivileges(projectId);
-        List<SiteModel> sites = controller.getSites(projectId, propertyId);
+        List<? extends SiteModel> sites = controller.getSites(projectId, propertyId);
         return SiteListJson.valueOf(sites);
     }
 

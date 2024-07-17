@@ -9,6 +9,4 @@ public interface SiteModel extends RentalUnitModel {
 
     AddressModel getAddress();
 
-    Float getUsableSpace();
-
 }

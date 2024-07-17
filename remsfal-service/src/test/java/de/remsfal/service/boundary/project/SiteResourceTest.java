@@ -1,6 +1,7 @@
 package de.remsfal.service.boundary.project;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,10 +54,11 @@ class SiteResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
             .body(SiteListJson.valueOf(List.of(entity)))
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
             .then()
-            .statusCode(Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
 }

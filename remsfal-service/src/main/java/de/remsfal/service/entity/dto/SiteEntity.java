@@ -3,7 +3,6 @@ package de.remsfal.service.entity.dto;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -27,7 +26,7 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String propertyId;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "ADDRESS_ID")
     private AddressEntity address;
 
@@ -87,7 +86,6 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
         entity.setAddress(AddressEntity.fromModel(site.getAddress()));
         entity.setDescription(site.getDescription());
         entity.setUsableSpace(site.getUsableSpace());
-        entity.setRent(site.getRent());
         return entity;
     }
 

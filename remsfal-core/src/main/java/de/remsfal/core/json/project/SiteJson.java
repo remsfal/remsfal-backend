@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.project.SiteModel;
+import de.remsfal.core.model.project.TenancyModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -32,8 +33,17 @@ public abstract class SiteJson implements SiteModel {
 
     @NotNull
     public abstract AddressModel getAddress();
+    
+    @Nullable
+    public abstract String getDescription();
 
-    public static SiteJson valueOf(SiteModel model) {
+    @Nullable
+    public abstract TenancyModel getTenancy();
+
+    @Nullable
+    public abstract Float getUsableSpace();
+
+    public static SiteJson valueOf(final SiteModel model) {
 
         // TODO Auto-generated method stub
         return null;

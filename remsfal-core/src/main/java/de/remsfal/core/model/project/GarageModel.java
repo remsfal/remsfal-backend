@@ -15,6 +15,4 @@ public interface GarageModel {
 
     Float getUsableSpace();
 
-    Float getRent();
-
 }

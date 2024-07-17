@@ -82,7 +82,6 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
         entity.setLocation(garage.getLocation());
         entity.setDescription(garage.getDescription());
         entity.setUsableSpace(garage.getUsableSpace());
-        entity.setRent(garage.getRent());
         return entity;
     }
 

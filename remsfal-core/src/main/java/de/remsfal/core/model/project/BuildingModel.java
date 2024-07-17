@@ -23,6 +23,6 @@ public interface BuildingModel {
 
     Float getHeatingSpace();
 
-    Float getRent();
+    Boolean isDifferentHeatingSpace();
 
 }

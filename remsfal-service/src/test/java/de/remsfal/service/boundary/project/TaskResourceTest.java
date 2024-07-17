@@ -182,7 +182,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.USER_ID_2)
-            .setParameter(3, "LESSEE")
+            .setParameter(3, "CARETAKER")
             .executeUpdate());
 
         final String taskId = given()

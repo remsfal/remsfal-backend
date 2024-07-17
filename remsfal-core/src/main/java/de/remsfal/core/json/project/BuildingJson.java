@@ -34,4 +34,22 @@ public abstract class BuildingJson implements BuildingModel {
     @NotNull
     public abstract AddressModel getAddress();
 
+    @Nullable
+    public abstract String getDescription();
+
+    @Nullable
+    public abstract Float getLivingSpace();
+
+    @Nullable
+    public abstract Float getCommercialSpace();
+
+    @Nullable
+    public abstract Float getUsableSpace();
+
+    @Nullable
+    public abstract Float getHeatingSpace();
+
+    public abstract Boolean isDifferentHeatingSpace();
+
+
 }
