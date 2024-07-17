@@ -8,11 +8,10 @@ public interface ProjectMemberModel extends UserModel {
     public enum UserRole {
         PROPRIETOR(10), // Eigentuemer
         MANAGER(20), // Verwalter
-        LESSOR(30); // Vermieter
-        // caretaker, consultant, and lessee have their own view and thus, are not roles in a project 
-        // CARETAKER(40), // Hausmeister
-        // CONSULTANT(50), // Auftragnehmer / Berater
-        // LESSEE(80); // Mieter
+        LESSOR(30), // Vermieter
+        CARETAKER(40), // Hausmeister
+        CONSULTANT(50), // Auftragnehmer / Berater
+        LESSEE(80); // Mieter
         
         private int leadership;
         

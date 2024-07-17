@@ -21,34 +21,38 @@ public abstract class AbstractResourceTest extends AbstractTest {
     @Inject
     SessionManager sessionManager;
 
-    void setupTestUsers() {
+    protected void setupTestUsers() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, NAME, EMAIL) VALUES (?,?,?,?)")
+            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID_1)
             .setParameter(2, TestData.USER_TOKEN_1)
-            .setParameter(3, TestData.USER_NAME_1)
-            .setParameter(4, TestData.USER_EMAIL_1)
+            .setParameter(3, TestData.USER_EMAIL_1)
+            .setParameter(4, TestData.USER_FIRST_NAME_1)
+            .setParameter(5, TestData.USER_LAST_NAME_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, NAME, EMAIL) VALUES (?,?,?,?)")
+            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID_2)
             .setParameter(2, TestData.USER_TOKEN_2)
-            .setParameter(3, TestData.USER_NAME_2)
-            .setParameter(4, TestData.USER_EMAIL_2)
+            .setParameter(3, TestData.USER_EMAIL_2)
+            .setParameter(4, TestData.USER_FIRST_NAME_2)
+            .setParameter(5, TestData.USER_LAST_NAME_2)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, NAME, EMAIL) VALUES (?,?,?,?)")
+            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID_3)
             .setParameter(2, TestData.USER_TOKEN_3)
-            .setParameter(3, TestData.USER_NAME_3)
-            .setParameter(4, TestData.USER_EMAIL_3)
+            .setParameter(3, TestData.USER_EMAIL_3)
+            .setParameter(4, TestData.USER_FIRST_NAME_3)
+            .setParameter(5, TestData.USER_LAST_NAME_3)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, NAME, EMAIL) VALUES (?,?,?,?)")
+            .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID_4)
             .setParameter(2, TestData.USER_TOKEN_4)
-            .setParameter(3, TestData.USER_NAME_4)
-            .setParameter(4, TestData.USER_EMAIL_4)
+            .setParameter(3, TestData.USER_EMAIL_4)
+            .setParameter(4, TestData.USER_FIRST_NAME_4)
+            .setParameter(5, TestData.USER_LAST_NAME_4)
             .executeUpdate());
     }
 

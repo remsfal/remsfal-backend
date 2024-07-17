@@ -1,6 +1,7 @@
 package de.remsfal.core.api.project;
 
 import jakarta.validation.Valid;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -15,15 +16,17 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.ApartmentJson;
+import de.remsfal.core.api.ProjectEndpoint;
+import de.remsfal.core.json.project.ApartmentJson;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/" 
- + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
- + "/{propertyId}/" + BuildingEndpoint.SERVICE
- + "/{buildingId}/" + ApartmentEndpoint.SERVICE)
+    + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
+    + "/{propertyId}/" + BuildingEndpoint.SERVICE
+    + "/{buildingId}/" + ApartmentEndpoint.SERVICE)
 public interface ApartmentEndpoint {
 
     static final String SERVICE = "apartments";
@@ -34,7 +37,7 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "201", description = "Apartment created successfully",
         headers = @Header(name = "Location", description = "URL of the new apartment"))
     Response createApartment(
-        @Parameter(description = "Apartment information", required = true) @Valid ApartmentJson apartment);
+        @Parameter(description = "Apartment information", required = true) @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment);
 
     @GET
     @Path("/{apartmentId}")

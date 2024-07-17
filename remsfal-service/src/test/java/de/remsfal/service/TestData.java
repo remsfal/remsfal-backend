@@ -1,50 +1,51 @@
 package de.remsfal.service;
 
 import de.remsfal.core.json.ImmutableAddressJson;
-import de.remsfal.core.json.ImmutableApartmentJson;
-import de.remsfal.core.json.ImmutableBuildingJson;
-import de.remsfal.core.json.ImmutableCommercialJson;
-import de.remsfal.core.json.ImmutableGarageJson;
-import de.remsfal.core.json.ImmutablePropertyJson;
-import de.remsfal.core.json.ImmutableSiteJson;
-import de.remsfal.core.model.ApartmentModel;
-import de.remsfal.core.model.CommercialModel;
-import de.remsfal.core.model.GarageModel;
+import de.remsfal.core.json.project.ImmutableApartmentJson;
+import de.remsfal.core.json.project.ImmutableBuildingJson;
+import de.remsfal.core.json.project.ImmutableCommercialJson;
+import de.remsfal.core.json.project.ImmutableGarageJson;
+import de.remsfal.core.json.project.ImmutablePropertyJson;
+import de.remsfal.core.json.project.ImmutableSiteJson;
 
 public class TestData {
 
     // Default test user
     public static final String USER_ID = TestData.USER_ID_1;
     public static final String USER_TOKEN = TestData.USER_TOKEN_1;
-    public static final String USER_NAME = TestData.USER_NAME_1;
     public static final String USER_EMAIL = TestData.USER_EMAIL_1;
+    public static final String USER_FIRST_NAME = TestData.USER_FIRST_NAME_1;
+    public static final String USER_LAST_NAME = TestData.USER_LAST_NAME_1;
     
     // Test user 1
     public static final String USER_ID_1 = "b9440c43-b5c0-4951-9c29-000000000001";
     public static final String USER_TOKEN_1 = "tokenOfMaxMustermann";
-    public static final String USER_NAME_1 = "Max Mustermann";
     public static final String USER_EMAIL_1 = "max.mustermann@example.org";
+    public static final String USER_FIRST_NAME_1 = "Max";
+    public static final String USER_LAST_NAME_1 = "Mustermann";
 
     // Test user 2
     public static final String USER_ID_2 = "b9440c43-b5c0-4951-9c29-000000000002";
     public static final String USER_TOKEN_2 = "tokenOfLieschenMueller";
-    public static final String USER_NAME_2 = "Lieschen Müller";
     public static final String USER_EMAIL_2 = "lieschen.mueller@example.org";
+    public static final String USER_FIRST_NAME_2 = "Lieschen";
+    public static final String USER_LAST_NAME_2 = "Müller";
 
     // Test user 3
     public static final String USER_ID_3 = "b9440c43-b5c0-4951-9c29-000000000003";
     public static final String USER_TOKEN_3 = "tokenOfOttoNormalverbraucher";
-    public static final String USER_NAME_3 = "Otto Normalverbraucher";
     public static final String USER_EMAIL_3 = "otto.normalverbraucher@example.org";
+    public static final String USER_FIRST_NAME_3 = "Otto";
+    public static final String USER_LAST_NAME_3 = "Normalverbraucher";
 
     // Test user 4
     public static final String USER_ID_4 = "b9440c43-b5c0-4951-9c29-000000000004";
     public static final String USER_TOKEN_4 = "tokenOfLassmirandaDennsiewillja";
-    public static final String USER_NAME_4 = "Lassmiranda Dennsiewillja";
     public static final String USER_EMAIL_4 = "l.m.r.d-d.s.w.j@simsons.org";
+    public static final String USER_FIRST_NAME_4 = "Lassmiranda";
+    public static final String USER_LAST_NAME_4 = "Dennsiewillja";
 
     // Default test address
-    public static final String ADDRESS_ID = TestData.ADDRESS_ID_1;
     public static final String ADDRESS_STREET = TestData.ADDRESS_STREET_1;
     public static final String ADDRESS_CITY = TestData.ADDRESS_CITY_1;
     public static final String ADDRESS_PROVINCE = TestData.ADDRESS_PROVINCE_1;
@@ -56,22 +57,20 @@ public class TestData {
     }
 
     // Test address 1
-    public static final String ADDRESS_ID_1 = "b9440c43-b5c0-4951-abcd-000000000001";
     public static final String ADDRESS_STREET_1 = "Maximiliankorso 9901";
     public static final String ADDRESS_CITY_1 = "Berlin";
     public static final String ADDRESS_PROVINCE_1 = "Berlin";
     public static final String ADDRESS_ZIP_1 = "13467";
-    public static final String ADDRESS_COUNTRY_1 = "Germany";
+    public static final String ADDRESS_COUNTRY_1 = "DE";
     
     public static final ImmutableAddressJson.Builder addressBuilder1() {
         return ImmutableAddressJson
             .builder()
-            .id(ADDRESS_ID_1)
             .street(ADDRESS_STREET_1)
             .city(ADDRESS_CITY_1)
             .province(ADDRESS_PROVINCE_1)
             .zip(ADDRESS_ZIP_1)
-            .country(ADDRESS_COUNTRY_1);
+            .countryCode(ADDRESS_COUNTRY_1);
     }
 
     // Default test project
@@ -115,7 +114,14 @@ public class TestData {
     public static final String PROPERTY_REG_ENTRY_1 = "Amtsgericht Schönestadt, Grundbuch von Kleinesiedlung, Blatt 4711";
     public static final String PROPERTY_DESCRIPTION_1 = "Example description of Kleinesiedlung";
     public static final Integer PROPERTY_PLOT_AREA_1 = 1234;
-    
+
+    // Test property 2
+    public static final String PROPERTY_ID_2 = "8b4f2703-94ca-490f-ae08-a787c716415f";
+    public static final String PROPERTY_TITLE_2 = "Test-Siedling Bremen";
+    public static final String PROPERTY_REG_ENTRY_2 = "Amtsgericht Bremen";
+    public static final String PROPERTY_DESCRIPTION_2 = "Example description of Test-Siedling";
+    public static final Integer PROPERTY_PLOT_AREA_2 = 4444;
+
     public static final ImmutablePropertyJson.Builder propertyBuilder1() {
         return ImmutablePropertyJson
             .builder()
@@ -337,5 +343,40 @@ public class TestData {
         .usableSpace(GARAGE_USABLE_SPACE_2)
         .rent(GARAGE_RENT_2);
     }
+
+    // Default test task
+    public static final String TASK_TITLE = TestData.TASK_TITLE_1;
+    public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
+    
+    // Test task 1
+    public static final String TASK_TITLE_1 = "Heizung funktioniert nicht";
+    public static final String TASK_DESCRIPTION_1 = "Sehr geehrte Damen und Herren,\\n"
+        + "\\n"
+        + "hiermit möchte ich einen dringenden Heizungsausfall in meiner Wohnung melden. "
+        + "Seit dem 23.12.2023 funktioniert die Heizung nicht mehr, "
+        + "und die Wohnung wird nicht mehr ausreichend beheizt. Dies ist besonders kritisch, "
+        + "da die Außentemperaturen derzeit sehr niedrig sind und die Wohnung ohne funktionierende "
+        + "Heizung unangenehm kalt ist.Ich bitte Sie daher dringend, einen Techniker zu schicken, "
+        + "um das Problem so schnell wie möglich zu beheben. Ein schneller Eingriff ist notwendig, "
+        + "um die Heizung wieder in Betrieb zu nehmen und weiteren Schaden zu vermeiden.\\n"
+        + "\\n"
+        + "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Bitte lassen Sie mich wissen, wann der Techniker kommen kann.\\n"
+        + "\\n"
+        + "Vielen Dank für Ihre schnelle Hilfe.\\n"
+        + "\\n"
+        + "Mit freundlichen Grüßen";
+
+    // Test task 2
+    public static final String TASK_TITLE_2 = "Licht im Treppenhaus defekt";
+    public static final String Task_DESCRIPTION_2 = "Sehr geehrte Damen und Herren,\\n"
+        + "\\n"
+        + "hiermit möchte ich einen dringenden Ausfall der Beleuchtung im Treppenhaus unseres Gebäudes melden. "
+        + "Seit dem 8.Mai 2023 funktioniert das Licht im Treppenhaus nicht mehr, was zu erheblichen Unannehmlichkeiten "
+        + "und Sicherheitsrisiken für alle Bewohner führt. Ich bitte Sie daher dringend, einen Techniker zu schicken, "
+        + "um den Beleuchtungsausfall so schnell wie möglich zu beheben.\\n"
+        + "\\n"
+        + "Vielen Dank im Voraus.\\n"
+        + "\\n"
+        + "Mit freundlichen Grüßen";
 
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import de.remsfal.core.model.AddressModel;
@@ -32,10 +33,9 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     @Column(name = "ZIP", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", nullable = false)
+    @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
     private String country;
 
-    @Override
     public String getId() {
         return id;
     }
@@ -77,12 +77,12 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         this.zip = zip;
     }
 
-    public String getCountry() {
-        return country;
+    public Locale getCountry() {
+        return new Locale("", country);
     }
 
-    public void setCountry(final String country) {
-        this.country = country;
+    public void setCountry(final Locale country) {
+        this.country = country.getCountry();
     }
 
     @Override
@@ -111,7 +111,6 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
             return null;
         }
         final AddressEntity entity = new AddressEntity();
-        entity.setId(address.getId());
         entity.setStreet(address.getStreet());
         entity.setCity(address.getCity());
         entity.setProvince(address.getProvince());

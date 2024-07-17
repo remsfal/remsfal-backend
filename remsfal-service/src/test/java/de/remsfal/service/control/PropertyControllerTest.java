@@ -1,30 +1,36 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.project.ImmutablePropertyJson;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.NotFoundException;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.model.ApartmentModel;
-import de.remsfal.core.model.BuildingModel;
-import de.remsfal.core.model.CommercialModel;
-import de.remsfal.core.model.GarageModel;
-import de.remsfal.core.model.PropertyModel;
-import de.remsfal.core.model.SiteModel;
+import de.remsfal.core.model.project.ApartmentModel;
+import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.PropertyEntity;
 import de.remsfal.service.entity.dto.SiteEntity;
+
+import java.util.List;
 
 @QuarkusTest
 class PropertyControllerTest extends AbstractTest {
@@ -87,7 +93,107 @@ class PropertyControllerTest extends AbstractTest {
             .getSingleResult();
         assertEquals(result, entity);
     }
-    
+
+    @Test
+    void deleteProperty_SUCCESS_correctlyDeleted() {
+        // Arrange
+        final PropertyModel property = TestData.propertyBuilder().build();
+        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
+        String propertyId = createdProperty.getId();
+        // Act
+        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, propertyId);
+        // Assert
+        assertTrue(deleted);
+        assertThrows(NoResultException.class, () -> findPropertyById(propertyId));
+    }
+
+    private PropertyEntity findPropertyById(String propertyId) {
+        return entityManager
+            .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
+            .setParameter("id", propertyId)
+            .getSingleResult();
+    }
+
+    @Test
+    void deleteProperty_FAILED_notDeleted() {
+        // Arrange
+        String notExistingPropertyId = "bfbada15-d3d5-4925-a438-260821532b54";
+        // Act
+        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, notExistingPropertyId);
+        // Assert
+        assertFalse(deleted);
+    }
+
+    @Test
+    void updateProperty_SUCCESS_correctlyUpdated() {
+        // Arrange
+        final PropertyModel property = TestData.propertyBuilder().build();
+        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
+        // Act
+        PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
+            .title(TestData.PROPERTY_ID_2)
+            .landRegisterEntry(TestData.PROPERTY_REG_ENTRY_2)
+            .description(TestData.PROPERTY_DESCRIPTION_2)
+            .plotArea(TestData.PROPERTY_PLOT_AREA_2)
+            .build();
+        PropertyModel updatedProperty = propertyController.updateProperty(TestData.PROJECT_ID, createdProperty.getId(), newPropertyValues);
+        // Assert
+        PropertyModel updatedPropertyFromDb = entityManager
+            .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
+            .setParameter("id", updatedProperty.getId())
+            .getSingleResult();
+        assertEquals(updatedProperty.getId(), updatedPropertyFromDb.getId());
+        assertProperty(newPropertyValues, updatedPropertyFromDb);
+    }
+
+    @Test
+    void updateProperty_FAILED_propertyNotFound() {
+        // Arrange
+        String notExistingPropertyId = "bfbada15-d3d5-4925-a438-260821532b54";
+        // act + Assert
+        PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
+            .title("new title")
+            .landRegisterEntry("new register entry")
+            .description("new description")
+            .plotArea(999)
+            .build();
+        assertThrows(NotFoundException.class,
+            () -> propertyController.updateProperty(TestData.PROJECT_ID, notExistingPropertyId, newPropertyValues));
+    }
+
+    @Test
+    void getProperties_SUCCESS_correctlyReturned() {
+        // Arrange
+        final PropertyModel property1 = ImmutablePropertyJson.builder()
+            .title("Property 1")
+            .landRegisterEntry("register entry 1")
+            .description("description 1")
+            .plotArea(111)
+            .build();
+        final PropertyModel property2 = ImmutablePropertyJson.builder()
+            .title("Property 2")
+            .landRegisterEntry("register entry 2")
+            .description("description 2")
+            .plotArea(999)
+            .build();
+
+        final PropertyModel createdProperty1 = propertyController.createProperty(TestData.PROJECT_ID, property1);
+        final PropertyModel createdProperty2 = propertyController.createProperty(TestData.PROJECT_ID, property2);
+        // Act
+        List<PropertyModel> properties = propertyController.getProperties(TestData.PROJECT_ID, 0, 100);
+        // Assert
+        assertEquals(2, properties.size());
+        assertProperty(property1, createdProperty1);
+        assertProperty(property2, createdProperty2);
+    }
+
+    private void assertProperty(PropertyModel expectedProperty, PropertyModel actualProperty) {
+        assertEquals(expectedProperty.getTitle(), actualProperty.getTitle());
+        assertEquals(expectedProperty.getLandRegisterEntry(), actualProperty.getLandRegisterEntry());
+        assertEquals(expectedProperty.getDescription(), actualProperty.getDescription());
+        assertEquals(expectedProperty.getPlotArea(), actualProperty.getPlotArea());
+    }
+
     @Test
     void getProperty_SUCCESS_propertyRetrieved() {
         runInTransaction(() -> entityManager
@@ -132,7 +238,10 @@ class PropertyControllerTest extends AbstractTest {
             .getId();
         assertNotNull(propertyId);
 
-        final SiteModel site = TestData.siteBuilder().build();
+        final SiteModel site = TestData.siteBuilder()
+            	.id(null)
+                .address(TestData.addressBuilder().build())
+                .build();
         
         assertThrows(ConstraintViolationException.class,
             () -> propertyController.createSite(null, propertyId, site));
@@ -146,6 +255,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(property.getId());
 
         final SiteModel site = TestData.siteBuilder()
+        	.id(null)
             .address(TestData.addressBuilder().build())
             .build();
         
@@ -174,14 +284,13 @@ class PropertyControllerTest extends AbstractTest {
         final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
         final SiteModel site = propertyController.createSite(TestData.PROJECT_ID, property.getId(),
-            TestData.siteBuilder().address(TestData.addressBuilder().build()).build());
+            TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(site.getId());
 
         final SiteModel result = propertyController.getSite(TestData.PROJECT_ID, property.getId(), site.getId());
         
         assertEquals(site.getId(), result.getId());
         assertEquals(site.getTitle(), result.getTitle());
-        assertEquals(site.getAddress().getId(), result.getAddress().getId());
         assertEquals(site.getDescription(), result.getDescription());
         assertEquals(site.getUsableSpace(), result.getUsableSpace());
         assertEquals(site.getRent(), result.getRent());
@@ -195,7 +304,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(propertyId);
         final String siteId = propertyController
             .createSite(TestData.PROJECT_ID, propertyId,
-            TestData.siteBuilder().address(TestData.addressBuilder().build()).build())
+            TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build())
             .getId();
         assertNotNull(siteId);
         
@@ -211,7 +320,8 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(buildingId);
 
         final BuildingModel building = TestData.buildingBuilder()
-            .address(TestData.addressBuilder().build())
+        	.id(null)
+        	.address(TestData.addressBuilder().build())
             .build();
         
         assertThrows(ConstraintViolationException.class,
@@ -226,6 +336,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(property.getId());
 
         final BuildingModel building = TestData.buildingBuilder()
+        	.id(null)
             .address(TestData.addressBuilder().build())
             .build();
         
@@ -256,14 +367,13 @@ class PropertyControllerTest extends AbstractTest {
         final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
         final BuildingModel building = propertyController.createBuilding(TestData.PROJECT_ID, property.getId(),
-            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build());
+            TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(building.getId());
 
         final BuildingModel result = propertyController.getBuilding(TestData.PROJECT_ID, property.getId(), building.getId());
         
         assertEquals(building.getId(), result.getId());
         assertEquals(building.getTitle(), result.getTitle());
-        assertEquals(building.getAddress().getId(), result.getAddress().getId());
         assertEquals(building.getDescription(), result.getDescription());
         assertEquals(building.getLivingSpace(), result.getLivingSpace());
         assertEquals(building.getCommercialSpace(), result.getCommercialSpace());
@@ -279,7 +389,7 @@ class PropertyControllerTest extends AbstractTest {
         assertNotNull(propertyId);
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
-            TestData.buildingBuilder().address(TestData.addressBuilder().build()).build())
+            TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build())
             .getId();
         assertNotNull(buildingId);
         
@@ -297,6 +407,7 @@ class PropertyControllerTest extends AbstractTest {
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
                 TestData.buildingBuilder()
+                .id(null)
                 .address(TestData.addressBuilder().build())
                 .build())
             .getId();
@@ -336,6 +447,7 @@ class PropertyControllerTest extends AbstractTest {
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
                 TestData.buildingBuilder()
+                .id(null)
                 .address(TestData.addressBuilder().build())
                 .build())
             .getId();
@@ -375,6 +487,7 @@ class PropertyControllerTest extends AbstractTest {
         final String buildingId = propertyController
             .createBuilding(TestData.PROJECT_ID, propertyId,
                 TestData.buildingBuilder()
+                .id(null)
                 .address(TestData.addressBuilder().build())
                 .build())
             .getId();

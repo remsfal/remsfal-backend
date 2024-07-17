@@ -1,8 +1,12 @@
 name: "RELEASE Build"
 
 on:
-  # Only run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      nextRelease:
+        description: 'Next Release Version (leave empty to automatically patch current version)'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -11,16 +15,61 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Determine Next Version
+        id: next-version
+        run: |
+          CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Current project version: $CURRENT_VERSION"
+          if  [ -z "${{ github.event.inputs.nextRelease }}" ]; then
+            # Assumes semantic versioning, increments minor version
+            NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."$3+1}')
+          else
+            NEXT_VERSION="${{ github.event.inputs.nextRelease }}"
+          fi
+          echo "Next version: $NEXT_VERSION"
+          echo "RELEASE_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          server-id: 'github'
+
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven
-      - name: Build with Maven (package)
-        run: mvn --batch-mode --update-snapshots package
+          restore-keys: ${{ runner.os }}-maven  
+
+      - name: Set project version
+        run: mvn versions:set -DnewVersion=${RELEASE_VERSION}
+
+      - name: Build with Maven
+        run: mvn clean install
+
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          add: '["pom.xml", "remsfal-core/pom.xml", "remsfal-service/pom.xml"]'
+          message: "Release version ${{env.RELEASE_VERSION}}"
+          author_name: "Release Bot"
+          author_email: "info@remsfal.de"
+          tag: "v${{env.RELEASE_VERSION}}"
+          push: "--tags --force"
+
+      - name: Publish to GitHub Packages Apache Maven
+        # Disable tests because they were already run in previous build step
+        run: mvn --batch-mode  deploy -PgithubDeploy -Dmaven.test.skip=true 
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1.14.0
+        with: 
+          artifacts: "remsfal-service/target/remsfal-service-runner.jar"
+          tag: "v${{env.RELEASE_VERSION}}"
+          body: "Release version ${{env.RELEASE_VERSION}}"
+          allowUpdates: true

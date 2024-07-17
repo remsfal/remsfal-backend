@@ -29,14 +29,33 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.style.configDirectory>src/main/style</project.style.configDirectory>
-        <surefire-plugin.version>3.2.5</surefire-plugin.version>
-        <failsafe-plugin.version>3.2.5</failsafe-plugin.version>
+        <surefire-plugin.version>3.3.1</surefire-plugin.version>
+        <failsafe-plugin.version>3.3.1</failsafe-plugin.version>
         <checkstyle-plugin.version>3.4.0</checkstyle-plugin.version>
         <sonar-plugin.version>3.11.0.3922</sonar-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.java.checkstyle.reportPaths>${project.build.directory}/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
+        <sonar.cpd.exclusions>
+                de.remsfal.service.entity.dto\**
+        </sonar.cpd.exclusions>
     </properties>
+
+    <profiles>
+      <profile>
+        <id>githubDeploy</id>
+        <distributionManagement>
+          <repository>
+            <id>github</id>
+            <name>GitHub Remsfal Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/remsfal/remsfal-backend</url>
+          </repository>
+        </distributionManagement>
+        </profile>
+    </profiles>
 
     <build>
         <pluginManagement>
@@ -96,6 +115,7 @@
                     <version>${checkstyle-plugin.version}</version>
                     <configuration>
                         <configLocation>${project.style.configDirectory}/checkstyle.xml</configLocation>
+                        <excludeGeneratedSources>true</excludeGeneratedSources>
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <linkXRef>false</linkXRef>

@@ -3,16 +3,19 @@ package de.remsfal.service.entity.dto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
 
-import de.remsfal.core.model.PropertyModel;
+import de.remsfal.core.model.project.PropertyModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
+@NamedQuery(name = "PropertyEntity.findByProjectId",
+    query = "SELECT p FROM PropertyEntity p WHERE p.projectId = :projectId")
 @Table(name = "PROPERTY")
 public class PropertyEntity extends AbstractEntity implements PropertyModel {
 
