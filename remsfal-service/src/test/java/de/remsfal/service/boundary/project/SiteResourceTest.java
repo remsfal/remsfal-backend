@@ -3,16 +3,15 @@ package de.remsfal.service.boundary.project;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.json.project.SiteListJson;
 import de.remsfal.service.TestData;
-import de.remsfal.service.entity.dto.SiteEntity;
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
-import java.util.List;
 
 import jakarta.ws.rs.core.Response.Status;
 
@@ -23,42 +22,61 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
     @Override
     @BeforeEach
-    protected void setupTestProjects() {
+    protected void setupTestProperties() {
+        super.setupTestUsers();
         super.setupTestProjects();
+        super.setupTestProperties();
     }
 
     @Test
-    void getSite_FAILED_notImplemented() {
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_1)
-            .setParameter(2, TestData.PROJECT_ID)
-            .setParameter(3, TestData.PROPERTY_TITLE_1)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY_1)
-            .setParameter(5, TestData.PROPERTY_DESCRIPTION_1)
-            .setParameter(6, TestData.PROPERTY_PLOT_AREA_1)
-            .executeUpdate());
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_2)
-            .setParameter(2, TestData.PROJECT_ID)
-            .setParameter(3, TestData.PROPERTY_TITLE_2)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY_2)
-            .setParameter(5, TestData.PROPERTY_DESCRIPTION_2)
-            .setParameter(6, TestData.PROPERTY_PLOT_AREA_2)
-            .executeUpdate());
-
-        SiteEntity entity = new SiteEntity();
-        entity.generateId();
-        entity.setTitle(TestData.SITE_TITLE);
+    void getSites_FAILED_noAuthentication() {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .contentType(ContentType.JSON)
-            .body(SiteListJson.valueOf(List.of(entity)))
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
+            .get(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
-            .statusCode(Status.BAD_REQUEST.getStatusCode());
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getSites_SUCCESS_emptyListIsReturned() {
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("sites.size()", Matchers.is(0));
+    }
+
+    @Test
+    void createSite_SUCCESS_propertyIsCreated() {
+        final String json = "{ \"title\":\"" + TestData.SITE_TITLE + "\","
+            + "\"address\":{"
+            + "\"street\":\"" + TestData.ADDRESS_STREET + "\","
+            + "\"city\":\"" + TestData.ADDRESS_CITY + "\","
+            + "\"province\":\"" + TestData.ADDRESS_PROVINCE + "\","
+            + "\"zip\":\"" + TestData.ADDRESS_ZIP + "\","
+            + "\"countryCode\":\"" + TestData.ADDRESS_COUNTRY + "\"}}";
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .contentType(ContentType.JSON)
+            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID)
+                .replace("{propertyId}", TestData.PROPERTY_ID) + "/"))
+            .and().body("id", Matchers.notNullValue())
+            .and().body("title", Matchers.equalTo(TestData.SITE_TITLE));
+
+        long enties = entityManager
+            .createQuery("SELECT count(site) FROM SiteEntity site where site.title = :title", Long.class)
+            .setParameter("title", TestData.SITE_TITLE)
+            .getSingleResult();
+        assertEquals(1, enties);
     }
 
 }

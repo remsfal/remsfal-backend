@@ -104,7 +104,9 @@
             <column name="PROPERTY_ID" type="char(36)">
                 <constraints nullable="false" />
              </column>
-            <column name="TITLE" type="varchar(255)" />
+            <column name="TITLE" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
             <column name="ADDRESS_ID" type="char(36)">
                 <constraints nullable="false" />
             </column>

@@ -30,6 +30,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
     @BeforeEach
     protected void setupTestProjects() {
+        super.setupTestUsers();
         super.setupTestProjects();
     }
 

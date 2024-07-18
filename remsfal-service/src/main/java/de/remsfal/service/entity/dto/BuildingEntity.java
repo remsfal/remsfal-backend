@@ -49,7 +49,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -57,7 +57,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         return propertyId;
     }
 
-    public void setPropertyId(String propertyId) {
+    public void setPropertyId(final String propertyId) {
         this.propertyId = propertyId;
     }
 
@@ -66,7 +66,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         return address;
     }
 
-    public void setAddress(AddressEntity address) {
+    public void setAddress(final AddressEntity address) {
         this.address = address;
     }
 
@@ -75,7 +75,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         return livingSpace;
     }
 
-    public void setLivingSpace(Float livingSpace) {
+    public void setLivingSpace(final Float livingSpace) {
         this.livingSpace = livingSpace;
     }
 
@@ -84,7 +84,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         return commercialSpace;
     }
 
-    public void setCommercialSpace(Float commercialSpace) {
+    public void setCommercialSpace(final Float commercialSpace) {
         this.commercialSpace = commercialSpace;
     }
 
@@ -93,7 +93,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         return heatingSpace;
     }
 
-    public void setHeatingSpace(Float heatingSpace) {
+    public void setHeatingSpace(final Float heatingSpace) {
         this.heatingSpace = heatingSpace;
     }
 
@@ -102,7 +102,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         return differentHeatingSpace;
     }
 
-    public void setDifferentHeatingSpace(Boolean differentHeatingSpace) {
+    public void setDifferentHeatingSpace(final Boolean differentHeatingSpace) {
         this.differentHeatingSpace = differentHeatingSpace;
     }
 

@@ -1,8 +1,9 @@
 package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -11,9 +12,11 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.core.model.project.TenancyModel;
+import de.remsfal.core.validation.NullOrNotBlank;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -26,27 +29,40 @@ public abstract class SiteJson implements SiteModel {
 
     @Null
     @Nullable
+    @Override
     public abstract String getId();
 
-    @NotNull
+    @NullOrNotBlank
+    @NotBlank(groups = PostValidation.class)
+    @Size(max=255)
+    @Override
     public abstract String getTitle();
 
-    @NotNull
-    public abstract AddressModel getAddress();
+    @Nullable
+    @Override
+    public abstract AddressJson getAddress();
     
     @Nullable
+    @Override
     public abstract String getDescription();
 
     @Nullable
+    @Override
     public abstract TenancyModel getTenancy();
 
     @Nullable
+    @Override
     public abstract Float getUsableSpace();
 
     public static SiteJson valueOf(final SiteModel model) {
-
-        // TODO Auto-generated method stub
-        return null;
+        return ImmutableSiteJson.builder()
+            .id(model.getId())
+            .title(model.getTitle())
+            .address(AddressJson.valueOf(model.getAddress()))
+            .description(model.getDescription())
+            .tenancy(TenancyJson.valueOf(model.getTenancy()))
+            .usableSpace(model.getUsableSpace())
+            .build();
     }
 
 }

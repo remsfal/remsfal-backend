@@ -20,39 +20,45 @@ public class SiteController {
     
     @Inject
     Logger logger;
-    
+
     @Inject
-    SiteRepository siteRepository;
-    
+    SiteRepository repository;
+
+    @Inject
+    AddressController addressController;
+
     @Transactional
     public SiteModel createSite(final String projectId, final String propertyId, final SiteModel site) {
         logger.infov("Creating a site (projectId={0}, propertyId={1}, site={2})", projectId, propertyId, site);
-        SiteEntity entity = SiteEntity.fromModel(site);
+        SiteEntity entity = new SiteEntity();
         entity.generateId();
-        entity.getAddress().generateId();
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
-        siteRepository.persistAndFlush(entity);
-        siteRepository.getEntityManager().refresh(entity);
+        entity.setTitle(site.getTitle());
+        entity.setDescription(site.getDescription());
+        entity.setAddress(addressController.updateAddress(entity.getAddress(), site.getAddress()));
+        entity.setUsableSpace(site.getUsableSpace());
+        repository.persistAndFlush(entity);
+        repository.getEntityManager().refresh(entity);
         return getSite(projectId, propertyId, entity.getId());
     }
 
-    public List<? extends SiteModel> getSites(String projectId, String propertyId) {
-        logger.infov("Retrieving all sites (projectId = {0}, propertyId={1)", projectId, propertyId);
-        return siteRepository.findAllSites();
+    public List<? extends SiteModel> getSites(final String projectId, final String propertyId) {
+        logger.infov("Retrieving all sites (projectId={0}, propertyId={1}", projectId, propertyId);
+        return repository.findAllSites(projectId, propertyId);
     }
 
     public SiteModel getSite(final String projectId, final String propertyId, final String siteId) {
         logger.infov("Retrieving a site (projectId={0}, propertyId={1}, siteId={2})",
                 projectId, propertyId, siteId);
-        return siteRepository.findSiteById(projectId, propertyId, siteId)
+        return repository.findSiteById(projectId, propertyId, siteId)
             .orElseThrow(() -> new NotFoundException("Site not exist"));
     }
 
     public SiteModel updateSite(String projectId, String propertyId, String siteId, SiteJson site) {
         logger.infov("Updating a site (projectId={0}, propertyId={1}, siteId={2}, site={3})",
                 projectId, propertyId, siteId, site);
-            final SiteEntity entity = siteRepository.findSiteById(projectId, propertyId, siteId)
+            final SiteEntity entity = repository.findSiteById(projectId, propertyId, siteId)
                 .orElseThrow(() -> new NotFoundException("Site not exist or user has no membership"));
             if(site.getTitle() != null) {
                 entity.setTitle(site.getTitle());
@@ -60,13 +66,13 @@ public class SiteController {
             if(site.getDescription() != null) {
                 entity.setDescription(site.getDescription());
             }
-            return siteRepository.merge(entity);
+            return repository.merge(entity);
     }
 
     @Transactional
     public boolean deleteSite(String projectId, String propertyId, String siteId) {
         logger.infov("Deleting a site (projectId={0}, propertyId={1}, siteId={2})", projectId, propertyId, siteId);
-        return siteRepository.deleteSiteById(projectId, propertyId, siteId) > 0;
+        return repository.deleteSiteById(projectId, propertyId, siteId) > 0;
     }
 
 }

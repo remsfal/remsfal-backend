@@ -19,7 +19,7 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String projectId;
 
-    @Column(name = "TITLE")
+    @Column(name = "TITLE", nullable = false)
     private String title;
 
     @Column(name = "DESCRIPTION")

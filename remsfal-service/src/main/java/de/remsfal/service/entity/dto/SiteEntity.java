@@ -27,7 +27,7 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     private String propertyId;
 
     @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID")
+    @JoinColumn(name = "ADDRESS_ID", nullable = false)
     private AddressEntity address;
 
     @Override
@@ -74,19 +74,6 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    public static SiteEntity fromModel(SiteModel site) {
-        if(site == null) {
-            return null;
-        }
-        final SiteEntity entity = new SiteEntity();
-        entity.setId(site.getId());
-        entity.setTitle(site.getTitle());
-        entity.setAddress(AddressEntity.fromModel(site.getAddress()));
-        entity.setDescription(site.getDescription());
-        entity.setUsableSpace(site.getUsableSpace());
-        return entity;
     }
 
 }

@@ -27,9 +27,9 @@ public class SiteRepository extends AbstractRepository<SiteEntity> {
     }
 
 
-    public List<SiteEntity> findAllSites() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<SiteEntity> findAllSites(final String projectId, final String propertyId) {
+        return list("projectId = :projectId and propertyId = :propertyId",
+            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_PROPERTY_ID, propertyId));
     }
 
 }

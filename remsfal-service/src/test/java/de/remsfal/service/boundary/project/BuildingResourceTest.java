@@ -23,31 +23,14 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
     @Override
     @BeforeEach
-    protected void setupTestProjects() {
+    protected void setupTestProperties() {
+        super.setupTestUsers();
         super.setupTestProjects();
+        super.setupTestProperties();
     }
 
     @Test
     void getBuilding_FAILED_notImplemented() {
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_1)
-            .setParameter(2, TestData.PROJECT_ID)
-            .setParameter(3, TestData.PROPERTY_TITLE_1)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY_1)
-            .setParameter(5, TestData.PROPERTY_DESCRIPTION_1)
-            .setParameter(6, TestData.PROPERTY_PLOT_AREA_1)
-            .executeUpdate());
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_2)
-            .setParameter(2, TestData.PROJECT_ID)
-            .setParameter(3, TestData.PROPERTY_TITLE_2)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY_2)
-            .setParameter(5, TestData.PROPERTY_DESCRIPTION_2)
-            .setParameter(6, TestData.PROPERTY_PLOT_AREA_2)
-            .executeUpdate());
-
         BuildingEntity entity = new BuildingEntity();
         entity.generateId();
         entity.setTitle(TestData.BUILDING_TITLE);
