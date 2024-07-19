@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -84,7 +85,7 @@ public class RentEntity extends AbstractEntity implements RentModel {
     }
 
     public void setBasicRent(final Float basicRent) {
-        this.basicRent = BigDecimal.valueOf(basicRent);
+        this.basicRent = BigDecimal.valueOf(basicRent).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
@@ -93,7 +94,7 @@ public class RentEntity extends AbstractEntity implements RentModel {
     }
 
     public void setOperatingCostsPrepayment(final Float operatingCostsPrepayment) {
-        this.operatingCostsPrepayment = BigDecimal.valueOf(operatingCostsPrepayment);
+        this.operatingCostsPrepayment = BigDecimal.valueOf(operatingCostsPrepayment).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
@@ -102,7 +103,7 @@ public class RentEntity extends AbstractEntity implements RentModel {
     }
 
     public void setHeatingCostsPrepayment(final Float heatingCostsPrepayment) {
-        this.heatingCostsPrepayment = BigDecimal.valueOf(heatingCostsPrepayment);
+        this.heatingCostsPrepayment = BigDecimal.valueOf(heatingCostsPrepayment).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override

@@ -63,7 +63,7 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
         return tenancy;
     }
 
-    public void setTenancies(final TenancyEntity tenancy) {
+    public void setTenancy(final TenancyEntity tenancy) {
         this.tenancy = tenancy;
     }
 

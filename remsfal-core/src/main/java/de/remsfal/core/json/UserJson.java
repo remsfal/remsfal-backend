@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import de.remsfal.core.validation.PostValidation;
 import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.PastOrPresent;
@@ -57,6 +58,7 @@ public abstract class UserJson implements CustomerModel {
     @Override
     public abstract String getLastName();
 
+    @Valid
     @Nullable
     @Override
     public abstract AddressJson getAddress();

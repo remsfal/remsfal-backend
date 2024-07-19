@@ -57,9 +57,8 @@ public class AddressController {
         }
         if(!isValidAddress(entity)) {
             throw new BadRequestException("Invalid address");
-        } {
-            return entity;
         }
+        return entity;
     }
 
 }

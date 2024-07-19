@@ -17,7 +17,7 @@ import java.util.List;
  */
 @RequestScoped
 public class SiteController {
-    
+
     @Inject
     Logger logger;
 
@@ -26,6 +26,9 @@ public class SiteController {
 
     @Inject
     AddressController addressController;
+
+    @Inject
+    TenancyController tenancyController;
 
     @Transactional
     public SiteModel createSite(final String projectId, final String propertyId, final SiteModel site) {
@@ -50,23 +53,33 @@ public class SiteController {
 
     public SiteModel getSite(final String projectId, final String propertyId, final String siteId) {
         logger.infov("Retrieving a site (projectId={0}, propertyId={1}, siteId={2})",
-                projectId, propertyId, siteId);
+            projectId, propertyId, siteId);
         return repository.findSiteById(projectId, propertyId, siteId)
             .orElseThrow(() -> new NotFoundException("Site not exist"));
     }
 
-    public SiteModel updateSite(String projectId, String propertyId, String siteId, SiteJson site) {
+    @Transactional
+    public SiteModel updateSite(final String projectId, final String propertyId, final String siteId, final SiteJson site) {
         logger.infov("Updating a site (projectId={0}, propertyId={1}, siteId={2}, site={3})",
-                projectId, propertyId, siteId, site);
-            final SiteEntity entity = repository.findSiteById(projectId, propertyId, siteId)
-                .orElseThrow(() -> new NotFoundException("Site not exist or user has no membership"));
-            if(site.getTitle() != null) {
-                entity.setTitle(site.getTitle());
-            }
-            if(site.getDescription() != null) {
-                entity.setDescription(site.getDescription());
-            }
-            return repository.merge(entity);
+            projectId, propertyId, siteId, site);
+        final SiteEntity entity = repository.findSiteById(projectId, propertyId, siteId)
+            .orElseThrow(() -> new NotFoundException("Site not exist or user has no membership"));
+        if (site.getTitle() != null) {
+            entity.setTitle(site.getTitle());
+        }
+        if (site.getDescription() != null) {
+            entity.setDescription(site.getDescription());
+        }
+        if (site.getAddress() != null) {
+            entity.setAddress(addressController.updateAddress(entity.getAddress(), site.getAddress()));
+        }
+        if (site.getTenancy() != null) {
+            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), site.getTenancy()));
+        }
+        if (site.getUsableSpace() != null) {
+            entity.setUsableSpace(site.getUsableSpace());
+        }
+        return repository.merge(entity);
     }
 
     @Transactional

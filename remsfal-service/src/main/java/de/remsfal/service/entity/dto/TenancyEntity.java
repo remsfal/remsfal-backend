@@ -31,7 +31,7 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     private String projectId;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "TENANCY_ID")
+    @JoinColumn(name = "TENANCY_ID", referencedColumnName="ID", nullable = false)
     @OrderBy("firstPaymentDate")
     private List<RentEntity> rent;
 
@@ -53,6 +53,14 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     @Override
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
 
 import java.time.LocalDate;
@@ -14,7 +15,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.project.TenancyModel;
 
 /**
@@ -35,9 +35,10 @@ public abstract class TenancyJson implements TenancyModel {
     @Override
     public abstract List<RentJson> getRent();
 
+    @Valid
     @Nullable
     @Override
-    public abstract CustomerModel getTenant();
+    public abstract UserJson getTenant();
 
     @Nullable
     @Override

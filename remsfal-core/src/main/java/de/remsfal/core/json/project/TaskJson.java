@@ -30,46 +30,57 @@ public abstract class TaskJson implements TaskModel {
 
     @Null
     @Nullable
+    @Override
     public abstract String getId();
 
     @Null
     @Nullable
+    @Override
     public abstract String getProjectId();
 
     @NullOrNotBlank
     @NotBlank(groups = PostValidation.class)
     @Size(max = 255)
     @Nullable
+    @Override
     public abstract String getTitle();
 
     @Nullable
+    @Override
     public abstract Status getStatus();
 
     @UUID
     @Nullable
+    @Override
     public abstract String getOwnerId();
 
     @Nullable
+    @Override
     public abstract String getDescription();
 
     @UUID
     @Nullable
+    @Override
     public abstract String getBlockedBy();
 
     @UUID
     @Nullable
+    @Override
     public abstract String getRelatedTo();
 
     @UUID
     @Nullable
+    @Override
     public abstract String getDuplicateOf();
 
     @Null
     @Nullable
+    @Override
     public abstract Date getCreatedAt();
 
     @Null
     @Nullable
+    @Override
     public abstract Date getModifiedAt();
 
     public static TaskJson valueOf(final TaskModel model) {

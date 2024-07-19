@@ -1,5 +1,7 @@
 package de.remsfal.service;
 
+import java.time.LocalDate;
+
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
@@ -7,6 +9,7 @@ import de.remsfal.core.json.project.ImmutableCommercialJson;
 import de.remsfal.core.json.project.ImmutableGarageJson;
 import de.remsfal.core.json.project.ImmutablePropertyJson;
 import de.remsfal.core.json.project.ImmutableSiteJson;
+import de.remsfal.core.json.project.ImmutableTenancyJson;
 
 public class TestData {
 
@@ -46,6 +49,7 @@ public class TestData {
     public static final String USER_LAST_NAME_4 = "Dennsiewillja";
 
     // Default test address
+    public static final String ADDRESS_ID = TestData.ADDRESS_ID_1;
     public static final String ADDRESS_STREET = TestData.ADDRESS_STREET_1;
     public static final String ADDRESS_CITY = TestData.ADDRESS_CITY_1;
     public static final String ADDRESS_PROVINCE = TestData.ADDRESS_PROVINCE_1;
@@ -57,6 +61,7 @@ public class TestData {
     }
 
     // Test address 1
+    public static final String ADDRESS_ID_1 = "00550c43-b5c0-4951-9c29-000000000001";
     public static final String ADDRESS_STREET_1 = "Maximiliankorso 9901";
     public static final String ADDRESS_CITY_1 = "Berlin";
     public static final String ADDRESS_PROVINCE_1 = "Berlin";
@@ -335,6 +340,28 @@ public class TestData {
         .location(GARAGE_LOCATION_2)
         .description(GARAGE_DESCRIPTION_2)
         .usableSpace(GARAGE_USABLE_SPACE_2);
+    }
+
+    // Default test tenancy
+    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
+    public static final String TENANCY_START = TestData.TENANCY_START_1;
+    public static final String TENANCY_END = TestData.TENANCY_END_1;
+    
+    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
+        return tenancyBuilder1();
+    }
+
+    // Test tenancy 1
+    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_1 = "2007-12-01";
+    public static final String TENANCY_END_1 = "2025-01-30";
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
+        return ImmutableTenancyJson
+        .builder()
+        .id(TENANCY_ID_1)
+        .startOfRental(LocalDate.parse(TENANCY_START_1))
+        .endOfRental(LocalDate.parse(TENANCY_END_1));
     }
 
     // Default test task
