@@ -31,7 +31,7 @@ public abstract class PropertyListJson {
 
     public abstract List<PropertyItemJson> getProperties();
 
-    public static PropertyListJson valueOf(final List<PropertyModel> properties, final int first, final long total) {
+    public static PropertyListJson valueOf(final List<? extends PropertyModel> properties, final int first, final long total) {
         final ImmutablePropertyListJson.Builder builder = ImmutablePropertyListJson.builder();
         for(PropertyModel model : properties) {
             builder.addProperties(PropertyItemJson.valueOf(model));

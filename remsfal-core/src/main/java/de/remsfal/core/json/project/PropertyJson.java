@@ -27,20 +27,25 @@ public abstract class PropertyJson implements PropertyModel {
 
     @Null
     @Nullable
+    @Override
     public abstract String getId();
 
     @NullOrNotBlank
     @NotBlank(groups = PostValidation.class)
     @Size(max=255)
+    @Override
     public abstract String getTitle();
 
     @Nullable
+    @Override
     public abstract String getLandRegisterEntry();
 
     @Nullable
+    @Override
     public abstract String getDescription();
 
     @Nullable
+    @Override
     public abstract Integer getPlotArea();
 
     @Null

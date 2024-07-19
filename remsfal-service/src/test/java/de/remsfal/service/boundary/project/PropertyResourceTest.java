@@ -26,6 +26,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
     @Override
     @BeforeEach
     protected void setupTestProjects() {
+        super.setupTestUsers();
         super.setupTestProjects();
     }
 

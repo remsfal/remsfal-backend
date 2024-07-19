@@ -2,10 +2,8 @@ package de.remsfal.service.boundary.project;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
 import java.util.Optional;
@@ -22,9 +20,6 @@ import de.remsfal.service.control.TaskController;
  */
 @RequestScoped
 public class DefectResource extends ProjectSubResource implements DefectEndpoint {
-
-    @Context
-    UriInfo uri;
 
     @Inject
     TaskController defectController;

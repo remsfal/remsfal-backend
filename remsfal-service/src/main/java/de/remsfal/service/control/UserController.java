@@ -6,6 +6,7 @@ import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
@@ -14,13 +15,11 @@ import java.util.Optional;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.AuthenticationEvent;
 import de.remsfal.service.boundary.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.UserRepository;
-import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 
 /**
@@ -70,9 +69,30 @@ public class UserController {
         }
     }
 
-    public CustomerModel getUser(final String userId) {
+    public UserEntity getUser(final String userId) {
         logger.infov("Retrieving a user (id = {0})", userId);
         return repository.findByIdOptional(userId).orElseThrow(() -> new NotFoundException("User does not exist"));
+    }
+
+    @Transactional(TxType.MANDATORY)
+    public UserEntity findOrCreateUser(final UserModel user) {
+        if (user.getId() != null) {
+            return repository.findByIdOptional(user.getId())
+                .orElseThrow(() -> new NotFoundException("User does not exist"));
+        } else if (user.getEmail() != null) {
+            Optional<UserEntity> userByEmail = repository.findByEmail(user.getEmail());
+            if (userByEmail.isPresent()) {
+                return userByEmail.get();
+            }
+
+            UserEntity userEntity = new UserEntity();
+            userEntity.generateId();
+            userEntity.setEmail(user.getEmail());
+            repository.persist(userEntity);
+            return userEntity;
+        } else {
+            throw new BadRequestException("Project member's email is missing");
+        }
     }
 
     @Transactional
@@ -88,7 +108,7 @@ public class UserController {
             entity.setLastName(user.getLastName());
         }
         if(user.getAddress() != null) {
-            updateAddress(entity, user.getAddress());
+            entity.setAddress(addressController.updateAddress(entity.getAddress(), user.getAddress()));
         }
         if(user.getMobilePhoneNumber() != null) {
             entity.setMobilePhoneNumber(user.getMobilePhoneNumber());
@@ -102,31 +122,6 @@ public class UserController {
         return repository.merge(entity);
     }
     
-    private void updateAddress(final UserEntity user, final AddressModel address) {
-        if(user.getAddress() == null) {
-            user.setAddress(new AddressEntity());
-            user.getAddress().generateId();
-        }
-        if(address.getStreet() != null) {
-            user.getAddress().setStreet(address.getStreet());
-        }
-        if(address.getCity() != null) {
-            user.getAddress().setCity(address.getCity());
-        }
-        if(address.getProvince() != null) {
-            user.getAddress().setProvince(address.getProvince());
-        }
-        if(address.getZip() != null) {
-            user.getAddress().setZip(address.getZip());
-        }
-        if(address.getCountry() != null) {
-            user.getAddress().setCountry(address.getCountry());
-        }
-        if(!addressController.isValidAddress(user.getAddress())) {
-            throw new BadRequestException("Invalid address");
-        }
-    }
-
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
         logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})",
                 event.getGoogleId(), event.getEmail());

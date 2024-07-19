@@ -29,42 +29,6 @@ public class TaskController {
     @Inject
     TaskRepository repository;
 
-    public List<? extends TaskModel> getTasks(final String projectId, final Optional<Status> status) {
-        logger.infov("Retrieving tasks (projectId = {0})", projectId);
-        if(status.isEmpty()) {
-            return repository.findTaskByProjectId(TaskType.TASK, projectId);
-        } else {
-            return repository.findTaskByProjectId(TaskType.TASK, projectId, status.get());
-        }
-    }
-
-    public List<? extends TaskModel> getDefects(final String projectId, final Optional<Status> status) {
-        logger.infov("Retrieving defects (projectId = {0})", projectId);
-        if(status.isEmpty()) {
-            return repository.findTaskByProjectId(TaskType.DEFECT, projectId);
-        } else {
-            return repository.findTaskByProjectId(TaskType.DEFECT, projectId, status.get());
-        }
-    }
-
-    public List<? extends TaskModel> getTasks(final String projectId, final String ownerId, final Optional<Status> status) {
-        logger.infov("Retrieving tasks (projectId = {0}, ownerId = {1})", projectId, ownerId);
-        if(status.isEmpty()) {
-            return repository.findTaskByOwnerId(TaskType.TASK, projectId, ownerId);
-        } else {
-            return repository.findTaskByOwnerId(TaskType.TASK, projectId, ownerId, status.get());
-        }
-    }
-
-    public List<? extends TaskModel> getDefects(final String projectId, final String ownerId, final Optional<Status> status) {
-        logger.infov("Retrieving defects (projectId = {0}, ownerId = {1})", projectId, ownerId);
-        if(status.isEmpty()) {
-            return repository.findTaskByOwnerId(TaskType.DEFECT, projectId, ownerId);
-        } else {
-            return repository.findTaskByOwnerId(TaskType.DEFECT, projectId, ownerId, status.get());
-        }
-    }
-
     @Transactional
     public TaskModel createTask(final String projectId, final UserModel user, final TaskModel task) {
         logger.infov("Creating a task (projectId={0}, creator={1})", projectId, user.getEmail());
@@ -103,6 +67,42 @@ public class TaskController {
         entity.setDescription(task.getDescription());
         repository.persistAndFlush(entity);
         return entity;
+    }
+
+    public List<? extends TaskModel> getTasks(final String projectId, final Optional<Status> status) {
+        logger.infov("Retrieving tasks (projectId = {0})", projectId);
+        if(status.isEmpty()) {
+            return repository.findTaskByProjectId(TaskType.TASK, projectId);
+        } else {
+            return repository.findTaskByProjectId(TaskType.TASK, projectId, status.get());
+        }
+    }
+
+    public List<? extends TaskModel> getDefects(final String projectId, final Optional<Status> status) {
+        logger.infov("Retrieving defects (projectId = {0})", projectId);
+        if(status.isEmpty()) {
+            return repository.findTaskByProjectId(TaskType.DEFECT, projectId);
+        } else {
+            return repository.findTaskByProjectId(TaskType.DEFECT, projectId, status.get());
+        }
+    }
+
+    public List<? extends TaskModel> getTasks(final String projectId, final String ownerId, final Optional<Status> status) {
+        logger.infov("Retrieving tasks (projectId = {0}, ownerId = {1})", projectId, ownerId);
+        if(status.isEmpty()) {
+            return repository.findTaskByOwnerId(TaskType.TASK, projectId, ownerId);
+        } else {
+            return repository.findTaskByOwnerId(TaskType.TASK, projectId, ownerId, status.get());
+        }
+    }
+
+    public List<? extends TaskModel> getDefects(final String projectId, final String ownerId, final Optional<Status> status) {
+        logger.infov("Retrieving defects (projectId = {0}, ownerId = {1})", projectId, ownerId);
+        if(status.isEmpty()) {
+            return repository.findTaskByOwnerId(TaskType.DEFECT, projectId, ownerId);
+        } else {
+            return repository.findTaskByOwnerId(TaskType.DEFECT, projectId, ownerId, status.get());
+        }
     }
 
     protected TaskEntity getTask(final TaskType type, final String projectId, final String taskId) {

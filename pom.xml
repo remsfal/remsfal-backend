@@ -77,15 +77,21 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${surefire-plugin.version}</version>
                     <configuration>
+                        <runOrder>alphabetical</runOrder>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <trimStackTrace>false</trimStackTrace>
                         <systemPropertyVariables>
                             <java.util.logging.manager>
-                                org.jboss.logmanager.LogManager</java.util.logging.manager>
+                                org.jboss.logmanager.LogManager
+                            </java.util.logging.manager>
                             <maven.home>${maven.home}</maven.home>
                             <quarkus.jacoco.data-file>
-                                ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec</quarkus.jacoco.data-file>
+                                ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec
+                            </quarkus.jacoco.data-file>
                             <quarkus.jacoco.reuse-data-file>true</quarkus.jacoco.reuse-data-file>
                             <quarkus.jacoco.report-location>
-                                ${maven.multiModuleProjectDirectory}/target/site/jacoco</quarkus.jacoco.report-location>
+                                ${maven.multiModuleProjectDirectory}/target/site/jacoco
+                            </quarkus.jacoco.report-location>
                         </systemPropertyVariables>
                         <!-- includes>
                             <include>AuthenticationResourceMockitoTest.java</include>

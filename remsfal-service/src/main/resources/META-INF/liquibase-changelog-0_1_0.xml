@@ -8,124 +8,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-backend-0.1.0-property" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="PROPERTY">
-            <column name="ID" type="char(36)">
-                <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="PROJECT_ID" type="char(36)">
-                <constraints nullable="false" />
-            </column>
-            <column name="TITLE" type="varchar(255)" />
-            <column name="LAND_REGISTER_ENTRY" type="varchar(255)" />
-            <column name="DESCRIPTION" type="varchar(255)" />
-            <column name="PLOT_AREA" type="int" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-
-        <addForeignKeyConstraint constraintName="FK_PROPERTY_PROJECT_ID"
-            baseTableName="PROPERTY" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
-            onDelete="CASCADE" onUpdate="RESTRICT" />
-
-        <createIndex indexName="IDX_PROJECT_FK" tableName="PROPERTY">
-            <column name="PROJECT_ID" type="char(36)" />
-        </createIndex>
-
-        <createTable tableName="BUILDING">
-            <column name="ID" type="char(36)">
-                <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="PROJECT_ID" type="char(36)">
-                <constraints nullable="false" />
-            </column>
-            <column name="PROPERTY_ID" type="char(36)">
-                <constraints nullable="false" />
-             </column>
-            <column name="TITLE" type="varchar(255)" />
-            <column name="ADDRESS_ID" type="char(36)">
-                <constraints nullable="false" />
-            </column>
-            <column name="DESCRIPTION" type="varchar(255)" />
-            <column name="LIVING_SPACE" type="DECIMAL(10, 2)" />
-            <column name="COMMERCIAL_SPACE" type="DECIMAL(10, 2)" />
-            <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
-            <column name="HEATING_SPACE" type="DECIMAL(10, 2)" />
-            <column name="RENT" type="DECIMAL(10, 2)" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-
-        <addForeignKeyConstraint constraintName="FK_BUILDING_PROJECT_ID"
-            baseTableName="BUILDING" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
-            onDelete="CASCADE" onUpdate="RESTRICT" />
-
-        <addForeignKeyConstraint constraintName="FK_BUILDING_PROPERTY_ID"
-            baseTableName="BUILDING" baseColumnNames="PROPERTY_ID"
-            referencedTableName="PROPERTY" referencedColumnNames="ID"
-            onDelete="CASCADE" onUpdate="RESTRICT" />
-
-        <createIndex indexName="IDX_PROJECT_FK" tableName="BUILDING">
-            <column name="PROJECT_ID" type="char(36)" />
-        </createIndex>
-
-        <createIndex indexName="IDX_PROPERTY_FK" tableName="BUILDING">
-            <column name="PROPERTY_ID" type="char(36)" />
-        </createIndex>
-
-        <createTable tableName="SITE">
-            <column name="ID" type="char(36)">
-                <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="PROJECT_ID" type="char(36)">
-                <constraints nullable="false" />
-            </column>
-            <column name="PROPERTY_ID" type="char(36)">
-                <constraints nullable="false" />
-             </column>
-            <column name="TITLE" type="varchar(255)" />
-            <column name="ADDRESS_ID" type="char(36)">
-                <constraints nullable="false" />
-            </column>
-            <column name="DESCRIPTION" type="varchar(255)" />
-            <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
-            <column name="RENT" type="DECIMAL(10, 2)" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-
-        <addForeignKeyConstraint constraintName="FK_SITE_PROJECT_ID"
-            baseTableName="SITE" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
-            onDelete="CASCADE" onUpdate="RESTRICT" />
-
-        <addForeignKeyConstraint constraintName="FK_SITE_PROPERTY_ID"
-            baseTableName="SITE" baseColumnNames="PROPERTY_ID"
-            referencedTableName="PROPERTY" referencedColumnNames="ID"
-            onDelete="CASCADE" onUpdate="RESTRICT" />
-
-        <createIndex indexName="IDX_PROJECT_FK" tableName="SITE">
-            <column name="PROJECT_ID" type="char(36)" />
-        </createIndex>
-
-        <createIndex indexName="IDX_PROPERTY_FK" tableName="SITE">
-            <column name="PROPERTY_ID" type="char(36)" />
-        </createIndex>
-
+    <changeSet id="remsfal-backend-0.1.0-apartment" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="APARTMENT">
             <column name="ID" type="char(36)">
                 <constraints nullable="false" primaryKey="true" />
@@ -138,11 +21,11 @@
              </column>
             <column name="TITLE" type="varchar(255)" />
             <column name="LOCATION" type="varchar(255)" />
-            <column name="DESCRIPTION" type="varchar(255)" />
+            <column name="DESCRIPTION" type="clob" />
+            <column name="TENANCY_ID" type="char(36)" />
             <column name="LIVING_SPACE" type="DECIMAL(10, 2)" />
             <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
             <column name="HEATING_SPACE" type="DECIMAL(10, 2)" />
-            <column name="RENT" type="DECIMAL(10, 2)" />
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
@@ -181,11 +64,11 @@
              </column>
             <column name="TITLE" type="varchar(255)" />
             <column name="LOCATION" type="varchar(255)" />
-            <column name="DESCRIPTION" type="varchar(255)" />
+            <column name="DESCRIPTION" type="clob" />
+            <column name="TENANCY_ID" type="char(36)" />
             <column name="COMMERCIAL_SPACE" type="DECIMAL(10, 2)" />
             <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
             <column name="HEATING_SPACE" type="DECIMAL(10, 2)" />
-            <column name="RENT" type="DECIMAL(10, 2)" />
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
@@ -224,9 +107,9 @@
              </column>
             <column name="TITLE" type="varchar(255)" />
             <column name="LOCATION" type="varchar(255)" />
-            <column name="DESCRIPTION" type="varchar(255)" />
+            <column name="DESCRIPTION" type="clob" />
+            <column name="TENANCY_ID" type="char(36)" />
             <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
-            <column name="RENT" type="DECIMAL(10, 2)" />
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>

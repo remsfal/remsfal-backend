@@ -1,11 +1,8 @@
 package de.remsfal.service.control;
 
-
-import jakarta.annotation.Nonnull;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
@@ -16,7 +13,6 @@ import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
-import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.UserEntity;
@@ -36,7 +32,7 @@ public class ProjectController {
     Logger logger;
 
     @Inject
-    UserRepository userRepository;
+    UserController userController;
 
     @Inject
     ProjectRepository projectRepository;
@@ -61,7 +57,7 @@ public class ProjectController {
     @Transactional
     public ProjectModel createProject(final UserModel user, final ProjectModel project) {
         logger.infov("Creating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
-        UserEntity userEntity = userRepository.findById(user.getId());
+        UserEntity userEntity = userController.getUser(user.getId());
 
         ProjectEntity entity = new ProjectEntity();
         entity.generateId();
@@ -115,32 +111,10 @@ public class ProjectController {
         final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
 
-        UserEntity userEntity = findOrCreateUser(member);
+        UserEntity userEntity = userController.findOrCreateUser(member);
         projectEntity.addMember(userEntity, member.getRole());
         notificationController.informUserAboutProjectMembership(userEntity);
         return projectRepository.mergeAndFlush(projectEntity);
-    }
-
-    @Nonnull
-    private UserEntity findOrCreateUser(ProjectMemberModel member) {
-        if (member.getId() != null) {
-            return userRepository.findByIdOptional(member.getId())
-                .orElseThrow(() -> new NotFoundException("User does not exist"));
-        } else if (member.getEmail() != null) {
-            Optional<UserEntity> userByEmail = userRepository.findByEmail(member.getEmail());
-            if (userByEmail.isPresent()) {
-                return userByEmail.get();
-            }
-
-            UserEntity userEntity = new UserEntity();
-            userEntity.generateId();
-            userEntity.setEmail(member.getEmail());
-            userRepository.persist(userEntity);
-            notificationController.informUserAboutRegistration(userEntity);
-            return userEntity;
-        } else {
-            throw new BadRequestException("Project member's email is missing");
-        }
     }
 
     public Set<? extends ProjectMemberModel> getProjectMembers(final UserModel user, final String projectId) {

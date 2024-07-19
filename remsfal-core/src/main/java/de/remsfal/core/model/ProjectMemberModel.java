@@ -10,8 +10,8 @@ public interface ProjectMemberModel extends UserModel {
         MANAGER(20), // Verwalter
         LESSOR(30), // Vermieter
         CARETAKER(40), // Hausmeister
-        CONSULTANT(50), // Auftragnehmer / Berater
-        LESSEE(80); // Mieter
+        CONTRACTOR(50), // Auftragnehmer / Berater
+        TENANCY(80); // Mieter
         
         private int leadership;
         

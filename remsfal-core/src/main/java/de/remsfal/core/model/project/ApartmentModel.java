@@ -19,6 +19,4 @@ public interface ApartmentModel {
 
     Float getHeatingSpace();
 
-    Float getRent();
-
 }

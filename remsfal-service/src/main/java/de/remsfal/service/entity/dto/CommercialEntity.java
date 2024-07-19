@@ -110,7 +110,6 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         entity.setCommercialSpace(commercial.getCommercialSpace());
         entity.setUsableSpace(commercial.getUsableSpace());
         entity.setHeatingSpace(commercial.getHeatingSpace());
-        entity.setRent(commercial.getRent());
         return entity;
     }
 

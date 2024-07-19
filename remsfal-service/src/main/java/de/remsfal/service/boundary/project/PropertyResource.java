@@ -2,17 +2,17 @@ package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.BuildingEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.api.project.SiteEndpoint;
 import de.remsfal.core.json.project.PropertyJson;
 import de.remsfal.core.json.project.PropertyListJson;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.control.PropertyController;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
 import java.util.List;
@@ -23,16 +23,16 @@ import java.util.List;
 @RequestScoped
 public class PropertyResource extends ProjectSubResource implements PropertyEndpoint {
 
-    @Context
-    UriInfo uri;
-
     @Inject
     PropertyController controller;
 
+    @Inject
+    Instance<SiteResource> siteResource;
+
     @Override
-    public PropertyListJson getProperties(String projectId, Integer offset, Integer limit) {
+    public PropertyListJson getProperties(final String projectId, final Integer offset, final Integer limit) {
         checkPrivileges(projectId);
-        List<PropertyModel> properties = controller.getProperties(projectId, offset, limit);
+        List<? extends PropertyModel> properties = controller.getProperties(projectId, offset, limit);
         return PropertyListJson.valueOf(properties, offset, controller.countProperties(projectId));
     }
 
@@ -55,13 +55,13 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
     }
 
     @Override
-    public PropertyJson updateProperty(String projectId, String propertyId, PropertyJson property) {
+    public PropertyJson updateProperty(final String projectId, final String propertyId, final PropertyJson property) {
         checkPrivileges(projectId);
         return PropertyJson.valueOf(controller.updateProperty(projectId, propertyId, property));
     }
 
     @Override
-    public void deleteProperty(String projectId, String propertyId) {
+    public void deleteProperty(final String projectId, final String propertyId) {
         checkPrivileges(projectId);
         controller.deleteProperty(projectId, propertyId);
     }
@@ -72,8 +72,8 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
     }
 
     @Override
-    public BuildingEndpoint getSiteResource() {
-      throw new InternalServerErrorException("Not implemented");
+    public SiteEndpoint getSiteResource() {
+        return resourceContext.initResource(siteResource.get());
     }
 
 }

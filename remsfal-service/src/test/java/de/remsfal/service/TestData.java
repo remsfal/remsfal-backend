@@ -1,5 +1,7 @@
 package de.remsfal.service;
 
+import java.time.LocalDate;
+
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
@@ -7,6 +9,7 @@ import de.remsfal.core.json.project.ImmutableCommercialJson;
 import de.remsfal.core.json.project.ImmutableGarageJson;
 import de.remsfal.core.json.project.ImmutablePropertyJson;
 import de.remsfal.core.json.project.ImmutableSiteJson;
+import de.remsfal.core.json.project.ImmutableTenancyJson;
 
 public class TestData {
 
@@ -46,6 +49,7 @@ public class TestData {
     public static final String USER_LAST_NAME_4 = "Dennsiewillja";
 
     // Default test address
+    public static final String ADDRESS_ID = TestData.ADDRESS_ID_1;
     public static final String ADDRESS_STREET = TestData.ADDRESS_STREET_1;
     public static final String ADDRESS_CITY = TestData.ADDRESS_CITY_1;
     public static final String ADDRESS_PROVINCE = TestData.ADDRESS_PROVINCE_1;
@@ -57,6 +61,7 @@ public class TestData {
     }
 
     // Test address 1
+    public static final String ADDRESS_ID_1 = "00550c43-b5c0-4951-9c29-000000000001";
     public static final String ADDRESS_STREET_1 = "Maximiliankorso 9901";
     public static final String ADDRESS_CITY_1 = "Berlin";
     public static final String ADDRESS_PROVINCE_1 = "Berlin";
@@ -137,7 +142,6 @@ public class TestData {
     public static final String SITE_TITLE = TestData.SITE_TITLE_1;
     public static final String SITE_DESCRIPTION = TestData.SITE_DESCRIPTION_1;
     public static final Float SITE_USABLE_SPACE = TestData.SITE_USABLE_SPACE_1;
-    public static final Float SITE_RENT = TestData.SITE_RENT_1;
 
     public static final ImmutableSiteJson.Builder siteBuilder() {
         return siteBuilder1();
@@ -148,7 +152,6 @@ public class TestData {
     public static final String SITE_TITLE_1 = "PKW Stellplatz";
     public static final String SITE_DESCRIPTION_1 = "Stellplatz mit Carport";
     public static final Float SITE_USABLE_SPACE_1 = 13.4f;
-    public static final Float SITE_RENT_1 = 75f;
     
     public static final ImmutableSiteJson.Builder siteBuilder1() {
         return ImmutableSiteJson
@@ -156,8 +159,7 @@ public class TestData {
             .id(SITE_ID_1)
             .title(SITE_TITLE_1)
             .description(SITE_DESCRIPTION_1)
-            .usableSpace(SITE_USABLE_SPACE_1)
-            .rent(SITE_RENT_1);
+            .usableSpace(SITE_USABLE_SPACE_1);
     }
 
     // Default test building
@@ -168,7 +170,6 @@ public class TestData {
     public static final Float BUILDING_COMMERCIAL_SPACE = TestData.BUILDING_COMMERCIAL_SPACE_1;
     public static final Float BUILDING_USABLE_SPACE = TestData.BUILDING_USABLE_SPACE_1;
     public static final Float BUILDING_HEATING_SPACE = TestData.BUILDING_HEATING_SPACE_1;
-    public static final Float BUILDING_RENT = TestData.BUILDING_RENT_1;
 
     public static final ImmutableBuildingJson.Builder buildingBuilder() {
         return buildingBuilder1();
@@ -182,7 +183,6 @@ public class TestData {
     public static final Float BUILDING_COMMERCIAL_SPACE_1 = 103.22f;
     public static final Float BUILDING_USABLE_SPACE_1 = 53.9f;
     public static final Float BUILDING_HEATING_SPACE_1 = 103.22f;
-    public static final Float BUILDING_RENT_1 = 759.50f;
 
     public static final ImmutableBuildingJson.Builder buildingBuilder1() {
         return ImmutableBuildingJson
@@ -194,7 +194,7 @@ public class TestData {
             .commercialSpace(TestData.BUILDING_COMMERCIAL_SPACE_1)
             .usableSpace(TestData.BUILDING_USABLE_SPACE_1)
             .heatingSpace(TestData.BUILDING_HEATING_SPACE_1)
-            .rent(TestData.BUILDING_RENT_1);
+            .isDifferentHeatingSpace(true);
     }
 
     // Default test apartment
@@ -321,8 +321,7 @@ public class TestData {
         .title(GARAGE_TITLE_1)
         .location(GARAGE_LOCATION_1)
         .description(GARAGE_DESCRIPTION_1)
-        .usableSpace(GARAGE_USABLE_SPACE_1)
-        .rent(GARAGE_RENT_1);
+        .usableSpace(GARAGE_USABLE_SPACE_1);
     }
 
     // Test garage 2
@@ -340,8 +339,29 @@ public class TestData {
         .title(GARAGE_TITLE_2)
         .location(GARAGE_LOCATION_2)
         .description(GARAGE_DESCRIPTION_2)
-        .usableSpace(GARAGE_USABLE_SPACE_2)
-        .rent(GARAGE_RENT_2);
+        .usableSpace(GARAGE_USABLE_SPACE_2);
+    }
+
+    // Default test tenancy
+    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
+    public static final String TENANCY_START = TestData.TENANCY_START_1;
+    public static final String TENANCY_END = TestData.TENANCY_END_1;
+    
+    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
+        return tenancyBuilder1();
+    }
+
+    // Test tenancy 1
+    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_1 = "2007-12-01";
+    public static final String TENANCY_END_1 = "2025-01-30";
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
+        return ImmutableTenancyJson
+        .builder()
+        .id(TENANCY_ID_1)
+        .startOfRental(LocalDate.parse(TENANCY_START_1))
+        .endOfRental(LocalDate.parse(TENANCY_END_1));
     }
 
     // Default test task

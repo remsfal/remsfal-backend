@@ -1,10 +1,5 @@
 package de.remsfal.core.json;
 
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
-
 import java.util.Locale;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -16,44 +11,46 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.Zip;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "The address of a building or site")
+@Value.Style(validationMethod = Value.Style.ValidationMethod.NONE)
+@Schema(description = "The address of a customer, a building or a site")
 @JsonDeserialize(as = ImmutableAddressJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class AddressJson implements AddressModel {
 
-    @NotNull
-    @NotBlank
-    @Nullable
+    @NullOrNotBlank
+    @Override
     public abstract String getStreet();
 
-    @NotNull
-    @NotBlank
+    @NullOrNotBlank
+    @Override
     public abstract String getCity();
 
-    @NotNull
-    @NotBlank
+    @NullOrNotBlank
+    @Override
     public abstract String getProvince();
 
     @Zip
-    @NotNull
-    @NotBlank
+    @NullOrNotBlank
+    @Override
     public abstract String getZip();
 
     @JsonIgnore
-    @Null
-    @Nullable
+    @Override
     public Locale getCountry() {
+        if (getCountryCode() == null) {
+            return null;
+        }
         return new Locale("", getCountryCode());
     }
 
-    @NotNull
-    @NotBlank
+    @NullOrNotBlank
     public abstract String getCountryCode();
 
     public static AddressJson valueOf(final AddressModel model) {

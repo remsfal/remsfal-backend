@@ -19,6 +19,4 @@ public interface CommercialModel {
 
     Float getHeatingSpace();
 
-    Float getRent();
-
 }

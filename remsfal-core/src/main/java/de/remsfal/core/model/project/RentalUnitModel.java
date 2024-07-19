@@ -3,15 +3,15 @@ package de.remsfal.core.model.project;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface GarageModel {
+public interface RentalUnitModel {
 
     String getId();
 
     String getTitle();
 
-    String getLocation();
-
     String getDescription();
+
+    TenancyModel getTenancy();
 
     Float getUsableSpace();
 
