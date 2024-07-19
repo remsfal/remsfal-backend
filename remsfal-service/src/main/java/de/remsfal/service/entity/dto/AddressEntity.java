@@ -106,6 +106,10 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         return Objects.hash(id);
     }
 
+    public String toString() {
+        return String.format("street=%s, city=%s, province=%s, zip=%s, country=%s", street, city, province, zip, country);
+    }
+
     public static AddressEntity fromModel(final AddressModel address) {
         if(address == null) {
             return null;

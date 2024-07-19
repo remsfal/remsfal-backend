@@ -205,6 +205,51 @@ class SiteResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = "{ \"title\":\"" + TestData.BUILDING_TITLE + "\","
+        + "\"address\":{"
+        + "\"street\":\"Berliner Str. 22\","
+        + "\"zip\":\"10715\"}}")
+    void updateSite_SUCCESS_siteCorrectlyUpdated(final String json) {
+        setupTestSites();
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID))
+            .and().body("title", Matchers.equalTo(TestData.BUILDING_TITLE))
+            .and().body("address.street", Matchers.equalTo("Berliner Str. 22"))
+            .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
+            .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
+            .and().body("address.zip", Matchers.equalTo("10715"))
+            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY))
+            .and().body("address.country", Matchers.nullValue())
+            .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION));
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID))
+            .and().body("title", Matchers.equalTo(TestData.BUILDING_TITLE))
+            .and().body("address.street", Matchers.equalTo("Berliner Str. 22"))
+            .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
+            .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
+            .and().body("address.zip", Matchers.equalTo("10715"))
+            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY))
+            .and().body("address.country", Matchers.nullValue())
+            .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION));
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = "{ \"tenancy\":{"
         + "\"startOfRental\":\"" + TestData.TENANCY_START + "\","
         + "\"endOfRental\":\"" + TestData.TENANCY_END + "\","
@@ -218,7 +263,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
         + "\"businessPhoneNumber\":\"+49302278349\","
         + "\"privatePhoneNumber\":\"+4933012345611\"}},"
         + "\"usableSpace\":51.99}")
-    void updateProperty_SUCCESS_propertyCorrectlyUpdated(final String json) {
+    void updateSite_SUCCESS_tenancyCorrectlyUpdated(final String json) {
         setupTestSites();
 
         given()
@@ -264,14 +309,6 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.SITE_ID))
-            .and().body("title", Matchers.equalTo(TestData.SITE_TITLE))
-            .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET))
-            .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
-            .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
-            .and().body("address.zip", Matchers.equalTo(TestData.ADDRESS_ZIP))
-            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY))
-            .and().body("address.country", Matchers.nullValue())
-            .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION))
             .and().body("tenancy.id", Matchers.notNullValue())
             .and().body("tenancy.startOfRental", Matchers.equalTo(TestData.TENANCY_START))
             .and().body("tenancy.endOfRental", Matchers.equalTo(TestData.TENANCY_END))

@@ -49,6 +49,7 @@ public abstract class BuildingJson implements BuildingModel {
     @Nullable
     public abstract Float getHeatingSpace();
 
+    @Nullable
     public abstract Boolean isDifferentHeatingSpace();
 
 

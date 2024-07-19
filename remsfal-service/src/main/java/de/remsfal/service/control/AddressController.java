@@ -56,7 +56,7 @@ public class AddressController {
             entity.setCountry(address.getCountry());
         }
         if(!isValidAddress(entity)) {
-            throw new BadRequestException("Invalid address");
+            throw new BadRequestException("Invalid address: " + entity.toString());
         }
         return entity;
     }

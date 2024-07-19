@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -63,8 +64,8 @@ public abstract class RentJson implements RentModel {
     }
 
     public static List<RentJson> valueOfList(List<? extends RentModel> rentList) {
-        if(rentList == null) {
-            return null;
+        if(rentList == null || rentList.isEmpty()) {
+            return Collections.emptyList();
         }
         return rentList.stream().map(RentJson::valueOf).toList();
     }

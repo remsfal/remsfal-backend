@@ -8,7 +8,6 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -79,12 +78,12 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getPrivatePhoneNumber();
 
     @Nullable
-    @PastOrPresent
+    @Null
     @Override
     public abstract LocalDate getRegisteredDate();
 
     @Nullable
-    @PastOrPresent
+    @Null
     @Override
     public abstract LocalDateTime getLastLoginDate();
 
