@@ -113,6 +113,10 @@
             <artifactId>quarkus-jacoco</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-metrics</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <finalName>remsfal-service</finalName>
