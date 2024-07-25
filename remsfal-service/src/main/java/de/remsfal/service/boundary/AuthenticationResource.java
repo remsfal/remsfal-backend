@@ -95,6 +95,8 @@ public class AuthenticationResource implements AuthenticationEndpoint {
             .build();
     }
 
+    @Timed(name = "checksTimerLogout",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "countedLogout")
     @Override
     public Response logout() {
         final URI redirectUri = getAbsoluteUriBuilder()

@@ -9,3 +9,26 @@ services:
      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
      - MYSQL_DATABASE=REMSFAL
 
+
+
+  grafana:
+    networks:
+      - remsfal
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3001:3000'
+
+
+  prometheus:
+      image: prom/prometheus
+      volumes:
+        - "./prometheus.yml:/home/ibo/Desktop/bac/remsfal-backend/prometheus.yml"
+      networks:
+        - remsfal
+      ports:
+        - 9090:9090
+networks:
+    remsfal:
+      driver: bridge
