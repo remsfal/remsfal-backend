@@ -1,5 +1,5 @@
-name: remsfal-backend
 
+version: '3.8'
 services:
   mysql:
     image: mysql:lts
@@ -20,15 +20,14 @@ services:
     ports:
       - '3001:3000'
 
-
   prometheus:
       image: prom/prometheus
       volumes:
-        - "./prometheus.yml:/home/ibo/Desktop/bac/remsfal-backend/prometheus.yml"
+        - "./prometheus.yml:/etc/prometheus/prometheus.yml"
       networks:
         - remsfal
       ports:
-        - 9090:9090
+        - '9090:9090'
 networks:
     remsfal:
       driver: bridge
