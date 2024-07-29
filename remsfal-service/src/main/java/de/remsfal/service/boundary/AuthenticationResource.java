@@ -11,6 +11,9 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.jboss.logging.Logger;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -51,7 +54,10 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     @Inject
     Logger logger;
 
+
     @Override
+    @Timed(name = "checksTimerLogin",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "countedLogin")
     public Response login(final String route) {
         final String redirectUri = getAbsoluteUri()
             .toASCIIString().replace("/login", "/session");
@@ -89,6 +95,8 @@ public class AuthenticationResource implements AuthenticationEndpoint {
             .build();
     }
 
+    @Timed(name = "checksTimerLogout",unit = MetricUnits.MILLISECONDS)
+    @Counted(name = "countedLogout")
     @Override
     public Response logout() {
         final URI redirectUri = getAbsoluteUriBuilder()

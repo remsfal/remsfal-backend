@@ -1,11 +1,33 @@
-name: remsfal-backend
 
+version: '3.8'
 services:
   mysql:
     image: mysql:lts
     ports:
-     - "3306:3306"
+      - "3306:3306"
     environment:
-     - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-     - MYSQL_DATABASE=REMSFAL
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=REMSFAL
 
+
+
+  grafana:
+    networks:
+      - remsfal
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3001:3000'
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - remsfal
+    ports:
+      - '9090:9090'
+networks:
+  remsfal:
+    driver: bridge
