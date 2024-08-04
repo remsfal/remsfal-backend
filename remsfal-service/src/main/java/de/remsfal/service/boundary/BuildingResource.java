@@ -36,7 +36,7 @@ public class BuildingResource implements BuildingEndpoint {
 
     @Override
     public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
-        final BuildingModel model = controller.getBuilding(projectId);
+        final BuildingModel model = controller.getBuilding(projectId, propertyId, buildingId);
         return BuildingJson.valueOf(model);
     }
 }

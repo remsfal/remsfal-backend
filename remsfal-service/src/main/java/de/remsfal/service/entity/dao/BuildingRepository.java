@@ -1,5 +1,6 @@
 package de.remsfal.service.entity.dao;
 
+import de.remsfal.core.model.BuildingModel;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.remsfal.service.entity.dto.BuildingEntity;
@@ -10,4 +11,12 @@ import de.remsfal.service.entity.dto.BuildingEntity;
 @ApplicationScoped
 public class BuildingRepository extends AbstractRepository<BuildingEntity> {
 
+    public BuildingModel findByProjectIdAndByPropertyIdAndByBuildingId(String projectId, String propertyId, String buildingId){
+        return getEntityManager()
+                .createNamedQuery("BuildingEntity.findByProjectIdAndByPropertyIdAndByBuildingId", BuildingEntity.class)
+                .setParameter(PARAM_PROJECT_ID, projectId)
+                .setParameter(PARAM_PROPERTY_ID, propertyId)
+                .setParameter(PARAM_BUILDING_ID, buildingId)
+                .getSingleResult();
+    }
 }
