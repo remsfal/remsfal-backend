@@ -16,8 +16,8 @@ public class BuildingController {
     @Inject
     BuildingRepository buildingRepository;
 
-    public BuildingModel getBuilding(String buildingId) {
-        return buildingRepository.findById(buildingId);
+    public BuildingModel getBuilding(String projectId, String propertyId, String buildingId) {
+        return buildingRepository.findByProjectIdAndByPropertyIdAndByBuildingId(projectId, propertyId, buildingId);
     }
 
     @Transactional

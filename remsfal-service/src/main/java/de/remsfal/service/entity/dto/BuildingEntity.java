@@ -1,13 +1,6 @@
 package de.remsfal.service.entity.dto;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -17,6 +10,8 @@ import de.remsfal.core.model.project.BuildingModel;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
+@NamedQuery(name = "BuildingEntity.findByProjectIdAndByPropertyIdAndByBuildingId",
+        query = "SELECT m FROM BuildingEntity m WHERE m.id = :buildingId and m.propertyId = :propertyId and m.projectId = :projectId")
 @Table(name = "BUILDING")
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
