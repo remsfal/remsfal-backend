@@ -34,7 +34,8 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "201", description = "Building created successfully",
         headers = @Header(name = "Location", description = "URL of the new building"))
     Response createBuilding(
-        @Parameter(description = "Building information", required = true) @Valid BuildingJson property);
+            @PathParam("projectId") String projectId,
+            @Parameter(description = "Building information", required = true) @Valid BuildingJson property);
 
     @GET
     @Path("/{buildingId}")
