@@ -39,11 +39,27 @@ public abstract class BuildingJson implements BuildingModel {
         if (model == null) {
             return null;
         }
+
+        String description = model.getDescription();
+        if (description == null) {
+            description = "";
+        }
+
+        Float livingSpace = model.getLivingSpace();
+        if (livingSpace == null) {
+            livingSpace = valueOf(0);
+        }
+
         return ImmutableBuildingJson.builder()
                 .id(model.getId())
                 .address(model.getAddress())
                 .title(model.getTitle())
+                .description(description)
+                .livingSpace((model.getLivingSpace()))
+                .commercialSpace(model.getCommercialSpace())
+                .usableSpace(model.getUsableSpace())
+                .heatingSpace(model.getHeatingSpace())
+                .rent(model.getRent())
                 .build();
     }
-
 }
