@@ -20,40 +20,17 @@ public class BuildingController {
     @Inject
     BuildingRepository buildingRepository;
 
-    @Inject
-    PropertyRepository propertyRepository;
-
-    @Inject
-    ProjectRepository projectRepository;
-
     public BuildingModel getBuilding(String projectId, String propertyId, String buildingId) {
         return buildingRepository.findByProjectIdAndByPropertyIdAndByBuildingId(projectId, propertyId, buildingId);
     }
 
     @Transactional
-    public BuildingModel createBuilding(String projectId, BuildingJson property) {
-
-        ProjectEntity projectEntity = projectRepository.findById(projectId);
-        if (projectEntity == null) {
-            logger.infov("Project not found...");
-            throw new IllegalArgumentException("Project with ID " + projectId + " does not exist.");
-        }
-
+    public BuildingModel createBuilding(String projectId, String building, BuildingJson property) {
         logger.infov("Creating a building (title={0}, address={1})", property.getTitle(), property.getAddress());
-
-        PropertyEntity propertyEntity = new PropertyEntity();
-        propertyEntity.generateId();
-        propertyEntity.setDescription(property.getDescription());
-        propertyEntity.setTitle(property.getTitle());
-        propertyEntity.setProjectId(projectId);
-        logger.infov("Creating a property (projectId={0}, property={1})", projectId, propertyEntity);
-        propertyRepository.persistAndFlush(propertyEntity);
-        propertyRepository.getEntityManager().refresh(propertyEntity);
-
         BuildingEntity buildingEntity = new BuildingEntity();
         buildingEntity.setProjectId(projectId);
         buildingEntity.generateId();
-        buildingEntity.setPropertyId(propertyEntity.getId());
+        buildingEntity.setPropertyId(building);
         buildingEntity.setTitle(property.getTitle());
         AddressEntity address = new AddressEntity();
         address.generateId();

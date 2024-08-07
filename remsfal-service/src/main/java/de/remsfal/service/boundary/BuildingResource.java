@@ -25,8 +25,8 @@ public class BuildingResource implements BuildingEndpoint {
 
 
     @Override
-    public Response createBuilding(String projectId, BuildingJson property) {
-        BuildingModel model = controller.createBuilding(projectId, property);
+    public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
+        BuildingModel model = controller.createBuilding(projectId, propertyId, building);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)

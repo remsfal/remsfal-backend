@@ -5,6 +5,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +20,7 @@ public class BuildingResourceTest extends AbstractResourceTest{
 
     static final String BASE_PATH_POST = "/api/v1/projects/b9440c43-b5c0-4951-9c28-000000000001/properties/b9440c43-b5c0-4951-9c25-000000000001/buildings/";
 
+    static final String BASE_PATH = "/api/v1/projects";
     @BeforeEach
     protected void setupTestUsers() {
         super.setupTestUsers();
@@ -46,6 +48,30 @@ public class BuildingResourceTest extends AbstractResourceTest{
     @Test
     void getBuilding_SUCCESS() {
 
+        final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
+        final String user1project1 = given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .body(json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Response.Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+
+        final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
+        final String user1property1 =  given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .body(json1)
+                .post(BASE_PATH + "/" + user1project1 + "/properties")
+                .then()
+                .statusCode(Response.Status.CREATED.getStatusCode())
+                .extract().path("id");;
+
+
         final String user1building1 = given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -64,7 +90,7 @@ public class BuildingResourceTest extends AbstractResourceTest{
                         "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                         "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                         " } }")
-                .post(BASE_PATH_POST)
+                .post("/api/v1/projects/" + user1project1 + "/properties/" + user1property1 + "/buildings")
                 .then()
                 .statusCode(Response.Status.CREATED.getStatusCode())
                 .extract().path("id");
