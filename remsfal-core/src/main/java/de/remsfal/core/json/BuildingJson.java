@@ -47,7 +47,27 @@ public abstract class BuildingJson implements BuildingModel {
 
         Float livingSpace = model.getLivingSpace();
         if (livingSpace == null) {
-            livingSpace = valueOf(0);
+            livingSpace = 0.0F;
+        }
+
+        Float commercialSpace = model.getCommercialSpace();
+        if (commercialSpace == null) {
+            commercialSpace = 0.0F;
+        }
+
+        Float usableSpace = model.getUsableSpace();
+        if (usableSpace == null) {
+            usableSpace = 0.0F;
+        }
+
+        Float heatingSpace = model.getHeatingSpace();
+        if (heatingSpace == null) {
+            heatingSpace = 0.0F;
+        }
+
+        Float rent = model.getRent();
+        if (rent == null) {
+            rent = 0.0F;
         }
 
         return ImmutableBuildingJson.builder()
@@ -55,11 +75,11 @@ public abstract class BuildingJson implements BuildingModel {
                 .address(model.getAddress())
                 .title(model.getTitle())
                 .description(description)
-                .livingSpace((model.getLivingSpace()))
-                .commercialSpace(model.getCommercialSpace())
-                .usableSpace(model.getUsableSpace())
-                .heatingSpace(model.getHeatingSpace())
-                .rent(model.getRent())
+                .livingSpace(livingSpace)
+                .commercialSpace(commercialSpace)
+                .usableSpace(usableSpace)
+                .heatingSpace(heatingSpace)
+                .rent(rent)
                 .build();
     }
 }

@@ -12,7 +12,7 @@ import de.remsfal.service.entity.dto.BuildingEntity;
 public class BuildingRepository extends AbstractRepository<BuildingEntity> {
 
     public BuildingModel findByProjectIdAndByPropertyIdAndByBuildingId(String projectId, String propertyId, String buildingId){
-        return getEntityManager()
+        return  getEntityManager()
                 .createNamedQuery("BuildingEntity.findByProjectIdAndByPropertyIdAndByBuildingId", BuildingEntity.class)
                 .setParameter(PARAM_PROJECT_ID, projectId)
                 .setParameter(PARAM_PROPERTY_ID, propertyId)
