@@ -1,6 +1,5 @@
 package de.remsfal.service.entity.dao;
 
-import de.remsfal.core.model.BuildingModel;
 import de.remsfal.core.model.project.BuildingModel;
 import jakarta.enterprise.context.ApplicationScoped;
 

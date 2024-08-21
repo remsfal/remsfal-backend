@@ -1,8 +1,6 @@
 package de.remsfal.service.boundary;
 
 import de.remsfal.core.api.project.BuildingEndpoint;
-import de.remsfal.core.json.BuildingJson;
-import de.remsfal.core.model.BuildingModel;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.control.BuildingController;

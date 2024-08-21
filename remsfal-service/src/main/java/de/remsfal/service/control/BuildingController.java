@@ -1,9 +1,6 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.BuildingJson;
-import de.remsfal.core.model.*;
 import de.remsfal.core.json.project.BuildingJson;
-import de.remsfal.core.model.*;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dto.*;
@@ -15,23 +12,16 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import de.remsfal.core.model.project.ApartmentModel;
-import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.core.model.project.GarageModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
-import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
-import org.jboss.logging.Logger;
 
 
 @RequestScoped

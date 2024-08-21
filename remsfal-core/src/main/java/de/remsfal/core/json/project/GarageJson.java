@@ -1,6 +1,7 @@
 package de.remsfal.core.json.project;
 
-import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.model.project.BuildingModel;
 import jakarta.annotation.Nullable;
 
 import jakarta.validation.constraints.NotNull;
@@ -64,10 +65,6 @@ public abstract class GarageJson implements GarageModel {
             heatingSpace = 0.0F;
         }
 
-        Float rent = model.getRent();
-        if (rent == null) {
-            rent = 0.0F;
-        }
 
         return ImmutableBuildingJson.builder()
                 .id(model.getId())
@@ -78,7 +75,6 @@ public abstract class GarageJson implements GarageModel {
                 .commercialSpace(commercialSpace)
                 .usableSpace(usableSpace)
                 .heatingSpace(heatingSpace)
-                .rent(rent)
                 .build();
     }
 }
