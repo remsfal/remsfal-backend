@@ -42,6 +42,9 @@ public interface BuildingEndpoint {
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "Building information", required = true) @Valid @ConvertGroup(to = PostValidation.class) BuildingJson building);
+            @PathParam("projectId") String projectId,
+            @PathParam("propertyId") String propertyId,
+            @Parameter(description = "Building information", required = true) @Valid BuildingJson building);
 
     @GET
     @Path("/{buildingId}")
