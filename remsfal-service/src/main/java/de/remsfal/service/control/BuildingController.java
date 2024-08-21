@@ -1,7 +1,8 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.BuildingJson;
+import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.*;
+import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dto.*;
 import jakarta.enterprise.context.RequestScoped;
@@ -10,6 +11,24 @@ import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import org.jboss.logging.Logger;
+import de.remsfal.core.model.project.ApartmentModel;
+import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.service.entity.dao.ApartmentRepository;
+import de.remsfal.service.entity.dao.BuildingRepository;
+import de.remsfal.service.entity.dao.CommercialRepository;
+import de.remsfal.service.entity.dao.GarageRepository;
+import de.remsfal.service.entity.dto.ApartmentEntity;
+import de.remsfal.service.entity.dto.BuildingEntity;
+import de.remsfal.service.entity.dto.CommercialEntity;
+import de.remsfal.service.entity.dto.GarageEntity;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 
@@ -20,6 +39,15 @@ public class BuildingController {
 
     @Inject
     BuildingRepository buildingRepository;
+
+    @Inject
+    ApartmentRepository apartmentRepository;
+
+    @Inject
+    CommercialRepository commercialRepository;
+
+    @Inject
+    GarageRepository garageRepository;
 
     public BuildingModel getBuilding(String projectId, String propertyId, String buildingId) {
         try {
@@ -52,45 +80,6 @@ public class BuildingController {
             throw new WebApplicationException("Building not created", Response.Status.BAD_REQUEST);
         }
     }
-import de.remsfal.core.model.project.ApartmentModel;
-import de.remsfal.core.model.project.BuildingModel;
-import de.remsfal.core.model.project.CommercialModel;
-import de.remsfal.core.model.project.GarageModel;
-import de.remsfal.service.entity.dao.ApartmentRepository;
-import de.remsfal.service.entity.dao.BuildingRepository;
-import de.remsfal.service.entity.dao.CommercialRepository;
-import de.remsfal.service.entity.dao.GarageRepository;
-import de.remsfal.service.entity.dto.ApartmentEntity;
-import de.remsfal.service.entity.dto.BuildingEntity;
-import de.remsfal.service.entity.dto.CommercialEntity;
-import de.remsfal.service.entity.dto.GarageEntity;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
-import org.jboss.logging.Logger;
-
-/**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
- */
-@RequestScoped
-public class BuildingController {
-
-    @Inject
-    Logger logger;
-
-    @Inject
-    BuildingRepository buildingRepository;
-
-    @Inject
-    ApartmentRepository apartmentRepository;
-
-    @Inject
-    CommercialRepository commercialRepository;
-
-    @Inject
-    GarageRepository garageRepository;
 
     @Transactional
     public BuildingModel createBuilding(final String projectId, final String propertyId, final BuildingModel building) {
@@ -106,7 +95,7 @@ public class BuildingController {
         return getBuilding(projectId, propertyId, entity.getId());
     }
 
-    public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
+   /* public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
         logger.infov("Retrieving a building (projectId={0}, propertyId={1}, buildingId={2})",
                 projectId, propertyId, buildingId);
         BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
@@ -117,7 +106,7 @@ public class BuildingController {
         }
 
         return entity;
-    }
+    }*/
 
     @Transactional
     public ApartmentModel createApartment(final String projectId, final String buildingId, final ApartmentModel apartment) {

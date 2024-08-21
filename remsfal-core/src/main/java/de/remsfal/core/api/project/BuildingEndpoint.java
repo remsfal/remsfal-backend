@@ -32,13 +32,6 @@ public interface BuildingEndpoint {
 
     static final String SERVICE = "buildings";
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information for all bujildings.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    BuildingListJson getBuildings(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -46,19 +39,16 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "201", description = "Building created successfully",
         headers = @Header(name = "Location", description = "URL of the new building"))
     Response createBuilding(
-            @PathParam("projectId") String projectId,
-            @Parameter(description = "Building information", required = true) @Valid BuildingJson property);
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "Building information", required = true) @Valid @ConvertGroup(to = PostValidation.class) BuildingJson building);
-            @PathParam("propertyId") String propertyId,
-            @Parameter(description = "Building information", required = true) @Valid BuildingJson building);
 
     @GET
     @Path("/{buildingId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a building.")
     @APIResponse(responseCode = "404", description = "The building does not exist")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     BuildingJson getBuilding(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,

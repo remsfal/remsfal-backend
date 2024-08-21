@@ -35,6 +35,24 @@ public abstract class BuildingJson implements BuildingModel {
     @NotNull
     public abstract AddressModel getAddress();
 
+    @Nullable
+    public abstract String getDescription();
+
+    @Nullable
+    public abstract Float getLivingSpace();
+
+    @Nullable
+    public abstract Float getCommercialSpace();
+
+    @Nullable
+    public abstract Float getUsableSpace();
+
+    @Nullable
+    public abstract Float getHeatingSpace();
+
+    @Nullable
+    public abstract Boolean isDifferentHeatingSpace();
+
     public static BuildingJson valueOf(final BuildingModel model) {
         if (model == null) {
             return null;
@@ -65,10 +83,6 @@ public abstract class BuildingJson implements BuildingModel {
             heatingSpace = 0.0F;
         }
 
-        Float rent = model.getRent();
-        if (rent == null) {
-            rent = 0.0F;
-        }
 
         return ImmutableBuildingJson.builder()
                 .id(model.getId())
@@ -79,27 +93,7 @@ public abstract class BuildingJson implements BuildingModel {
                 .commercialSpace(commercialSpace)
                 .usableSpace(usableSpace)
                 .heatingSpace(heatingSpace)
-                .rent(rent)
                 .build();
     }
-
-    @Nullable
-    public abstract String getDescription();
-
-    @Nullable
-    public abstract Float getLivingSpace();
-
-    @Nullable
-    public abstract Float getCommercialSpace();
-
-    @Nullable
-    public abstract Float getUsableSpace();
-
-    @Nullable
-    public abstract Float getHeatingSpace();
-
-    @Nullable
-    public abstract Boolean isDifferentHeatingSpace();
-
 
 }

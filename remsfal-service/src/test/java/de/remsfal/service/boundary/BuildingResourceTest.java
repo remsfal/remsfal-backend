@@ -81,7 +81,7 @@ public class BuildingResourceTest extends AbstractResourceTest {
                         " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                         " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                         " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
-                        " \"rent\":\"" + TestData.BUILDING_RENT_1 + "\"," +
+                       // " \"rent\":\"" + TestData.BUILDING_RENT_1 + "\"," +
                         " \"address\": {" +
                         "     \"street\": \"" + TestData.ADDRESS_STREET_1 + "\"," +
                         "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
@@ -136,7 +136,7 @@ public class BuildingResourceTest extends AbstractResourceTest {
                         " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                         " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                         " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
-                        " \"rent\":\"" + TestData.BUILDING_RENT_1 + "\"," +
+                        /* " \"rent\":\"" + TestData.BUILDING_RENT_1 + "\"," + */
                         " \"address\": {" +
                         "     \"street\": \"" + TestData.ADDRESS_STREET_1 + "\"," +
                         "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
@@ -181,7 +181,7 @@ public class BuildingResourceTest extends AbstractResourceTest {
                         " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                         " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                         " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
-                        " \"rent\":\"" + TestData.BUILDING_RENT_1 + "\"," +
+                     /*   " \"rent\":\"" + TestData.BUILDING_RENT_1 + "\"," + */
                         " \"address\": {" +
                         "     \"street\": \"" + TestData.ADDRESS_STREET_1 + "\"," +
                         "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +

@@ -1,8 +1,8 @@
 package de.remsfal.service.boundary;
 
 import de.remsfal.core.api.project.BuildingEndpoint;
-import de.remsfal.core.json.BuildingJson;
-import de.remsfal.core.model.BuildingModel;
+import de.remsfal.core.json.project.BuildingJson;
+import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.control.BuildingController;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -39,6 +39,7 @@ public class BuildingResource implements BuildingEndpoint {
         }
     }
 
+
     @Override
     public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
         try {
@@ -48,4 +49,16 @@ public class BuildingResource implements BuildingEndpoint {
             throw e;
         }
     }
+
+    @Override
+    public BuildingJson updateBuilding(String projectId, String propertyId, String buildingId, BuildingJson building) {
+        return null;
+    }
+
+    @Override
+    public void deleteBuilding(String projectId, String propertyId, String buildingId) {
+
+    }
+
+
 }
