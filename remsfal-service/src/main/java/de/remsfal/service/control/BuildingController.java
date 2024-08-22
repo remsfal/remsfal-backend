@@ -41,14 +41,6 @@ public class BuildingController {
     @Inject
     GarageRepository garageRepository;
 
-    public BuildingModel getBuilding(String projectId, String propertyId, String buildingId) {
-        try {
-            return buildingRepository.findByProjectIdAndByPropertyIdAndByBuildingId(projectId, propertyId, buildingId);
-        } catch (NoResultException e) {
-            throw new WebApplicationException("Building not found", Response.Status.NOT_FOUND);
-        }
-    }
-
     @Transactional
     public BuildingModel createBuilding(String projectId, String building, BuildingJson property) {
         logger.infov("Creating a building (title={0}, address={1})", property.getTitle(), property.getAddress());
@@ -87,7 +79,7 @@ public class BuildingController {
         return getBuilding(projectId, propertyId, entity.getId());
     }
 
-   /* public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
+    public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
         logger.infov("Retrieving a building (projectId={0}, propertyId={1}, buildingId={2})",
                 projectId, propertyId, buildingId);
         BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
@@ -98,7 +90,7 @@ public class BuildingController {
         }
 
         return entity;
-    }*/
+    }
 
     @Transactional
     public ApartmentModel createApartment(final String projectId, final String buildingId, final ApartmentModel apartment) {
