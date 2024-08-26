@@ -222,7 +222,7 @@ class BuildingControllerTest extends AbstractTest {
         assertEquals(result, getResult);
     }
 
-   /* @Test
+   @Test
     void createGarage_SUCCESS_getGarage() {
         final String propertyId = propertyController
             .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
@@ -258,6 +258,6 @@ class BuildingControllerTest extends AbstractTest {
             .getGarage(TestData.PROJECT_ID, buildingId, garageId);
         
         assertEquals(result, getResult);
-    }*/
+    }
 
 }

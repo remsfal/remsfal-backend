@@ -41,9 +41,9 @@ public class BuildingResource implements BuildingEndpoint {
 
 
     @Override
-    public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
+    public BuildingJson getBuilding(String projectId, String buildingId, String propertyId) {
         try {
-            final BuildingModel model = controller.getBuilding(projectId, propertyId, buildingId);
+            final BuildingModel model = controller.getBuilding(projectId, buildingId, propertyId);
             return BuildingJson.valueOf(model);
         } catch (WebApplicationException e) {
             throw e;
@@ -51,12 +51,12 @@ public class BuildingResource implements BuildingEndpoint {
     }
 
     @Override
-    public BuildingJson updateBuilding(String projectId, String propertyId, String buildingId, BuildingJson building) {
+    public BuildingJson updateBuilding(String propertyId, String buildingId, BuildingJson building) {
         return null;
     }
 
     @Override
-    public void deleteBuilding(String projectId, String propertyId, String buildingId) {
+    public void deleteBuilding(String propertyId, String buildingId) {
 
     }
 

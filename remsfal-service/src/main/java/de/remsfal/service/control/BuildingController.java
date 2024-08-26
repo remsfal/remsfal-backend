@@ -42,30 +42,6 @@ public class BuildingController {
     GarageRepository garageRepository;
 
     @Transactional
-    public BuildingModel createBuilding(String projectId, String building, BuildingJson property) {
-        logger.infov("Creating a building (title={0}, address={1})", property.getTitle(), property.getAddress());
-        try {
-            BuildingEntity buildingEntity = new BuildingEntity();
-            buildingEntity.setProjectId(projectId);
-            buildingEntity.generateId();
-            buildingEntity.setPropertyId(building);
-            buildingEntity.setTitle(property.getTitle());
-            AddressEntity address = new AddressEntity();
-            address.generateId();
-            address.setCountry(property.getAddress().getCountry());
-            address.setProvince(property.getAddress().getProvince());
-            address.setCity(property.getAddress().getCity());
-            address.setStreet(property.getAddress().getStreet());
-            address.setZip(property.getAddress().getZip());
-            buildingEntity.setAddress(address);
-            buildingRepository.persistAndFlush(buildingEntity);
-            return buildingEntity;
-        } catch (NoResultException e) {
-            throw new WebApplicationException("Building not created", Response.Status.BAD_REQUEST);
-        }
-    }
-
-    @Transactional
     public BuildingModel createBuilding(final String projectId, final String propertyId, final BuildingModel building) {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
                 projectId, propertyId, building);

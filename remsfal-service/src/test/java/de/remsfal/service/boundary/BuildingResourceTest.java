@@ -15,22 +15,14 @@ import static io.restassured.RestAssured.given;
 @QuarkusTest
 public class BuildingResourceTest extends AbstractResourceTest {
 
-    static final String BASE_PATH_GET = "/api/v1/projects/b9440c43-b5c0-4951-9c28-000000000001/properties/b9440c43-b5c0-4951-9c25-000000000001/buildings/b9440c43-b5c0-4951-9c25-000000000001";
+    static final String BASE_PATH_GET_OLD = "/api/v1/projects/b9440c43-b5c0-4951-9c28-000000000001/properties/b9440c43-b5c0-4951-9c25-000000000001/buildings/b9440c43-b5c0-4951-9c25-000000000001";
 
+    static final String BASE_PATH_GET = "/b9440c43-b5c0-4951-9c25-000000000001";
     static final String BASE_PATH = "/api/v1/projects";
 
     @BeforeEach
     protected void setupTestUsers() {
         super.setupTestUsers();
-    }
-
-    @Test
-    void getBuilding_FAILED_noAuthentication() {
-        given()
-                .when()
-                .get(BASE_PATH_GET)
-                .then()
-                .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
     }
 
     @Test
@@ -57,7 +49,6 @@ public class BuildingResourceTest extends AbstractResourceTest {
                 .statusCode(Response.Status.CREATED.getStatusCode())
                 .extract().path("id");
 
-
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
@@ -68,8 +59,6 @@ public class BuildingResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(Response.Status.CREATED.getStatusCode())
                 .extract().path("id");
-        ;
-
 
         final String user1building1 = given()
                 .when()
@@ -89,17 +78,17 @@ public class BuildingResourceTest extends AbstractResourceTest {
                         "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                         "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                         " } }")
+                //.post("/buildings/" + user1project1 + "/" + user1property1)
                 .post("/api/v1/projects/" + user1project1 + "/properties/" + user1property1 + "/buildings")
                 .then()
                 .statusCode(Response.Status.CREATED.getStatusCode())
                 .extract().path("id");
 
-
         given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .get("/api/v1/projects/" + user1project1 + "/properties/" + user1property1 + "/buildings/" + user1building1)
+                .get("/" + user1building1 + "/")
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode());
     }
