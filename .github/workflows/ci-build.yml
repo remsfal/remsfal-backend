@@ -33,6 +33,13 @@ jobs:
           restore-keys: ${{ runner.os }}-maven
       - name: Build with Maven (package)
         run: mvn --batch-mode --update-snapshots package checkstyle::check
+      - name: Archive test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: remsfal-service/target/surefire-reports/
+          retention-days: 30
       - name: Save PR number to file for subsequently Sonar Analysis
         if: github.event_name == 'pull_request'
         env:
