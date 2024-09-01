@@ -4,6 +4,7 @@ import de.remsfal.core.api.project.BuildingEndpoint;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.control.BuildingController;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ResourceContext;
@@ -14,6 +15,7 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
 
+@RequestScoped
 public class BuildingResource implements BuildingEndpoint {
     @Context
     UriInfo uri;
@@ -41,9 +43,9 @@ public class BuildingResource implements BuildingEndpoint {
 
 
     @Override
-    public BuildingJson getBuilding(String projectId, String buildingId, String propertyId) {
+    public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
         try {
-            final BuildingModel model = controller.getBuilding(projectId, buildingId, propertyId);
+            final BuildingModel model = controller.getBuilding(projectId, propertyId, buildingId);
             return BuildingJson.valueOf(model);
         } catch (WebApplicationException e) {
             throw e;

@@ -33,7 +33,6 @@ public interface BuildingEndpoint {
 
 
     @POST
-    @Path("/{projectId}/{propertyId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new building.")
     @APIResponse(responseCode = "201", description = "Building created successfully",
@@ -44,15 +43,14 @@ public interface BuildingEndpoint {
         @Parameter(description = "Building information", required = true) @Valid @ConvertGroup(to = PostValidation.class) BuildingJson building);
 
     @GET
-    @Path("/{projectId}/{buildingId}/{propertyId}")
+    @Path("/{buildingId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a building.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The building does not exist")
     BuildingJson getBuilding(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
+            @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
+            @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId);
 
     @PATCH
     @Path("/{buildingId}")
