@@ -317,14 +317,15 @@ public class TestData {
     public static final Float GARAGE_USABLE_SPACE_1 = 12.8f;
     public static final Float GARAGE_RENT_1 = 80f;
 
+    public static final Locale ADDRESS_LOCALE_1 = new Locale("DE");
+
     public static final ImmutableGarageJson.Builder garageBuilder1() {
-        Locale locale = new Locale("DE");
         AddressModel addressModel = ImmutableAddressModel.builder()
                 .street(ADDRESS_STREET_1)
                 .city(ADDRESS_CITY_1)
                 .province(ADDRESS_PROVINCE_1)
                 .zip(ADDRESS_ZIP_1)
-                .country(locale)
+                .country(ADDRESS_LOCALE_1)
                 .build();
         return ImmutableGarageJson
         .builder()

@@ -8,8 +8,6 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.CommercialModel;
@@ -66,6 +64,45 @@ public class BuildingController {
         }
 
         return entity;
+    }
+
+    public BuildingModel updateBuilding(String propertyId, String buildingId, BuildingJson building) {
+        logger.infov("Update a building (propertyId={0}, buildingId={1}, building={2})",
+                propertyId, buildingId, building);
+        final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
+                .orElseThrow(() -> new NotFoundException("Building not exist"));
+        if (building.getTitle() != null) {
+            entity.setTitle(building.getTitle());
+        }
+        if (building.getAddress() != null) {
+            AddressEntity address = AddressEntity.fromModel(building.getAddress());
+            entity.setAddress(address);
+        }
+        if (building.getDescription() != null) {
+            entity.setDescription(building.getDescription());
+        }
+        if (building.getLivingSpace() != null) {
+            entity.setLivingSpace(building.getLivingSpace());
+        }
+        if (building.getCommercialSpace() != null) {
+            entity.setCommercialSpace(building.getCommercialSpace());
+        }
+        if (building.getUsableSpace() != null) {
+            entity.setUsableSpace(building.getUsableSpace());
+        }
+        if (building.getHeatingSpace() != null) {
+            entity.setHeatingSpace(building.getHeatingSpace());
+        }
+        if (building.isDifferentHeatingSpace() != null) {
+            entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
+        }
+        return buildingRepository.merge(entity);
+    }
+
+    public void deleteBuilding(String propertyId, String buildingId) {
+        logger.infov("Delete a building (propertyId={0}, buildingId={1})",
+                propertyId, buildingId);
+        buildingRepository.deleteById(buildingId);
     }
 
     @Transactional
