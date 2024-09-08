@@ -21,6 +21,8 @@ import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.UUID;
+
 
 @RequestScoped
 public class BuildingController {
@@ -66,6 +68,7 @@ public class BuildingController {
         return entity;
     }
 
+    @Transactional
     public BuildingModel updateBuilding(String propertyId, String buildingId, BuildingJson building) {
         logger.infov("Update a building (propertyId={0}, buildingId={1}, building={2})",
                 propertyId, buildingId, building);
@@ -76,8 +79,12 @@ public class BuildingController {
         }
         if (building.getAddress() != null) {
             AddressEntity address = AddressEntity.fromModel(building.getAddress());
+            if (address.getId() == null) {
+                address.setId(UUID.randomUUID().toString());
+            }
             entity.setAddress(address);
         }
+
         if (building.getDescription() != null) {
             entity.setDescription(building.getDescription());
         }
@@ -99,6 +106,7 @@ public class BuildingController {
         return buildingRepository.merge(entity);
     }
 
+    @Transactional
     public void deleteBuilding(String propertyId, String buildingId) {
         logger.infov("Delete a building (propertyId={0}, buildingId={1})",
                 propertyId, buildingId);

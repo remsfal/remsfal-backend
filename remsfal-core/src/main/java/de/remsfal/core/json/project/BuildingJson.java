@@ -1,5 +1,6 @@
 package de.remsfal.core.json.project;
 
+import de.remsfal.core.model.ImmutableAddressModel;
 import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.annotation.Nullable;
 
