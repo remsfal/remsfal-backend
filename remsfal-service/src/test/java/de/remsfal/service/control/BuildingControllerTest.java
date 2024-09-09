@@ -4,7 +4,6 @@ import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.ImmutableAddressModel;
-import de.remsfal.service.entity.dto.AddressEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
