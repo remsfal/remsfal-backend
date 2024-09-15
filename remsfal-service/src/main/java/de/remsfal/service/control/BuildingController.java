@@ -74,35 +74,16 @@ public class BuildingController {
                 propertyId, buildingId, building);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
                 .orElseThrow(() -> new NotFoundException("Building not exist"));
-        if (building.getTitle() != null) {
             entity.setTitle(building.getTitle());
-        }
-        if (building.getAddress() != null) {
             AddressEntity address = AddressEntity.fromModel(building.getAddress());
-            if (address.getId() == null) {
-                address.setId(UUID.randomUUID().toString());
-            }
+            address.setId(UUID.randomUUID().toString());
             entity.setAddress(address);
-        }
-
-        if (building.getDescription() != null) {
             entity.setDescription(building.getDescription());
-        }
-        if (building.getLivingSpace() != null) {
             entity.setLivingSpace(building.getLivingSpace());
-        }
-        if (building.getCommercialSpace() != null) {
             entity.setCommercialSpace(building.getCommercialSpace());
-        }
-        if (building.getUsableSpace() != null) {
             entity.setUsableSpace(building.getUsableSpace());
-        }
-        if (building.getHeatingSpace() != null) {
             entity.setHeatingSpace(building.getHeatingSpace());
-        }
-        if (building.isDifferentHeatingSpace() != null) {
             entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
-        }
         return buildingRepository.merge(entity);
     }
 
