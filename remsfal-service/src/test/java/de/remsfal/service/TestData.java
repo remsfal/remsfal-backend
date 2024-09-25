@@ -11,8 +11,6 @@ import de.remsfal.core.json.project.ImmutableGarageJson;
 import de.remsfal.core.json.project.ImmutablePropertyJson;
 import de.remsfal.core.json.project.ImmutableSiteJson;
 import de.remsfal.core.json.project.ImmutableTenancyJson;
-import de.remsfal.core.model.AddressModel;
-import de.remsfal.core.model.ImmutableAddressModel;
 
 public class TestData {
 
@@ -320,21 +318,13 @@ public class TestData {
     public static final Locale ADDRESS_LOCALE_1 = new Locale("DE");
 
     public static final ImmutableGarageJson.Builder garageBuilder1() {
-        AddressModel addressModel = ImmutableAddressModel.builder()
-                .street(ADDRESS_STREET_1)
-                .city(ADDRESS_CITY_1)
-                .province(ADDRESS_PROVINCE_1)
-                .zip(ADDRESS_ZIP_1)
-                .country(ADDRESS_LOCALE_1)
-                .build();
         return ImmutableGarageJson
         .builder()
         .id(GARAGE_ID_1)
         .title(GARAGE_TITLE_1)
         .location(GARAGE_LOCATION_1)
         .description(GARAGE_DESCRIPTION_1)
-        .usableSpace(GARAGE_USABLE_SPACE_1)
-                .address(addressModel);
+        .usableSpace(GARAGE_USABLE_SPACE_1);
     }
 
     // Test garage 2

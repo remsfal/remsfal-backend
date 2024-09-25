@@ -1,15 +1,15 @@
 package de.remsfal.core.model;
 
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
+import de.remsfal.core.model.deserializer.AddressModelDeserializer;
 
 import java.util.Locale;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
-@JsonDeserialize(as = ImmutableAddressModel.class)
+@JsonDeserialize(using = AddressModelDeserializer.class)
 public interface AddressModel {
 
     String getStreet();
@@ -21,5 +21,5 @@ public interface AddressModel {
     String getZip();
 
     Locale getCountry();
-
 }
+

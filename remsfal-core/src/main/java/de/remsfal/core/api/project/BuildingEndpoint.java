@@ -60,6 +60,7 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The building does not exist")
     BuildingJson updateBuilding(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId,
         @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) BuildingJson building);
@@ -70,6 +71,7 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "204", description = "The building was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteBuilding(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId);
 

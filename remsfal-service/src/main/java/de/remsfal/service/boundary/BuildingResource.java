@@ -3,6 +3,7 @@ package de.remsfal.service.boundary;
 import de.remsfal.core.api.project.BuildingEndpoint;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.service.boundary.project.ProjectSubResource;
 import de.remsfal.service.control.BuildingController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -15,8 +16,10 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
 
+import static io.smallrye.openapi.runtime.io.IoLogging.logger;
+
 @RequestScoped
-public class BuildingResource implements BuildingEndpoint {
+public class BuildingResource extends ProjectSubResource implements BuildingEndpoint {
     @Context
     UriInfo uri;
 
@@ -29,6 +32,7 @@ public class BuildingResource implements BuildingEndpoint {
 
     @Override
     public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
+        checkPrivileges(projectId);
         try {
             final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
             final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
@@ -44,16 +48,19 @@ public class BuildingResource implements BuildingEndpoint {
 
     @Override
     public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
+        checkPrivileges(projectId);
         try {
             final BuildingModel model = controller.getBuilding(projectId, propertyId, buildingId);
+
             return BuildingJson.valueOf(model);
-        } catch (WebApplicationException e) {
+        } catch (Exception e) {
             throw e;
         }
     }
 
     @Override
-    public BuildingJson updateBuilding(String propertyId, String buildingId, BuildingJson building) {
+    public BuildingJson updateBuilding(String projectId, String propertyId, String buildingId, BuildingJson building) {
+        checkPrivileges(projectId);
         try {
             final BuildingModel model = controller.updateBuilding(propertyId, buildingId, building);
             return BuildingJson.valueOf(model);
@@ -63,7 +70,8 @@ public class BuildingResource implements BuildingEndpoint {
     }
 
     @Override
-    public void deleteBuilding(String propertyId, String buildingId) {
+    public void deleteBuilding(String projectId, String propertyId, String buildingId) {
+        checkPrivileges(projectId);
         try {
             controller.deleteBuilding(propertyId, buildingId);
         } catch (Exception e) {

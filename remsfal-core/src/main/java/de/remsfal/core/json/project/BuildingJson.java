@@ -1,7 +1,5 @@
 package de.remsfal.core.json.project;
 
-import de.remsfal.core.model.ImmutableAddressModel;
-import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.annotation.Nullable;
 
 import jakarta.validation.constraints.NotNull;
@@ -83,7 +81,6 @@ public abstract class BuildingJson implements BuildingModel {
         if (heatingSpace == null) {
             heatingSpace = 0.0F;
         }
-
 
         return ImmutableBuildingJson.builder()
                 .id(model.getId())

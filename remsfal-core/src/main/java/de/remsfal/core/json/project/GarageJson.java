@@ -32,6 +32,4 @@ public abstract class GarageJson implements GarageModel {
     @NotNull
     public abstract String getTitle();
 
-    @NotNull
-    public abstract AddressModel getAddress();
 }

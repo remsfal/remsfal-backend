@@ -3,7 +3,7 @@ package de.remsfal.service.control;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.core.model.AddressModel;
-import de.remsfal.core.model.ImmutableAddressModel;
+import de.remsfal.service.entity.dto.AddressEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
+import org.checkerframework.checker.units.qual.A;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -159,17 +160,16 @@ class BuildingControllerTest extends AbstractTest {
 
         final BuildingModel result = buildingController.getBuilding(TestData.PROJECT_ID, property.getId(), building.getId());
 
-        AddressModel newAddress = ImmutableAddressModel.builder()
-                .street("Lavochkina St.")
-                .city(result.getAddress().getCity())
-                .province(result.getAddress().getProvince())
-                .zip(result.getAddress().getZip())
-                .country(result.getAddress().getCountry())
-                .build();
+        AddressEntity address = new AddressEntity();
+        address.setCity(result.getAddress().getCity());
+        address.setCountry(result.getAddress().getCountry());
+        address.setStreet("Lavochkina St.");
+        address.setProvince(result.getAddress().getProvince());
+        address.setZip(result.getAddress().getZip());
 
         BuildingModel model = ImmutableBuildingJson.builder()
                 .id(result.getId())
-                .address(newAddress)
+                .address(address)
                 .title(result.getTitle())
                 .description(result.getDescription())
                 .commercialSpace(result.getCommercialSpace())
@@ -179,6 +179,8 @@ class BuildingControllerTest extends AbstractTest {
                 .build();
 
         BuildingJson updatedBuildingJson = BuildingJson.valueOf(model);
+
+        logger.infov("country: " + updatedBuildingJson.getAddress().getCountry());
 
         final BuildingModel buildingModel = buildingController.updateBuilding(property.getId(), building.getId(), updatedBuildingJson);
 
@@ -202,17 +204,16 @@ class BuildingControllerTest extends AbstractTest {
 
         final BuildingModel result = buildingController.getBuilding(TestData.PROJECT_ID, property.getId(), building.getId());
 
-        AddressModel newAddress = ImmutableAddressModel.builder()
-                .street("Lavochkina St.")
-                .city(result.getAddress().getCity())
-                .province(result.getAddress().getProvince())
-                .zip(result.getAddress().getZip())
-                .country(result.getAddress().getCountry())
-                .build();
+        AddressEntity address = new AddressEntity();
+        address.setCity(result.getAddress().getCity());
+        address.setCountry(result.getAddress().getCountry());
+        address.setStreet("Lavochkina St.");
+        address.setProvince(result.getAddress().getProvince());
+        address.setZip(result.getAddress().getZip());
 
         BuildingModel model = ImmutableBuildingJson.builder()
                 .id(result.getId())
-                .address(newAddress)
+                .address(address)
                 .title(result.getTitle())
                 .description(result.getDescription())
                 .commercialSpace(result.getCommercialSpace())

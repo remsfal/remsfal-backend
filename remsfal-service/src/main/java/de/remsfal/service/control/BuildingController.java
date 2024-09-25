@@ -8,6 +8,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
+import org.checkerframework.checker.units.qual.A;
 import org.jboss.logging.Logger;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.CommercialModel;
@@ -46,6 +47,13 @@ public class BuildingController {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
                 projectId, propertyId, building);
         BuildingEntity entity = BuildingEntity.fromModel(building);
+        AddressEntity address = new AddressEntity();
+        address.setCountry(building.getAddress().getCountry());
+        address.setCity(building.getAddress().getCity());
+        address.setStreet(building.getAddress().getStreet());
+        address.setZip(building.getAddress().getZip());
+        address.setProvince(building.getAddress().getProvince());
+        entity.setAddress(address);
         entity.generateId();
         entity.getAddress().generateId();
         entity.setProjectId(projectId);
