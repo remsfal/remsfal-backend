@@ -17,7 +17,7 @@
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.validation>3.1.0</version.validation>
         <version.jax-rs>4.0.0</version.jax-rs>
-        <version.open-api>4.0</version.open-api>
+        <version.open-api>4.0.1</version.open-api>
     </properties>
     <dependencies>
         <dependency>
