@@ -162,7 +162,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
             .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
             .and().body("address.zip", Matchers.equalTo(TestData.ADDRESS_ZIP))
-            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY))
+            .and().body("address.countryCode", Matchers.equalTo("DE"))
             .and().body("address.country", Matchers.nullValue())
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION))
             .and().body("usableSpace", Matchers.equalTo(TestData.SITE_USABLE_SPACE));
@@ -227,7 +227,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
             .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
             .and().body("address.zip", Matchers.equalTo("10715"))
-            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY))
+            .and().body("address.countryCode", Matchers.equalTo("DE"))
             .and().body("address.country", Matchers.nullValue())
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION));
 
@@ -244,7 +244,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
             .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
             .and().body("address.zip", Matchers.equalTo("10715"))
-            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY))
+            .and().body("address.countryCode", Matchers.equalTo("DE"))
             .and().body("address.country", Matchers.nullValue())
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION));
     }
@@ -281,7 +281,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
             .and().body("address.province", Matchers.equalTo(TestData.ADDRESS_PROVINCE))
             .and().body("address.zip", Matchers.equalTo(TestData.ADDRESS_ZIP))
-            .and().body("address.countryCode", Matchers.equalTo(TestData.ADDRESS_COUNTRY))
+            .and().body("address.countryCode", Matchers.equalTo("DE"))
             .and().body("address.country", Matchers.nullValue())
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION))
             .and().body("tenancy.id", Matchers.notNullValue())

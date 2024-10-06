@@ -1,5 +1,7 @@
 package de.remsfal.core.json.project;
 
+import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.model.project.BuildingModel;
 import jakarta.annotation.Nullable;
 
 import jakarta.validation.constraints.NotNull;

@@ -6,6 +6,7 @@ import de.remsfal.core.api.project.SiteEndpoint;
 import de.remsfal.core.json.project.PropertyJson;
 import de.remsfal.core.json.project.PropertyListJson;
 import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.service.boundary.BuildingResource;
 import de.remsfal.service.control.PropertyController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
@@ -28,6 +29,9 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Inject
     Instance<SiteResource> siteResource;
+
+    @Inject
+    Instance<BuildingResource> buildingResource;
 
     @Override
     public PropertyListJson getProperties(final String projectId, final Integer offset, final Integer limit) {
@@ -68,7 +72,7 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public BuildingEndpoint getBuildingResource() {
-        throw new InternalServerErrorException("Not implemented");
+        return resourceContext.initResource(buildingResource.get());
     }
 
     @Override

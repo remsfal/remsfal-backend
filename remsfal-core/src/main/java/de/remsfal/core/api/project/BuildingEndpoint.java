@@ -20,7 +20,6 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.project.BuildingJson;
-import de.remsfal.core.json.project.BuildingListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
@@ -32,13 +31,6 @@ public interface BuildingEndpoint {
 
     static final String SERVICE = "buildings";
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information for all bujildings.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    BuildingListJson getBuildings(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -56,9 +48,9 @@ public interface BuildingEndpoint {
     @Operation(summary = "Retrieve information of a building.")
     @APIResponse(responseCode = "404", description = "The building does not exist")
     BuildingJson getBuilding(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
-        @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId);
+            @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
+            @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") @NotNull @UUID String buildingId);
 
     @PATCH
     @Path("/{buildingId}")
