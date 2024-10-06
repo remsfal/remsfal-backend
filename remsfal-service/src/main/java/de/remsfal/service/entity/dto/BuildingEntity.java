@@ -1,5 +1,7 @@
 package de.remsfal.service.entity.dto;
 
+
+import de.remsfal.core.model.project.BuildingModel;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,10 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-
 import java.util.Objects;
-
-import de.remsfal.core.model.project.BuildingModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

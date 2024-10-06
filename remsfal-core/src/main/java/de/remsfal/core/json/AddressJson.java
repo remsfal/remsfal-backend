@@ -57,12 +57,38 @@ public abstract class AddressJson implements AddressModel {
         if (model == null) {
             return null;
         }
+
+        String street = "";
+        if(model.getStreet() != null){
+            street = model.getStreet();
+        }
+
+        String city = "";
+        if(model.getCity() != null){
+            city = model.getCity();
+        }
+
+        String province = "";
+        if(model.getProvince() != null){
+            province = model.getProvince();
+        }
+
+        String zip = "";
+        if(model.getZip() != null){
+            zip = model.getZip();
+        }
+
+        String country = "";
+        if(model.getCountry() != null){
+            country = model.getCountry().getCountry();
+        }
+
         return ImmutableAddressJson.builder()
-            .street(model.getStreet())
-            .city(model.getCity())
-            .province(model.getProvince())
-            .zip(model.getZip())
-            .countryCode(model.getCountry().getCountry())
+            .street(street)
+            .city(city)
+            .province(province)
+            .zip(zip)
+            .countryCode(country)
             .build();
     }
 

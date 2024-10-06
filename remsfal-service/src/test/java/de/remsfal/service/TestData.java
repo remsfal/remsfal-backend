@@ -1,6 +1,7 @@
 package de.remsfal.service;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
@@ -313,6 +314,8 @@ public class TestData {
     public static final String GARAGE_DESCRIPTION_1 = "Tiefgarage";
     public static final Float GARAGE_USABLE_SPACE_1 = 12.8f;
     public static final Float GARAGE_RENT_1 = 80f;
+
+    public static final Locale ADDRESS_LOCALE_1 = new Locale("DE");
 
     public static final ImmutableGarageJson.Builder garageBuilder1() {
         return ImmutableGarageJson

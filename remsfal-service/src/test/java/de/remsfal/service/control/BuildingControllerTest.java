@@ -1,5 +1,9 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.project.BuildingJson;
+import de.remsfal.core.json.project.ImmutableBuildingJson;
+import de.remsfal.core.model.AddressModel;
+import de.remsfal.service.entity.dto.AddressEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
+import org.checkerframework.checker.units.qual.A;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,6 +148,127 @@ class BuildingControllerTest extends AbstractTest {
         assertThrows(NotFoundException.class,
             () -> buildingController.getBuilding(TestData.PROJECT_ID_2, propertyId, buildingId));
     }
+
+    @Test
+    void updateBuilding_SUCCESS() {
+        assertNotNull(TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+        final BuildingModel building = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(),
+                TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build());
+        assertNotNull(building.getId());
+
+        final BuildingModel result = buildingController.getBuilding(TestData.PROJECT_ID, property.getId(), building.getId());
+
+        AddressEntity address = new AddressEntity();
+        address.setCity(result.getAddress().getCity());
+        address.setCountry(result.getAddress().getCountry());
+        address.setStreet("Lavochkina St.");
+        address.setProvince(result.getAddress().getProvince());
+        address.setZip(result.getAddress().getZip());
+
+        BuildingModel model = ImmutableBuildingJson.builder()
+                .id(result.getId())
+                .address(address)
+                .title(result.getTitle())
+                .description(result.getDescription())
+                .commercialSpace(result.getCommercialSpace())
+                .heatingSpace(result.getHeatingSpace())
+                .livingSpace(result.getLivingSpace())
+                .usableSpace(result.getUsableSpace())
+                .build();
+
+        BuildingJson updatedBuildingJson = BuildingJson.valueOf(model);
+
+        logger.infov("country: " + updatedBuildingJson.getAddress().getCountry());
+
+        final BuildingModel buildingModel = buildingController.updateBuilding(property.getId(), building.getId(), updatedBuildingJson);
+
+        assertEquals(building.getId(), buildingModel.getId());
+        assertEquals(building.getTitle(), buildingModel.getTitle());
+        assertEquals(building.getDescription(), buildingModel.getDescription());
+        assertEquals(building.getLivingSpace(), buildingModel.getLivingSpace());
+        assertEquals(building.getCommercialSpace(), buildingModel.getCommercialSpace());
+        assertEquals(building.getUsableSpace(), buildingModel.getUsableSpace());
+        assertEquals(buildingModel.getAddress().getStreet(), "Lavochkina St.");
+    }
+
+    @Test
+    void updateBuilding_FAILED_wrongBuildingId() {
+        assertNotNull(TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+        final BuildingModel building = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(),
+                TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build());
+        assertNotNull(building.getId());
+
+        final BuildingModel result = buildingController.getBuilding(TestData.PROJECT_ID, property.getId(), building.getId());
+
+        AddressEntity address = new AddressEntity();
+        address.setCity(result.getAddress().getCity());
+        address.setCountry(result.getAddress().getCountry());
+        address.setStreet("Lavochkina St.");
+        address.setProvince(result.getAddress().getProvince());
+        address.setZip(result.getAddress().getZip());
+
+        BuildingModel model = ImmutableBuildingJson.builder()
+                .id(result.getId())
+                .address(address)
+                .title(result.getTitle())
+                .description(result.getDescription())
+                .commercialSpace(result.getCommercialSpace())
+                .heatingSpace(result.getHeatingSpace())
+                .livingSpace(result.getLivingSpace())
+                .usableSpace(result.getUsableSpace())
+                .build();
+
+        BuildingJson updatedBuildingJson = BuildingJson.valueOf(model);
+
+        assertThrows(NotFoundException.class,
+                () -> buildingController.updateBuilding(property.getId(), TestData.BUILDING_ID_1, updatedBuildingJson));
+
+    }
+
+    @Test
+    void deleteBuilding_SUCCESS() {
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        assertNotNull(property.getId());
+
+        final BuildingModel building = TestData.buildingBuilder()
+                .id(null)
+                .address(TestData.addressBuilder().build())
+                .build();
+
+        final BuildingModel result = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+
+        buildingController.deleteBuilding(property.getId(), result.getId());
+
+        assertThrows(NotFoundException.class,
+                () -> buildingController.getBuilding(TestData.PROJECT_ID, property.getId(), result.getId()));
+
+    }
+
+    @Test
+    void deleteBuilding_FAILED() {
+        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+
+        assertNotNull(property.getId());
+
+        final BuildingModel building = TestData.buildingBuilder()
+                .id(null)
+                .address(TestData.addressBuilder().build())
+                .build();
+
+        buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+
+        buildingController.deleteBuilding(property.getId(), TestData.BUILDING_ID_1);
+
+        Long entity = entityManager
+                .createQuery("SELECT count (b) FROM BuildingEntity b where b.title = :title", Long.class)
+                .setParameter("title", TestData.BUILDING_TITLE)
+                .getSingleResult();
+        assertEquals(1, entity);
+    }
     
     @Test
     void createApartment_SUCCESS_getApartment() {
@@ -222,7 +348,7 @@ class BuildingControllerTest extends AbstractTest {
         assertEquals(result, getResult);
     }
 
-    @Test
+   @Test
     void createGarage_SUCCESS_getGarage() {
         final String propertyId = propertyController
             .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())

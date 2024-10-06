@@ -1,50 +1,59 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.model.project.ApartmentModel;
+import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.service.entity.dao.BuildingRepository;
+import de.remsfal.service.entity.dto.*;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
+import org.checkerframework.checker.units.qual.A;
+import org.jboss.logging.Logger;
+import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.core.model.project.GarageModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
-import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
-import org.jboss.logging.Logger;
 
-/**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
- */
+import java.util.UUID;
+
+
 @RequestScoped
 public class BuildingController {
-    
     @Inject
     Logger logger;
-    
+
     @Inject
     BuildingRepository buildingRepository;
-    
+
     @Inject
     ApartmentRepository apartmentRepository;
-    
+
     @Inject
     CommercialRepository commercialRepository;
-    
+
     @Inject
     GarageRepository garageRepository;
-    
+
     @Transactional
     public BuildingModel createBuilding(final String projectId, final String propertyId, final BuildingModel building) {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
                 projectId, propertyId, building);
         BuildingEntity entity = BuildingEntity.fromModel(building);
+        AddressEntity address = new AddressEntity();
+        address.setCountry(building.getAddress().getCountry());
+        address.setCity(building.getAddress().getCity());
+        address.setStreet(building.getAddress().getStreet());
+        address.setZip(building.getAddress().getZip());
+        address.setProvince(building.getAddress().getProvince());
+        entity.setAddress(address);
         entity.generateId();
         entity.getAddress().generateId();
         entity.setProjectId(projectId);
@@ -65,6 +74,32 @@ public class BuildingController {
         }
 
         return entity;
+    }
+
+    @Transactional
+    public BuildingModel updateBuilding(String propertyId, String buildingId, BuildingJson building) {
+        logger.infov("Update a building (propertyId={0}, buildingId={1}, building={2})",
+                propertyId, buildingId, building);
+        final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
+                .orElseThrow(() -> new NotFoundException("Building not exist"));
+            entity.setTitle(building.getTitle());
+            AddressEntity address = AddressEntity.fromModel(building.getAddress());
+            address.setId(UUID.randomUUID().toString());
+            entity.setAddress(address);
+            entity.setDescription(building.getDescription());
+            entity.setLivingSpace(building.getLivingSpace());
+            entity.setCommercialSpace(building.getCommercialSpace());
+            entity.setUsableSpace(building.getUsableSpace());
+            entity.setHeatingSpace(building.getHeatingSpace());
+            entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
+        return buildingRepository.merge(entity);
+    }
+
+    @Transactional
+    public void deleteBuilding(String propertyId, String buildingId) {
+        logger.infov("Delete a building (propertyId={0}, buildingId={1})",
+                propertyId, buildingId);
+        buildingRepository.deleteById(buildingId);
     }
 
     @Transactional
@@ -109,7 +144,7 @@ public class BuildingController {
     }
 
 
-    public CommercialModel getCommercial(final String projectId, 
+    public CommercialModel getCommercial(final String projectId,
                                          final String buildingId, final String commercialId) {
         logger.infov("Retrieving a commercial (projectId={0}, buildingId={1}, commercialId={2})",
                 projectId, buildingId, commercialId);
