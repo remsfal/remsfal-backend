@@ -99,6 +99,13 @@
 	        	</exclusion>
     	  	</exclusions>
         </dependency>
+        <!-- Bugfix dependencies -->
+        <dependency>
+            <!-- JDK 24 support -->
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.15.4</version>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
