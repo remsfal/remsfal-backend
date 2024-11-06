@@ -55,6 +55,16 @@
             <artifactId>microprofile-openapi-api</artifactId>
             <version>${version.open-api}</version>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy</artifactId>
+            <version>3.13.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-multipart</artifactId>
+            <version>3.13.3</version>
+        </dependency>
     </dependencies>
 
     <build>

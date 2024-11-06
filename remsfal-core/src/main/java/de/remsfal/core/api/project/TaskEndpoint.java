@@ -32,7 +32,7 @@ import de.remsfal.core.validation.UUID;
  */
 public interface TaskEndpoint {
 
-    static final String SERVICE = "tasks";
+    String SERVICE = "tasks";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -83,5 +83,8 @@ public interface TaskEndpoint {
     void deleteTask(
         @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "ID of the task", required = true) @PathParam("taskId") @NotNull @UUID String taskId);
+
+    @Path("/{taskId}/" + ChatEndpoint.SERVICE)
+    ChatEndpoint getChatSessionResource();
 
 }
