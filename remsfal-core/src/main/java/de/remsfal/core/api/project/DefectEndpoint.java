@@ -32,7 +32,7 @@ import de.remsfal.core.validation.UUID;
  */
 public interface DefectEndpoint {
 
-    static final String SERVICE = "defects";
+    String SERVICE = "defects";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -127,5 +127,8 @@ public interface DefectEndpoint {
         @Parameter(description = "ID of the defect", required = true)
         @PathParam("defectId") @NotNull @UUID String defectId
     );
+
+    @Path("/{defectId}/" + ChatEndpoint.SERVICE)
+    ChatEndpoint getChatSessionResource();
 
 }
