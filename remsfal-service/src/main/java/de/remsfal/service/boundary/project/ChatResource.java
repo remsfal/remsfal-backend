@@ -4,13 +4,14 @@ import de.remsfal.core.api.project.ChatEndpoint;
 import de.remsfal.core.json.project.ChatMessageJson;
 import de.remsfal.core.json.project.ChatSessionJson;
 import de.remsfal.core.model.project.ChatSessionModel;
-import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.ChatMessageController;
 import de.remsfal.service.control.ChatSessionController;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.*;
 import org.jboss.logging.Logger;
 import java.io.InputStream;
@@ -39,9 +40,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         String defectId = uri.getPathParameters().getFirst("defectId");
 
         if ((taskId == null || taskId.isBlank()) && (defectId == null || defectId.isBlank())) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Either Task ID or Defect ID must be provided")
-                    .build();
+            throw new BadRequestException("Task ID or defect ID must be provided");
         }
 
         ChatSessionModel.TaskType taskType = (taskId != null && !taskId.isBlank())
@@ -57,14 +56,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .entity(ChatSessionJson.valueOf(model))
                     .build();
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+            throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to create chat session", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error" )
-                    .build();
+            throw new InternalServerErrorException("Internal server error: Failed to create chat session" + e.getMessage());
         }
     }
 
@@ -102,14 +97,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .entity(ChatSessionJson.valueOf(chatSessionController.getChatSession(sessionId)))
                     .build();
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+            throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to join chat session", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error")
-                    .build();
+            throw new InternalServerErrorException("Internal server error: Failed to join chat session" + e.getMessage());
         }
     }
 
@@ -123,23 +114,17 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .entity(ChatSessionJson.valueOf(chatSessionController.getChatSession(sessionId)))
                     .build();
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+            throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to handle chat session", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error")
-                    .build();
+            throw new InternalServerErrorException("Internal server error: Failed to handle chat session" + e.getMessage());
         }
     }
 
     @Override
     public Response addParticipants(String sessionId, String userId, ChatSessionModel.ParticipantRole role) {
         if (userId == null || userId.isBlank()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("User ID must be provided")
-                    .build();
+            throw new BadRequestException("User ID must be provided");
         }
         try {
             chatSessionController.addParticipant(sessionId, userId, role);
@@ -149,19 +134,13 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                         .entity(Map.of(userId, role))
                         .build();
             } else {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity("Failed to add participant to chat session")
-                        .build();
+                throw new InternalServerErrorException("Failed to add participant to chat session");
             }
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+            throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to add participant to chat session", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error")
-                    .build();
+            throw new InternalServerErrorException("Internal server error: Failed to add participant to chat session" + e.getMessage());
         }
     }
 
@@ -184,52 +163,52 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .entity(Map.of(participantId, participants.get(participantId)))
                     .build();
         } else {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Participant not found")
-                    .build();
+            throw new NoSuchElementException("Participant not found");
         }
     }
 
     @Override
     public Response changeParticipantRole(String sessionId, String participantId, ChatSessionModel.ParticipantRole role) {
         ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-        Map <String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
-        if (participants.containsKey(participantId)) {
+        Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
+
+        if (!participants.containsKey(participantId)) {
+            throw new NoSuchElementException("Participant not found");
+        }
+
+        try {
             chatSessionController.updateParticipantRole(sessionId, participantId, role);
-            if (chatSessionController.getParticipantRole(sessionId, participantId).equals(role)) {
-                return Response.ok()
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(Map.of(participantId, participants.get(participantId)))
-                        .build();
-            } else {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity("Failed to update participant role")
-                        .build();
+            if (!chatSessionController.getParticipantRole(sessionId, participantId).equals(role)) {
+                throw new InternalServerErrorException("Failed to change participant role");
             }
-        } else {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Participant not found")
+            return Response.ok()
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(Map.of(participantId, role))
                     .build();
+        } catch (Exception e) {
+            logger.error("Failed to change participant role", e);
+            throw new InternalServerErrorException("Internal server error: Failed to change participant role" + e.getMessage());
         }
     }
 
     @Override
     public Response removeParticipant(String sessionId, String participantId) {
         ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-        Map <String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
-        if (participants.containsKey(participantId)) {
+        Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
+
+        if (!participants.containsKey(participantId)) {
+            throw new NoSuchElementException("Participant not found");
+        }
+
+        try {
             chatSessionController.removeParticipant(sessionId, participantId);
-            if (!participants.containsKey(participantId)) {
-                return Response.noContent().build();
-            } else {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity("Failed to remove participant from chat session")
-                        .build();
+            if (participants.containsKey(participantId)) {
+                throw new InternalServerErrorException("Failed to remove participant from chat session");
             }
-        } else {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Participant not found")
-                    .build();
+            return Response.noContent().build();
+        } catch (Exception e) {
+            logger.error("Failed to remove participant from chat session", e);
+            throw new InternalServerErrorException("Internal server error: Failed to remove participant from chat session" + e.getMessage());
         }
     }
 
@@ -242,9 +221,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .entity(Map.of(participantId, role))
                     .build();
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+            throw new NoSuchElementException(e.getMessage());
         }
     }
 
@@ -259,14 +236,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .entity(ChatMessageJson.valueOf(entity))
                     .build();
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+            throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to send message", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error")
-                    .build();
+            throw new InternalServerErrorException("Internal server error: Failed to send message" + e.getMessage());
         }
     }
 
@@ -298,19 +271,13 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                         .entity(ChatMessageJson.valueOf(updatedMessage))
                         .build();
             } else {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity("Failed to update message")
-                        .build();
+                throw new InternalServerErrorException("Failed to update message");
             }
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+           throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to update message", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error")
-                    .build();
+            throw new InternalServerErrorException("Internal server error: Failed to update message" + e.getMessage());
         }
     }
 
@@ -320,14 +287,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             chatMessageController.deleteChatMessage(messageId);
             return Response.noContent().build();
         } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+            throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to delete message", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error")
-                    .build();
+            throw new InternalServerErrorException("Internal server error: Failed to delete message" + e.getMessage());
         }
     }
 
