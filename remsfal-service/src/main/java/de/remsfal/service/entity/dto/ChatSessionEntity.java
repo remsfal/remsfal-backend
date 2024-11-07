@@ -2,6 +2,8 @@ package de.remsfal.service.entity.dto;
 
 import jakarta.persistence.*;
 import de.remsfal.core.model.project.ChatSessionModel;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.*;
 
@@ -11,6 +13,7 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
 
     @Id
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
+    @NotBlank
     private String id;
 
     @Override
@@ -24,6 +27,7 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
     }
 
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, length = 36)
+    @NotBlank
     private String projectId;
 
     @Override
@@ -36,6 +40,7 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
     }
 
     @Column(name = "TASK_ID", columnDefinition = "char", nullable = false, length = 36)
+    @NotBlank
     private String taskId;
 
     @Override
@@ -49,6 +54,7 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
 
     @Enumerated(EnumType.STRING)
     @Column(name = "TASK_TYPE", nullable = false)
+    @NotNull
     private TaskType taskType;
 
     @Override
@@ -91,6 +97,7 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
     // Status of the chat session: OPEN, CLOSED, ARCHIVED
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false)
+    @NotNull
     private Status status;
 
     @Override

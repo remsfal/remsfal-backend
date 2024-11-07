@@ -2,6 +2,9 @@ package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.project.ChatMessageModel;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -11,17 +14,21 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
 
     @Id
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
+    @NotBlank
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CHAT_SESSION_ID", referencedColumnName = "ID", nullable = false)
+    @NotNull
     private ChatSessionEntity chatSession;
 
     @Column(name = "SENDER_ID", columnDefinition = "char", nullable = false, length = 36)
+    @NotBlank
     private String senderId;
 
     @Column(name = "CONTENT_TYPE", nullable = false)
     @Enumerated(EnumType.STRING)
+    @NotNull
     private ContentType contentType;
 
     @Column(name = "CONTENT")
