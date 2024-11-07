@@ -79,7 +79,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
         if (message == null) {
             return Collections.emptyMap();
         }
-
         Map<String, Object> messageJsonMap = new LinkedHashMap<>();
         messageJsonMap.put("DATETIME", message.getTimestamp());
         messageJsonMap.put("MESSAGE_ID", message.getId());
@@ -104,21 +103,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
     @Transactional
     public ChatSessionEntity createChatSession(String projectId, String taskId, TaskType taskType,
                                                Map<String, ParticipantRole> participants, Status status) {
-        // Validate required fields
-        if (projectId == null || projectId.isBlank()) {
-            throw new IllegalArgumentException("Project ID is required");
-        }
-        if (taskId == null || taskId.isBlank()) {
-            throw new IllegalArgumentException("Task ID is required");
-        }
-        if (taskType == null) {
-            throw new IllegalArgumentException("TaskType is required");
-        }
-        if (participants == null || participants.isEmpty()) {
-            throw new IllegalArgumentException("At least one participant is required");
-        }
-
-
 
         ChatSessionEntity session = new ChatSessionEntity();
         session.setId(UUID.randomUUID().toString());

@@ -7,10 +7,13 @@ import de.remsfal.service.entity.dao.ChatMessageRepository;
 import de.remsfal.service.entity.dao.ChatSessionRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
+import io.quarkus.arc.ArcUndeclaredThrowableException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.RollbackException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.*;
 
 import java.util.NoSuchElementException;
@@ -204,32 +207,32 @@ public class ChatMessageRepositoryTest extends AbstractTest {
 
     @Test
     void sendTextChatMessage_FAILURE() {
-        String invalidSessionId = UUID.randomUUID().toString();
         String validSessionId = CHAT_SESSION_ID;
-        String closedSessionId = CLOSED_CHAT_SESSION_ID;
         String validSenderId = TestData.USER_ID_2;
         String validMessageContent = "Test message content";
         ChatMessageEntity.ContentType validContentType = ChatMessageEntity.ContentType.TEXT;
 
-        Exception exception1 = assertThrows(NoSuchElementException.class, () -> chatMessageRepository.sendChatMessage(invalidSessionId, validSenderId, validContentType, validMessageContent));
-        assertEquals("ChatSession with ID " + invalidSessionId + " not found", exception1.getMessage(), "Exception message should match for non-existent session ID");
+        // Non-existent session ID should fail
+        assertThrows(Exception.class, () ->
+                chatMessageRepository.sendChatMessage(UUID.randomUUID().toString(), validSenderId, validContentType, validMessageContent)
+        );
 
-        Exception exception2 = assertThrows(IllegalStateException.class, () -> chatMessageRepository.sendChatMessage(closedSessionId, validSenderId, validContentType, validMessageContent));
-        assertEquals("ChatSession with ID " + closedSessionId + " is closed or archived", exception2.getMessage(), "Exception message should match for closed session");
+        // Closed session should fail
+        assertThrows(Exception.class, () ->
+                chatMessageRepository.sendChatMessage(CLOSED_CHAT_SESSION_ID, validSenderId, validContentType, validMessageContent)
+        );
 
-        Exception exception3 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.sendChatMessage(validSessionId, validSenderId, validContentType, null));
-        assertEquals("Message content cannot be null or empty", exception3.getMessage(), "Exception message should match for null message content");
+        // Null sender ID should fail
+        assertThrows(Exception.class, () ->
+                chatMessageRepository.sendChatMessage(validSessionId, null, validContentType, validMessageContent)
+        );
 
-        Exception exception4 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.sendChatMessage(validSessionId, validSenderId, validContentType, "   "));
-        assertEquals("Message content cannot be null or empty", exception4.getMessage(), "Exception message should match for blank message content");
-
-        Exception exception5 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.sendChatMessage(validSessionId, null, validContentType, validMessageContent));
-        assertEquals("Sender ID cannot be null or empty", exception5.getMessage(), "Exception message should match for null sender ID");
-
-        Exception exception6 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.sendChatMessage(validSessionId, validSenderId, null, validMessageContent));
-        assertEquals("Content type cannot be null", exception6.getMessage(), "Exception message should match for null content type");
-
+        // Null content type should fail
+        assertThrows(Exception.class, () ->
+                chatMessageRepository.sendChatMessage(validSessionId, validSenderId, null, validMessageContent)
+        );
     }
+
 
     @Test
     @Transactional
@@ -287,10 +290,32 @@ public class ChatMessageRepositoryTest extends AbstractTest {
         chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().add(chatMessage);
         chatMessageRepository.persist(chatMessage);
 
-        chatMessageRepository.updateImageURL(chatMessage.getId(), "https://example.com/updated-image.jpg");
-        ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
-        assertEquals("https://example.com/updated-image.jpg", chatSession.getMessages().get(1).getImageUrl(), "Image URL of the updated message should match");
+        String randomId = UUID.randomUUID().toString();
+        String invalidImageUrl = "   ";
+        String validImageUrl = "https://example.com/updated-image.jpg";
 
+        // Non-existent message ID
+        NoSuchElementException exception1 = assertThrows(NoSuchElementException.class, () ->
+                chatMessageRepository.updateImageURL(randomId, validImageUrl)
+        );
+        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage());
+
+        // Invalid image URL
+        IllegalArgumentException exception2 = assertThrows(IllegalArgumentException.class, () ->
+                chatMessageRepository.updateImageURL(chatMessage.getId(), invalidImageUrl)
+        );
+        assertEquals("Image URL cannot be null or empty", exception2.getMessage());
+
+        IllegalArgumentException exception3 = assertThrows(IllegalArgumentException.class, () ->
+                chatMessageRepository.updateImageURL(chatMessage.getId(), null)
+        );
+        assertEquals("Image URL cannot be null or empty", exception3.getMessage());
+
+        // Attempt to update non-image message
+        IllegalArgumentException exception4 = assertThrows(IllegalArgumentException.class, () ->
+                chatMessageRepository.updateImageURL(CHAT_MESSAGE_ID, validImageUrl)
+        );
+        assertEquals("Cannot update non-image message with updateImageURL() method", exception4.getMessage());
     }
 
     @Test

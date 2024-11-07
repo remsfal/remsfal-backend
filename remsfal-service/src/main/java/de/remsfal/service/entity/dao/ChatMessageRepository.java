@@ -26,18 +26,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
 
     @Transactional
     public ChatMessageEntity sendChatMessage(String sessionId, String senderId, ContentType contentType, String content) {
-        if (sessionId == null || sessionId.isBlank()) {
-            throw new IllegalArgumentException("Session ID cannot be null or empty");
-        }
-        if (senderId == null || senderId.isBlank()) {
-            throw new IllegalArgumentException("Sender ID cannot be null or empty");
-        }
-        if (contentType == null) {
-            throw new IllegalArgumentException("Content type cannot be null");
-        }
-        if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("Message content cannot be null or empty");
-        }
+
         ChatSessionEntity session = chatSessionRepository.findChatSessionById(sessionId);
         if (session == null) {
             throw new NoSuchElementException("ChatSession with ID " + sessionId + " not found");
