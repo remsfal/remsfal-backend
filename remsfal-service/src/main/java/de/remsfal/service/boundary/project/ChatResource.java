@@ -28,10 +28,6 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     ChatMessageController chatMessageController;
 
     @Inject
-    RemsfalPrincipal principal;
-
-
-    @Inject
     Logger logger;
 
 
