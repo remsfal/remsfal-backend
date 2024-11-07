@@ -34,12 +34,6 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     @Override
     public Response createChatSession() {
         String userId = principal.getId(); // Get user ID from session
-        if (userId == null || userId.isBlank()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("User is not authenticated")
-                    .build();
-        }
-
         String projectId = uri.getPathParameters().getFirst("projectId");
         String taskId = uri.getPathParameters().getFirst("taskId");
         String defectId = uri.getPathParameters().getFirst("defectId");
@@ -101,11 +95,6 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     @Override
     public Response joinChatSession(String sessionId) {
         String userId = principal.getId(); // Get user ID from session
-        if (userId == null || userId.isBlank()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("User is not authenticated")
-                    .build();
-        }
         try {
             chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.OBSERVER);
             return Response.ok()
@@ -127,11 +116,6 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     @Override
     public Response handleChatSession(String sessionId) {
         String userId = principal.getId(); // Get user ID from session
-        if (userId == null || userId.isBlank()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("User is not authenticated")
-                    .build();
-        }
         try {
             chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.HANDLER);
             return Response.ok()
@@ -267,11 +251,6 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     @Override
     public Response sendMessage(String sessionId, ChatMessageJson message) {
         String userId = principal.getId(); // Get user ID from session
-        if (userId == null || userId.isBlank()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("User is not authenticated")
-                    .build();
-        }
         try {
             ChatMessageEntity entity = chatMessageController.sendChatMessage(sessionId, userId, message.getContentType(), message.getContent());
             URI location = uri.getAbsolutePathBuilder().path(entity.getId()).build();
