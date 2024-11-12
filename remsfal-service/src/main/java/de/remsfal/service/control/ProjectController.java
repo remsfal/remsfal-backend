@@ -149,7 +149,8 @@ public class ProjectController {
 
     @Transactional
     public ProjectModel changeProjectMemberRole(final UserModel user, final String projectId, final ProjectMemberModel member) {
-        logger.infov("Updating a project membership (user={0}, project={1}, memberId={2}, memberRole={3})", user.getId(), projectId, member.getId(), member.getRole());
+        logger.infov("Updating a project membership (user={0}, project={1}, memberId={2}, memberRole={3})",
+                user.getId(), projectId, member.getId(), member.getRole());
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
         entity.changeMemberRole(member);
