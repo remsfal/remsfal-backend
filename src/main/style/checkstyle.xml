@@ -20,7 +20,7 @@
     <module name="TreeWalker">
         <module name="AvoidStarImport" />
         <module name="Indentation">
-            <property name="forceStrictCondition" value="false"/>
+            <property name="forceStrictCondition" value="true"/>
         </module>
         <module name="AnnotationLocation">
             <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
@@ -30,7 +30,8 @@
     </module>
 
     <module name="LineLength">
-        <property name="max" value="150"/>
+        <property name="max" value="120"/>
+        <property name="severity" value="error"/>
     </module>
 
 </module>
