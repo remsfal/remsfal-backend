@@ -29,7 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 /**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface PropertyEndpoint {
 
@@ -38,57 +38,92 @@ public interface PropertyEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all properties.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(
+            responseCode = "401",
+            description = "No user authentication provided via session cookie"
+    )
     PropertyListJson getProperties(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "Offset of the first property to return")
-        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
-        @Parameter(description = "Maximum number of properties to return")
-        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "Offset of the first property to return")
+            @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
+            @Parameter(description = "Maximum number of properties to return")
+            @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
+    );
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new property.")
-    @APIResponse(responseCode = "201", description = "Property created successfully",
-        headers = @Header(name = "Location", description = "URL of the new property"))
+    @APIResponse(
+            responseCode = "201",
+            description = "Property created successfully",
+            headers = @Header(name = "Location", description = "URL of the new property")
+    )
     Response createProperty(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PostValidation.class) PropertyJson property);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "Property information", required = true)
+            @Valid @ConvertGroup(to = PostValidation.class) PropertyJson property
+    );
 
     @GET
     @Path("/{propertyId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a property.")
-    @APIResponse(responseCode = "404", description = "The property does not exist")
+    @APIResponse(
+            responseCode = "404",
+            description = "The property does not exist"
+    )
     PropertyJson getProperty(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the property", required = true)
+            @PathParam("propertyId") @NotNull @UUID String propertyId
+    );
 
     @PATCH
     @Path("/{propertyId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a property.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "The property does not exist")
+    @APIResponse(
+            responseCode = "401",
+            description = "No user authentication provided via session cookie"
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "The property does not exist"
+    )
     PropertyJson updateProperty(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
-        @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) PropertyJson property);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the property", required = true)
+            @PathParam("propertyId") @NotNull @UUID String propertyId,
+            @Parameter(description = "Property information", required = true)
+            @Valid @ConvertGroup(to = PatchValidation.class) PropertyJson property
+    );
 
     @DELETE
     @Path("/{propertyId}")
     @Operation(summary = "Delete an existing property.")
-    @APIResponse(responseCode = "204", description = "The property was deleted successfully")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(
+            responseCode = "204",
+            description = "The property was deleted successfully"
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "No user authentication provided via session cookie"
+    )
     void deleteProperty(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the property", required = true)
+            @PathParam("propertyId") @NotNull @UUID String propertyId
+    );
 
     @Path("/{propertyId}/" + BuildingEndpoint.SERVICE)
     BuildingEndpoint getBuildingResource();
 
     @Path("/{propertyId}/" + SiteEndpoint.SERVICE)
     SiteEndpoint getSiteResource();
-
 }
