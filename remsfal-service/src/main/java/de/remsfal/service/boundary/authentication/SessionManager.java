@@ -36,7 +36,7 @@ public class SessionManager {
     
     public static final String KEY_ALGORITHM = "AES";
     
-    @ConfigProperty(name = "de.remsfal.auth.session.encryption-key") 
+    @ConfigProperty(name = "de.remsfal.auth.session.encryption-key")
     private Optional<String> sessionSecretKey;
 
     @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/")

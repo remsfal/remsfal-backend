@@ -33,11 +33,11 @@ public class ProjectRepository extends AbstractRepository<ProjectEntity> {
     }
 
 
-    public Optional<ProjectMembershipEntity> findMembershipByUserIdAndProjectId(final String userId, 
+    public Optional<ProjectMembershipEntity> findMembershipByUserIdAndProjectId(final String userId,
                                                                                 final String projectId) {
         try {
             return Optional.of(getEntityManager()
-                    .createNamedQuery("ProjectMembershipEntity.findByProjectIdAndUserId", 
+                    .createNamedQuery("ProjectMembershipEntity.findByProjectIdAndUserId",
                                       ProjectMembershipEntity.class)
                     .setParameter(PARAM_PROJECT_ID, projectId)
                     .setParameter(PARAM_USER_ID, userId)
