@@ -18,7 +18,7 @@
     </module>
 
     <module name="RegexpSingleline">
-        <property name="format" value="\s+$"/>
+        <property name="format" value=".*\S\s+$"/>
         <property name="message" value="Trailing whitespace detected"/>
     </module>
 
