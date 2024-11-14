@@ -17,6 +17,11 @@
         <property name="eachLine" value="true" />
     </module>
 
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$"/>
+        <property name="message" value="Trailing whitespace detected"/>
+    </module>
+
     <module name="TreeWalker">
         <module name="AvoidStarImport" />
         <module name="Indentation">
