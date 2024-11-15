@@ -148,6 +148,72 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
     }
 
+
+    //ARBEIT
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
+    void createTask_SUCCESS_taskIsCreated_USERID_isNull(String path) {
+        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\"}";
+        given()
+                .when()
+                .cookie(buildCookie(null, null, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .body(json)
+                .post(path, TestData.PROJECT_ID)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .contentType(ContentType.JSON)
+                .header("location", Matchers.containsString(path.replace("{projectId}", TestData.PROJECT_ID)))
+                .and().body("id", Matchers.notNullValue())
+                .and().body("title", Matchers.equalTo(TestData.TASK_TITLE));
+
+        long enties = entityManager
+                .createQuery("SELECT count(task) FROM TaskEntity task where task.title = :title", Long.class)
+                .setParameter("title", TestData.TASK_TITLE)
+                .getSingleResult();
+        assertEquals(1, enties);
+    }
+
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
+    void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL(String path) {
+        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
+                + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
+
+        final Response res = given()
+                .when()
+                .cookie(buildCookie(null, null, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json)
+                .post(path, TestData.PROJECT_ID)
+                .thenReturn();
+
+        final String taskId = res.then()
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().path("id");
+
+        final String taskUrl = res.then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .and().body("id", Matchers.equalTo(taskId))
+                .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
+                .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")))
+                .header("location", Matchers.startsWith("http://localhost:8081/api/v1/projects"))
+                .header("location", Matchers.endsWith(taskId))
+                .extract().header("location");
+
+        given()
+                .when()
+                .cookie(buildCookie(null, null, Duration.ofMinutes(10)))
+                .get(taskUrl)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(taskId))
+                .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
+                .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
+    }
+
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
     void getTask_FAILED_userIsNotMember(String path) {
