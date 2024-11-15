@@ -40,6 +40,6 @@ public interface AddressEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
 
     List<AddressJson> getPossibleCities(@Parameter(description = "A zip code to map the city")
-                                        @QueryParam("zip") @NotNull @Zip String zipCode);
-
+        @Parameter(description = "A zip code to map the city")
+        @QueryParam("zip") @NotNull @Zip String zipCode);
 }

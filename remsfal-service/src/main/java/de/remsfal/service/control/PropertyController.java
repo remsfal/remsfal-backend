@@ -34,7 +34,8 @@ public class PropertyController {
         return getProperty(projectId, entity.getId());
     }
 
-    public List<? extends PropertyModel> getProperties(final String projectId, final Integer offset, final Integer limit) {
+    public List<? extends PropertyModel> getProperties(final String projectId,
+                                                       final Integer offset, final Integer limit) {
         logger.infov("Retrieving up to {1} properties (projectId = {0})", projectId, limit);
         return propertyRepository.findPropertiesByProjectId(projectId, offset, limit);
     }

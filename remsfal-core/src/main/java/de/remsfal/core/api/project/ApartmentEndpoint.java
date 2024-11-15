@@ -37,8 +37,8 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "201", description = "Apartment created successfully",
         headers = @Header(name = "Location", description = "URL of the new apartment"))
     Response createApartment(
-        @Parameter(description = "Apartment information", required = true) @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment);
-    
+        @Parameter(description = "Apartment information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment);
     @GET
     @Path("/{apartmentId}")
     @Produces(MediaType.APPLICATION_JSON)

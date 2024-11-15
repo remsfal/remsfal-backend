@@ -36,6 +36,7 @@
 
     <module name="LineLength">
         <property name="max" value="120"/>
+        <property name="severity" value="error"/>
     </module>
 
 </module>
