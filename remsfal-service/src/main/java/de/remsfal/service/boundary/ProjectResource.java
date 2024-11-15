@@ -108,7 +108,8 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public ProjectJson updateProjectMember(final String projectId, final String memberId, final ProjectMemberJson project) {
+    public ProjectJson updateProjectMember(final String projectId,
+                                           final String memberId, final ProjectMemberJson project) {
         final ProjectModel model = controller.changeProjectMemberRole(principal, projectId, project);
         return ProjectJson.valueOf(model);
     }

@@ -103,7 +103,8 @@ public class BuildingController {
     }
 
     @Transactional
-    public ApartmentModel createApartment(final String projectId, final String buildingId, final ApartmentModel apartment) {
+    public ApartmentModel createApartment(final String projectId, final String buildingId,
+                                          final ApartmentModel apartment) {
         logger.infov("Creating a apartment (projectId={0}, buildingId={1}, apartment={2})",
                 projectId, buildingId, apartment);
         ApartmentEntity entity = ApartmentEntity.fromModel(apartment);
@@ -131,7 +132,8 @@ public class BuildingController {
 
 
     @Transactional
-    public CommercialModel createCommercial(final String projectId, final String buildingId, final CommercialModel commercial) {
+    public CommercialModel createCommercial(final String projectId, final String buildingId,
+                                            final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
                 projectId, buildingId, commercial);
         CommercialEntity entity = CommercialEntity.fromModel(commercial);

@@ -19,42 +19,43 @@ import java.util.List;
 public abstract class PropertyListJson {
 
     @Schema(
-            description = "Index of the first element in property list of total available entries, starting at 1",
-            required = true,
-            example = "1"
+        description = "Index of the first element in property list of total available entries, starting at 1",
+        required = true,
+        example = "1"
     )
     public abstract Integer getFirst();
 
     @Schema(
-            description = "Number of elements in property list",
-            minimum = "1",
-            maximum = "100",
-            defaultValue = "10",
-            required = true
+        description = "Number of elements in property list",
+        minimum = "1",
+        maximum = "100",
+        defaultValue = "10",
+        required = true
     )
     public abstract Integer getSize();
 
     @Schema(
-            description = "Total number of available properties",
-            required = true
+        description = "Total number of available properties",
+        required = true
     )
     public abstract Long getTotal();
 
     public abstract List<PropertyItemJson> getProperties();
 
     public static PropertyListJson valueOf(
-            final List<? extends PropertyModel> properties,
-            final int first,
-            final long total
+        final List<? extends PropertyModel> properties,
+        final int first,
+        final long total
     ) {
+
         final ImmutablePropertyListJson.Builder builder = ImmutablePropertyListJson.builder();
         for (PropertyModel model : properties) {
             builder.addProperties(PropertyItemJson.valueOf(model));
         }
         return builder
-                .size(properties.size())
-                .first(first)
-                .total(total)
-                .build();
+            .size(properties.size())
+            .first(first)
+            .total(total)
+            .build();
     }
 }

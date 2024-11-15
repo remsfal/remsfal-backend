@@ -39,53 +39,40 @@ public interface TaskEndpoint {
     @Operation(summary = "Retrieve information for all tasks.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     TaskListJson getTasks(
-            @Parameter(
-                    description = "ID of the project", required = true
-            ) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(
-                    description = "Filter to return only tasks of a specific user"
-            ) @QueryParam("owner") @UUID String ownerId,
-            @Parameter(
-                    description = "Filter to return only tasks with a specific status"
-            ) @QueryParam("status") Status status
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "Filter to return only tasks of a specific user")
+        @QueryParam("owner") @UUID String ownerId,
+        @Parameter(description = "Filter to return only tasks with a specific status")
+        @QueryParam("status") Status status
     );
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new task.")
     @APIResponse(
-            responseCode = "201", description = "Task created successfully",
-            headers = @Header(name = "Location", description = "URL of the new task")
+        responseCode = "201", description = "Task created successfully",
+        headers = @Header(name = "Location", description = "URL of the new task")
     )
-    @APIResponse(
-            responseCode = "401", description = "No user authentication provided via session cookie"
-    )
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createTasks(
-            @Parameter(
-                    description = "ID of the project", required = true
-            ) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(
-                    description = "Task information", required = true
-            ) @Valid @ConvertGroup(to = PostValidation.class) TaskJson task
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "Task information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) TaskJson task
     );
 
     @GET
     @Path("/{taskId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a task.")
-    @APIResponse(
-            responseCode = "401", description = "No user authentication provided via session cookie"
-    )
-    @APIResponse(
-            responseCode = "404", description = "The property does not exist"
-    )
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The property does not exist")
     TaskJson getTask(
-            @Parameter(
-                    description = "ID of the project", required = true
-            ) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(
-                    description = "ID of the task", required = true
-            ) @PathParam("taskId") @NotNull @UUID String taskId
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId
     );
 
     @PATCH
@@ -93,39 +80,26 @@ public interface TaskEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a task.")
-    @APIResponse(
-            responseCode = "401", description = "No user authentication provided via session cookie"
-    )
-    @APIResponse(
-            responseCode = "404", description = "The task does not exist"
-    )
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The task does not exist")
     TaskJson updateTask(
-            @Parameter(
-                    description = "ID of the project", required = true
-            ) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(
-                    description = "ID of the task", required = true
-            ) @PathParam("taskId") @NotNull @UUID String taskId,
-            @Parameter(
-                    description = "Task information", required = true
-            ) @Valid @ConvertGroup(to = PatchValidation.class) TaskJson task
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @Parameter(description = "Task information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) TaskJson task
     );
 
     @DELETE
     @Path("/{taskId}")
     @Operation(summary = "Delete an existing task.")
-    @APIResponse(
-            responseCode = "204", description = "The task was deleted successfully"
-    )
-    @APIResponse(
-            responseCode = "401", description = "No user authentication provided via session cookie"
-    )
+    @APIResponse(responseCode = "204", description = "The task was deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteTask(
-            @Parameter(
-                    description = "ID of the project", required = true
-            ) @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(
-                    description = "ID of the task", required = true
-            ) @PathParam("taskId") @NotNull @UUID String taskId
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId
     );
 }
