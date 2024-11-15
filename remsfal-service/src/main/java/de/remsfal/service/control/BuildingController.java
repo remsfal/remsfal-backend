@@ -3,12 +3,15 @@ package de.remsfal.service.control;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.entity.dao.BuildingRepository;
-import de.remsfal.service.entity.dto.*;
+import de.remsfal.service.entity.dto.AddressEntity;
+import de.remsfal.service.entity.dto.ApartmentEntity;
+import de.remsfal.service.entity.dto.BuildingEntity;
+import de.remsfal.service.entity.dto.CommercialEntity;
+import de.remsfal.service.entity.dto.GarageEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
-import org.checkerframework.checker.units.qual.A;
 import org.jboss.logging.Logger;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.CommercialModel;
@@ -16,10 +19,7 @@ import de.remsfal.core.model.project.GarageModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
-import de.remsfal.service.entity.dto.ApartmentEntity;
-import de.remsfal.service.entity.dto.BuildingEntity;
-import de.remsfal.service.entity.dto.CommercialEntity;
-import de.remsfal.service.entity.dto.GarageEntity;
+
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.UUID;
@@ -82,16 +82,16 @@ public class BuildingController {
                 propertyId, buildingId, building);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
                 .orElseThrow(() -> new NotFoundException("Building not exist"));
-            entity.setTitle(building.getTitle());
-            AddressEntity address = AddressEntity.fromModel(building.getAddress());
-            address.setId(UUID.randomUUID().toString());
-            entity.setAddress(address);
-            entity.setDescription(building.getDescription());
-            entity.setLivingSpace(building.getLivingSpace());
-            entity.setCommercialSpace(building.getCommercialSpace());
-            entity.setUsableSpace(building.getUsableSpace());
-            entity.setHeatingSpace(building.getHeatingSpace());
-            entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
+        entity.setTitle(building.getTitle());
+        AddressEntity address = AddressEntity.fromModel(building.getAddress());
+        address.setId(UUID.randomUUID().toString());
+        entity.setAddress(address);
+        entity.setDescription(building.getDescription());
+        entity.setLivingSpace(building.getLivingSpace());
+        entity.setCommercialSpace(building.getCommercialSpace());
+        entity.setUsableSpace(building.getUsableSpace());
+        entity.setHeatingSpace(building.getHeatingSpace());
+        entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
         return buildingRepository.merge(entity);
     }
 
@@ -103,7 +103,8 @@ public class BuildingController {
     }
 
     @Transactional
-    public ApartmentModel createApartment(final String projectId, final String buildingId, final ApartmentModel apartment) {
+    public ApartmentModel createApartment(final String projectId, final String buildingId,
+                                          final ApartmentModel apartment) {
         logger.infov("Creating a apartment (projectId={0}, buildingId={1}, apartment={2})",
                 projectId, buildingId, apartment);
         ApartmentEntity entity = ApartmentEntity.fromModel(apartment);
@@ -131,7 +132,8 @@ public class BuildingController {
 
 
     @Transactional
-    public CommercialModel createCommercial(final String projectId, final String buildingId, final CommercialModel commercial) {
+    public CommercialModel createCommercial(final String projectId, final String buildingId,
+                                            final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
                 projectId, buildingId, commercial);
         CommercialEntity entity = CommercialEntity.fromModel(commercial);

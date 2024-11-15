@@ -37,7 +37,8 @@ public interface GarageEndpoint {
     @APIResponse(responseCode = "201", description = "Garage created successfully",
         headers = @Header(name = "Location", description = "URL of the new garage"))
     Response createGarage(
-        @Parameter(description = "Garage information", required = true) @Valid @ConvertGroup(to = PostValidation.class) GarageJson garage);
+        @Parameter(description = "Garage information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) GarageJson garage);
 
     @GET
     @Path("/{garageId}")
