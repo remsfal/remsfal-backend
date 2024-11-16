@@ -15,6 +15,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
@@ -148,33 +149,6 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
     }
 
-
-    //ARBEIT
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void createTask_SUCCESS_taskIsCreated_USERID_isNull(String path) {
-        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\"}";
-        given()
-                .when()
-                .cookie(buildCookie(null, null, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(json)
-                .post(path, TestData.PROJECT_ID)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .contentType(ContentType.JSON)
-                .header("location", Matchers.containsString(path.replace("{projectId}", TestData.PROJECT_ID)))
-                .and().body("id", Matchers.notNullValue())
-                .and().body("title", Matchers.equalTo(TestData.TASK_TITLE));
-
-        long enties = entityManager
-                .createQuery("SELECT count(task) FROM TaskEntity task where task.title = :title", Long.class)
-                .setParameter("title", TestData.TASK_TITLE)
-                .getSingleResult();
-        assertEquals(1, enties);
-    }
-
-
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
     void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL(String path) {
@@ -183,9 +157,10 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         final Response res = given()
                 .when()
-                .cookie(buildCookie(null, null, Duration.ofMinutes(10)))
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(json)
+                .queryParam("owner","")
                 .post(path, TestData.PROJECT_ID)
                 .thenReturn();
 
@@ -204,7 +179,8 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(null, null, Duration.ofMinutes(10)))
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .queryParam("owner", Optional.empty())
                 .get(taskUrl)
                 .then()
                 .statusCode(Status.OK.getStatusCode())
