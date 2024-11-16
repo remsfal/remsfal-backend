@@ -160,7 +160,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
                 .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(json)
-                .queryParam("owner","")
+                .queryParam("owner", Optional.empty())
                 .post(path, TestData.PROJECT_ID)
                 .thenReturn();
 
