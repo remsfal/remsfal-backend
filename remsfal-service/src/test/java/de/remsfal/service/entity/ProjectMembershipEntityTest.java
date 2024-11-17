@@ -9,7 +9,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+
+import static de.remsfal.service.TestData.PROJECT_ID_1;
+import static de.remsfal.service.TestData.PROJECT_ID_2;
+import static de.remsfal.service.TestData.USER_EMAIL;
+import static de.remsfal.service.TestData.USER_FIRST_NAME;
+import static de.remsfal.service.TestData.USER_ID_1;
+import static de.remsfal.service.TestData.USER_ID_2;
+import static de.remsfal.service.TestData.USER_LAST_NAME;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 
 @QuarkusTest
 public class ProjectMembershipEntityTest {
@@ -20,16 +31,15 @@ public class ProjectMembershipEntityTest {
     private UserEntity user1;
     private UserEntity user2;
 
-
     @BeforeEach
     //entity1 is equal to entity2
     public void setUp () {
         project1 = new ProjectEntity();
         user1 = new UserEntity();
         user2 = new UserEntity();
-        project1.setId("1");
-        user1.setId("1");
-        user2.setId("2");
+        project1.setId(PROJECT_ID_1);
+        user1.setId(USER_ID_1);
+        user2.setId(USER_ID_2);
 
         entity1 = new ProjectMembershipEntity();
         entity1.setProject(project1);
@@ -53,7 +63,7 @@ public class ProjectMembershipEntityTest {
     @DisplayName("Tests two unequal objects (different project)")
     public void testEqualsDifferentProjects () {
         ProjectEntity project2 = new ProjectEntity();
-        project2.setId("2");
+        project2.setId(PROJECT_ID_2);
         entity2.setProject(project2);
 
         assertNotEquals(entity1, entity2);
@@ -79,21 +89,21 @@ public class ProjectMembershipEntityTest {
     @DisplayName("Tests if the correct String is being generated")
     public void testToString() {
         ProjectMembershipEntity entity3 = new ProjectMembershipEntity();
-        entity3.setProject(project1);
         entity3.setUser(user2);
         entity3.setRole(ProjectMemberModel.UserRole.LESSOR);
 
-        user2.setEmail("blabla");
-        user2.setFirstName("Alex");
-        user2.setLastName("Muster");
+        user2.setEmail(USER_EMAIL);
+        user2.setFirstName(USER_FIRST_NAME);
+        user2.setLastName(USER_LAST_NAME);
 
-        String entity1String = "ProjectMembershipEntity: {id=2, email=blabla, name=Alex Muster, role=LESSOR}";
-        assertEquals(entity1String, entity3.toString());
+        String expectedString = "ProjectMembershipEntity: {id="+entity3.getId()+", email="+user2.getEmail()+
+                ", name="+user2.getName()+", role="+entity3.getRole()+"}";
+        assertEquals(expectedString, entity3.toString());
     }
 
     @Test
-    @DisplayName("Tests if setId() throws IllegalArgumentException")
+    @DisplayName("Tests if setId() throws IllegalArgumentException if manually set")
     public void testSetId () {
-        assertThrows(IllegalArgumentException.class, () -> entity1.setId("test"));
+        assertThrows(IllegalArgumentException.class, () -> entity1.setId("Id"));
     }
 }
