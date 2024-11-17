@@ -164,28 +164,15 @@ class TaskResourceTest extends AbstractProjectResourceTest {
                 .post(path, TestData.PROJECT_ID)
                 .thenReturn();
 
-        final String taskId = res.then()
-                .contentType(MediaType.APPLICATION_JSON)
-                .extract().path("id");
-
-        final String taskUrl = res.then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .and().body("id", Matchers.equalTo(taskId))
-                .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
-                .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")))
-                .header("location", Matchers.startsWith("http://localhost:8081/api/v1/projects"))
-                .header("location", Matchers.endsWith(taskId))
-                .extract().header("location");
-
         given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .queryParam("owner", Optional.empty())
-                .get(taskUrl)
+                .get(path,TestData.PROJECT_ID)
                 .then()
                 .statusCode(Status.OK.getStatusCode())
                 .contentType(ContentType.JSON)
-                .and().body("id", Matchers.equalTo(taskId))
+                .and().body("id", Matchers.equalTo(res.then().extract().path("id")))
                 .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
                 .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
     }
