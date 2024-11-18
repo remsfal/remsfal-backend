@@ -39,7 +39,8 @@ public abstract class TaskItemJson {
             .name(model.getTitle())
             .title(model.getTitle())
             .status(model.getStatus())
-            .owner(model.getOwnerId())
+            .owner("")
+            //.owner(model.getOwnerId())
             .build();
     }
 
