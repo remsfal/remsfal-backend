@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 
 @QuarkusTest
-public class ProjectMembershipEntityTest {
+class ProjectMembershipEntityTest {
 
     private ProjectMembershipEntity entity1;
     private ProjectMembershipEntity entity2;
@@ -55,13 +55,13 @@ public class ProjectMembershipEntityTest {
     //Tests if equality of ProjectMember objects is based on equality of project, user & role
     @Test
     @DisplayName("Tests two equal objects")
-    public void testEqualsSameValues () {
+    void testEqualsSameValues () {
         assertEquals(entity1, entity2);
     }
 
     @Test
     @DisplayName("Tests two unequal objects (different project)")
-    public void testEqualsDifferentProjects () {
+    void testEqualsDifferentProjects () {
         ProjectEntity project2 = new ProjectEntity();
         project2.setId(PROJECT_ID_2);
         entity2.setProject(project2);
@@ -71,7 +71,7 @@ public class ProjectMembershipEntityTest {
 
     @Test
     @DisplayName("Tests two unequal objects (different user)")
-    public void testEqualsDifferentUsers () {
+    void testEqualsDifferentUsers () {
         entity2.setUser(user2);
 
         assertNotEquals(entity1, entity2);
@@ -79,7 +79,7 @@ public class ProjectMembershipEntityTest {
 
     @Test
     @DisplayName("Test two unequal objects (different role)")
-    public void testEqualsDifferentRoles () {
+    void testEqualsDifferentRoles () {
         entity2.setRole(ProjectMemberModel.UserRole.LESSOR);
 
         assertNotEquals(entity1, entity2);
@@ -87,7 +87,7 @@ public class ProjectMembershipEntityTest {
 
     @Test
     @DisplayName("Tests if the correct String is being generated")
-    public void testToString() {
+    void testToString() {
         ProjectMembershipEntity entity3 = new ProjectMembershipEntity();
         entity3.setUser(user2);
         entity3.setRole(ProjectMemberModel.UserRole.LESSOR);
@@ -103,7 +103,7 @@ public class ProjectMembershipEntityTest {
 
     @Test
     @DisplayName("Tests if setId() throws IllegalArgumentException if manually set")
-    public void testSetId () {
+    void testSetId () {
         assertThrows(IllegalArgumentException.class, () -> entity1.setId("Id"));
     }
 }
