@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.model.ProjectModel;
 
 /**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * A list of projects
  */
 @Value.Immutable
 @Schema(description = "A list of projects")
@@ -35,9 +35,12 @@ public abstract class ProjectListJson {
     public abstract List<ProjectItemJson> getProjects();
 
     public static ProjectListJson valueOf(final List<ProjectModel> projects,
-                                          final int first, final long total, final UserModel user) {
+
+        final int first, final long total, final UserModel user) {
+
         final ImmutableProjectListJson.Builder builder = ImmutableProjectListJson.builder();
-        for(ProjectModel model : projects) {
+
+        for (ProjectModel model : projects) {
             builder.addProjects(ProjectItemJson.valueOf(model, user));
         }
         return builder
@@ -46,5 +49,4 @@ public abstract class ProjectListJson {
             .total(total)
             .build();
     }
-
 }
