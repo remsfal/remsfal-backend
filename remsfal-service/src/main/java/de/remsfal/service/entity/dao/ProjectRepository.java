@@ -31,8 +31,7 @@ public class ProjectRepository extends AbstractRepository<ProjectEntity> {
             .setParameter(PARAM_USER_ID, userId)
             .getSingleResult();
     }
-
-
+    
     public Optional<ProjectMembershipEntity> findMembershipByUserIdAndProjectId(final String userId,
                                                                                 final String projectId) {
         try {
