@@ -39,7 +39,6 @@ public interface ApartmentEndpoint {
     Response createApartment(
         @Parameter(description = "Apartment information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment);
-
     @GET
     @Path("/{apartmentId}")
     @Produces(MediaType.APPLICATION_JSON)
