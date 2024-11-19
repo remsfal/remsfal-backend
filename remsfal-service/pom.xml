@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <quarkus.version>3.15.1</quarkus.version>
+        <quarkus.version>3.16.3</quarkus.version>
         <google.version>2.7.0</google.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
@@ -104,7 +104,7 @@
             <!-- JDK 24 support -->
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.15.4</version>
+            <version>1.15.10</version>
         </dependency>
 
         <!-- TEST dependencies -->

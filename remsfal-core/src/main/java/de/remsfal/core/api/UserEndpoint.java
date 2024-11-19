@@ -18,7 +18,7 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.validation.PatchValidation;
 
 /**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(UserEndpoint.CONTEXT + "/" + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE)
 public interface UserEndpoint {
@@ -40,7 +40,10 @@ public interface UserEndpoint {
     @Operation(summary = "Update information of this user identified by the cookie.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The user does not exist")
-    UserJson updateUser(@Parameter(description = "User information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) UserJson user);
+    UserJson updateUser(
+        @Parameter(description = "User information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) UserJson user
+    );
 
     @DELETE
     @Operation(summary = "Delete this user identified by the cookie.")
