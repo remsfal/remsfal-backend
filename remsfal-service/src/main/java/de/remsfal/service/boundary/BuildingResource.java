@@ -45,7 +45,6 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
         }
     }
 
-
     @Override
     public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
         checkPrivileges(projectId);
