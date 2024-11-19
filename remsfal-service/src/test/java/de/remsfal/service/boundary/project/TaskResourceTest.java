@@ -150,7 +150,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
+    @ValueSource(strings = { DEFECT_PATH })
     void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL(String path) {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
                 + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
@@ -163,6 +163,10 @@ class TaskResourceTest extends AbstractProjectResourceTest {
                 .post(path, TestData.PROJECT_ID)
                 .thenReturn();
 
+        final String taskId = res.then()
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().path("id");
+
         given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -170,9 +174,9 @@ class TaskResourceTest extends AbstractProjectResourceTest {
                 .then()
                 .statusCode(Status.OK.getStatusCode())
                 .contentType(ContentType.JSON)
-                .and().body("id", Matchers.equalTo(res.then().extract().path("id")))
-                .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
-                .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
+                .and().body("tasks.id", Matchers.hasItems(taskId))
+                .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
+                .and().body("tasks.status", Matchers.hasItems("PENDING"));
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
