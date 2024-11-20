@@ -20,6 +20,7 @@ import static io.smallrye.openapi.runtime.io.IoLogging.logger;
 
 @RequestScoped
 public class BuildingResource extends ProjectSubResource implements BuildingEndpoint {
+
     @Context
     UriInfo uri;
 
@@ -28,7 +29,6 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Inject
     BuildingController controller;
-
 
     @Override
     public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
@@ -44,7 +44,6 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
             throw e;
         }
     }
-
 
     @Override
     public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
@@ -78,6 +77,5 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
             throw e;
         }
     }
-
 
 }

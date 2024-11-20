@@ -41,7 +41,7 @@ public class TaskController {
         if(task.getStatus() == null) {
             entity.setStatus(Status.OPEN);
         } else {
-            entity.setStatus(task.getStatus());            
+            entity.setStatus(task.getStatus());
         }
         entity.setOwnerId(task.getOwnerId());
         entity.setDescription(task.getDescription());
@@ -61,7 +61,7 @@ public class TaskController {
         if(task.getStatus() == null) {
             entity.setStatus(Status.PENDING);
         } else {
-            entity.setStatus(task.getStatus());            
+            entity.setStatus(task.getStatus());
         }
         entity.setOwnerId(task.getOwnerId());
         entity.setDescription(task.getDescription());
