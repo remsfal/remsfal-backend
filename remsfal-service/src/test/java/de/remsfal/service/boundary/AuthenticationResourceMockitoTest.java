@@ -4,6 +4,8 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.matcher.RestAssuredMatchers;
 
+import jakarta.transaction.Transactional;
+import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +21,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import jakarta.ws.rs.core.Response.Status;
+
+import java.util.concurrent.TimeUnit;
 
 @QuarkusTest
 class AuthenticationResourceMockitoTest extends AbstractResourceTest {
@@ -103,7 +107,18 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .getSingleResult();
         assertEquals(1, enties);
         // TODO: Use Awaitility to test AuthenticationEvent
+
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> assertUserCount(TestData.USER_EMAIL_1, 1));
     }
+    @Transactional
+    void assertUserCount(String email, long expectedCount) {
+        long actualCount = entityManager
+                .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
+                .setParameter("email", email)
+                .getSingleResult();
+        assertEquals(expectedCount, actualCount);
+    }
+
 
     @Test
     void session_FAILED_noCode() {

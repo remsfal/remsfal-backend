@@ -84,7 +84,6 @@
                             <java.util.logging.manager>
                                 org.jboss.logmanager.LogManager
                             </java.util.logging.manager>
-                            <maven.home>${maven.home}</maven.home>
                             <quarkus.jacoco.data-file>
                                 ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec
                             </quarkus.jacoco.data-file>
@@ -113,7 +112,6 @@
                                         ${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                                     <java.util.logging.manager>
                                         org.jboss.logmanager.LogManager</java.util.logging.manager>
-                                    <maven.home>${maven.home}</maven.home>
                                 </systemPropertyVariables>
                             </configuration>
                         </execution>
