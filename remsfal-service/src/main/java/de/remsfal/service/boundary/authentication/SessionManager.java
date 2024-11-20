@@ -116,6 +116,13 @@ public class SessionManager {
         return decryptSessionObject(sessionCookie.getValue());
     }
 
+    public NewCookie renewSessionCookie(final SessionInfo sessionInfo) {
+        SessionInfo info = SessionInfo.builder().from(sessionInfo)
+                .expireAfter(sessionCookieTimeout)
+                .build();
+        return encryptSessionCookie(info);
+    }
+
     public NewCookie removalSessionCookie() {
         return new NewCookie.Builder(COOKIE_NAME)
             .value("")
