@@ -15,6 +15,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
@@ -146,6 +147,36 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .and().body("id", Matchers.equalTo(taskId))
             .and().body("title", Matchers.equalTo(TestData.TASK_TITLE))
             .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { DEFECT_PATH })
+    void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL(String path) {
+        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
+                + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
+
+        final Response res = given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json)
+                .post(path, TestData.PROJECT_ID)
+                .thenReturn();
+
+        final String taskId = res.then()
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .get(path,TestData.PROJECT_ID)
+                .then()
+                .statusCode(Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("tasks.id", Matchers.hasItems(taskId))
+                .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
+                .and().body("tasks.status", Matchers.hasItems("PENDING"));
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
