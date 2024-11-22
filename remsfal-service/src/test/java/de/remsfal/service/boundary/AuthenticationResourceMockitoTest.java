@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response.Status;
 
 @QuarkusTest
@@ -27,6 +28,9 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
 
     @InjectMock
     protected GoogleAuthenticator authenticator;
+
+    @Inject
+    protected AuthenticationEventObserver observer;
 
     @Test
     void session_SUCCESS_userIsCreated() {
@@ -103,6 +107,13 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .getSingleResult();
         assertEquals(1, enties);
         // TODO: Use Awaitility to test AuthenticationEvent
+        try {
+            Thread.sleep(3000);
+            assertEquals(1, observer.getNumberOfEvents());
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Test
