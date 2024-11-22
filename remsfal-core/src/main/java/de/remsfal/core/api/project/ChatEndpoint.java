@@ -23,7 +23,7 @@ public interface ChatEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new chat session on task")
+    @Operation(summary = "Create a new chat session")
     @APIResponse(responseCode = "201", description = "Chat session created")
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "404", description = "Project or task not found")
@@ -71,10 +71,10 @@ public interface ChatEndpoint {
             @Valid @NotNull ChatSessionModel.Status status);
 
     @POST
-    @Path("/{sessionId}/join")
+    @Path("/{sessionId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Join chat session as a participant - observer")
+    @Operation(summary = "Add a participant to chat session")
     @APIResponse(responseCode = "200", description = "Chat session joined")
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
@@ -82,36 +82,6 @@ public interface ChatEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response joinChatSession(
             @PathParam("sessionId") @NotNull @UUID String sessionId);
-
-    @POST
-    @Path("/{sessionId}/handle")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Join chat session as a participant - handler")
-    @APIResponse(responseCode = "200", description = "Chat session joined")
-    @APIResponse(responseCode = "400", description = "Invalid input")
-    @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
-    @APIResponse(responseCode = "500", description = "Internal server error")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response handleChatSession(
-            @PathParam("sessionId") @NotNull @UUID String sessionId);
-
-    @POST
-    @Path("/{sessionId}/participants")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Add other participants to chat session using their user IDs")
-    @APIResponse(responseCode = "200", description = "Participants added")
-    @APIResponse(responseCode = "400", description = "Invalid input")
-    @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
-    @APIResponse(responseCode = "500", description = "Internal server error")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response addParticipants(
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "User Id", required = true)
-            @Valid @NotNull @ConvertGroup(to = PostValidation.class) String userId,
-            @Parameter(description = "Role to add", required = true)
-            @Valid @NotNull ChatSessionModel.ParticipantRole role);
 
     @GET
     @Path("/{sessionId}/participants")
@@ -251,7 +221,7 @@ public interface ChatEndpoint {
     @GET
     @Path("/{sessionId}/messages")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get chat messages in a chat session")
+    @Operation(summary = "Get chat logs in a chat session")
     @APIResponse(responseCode = "200", description = "Chat messages retrieved")
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
@@ -259,36 +229,4 @@ public interface ChatEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getChatMessages(
             @PathParam("sessionId") @NotNull @UUID String sessionId);
-
-    @POST
-    @Path("/{sessionId}/messages/upload")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(summary = "Upload an image as a chat message in a chat session")
-    @APIResponse(responseCode = "201", description = "Image uploaded as chat message")
-    @APIResponse(responseCode = "400", description = "Invalid input")
-    @APIResponse(responseCode = "403", description = "Chat session is closed or archived")
-    @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
-    @APIResponse(responseCode = "500", description = "Internal server error")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response uploadImage(
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "Sender ID", required = true)
-            @FormParam("senderId") @NotNull @UUID String senderId,
-            @Parameter(description = "The image file", required = true)
-            @FormParam("file") InputStream file);
-
-    @GET
-    @Path("/{sessionId}/messages/{messageId}/download")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @Operation(summary = "Download an image from a chat message in a chat session")
-    @APIResponse(responseCode = "200", description = "Image downloaded")
-    @APIResponse(responseCode = "400", description = "Invalid input")
-    @APIResponse(responseCode = "404", description = "Project, task, chat session, or chat message not found")
-    @APIResponse(responseCode = "500", description = "Internal server error")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response downloadImage(
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The chat message ID", required = true)
-            @PathParam("messageId") @NotNull @UUID String messageId);
 }
