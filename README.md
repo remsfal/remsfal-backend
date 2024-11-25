@@ -54,7 +54,7 @@ de.remsfal.auth.session.secret=<YOUR-CUSTOM-SESSION-SECRET>
 
 To package and execute the application
 ```sh
-mvn package
+./mvnw package
 java -jar remsfal-service/target/remsfal-service-runner.jar
 ```
 
@@ -86,8 +86,8 @@ At first you well need to start the db as described in [Prerequisits](#prerequis
 
 Next run the project using the following command:
 ```sh
-mvn clean install
-mvn compile quarkus:dev -pl remsfal-service
+./mvnw clean install
+./mvnw compile quarkus:dev -pl remsfal-service
 ```
 It will automatically recompile when you change something.
 
@@ -95,7 +95,7 @@ It will automatically recompile when you change something.
 
 To run the stylecheck use the following command:
 ```sh
-mvn checkstyle:checkstyle
+./mvnw checkstyle:checkstyle
 ```
 
 ## Copyright
