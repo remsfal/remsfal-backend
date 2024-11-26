@@ -29,7 +29,7 @@ import de.remsfal.core.validation.PostValidation;
     + "/{buildingId}/" + GarageEndpoint.SERVICE)
 public interface GarageEndpoint {
 
-    static final String SERVICE = "garages";
+    String SERVICE = "garages";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

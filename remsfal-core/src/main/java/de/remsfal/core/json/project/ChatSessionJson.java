@@ -15,7 +15,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 @Value.Immutable
 @Schema(description = "A chat session")
 @JsonDeserialize(as = ImmutableChatSessionJson.class)

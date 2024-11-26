@@ -25,11 +25,11 @@ import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 
 /**
- * Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface SiteEndpoint {
 
-    static final String SERVICE = "sites";
+    String SERVICE = "sites";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

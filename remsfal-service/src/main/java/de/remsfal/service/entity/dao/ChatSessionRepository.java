@@ -3,15 +3,22 @@ package de.remsfal.service.entity.dao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
-import de.remsfal.core.model.project.ChatSessionModel.Status;
+import de.remsfal.core.model.project.ChatMessageModel.ContentType;
 import de.remsfal.core.model.project.ChatSessionModel.ParticipantRole;
 import de.remsfal.core.model.project.ChatSessionModel.TaskType;
+import de.remsfal.core.model.project.ChatSessionModel.Status;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import io.quarkus.panache.common.Parameters;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -89,7 +96,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
                 message.getSenderId()).name());
         messageJsonMap.put("MESSAGE_TYPE", message.getContentType());
 
-        if (message.getContentType() == ChatMessageEntity.ContentType.IMAGE) {
+        if (message.getContentType() == ContentType.IMAGE) {
             messageJsonMap.put("MESSAGE_CONTENT", message.getImageUrl());
         } else {
             messageJsonMap.put("MESSAGE_CONTENT", message.getContent());

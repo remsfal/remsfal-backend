@@ -16,8 +16,6 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ProjectEndpoint;
-import de.remsfal.core.api.project.DefectEndpoint;
-import de.remsfal.core.api.project.TaskEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.json.ProjectMemberJson;
@@ -125,12 +123,12 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public TaskEndpoint getTaskResource() {
+    public TaskResource getTaskResource() {
         return resourceContext.initResource(taskResource.get());
     }
 
     @Override
-    public DefectEndpoint getDefectResource() {
+    public DefectResource getDefectResource() {
         return resourceContext.initResource(defectResource.get());
     }
 

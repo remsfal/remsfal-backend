@@ -391,7 +391,7 @@ public class TestData {
 
     // Test task 2
     public static final String TASK_TITLE_2 = "Licht im Treppenhaus defekt";
-    public static final String Task_DESCRIPTION_2 = "Sehr geehrte Damen und Herren,\\n"
+    public static final String TASK_DESCRIPTION_2 = "Sehr geehrte Damen und Herren,\\n"
         + "\\n"
         + "hiermit möchte ich einen dringenden Ausfall der Beleuchtung im Treppenhaus unseres Gebäudes melden. "
         + "Seit dem 8.Mai 2023 funktioniert das Licht im Treppenhaus nicht mehr, was zu erheblichen Unannehmlichkeiten "

@@ -29,11 +29,11 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 /**
- * Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface PropertyEndpoint {
 
-    static final String SERVICE = "properties";
+    String SERVICE = "properties";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

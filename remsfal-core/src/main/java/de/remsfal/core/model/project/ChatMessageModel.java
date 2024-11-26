@@ -4,6 +4,9 @@ import de.remsfal.core.model.UserModel;
 
 import java.util.Date;
 
+/**
+ * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 public interface ChatMessageModel {
 
     String getId();
@@ -17,7 +20,7 @@ public interface ChatMessageModel {
     String getSenderId();
 
 
-     enum ContentType {
+    enum ContentType {
         TEXT,
         IMAGE
     }
@@ -29,6 +32,5 @@ public interface ChatMessageModel {
     String getImageUrl();
 
     Date getTimestamp();
-
 
 }

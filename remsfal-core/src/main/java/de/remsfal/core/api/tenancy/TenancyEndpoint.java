@@ -14,9 +14,9 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 @Path(TenancyEndpoint.CONTEXT + "/" + TenancyEndpoint.VERSION + "/" + TenancyEndpoint.SERVICE)
 public interface TenancyEndpoint {
 
-    static final String CONTEXT = "api";
-    static final String VERSION = "v1";
-    static final String SERVICE = "tenancies";
+    String CONTEXT = "api";
+    String VERSION = "v1";
+    String SERVICE = "tenancies";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

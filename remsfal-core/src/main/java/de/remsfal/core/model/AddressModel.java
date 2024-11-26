@@ -1,6 +1,5 @@
 package de.remsfal.core.model;
 
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.remsfal.core.model.deserializer.AddressModelDeserializer;
 

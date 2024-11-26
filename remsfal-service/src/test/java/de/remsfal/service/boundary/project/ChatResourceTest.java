@@ -28,7 +28,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String CHAT_SESSION_TASK_PATH = BASE_PATH + "/tasks/{taskId}/chat";
     static final String CHAT_SESSION_DEFECT_PATH = BASE_PATH + "/defects/{defectId}/chat";
-    static final String CHAT_SESSION_TASK_PATH_with_SESSION_ID = CHAT_SESSION_TASK_PATH + "/{sessionId}";
+    static final String CHAT_SESSION_TASK_PATH_WITH_SESSION_ID = CHAT_SESSION_TASK_PATH + "/{sessionId}";
 
     static final String TASK_ID_1 = UUID.randomUUID().toString();
     static final String TASK_ID_2 = UUID.randomUUID().toString();
@@ -201,7 +201,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
     // authentication test - same logic in all methods - no need for multiple tests
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void getChatSession_UNAUTHENTICATED(String path) {
         given()
                 .when()
@@ -212,7 +212,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void getChatSession_UNPRIVILEGED(String path) {
         given()
                 .when()
@@ -224,7 +224,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void deleteChatSession_INVALID_INPUT(String path) {
         given()
                 .when()
@@ -250,7 +250,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
     // unprivileged tests - same logic in all methods - no need for multiple tests
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void changeParticipantRole_UNPRIVILEGED(String path)
     {
         String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
@@ -286,7 +286,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void getChatSession_FAILURE_INVALID_SESSION(String path) {
         // invalid input - non-existing sessionId in the database
         String nonExistingSessionId = UUID.randomUUID().toString();
@@ -300,7 +300,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/status"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status"})
     void updateChatSessionStatus_FAILURE_INVALID_STATUS(String path) {
         String invalidStatus = "INVALID_STATUS";
         String jsonBody = "\"" + invalidStatus + "\"";
@@ -317,7 +317,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/status"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status"})
     void updateChatSessionStatus_INVALID_SESSION(String path) {
 
         String newStatus = ChatSessionModel.Status.CLOSED.toString(); // "CLOSED"
@@ -338,7 +338,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void getParticipant_FAILURE_INVALID_PARTICIPANT(String path) {
         String nonExistingParticipantId = UUID.randomUUID().toString();
         given()
@@ -352,7 +352,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void getParticipant_FAILURE_UNPRIVILEGED(String path) {
         given()
                 .when()
@@ -365,7 +365,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}/role"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}/role"})
     void changeParticipantRole_FAILURE_INVALID_ROLE(String path) {
         // invalid input - non-existing role in the database
         String nonExistingRole = "INVALID_ROLE";
@@ -384,7 +384,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void changeParticipantRole_INVALID_SESSION(String path)
     {
         String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
@@ -406,7 +406,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void joinChatSession_INVALID_INPUT(String path)
     {
         given()
@@ -429,7 +429,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     // important logic tests
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages"})
     void sendMessage_FAILURE_INVALID_PAYLOAD(String path) {
             String largePayload = "{\"content\":\"" + "a".repeat(9000) + "\"}";
             given()
@@ -444,7 +444,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
         }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants"})
     void getParticipants_EMPTY_SESSION(String path) {
         // Create an empty session
         String emptySessionId = "EMPTY_SESSION_ID";
@@ -459,7 +459,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants"})
     void getParticipants_INVALID_INPUT(String path)
     {
         given()
@@ -484,7 +484,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void removeParticipant_INVALID_INPUT(String path)
     {   String path_task1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
             .replace("{taskId}", TASK_ID_1)
@@ -510,7 +510,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages"})
     void sendMessage_INVALID_INPUT(String path) {
         given()
                 .body(CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT)
@@ -567,7 +567,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void getChatSession_SUCCESS(String path)
     {
         given()
@@ -584,7 +584,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void deleteChatSession_SUCCESS(String path) {
         given()
                 .when()
@@ -597,7 +597,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/status"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status"})
     void updateChatSessionStatus_SUCCESS(String path) {
 
         String newStatus = ChatSessionModel.Status.CLOSED.toString(); // "CLOSED"
@@ -618,7 +618,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID})
     void joinChatSession_SUCCESS(String path)
     {
         given()
@@ -637,7 +637,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants"})
     void getParticipants_SUCCESS(String path)
     {
         given()
@@ -654,7 +654,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void getParticipant_SUCCESS(String path)
     {
         given()
@@ -673,7 +673,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void changeParticipantRole_SUCCESS(String path)
     {
         String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
@@ -697,7 +697,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void removeParticipant_SUCCESS(String path)
     {
         given()
@@ -714,7 +714,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages"})
     void sendMessage_SUCCESS(String path) {
         given()
                 .body(CHAT_MESSAGE_JSON_PAYLOAD)
@@ -729,7 +729,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages"})
     void getChatMessages_SUCCESS(String path) {
         given()
                 .when()
@@ -752,7 +752,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}"})
     void getChatMessage_SUCCESS(String path) {
         given()
                 .when()
@@ -773,7 +773,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages"})
     void getChatMessages_FAILURE(String path) {
         given()
                 .when()
@@ -793,7 +793,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}"})
     void getChatMessage_FAILURE(String path) {
         String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
                 .replace("{taskId}", TASK_ID_1)
@@ -816,7 +816,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}"})
     void updateChatMessage_SUCCESS(String path) {
         String updatedMessageJson = "{\"content\":\"Updated Hello World\"}";
 
@@ -841,7 +841,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}"})
     void updateChatMessage_FAILURE(String path) {
         String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
                 .replace("{taskId}", TASK_ID_1)
@@ -883,7 +883,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}"})
     void deleteChatMessage_SUCCESS(String path) {
         given()
                 .when()
@@ -896,7 +896,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}"})
     void deleteChatMessage_FAILURE(String path) {
         String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
                 .replace("{taskId}", TASK_ID_1)

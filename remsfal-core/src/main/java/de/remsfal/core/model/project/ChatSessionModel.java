@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 public interface ChatSessionModel {
 
     String getId();

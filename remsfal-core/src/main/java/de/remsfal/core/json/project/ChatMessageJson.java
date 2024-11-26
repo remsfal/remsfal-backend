@@ -15,7 +15,9 @@ import org.immutables.value.Value;
 
 import java.util.Date;
 
-
+/**
+ * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 @Value.Immutable
 @Schema(description = "A single chat message")
 @JsonDeserialize(as = ImmutableChatMessageJson.class)

@@ -36,14 +36,15 @@ import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 
 /**
- * Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/" + ProjectEndpoint.SERVICE)
 public interface ProjectEndpoint {
 
-    static final String CONTEXT = "api";
-    static final String VERSION = "v1";
-    static final String SERVICE = "projects";
+    String CONTEXT = "api";
+    String VERSION = "v1";
+    String SERVICE = "projects";
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all projects.")

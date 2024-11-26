@@ -21,9 +21,9 @@ import java.util.List;
 @Path(AddressEndpoint.CONTEXT + "/" + AddressEndpoint.VERSION + "/" + AddressEndpoint.SERVICE)
 public interface AddressEndpoint {
 
-    static final String CONTEXT = "api";
-    static final String VERSION = "v1";
-    static final String SERVICE = "address";
+    String CONTEXT = "api";
+    String VERSION = "v1";
+    String SERVICE = "address";
 
     @GET
     @Path("/countries")

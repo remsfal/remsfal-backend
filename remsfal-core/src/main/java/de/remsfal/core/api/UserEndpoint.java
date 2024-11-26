@@ -18,14 +18,14 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.validation.PatchValidation;
 
 /**
- * Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(UserEndpoint.CONTEXT + "/" + UserEndpoint.VERSION + "/" + UserEndpoint.SERVICE)
 public interface UserEndpoint {
 
-    static final String CONTEXT = "api";
-    static final String VERSION = "v1";
-    static final String SERVICE = "user";
+    String CONTEXT = "api";
+    String VERSION = "v1";
+    String SERVICE = "user";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

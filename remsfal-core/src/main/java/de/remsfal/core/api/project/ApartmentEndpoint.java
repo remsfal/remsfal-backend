@@ -29,7 +29,7 @@ import de.remsfal.core.validation.PostValidation;
     + "/{buildingId}/" + ApartmentEndpoint.SERVICE)
 public interface ApartmentEndpoint {
 
-    static final String SERVICE = "apartments";
+    String SERVICE = "apartments";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
