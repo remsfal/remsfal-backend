@@ -140,21 +140,6 @@ public interface ChatEndpoint {
             @Parameter(description = "The participant ID to remove", required = true)
             @PathParam("participantId") @NotNull @UUID String participantId);
 
-    @GET
-    @Path("/{sessionId}/participants/{participantId}/role")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get participant role in chat session")
-    @APIResponse(responseCode = "200", description = "Participant role retrieved")
-    @APIResponse(responseCode = "400", description = "Invalid input")
-    @APIResponse(responseCode = "404", description = "Project, task, chat session, or participant not found")
-    @APIResponse(responseCode = "500", description = "Internal server error")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response getParticipantRole(
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The participant ID", required = true)
-            @PathParam("participantId") @NotNull @UUID String participantId);
-
-
     @POST
     @Path("/{sessionId}/messages")
     @Consumes(MediaType.APPLICATION_JSON)
