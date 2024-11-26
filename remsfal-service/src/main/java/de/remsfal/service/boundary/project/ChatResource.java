@@ -140,7 +140,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         checkPrivileges(uri.getPathParameters().getFirst("projectId"));
         try {
             chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.OBSERVER);
-            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionController.getChatSession(sessionId).getParticipants();
+            Map<String, ChatSessionModel.ParticipantRole> participants =
+                    chatSessionController.getChatSession(sessionId).getParticipants();
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
@@ -159,7 +160,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response getParticipants(String sessionId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionController.getParticipants(sessionId);
+            Map<String, ChatSessionModel.ParticipantRole> participants =
+                    chatSessionController.getParticipants(sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                     .type(MediaType.APPLICATION_JSON)

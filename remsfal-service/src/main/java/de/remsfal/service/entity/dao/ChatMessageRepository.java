@@ -47,7 +47,8 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
 
 
     @Transactional
-    public ChatMessageEntity sendChatMessage(String sessionId, String senderId, ContentType contentType, String content) {
+    public ChatMessageEntity sendChatMessage(String sessionId, String senderId, ContentType contentType,
+                                             String content) {
         try {
             ChatSessionEntity session = chatSessionRepository.findChatSessionById(sessionId);
             UserEntity sender = userRepository.findByIdOptional(senderId)

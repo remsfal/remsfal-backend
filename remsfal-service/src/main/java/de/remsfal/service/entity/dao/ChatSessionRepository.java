@@ -169,7 +169,8 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
 
     @Transactional
     public long deleteChatSession(String sessionId) {
-        return delete("id = :id", Parameters.with(PARAM_ID, sessionId));
+        return delete("id = :id",
+                Parameters.with(PARAM_ID, sessionId));
     }
 
     @Transactional
