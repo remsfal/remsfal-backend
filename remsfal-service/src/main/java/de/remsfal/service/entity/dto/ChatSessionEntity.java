@@ -86,8 +86,9 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
     }
 
     @OneToMany(mappedBy = "chatSession", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @OrderBy("createdAt ASC, id ASC") // Corrected field name
+    @OrderBy("createdAt ASC") // Ensure consistent order
     private List<ChatMessageEntity> messages = new ArrayList<>();
+
 
     @Override
     public List<ChatMessageEntity> getMessages() {
@@ -122,6 +123,15 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
         return super.getModifiedAt();
     }
 
+    public void addMessage(ChatMessageEntity message) {
+        if (messages == null) {
+            messages = new ArrayList<>();
+        }
+        messages.add(message);
+        message.setChatSession(this); // Ensures bidirectionality
+    }
+
+
     // Equals and hashCode methods
     @Override
     public int hashCode() {
@@ -137,9 +147,8 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
                 Objects.equals(taskId, that.taskId) &&
                 taskType == that.taskType &&
                 status == that.status &&
-                Objects.equals(participants, that.participants) &&
-                Objects.equals(messages, that.messages) &&
                 Objects.equals(getCreatedAt(), that.getCreatedAt()) &&
                 Objects.equals(getModifiedAt(), that.getModifiedAt());
     }
+
 }

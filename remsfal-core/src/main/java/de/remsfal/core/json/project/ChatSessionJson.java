@@ -75,6 +75,7 @@ public abstract class ChatSessionJson implements ChatSessionModel {
                 .projectId(model.getProjectId())
                 .taskId(model.getTaskId())
                 .taskType(model.getTaskType())
+                .status(model.getStatus())
                 .messages(model.getMessages().stream()
                         .map(ChatMessageJson::valueOf)
                         .toList())
