@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.model.project.ChatSessionModel.ParticipantRole;
+import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import de.remsfal.service.entity.dao.ChatSessionRepository;
@@ -29,6 +31,9 @@ public class ChatSessionRepositoryTest extends AbstractTest {
 
     @Inject
     ChatSessionRepository repository;
+
+    @Inject
+    UserRepository userRepository;
 
     @Inject
     EntityManager entityManager;
@@ -338,9 +343,8 @@ public class ChatSessionRepositoryTest extends AbstractTest {
         participants.put(TestData.USER_ID_2, ParticipantRole.HANDLER);
         participants.put(TestData.USER_ID_3, ParticipantRole.OBSERVER);
         final ChatSessionModel.TaskType taskType = ChatSessionModel.TaskType.TASK;
-        final ChatSessionModel.Status status = ChatSessionModel.Status.OPEN;
 
-        final ChatSessionEntity session = repository.createChatSession(projectId, taskId, taskType , participants, status);
+        final ChatSessionEntity session = repository.createChatSession(projectId, taskId, taskType , participants);
 
         assertNotNull(session, "ChatSessionEntity should not be null");
         assertEquals(projectId, session.getProjectId(), "Project ID should match");
@@ -354,23 +358,22 @@ public class ChatSessionRepositoryTest extends AbstractTest {
     void createChatSession_FAILURE() {
         String taskId = TASK_ID;
         ChatSessionModel.TaskType taskType = ChatSessionModel.TaskType.TASK;
-        ChatSessionModel.Status status = ChatSessionModel.Status.OPEN;
         Map<String, ParticipantRole> participants = new HashMap<>();
         participants.put(TestData.USER_ID, ParticipantRole.INITIATOR);
 
         // Null project ID should fail
         assertThrows(Exception.class, () -> {
-            repository.createChatSession(null, taskId, taskType, participants, status);
+            repository.createChatSession(null, taskId, taskType, participants);
         }, "Expected an exception for null projectId");
 
         // Null task ID should fail
         assertThrows(Exception.class, () -> {
-            repository.createChatSession(TestData.PROJECT_ID, null, taskType, participants, status);
+            repository.createChatSession(TestData.PROJECT_ID, null, taskType, participants);
         }, "Expected an exception for null taskId");
 
         // Null task type should fail
         assertThrows(Exception.class, () -> {
-            repository.createChatSession(TestData.PROJECT_ID, taskId, null, participants, status);
+            repository.createChatSession(TestData.PROJECT_ID, taskId, null, participants);
         }, "Expected an exception for null taskType");
     }
 
@@ -500,9 +503,15 @@ public class ChatSessionRepositoryTest extends AbstractTest {
         final ChatSessionEntity session = sessions.get(0);
         final String sessionId = session.getId();
 
-        assertTrue(repository.deleteChatSession(sessionId), "Chat session should be deleted");
-        assertTrue(repository.findChatSessionsByProjectId(TestData.PROJECT_ID).isEmpty(), "Chat session should not be found");
+        long deletedCount = repository.deleteChatSession(sessionId);
+
+        assertEquals(1, deletedCount, "Chat session should be deleted");
+
+        List<ChatSessionEntity> remainingSessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
+        assertTrue(remainingSessions.isEmpty(), "Chat session should not be found");
     }
+
+
 
     @Test
     void deleteMember_SUCCESS() {
@@ -555,5 +564,64 @@ public class ChatSessionRepositoryTest extends AbstractTest {
         Exception exception2 = assertThrows(IllegalArgumentException.class, () -> repository.updateTaskType(sessionId, existingTaskType));
         assertEquals("TaskType is already set to " + existingTaskType, exception2.getMessage(), "Exception message should match");
     }
+
+    @Test
+    @Transactional
+    void removeParticipantWithMessages_SUCCESS() {
+        // Arrange
+        List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
+        assertNotNull(sessions, "Sessions list should not be null");
+        assertEquals(1, sessions.size(), "There should be exactly one chat session");
+
+        ChatSessionEntity session = sessions.get(0);
+        String sessionId = session.getId();
+        String participantId = TestData.USER_ID_3; // Handler who has sent messages
+
+        // Verify that the participant exists before removal
+        assertTrue(session.getParticipants().containsKey(participantId), "Participant should exist before removal");
+
+        // Count messages sent by participant before removal
+        long messagesBeforeRemoval = session.getMessages().stream()
+                .filter(message -> participantId.equals(message.getSenderId()))
+                .count();
+        assertTrue(messagesBeforeRemoval > 0, "Participant should have messages before removal");
+
+        // Act
+        ChatSessionEntity updatedSession = repository.deleteMember(sessionId, participantId);
+
+        // Assert
+
+        // 1. Verify participant is removed from the session
+        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
+        Map<String, ParticipantRole> updatedParticipants = updatedSession.getParticipants();
+        assertFalse(updatedParticipants.containsKey(participantId), "Participant should be removed from the session");
+
+        // 2. Reload session to ensure changes are persisted
+        ChatSessionEntity reloadedSession = repository.findChatSessionById(sessionId);
+        assertNotNull(reloadedSession, "Reloaded ChatSessionEntity should not be null");
+        Map<String, ParticipantRole> reloadedParticipants = reloadedSession.getParticipants();
+        assertFalse(reloadedParticipants.containsKey(participantId), "Participant should be removed from the session after reload");
+
+        // 3. Verify messages sent by the removed participant still exist
+        List<ChatMessageEntity> messages = repository.exportChatLogs(sessionId);
+        long messagesAfterRemoval = messages.stream()
+                .filter(message -> participantId.equals(message.getSenderId()))
+                .count();
+        assertEquals(messagesBeforeRemoval, messagesAfterRemoval, "Messages sent by the removed participant should still exist");
+
+        // 4. Verify that the sender_id in messages still references the correct UserEntity
+        messages.stream()
+                .filter(message -> participantId.equals(message.getSenderId()))
+                .forEach(message -> {
+                    assertNotNull(message.getSenderId(), "Sender ID should not be null");
+                    assertEquals(participantId, message.getSenderId(), "Sender ID should match the removed participant's ID");
+                });
+
+        // 5. Ensure that the UserEntity still exists in the USER table
+        UserEntity user = userRepository.findByIdOptional(participantId).orElse(null);
+        assertNotNull(user, "UserEntity should still exist in the USER table");
+        assertEquals(participantId, user.getId(), "UserEntity ID should match the removed participant's ID");
+    }
+
 
 }
