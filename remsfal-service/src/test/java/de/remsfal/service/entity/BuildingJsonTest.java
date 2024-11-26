@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-public class BuildingJsonTest extends AbstractTest {
+class BuildingJsonTest extends AbstractTest {
 
     @Test
     void testValueOf_withNullModel() {

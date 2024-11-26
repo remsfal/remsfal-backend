@@ -23,7 +23,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
-public class ChatResourceTest extends AbstractProjectResourceTest {
+class ChatResourceTest extends AbstractProjectResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String CHAT_SESSION_TASK_PATH = BASE_PATH + "/tasks/{taskId}/chat";

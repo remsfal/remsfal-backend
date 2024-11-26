@@ -9,23 +9,24 @@ import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 import de.remsfal.service.entity.dto.UserEntity;
-import io.quarkus.arc.ArcUndeclaredThrowableException;
+
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.RollbackException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.NotFoundException;
-import org.junit.jupiter.api.*;
 
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class ChatMessageRepositoryTest extends AbstractTest {
+class ChatMessageRepositoryTest extends AbstractTest {
 
     @Inject
     ChatSessionRepository chatSessionRepository;
