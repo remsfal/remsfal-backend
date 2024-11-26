@@ -59,7 +59,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                 : ChatSessionModel.TaskType.DEFECT;
         String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
 
-            ChatSessionModel session = chatSessionController.createChatSession(projectId, associatedId, taskType, userId);
+            ChatSessionModel session = chatSessionController
+                    .createChatSession(projectId, associatedId, taskType, userId);
             URI location = uri.getAbsolutePathBuilder().path(session.getId()).build();
             return Response.created(location)
                     .type(MediaType.APPLICATION_JSON)
