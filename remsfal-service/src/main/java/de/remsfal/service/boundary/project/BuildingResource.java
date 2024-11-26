@@ -20,49 +20,33 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     @Override
     public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
         checkPrivileges(projectId);
-        try {
-            final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
-            final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
-            return Response.created(location)
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(BuildingJson.valueOf(model))
-                    .build();
-        } catch (Exception e) {
-            throw e;
-        }
+        final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        return Response.created(location)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(BuildingJson.valueOf(model))
+            .build();
     }
 
     @Override
     public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
         checkPrivileges(projectId);
-        try {
-            final BuildingModel model = controller.getBuilding(projectId, propertyId, buildingId);
+        final BuildingModel model = controller.getBuilding(projectId, propertyId, buildingId);
 
-            return BuildingJson.valueOf(model);
-        } catch (Exception e) {
-            throw e;
-        }
+        return BuildingJson.valueOf(model);
     }
 
     @Override
     public BuildingJson updateBuilding(String projectId, String propertyId, String buildingId, BuildingJson building) {
         checkPrivileges(projectId);
-        try {
-            final BuildingModel model = controller.updateBuilding(propertyId, buildingId, building);
-            return BuildingJson.valueOf(model);
-        } catch (Exception e) {
-            throw e;
-        }
+        final BuildingModel model = controller.updateBuilding(propertyId, buildingId, building);
+        return BuildingJson.valueOf(model);
     }
 
     @Override
     public void deleteBuilding(String projectId, String propertyId, String buildingId) {
         checkPrivileges(projectId);
-        try {
-            controller.deleteBuilding(propertyId, buildingId);
-        } catch (Exception e) {
-            throw e;
-        }
+        controller.deleteBuilding(propertyId, buildingId);
     }
 
 }
