@@ -9,6 +9,7 @@ import de.remsfal.core.model.project.ChatSessionModel.TaskType;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 import java.util.Map;
 
@@ -30,9 +31,8 @@ public class ChatSessionController {
         if (userController.getUser(userId) == null) {
             throw new IllegalArgumentException("User with ID " + userId + " not found");
         }
-        ChatSessionModel.Status status = ChatSessionModel.Status.OPEN;
         Map<String, ParticipantRole> participants = Map.of(userId, ParticipantRole.INITIATOR);
-        return repository.createChatSession(projectId, taskId, taskType, participants, status);
+        return repository.createChatSession(projectId, taskId, taskType, participants);
     }
 
     @Transactional
@@ -49,13 +49,15 @@ public class ChatSessionController {
 
     @Transactional
     public void removeParticipant(String sessionId, String userId) {
-        logger.infov("Removing participant from chat session (sessionId={0}, participantId={1})", sessionId, userId);
+        logger.infov("Removing participant from chat session (sessionId={0}, participantId={1})",
+                sessionId, userId);
         repository.deleteMember(sessionId, userId);
     }
 
     @Transactional
     public void updateParticipantRole(String sessionId, String userId, ParticipantRole role) {
-        logger.infov("Updating participant role in chat session (sessionId={0}, participantId={1})", sessionId, userId);
+        logger.infov("Updating participant role in chat session (sessionId={0}, participantId={1})",
+                sessionId, userId);
         ChatSessionEntity updatedSession = repository.changeParticipantRole(sessionId, userId, role);
         updatedSession.getParticipants().get(userId);
     }
@@ -69,9 +71,22 @@ public class ChatSessionController {
     @Transactional
     public void deleteChatSession(String sessionId) {
         logger.infov("Deleting chat session (sessionId={0})", sessionId);
-        repository.deleteChatSession(sessionId);
+        try {
+            long deletedCount = repository.deleteChatSession(sessionId);
+            if (deletedCount > 0) {
+                logger.infov("Chat session with ID {0} deleted successfully", sessionId);
+            } else {
+                logger.infov("No chat session found with ID {0} to delete", sessionId);
+                throw new NotFoundException("Chat session not found");
+            }
+        }  catch (Exception e) {
+            logger.errorv("Error deleting chat session with ID {0}", sessionId, e);
+            throw e;
+        }
     }
 
+
+    @Transactional
     public ChatSessionEntity getChatSession(String sessionId) {
         logger.infov("Retrieving chat session (sessionId={0})", sessionId);
         return repository.findChatSessionById(sessionId);

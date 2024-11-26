@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.service.entity.dao.ChatMessageRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import de.remsfal.core.model.project.ChatMessageModel.ContentType;
@@ -17,8 +18,10 @@ public class ChatMessageController {
     @Inject
     ChatMessageRepository repository;
 
-    public ChatMessageEntity sendChatMessage(String sessionId, String userId, ContentType contentType, String content) {
-        logger.infov("Sending chat message (sessionId={0}, userId={1}, contentType={2})", sessionId, userId, contentType);
+    public ChatMessageEntity sendChatMessage(String sessionId, String userId, ContentType contentType, String content)
+    {
+        logger.infov("Sending chat message (sessionId={0}, userEntity={1}, contentType={2})",
+                sessionId, userId, contentType);
         return repository.sendChatMessage(sessionId, userId, contentType, content);
     }
 
