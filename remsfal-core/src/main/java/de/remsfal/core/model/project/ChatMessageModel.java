@@ -1,5 +1,7 @@
 package de.remsfal.core.model.project;
 
+import de.remsfal.core.model.UserModel;
+
 import java.util.Date;
 
 public interface ChatMessageModel {
@@ -10,10 +12,12 @@ public interface ChatMessageModel {
 
     String getChatSessionId();
 
+    UserModel getSender();
+
     String getSenderId();
 
 
-    enum ContentType {
+     enum ContentType {
         TEXT,
         IMAGE
     }

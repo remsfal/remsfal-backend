@@ -5,8 +5,10 @@ import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
 import de.remsfal.service.entity.dao.ChatMessageRepository;
 import de.remsfal.service.entity.dao.ChatSessionRepository;
+import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.arc.ArcUndeclaredThrowableException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -14,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.*;
 
 import java.util.NoSuchElementException;
@@ -29,6 +32,9 @@ public class ChatMessageRepositoryTest extends AbstractTest {
 
     @Inject
     ChatMessageRepository chatMessageRepository;
+
+    @Inject
+    UserRepository userRepository;
 
     @Inject
     EntityManager entityManager;
@@ -64,10 +70,14 @@ public class ChatMessageRepositoryTest extends AbstractTest {
 
     private void insertUsers() {
         String insertUserSQL = "INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)";
-        insertUser(TestData.USER_ID, TestData.USER_TOKEN, TestData.USER_EMAIL, TestData.USER_FIRST_NAME, TestData.USER_LAST_NAME, insertUserSQL);
-        insertUser(TestData.USER_ID_2, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2, TestData.USER_FIRST_NAME_2, TestData.USER_LAST_NAME_2, insertUserSQL);
-        insertUser(TestData.USER_ID_3, TestData.USER_TOKEN_3, TestData.USER_EMAIL_3, TestData.USER_FIRST_NAME_3, TestData.USER_LAST_NAME_3, insertUserSQL);
-        insertUser(TestData.USER_ID_4, TestData.USER_TOKEN_4, TestData.USER_EMAIL_4, TestData.USER_FIRST_NAME_4, TestData.USER_LAST_NAME_4, insertUserSQL);
+        insertUser(TestData.USER_ID, TestData.USER_TOKEN, TestData.USER_EMAIL, TestData.USER_FIRST_NAME,
+                TestData.USER_LAST_NAME, insertUserSQL);
+        insertUser(TestData.USER_ID_2, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2, TestData.USER_FIRST_NAME_2,
+                TestData.USER_LAST_NAME_2, insertUserSQL);
+        insertUser(TestData.USER_ID_3, TestData.USER_TOKEN_3, TestData.USER_EMAIL_3, TestData.USER_FIRST_NAME_3,
+                TestData.USER_LAST_NAME_3, insertUserSQL);
+        insertUser(TestData.USER_ID_4, TestData.USER_TOKEN_4, TestData.USER_EMAIL_4, TestData.USER_FIRST_NAME_4,
+                TestData.USER_LAST_NAME_4, insertUserSQL);
     }
 
     private void insertUser(String id, String tokenId, String email, String firstName, String lastName, String sql) {
@@ -104,7 +114,8 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     }
 
     private void insertTask() {
-        entityManager.createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY)" +
+                        " VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, TASK_ID)
                 .setParameter(2, "TASK")
                 .setParameter(3, TestData.PROJECT_ID)
@@ -116,7 +127,8 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     }
 
     private void insertChatSessions() {
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) VALUES (?,?,?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) " +
+                        "VALUES (?,?,?,?,?)")
                 .setParameter(1, CHAT_SESSION_ID)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, TASK_ID)
@@ -124,7 +136,8 @@ public class ChatMessageRepositoryTest extends AbstractTest {
                 .setParameter(5, "OPEN")
                 .executeUpdate();
 
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) VALUES (?,?,?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) " +
+                        "VALUES (?,?,?,?,?)")
                 .setParameter(1, CLOSED_CHAT_SESSION_ID)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, TASK_ID)
@@ -134,7 +147,8 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     }
 
     private void insertChatSessionParticipants() {
-        String insertParticipantSQL = "INSERT INTO CHAT_SESSION_PARTICIPANT (CHAT_SESSION_ID, PARTICIPANT_ID, ROLE) VALUES (?,?,?)";
+        String insertParticipantSQL = "INSERT INTO CHAT_SESSION_PARTICIPANT (CHAT_SESSION_ID, PARTICIPANT_ID, ROLE) " +
+                "VALUES (?,?,?)";
         insertParticipant(TestData.USER_ID_2, "INITIATOR", insertParticipantSQL);
         insertParticipant(TestData.USER_ID_3, "HANDLER", insertParticipantSQL);
         insertParticipant(TestData.USER_ID, "OBSERVER", insertParticipantSQL);
@@ -149,7 +163,8 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     }
 
     private void insertChatMessage() {
-        entityManager.createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT) VALUES (?,?,?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO CHAT_MESSAGE" +
+                        " (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT) VALUES (?,?,?,?,?)")
                 .setParameter(1, CHAT_MESSAGE_ID)
                 .setParameter(2, CHAT_SESSION_ID)
                 .setParameter(3, TestData.USER_ID_2)
@@ -183,8 +198,10 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     @Test
     void findChatMessageById_FAILURE() {
         String randomId = UUID.randomUUID().toString();
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> chatMessageRepository.findChatMessageById(randomId));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception.getMessage(), "Exception message should match");
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
+                chatMessageRepository.findChatMessageById(randomId));
+        assertEquals("ChatMessage with ID " + randomId + " not found", exception.getMessage(),
+                "Exception message should match");
     }
 
     @Test
@@ -193,7 +210,8 @@ public class ChatMessageRepositoryTest extends AbstractTest {
         chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.TEXT, "This is a second test message");
         ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
         assertEquals(2, chatSession.getMessages().size(), "Chat session should have 2 messages");
-        assertEquals("This is a second test message", chatSession.getMessages().get(1).getContent(), "Content of the second message should match");
+        assertEquals("This is a second test message", chatSession.getMessages().get(1).getContent(),
+                "Content of the second message should match");
     }
 
     @Test
@@ -202,7 +220,8 @@ public class ChatMessageRepositoryTest extends AbstractTest {
         chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.IMAGE, "https://example.com/image.jpg");
         ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
         assertEquals(2, chatSession.getMessages().size(), "Chat session should have 2 messages");
-        assertEquals("https://example.com/image.jpg", chatSession.getMessages().get(1).getImageUrl(), "Image URL of the second message should match");
+        assertEquals("https://example.com/image.jpg", chatSession.getMessages().get(1).getImageUrl(),
+                "Image URL of the second message should match");
     }
 
     @Test
@@ -214,22 +233,26 @@ public class ChatMessageRepositoryTest extends AbstractTest {
 
         // Non-existent session ID should fail
         assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(UUID.randomUUID().toString(), validSenderId, validContentType, validMessageContent)
+                chatMessageRepository.sendChatMessage(UUID.randomUUID().toString(), validSenderId, validContentType,
+                        validMessageContent)
         );
 
         // Closed session should fail
         assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(CLOSED_CHAT_SESSION_ID, validSenderId, validContentType, validMessageContent)
+                chatMessageRepository.sendChatMessage(CLOSED_CHAT_SESSION_ID, validSenderId, validContentType,
+                        validMessageContent)
         );
 
         // Null sender ID should fail
         assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(validSessionId, null, validContentType, validMessageContent)
+                chatMessageRepository.sendChatMessage(validSessionId, null, validContentType,
+                        validMessageContent)
         );
 
         // Null content type should fail
         assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(validSessionId, validSenderId, null, validMessageContent)
+                chatMessageRepository.sendChatMessage(validSessionId, validSenderId, null,
+                        validMessageContent)
         );
     }
 
@@ -245,8 +268,10 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     @Test
     void deleteChatMessage_FAILURE() {
         String randomId = UUID.randomUUID().toString();
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> chatMessageRepository.deleteChatMessage(randomId));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception.getMessage(), "Exception message should match");
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, ()
+                -> chatMessageRepository.deleteChatMessage(randomId));
+        assertEquals("ChatMessage with ID " + randomId + " not found", exception.getMessage(),
+                "Exception message should match");
     }
 
     @Test
@@ -254,8 +279,10 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     void updateTextChatMessage_SUCCESS() {
         chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, "This is an updated message");
         ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
-        assertEquals("This is an updated message", chatSession.getMessages().get(0).getContent(), "Content of the updated message should match");
+        assertEquals("This is an updated message", chatSession.getMessages().get(0).getContent(),
+                "Content of the updated message should match");
     }
+
 
     @Test
     void updateTextChatMessage_FAILURE() {
@@ -263,27 +290,40 @@ public class ChatMessageRepositoryTest extends AbstractTest {
         String validContent = "This is an updated message";
         String blankContent = "   ";
 
-        Exception exception1 = assertThrows(NoSuchElementException.class, () -> chatMessageRepository.updateTextChatMessage(randomId, validContent));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage(), "Exception message should match for non-existent message ID");
+        Exception exception1 = assertThrows(NoSuchElementException.class, () ->
+                chatMessageRepository.updateTextChatMessage(randomId, validContent));
+        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage(),
+                "Exception message should match for non-existent message ID");
 
-        Exception exception2 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, null));
-        assertEquals("Content cannot be null or empty", exception2.getMessage(), "Exception message should match for null content");
+        Exception exception2 = assertThrows(IllegalArgumentException.class, () ->
+                chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, null));
+        assertEquals("Content cannot be null or empty", exception2.getMessage(),
+                "Exception message should match for null content");
 
-        Exception exception3 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, blankContent));
-        assertEquals("Content cannot be null or empty", exception3.getMessage(), "Exception message should match for blank content");
+        Exception exception3 = assertThrows(IllegalArgumentException.class, () ->
+                chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, blankContent));
+        assertEquals("Content cannot be null or empty", exception3.getMessage(),
+                "Exception message should match for blank content");
 
         chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.IMAGE, "This is an image message");
         String imageMessageId = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().get(1).getId();
-        Exception exception4 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.updateTextChatMessage(imageMessageId, validContent));
-        assertEquals("Cannot update non-text message with updateTextChatMessage() method", exception4.getMessage(), "Exception message should match for non-text message");
+        Exception exception4 = assertThrows(IllegalArgumentException.class, () ->
+                chatMessageRepository.updateTextChatMessage(imageMessageId, validContent));
+        assertEquals("Cannot update non-text message with updateTextChatMessage() method",
+                exception4.getMessage(), "Exception message should match for non-text message");
     }
 
     @Test
     @Transactional
     void updateImageURL_SUCCESS() {
+
+        UserEntity sender = userRepository.findByIdOptional(TestData.USER_ID_2).orElseThrow(() ->
+                new NotFoundException("User does not exist"));
+
         ChatMessageEntity chatMessage = new ChatMessageEntity();
         chatMessage.setId(UUID.randomUUID().toString());
         chatMessage.setChatSession(chatSessionRepository.findChatSessionById(CHAT_SESSION_ID));
+        chatMessage.setSender(sender);
         chatMessage.setSenderId(TestData.USER_ID_2);
         chatMessage.setContentType(ChatMessageEntity.ContentType.IMAGE);
         chatMessage.setImageUrl("https://example.com/image.jpg");
@@ -321,9 +361,14 @@ public class ChatMessageRepositoryTest extends AbstractTest {
     @Test
     @Transactional
     void updateImageURL_FAILURE() {
+
+        UserEntity sender = userRepository.findByIdOptional(TestData.USER_ID_2).orElseThrow(() ->
+                new NotFoundException("User does not exist"));
+
         ChatMessageEntity chatMessage = new ChatMessageEntity();
         chatMessage.setId(UUID.randomUUID().toString());
         chatMessage.setChatSession(chatSessionRepository.findChatSessionById(CHAT_SESSION_ID));
+        chatMessage.setSender(sender);
         chatMessage.setSenderId(TestData.USER_ID_2);
         chatMessage.setContentType(ChatMessageEntity.ContentType.IMAGE);
         chatMessage.setImageUrl("https://example.com/image.jpg");
@@ -334,19 +379,28 @@ public class ChatMessageRepositoryTest extends AbstractTest {
         String invalidImageUrl = "   ";
         String validImageUrl = "https://example.com/updated-image.jpg";
 
-        Exception exception1 = assertThrows(NoSuchElementException.class, () -> chatMessageRepository.updateImageURL(randomId, validImageUrl));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage(), "Exception message should match for non-existent message ID");
+        Exception exception1 = assertThrows(NoSuchElementException.class, ()
+                -> chatMessageRepository.updateImageURL(randomId, validImageUrl));
+        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage(),
+                "Exception message should match for non-existent message ID");
 
-        Exception exception2 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.updateImageURL(chatMessage.getId(), invalidImageUrl));
-        assertEquals("Image URL cannot be null or empty", exception2.getMessage(), "Exception message should match for blank image URL");
+        Exception exception2 = assertThrows(IllegalArgumentException.class, ()
+                -> chatMessageRepository.updateImageURL(chatMessage.getId(), invalidImageUrl));
+        assertEquals("Image URL cannot be null or empty", exception2.getMessage(),
+                "Exception message should match for blank image URL");
 
-        Exception exception3 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.updateImageURL(chatMessage.getId(), null));
-        assertEquals("Image URL cannot be null or empty", exception3.getMessage(), "Exception message should match for null image URL");
+        Exception exception3 = assertThrows(IllegalArgumentException.class, ()
+                -> chatMessageRepository.updateImageURL(chatMessage.getId(), null));
+        assertEquals("Image URL cannot be null or empty", exception3.getMessage(),
+                "Exception message should match for null image URL");
 
-        Exception exception4 = assertThrows(IllegalArgumentException.class, () -> chatMessageRepository.updateImageURL(CHAT_MESSAGE_ID, validImageUrl));
+        Exception exception4 = assertThrows(IllegalArgumentException.class, () ->
+                chatMessageRepository.updateImageURL(CHAT_MESSAGE_ID, validImageUrl));
         assertEquals("Cannot update non-image message with updateImageURL() method", exception4.getMessage(), "Exception message should match for non-image message");
 
     }
+
+
 
 
 

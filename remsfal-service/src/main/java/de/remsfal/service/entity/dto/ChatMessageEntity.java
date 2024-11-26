@@ -17,14 +17,16 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
     @NotBlank
     private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CHAT_SESSION_ID", referencedColumnName = "ID", nullable = false)
     @NotNull
     private ChatSessionEntity chatSession;
 
-    @Column(name = "SENDER_ID", columnDefinition = "char", nullable = false, length = 36)
-    @NotBlank
-    private String senderId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "SENDER_ID", referencedColumnName = "ID", nullable = false)
+    @NotNull
+    private UserEntity sender;
+
 
     @Column(name = "CONTENT_TYPE", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -62,6 +64,26 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
         return chatSession != null ? chatSession.getId() : null;
     }
 
+    @Override
+    public UserEntity getSender() {
+        return sender;
+    }
+
+    public void setSender(UserEntity sender) {
+        this.sender = sender;
+    }
+
+    public String getSenderId() {
+        return sender != null ? sender.getId() : null;
+    }
+
+    public void setSenderId(String senderId) {
+        if (sender != null) sender.setId(senderId);
+        else {
+            throw new IllegalArgumentException("UserEntity is null");
+        }
+    }
+
     public void setChatSession(ChatSessionEntity chatSession) {
         this.chatSession = chatSession;
     }
@@ -71,15 +93,6 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
         else {
             throw new IllegalArgumentException("ChatSessionEntity is null");
         }
-    }
-
-    @Override
-    public String getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(final String senderId) {
-        this.senderId = senderId;
     }
 
     @Override
@@ -109,9 +122,10 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
         this.imageUrl = imageUrl;
     }
 
+
     @Override
     public int hashCode() {
-        return Objects.hash(id, senderId, contentType, content, imageUrl, getCreatedAt());
+        return Objects.hash(id, sender.getId(), contentType, content, imageUrl, getCreatedAt());
     }
 
     @Override
@@ -120,7 +134,7 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
         if (!(obj instanceof ChatMessageEntity that)) return false;
         return Objects.equals(id, that.id) &&
                 Objects.equals(getChatSessionId(), that.getChatSessionId()) &&
-                Objects.equals(senderId, that.senderId) &&
+                Objects.equals(getSenderId(), that.getSenderId()) &&
                 contentType == that.contentType &&
                 Objects.equals(content, that.content) &&
                 Objects.equals(imageUrl, that.imageUrl) &&

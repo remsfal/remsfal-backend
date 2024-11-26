@@ -1,9 +1,12 @@
 package de.remsfal.core.json.project;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ChatMessageModel;
+import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.validation.UUID;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Null;
@@ -35,7 +38,6 @@ public abstract class ChatMessageJson implements ChatMessageModel {
     @UUID
     public abstract String getSenderId();
 
-
     @Nullable
     @Override
     public abstract ContentType getContentType();
@@ -53,6 +55,18 @@ public abstract class ChatMessageJson implements ChatMessageModel {
     @Nullable
     @Override
     public abstract Date getTimestamp();
+
+    @Null
+    @Nullable
+    @Override
+    @JsonIgnore
+    public abstract ChatSessionModel getChatSession();
+
+    @Null
+    @Nullable
+    @Override
+    @JsonIgnore
+    public abstract UserModel getSender();
 
     public static ChatMessageJson valueOf(final ChatMessageModel model)
     {
