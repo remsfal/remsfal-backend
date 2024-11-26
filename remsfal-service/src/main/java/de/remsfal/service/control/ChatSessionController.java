@@ -58,8 +58,7 @@ public class ChatSessionController {
     public void updateParticipantRole(String sessionId, String userId, ParticipantRole role) {
         logger.infov("Updating participant role in chat session (sessionId={0}, participantId={1})",
                 sessionId, userId);
-        ChatSessionEntity updatedSession = repository.changeParticipantRole(sessionId, userId, role);
-        updatedSession.getParticipants().get(userId);
+        repository.changeParticipantRole(sessionId, userId, role);
     }
 
     @Transactional
