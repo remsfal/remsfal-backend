@@ -128,7 +128,7 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
             messages = new ArrayList<>();
         }
         messages.add(message);
-        message.setChatSession(this); // Ensures bidirectionality
+        message.setChatSession(this); // Ensures bidirectional relationship
     }
 
 

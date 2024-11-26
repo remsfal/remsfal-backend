@@ -2,7 +2,6 @@ package de.remsfal.service.control;
 
 import de.remsfal.service.entity.dao.ChatMessageRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
-import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import de.remsfal.core.model.project.ChatMessageModel.ContentType;

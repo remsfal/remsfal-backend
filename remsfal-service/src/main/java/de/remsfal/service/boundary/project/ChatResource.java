@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.project;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 import de.remsfal.core.api.project.ChatEndpoint;
 import de.remsfal.core.json.project.ChatMessageJson;
@@ -14,12 +13,10 @@ import de.remsfal.service.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.*;
 import org.jboss.logging.Logger;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
 
@@ -113,7 +110,6 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         try {
             String projectId = uri.getPathParameters().getFirst("projectId");
             checkPrivileges(projectId);
-            ChatSessionEntity existingSession = chatSessionController.getChatSession(sessionId);
             if (status != ChatSessionModel.Status.ARCHIVED && status != ChatSessionModel.Status.OPEN
                     && status != ChatSessionModel.Status.CLOSED) {
                 throw new BadRequestException("Status must be provided");
@@ -124,6 +120,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .type(MediaType.APPLICATION_JSON)
                     .entity(ChatSessionJson.valueOf(updatedSession))
                     .build();
+        }
+        catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage());
         }
         catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
@@ -149,7 +148,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     .entity(json)
                     .build();
         } catch (NoSuchElementException e) {
-            throw new NoSuchElementException(e.getMessage());
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage());
         }
         catch (Exception e) {
             logger.error("Failed to join chat session", e);
@@ -241,7 +243,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
 
             if (!participants.containsKey(participantId)) {
-                throw new NoSuchElementException("Participant not found");
+                throw new NotFoundException("Participant not found");
             }
             chatSessionController.removeParticipant(sessionId, participantId);
             return Response.noContent().build();
@@ -343,7 +345,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                 throw new InternalServerErrorException("Failed to update message");
             }
         } catch (NoSuchElementException e) {
-           throw new NoSuchElementException(e.getMessage());
+           throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to update message", e);
             throw  e;
@@ -354,10 +356,12 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response deleteChatMessage(String sessionId, String messageId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            if (chatSessionController.getChatSession(sessionId) == null)
+                throw new NotFoundException("Chat session not found");
             chatMessageController.deleteChatMessage(messageId);
             return Response.noContent().build();
         } catch (NoSuchElementException e) {
-            throw new NoSuchElementException(e.getMessage());
+            throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to delete message", e);
             throw e;

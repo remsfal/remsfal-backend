@@ -1,8 +1,6 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.core.json.project.ChatMessageJson;
-import de.remsfal.core.json.project.ImmutableChatMessageJson;
-import de.remsfal.core.model.ProjectMemberModel;
+
 import de.remsfal.core.model.project.ChatMessageModel;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.model.project.TaskModel;
@@ -15,7 +13,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import de.remsfal.service.TestData;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -44,6 +41,18 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
             + "\"sender_id\": \"" + TestData.USER_ID + "\","
             + "\"contentType\": \"" + ChatMessageModel.ContentType.TEXT.name() + "\","
             + "\"content\": \"Test Message\""
+            + "}";
+    static final String CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT = "{"
+            + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
+            + "\"sender_id\": \"" + TestData.USER_ID + "\","
+            + "\"contentType\": \"" + ChatMessageModel.ContentType.TEXT.name() + "\","
+            + "\"content\": \"\""
+            + "}";
+    static final String CHAT_MESSAGE_JSON_PAYLOAD_NULL_CONTENT = "{"
+            + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
+            + "\"sender_id\": \"" + TestData.USER_ID + "\","
+            + "\"contentType\": \"" + ChatMessageModel.ContentType.TEXT.name() + "\","
+            + "\"content\": null"
             + "}";
 
 
@@ -80,7 +89,8 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
         // set up a task and a defect in project 1
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, DESCRIPTION, STATUS, CREATED_BY)" +
+                .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, DESCRIPTION, STATUS, CREATED_BY)"
+                        +
                         " VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, TASK_ID_1)
                 .setParameter(2, "TASK")
@@ -92,7 +102,8 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, DESCRIPTION, STATUS, CREATED_BY)" +
+                .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, DESCRIPTION, STATUS, CREATED_BY)"
+                        +
                         " VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, TASK_ID_2)
                 .setParameter(2, "DEFECT")
@@ -152,7 +163,8 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
         // insert hello world message in both sessions for testing
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT)" +
+                .createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT)"
+                        +
                         " VALUES (?,?,?,?,?)")
                 .setParameter(1, CHAT_MESSAGE_ID_1)
                 .setParameter(2, EXAMPLE_CHAT_SESSION_ID_1)
@@ -162,7 +174,8 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT)" +
+                .createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT)"
+                        +
                         " VALUES (?,?,?,?,?)")
                 .setParameter(1, CHAT_MESSAGE_ID_2)
                 .setParameter(2, EXAMPLE_CHAT_SESSION_ID_2)
@@ -197,10 +210,48 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .then()
                 .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
     }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    void getChatSession_UNPRIVILEGED(String path) {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    void deleteChatSession_INVALID_INPUT(String path) {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .delete(path.replace("{projectId}", UUID.randomUUID().toString()).replace("{taskId}",
+                                TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .delete(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}",
+                                TASK_ID_1)
+                        .replace("{sessionId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+
+
     // unprivileged tests - same logic in all methods - no need for multiple tests
     @ParameterizedTest
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
-    void changeParticipantRole_SUCCESS_2(String path)
+    void changeParticipantRole_UNPRIVILEGED(String path)
     {
         String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";
@@ -233,6 +284,7 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
+
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
     void getChatSession_FAILURE_INVALID_SESSION(String path) {
@@ -264,6 +316,26 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/status"})
+    void updateChatSessionStatus_INVALID_SESSION(String path) {
+
+        String newStatus = ChatSessionModel.Status.CLOSED.toString(); // "CLOSED"
+        // Wrap the status in quotes to form a valid JSON string
+        String jsonBody = "\"" + newStatus + "\"";
+
+        given()
+                .body(jsonBody)
+                .contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
@@ -277,6 +349,19 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                         .replace("{participantId}", nonExistingParticipantId))
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    void getParticipant_FAILURE_UNPRIVILEGED(String path) {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
+                        .replace("{participantId}",TestData.USER_ID_4 ))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
@@ -296,6 +381,49 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                         .replace("{participantId}", TestData.USER_ID_3))
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    void changeParticipantRole_INVALID_SESSION(String path)
+    {
+        String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
+        String jsonBody = "\"" + newRole + "\"";
+
+        given()
+                .body(jsonBody)
+                .contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", UUID.randomUUID().toString())
+                        .replace("{participantId}", TestData.USER_ID_4))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID})
+    void joinChatSession_INVALID_INPUT(String path)
+    {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
     // important logic tests
@@ -330,6 +458,79 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants"})
+    void getParticipants_INVALID_INPUT(String path)
+    {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .get(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_2)
+                        .replace("{sessionId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .get(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/participants/{participantId}"})
+    void removeParticipant_INVALID_INPUT(String path)
+    {   String path_task1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+            .replace("{taskId}", TASK_ID_1)
+            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .delete(path_task1_session1
+                        .replace("{participantId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .delete(path_task1_session1
+                        .replace("{participantId}", TestData.USER_ID_3))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages"})
+    void sendMessage_INVALID_INPUT(String path) {
+        given()
+                .body(CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT)
+                .contentType(ContentType.JSON)
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+
+        given()
+                .body(CHAT_MESSAGE_JSON_PAYLOAD_NULL_CONTENT)
+                .contentType(ContentType.JSON)
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
 
     // success tests
     @ParameterizedTest(name = "{displayName} - {arguments}")
@@ -345,6 +546,22 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                 .contentType(ContentType.JSON)
                 .header("Location", Matchers.containsString(path.replace("{projectId}",
                         TestData.PROJECT_ID_1).replace("{defectId}", TASK_ID_2)))
+                .and().body("id", notNullValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH})
+    void createChatSession_OnTask_SUCCESS(String path) {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .post(path, TestData.PROJECT_ID_1, TASK_ID_1)
+                .then()
+                .statusCode(Response.Status.CREATED.getStatusCode())
+                .contentType(ContentType.JSON)
+                .header("Location", Matchers.containsString(path.replace("{projectId}",
+                        TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)))
                 .and().body("id", notNullValue());
     }
 
@@ -556,6 +773,49 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages"})
+    void getChatMessages_FAILURE(String path) {
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    void getChatMessage_FAILURE(String path) {
+        String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+                .replace("{taskId}", TASK_ID_1)
+                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .get(path_project1_session1
+                        .replace("{messageId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .get(path_project1_session1
+                        .replace("{messageId}", CHAT_MESSAGE_ID_1))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
     void updateChatMessage_SUCCESS(String path) {
         String updatedMessageJson = "{\"content\":\"Updated Hello World\"}";
@@ -582,6 +842,48 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    void updateChatMessage_FAILURE(String path) {
+        String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+                .replace("{taskId}", TASK_ID_1)
+                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
+        String updatedMessageJsonBlank = "{\"content\":\"\"}";
+        String updatedMessageJson = "{\"content\":\"Updated Hello World\"}";
+        String put_request = path_project1_session1
+                .replace("{messageId}", CHAT_MESSAGE_ID_1);
+
+
+        given()
+                .body(updatedMessageJsonBlank)
+                .contentType(ContentType.JSON)
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .put(put_request)
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
+                .contentType(ContentType.JSON);
+
+        given()
+                .body(updatedMessageJson)
+                .contentType(ContentType.JSON)
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .put(put_request)
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+
+        given()
+                .body(updatedMessageJson)
+                .contentType(ContentType.JSON)
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .put(path_project1_session1
+                        .replace("{messageId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
     void deleteChatMessage_SUCCESS(String path) {
         given()
                 .when()
@@ -591,6 +893,38 @@ public class ChatResourceTest extends AbstractProjectResourceTest {
                         .replace("{messageId}", CHAT_MESSAGE_ID_1))
                 .then()
                 .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_with_SESSION_ID + "/messages/{messageId}"})
+    void deleteChatMessage_FAILURE(String path) {
+        String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+                .replace("{taskId}", TASK_ID_1)
+                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .delete(path_project1_session1
+                        .replace("{messageId}", UUID.randomUUID().toString()))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .delete(path_project1_session1
+                        .replace("{messageId}", CHAT_MESSAGE_ID_1))
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .delete(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", UUID.randomUUID().toString())
+                        .replace("{messageId}", CHAT_MESSAGE_ID_1))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
 }

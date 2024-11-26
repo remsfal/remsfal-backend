@@ -1,6 +1,6 @@
 package de.remsfal.service.entity.dao;
 
-import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 import de.remsfal.core.model.project.ChatMessageModel.ContentType;
@@ -12,10 +12,8 @@ import io.quarkus.panache.common.Parameters;
 import jakarta.ws.rs.NotFoundException;
 
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -29,15 +27,8 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
 
     @Transactional
     public ChatMessageEntity findChatMessageById(String messageId) {
-        System.out.println("Finding ChatMessage with ID: " + messageId);
-
-        // Force synchronization with the database
         getEntityManager().flush();
-
         List<ChatMessageEntity> messages = find("id = :id", Parameters.with("id", messageId)).list();
-
-        System.out.println("Query Result: " + messages);
-
         return messages.stream()
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("ChatMessage with ID " + messageId + " not found"));
@@ -53,7 +44,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
             ChatSessionEntity session = chatSessionRepository.findChatSessionById(sessionId);
             UserEntity sender = userRepository.findByIdOptional(senderId)
                     .orElseThrow(() -> new NotFoundException("User does not exist"));
-            if (session.getStatus() == ChatSessionEntity.Status.CLOSED) {
+            if (session.getStatus() == ChatSessionModel.Status.CLOSED) {
                 throw new IllegalStateException("Chat session is closed");
             }
 
@@ -82,8 +73,9 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
             return findChatMessageById(chatMessage.getId());
         }
         catch (Exception e) {
-            throw new RuntimeException("Failed to send chat message", e);
+            throw new IllegalStateException("Failed to send chat message", e);
         }
+
     }
 
 
@@ -112,8 +104,8 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
         if (newContent.equals(message.getContent())) {
             throw new IllegalArgumentException("Content is the same as the current content");
         }
-        if (session.getStatus() == ChatSessionEntity.Status.CLOSED || session.getStatus() ==
-                ChatSessionEntity.Status.ARCHIVED) {
+        if (session.getStatus() == ChatSessionModel.Status.CLOSED || session.getStatus() ==
+                ChatSessionModel.Status.ARCHIVED) {
             throw new IllegalStateException("ChatSession with ID " + sessionId + " is closed or archived");
         }
 
@@ -135,8 +127,8 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
         if (newImageUrl.equals(message.getImageUrl())) {
             throw new IllegalArgumentException("Image URL is the same as the current image URL");
         }
-        if (session.getStatus() == ChatSessionEntity.Status.CLOSED || session.getStatus() ==
-                ChatSessionEntity.Status.ARCHIVED) {
+        if (session.getStatus() == ChatSessionModel.Status.CLOSED || session.getStatus() ==
+                ChatSessionModel.Status.ARCHIVED) {
             throw new IllegalStateException("ChatSession with ID " + sessionId + " is closed or archived");
         }
         message.setImageUrl(newImageUrl);

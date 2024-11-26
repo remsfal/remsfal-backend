@@ -88,13 +88,6 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
         this.chatSession = chatSession;
     }
 
-    public void setChatSessionId(String chatSessionId) {
-        if (chatSession != null) chatSession.setId(chatSessionId);
-        else {
-            throw new IllegalArgumentException("ChatSessionEntity is null");
-        }
-    }
-
     @Override
     public ContentType getContentType() {
         return contentType;

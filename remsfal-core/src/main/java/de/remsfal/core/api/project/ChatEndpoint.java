@@ -2,19 +2,15 @@ package de.remsfal.core.api.project;
 
 import de.remsfal.core.json.project.ChatMessageJson;
 import de.remsfal.core.model.project.ChatSessionModel;
-import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-
-import java.io.InputStream;
 
 public interface ChatEndpoint {
 
