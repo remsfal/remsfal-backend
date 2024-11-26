@@ -1,23 +1,27 @@
 package de.remsfal.service.boundary.project;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.Gson;
 import de.remsfal.core.api.project.ChatEndpoint;
 import de.remsfal.core.json.project.ChatMessageJson;
 import de.remsfal.core.json.project.ChatSessionJson;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.service.control.ChatMessageController;
 import de.remsfal.service.control.ChatSessionController;
+import de.remsfal.service.control.TaskController;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.*;
 import org.jboss.logging.Logger;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @RequestScoped
 public class ChatResource extends ProjectSubResource implements ChatEndpoint {
@@ -29,146 +33,177 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     ChatMessageController chatMessageController;
 
     @Inject
+    TaskController taskController;
+
+    @Inject
     Logger logger;
 
 
     @Override
     public Response createChatSession() {
+        try {
         String userId = principal.getId(); // Get user ID from session
         String projectId = uri.getPathParameters().getFirst("projectId");
         String taskId = uri.getPathParameters().getFirst("taskId");
         String defectId = uri.getPathParameters().getFirst("defectId");
-
-        if ((taskId == null || taskId.isBlank()) && (defectId == null || defectId.isBlank())) {
+        checkPrivileges(projectId);
+        if ((taskId == null || taskId.isBlank()) && (defectId == null || defectId.isBlank()))
             throw new BadRequestException("Task ID or defect ID must be provided");
-        }
+        if (taskId != null && taskController.getTask(projectId, taskId) == null)
+            throw new NotFoundException("Task does not exist");
+        if (defectId != null && taskController.getDefect(projectId, defectId) == null)
+            throw new NotFoundException("Defect does not exist");
 
         ChatSessionModel.TaskType taskType = (taskId != null && !taskId.isBlank())
                 ? ChatSessionModel.TaskType.TASK
                 : ChatSessionModel.TaskType.DEFECT;
         String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
 
-        try {
-            ChatSessionModel model = chatSessionController.createChatSession(projectId, associatedId, taskType, userId);
-            URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+            ChatSessionModel session = chatSessionController.createChatSession(projectId, associatedId, taskType, userId);
+            URI location = uri.getAbsolutePathBuilder().path(session.getId()).build();
             return Response.created(location)
                     .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatSessionJson.valueOf(model))
+                    .entity(ChatSessionJson.valueOf(session))
                     .build();
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException(e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("Failed to create chat session", e);
-            throw new InternalServerErrorException("Internal server error: Failed to create chat session" + e.getMessage());
+            throw e;
         }
     }
 
     @Override
     public Response getChatSession(String sessionId) {
-        chatSessionController.getChatSession(sessionId);
-        return Response.created(uri.getAbsolutePath())
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatSessionJson.valueOf(chatSessionController.getChatSession(sessionId)))
-                .build();
+        try {
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            checkPrivileges(projectId);
+            ChatSessionModel session = chatSessionController.getChatSession(sessionId);
+            return Response.ok(uri.getAbsolutePath())
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(ChatSessionJson.valueOf(session))
+                    .build();
+        } catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+         catch (Exception e) {
+            logger.error("Failed to get chat session", e);
+            throw e;
+        }
     }
 
     @Override
     public Response deleteChatSession(String sessionId) {
-        chatSessionController.deleteChatSession(sessionId);
-        return Response.noContent().build();
+        try {
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            checkPrivileges(projectId);
+            chatSessionController.deleteChatSession(sessionId);
+            return Response.noContent().build();
+        }
+        catch (Exception e) {
+            logger.error("Failed to delete chat session", e);
+            throw e;
+        }
     }
+
+
 
     @Override
     public Response updateChatSessionStatus(String sessionId, ChatSessionModel.Status status) {
-        chatSessionController.updateChatSessionStatus(sessionId, status);
-        return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatSessionJson.valueOf(chatSessionController.getChatSession(sessionId)))
-                .build();
+        try {
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            checkPrivileges(projectId);
+            ChatSessionEntity existingSession = chatSessionController.getChatSession(sessionId);
+            if (status != ChatSessionModel.Status.ARCHIVED && status != ChatSessionModel.Status.OPEN
+                    && status != ChatSessionModel.Status.CLOSED) {
+                throw new BadRequestException("Status must be provided");
+            }
+            chatSessionController.updateChatSessionStatus(sessionId, status);
+            ChatSessionEntity updatedSession = chatSessionController.getChatSession(sessionId);
+            return Response.ok()
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(ChatSessionJson.valueOf(updatedSession))
+                    .build();
+        }
+        catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Failed to update chat session status", e);
+            throw e;
+        }
     }
+
 
     @Override
     public Response joinChatSession(String sessionId) {
         String userId = principal.getId(); // Get user ID from session
+        checkPrivileges(uri.getPathParameters().getFirst("projectId"));
         try {
             chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.OBSERVER);
+            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionController.getChatSession(sessionId).getParticipants();
+            String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatSessionJson.valueOf(chatSessionController.getChatSession(sessionId)))
+                    .entity(json)
                     .build();
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException(e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("Failed to join chat session", e);
-            throw new InternalServerErrorException("Internal server error: Failed to join chat session" + e.getMessage());
-        }
-    }
-
-    @Override
-    public Response handleChatSession(String sessionId) {
-        String userId = principal.getId(); // Get user ID from session
-        try {
-            chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.HANDLER);
-            return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatSessionJson.valueOf(chatSessionController.getChatSession(sessionId)))
-                    .build();
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to handle chat session", e);
-            throw new InternalServerErrorException("Internal server error: Failed to handle chat session" + e.getMessage());
-        }
-    }
-
-    @Override
-    public Response addParticipants(String sessionId, String userId, ChatSessionModel.ParticipantRole role) {
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("User ID must be provided");
-        }
-        try {
-            chatSessionController.addParticipant(sessionId, userId, role);
-            if (chatSessionController.getParticipantRole(sessionId, userId).equals(role)) {
-                return Response.ok()
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(Map.of(userId, role))
-                        .build();
-            } else {
-                throw new InternalServerErrorException("Failed to add participant to chat session");
-            }
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to add participant to chat session", e);
-            throw new InternalServerErrorException("Internal server error: Failed to add participant to chat session" + e.getMessage());
+            throw e;
         }
     }
 
     @Override
     public Response getParticipants(String sessionId) {
-        Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionController.getParticipants(sessionId);
-        return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(participants)
-                .build();
-    }
-
-    @Override
-    public Response getParticipant(String sessionId, String participantId) {
-        ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-        Map <String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
-        if (participants.containsKey(participantId)) {
+        try {
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionController.getParticipants(sessionId);
+            String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
-                    .entity(Map.of(participantId, participants.get(participantId)))
+                    .entity(json)
                     .build();
-        } else {
-            throw new NoSuchElementException("Participant not found");
+        }
+        catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Failed to get participants", e);
+            throw e;
         }
     }
 
     @Override
-    public Response changeParticipantRole(String sessionId, String participantId, ChatSessionModel.ParticipantRole role) {
+    public Response getParticipant(String sessionId, String participantId) {
+        try {
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
+            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
+            if (participants.containsKey(participantId)) {
+                String json = jsonifyParticipantsMap(Map.of(participantId, participants.get(participantId)));
+                return Response.ok()
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(json)
+                        .build();
+            } else {
+                throw new NoSuchElementException("Participant not found");
+            }
+        }
+        catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Failed to get participant", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Response changeParticipantRole(String sessionId, String participantId, ChatSessionModel.ParticipantRole role)
+    {   try {
+        checkPrivileges(uri.getPathParameters().getFirst("projectId"));
         ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
         Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
 
@@ -176,93 +211,124 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             throw new NoSuchElementException("Participant not found");
         }
 
-        try {
             chatSessionController.updateParticipantRole(sessionId, participantId, role);
             if (!chatSessionController.getParticipantRole(sessionId, participantId).equals(role)) {
                 throw new InternalServerErrorException("Failed to change participant role");
             }
+            String json = jsonifyParticipantsMap(Map.of(participantId, role));
             return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
-                    .entity(Map.of(participantId, role))
+                    .entity(json)
                     .build();
-        } catch (Exception e) {
+        }
+        catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (Exception e) {
             logger.error("Failed to change participant role", e);
-            throw new InternalServerErrorException("Internal server error: Failed to change participant role" + e.getMessage());
+            throw e;
         }
     }
 
     @Override
     public Response removeParticipant(String sessionId, String participantId) {
-        ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-        Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
-
-        if (!participants.containsKey(participantId)) {
-            throw new NoSuchElementException("Participant not found");
-        }
-
         try {
-            chatSessionController.removeParticipant(sessionId, participantId);
-            if (participants.containsKey(participantId)) {
-                throw new InternalServerErrorException("Failed to remove participant from chat session");
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
+            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
+
+            if (!participants.containsKey(participantId)) {
+                throw new NoSuchElementException("Participant not found");
             }
+            chatSessionController.removeParticipant(sessionId, participantId);
             return Response.noContent().build();
         } catch (Exception e) {
             logger.error("Failed to remove participant from chat session", e);
-            throw new InternalServerErrorException("Internal server error: Failed to remove participant from chat session" + e.getMessage());
-        }
-    }
-
-    @Override
-    public Response getParticipantRole(String sessionId, String participantId) {
-        ChatSessionModel.ParticipantRole role = chatSessionController.getParticipantRole(sessionId, participantId);
-        try {
-            return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(Map.of(participantId, role))
-                    .build();
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException(e.getMessage());
+            throw e;
         }
     }
 
     @Override
     public Response sendMessage(String sessionId, ChatMessageJson message) {
-        String userId = principal.getId(); // Get user ID from session
         try {
-            ChatMessageEntity entity = chatMessageController.sendChatMessage(sessionId, userId, message.getContentType(), message.getContent());
+            String userId = principal.getId(); // Get user ID from session
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+
+            if (message.getContent() == null || message.getContent().isBlank()) {
+                throw new BadRequestException("Message content cannot be null or empty");
+            }
+
+            int maxPayloadSize = 8000;
+            if (message.getContent().length() > maxPayloadSize) {
+                throw new BadRequestException("Payload size exceeds limit");
+            }
+
+            ChatMessageEntity entity = chatMessageController.sendChatMessage(
+                    sessionId, userId, message.getContentType(), message.getContent());
             URI location = uri.getAbsolutePathBuilder().path(entity.getId()).build();
             return Response.created(location)
                     .type(MediaType.APPLICATION_JSON)
                     .entity(ChatMessageJson.valueOf(entity))
                     .build();
         } catch (NoSuchElementException e) {
-            throw new NoSuchElementException(e.getMessage());
+            throw new NotFoundException(e.getMessage());
+        } catch (BadRequestException e) {
+            throw new BadRequestException("Malformed JSON payload");
         } catch (Exception e) {
             logger.error("Failed to send message", e);
-            throw new InternalServerErrorException("Internal server error: Failed to send message" + e.getMessage());
+            throw e;
         }
     }
 
+
+
     @Override
     public Response getChatMessages(String sessionId) {
-        return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(chatSessionController.exportChatLogs(sessionId))
-                .build();
+        try {
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            return Response.ok()
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(chatSessionController.exportChatLogs(sessionId))
+                    .build();
+        }
+        catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Failed to get chat messages", e);
+            throw e;
+        }
+
     }
 
     @Override
     public Response getChatMessage(String sessionId, String messageId) {
-        ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(messageId);
-        return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatMessageJson.valueOf(chatMessageEntity))
-                .build();
+        try {
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(messageId);
+            return Response.ok()
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(ChatMessageJson.valueOf(chatMessageEntity))
+                    .build();
+        }
+        catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Failed to get chat message", e);
+            throw e;
+        }
+
     }
 
     @Override
     public Response updateChatMessage(String sessionId, String messageId, ChatMessageJson message) {
         try {
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            int maxPayloadSize = 8000;
+            if (Objects.requireNonNull(message.getContent()).length() > maxPayloadSize) {
+                throw new BadRequestException("Payload size exceeds limit");
+            }
             chatMessageController.updateTextChatMessage(messageId, message.getContent());
             ChatMessageEntity updatedMessage = chatMessageController.getChatMessage(messageId);
             if (updatedMessage.getContent().equals(message.getContent())) {
@@ -277,33 +343,33 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
            throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to update message", e);
-            throw new InternalServerErrorException("Internal server error: Failed to update message" + e.getMessage());
+            throw  e;
         }
     }
 
     @Override
     public Response deleteChatMessage(String sessionId, String messageId) {
         try {
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             chatMessageController.deleteChatMessage(messageId);
             return Response.noContent().build();
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to delete message", e);
-            throw new InternalServerErrorException("Internal server error: Failed to delete message" + e.getMessage());
+            throw e;
         }
     }
 
-    @Override
-    public Response uploadImage(String sessionId, String senderId, InputStream file) {
-        // TODO: Implement image upload
-        return null;
+    public String jsonifyParticipantsMap(Map<String, ChatSessionModel.ParticipantRole> participants) {
+        List<Map<String, String>> participantList = new ArrayList<>();
+        participants.forEach((id, role) -> {
+            Map<String, String> participant = new HashMap<>();
+            participant.put("userId", id);
+            participant.put("userRole", role.toString());
+            participantList.add(participant);
+        });
+        Gson gson = new Gson();
+        return gson.toJson(participantList);
     }
-
-    @Override
-    public Response downloadImage(String sessionId, String messageId) {
-        // TODO: Implement image download
-        return null;
-    }
-
 }
