@@ -1,17 +1,13 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.core.api.project.BuildingEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
-import de.remsfal.core.api.project.SiteEndpoint;
 import de.remsfal.core.json.project.PropertyJson;
 import de.remsfal.core.json.project.PropertyListJson;
 import de.remsfal.core.model.project.PropertyModel;
-import de.remsfal.service.boundary.BuildingResource;
 import de.remsfal.service.control.PropertyController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -71,12 +67,12 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
     }
 
     @Override
-    public BuildingEndpoint getBuildingResource() {
+    public BuildingResource getBuildingResource() {
         return resourceContext.initResource(buildingResource.get());
     }
 
     @Override
-    public SiteEndpoint getSiteResource() {
+    public SiteResource getSiteResource() {
         return resourceContext.initResource(siteResource.get());
     }
 

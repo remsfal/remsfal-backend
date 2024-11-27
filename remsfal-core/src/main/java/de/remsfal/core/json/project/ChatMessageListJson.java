@@ -8,6 +8,9 @@ import org.immutables.value.Value;
 
 import java.util.List;
 
+/**
+ * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 @Value.Immutable
 @Schema(description = "A list of chat messages")
 @JsonDeserialize(as = ImmutableChatMessageListJson.class)

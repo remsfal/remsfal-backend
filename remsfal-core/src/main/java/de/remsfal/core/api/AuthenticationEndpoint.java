@@ -15,9 +15,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 @Path(AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE)
 public interface AuthenticationEndpoint {
 
-    static final String CONTEXT = "api";
-    static final String VERSION = "v1";
-    static final String SERVICE = "authentication";
+    String CONTEXT = "api";
+    String VERSION = "v1";
+    String SERVICE = "authentication";
     
     static boolean isAuthenticationPath(final String path) {
         final String basePath = "/" + AuthenticationEndpoint.CONTEXT + "/"

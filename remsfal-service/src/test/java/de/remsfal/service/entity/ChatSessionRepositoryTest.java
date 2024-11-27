@@ -1,33 +1,41 @@
 package de.remsfal.service.entity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.remsfal.core.model.ProjectMemberModel.UserRole;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.model.project.ChatSessionModel.ParticipantRole;
+import de.remsfal.service.AbstractTest;
+import de.remsfal.service.TestData;
+import de.remsfal.service.entity.dao.ChatSessionRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import de.remsfal.service.entity.dao.ChatSessionRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.RollbackException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolationException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import de.remsfal.service.TestData;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.core.model.ProjectMemberModel.UserRole;
-import org.junit.jupiter.api.Test;
-
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class ChatSessionRepositoryTest extends AbstractTest {
+class ChatSessionRepositoryTest extends AbstractTest {
 
     @Inject
     ChatSessionRepository repository;

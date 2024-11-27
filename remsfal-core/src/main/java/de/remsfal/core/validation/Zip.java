@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Pattern;
 @Pattern(regexp = "^\\d{4,5}$")
 @ReportAsSingleViolation
 public @interface Zip {
+
     String message() default "{invalid.zip}";
 
     Class<?>[] groups() default {};

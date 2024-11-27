@@ -1,6 +1,17 @@
 package de.remsfal.service.boundary.project;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
+import org.jboss.logging.Logger;
+
 import com.google.gson.Gson;
+
 import de.remsfal.core.api.project.ChatEndpoint;
 import de.remsfal.core.json.project.ChatMessageJson;
 import de.remsfal.core.json.project.ChatSessionJson;
@@ -15,10 +26,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.*;
-import org.jboss.logging.Logger;
-import java.net.URI;
-import java.util.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @RequestScoped
 public class ChatResource extends ProjectSubResource implements ChatEndpoint {
@@ -35,36 +44,33 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     @Inject
     Logger logger;
 
-
     @Override
     public Response createChatSession() {
         try {
-        String userId = principal.getId(); // Get user ID from session
-        String projectId = uri.getPathParameters().getFirst("projectId");
-        String taskId = uri.getPathParameters().getFirst("taskId");
-        String defectId = uri.getPathParameters().getFirst("defectId");
-        checkPrivileges(projectId);
-        if ((taskId == null || taskId.isBlank()) && (defectId == null || defectId.isBlank()))
-            throw new BadRequestException("Task ID or defect ID must be provided");
-        if (taskId != null && taskController.getTask(projectId, taskId) == null)
-            throw new NotFoundException("Task does not exist");
-        if (defectId != null && taskController.getDefect(projectId, defectId) == null)
-            throw new NotFoundException("Defect does not exist");
+            String userId = principal.getId(); // Get user ID from session
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            String defectId = uri.getPathParameters().getFirst("defectId");
+            checkPrivileges(projectId);
+            if ((taskId == null || taskId.isBlank()) && (defectId == null || defectId.isBlank()))
+                throw new BadRequestException("Task ID or defect ID must be provided");
+            if (taskId != null && taskController.getTask(projectId, taskId) == null)
+                throw new NotFoundException("Task does not exist");
+            if (defectId != null && taskController.getDefect(projectId, defectId) == null)
+                throw new NotFoundException("Defect does not exist");
 
-        ChatSessionModel.TaskType taskType = (taskId != null && !taskId.isBlank())
-                ? ChatSessionModel.TaskType.TASK
-                : ChatSessionModel.TaskType.DEFECT;
-        String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
+            ChatSessionModel.TaskType taskType = (taskId != null && !taskId.isBlank())
+                ? ChatSessionModel.TaskType.TASK : ChatSessionModel.TaskType.DEFECT;
+            String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
 
             ChatSessionModel session = chatSessionController
-                    .createChatSession(projectId, associatedId, taskType, userId);
+                .createChatSession(projectId, associatedId, taskType, userId);
             URI location = uri.getAbsolutePathBuilder().path(session.getId()).build();
             return Response.created(location)
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatSessionJson.valueOf(session))
-                    .build();
-        }
-        catch (Exception e) {
+                .type(MediaType.APPLICATION_JSON)
+                .entity(ChatSessionJson.valueOf(session))
+                .build();
+        } catch (Exception e) {
             logger.error("Failed to create chat session", e);
             throw e;
         }
@@ -77,13 +83,12 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             checkPrivileges(projectId);
             ChatSessionModel session = chatSessionController.getChatSession(sessionId);
             return Response.ok(uri.getAbsolutePath())
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatSessionJson.valueOf(session))
-                    .build();
+                .type(MediaType.APPLICATION_JSON)
+                .entity(ChatSessionJson.valueOf(session))
+                .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-         catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get chat session", e);
             throw e;
         }
@@ -96,14 +101,11 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             checkPrivileges(projectId);
             chatSessionController.deleteChatSession(sessionId);
             return Response.noContent().build();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to delete chat session", e);
             throw e;
         }
     }
-
-
 
     @Override
     public Response updateChatSessionStatus(String sessionId, ChatSessionModel.Status status) {
@@ -111,28 +113,24 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             String projectId = uri.getPathParameters().getFirst("projectId");
             checkPrivileges(projectId);
             if (status != ChatSessionModel.Status.ARCHIVED && status != ChatSessionModel.Status.OPEN
-                    && status != ChatSessionModel.Status.CLOSED) {
+                && status != ChatSessionModel.Status.CLOSED) {
                 throw new BadRequestException("Status must be provided");
             }
             chatSessionController.updateChatSessionStatus(sessionId, status);
             ChatSessionEntity updatedSession = chatSessionController.getChatSession(sessionId);
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatSessionJson.valueOf(updatedSession))
-                    .build();
-        }
-        catch (IllegalArgumentException e) {
+                .type(MediaType.APPLICATION_JSON)
+                .entity(ChatSessionJson.valueOf(updatedSession))
+                .build();
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to update chat session status", e);
             throw e;
         }
     }
-
 
     @Override
     public Response joinChatSession(String sessionId) {
@@ -141,19 +139,17 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         try {
             chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.OBSERVER);
             Map<String, ChatSessionModel.ParticipantRole> participants =
-                    chatSessionController.getChatSession(sessionId).getParticipants();
+                chatSessionController.getChatSession(sessionId).getParticipants();
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(json)
-                    .build();
+                .type(MediaType.APPLICATION_JSON)
+                .entity(json)
+                .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to join chat session", e);
             throw e;
         }
@@ -164,17 +160,15 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             Map<String, ChatSessionModel.ParticipantRole> participants =
-                    chatSessionController.getParticipants(sessionId);
+                chatSessionController.getParticipants(sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(json)
-                    .build();
-        }
-        catch (NoSuchElementException e) {
+                .type(MediaType.APPLICATION_JSON)
+                .entity(json)
+                .build();
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get participants", e);
             throw e;
         }
@@ -189,32 +183,31 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             if (participants.containsKey(participantId)) {
                 String json = jsonifyParticipantsMap(Map.of(participantId, participants.get(participantId)));
                 return Response.ok()
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(json)
-                        .build();
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(json)
+                    .build();
             } else {
                 throw new NoSuchElementException("Participant not found");
             }
-        }
-        catch (NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get participant", e);
             throw e;
         }
     }
 
     @Override
-    public Response changeParticipantRole(String sessionId, String participantId, ChatSessionModel.ParticipantRole role)
-    {   try {
-        checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-        ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-        Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
+    public Response changeParticipantRole(String sessionId, String participantId,
+        ChatSessionModel.ParticipantRole role) {
+        try {
+            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
+            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
 
-        if (!participants.containsKey(participantId)) {
-            throw new NoSuchElementException("Participant not found");
-        }
+            if (!participants.containsKey(participantId)) {
+                throw new NoSuchElementException("Participant not found");
+            }
 
             chatSessionController.updateParticipantRole(sessionId, participantId, role);
             if (!chatSessionController.getParticipantRole(sessionId, participantId).equals(role)) {
@@ -222,14 +215,12 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             }
             String json = jsonifyParticipantsMap(Map.of(participantId, role));
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(json)
-                    .build();
-        }
-        catch (NoSuchElementException e) {
+                .type(MediaType.APPLICATION_JSON)
+                .entity(json)
+                .build();
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to change participant role", e);
             throw e;
         }
@@ -269,12 +260,12 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             }
 
             ChatMessageEntity entity = chatMessageController.sendChatMessage(
-                    sessionId, userId, message.getContentType(), message.getContent());
+                sessionId, userId, message.getContentType(), message.getContent());
             URI location = uri.getAbsolutePathBuilder().path(entity.getId()).build();
             return Response.created(location)
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatMessageJson.valueOf(entity))
-                    .build();
+                .type(MediaType.APPLICATION_JSON)
+                .entity(ChatMessageJson.valueOf(entity))
+                .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         } catch (BadRequestException e) {
@@ -285,21 +276,17 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         }
     }
 
-
-
     @Override
     public Response getChatMessages(String sessionId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(chatSessionController.exportChatLogs(sessionId))
-                    .build();
-        }
-        catch (NoSuchElementException e) {
+                .type(MediaType.APPLICATION_JSON)
+                .entity(chatSessionController.exportChatLogs(sessionId))
+                .build();
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get chat messages", e);
             throw e;
         }
@@ -312,14 +299,12 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(messageId);
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatMessageJson.valueOf(chatMessageEntity))
-                    .build();
-        }
-        catch (NoSuchElementException e) {
+                .type(MediaType.APPLICATION_JSON)
+                .entity(ChatMessageJson.valueOf(chatMessageEntity))
+                .build();
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get chat message", e);
             throw e;
         }
@@ -338,17 +323,17 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             ChatMessageEntity updatedMessage = chatMessageController.getChatMessage(messageId);
             if (updatedMessage.getContent().equals(message.getContent())) {
                 return Response.ok()
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(ChatMessageJson.valueOf(updatedMessage))
-                        .build();
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(ChatMessageJson.valueOf(updatedMessage))
+                    .build();
             } else {
                 throw new InternalServerErrorException("Failed to update message");
             }
         } catch (NoSuchElementException e) {
-           throw new NotFoundException(e.getMessage());
+            throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to update message", e);
-            throw  e;
+            throw e;
         }
     }
 
