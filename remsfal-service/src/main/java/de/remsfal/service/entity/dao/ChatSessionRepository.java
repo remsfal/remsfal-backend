@@ -32,17 +32,18 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
     @Transactional
     public ChatSessionEntity findChatSessionById(String id) {
         return find("FROM ChatSessionEntity s LEFT JOIN FETCH s.messages WHERE s.id = :id",
-                Parameters.with("id", id)).firstResultOptional()
+            Parameters.with("id", id)).firstResultOptional()
                 .orElseThrow(() -> new NoSuchElementException("ChatSession with ID " + id + " not found"));
     }
+
     public List<ChatSessionEntity> findChatSessionsByProjectId(final String projectId) {
         return find("projectId = :projectId", Parameters.with("projectId", projectId))
-                .list();
+            .list();
     }
 
     public List<ChatSessionEntity> findChatSessionsByParticipantId(final String participantId) {
-        return find("JOIN participants p WHERE KEY(p) = :participantId", Parameters.with("participantId",
-                participantId))
+        return find("JOIN participants p WHERE KEY(p) = :participantId",
+            Parameters.with("participantId", participantId))
                 .list();
     }
 
@@ -51,7 +52,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
         ParticipantRole role = session.getParticipants().get(participantId);
         if (role == null) {
             throw new NoSuchElementException("Participant with ID " + participantId + " not found in session "
-                    + sessionId);
+                + sessionId);
         }
         return role;
     }
@@ -59,9 +60,9 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
     public List<ChatMessageEntity> exportChatLogs(String sessionId) {
         ChatSessionEntity session = findChatSessionById(sessionId);
         return session.getMessages()
-                .stream()
-                .sorted(Comparator.comparing(ChatMessageEntity::getTimestamp))
-                .toList();
+            .stream()
+            .sorted(Comparator.comparing(ChatMessageEntity::getTimestamp))
+            .toList();
     }
 
     public String exportChatLogsAsJsonString(String sessionId) {
@@ -74,8 +75,8 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
         chatSessionJsonMap.put("PROJECT_ID", session.getProjectId());
         chatSessionJsonMap.put("TASK_TYPE", session.getTaskType());
         chatSessionJsonMap.put("messages", messages.stream()
-                .map(this::mapChatMessageToJson)
-                .collect(Collectors.toList()));
+            .map(this::mapChatMessageToJson)
+            .collect(Collectors.toList()));
 
         try {
             return objectMapper.writeValueAsString(chatSessionJsonMap);
@@ -93,7 +94,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
         messageJsonMap.put("MESSAGE_ID", message.getId());
         messageJsonMap.put("SENDER_ID", message.getSenderId());
         messageJsonMap.put("MEMBER_ROLE", findParticipantRole(message.getChatSessionId(),
-                message.getSenderId()).name());
+            message.getSenderId()).name());
         messageJsonMap.put("MESSAGE_TYPE", message.getContentType());
 
         if (message.getContentType() == ContentType.IMAGE) {
@@ -112,7 +113,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
 
     @Transactional
     public ChatSessionEntity createChatSession(String projectId, String taskId, TaskType taskType,
-                                               Map<String, ParticipantRole> participants) {
+        Map<String, ParticipantRole> participants) {
 
         ChatSessionEntity session = new ChatSessionEntity();
         session.setId(UUID.randomUUID().toString());
@@ -139,14 +140,12 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
         ChatSessionEntity session = findChatSessionById(sessionId);
         if (role == null) {
             throw new IllegalArgumentException("Role is required");
-        }
-        else if (role == ParticipantRole.INITIATOR && session.getParticipants().values().stream().anyMatch(
-                r -> r == ParticipantRole.INITIATOR)) {
+        } else if (role == ParticipantRole.INITIATOR && session.getParticipants().values().stream().anyMatch(
+            r -> r == ParticipantRole.INITIATOR)) {
             throw new IllegalArgumentException("Only one participant can have the role INITIATOR");
-        }
-        else if (session.getParticipants().containsKey(participantId)) {
+        } else if (session.getParticipants().containsKey(participantId)) {
             throw new IllegalArgumentException("Participant with ID " + participantId + " already exists in session "
-                    + sessionId);
+                + sessionId);
         }
         session.getParticipants().put(participantId, role);
         persist(session);
@@ -158,15 +157,12 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
         ChatSessionEntity session = findChatSessionById(sessionId);
         if (!session.getParticipants().containsKey(participantId)) {
             throw new NoSuchElementException("Participant with ID " + participantId + " not found in session "
-                    + sessionId);
-        }
-        else if (newRole == ParticipantRole.INITIATOR && session.getParticipants().values().stream().anyMatch(
-                r -> r == ParticipantRole.INITIATOR)) {
-            throw new
-                    IllegalArgumentException("The role INITIATOR can not be changed or assigned to another participant"
-                    + " or more than one participant");
-        }
-        else if (newRole == null) {
+                + sessionId);
+        } else if (newRole == ParticipantRole.INITIATOR && session.getParticipants().values().stream().anyMatch(
+            r -> r == ParticipantRole.INITIATOR)) {
+            throw new IllegalArgumentException("The role INITIATOR can not be changed or assigned"
+                + " to another participant or more than one participant");
+        } else if (newRole == null) {
             throw new IllegalArgumentException("Role is required");
         }
         session.getParticipants().put(participantId, newRole);
@@ -177,7 +173,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
     @Transactional
     public long deleteChatSession(String sessionId) {
         return delete("id = :id",
-                Parameters.with(PARAM_ID, sessionId));
+            Parameters.with(PARAM_ID, sessionId));
     }
 
     @Transactional
@@ -185,9 +181,8 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
         ChatSessionEntity session = findChatSessionById(sessionId);
         if (!session.getParticipants().containsKey(participantId)) {
             throw new NoSuchElementException("Participant with ID " + participantId + " not found in session "
-                    + sessionId);
-        }
-        else if (session.getParticipants().get(participantId) == ParticipantRole.INITIATOR) {
+                + sessionId);
+        } else if (session.getParticipants().get(participantId) == ParticipantRole.INITIATOR) {
             throw new IllegalArgumentException("The role INITIATOR can not be deleted");
         }
         session.getParticipants().remove(participantId);
