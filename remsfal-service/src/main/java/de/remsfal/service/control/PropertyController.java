@@ -2,8 +2,11 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.model.ProjectTreeNodeModel;
 import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.service.entity.dao.ApartmentRepository;
+import de.remsfal.service.entity.dao.BuildingRepository;
+import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dao.PropertyRepository;
-import de.remsfal.service.entity.dto.PropertyEntity;
+import de.remsfal.service.entity.dto.*;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -11,6 +14,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -23,6 +27,15 @@ public class PropertyController {
     
     @Inject
     PropertyRepository propertyRepository;
+
+    @Inject
+    BuildingRepository buildingRepository;
+
+    @Inject
+    ApartmentRepository apartmentRepository;
+
+    @Inject
+    GarageRepository garageRepository;
 
     @Transactional
     public PropertyModel createProperty(final String projectId, final PropertyModel property) {
@@ -84,9 +97,92 @@ public class PropertyController {
         return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
-    public List<ProjectTreeNodeModel> getProjectTree(final String projectId,
-                                                     final Integer offset, final Integer limit) {
+    public List<ProjectTreeNodeModel> getProjectTree(final String projectId, final Integer offset, final Integer limit) {
         logger.infov("Retrieving up to {1} properties (projectId = {0})", projectId, limit);
-        return propertyRepository.findProjectTreeByProjectId(projectId, offset, limit);
+
+        // Fetch properties for the project
+        List<PropertyEntity> properties = propertyRepository.findPropertiesByProjectId(projectId, offset, limit);
+
+        return properties.stream()
+                .map(this::buildPropertyNode)
+                .collect(Collectors.toList());
     }
+
+    private ProjectTreeNode buildPropertyNode(PropertyEntity property) {
+        List<BuildingEntity> buildings = buildingRepository.findBuildingByPropertyId(property.getId());
+
+        ProjectTreeNode propertyNode = new ProjectTreeNode(
+                property.getId(),
+                "Property",
+                property.getTitle(),
+                property.getDescription(),
+                "",
+                0
+        );
+
+        float sumUsableSpace = (float) buildings.stream()
+                .mapToDouble(BuildingEntity::getUsableSpace)
+                .sum();
+
+        for (BuildingEntity building : buildings) {
+            ProjectTreeNode buildingNode = buildBuildingNode(building);
+            propertyNode.addChild(buildingNode);
+        }
+
+        propertyNode.setUsableSpace(sumUsableSpace);
+        return propertyNode;
+    }
+
+    private ProjectTreeNode buildBuildingNode(BuildingEntity building) {
+        String tenantName = getFullTenantName(building.getTenancy());
+
+        ProjectTreeNode buildingNode = new ProjectTreeNode(
+                building.getId(),
+                "Building",
+                building.getTitle(),
+                building.getDescription(),
+                tenantName,
+                building.getUsableSpace()
+        );
+
+        // Fetch apartments
+        List<ApartmentEntity> apartments = apartmentRepository.findApartmentByBuildingId(building.getId());
+        for (ApartmentEntity apartment : apartments) {
+            String apartmentTenantName = getFullTenantName(apartment.getTenancy());
+            ProjectTreeNode apartmentNode = new ProjectTreeNode(
+                    apartment.getId(),
+                    "Apartment",
+                    apartment.getTitle(),
+                    apartment.getDescription(),
+                    apartmentTenantName,
+                    apartment.getUsableSpace()
+            );
+            buildingNode.addChild(apartmentNode);
+        }
+
+        // Fetch garages
+        List<GarageEntity> garages = garageRepository.findGarageByBuildingId(building.getId());
+        for (GarageEntity garage : garages) {
+            String garageTenantName = getFullTenantName(garage.getTenancy());
+            ProjectTreeNode garageNode = new ProjectTreeNode(
+                    garage.getId(),
+                    "Garage",
+                    garage.getTitle(),
+                    garage.getDescription(),
+                    garageTenantName,
+                    garage.getUsableSpace()
+            );
+            buildingNode.addChild(garageNode);
+        }
+
+        return buildingNode;
+    }
+
+    private String getFullTenantName(TenancyEntity tenancy) {
+        if (tenancy != null && tenancy.getTenant() != null) {
+            return tenancy.getTenant().getLastName() + ", " + tenancy.getTenant().getFirstName();
+        }
+        return "";
+    }
+
 }

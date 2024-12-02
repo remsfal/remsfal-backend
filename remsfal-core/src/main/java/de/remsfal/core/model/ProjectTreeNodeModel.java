@@ -8,7 +8,13 @@ public interface ProjectTreeNodeModel {
 
     String getType();
 
-    Object getEntity();
+    String getTitle();
+
+    String getDescription();
+
+    String getTenant();
+
+    float getUsableSpace();
 
     List<ProjectTreeNodeModel> getChildren();
 }

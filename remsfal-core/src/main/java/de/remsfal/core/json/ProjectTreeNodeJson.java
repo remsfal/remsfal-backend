@@ -19,8 +19,17 @@ public abstract class ProjectTreeNodeJson {
     @Schema(description = "Type of the node (e.g., 'property', 'building')", required = true, example = "property")
     public abstract String getType();
 
-    @Schema(description = "Entity data associated with this node")
-    public abstract Object getEntity();
+    @Schema(description = "Title of the node", example = "Main Building")
+    public abstract String getTitle();
+
+    @Schema(description = "Description of the node", example = "A multi-story office building")
+    public abstract String getDescription();
+
+    @Schema(description = "Name of the tenant associated with this node", example = "Doe, John")
+    public abstract String getTenant();
+
+    @Schema(description = "Usable space in square meters", example = "350.5")
+    public abstract float getUsableSpace();
 
     @Schema(description = "Children nodes")
     public abstract List<ProjectTreeNodeJson> getChildren();
@@ -29,7 +38,10 @@ public abstract class ProjectTreeNodeJson {
         ImmutableProjectTreeNodeJson.Builder builder = ImmutableProjectTreeNodeJson.builder()
                 .key(treeNode.getKey())
                 .type(treeNode.getType())
-                .entity(treeNode.getEntity());
+                .title(treeNode.getTitle())
+                .description(treeNode.getDescription())
+                .tenant(treeNode.getTenant())
+                .usableSpace(treeNode.getUsableSpace());
 
         for (ProjectTreeNodeModel child : treeNode.getChildren()) {
             builder.addChildren(valueOf(child));
