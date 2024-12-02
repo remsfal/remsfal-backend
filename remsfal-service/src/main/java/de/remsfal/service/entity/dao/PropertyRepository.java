@@ -35,4 +35,5 @@ public class PropertyRepository extends AbstractRepository<PropertyEntity> {
         return delete("id = :id and projectId = :projectId",
                 Parameters.with("id", propertyId).and(PARAM_PROJECT_ID, projectId));
     }
+
 }
