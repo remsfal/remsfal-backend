@@ -1,8 +1,9 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.json.ProjectTreeJson;
 import de.remsfal.core.json.project.PropertyJson;
-import de.remsfal.core.json.project.PropertyListJson;
+import de.remsfal.core.model.ProjectTreeNodeModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.control.PropertyController;
 import jakarta.enterprise.context.RequestScoped;
@@ -30,10 +31,11 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
     Instance<BuildingResource> buildingResource;
 
     @Override
-    public PropertyListJson getProperties(final String projectId, final Integer offset, final Integer limit) {
+    public ProjectTreeJson getProperties(final String projectId, final Integer offset, final Integer limit) {
         checkPrivileges(projectId);
-        List<? extends PropertyModel> properties = controller.getProperties(projectId, offset, limit);
-        return PropertyListJson.valueOf(properties, offset, controller.countProperties(projectId));
+        List<ProjectTreeNodeModel> treeNodes = controller.getProjectTree(projectId, offset, limit);
+
+        return ProjectTreeJson.valueOf(treeNodes, offset, controller.countProperties(projectId));
     }
 
     @Override

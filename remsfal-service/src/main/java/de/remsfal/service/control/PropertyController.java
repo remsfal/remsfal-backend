@@ -1,5 +1,6 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.model.ProjectTreeNodeModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dto.PropertyEntity;
@@ -83,4 +84,9 @@ public class PropertyController {
         return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
+    public List<ProjectTreeNodeModel> getProjectTree(final String projectId,
+                                                     final Integer offset, final Integer limit) {
+        logger.infov("Retrieving up to {1} properties (projectId = {0})", projectId, limit);
+        return propertyRepository.findProjectTreeByProjectId(projectId, offset, limit);
+    }
 }
