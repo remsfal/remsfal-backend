@@ -103,33 +103,6 @@ public class BuildingController {
     }
 
     @Transactional
-    public ApartmentModel createApartment(final String projectId, final String buildingId,
-        final ApartmentModel apartment) {
-        logger.infov("Creating a apartment (projectId={0}, buildingId={1}, apartment={2})",
-            projectId, buildingId, apartment);
-        ApartmentEntity entity = ApartmentEntity.fromModel(apartment);
-        entity.generateId();
-        entity.setProjectId(projectId);
-        entity.setBuildingId(buildingId);
-        apartmentRepository.persistAndFlush(entity);
-        apartmentRepository.getEntityManager().refresh(entity);
-        return getApartment(projectId, buildingId, entity.getId());
-    }
-
-    public ApartmentModel getApartment(final String projectId, final String buildingId, final String apartmentId) {
-        logger.infov("Retrieving a apartment (projectId={0}, buildingId={1}, apartmentId={2})",
-            projectId, buildingId, apartmentId);
-        ApartmentEntity entity = apartmentRepository.findByIdOptional(apartmentId)
-            .orElseThrow(() -> new NotFoundException("Apartment not exist"));
-
-        if (!entity.getProjectId().equals(projectId)) {
-            throw new NoResultException("Unable to find apartment, because the project ID is invalid");
-        }
-
-        return entity;
-    }
-
-    @Transactional
     public CommercialModel createCommercial(final String projectId, final String buildingId,
         final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
