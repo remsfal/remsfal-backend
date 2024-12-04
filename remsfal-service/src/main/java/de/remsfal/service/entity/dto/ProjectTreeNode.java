@@ -14,7 +14,13 @@ public class ProjectTreeNode implements ProjectTreeNodeModel {
     private float usableSpace;
     private List<ProjectTreeNodeModel> children = new ArrayList<>();
 
-    public ProjectTreeNode(String key, String type, String title, String description, String tenant, float usableSpace) {
+    public ProjectTreeNode(
+            String key,
+            String type,
+            String title,
+            String description,
+            String tenant,
+            float usableSpace) {
         this.key = key;
         this.type = type;
         this.title = title;

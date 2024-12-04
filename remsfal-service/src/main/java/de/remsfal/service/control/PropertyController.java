@@ -6,7 +6,12 @@ import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dao.PropertyRepository;
-import de.remsfal.service.entity.dto.*;
+import de.remsfal.service.entity.dto.ApartmentEntity;
+import de.remsfal.service.entity.dto.BuildingEntity;
+import de.remsfal.service.entity.dto.GarageEntity;
+import de.remsfal.service.entity.dto.ProjectTreeNode;
+import de.remsfal.service.entity.dto.PropertyEntity;
+import de.remsfal.service.entity.dto.TenancyEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -97,7 +102,8 @@ public class PropertyController {
         return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
-    public List<ProjectTreeNodeModel> getProjectTree(final String projectId, final Integer offset, final Integer limit) {
+    public List<ProjectTreeNodeModel> getProjectTree(
+            final String projectId, final Integer offset, final Integer limit) {
         logger.infov("Retrieving up to {1} properties (projectId = {0})", projectId, limit);
 
         // Fetch properties for the project
