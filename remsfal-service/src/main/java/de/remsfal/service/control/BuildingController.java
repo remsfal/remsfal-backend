@@ -34,9 +34,6 @@ public class BuildingController {
     BuildingRepository buildingRepository;
 
     @Inject
-    ApartmentRepository apartmentRepository;
-
-    @Inject
     CommercialRepository commercialRepository;
 
     @Inject

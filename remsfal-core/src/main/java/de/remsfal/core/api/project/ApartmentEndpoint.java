@@ -1,6 +1,9 @@
 package de.remsfal.core.api.project;
 
+import de.remsfal.core.json.project.BuildingJson;
+import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -37,8 +40,13 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "201", description = "Apartment created successfully",
         headers = @Header(name = "Location", description = "URL of the new apartment"))
     Response createApartment(
-        @Parameter(description = "Apartment information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the building", required = true)
+            @PathParam("buildingId") @NotNull @UUID String buildingId,
+            @Parameter(description = "Apartment information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment
+    );
 
     @GET
     @Path("/{apartmentId}")
@@ -46,9 +54,11 @@ public interface ApartmentEndpoint {
     @Operation(summary = "Retrieve information of a apartment.")
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
     ApartmentJson getApartment(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") String propertyId,
-        @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") String buildingId,
-        @Parameter(description = "ID of the apartment", required = true) @PathParam("apartmentId") String apartmentId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the building", required = true)
+        @PathParam("buildingId") @NotNull @UUID String buildingId,
+        @Parameter(description = "ID of the apartment", required = true)
+        @PathParam("apartmentId") @NotNull @UUID String apartmentId);
 
 }
