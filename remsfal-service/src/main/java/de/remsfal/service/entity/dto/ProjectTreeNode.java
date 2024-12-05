@@ -1,5 +1,6 @@
 package de.remsfal.service.entity.dto;
 
+import de.remsfal.core.model.NodeDataModel;
 import de.remsfal.core.model.ProjectTreeNodeModel;
 
 import java.util.ArrayList;
@@ -7,26 +8,12 @@ import java.util.List;
 
 public class ProjectTreeNode implements ProjectTreeNodeModel {
     private String key;
-    private String type;
-    private String title;
-    private String description;
-    private String tenant;
-    private float usableSpace;
+    private NodeDataModel data;
     private List<ProjectTreeNodeModel> children = new ArrayList<>();
 
-    public ProjectTreeNode(
-            String key,
-            String type,
-            String title,
-            String description,
-            String tenant,
-            float usableSpace) {
+    public ProjectTreeNode(String key, NodeData data) {
         this.key = key;
-        this.type = type;
-        this.title = title;
-        this.description = description;
-        this.tenant = tenant;
-        this.usableSpace = usableSpace;
+        this.data = data;
     }
 
     public void addChild(ProjectTreeNode child) {
@@ -43,53 +30,15 @@ public class ProjectTreeNode implements ProjectTreeNodeModel {
         this.key = key;
     }
 
-    @Override
-    public String getType() {
-        return type;
+    public NodeDataModel getData() {
+        return data;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getTenant() {
-        return tenant;
-    }
-
-    public void setTenant(String tenant) {
-        this.tenant = tenant;
-    }
-
-    @Override
-    public float getUsableSpace() {
-        return usableSpace;
-    }
-
-    public void setUsableSpace(float usableSpace) {
-        this.usableSpace = usableSpace;
+    public void setData(NodeDataModel data) {
+        this.data = data;
     }
 
     public List<ProjectTreeNodeModel> getChildren() {
         return children;
     }
 }
-

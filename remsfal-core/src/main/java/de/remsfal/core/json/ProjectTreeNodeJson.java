@@ -16,20 +16,8 @@ public abstract class ProjectTreeNodeJson {
     @Schema(description = "Key of the node", required = true, example = "Property 1")
     public abstract String getKey();
 
-    @Schema(description = "Type of the node (e.g., 'property', 'building')", required = true, example = "property")
-    public abstract String getType();
-
-    @Schema(description = "Title of the node", example = "Main Building")
-    public abstract String getTitle();
-
-    @Schema(description = "Description of the node", example = "A multi-story office building")
-    public abstract String getDescription();
-
-    @Schema(description = "Name of the tenant associated with this node", example = "Doe, John")
-    public abstract String getTenant();
-
-    @Schema(description = "Usable space in square meters", example = "350.5")
-    public abstract float getUsableSpace();
+    @Schema(description = "Data encapsulating node attributes")
+    public abstract NodeDataJson getData();
 
     @Schema(description = "Children nodes")
     public abstract List<ProjectTreeNodeJson> getChildren();
@@ -37,11 +25,13 @@ public abstract class ProjectTreeNodeJson {
     public static ProjectTreeNodeJson valueOf(ProjectTreeNodeModel treeNode) {
         ImmutableProjectTreeNodeJson.Builder builder = ImmutableProjectTreeNodeJson.builder()
                 .key(treeNode.getKey())
-                .type(treeNode.getType())
-                .title(treeNode.getTitle())
-                .description(treeNode.getDescription())
-                .tenant(treeNode.getTenant())
-                .usableSpace(treeNode.getUsableSpace());
+                .data(ImmutableNodeDataJson.builder()
+                        .type(treeNode.getData().getType())
+                        .title(treeNode.getData().getTitle())
+                        .description(treeNode.getData().getDescription())
+                        .tenant(treeNode.getData().getTenant())
+                        .usableSpace(treeNode.getData().getUsableSpace())
+                        .build());
 
         for (ProjectTreeNodeModel child : treeNode.getChildren()) {
             builder.addChildren(valueOf(child));

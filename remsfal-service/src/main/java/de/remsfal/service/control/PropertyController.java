@@ -9,6 +9,7 @@ import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
+import de.remsfal.service.entity.dto.NodeData;
 import de.remsfal.service.entity.dto.ProjectTreeNode;
 import de.remsfal.service.entity.dto.PropertyEntity;
 import de.remsfal.service.entity.dto.TenancyEntity;
@@ -117,14 +118,15 @@ public class PropertyController {
     private ProjectTreeNode buildPropertyNode(PropertyEntity property) {
         List<BuildingEntity> buildings = buildingRepository.findBuildingByPropertyId(property.getId());
 
-        ProjectTreeNode propertyNode = new ProjectTreeNode(
-                property.getId(),
+        NodeData propertyData = new NodeData(
                 "Property",
                 property.getTitle(),
                 property.getDescription(),
                 "",
                 0
         );
+
+        ProjectTreeNode propertyNode = new ProjectTreeNode(property.getId(), propertyData);
 
         float sumUsableSpace = (float) buildings.stream()
                 .mapToDouble(BuildingEntity::getUsableSpace)
@@ -135,15 +137,14 @@ public class PropertyController {
             propertyNode.addChild(buildingNode);
         }
 
-        propertyNode.setUsableSpace(sumUsableSpace);
+        propertyData.setUsableSpace(sumUsableSpace);
         return propertyNode;
     }
 
     private ProjectTreeNode buildBuildingNode(BuildingEntity building) {
         String tenantName = getFullTenantName(building.getTenancy());
 
-        ProjectTreeNode buildingNode = new ProjectTreeNode(
-                building.getId(),
+        NodeData buildingData = new NodeData(
                 "Building",
                 building.getTitle(),
                 building.getDescription(),
@@ -151,34 +152,32 @@ public class PropertyController {
                 building.getUsableSpace()
         );
 
-        // Fetch apartments
+        ProjectTreeNode buildingNode = new ProjectTreeNode(building.getId(), buildingData);
+
         List<ApartmentEntity> apartments = apartmentRepository.findApartmentByBuildingId(building.getId());
         for (ApartmentEntity apartment : apartments) {
             String apartmentTenantName = getFullTenantName(apartment.getTenancy());
-            ProjectTreeNode apartmentNode = new ProjectTreeNode(
-                    apartment.getId(),
+            NodeData apartmentData = new NodeData(
                     "Apartment",
                     apartment.getTitle(),
                     apartment.getDescription(),
                     apartmentTenantName,
                     apartment.getUsableSpace()
             );
-            buildingNode.addChild(apartmentNode);
+            buildingNode.addChild(new ProjectTreeNode(apartment.getId(), apartmentData));
         }
 
-        // Fetch garages
         List<GarageEntity> garages = garageRepository.findGarageByBuildingId(building.getId());
         for (GarageEntity garage : garages) {
             String garageTenantName = getFullTenantName(garage.getTenancy());
-            ProjectTreeNode garageNode = new ProjectTreeNode(
-                    garage.getId(),
+            NodeData garageData = new NodeData(
                     "Garage",
                     garage.getTitle(),
                     garage.getDescription(),
                     garageTenantName,
                     garage.getUsableSpace()
             );
-            buildingNode.addChild(garageNode);
+            buildingNode.addChild(new ProjectTreeNode(garage.getId(), garageData));
         }
 
         return buildingNode;

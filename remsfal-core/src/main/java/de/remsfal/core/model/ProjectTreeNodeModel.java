@@ -6,15 +6,7 @@ public interface ProjectTreeNodeModel {
 
     String getKey();
 
-    String getType();
-
-    String getTitle();
-
-    String getDescription();
-
-    String getTenant();
-
-    float getUsableSpace();
+    NodeDataModel getData();
 
     List<ProjectTreeNodeModel> getChildren();
 }
