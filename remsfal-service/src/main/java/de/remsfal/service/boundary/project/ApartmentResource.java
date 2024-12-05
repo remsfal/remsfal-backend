@@ -8,6 +8,7 @@ import de.remsfal.service.boundary.ProjectResource;
 import de.remsfal.service.control.ApartmentController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -36,5 +37,18 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
         final ApartmentModel model = controller.getApartment(projectId, buildingId, apartmentId);
 
         return ApartmentJson.valueOf(model);
+    }
+
+    @Override
+    public ApartmentJson updateApartment(String projectId, String buildingId, String apartmentId, ApartmentJson apartment) {
+        checkPrivileges(projectId);
+        return ApartmentJson.valueOf(controller.updateApartment(
+                projectId, buildingId, apartmentId, apartment));
+    }
+
+    @Override
+    public void deleteApartment(String projectId, String buildingId, String apartmentId) {
+        checkPrivileges(projectId);
+        controller.deleteApartment(projectId, buildingId, apartmentId);
     }
 }

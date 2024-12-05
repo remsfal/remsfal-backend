@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.api.project.ApartmentEndpoint;
+import de.remsfal.core.json.project.ApartmentJson;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.boundary.project.ProjectSubResource;
 import de.remsfal.service.entity.dao.ApartmentRepository;
@@ -20,7 +21,6 @@ public class ApartmentController {
 
     @Inject
     ApartmentRepository apartmentRepository;
-
 
     @Transactional
     public ApartmentModel createApartment(final String projectId, final String buildingId,
@@ -50,10 +50,11 @@ public class ApartmentController {
     }
 
     @Transactional
-    public ApartmentModel updateApartment(final String projectId, final String buildingId, final ApartmentModel apartment) {
+    public ApartmentModel updateApartment(final String projectId, final String buildingId,
+                                         final String apartmentId, final ApartmentModel apartment) {
         logger.infov("Update an apartment (projectId={1} buildingId={2} apartment{3})",
                 projectId, buildingId, apartment);
-        final ApartmentEntity entity = apartmentRepository.findByIds(apartment.getId(), projectId, buildingId)
+        final ApartmentEntity entity = apartmentRepository.findByIds(apartmentId, projectId, buildingId)
                 .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
         entity.setDescription(entity.getDescription());
         entity.setLivingSpace(entity.getLivingSpace());
