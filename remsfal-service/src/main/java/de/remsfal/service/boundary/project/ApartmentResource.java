@@ -20,7 +20,6 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     @Inject
     ApartmentController controller;
 
-    //entity in response (+ changes in ApartmentJson) addable
     @Override
     public Response createApartment(String projectId, String buildingId, ApartmentJson apartment) {
     checkPrivileges(projectId);
@@ -28,6 +27,7 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
     return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
+            .entity(ApartmentJson.valueOf(model))
             .build();
     }
 
