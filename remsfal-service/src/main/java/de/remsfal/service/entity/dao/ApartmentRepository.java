@@ -13,15 +13,19 @@ import java.util.Optional;
 @ApplicationScoped
 public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
 
-    public Optional<ApartmentEntity> findByIds(final String apartmentId, final String projectId, final String buildingId) {
+    public Optional<ApartmentEntity> findByIds(final String apartmentId,
+                                               final String projectId, final String buildingId) {
         return find("id = :apartmentId and projectId = :projectId and buildingId = :buildingId",
-                Parameters.with("id", apartmentId).and("projectId", projectId).and("buildingId", buildingId))
+                Parameters.with("id", apartmentId).and("projectId", projectId)
+                        .and("buildingId", buildingId))
                 .singleResultOptional();
     }
 
-    public long removeApartmentByIds(final String apartmentId, final String projectId, final String buildingId) {
+    public long removeApartmentByIds(final String apartmentId,
+                                     final String projectId, final String buildingId) {
         return delete("id = :apartmentId and projectId = :projectId and buildingId = :buildingId",
-                Parameters.with("id", apartmentId).and("projectId", projectId).and("buildingId", buildingId));
+                Parameters.with("id", apartmentId).and("projectId", projectId)
+                        .and("buildingId", buildingId));
     }
 
 }

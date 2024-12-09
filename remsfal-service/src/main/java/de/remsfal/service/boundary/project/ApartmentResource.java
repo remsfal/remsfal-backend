@@ -40,7 +40,8 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     }
 
     @Override
-    public ApartmentJson updateApartment(String projectId, String buildingId, String apartmentId, ApartmentJson apartment) {
+    public ApartmentJson updateApartment(String projectId, String buildingId,
+                                         String apartmentId, ApartmentJson apartment) {
         checkPrivileges(projectId);
         return ApartmentJson.valueOf(controller.updateApartment(
                 projectId, buildingId, apartmentId, apartment));
