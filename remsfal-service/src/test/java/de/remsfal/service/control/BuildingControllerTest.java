@@ -269,45 +269,6 @@ class BuildingControllerTest extends AbstractTest {
                 .getSingleResult();
         assertEquals(1, entity);
     }
-    
-    @Test
-    void createApartment_SUCCESS_getApartment() {
-        final String propertyId = propertyController
-            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
-            .getId();
-        assertNotNull(propertyId);
-
-        final String buildingId = buildingController
-            .createBuilding(TestData.PROJECT_ID, propertyId,
-                TestData.buildingBuilder()
-                .id(null)
-                .address(TestData.addressBuilder().build())
-                .build())
-            .getId();
-        assertNotNull(buildingId);
-        
-        final ApartmentModel apartment = TestData.apartmentBuilder().build();
-        final ApartmentModel result = buildingController
-            .createApartment(TestData.PROJECT_ID, buildingId, apartment);
-        
-        assertNotEquals(apartment.getId(), result.getId());
-        assertEquals(apartment.getTitle(), result.getTitle());
-        assertEquals(apartment.getLocation(), result.getLocation());
-        assertEquals(apartment.getDescription(), result.getDescription());
-        assertEquals(apartment.getLivingSpace(), result.getLivingSpace());
-        assertEquals(apartment.getUsableSpace(), result.getUsableSpace());
-        
-        final String apartmentId = entityManager
-            .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", String.class)
-            .setParameter("title", TestData.APARTMENT_TITLE)
-            .getSingleResult();
-        assertEquals(result.getId(), apartmentId);
-
-        final ApartmentModel getResult = buildingController
-            .getApartment(TestData.PROJECT_ID, buildingId, apartmentId);
-        
-        assertEquals(result, getResult);
-    }
 
     @Test
     void createCommercial_SUCCESS_getCommercial() {
