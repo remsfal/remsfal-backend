@@ -59,8 +59,6 @@ public interface BuildingEndpoint {
     BuildingJson getBuilding(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the building", required = true)
         @PathParam("buildingId") @NotNull @UUID String buildingId
     );
@@ -81,8 +79,6 @@ public interface BuildingEndpoint {
     BuildingJson updateBuilding(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the building", required = true)
         @PathParam("buildingId") @NotNull @UUID String buildingId,
         @Parameter(description = "Building information", required = true)
@@ -103,8 +99,6 @@ public interface BuildingEndpoint {
     void deleteBuilding(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the building", required = true)
         @PathParam("buildingId") @NotNull @UUID String buildingId
     );
