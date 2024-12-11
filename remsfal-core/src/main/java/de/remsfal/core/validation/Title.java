@@ -7,15 +7,16 @@ import java.lang.annotation.Target;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import jakarta.validation.ReportAsSingleViolation;
+import jakarta.validation.constraints.Size;
 
-@Target({ ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
-@Constraint(validatedBy = NullOrNotBlankValidator.class)
+@NullOrNotBlank
+@Size(max=255)
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
+@Constraint(validatedBy = {})
 @Retention(RetentionPolicy.RUNTIME)
-@ReportAsSingleViolation
-public @interface NullOrNotBlank {
+public @interface Title {
 
-    String message() default "{invalid.NullOrNotBlank}";
+    String message() default "{invalid.title}";
 
     Class<?>[] groups() default {};
 

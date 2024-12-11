@@ -2,9 +2,7 @@ package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -15,8 +13,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.project.BuildingModel;
-import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
+import de.remsfal.core.validation.Title;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -32,9 +30,8 @@ public abstract class BuildingJson implements BuildingModel {
     @Override
     public abstract String getId();
 
-    @NullOrNotBlank
+    @Title
     @NotBlank(groups = PostValidation.class)
-    @Size(max=255)
     @Nullable
     @Override
     public abstract String getTitle();
