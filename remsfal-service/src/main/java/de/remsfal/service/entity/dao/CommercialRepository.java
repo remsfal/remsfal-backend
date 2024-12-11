@@ -13,7 +13,10 @@ import java.util.List;
 public class CommercialRepository extends AbstractRepository<CommercialEntity> {
     public List<CommercialEntity> findCommercialByBuildingId(String buildingId) {
         return getEntityManager()
-                .createQuery("SELECT c FROM CommercialEntity c WHERE c.buildingId = :buildingId", CommercialEntity.class)
+                .createQuery(
+                        "SELECT c FROM CommercialEntity c WHERE c.buildingId = :buildingId",
+                        CommercialEntity.class
+                )
                 .setParameter("buildingId", buildingId)
                 .getResultList();
     }
