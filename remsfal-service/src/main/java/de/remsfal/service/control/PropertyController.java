@@ -3,15 +3,19 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.ProjectTreeNodeModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
+import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dao.PropertyRepository;
+import de.remsfal.service.entity.dao.SiteRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
+import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
 import de.remsfal.service.entity.dto.NodeData;
 import de.remsfal.service.entity.dto.ProjectTreeNode;
 import de.remsfal.service.entity.dto.PropertyEntity;
+import de.remsfal.service.entity.dto.SiteEntity;
 import de.remsfal.service.entity.dto.TenancyEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -38,7 +42,13 @@ public class PropertyController {
     BuildingRepository buildingRepository;
 
     @Inject
+    SiteRepository siteRepository;
+
+    @Inject
     ApartmentRepository apartmentRepository;
+
+    @Inject
+    CommercialRepository commercialRepository;
 
     @Inject
     GarageRepository garageRepository;
@@ -117,9 +127,10 @@ public class PropertyController {
 
     private ProjectTreeNode buildPropertyNode(PropertyEntity property) {
         List<BuildingEntity> buildings = buildingRepository.findBuildingByPropertyId(property.getId());
+        List<SiteEntity> sites = siteRepository.findSiteByPropertyId(property.getId());
 
         NodeData propertyData = new NodeData(
-                "Property",
+                "property",
                 property.getTitle(),
                 property.getDescription(),
                 "",
@@ -128,13 +139,28 @@ public class PropertyController {
 
         ProjectTreeNode propertyNode = new ProjectTreeNode(property.getId(), propertyData);
 
-        float sumUsableSpace = (float) buildings.stream()
-                .mapToDouble(BuildingEntity::getUsableSpace)
-                .sum();
+        float sumUsableSpace = 0;
 
+        // Add building nodes
         for (BuildingEntity building : buildings) {
             ProjectTreeNode buildingNode = buildBuildingNode(building);
             propertyNode.addChild(buildingNode);
+            sumUsableSpace += building.getUsableSpace();
+        }
+
+        // Add site nodes
+        for (SiteEntity site : sites) {
+            System.out.println(site.getId());
+            NodeData siteData = new NodeData(
+                    "site",
+                    site.getTitle(),
+                    site.getDescription(),
+                    "",
+                    site.getUsableSpace()
+            );
+            ProjectTreeNode siteNode = new ProjectTreeNode(site.getId(), siteData);
+            propertyNode.addChild(siteNode);
+            sumUsableSpace += site.getUsableSpace();
         }
 
         propertyData.setUsableSpace(sumUsableSpace);
@@ -145,7 +171,7 @@ public class PropertyController {
         String tenantName = getFullTenantName(building.getTenancy());
 
         NodeData buildingData = new NodeData(
-                "Building",
+                "building",
                 building.getTitle(),
                 building.getDescription(),
                 tenantName,
@@ -154,11 +180,12 @@ public class PropertyController {
 
         ProjectTreeNode buildingNode = new ProjectTreeNode(building.getId(), buildingData);
 
+        // Add apartment nodes
         List<ApartmentEntity> apartments = apartmentRepository.findApartmentByBuildingId(building.getId());
         for (ApartmentEntity apartment : apartments) {
             String apartmentTenantName = getFullTenantName(apartment.getTenancy());
             NodeData apartmentData = new NodeData(
-                    "Apartment",
+                    "apartment",
                     apartment.getTitle(),
                     apartment.getDescription(),
                     apartmentTenantName,
@@ -167,11 +194,26 @@ public class PropertyController {
             buildingNode.addChild(new ProjectTreeNode(apartment.getId(), apartmentData));
         }
 
+        // Add commercial nodes
+        List<CommercialEntity> commercials = commercialRepository.findCommercialByBuildingId(building.getId());
+        for (CommercialEntity commercial : commercials) {
+            String commercialTenantName = getFullTenantName(commercial.getTenancy());
+            NodeData commercialData = new NodeData(
+                    "commercial",
+                    commercial.getTitle(),
+                    commercial.getDescription(),
+                    commercialTenantName,
+                    commercial.getUsableSpace()
+            );
+            buildingNode.addChild(new ProjectTreeNode(commercial.getId(), commercialData));
+        }
+
+        // Add garage nodes
         List<GarageEntity> garages = garageRepository.findGarageByBuildingId(building.getId());
         for (GarageEntity garage : garages) {
             String garageTenantName = getFullTenantName(garage.getTenancy());
             NodeData garageData = new NodeData(
-                    "Garage",
+                    "garage",
                     garage.getTitle(),
                     garage.getDescription(),
                     garageTenantName,
