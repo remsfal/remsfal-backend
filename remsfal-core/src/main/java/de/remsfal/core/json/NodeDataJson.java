@@ -10,18 +10,18 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public interface NodeDataJson {
 
-    @Schema(description = "Type of the node (e.g., 'property', 'building')", required = true, example = "property")
+    @Schema(description = "Type of the node (e.g., 'property', 'building')", required = true, examples = "property")
     String getType();
 
-    @Schema(description = "Title of the node", example = "Main Building")
+    @Schema(description = "Title of the node", examples = "Main Building")
     String getTitle();
 
-    @Schema(description = "Description of the node", example = "A multi-story office building")
+    @Schema(description = "Description of the node", examples = "A multi-story office building")
     String getDescription();
 
-    @Schema(description = "Name of the tenant associated with this node", example = "Doe, John")
+    @Schema(description = "Name of the tenant associated with this node", examples = "Doe, John")
     String getTenant();
 
-    @Schema(description = "Usable space in square meters", example = "350.5")
+    @Schema(description = "Usable space in square meters", examples = "350.5")
     float getUsableSpace();
 }

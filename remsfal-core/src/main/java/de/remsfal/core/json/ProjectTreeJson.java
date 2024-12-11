@@ -16,7 +16,7 @@ public abstract class ProjectTreeJson {
     @Schema(
             description = "Index of the first element in the list of available entries, starting at 1",
             required = true,
-            example = "1"
+            examples = "1"
     )
     public abstract Integer getFirst();
 

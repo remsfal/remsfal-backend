@@ -150,7 +150,6 @@ public class PropertyController {
 
         // Add site nodes
         for (SiteEntity site : sites) {
-            System.out.println(site.getId());
             NodeData siteData = new NodeData(
                     "site",
                     site.getTitle(),

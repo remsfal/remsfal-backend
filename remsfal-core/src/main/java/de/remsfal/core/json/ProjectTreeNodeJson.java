@@ -13,7 +13,7 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class ProjectTreeNodeJson {
 
-    @Schema(description = "Key of the node", required = true, example = "Property 1")
+    @Schema(description = "Key of the node", required = true, examples = "Property 1")
     public abstract String getKey();
 
     @Schema(description = "Data encapsulating node attributes")
