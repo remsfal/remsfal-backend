@@ -6,6 +6,7 @@ import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.boundary.project.ProjectSubResource;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
+import de.remsfal.service.entity.dto.TenancyEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
@@ -56,12 +57,11 @@ public class ApartmentController {
                 projectId, buildingId, apartment);
         final ApartmentEntity entity = apartmentRepository.findByIds(apartmentId, projectId, buildingId)
                 .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
-        entity.setDescription(entity.getDescription());
-        entity.setLivingSpace(entity.getLivingSpace());
-        entity.setHeatingSpace(entity.getHeatingSpace());
-        entity.setLocation(entity.getLocation());
-        entity.setTitle(entity.getTitle());
-        entity.setTenancy(entity.getTenancy());
+        entity.setDescription(apartment.getDescription());
+        entity.setLivingSpace(apartment.getLivingSpace());
+        entity.setHeatingSpace(apartment.getHeatingSpace());
+        entity.setLocation(apartment.getLocation());
+        entity.setTitle(apartment.getTitle());
         return apartmentRepository.merge(entity);
     }
 

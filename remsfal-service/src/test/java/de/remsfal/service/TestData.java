@@ -235,7 +235,6 @@ public class TestData {
     public static final Float APARTMENT_LIVING_SPACE = TestData.APARTMENT_LIVING_SPACE_1;
     public static final Float APARTMENT_USABLE_SPACE = TestData.APARTMENT_USABLE_SPACE_1;
     public static final Float APARTMENT_HEATING_SPACE = TestData.APARTMENT_HEATING_SPACE_1;
-    public static final TenancyJson APARTMENT_TENANCY = TestData.APARTMENT_TENANCY_1;
 
     public static final ImmutableApartmentJson.Builder apartmentBuilder() {
         return apartmentBuilder1();
@@ -249,7 +248,6 @@ public class TestData {
     public static final Float APARTMENT_LIVING_SPACE_1 = 77.36f;
     public static final Float APARTMENT_USABLE_SPACE_1 = 0f;
     public static final Float APARTMENT_HEATING_SPACE_1 = 77.36f;
-    public static final TenancyJson APARTMENT_TENANCY_1 = TestData.tenancyBuilder1().build();
 
     public static final ImmutableApartmentJson.Builder apartmentBuilder1() {
         return ImmutableApartmentJson
@@ -260,8 +258,7 @@ public class TestData {
         .description(APARTMENT_DESCRIPTION_1)
         .livingSpace(APARTMENT_LIVING_SPACE_1)
         .usableSpace(APARTMENT_USABLE_SPACE_1)
-        .heatingSpace(APARTMENT_HEATING_SPACE_1)
-                .tenancy(APARTMENT_TENANCY_1);
+        .heatingSpace(APARTMENT_HEATING_SPACE_1);
     }
 
     // Test apartment 2
@@ -272,7 +269,6 @@ public class TestData {
     public static final Float APARTMENT_LIVING_SPACE_2 = 87.36f;
     public static final Float APARTMENT_USABLE_SPACE_2 = 0f;
     public static final Float APARTMENT_HEATING_SPACE_2 = 87.36f;
-    public static final TenancyJson APARTMENT_TENANCY_2 = TestData.tenancyBuilder2().build();
 
     public static final ImmutableApartmentJson.Builder apartmentBuilder2() {
         return ImmutableApartmentJson
@@ -283,8 +279,7 @@ public class TestData {
         .description(APARTMENT_DESCRIPTION_2)
         .livingSpace(APARTMENT_LIVING_SPACE_2)
         .usableSpace(APARTMENT_USABLE_SPACE_2)
-        .heatingSpace(APARTMENT_HEATING_SPACE_2)
-        .tenancy(APARTMENT_TENANCY_2);
+        .heatingSpace(APARTMENT_HEATING_SPACE_2);
     }
 
     // Default test commercial

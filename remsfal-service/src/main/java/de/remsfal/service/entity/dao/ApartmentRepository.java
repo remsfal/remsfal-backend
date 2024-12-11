@@ -15,7 +15,7 @@ public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
 
     public Optional<ApartmentEntity> findByIds(final String apartmentId,
                                                final String projectId, final String buildingId) {
-        return find("id = :apartmentId and projectId = :projectId and buildingId = :buildingId",
+        return find("id = :id and projectId = :projectId and buildingId = :buildingId",
                 Parameters.with("id", apartmentId).and("projectId", projectId)
                         .and("buildingId", buildingId))
                 .singleResultOptional();
@@ -23,7 +23,7 @@ public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
 
     public long removeApartmentByIds(final String apartmentId,
                                      final String projectId, final String buildingId) {
-        return delete("id = :apartmentId and projectId = :projectId and buildingId = :buildingId",
+        return delete("id = :id and projectId = :projectId and buildingId = :buildingId",
                 Parameters.with("id", apartmentId).and("projectId", projectId)
                         .and("buildingId", buildingId));
     }
