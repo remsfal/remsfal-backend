@@ -32,4 +32,11 @@ public class SiteRepository extends AbstractRepository<SiteEntity> {
             Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_PROPERTY_ID, propertyId));
     }
 
+    public List<SiteEntity> findSiteByPropertyId(String propertyId) {
+        return getEntityManager()
+                .createQuery("SELECT s FROM SiteEntity s WHERE s.propertyId = :propertyId", SiteEntity.class)
+                .setParameter("propertyId", propertyId)
+                .getResultList();
+    }
+
 }
