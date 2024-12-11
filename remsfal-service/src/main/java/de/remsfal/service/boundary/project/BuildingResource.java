@@ -31,24 +31,24 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     }
 
     @Override
-    public BuildingJson getBuilding(String projectId, String propertyId, String buildingId) {
+    public BuildingJson getBuilding(String projectId, String buildingId) {
         checkPrivileges(projectId);
-        final BuildingModel model = controller.getBuilding(projectId, propertyId, buildingId);
+        final BuildingModel model = controller.getBuilding(projectId, buildingId);
 
         return BuildingJson.valueOf(model);
     }
 
     @Override
-    public BuildingJson updateBuilding(String projectId, String propertyId, String buildingId, BuildingJson building) {
+    public BuildingJson updateBuilding(String projectId, String buildingId, BuildingJson building) {
         checkPrivileges(projectId);
-        final BuildingModel model = controller.updateBuilding(propertyId, buildingId, building);
+        final BuildingModel model = controller.updateBuilding(projectId, buildingId, building);
         return BuildingJson.valueOf(model);
     }
 
     @Override
-    public void deleteBuilding(String projectId, String propertyId, String buildingId) {
+    public void deleteBuilding(String projectId, String buildingId) {
         checkPrivileges(projectId);
-        controller.deleteBuilding(propertyId, buildingId);
+        controller.deleteBuilding(projectId, buildingId);
     }
 
     @Override

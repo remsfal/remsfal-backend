@@ -1,9 +1,10 @@
 package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
-
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -14,6 +15,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.core.validation.NullOrNotBlank;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -26,30 +29,42 @@ public abstract class BuildingJson implements BuildingModel {
 
     @Null
     @Nullable
+    @Override
     public abstract String getId();
 
-    @NotNull
+    @NullOrNotBlank
+    @NotBlank(groups = PostValidation.class)
+    @Size(max=255)
+    @Nullable
+    @Override
     public abstract String getTitle();
 
-    @NotNull
+    @Nullable
+    @Override
     public abstract AddressModel getAddress();
 
     @Nullable
+    @Override
     public abstract String getDescription();
 
     @Nullable
+    @Override
     public abstract Float getLivingSpace();
 
     @Nullable
+    @Override
     public abstract Float getCommercialSpace();
 
     @Nullable
+    @Override
     public abstract Float getUsableSpace();
 
     @Nullable
+    @Override
     public abstract Float getHeatingSpace();
 
     @Nullable
+    @Override
     public abstract Boolean isDifferentHeatingSpace();
 
     public static BuildingJson valueOf(final BuildingModel model) {

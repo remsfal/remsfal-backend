@@ -19,6 +19,7 @@ import de.remsfal.service.entity.dao.GarageRepository;
 
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RequestScoped
@@ -54,12 +55,12 @@ public class BuildingController {
         entity.setPropertyId(propertyId);
         buildingRepository.persistAndFlush(entity);
         buildingRepository.getEntityManager().refresh(entity);
-        return getBuilding(projectId, propertyId, entity.getId());
+        return getBuilding(projectId, entity.getId());
     }
 
-    public BuildingModel getBuilding(final String projectId, final String propertyId, final String buildingId) {
-        logger.infov("Retrieving a building (projectId={0}, propertyId={1}, buildingId={2})",
-            projectId, propertyId, buildingId);
+    public BuildingModel getBuilding(final String projectId, final String buildingId) {
+        logger.infov("Retrieving a building (projectId={0}, buildingId={1})",
+            projectId, buildingId);
         BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
             .orElseThrow(() -> new NotFoundException("Building not exist"));
 
@@ -71,28 +72,32 @@ public class BuildingController {
     }
 
     @Transactional
-    public BuildingModel updateBuilding(String propertyId, String buildingId, BuildingJson building) {
-        logger.infov("Update a building (propertyId={0}, buildingId={1}, building={2})",
-            propertyId, buildingId, building);
+    public BuildingModel updateBuilding(String projectId, String buildingId, BuildingJson building) {
+        logger.infov("Update a building (projectId={0}, buildingId={1}, building={2})",
+            projectId, buildingId, building);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
             .orElseThrow(() -> new NotFoundException("Building not exist"));
-        entity.setTitle(building.getTitle());
-        AddressEntity address = AddressEntity.fromModel(building.getAddress());
-        address.setId(UUID.randomUUID().toString());
-        entity.setAddress(address);
-        entity.setDescription(building.getDescription());
-        entity.setLivingSpace(building.getLivingSpace());
-        entity.setCommercialSpace(building.getCommercialSpace());
-        entity.setUsableSpace(building.getUsableSpace());
-        entity.setHeatingSpace(building.getHeatingSpace());
-        entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
+        Optional.ofNullable(building.getTitle()).ifPresent(entity::setTitle);
+        Optional.ofNullable(building.getDescription()).ifPresent(entity::setDescription);
+        Optional.ofNullable(building.getLivingSpace()).ifPresent(entity::setLivingSpace);
+        Optional.ofNullable(building.getCommercialSpace()).ifPresent(entity::setCommercialSpace);
+        Optional.ofNullable(building.getUsableSpace()).ifPresent(entity::setUsableSpace);
+        Optional.ofNullable(building.getHeatingSpace()).ifPresent(entity::setHeatingSpace);
+        Optional.ofNullable(building.isDifferentHeatingSpace()).ifPresent(entity::setDifferentHeatingSpace);
+
+        if(building.getAddress() != null) {
+            AddressEntity address = AddressEntity.fromModel(building.getAddress());
+            address.setId(UUID.randomUUID().toString());
+            entity.setAddress(address);
+        }
+        
         return buildingRepository.merge(entity);
     }
 
     @Transactional
-    public void deleteBuilding(String propertyId, String buildingId) {
-        logger.infov("Delete a building (propertyId={0}, buildingId={1})",
-            propertyId, buildingId);
+    public void deleteBuilding(String projectId, String buildingId) {
+        logger.infov("Delete a building (projectId={0}, buildingId={1})",
+            projectId, buildingId);
         buildingRepository.deleteById(buildingId);
     }
 
