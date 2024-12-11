@@ -109,4 +109,12 @@ public interface BuildingEndpoint {
         @PathParam("buildingId") @NotNull @UUID String buildingId
     );
 
+    @Path("/{buildingId}/" + ApartmentEndpoint.SERVICE)
+    ApartmentEndpoint getApartmentResource();
+    
+    // TODO: Implement Commercial Endpoint
+
+    @Path("/{buildingId}/" + GarageEndpoint.SERVICE)
+    GarageEndpoint getGarageResource();
+
 }

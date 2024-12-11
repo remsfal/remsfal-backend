@@ -1,6 +1,8 @@
 package de.remsfal.service.boundary.project;
 
+import de.remsfal.core.api.project.ApartmentEndpoint;
 import de.remsfal.core.api.project.BuildingEndpoint;
+import de.remsfal.core.api.project.GarageEndpoint;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.control.BuildingController;
@@ -47,6 +49,18 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     public void deleteBuilding(String projectId, String propertyId, String buildingId) {
         checkPrivileges(projectId);
         controller.deleteBuilding(propertyId, buildingId);
+    }
+
+    @Override
+    public ApartmentEndpoint getApartmentResource() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public GarageEndpoint getGarageResource() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
