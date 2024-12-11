@@ -3,7 +3,7 @@ package de.remsfal.core.model.project;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface ApartmentModel {
+public interface ApartmentModel extends RentalUnitModel {
 
     String getId();
 
@@ -18,5 +18,7 @@ public interface ApartmentModel {
     Float getUsableSpace();
 
     Float getHeatingSpace();
+
+
 
 }
