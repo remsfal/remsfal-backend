@@ -100,6 +100,8 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
         insertApartment(TestData.APARTMENT_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_1, TestData.APARTMENT_LOCATION_1, TestData.APARTMENT_DESCRIPTION_1, TestData.APARTMENT_LIVING_SPACE_1, TestData.APARTMENT_USABLE_SPACE_1, TestData.APARTMENT_HEATING_SPACE_1);
         insertApartment(TestData.APARTMENT_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_2, TestData.APARTMENT_LOCATION_2, TestData.APARTMENT_DESCRIPTION_2, TestData.APARTMENT_LIVING_SPACE_2, TestData.APARTMENT_USABLE_SPACE_2, TestData.APARTMENT_HEATING_SPACE_2);
 
+        insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1, TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1, TestData.COMMERCIAL_HEATING_SPACE_1);
+
         insertGarage(TestData.GARAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_1, TestData.GARAGE_LOCATION_1, TestData.GARAGE_DESCRIPTION_1, TestData.GARAGE_USABLE_SPACE_1);
         insertGarage(TestData.GARAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_2, TestData.GARAGE_LOCATION_2, TestData.GARAGE_DESCRIPTION_2, TestData.GARAGE_USABLE_SPACE_2);
 
@@ -142,14 +144,18 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .and().body("nodes[1].children[0].children[1].data.type", Matchers.equalTo("apartment"))
             .and().body("nodes[1].children[0].children[1].data.title", Matchers.equalTo(TestData.APARTMENT_TITLE_2))
             .and().body("nodes[1].children[0].children[1].data.description", Matchers.equalTo(TestData.APARTMENT_DESCRIPTION_2))
-            .and().body("nodes[1].children[0].children[2].key", Matchers.equalTo(TestData.GARAGE_ID_1))
-            .and().body("nodes[1].children[0].children[2].data.type", Matchers.equalTo("garage"))
-            .and().body("nodes[1].children[0].children[2].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_1))
-            .and().body("nodes[1].children[0].children[2].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_1))
-            .and().body("nodes[1].children[0].children[3].key", Matchers.equalTo(TestData.GARAGE_ID_2))
+            .and().body("nodes[1].children[0].children[2].key", Matchers.equalTo(TestData.COMMERCIAL_ID_1))
+            .and().body("nodes[1].children[0].children[2].data.type", Matchers.equalTo("commercial"))
+            .and().body("nodes[1].children[0].children[2].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
+            .and().body("nodes[1].children[0].children[2].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
+            .and().body("nodes[1].children[0].children[3].key", Matchers.equalTo(TestData.GARAGE_ID_1))
             .and().body("nodes[1].children[0].children[3].data.type", Matchers.equalTo("garage"))
-            .and().body("nodes[1].children[0].children[3].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_2))
-            .and().body("nodes[1].children[0].children[3].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
+            .and().body("nodes[1].children[0].children[3].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_1))
+            .and().body("nodes[1].children[0].children[3].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_1))
+            .and().body("nodes[1].children[0].children[4].key", Matchers.equalTo(TestData.GARAGE_ID_2))
+            .and().body("nodes[1].children[0].children[4].data.type", Matchers.equalTo("garage"))
+            .and().body("nodes[1].children[0].children[4].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_2))
+            .and().body("nodes[1].children[0].children[4].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
             .log().body();
     }
 
@@ -184,6 +190,21 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
     private void insertApartment(Object... params) {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .setParameter(3, params[2])
+                .setParameter(4, params[3])
+                .setParameter(5, params[4])
+                .setParameter(6, params[5])
+                .setParameter(7, params[6])
+                .setParameter(8, params[7])
+                .setParameter(9, params[8])
+                .executeUpdate());
+    }
+
+    private void insertCommercial(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
