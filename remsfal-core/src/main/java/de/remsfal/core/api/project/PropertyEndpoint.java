@@ -1,7 +1,7 @@
 package de.remsfal.core.api.project;
 
+import de.remsfal.core.json.ProjectTreeJson;
 import de.remsfal.core.json.project.PropertyJson;
-import de.remsfal.core.json.project.PropertyListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
@@ -42,7 +42,7 @@ public interface PropertyEndpoint {
         responseCode = "401",
         description = "No user authentication provided via session cookie"
     )
-    PropertyListJson getProperties(
+    ProjectTreeJson getProperties(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
         @Parameter(description = "Offset of the first property to return")
