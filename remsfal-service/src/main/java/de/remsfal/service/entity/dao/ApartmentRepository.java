@@ -4,6 +4,7 @@ import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.remsfal.service.entity.dto.ApartmentEntity;
+
 import java.util.Optional;
 import java.util.List;
 
@@ -30,7 +31,6 @@ public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
                         .and("buildingId", buildingId));
     }
 
-}
     public List<ApartmentEntity> findApartmentByBuildingId(String buildingId) {
         return getEntityManager()
                 .createQuery("SELECT a FROM ApartmentEntity a WHERE a.buildingId = :buildingId", ApartmentEntity.class)
@@ -38,3 +38,4 @@ public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
                 .getResultList();
     }
 }
+

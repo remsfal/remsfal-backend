@@ -7,6 +7,8 @@ import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.Duration;
 
@@ -82,6 +84,16 @@ public class ApartmentResourceTest extends AbstractProjectResourceTest {
                 .and().body("heatingSpace", Matchers.equalTo(TestData.APARTMENT_HEATING_SPACE))
                 .and().body("location", Matchers.equalTo(TestData.APARTMENT_LOCATION));
     }
+
+//    @ParameterizedTest
+//    @ValueSource(strings = "")
+//    void createApartment_SUCCESS_propertyIsCreated() {
+//        setupTestApartments();
+//        given()
+//                .when()
+//                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+//                .post
+//    }
 
 
 

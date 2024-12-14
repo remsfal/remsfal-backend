@@ -2,9 +2,14 @@ package de.remsfal.service;
 
 import java.time.LocalDate;
 import java.util.Locale;
-
 import de.remsfal.core.json.ImmutableAddressJson;
-import de.remsfal.core.json.project.*;
+import de.remsfal.core.json.project.ImmutableApartmentJson;
+import de.remsfal.core.json.project.ImmutableBuildingJson;
+import de.remsfal.core.json.project.ImmutableCommercialJson;
+import de.remsfal.core.json.project.ImmutableGarageJson;
+import de.remsfal.core.json.project.ImmutablePropertyJson;
+import de.remsfal.core.json.project.ImmutableSiteJson;
+import de.remsfal.core.json.project.ImmutableTenancyJson;
 
 public class TestData {
 
@@ -266,6 +271,7 @@ public class TestData {
                 .id(TENANCY_ID_2)
                 .startOfRental(LocalDate.parse(TENANCY_START_2))
                 .endOfRental(LocalDate.parse(TENANCY_END_2));
+    }
 
     // Default test apartment
     public static final String APARTMENT_ID = TestData.APARTMENT_ID_1;
