@@ -81,7 +81,8 @@ public class ApartmentController {
     }
 
     @Transactional
-    public void deleteApartment(final String projectId, final String buildingId, final String apartmentId) throws NotFoundException {
+    public void deleteApartment(final String projectId, final String buildingId,
+                                final String apartmentId) throws NotFoundException {
         logger.infov("Delete an apartment (projectId{0} buildingId={1} apartmentId{2})",
                 projectId, buildingId, apartmentId);
         if (apartmentRepository.findByIds(apartmentId, projectId, buildingId).isEmpty()) {
