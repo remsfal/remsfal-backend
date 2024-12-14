@@ -84,9 +84,8 @@ public class ApartmentController {
     public void deleteApartment(final String projectId, final String buildingId, final String apartmentId) {
         logger.infov("Delete an apartment (projectId{0} buildingId={1} apartmentId{2})",
                 projectId, buildingId, apartmentId);
-        apartmentRepository.findByIds(apartmentId, projectId, buildingId)
+        ApartmentEntity apartmentDoesNotExist = apartmentRepository.findByIds(apartmentId, projectId, buildingId)
                 .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
         apartmentRepository.removeApartmentByIds(apartmentId, projectId, buildingId);
     }
-
 }
