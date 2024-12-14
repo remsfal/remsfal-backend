@@ -54,6 +54,10 @@ public interface ApartmentEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of an apartment.")
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
+    @APIResponse(
+            responseCode = "401",
+            description = "No user authentication provided via session cookie"
+    )
     ApartmentJson getApartment(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
