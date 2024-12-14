@@ -4,7 +4,6 @@ import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dto.AddressEntity;
-import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.GarageEntity;
@@ -13,10 +12,8 @@ import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
-import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.core.model.project.GarageModel;
-import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 

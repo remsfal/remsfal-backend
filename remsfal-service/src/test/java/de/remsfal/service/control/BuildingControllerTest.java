@@ -19,7 +19,6 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.core.model.project.GarageModel;

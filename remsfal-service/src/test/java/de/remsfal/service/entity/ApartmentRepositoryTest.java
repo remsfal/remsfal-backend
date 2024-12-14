@@ -12,16 +12,14 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.wildfly.common.Assert.assertTrue;
 
 @QuarkusTest
-public class ApartmentRepositoryTest extends AbstractTest {
+class ApartmentRepositoryTest extends AbstractTest {
 
     @Inject
     ApartmentRepository repository;

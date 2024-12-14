@@ -16,7 +16,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-public class ApartmentResourceTest extends AbstractProjectResourceTest {
+class ApartmentResourceTest extends AbstractProjectResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/properties/{propertyId}/" +
             "buildings/{buildingId}/apartments";

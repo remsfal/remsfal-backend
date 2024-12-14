@@ -1,20 +1,14 @@
 package de.remsfal.core.json;
 
 import de.remsfal.core.json.project.ApartmentJson;
-import de.remsfal.core.json.project.TenancyJson;
-import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.project.ApartmentModel;
-import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.TenancyModel;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ApartmentJsonTest {
+class ApartmentJsonTest {
 
     @Test
     void testValueOf() {
@@ -44,14 +38,14 @@ public class ApartmentJsonTest {
     }
 
     static class ApartmentModelEntity implements ApartmentModel {
-        final private String id;
-        final private String title;
-        final private String location;
-        final private String description;
-        final private Float livingSpace;
-        final private Float usableSpace;
-        final private Float heatingSpace;
-        final private TenancyModel tenancy;
+        private final String id;
+        private final String title;
+        private final String location;
+        private final String description;
+        private final Float livingSpace;
+        private final Float usableSpace;
+        private final Float heatingSpace;
+        private final TenancyModel tenancy;
 
         public ApartmentModelEntity(String id, String title, String location, String description,
                                     Float livingSpace, Float usableSpace, Float heatingSpace, TenancyModel tenancy) {

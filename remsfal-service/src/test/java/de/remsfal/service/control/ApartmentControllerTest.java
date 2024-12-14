@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
-public class ApartmentControllerTest extends AbstractTest {
+class ApartmentControllerTest extends AbstractTest {
 
     @Inject
     PropertyController propertyController;
