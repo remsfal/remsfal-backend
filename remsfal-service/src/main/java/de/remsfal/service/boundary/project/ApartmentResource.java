@@ -3,12 +3,9 @@ package de.remsfal.service.boundary.project;
 import de.remsfal.core.api.project.ApartmentEndpoint;
 import de.remsfal.core.json.project.ApartmentJson;
 import de.remsfal.core.model.project.ApartmentModel;
-import de.remsfal.core.model.project.BuildingModel;
-import de.remsfal.service.boundary.ProjectResource;
 import de.remsfal.service.control.ApartmentController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 

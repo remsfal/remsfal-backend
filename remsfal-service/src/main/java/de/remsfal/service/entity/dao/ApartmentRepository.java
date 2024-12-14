@@ -31,7 +31,7 @@ public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
                         .and("buildingId", buildingId));
     }
 
-    public List<ApartmentEntity> findApartmentByBuildingId(String buildingId) {
+    public List<ApartmentEntity> findApartmentByBuildingId(final String buildingId) {
         return getEntityManager()
                 .createQuery("SELECT a FROM ApartmentEntity a WHERE a.buildingId = :buildingId", ApartmentEntity.class)
                 .setParameter("buildingId", buildingId)

@@ -1,12 +1,8 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.api.project.ApartmentEndpoint;
-import de.remsfal.core.json.project.ApartmentJson;
 import de.remsfal.core.model.project.ApartmentModel;
-import de.remsfal.service.boundary.project.ProjectSubResource;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
-import de.remsfal.service.entity.dto.TenancyEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
@@ -56,7 +52,7 @@ public class ApartmentController {
     @Transactional
     public ApartmentModel updateApartment(final String projectId, final String buildingId,
                                          final String apartmentId, final ApartmentModel apartment) {
-        logger.infov("Update an apartment (projectId={1} buildingId={2} apartment{3})",
+        logger.infov("Update an apartment (projectId={0} buildingId={1} apartment{2} apartment{3})",
                 projectId, buildingId, apartment);
         final ApartmentEntity entity = apartmentRepository.findByIds(apartmentId, projectId, buildingId)
                 .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
@@ -88,7 +84,7 @@ public class ApartmentController {
     public void deleteApartment(final String projectId, final String buildingId, final String apartmentId) {
         logger.infov("Delete an apartment (projectId{0} buildingId={1} apartmentId{2})",
                 projectId, buildingId, apartmentId);
-        final ApartmentEntity entity = apartmentRepository.findByIds(apartmentId, projectId, buildingId)
+        apartmentRepository.findByIds(apartmentId, projectId, buildingId)
                 .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
         apartmentRepository.removeApartmentByIds(apartmentId, projectId, buildingId);
     }

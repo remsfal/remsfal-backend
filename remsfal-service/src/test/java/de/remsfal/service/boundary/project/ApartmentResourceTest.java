@@ -103,7 +103,7 @@ public class ApartmentResourceTest extends AbstractProjectResourceTest {
                         .replace("{propertyId}", TestData.PROPERTY_ID)
                         .replace("{buildingId}", TestData.BUILDING_ID)+"/"))
                 .and().body("id", Matchers.notNullValue())
-                .and().body("title", Matchers.equalTo(TestData.APARTMENT_TITLE));
+                .and().body("title", Matchers.equalTo(TestData.APARTMENT_TITLE_2));
 
         long entities = entityManager
                 .createQuery("SELECT count(apartment) FROM ApartmentEntity apartment where apartment.title = :title", long.class)
