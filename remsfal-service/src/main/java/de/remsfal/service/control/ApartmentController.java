@@ -23,6 +23,9 @@ public class ApartmentController {
     @Inject
     ApartmentRepository apartmentRepository;
 
+    @Inject
+    TenancyController tenancyController;
+
     @Transactional
     public ApartmentModel createApartment(final String projectId, final String buildingId,
                                           final ApartmentModel apartment) {
@@ -57,11 +60,27 @@ public class ApartmentController {
                 projectId, buildingId, apartment);
         final ApartmentEntity entity = apartmentRepository.findByIds(apartmentId, projectId, buildingId)
                 .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
-        entity.setDescription(apartment.getDescription());
-        entity.setLivingSpace(apartment.getLivingSpace());
-        entity.setHeatingSpace(apartment.getHeatingSpace());
-        entity.setLocation(apartment.getLocation());
-        entity.setTitle(apartment.getTitle());
+        if (apartment.getDescription() != null) {
+            entity.setDescription(apartment.getDescription());
+        }
+        if (apartment.getLivingSpace() != null) {
+            entity.setLivingSpace(apartment.getLivingSpace());
+        }
+        if (apartment.getHeatingSpace() != null) {
+            entity.setHeatingSpace(apartment.getHeatingSpace());
+        }
+        if (apartment.getLocation() != null) {
+            entity.setLocation(apartment.getLocation());
+        }
+        if (apartment.getTitle() != null) {
+            entity.setTitle(apartment.getTitle());
+        }
+        if (apartment.getUsableSpace() != null) {
+            entity.setUsableSpace(apartment.getUsableSpace());
+        }
+        if (apartment.getTenancy() != null) {
+            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), apartment.getTenancy()));
+        }
         return apartmentRepository.merge(entity);
     }
 

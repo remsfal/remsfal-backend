@@ -1,5 +1,6 @@
 package de.remsfal.core.api.project;
 
+import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -82,7 +83,7 @@ public interface ApartmentEndpoint {
             @Parameter(description = "ID of the apartment", required = true)
             @PathParam("apartmentId") @NotNull @UUID String apartmentId,
             @Parameter(description = "Apartment object with information", required = true)
-            @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment
+            @Valid @ConvertGroup(to = PatchValidation.class) ApartmentJson apartment
     );
 
     @DELETE

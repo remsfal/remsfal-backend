@@ -21,7 +21,8 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     ApartmentController controller;
 
     @Override
-    public Response createApartment(String projectId, String buildingId, ApartmentJson apartment) {
+    public Response createApartment(final String projectId, final String buildingId,
+                                    final ApartmentJson apartment) {
     checkPrivileges(projectId);
     final ApartmentModel model = controller.createApartment(projectId, buildingId, apartment);
     final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
@@ -32,7 +33,8 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     }
 
     @Override
-    public ApartmentJson getApartment(String projectId, String buildingId, String apartmentId) {
+    public ApartmentJson getApartment(final String projectId, final String buildingId,
+                                      final String apartmentId) {
         checkPrivileges(projectId);
         final ApartmentModel model = controller.getApartment(projectId, buildingId, apartmentId);
 
@@ -40,15 +42,16 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     }
 
     @Override
-    public ApartmentJson updateApartment(String projectId, String buildingId,
-                                         String apartmentId, ApartmentJson apartment) {
+    public ApartmentJson updateApartment(final String projectId, final String buildingId,
+                                         final String apartmentId, final ApartmentJson apartment) {
         checkPrivileges(projectId);
         return ApartmentJson.valueOf(controller.updateApartment(
                 projectId, buildingId, apartmentId, apartment));
     }
 
     @Override
-    public void deleteApartment(String projectId, String buildingId, String apartmentId) {
+    public void deleteApartment(final String projectId, final String buildingId,
+                                final String apartmentId) {
         checkPrivileges(projectId);
         controller.deleteApartment(projectId, buildingId, apartmentId);
     }
