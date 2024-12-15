@@ -28,19 +28,20 @@ public interface ContractorsEnpoint {
     String SERVICE = "contractors";
 
     @GET
+    @Path("/{contractorId}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all tasks.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    TaskListJson tasks(
+    TaskListJson getTasks(
             @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull
             @UUID String projectId,
-            @Parameter(description = "Filter to return only tasks of a specific user") @QueryParam("owner")
+            @Parameter(description = "Filter to return only tasks of a specific user") @QueryParam("owner") @NotNull
             @UUID String ownerId,
             @Parameter(description = "Filter to return only tasks with a specific status") @QueryParam("status")
             TaskModel.Status status);
 
     @GET
-    @Path("/{taskId}")
+    @Path("/{ownerId}/tasks/{taskId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a task.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
@@ -48,5 +49,7 @@ public interface ContractorsEnpoint {
     TaskJson getTask(
             @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID
             String projectId,
+            @Parameter(description = "Filter to return only tasks of a specific user") @QueryParam("owner") @NotNull
+            @UUID String ownerId,
             @Parameter(description = "ID of the task", required = true) @PathParam("taskId") @NotNull @UUID String taskId);
 }
