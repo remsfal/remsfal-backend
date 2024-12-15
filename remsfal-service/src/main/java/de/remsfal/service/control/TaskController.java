@@ -116,6 +116,10 @@ public class TaskController {
         logger.infov("Retrieving a task (projectId = {0}, taskId = {1})", projectId, taskId);
         return this.getTask(TaskType.TASK, projectId, taskId);
     }
+    public TaskModel getTask(final String projectId, final String ownerId, final String taskId) {
+        logger.infov("Retrieving a task (projectId = {0}, ownerId={1}, taskId = {2})", projectId, ownerId, taskId);
+        return this.getTask(TaskType.TASK, projectId, taskId);
+    }
 
     public TaskModel getDefect(final String projectId, final String taskId) {
         logger.infov("Retrieving a defect (projectId = {0}, defectId = {1})", projectId, taskId);
