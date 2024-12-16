@@ -139,6 +139,7 @@ At first you well need to start the db as described in [Prerequisits](#prerequis
 
 Next run the project using the following command:
 ```sh
+mvn clean install
 mvn compile quarkus:dev -pl remsfal-service
 ```
 It will automatically recompile when you change something.
