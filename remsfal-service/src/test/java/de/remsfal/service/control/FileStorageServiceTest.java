@@ -74,28 +74,26 @@ public class FileStorageServiceTest {
     }
 
     @Test
-    public void testUploadFile_NoFilePart_Failure() throws Exception {
+    public void testUploadFile_NoFilePart_Failure() {
         // Simulate a MultipartFormDataInput with no "file" entry
         MultipartFormDataInput input = mock(MultipartFormDataInput.class);
         when(input.getFormDataMap()).thenReturn(Map.of());
 
         fileStorageService.logger = Logger.getLogger(FileStorageService.class);
-        MinioException thrown = Assertions.assertThrows(MinioException.class, () -> {
-            fileStorageService.uploadFile(BUCKET_NAME, input);
-        });
+        MinioException thrown = Assertions.assertThrows(MinioException.class, ()
+                -> fileStorageService.uploadFile(BUCKET_NAME, input));
         assertTrue(thrown.getMessage().contains("File is null or empty"));
     }
 
     @Test
-    public void testUploadFile_EmptyFilePart_Failure() throws Exception {
+    public void testUploadFile_EmptyFilePart_Failure() {
         // Simulate a MultipartFormDataInput with empty file list
         MultipartFormDataInput input = mock(MultipartFormDataInput.class);
         when(input.getFormDataMap()).thenReturn(Map.of("file", List.of()));
 
         fileStorageService.logger = Logger.getLogger(FileStorageService.class);
-        MinioException thrown = Assertions.assertThrows(MinioException.class, () -> {
-            fileStorageService.uploadFile(BUCKET_NAME, input);
-        });
+        MinioException thrown = Assertions.assertThrows(MinioException.class, ()
+                -> fileStorageService.uploadFile(BUCKET_NAME, input));
 
         assertTrue(thrown.getMessage().contains("File is null or empty"));
     }
@@ -108,9 +106,8 @@ public class FileStorageServiceTest {
 
         MultipartFormDataInput input = createMultipartFormDataInput(fileName, contentType, fileContent);
         fileStorageService.logger = Logger.getLogger(FileStorageService.class);
-        MinioException thrown = Assertions.assertThrows(MinioException.class, () -> {
-            fileStorageService.uploadFile(BUCKET_NAME, input);
-        });
+        MinioException thrown = Assertions.assertThrows(MinioException.class, () ->
+                fileStorageService.uploadFile(BUCKET_NAME, input));
         assertTrue(thrown.getMessage().contains("Invalid file type"));
     }
 
@@ -131,9 +128,8 @@ public class FileStorageServiceTest {
         testService.minioClient = mockClient;
         testService.endpoint = "http://localhost:9000";
         testService.logger = Logger.getLogger(FileStorageService.class);
-        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
-            testService.uploadFile("new-bucket", input);
-        });
+        Exception thrown = Assertions.assertThrows(Exception.class, () ->
+                testService.uploadFile("new-bucket", input));
         assertTrue(thrown.getMessage().contains("Bucket creation failed"));
     }
 
@@ -165,10 +161,9 @@ public class FileStorageServiceTest {
     }
 
     @Test
-    public void testDownloadFile_NotFound_Failure() throws Exception {
-        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
-            fileStorageService.downloadFile(BUCKET_NAME, "non-existent-file.txt");
-        });
+    public void testDownloadFile_NotFound_Failure() {
+        Exception thrown = Assertions.assertThrows(Exception.class, () ->
+                fileStorageService.downloadFile(BUCKET_NAME, "non-existent-file.txt"));
         assertTrue(thrown.getMessage().contains("File does not exist"));
     }
 
@@ -185,9 +180,8 @@ public class FileStorageServiceTest {
 
     @Test
     public void testGetContentType_NotFound_Failure() {
-        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
-            fileStorageService.getContentType(BUCKET_NAME, "ghost-file.txt");
-        });
+        Exception thrown = Assertions.assertThrows(Exception.class, () ->
+                fileStorageService.getContentType(BUCKET_NAME, "ghost-file.txt"));
         assertTrue(thrown.getMessage().contains("File does not exist"));
     }
 
@@ -196,8 +190,10 @@ public class FileStorageServiceTest {
     @Test
     public void testListObjects_Success() throws Exception {
         byte[] content = "some content".getBytes();
-        fileStorageService.uploadFile(BUCKET_NAME, createMultipartFormDataInput("file1.png", "image/png", content));
-        fileStorageService.uploadFile(BUCKET_NAME, createMultipartFormDataInput("file2.png", "image/png", content));
+        fileStorageService.uploadFile(BUCKET_NAME,
+                createMultipartFormDataInput("file1.png", "image/png", content));
+        fileStorageService.uploadFile(BUCKET_NAME,
+                createMultipartFormDataInput("file2.png", "image/png", content));
 
         Iterable<Result<Item>> objects = fileStorageService.listObjects(BUCKET_NAME);
         int count = 0;
@@ -209,10 +205,9 @@ public class FileStorageServiceTest {
     }
 
     @Test
-    public void testListObjects_bucketNotFound_FAILURE() throws Exception {
-        MinioException thrown = Assertions.assertThrows(MinioException.class, () -> {
-            fileStorageService.listObjects("non-existent-bucket");
-        });
+    public void testListObjects_bucketNotFound_FAILURE() {
+        MinioException thrown = Assertions.assertThrows(MinioException.class, () ->
+                fileStorageService.listObjects("non-existent-bucket"));
         assertTrue(thrown.getMessage().contains("Bucket does not exist"));
     }
 
@@ -237,12 +232,10 @@ public class FileStorageServiceTest {
     }
 
     @Test
-    public void testDeleteObject_NotFound_FAILURE() throws Exception
-    {
+    public void testDeleteObject_NotFound_FAILURE() {
         String fileName = "non-existent-file.txt";
-        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
-            fileStorageService.deleteObject(BUCKET_NAME, fileName);
-        });
+        Exception thrown = Assertions.assertThrows(Exception.class, () ->
+                fileStorageService.deleteObject(BUCKET_NAME, fileName));
         assertTrue(thrown.getMessage().contains("File does not exist"));
     }
 
