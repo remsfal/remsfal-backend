@@ -50,6 +50,7 @@ de.remsfal.auth.oidc.client-secret=<YOUR-SECRET>
 de.remsfal.auth.session.secret=<YOUR-CUSTOM-SESSION-SECRET>
 ```
 
+
 #### Camunda run 
 Camunda is used for the workflow management. You can run it using the provided docker-compose.yml. 
 
@@ -84,15 +85,17 @@ To interact with the camunda engine you can use the REST API.
 
 You can read more about the camunda REST API [here](https://docs.camunda.org/manual/latest/reference/rest/).
 
-For example to start a process you can use the following curl command:
+For example to start a process you can use the following endpoint:
 
 POST: http://localhost:8081/engine-rest/process-definition/key/{process-key}/start
 
-To get all open tasks you can use the following curl command:
+
+To get all open tasks you can use the following endpoint:
 
 GET: http://localhost:8081/engine-rest/task
 
-To complete a task you can use the following curl command:
+
+To complete a task you can use the following endpoint:
 
 POST: http://localhost:8081/engine-rest/task/{id}/complete
 
