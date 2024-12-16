@@ -128,35 +128,6 @@ public class BuildingController {
 
         return entity;
     }
-
-    @Transactional
-    public CommercialModel createCommercial(final String projectId, final String buildingId,
-        final CommercialModel commercial) {
-        logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
-            projectId, buildingId, commercial);
-        CommercialEntity entity = CommercialEntity.fromModel(commercial);
-        entity.generateId();
-        entity.setProjectId(projectId);
-        entity.setBuildingId(buildingId);
-        commercialRepository.persistAndFlush(entity);
-        commercialRepository.getEntityManager().refresh(entity);
-        return getCommercial(projectId, buildingId, entity.getId());
-    }
-
-    public CommercialModel getCommercial(final String projectId,
-        final String buildingId, final String commercialId) {
-        logger.infov("Retrieving a commercial (projectId={0}, buildingId={1}, commercialId={2})",
-            projectId, buildingId, commercialId);
-        CommercialEntity entity = commercialRepository.findByIdOptional(commercialId)
-            .orElseThrow(() -> new NotFoundException("Commercial not exist"));
-
-        if (!entity.getProjectId().equals(projectId)) {
-            throw new NoResultException("Unable to find commercial, because the project ID is invalid");
-        }
-
-        return entity;
-    }
-
     @Transactional
     public GarageModel createGarage(final String projectId, final String buildingId, final GarageModel garage) {
         logger.infov("Creating a garage (projectId={0}, buildingId={1}, garage={2})",

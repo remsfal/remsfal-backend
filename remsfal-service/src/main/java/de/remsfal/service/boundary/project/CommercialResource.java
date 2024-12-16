@@ -2,63 +2,58 @@ package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.CommercialEndpoint;
 import de.remsfal.core.json.project.CommercialJson;
-import de.remsfal.service.boundary.ProjectResource;
+import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.service.control.CommercialController;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-public class CommercialResource extends ProjectResource implements CommercialEndpoint {
+import java.net.URI;
+import java.util.List;
 
+/**
+ * Resource for managing Commercial units via the API.
+ */
+@RequestScoped
+public class CommercialResource extends ProjectSubResource implements CommercialEndpoint {
 
-    /**
-     * @param projectId
-     * @param buildingId
-     * @param commercial
-     * @return
-     */
+    @Inject
+    CommercialController controller;
+
     @Override
-    public Response createCommercial(String projectId, String buildingId, CommercialJson commercial) {
-        return null;
+    public Response createCommercial(final String projectId, final String buildingId, final CommercialJson commercial) {
+        checkPrivileges(projectId);
+        CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
+        URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        return Response.created(location)
+                .type(MediaType.APPLICATION_JSON)
+                .entity(CommercialJson.valueOf(model))
+                .build();
     }
 
-    /**
-     * @param projectId
-     * @param buildingId
-     * @param commercialId
-     * @return
-     */
     @Override
-    public CommercialJson getCommercial(String projectId, String buildingId, String commercialId) {
-        return null;
+    public CommercialJson getCommercial(final String projectId, final String buildingId, final String commercialId) {
+        checkPrivileges(projectId);
+        return CommercialJson.valueOf(controller.getCommercial(projectId, buildingId, commercialId));
     }
 
-    /**
-     * @param projectId
-     * @param buildingId
-     * @return
-     */
     @Override
-    public Response getCommercials(String projectId, String buildingId) {
-        return null;
+    public Response getCommercials(final String projectId, final String buildingId) {
+        checkPrivileges(projectId);
+        List<? extends CommercialModel> commercials = controller.getCommercials(projectId, buildingId);
+        return Response.ok(commercials).build();
     }
 
-    /**
-     * @param projectId
-     * @param buildingId
-     * @param commercialId
-     * @param commercial
-     * @return
-     */
     @Override
-    public CommercialJson updateCommercial(String projectId, String buildingId, String commercialId, CommercialJson commercial) {
-        return null;
+    public CommercialJson updateCommercial(final String projectId, final String buildingId, final String commercialId, final CommercialJson commercial) {
+        checkPrivileges(projectId);
+        return CommercialJson.valueOf(controller.updateCommercial(projectId, buildingId, commercialId, commercial));
     }
 
-    /**
-     * @param projectId
-     * @param buildingId
-     * @param commercialId
-     */
     @Override
-    public void deleteCommercial(String projectId, String buildingId, String commercialId) {
-
+    public void deleteCommercial(final String projectId, final String buildingId, final String commercialId) {
+        checkPrivileges(projectId);
+        controller.deleteCommercial(projectId, buildingId, commercialId);
     }
 }

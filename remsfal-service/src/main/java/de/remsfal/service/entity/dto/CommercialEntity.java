@@ -32,6 +32,9 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
     @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
     private Float heatingSpace;
 
+    @Column(name="RENT", columnDefinition = "decimal")
+    private Float rent;
+
     @Override
     public String getId() {
         return id;
@@ -78,6 +81,10 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
     }
 
     @Override
+    public Float getRent() {return rent;}
+
+    public void setRent(Float rent) {this.rent = rent;}
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -88,7 +95,9 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
                 && Objects.equals(buildingId, e.buildingId)
                 && Objects.equals(location, e.location)
                 && Objects.equals(commercialSpace, e.commercialSpace)
-                && Objects.equals(heatingSpace, e.heatingSpace);
+                && Objects.equals(heatingSpace, e.heatingSpace)
+                    && Objects.equals(rent, e.rent);
+
         }
         return false;
     }
@@ -110,6 +119,7 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         entity.setCommercialSpace(commercial.getCommercialSpace());
         entity.setUsableSpace(commercial.getUsableSpace());
         entity.setHeatingSpace(commercial.getHeatingSpace());
+        entity.setRent(commercial.getRent());
         return entity;
     }
 

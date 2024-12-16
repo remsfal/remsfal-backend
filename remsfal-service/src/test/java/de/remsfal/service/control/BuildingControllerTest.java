@@ -308,46 +308,6 @@ class BuildingControllerTest extends AbstractTest {
         
         assertEquals(result, getResult);
     }
-
-    @Test
-    void createCommercial_SUCCESS_getCommercial() {
-        final String propertyId = propertyController
-            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
-            .getId();
-        assertNotNull(propertyId);
-
-        final String buildingId = buildingController
-            .createBuilding(TestData.PROJECT_ID, propertyId,
-                TestData.buildingBuilder()
-                .id(null)
-                .address(TestData.addressBuilder().build())
-                .build())
-            .getId();
-        assertNotNull(buildingId);
-        
-        final CommercialModel commercial = TestData.commercialBuilder().build();
-        final CommercialModel result = buildingController
-            .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
-        
-        assertNotEquals(commercial.getId(), result.getId());
-        assertEquals(commercial.getTitle(), result.getTitle());
-        assertEquals(commercial.getLocation(), result.getLocation());
-        assertEquals(commercial.getDescription(), result.getDescription());
-        assertEquals(commercial.getCommercialSpace(), result.getCommercialSpace());
-        assertEquals(commercial.getUsableSpace(), result.getUsableSpace());
-        
-        final String commercialId = entityManager
-            .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
-            .setParameter("title", TestData.COMMERCIAL_TITLE)
-            .getSingleResult();
-        assertEquals(result.getId(), commercialId);
-
-        final CommercialModel getResult = buildingController
-            .getCommercial(TestData.PROJECT_ID, buildingId, commercialId);
-        
-        assertEquals(result, getResult);
-    }
-
    @Test
     void createGarage_SUCCESS_getGarage() {
         final String propertyId = propertyController
