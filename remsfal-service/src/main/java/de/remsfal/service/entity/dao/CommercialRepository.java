@@ -3,6 +3,11 @@ package de.remsfal.service.entity.dao;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.remsfal.service.entity.dto.CommercialEntity;
+import io.quarkus.panache.common.Parameters;
+
+import java.util.List;
+import java.util.Optional;
+
 
 import java.util.List;
 
@@ -11,6 +16,7 @@ import java.util.List;
  */
 @ApplicationScoped
 public class CommercialRepository extends AbstractRepository<CommercialEntity> {
+
     public List<CommercialEntity> findCommercialByBuildingId(String buildingId) {
         return getEntityManager()
                 .createQuery(
@@ -19,5 +25,24 @@ public class CommercialRepository extends AbstractRepository<CommercialEntity> {
                 )
                 .setParameter("buildingId", buildingId)
                 .getResultList();
+    }
+
+    public List<CommercialEntity> findCommercialsByBuildingId(final String projectId, final String buildingId) {
+        return find("projectId = :projectId and buildingId = :buildingId",
+                Parameters.with("projectId", projectId).and("buildingId", buildingId)).list();
+    }
+
+    public Optional<CommercialEntity> findCommercialById(final String projectId, final String buildingId, final String commercialId) {
+        return find("id = :id and projectId = :projectId and buildingId = :buildingId",
+                Parameters.with("id", commercialId)
+                        .and("projectId", projectId)
+                        .and("buildingId", buildingId)).singleResultOptional();
+    }
+
+    public long deleteCommercialById(final String projectId, final String buildingId, final String commercialId) {
+        return delete("id = :id and projectId = :projectId and buildingId = :buildingId",
+                Parameters.with("id", commercialId)
+                        .and("projectId", projectId)
+                        .and("buildingId", buildingId));
     }
 }

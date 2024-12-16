@@ -54,4 +54,23 @@ public abstract class CommercialJson implements CommercialModel {
     @Nullable
     public abstract Float getRent();
 
+    /**
+     * Converts a {@link CommercialModel} to a {@link CommercialJson}.
+     *
+     * @param model the {@link CommercialModel} instance to convert.
+     * @return an immutable {@link CommercialJson} instance.
+     */
+    public static CommercialJson valueOf(final CommercialModel model) {
+        return ImmutableCommercialJson.builder()
+                .id(model.getId())
+                .title(model.getTitle())
+                .location(model.getLocation())
+                .description(model.getDescription())
+                .commercialSpace(model.getCommercialSpace())
+                .usableSpace(model.getUsableSpace())
+                .heatingSpace(model.getHeatingSpace())
+                .rent(model.getRent())
+                .build();
+    }
+
 }
