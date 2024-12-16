@@ -65,8 +65,8 @@ docker compose up -d
 
 Once started Camunda copies the bpmn files from ./processes to the camunda engine.
 
-There is a test class [CamundaApiTest](remsfal-service/src/test/java/de/remsfal/core/CamundaApiTest.java) which is showcasing how the camunda engine
-can be used. 
+There is a test class [CamundaApiTest](remsfal-service/src/test/java/de/remsfal/core/CamundaApiTest.java) which is showcasing how the camunda engine can be used. 
+
 To run this test class you will need to start the camunda engine using the provided docker-compose.yml.
 
 You can run the test class using the following command:
@@ -77,6 +77,8 @@ You can run the test class using the following command:
 
 
 You can access the camunda cockpit in browser under [`http://localhost:8081`](http://localhost:8081) with the credentials `demo/demo`.
+
+
 
 To interact with the camunda engine you can use the REST API. 
 
@@ -134,7 +136,6 @@ At first you well need to start the db as described in [Prerequisits](#prerequis
 
 Next run the project using the following command:
 ```sh
-mvn clean install
 mvn compile quarkus:dev -pl remsfal-service
 ```
 It will automatically recompile when you change something.
