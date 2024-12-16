@@ -112,7 +112,7 @@
             <!-- JDK 24 support -->
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.15.10</version>
+            <version>1.15.11</version>
         </dependency>
 
         <!-- TEST dependencies -->
