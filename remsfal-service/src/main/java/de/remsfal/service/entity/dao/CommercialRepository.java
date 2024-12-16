@@ -16,6 +16,7 @@ import java.util.List;
  */
 @ApplicationScoped
 public class CommercialRepository extends AbstractRepository<CommercialEntity> {
+
     public List<CommercialEntity> findCommercialByBuildingId(String buildingId) {
         return getEntityManager()
                 .createQuery(
