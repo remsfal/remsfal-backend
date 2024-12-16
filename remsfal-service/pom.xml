@@ -107,6 +107,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- File Storage dependencies - Minio -->
+        <dependency>
+            <groupId>io.quarkiverse.minio</groupId>
+            <artifactId>quarkus-minio</artifactId>
+            <version>3.7.7</version>
+        </dependency>
+
         <!-- Bugfix dependencies -->
         <dependency>
             <!-- JDK 24 support -->
