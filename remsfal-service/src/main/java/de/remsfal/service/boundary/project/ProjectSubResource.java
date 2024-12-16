@@ -17,16 +17,16 @@ import de.remsfal.service.control.ProjectController;
 public class ProjectSubResource {
 
     @Context
-    UriInfo uri;
+    protected UriInfo uri;
 
     @Context
-    ResourceContext resourceContext;
+    protected ResourceContext resourceContext;
 
     @Inject
-    RemsfalPrincipal principal;
-    
+    protected RemsfalPrincipal principal;
+
     @Inject
-    ProjectController projectController;
+    protected ProjectController projectController;
 
     public void checkPrivileges(final String projectId) {
         if (!projectController.getProjectMemberRole(principal, projectId).isPrivileged()) {

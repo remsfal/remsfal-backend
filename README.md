@@ -1,8 +1,11 @@
+<img src="https://remsfal.de/logo_upscaled.png" width="60%">
+
+![GitHub Release](https://img.shields.io/github/v/release/remsfal/remsfal-backend?label=latest%20release)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=remsfal_remsfal-backend&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=remsfal_remsfal-backend)
 ![Contributors](https://img.shields.io/github/contributors/remsfal/remsfal-backend)  
-![Remsfal Logo](https://remsfal.de/assets/logo-f578a7d9.png)
-# remsfal-backend 
+
+# Open Source Facility Management Software (Backend)
 
 `remsfal-backend` is a backend service built using Java and Quarkus framework to manage real estate projects.
 It works together with the [`remsfal-frontend`](https://github.com/remsfal/remsfal-frontend) repository.  
@@ -107,7 +110,7 @@ The implementation of the camunda engine is in a proof of concept state and is n
 
 To package and execute the application
 ```sh
-mvn package
+./mvnw package
 java -jar remsfal-service/target/remsfal-service-runner.jar
 ```
 
@@ -139,8 +142,8 @@ At first you well need to start the db as described in [Prerequisits](#prerequis
 
 Next run the project using the following command:
 ```sh
-mvn clean install
-mvn compile quarkus:dev -pl remsfal-service
+./mvnw clean install
+./mvnw compile quarkus:dev -pl remsfal-service
 ```
 It will automatically recompile when you change something.
 
@@ -148,7 +151,7 @@ It will automatically recompile when you change something.
 
 To run the stylecheck use the following command:
 ```sh
-mvn checkstyle:checkstyle
+./mvnw checkstyle:checkstyle
 ```
 
 ## Copyright

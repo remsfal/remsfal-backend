@@ -1,6 +1,8 @@
 package de.remsfal.service.boundary.project;
 
+import de.remsfal.core.api.project.ChatEndpoint;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -23,6 +25,9 @@ public class TaskResource extends ProjectSubResource implements TaskEndpoint {
 
     @Inject
     TaskController taskController;
+
+    @Inject
+    Instance<ChatEndpoint> chatEndpoint;
 
     @Override
     public TaskListJson getTasks(String projectId, String ownerId, Status status) {
@@ -61,6 +66,11 @@ public class TaskResource extends ProjectSubResource implements TaskEndpoint {
     public void deleteTask(String projectId, String taskId) {
         checkPrivileges(projectId);
         taskController.deleteTask(projectId, taskId);
+    }
+
+    @Override
+    public ChatEndpoint getChatSessionResource() {
+        return resourceContext.initResource(chatEndpoint.get());
     }
 
 }

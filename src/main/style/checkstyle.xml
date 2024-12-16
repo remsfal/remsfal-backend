@@ -7,7 +7,7 @@
 
     <property name="charset" value="UTF-8" />
 
-    <property name="severity" value="warning"/>
+    <property name="severity" value="error"/>
         
     <property name="fileExtensions" value="java, properties, xml" />
 
@@ -17,10 +17,16 @@
         <property name="eachLine" value="true" />
     </module>
 
+    <module name="RegexpSingleline">
+        <property name="format" value=".*\S\s+$"/>
+        <property name="message" value="Trailing whitespace detected"/>
+    </module>
+
     <module name="TreeWalker">
         <module name="AvoidStarImport" />
         <module name="Indentation">
             <property name="forceStrictCondition" value="true"/>
+            <property name="severity" value="warning"/>
         </module>
         <module name="AnnotationLocation">
             <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>

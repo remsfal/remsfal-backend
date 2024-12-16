@@ -16,8 +16,6 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ProjectEndpoint;
-import de.remsfal.core.api.project.DefectEndpoint;
-import de.remsfal.core.api.project.TaskEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.json.ProjectMemberJson;
@@ -108,7 +106,8 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public ProjectJson updateProjectMember(final String projectId, final String memberId, final ProjectMemberJson project) {
+    public ProjectJson updateProjectMember(final String projectId,
+                                           final String memberId, final ProjectMemberJson project) {
         final ProjectModel model = controller.changeProjectMemberRole(principal, projectId, project);
         return ProjectJson.valueOf(model);
     }
@@ -124,12 +123,12 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public TaskEndpoint getTaskResource() {
+    public TaskResource getTaskResource() {
         return resourceContext.initResource(taskResource.get());
     }
 
     @Override
-    public DefectEndpoint getDefectResource() {
+    public DefectResource getDefectResource() {
         return resourceContext.initResource(defectResource.get());
     }
 

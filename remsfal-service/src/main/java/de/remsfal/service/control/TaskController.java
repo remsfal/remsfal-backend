@@ -41,7 +41,7 @@ public class TaskController {
         if(task.getStatus() == null) {
             entity.setStatus(Status.OPEN);
         } else {
-            entity.setStatus(task.getStatus());            
+            entity.setStatus(task.getStatus());
         }
         entity.setOwnerId(task.getOwnerId());
         entity.setDescription(task.getDescription());
@@ -61,7 +61,7 @@ public class TaskController {
         if(task.getStatus() == null) {
             entity.setStatus(Status.PENDING);
         } else {
-            entity.setStatus(task.getStatus());            
+            entity.setStatus(task.getStatus());
         }
         entity.setOwnerId(task.getOwnerId());
         entity.setDescription(task.getDescription());
@@ -87,7 +87,8 @@ public class TaskController {
         }
     }
 
-    public List<? extends TaskModel> getTasks(final String projectId, final String ownerId, final Optional<Status> status) {
+    public List<? extends TaskModel>
+    getTasks(final String projectId, final String ownerId, final Optional<Status> status) {
         logger.infov("Retrieving tasks (projectId = {0}, ownerId = {1})", projectId, ownerId);
         if(status.isEmpty()) {
             return repository.findTaskByOwnerId(TaskType.TASK, projectId, ownerId);
@@ -96,7 +97,8 @@ public class TaskController {
         }
     }
 
-    public List<? extends TaskModel> getDefects(final String projectId, final String ownerId, final Optional<Status> status) {
+    public List<? extends TaskModel>
+    getDefects(final String projectId, final String ownerId, final Optional<Status> status) {
         logger.infov("Retrieving defects (projectId = {0}, ownerId = {1})", projectId, ownerId);
         if(status.isEmpty()) {
             return repository.findTaskByOwnerId(TaskType.DEFECT, projectId, ownerId);

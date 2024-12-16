@@ -79,6 +79,25 @@ public class TestData {
             .countryCode(ADDRESS_COUNTRY_1);
     }
 
+    // Test address 2
+    public static final String ADDRESS_ID_2 = "00550c43-b5c0-4951-9c29-000000000002";
+    public static final String ADDRESS_STREET_2 = "Alexanderplatz 100";
+    public static final String ADDRESS_CITY_2 = "Berlin";
+    public static final String ADDRESS_PROVINCE_2 = "Berlin";
+    public static final String ADDRESS_ZIP_2 = "10178";
+    public static final String ADDRESS_COUNTRY_2 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder2() {
+        return ImmutableAddressJson
+                .builder()
+                .street(ADDRESS_STREET_2)
+                .city(ADDRESS_CITY_2)
+                .province(ADDRESS_PROVINCE_2)
+                .zip(ADDRESS_ZIP_2)
+                .countryCode(ADDRESS_COUNTRY_2);
+    }
+
+
     // Default test project
     public static final String PROJECT_ID = TestData.PROJECT_ID_1;
     public static final String PROJECT_TITLE = TestData.PROJECT_TITLE_1;
@@ -196,6 +215,28 @@ public class TestData {
             .usableSpace(TestData.BUILDING_USABLE_SPACE_1)
             .heatingSpace(TestData.BUILDING_HEATING_SPACE_1)
             .isDifferentHeatingSpace(true);
+    }
+
+    // Test building 2
+    public static final String BUILDING_ID_2 = "b9440c43-b5c0-4951-9c25-000000000002";
+    public static final String BUILDING_TITLE_2 = "Bavariaplatz (Fam. Müller)";
+    public static final String BUILDING_DESCRIPTION_2 = "Einfamilienhaus mit Garten";
+    public static final Float BUILDING_LIVING_SPACE_2 = 120.75f;
+    public static final Float BUILDING_COMMERCIAL_SPACE_2 = 0.0f;
+    public static final Float BUILDING_USABLE_SPACE_2 = 70.5f;
+    public static final Float BUILDING_HEATING_SPACE_2 = 120.75f;
+
+    public static final ImmutableBuildingJson.Builder buildingBuilder2() {
+        return ImmutableBuildingJson
+                .builder()
+                .id(TestData.BUILDING_ID_2)
+                .title(TestData.BUILDING_TITLE_2)
+                .description(TestData.BUILDING_DESCRIPTION_2)
+                .livingSpace(TestData.BUILDING_LIVING_SPACE_2)
+                .commercialSpace(TestData.BUILDING_COMMERCIAL_SPACE_2)
+                .usableSpace(TestData.BUILDING_USABLE_SPACE_2)
+                .heatingSpace(TestData.BUILDING_HEATING_SPACE_2)
+                .isDifferentHeatingSpace(false);
     }
 
     // Default test apartment
@@ -391,7 +432,7 @@ public class TestData {
 
     // Test task 2
     public static final String TASK_TITLE_2 = "Licht im Treppenhaus defekt";
-    public static final String Task_DESCRIPTION_2 = "Sehr geehrte Damen und Herren,\\n"
+    public static final String TASK_DESCRIPTION_2 = "Sehr geehrte Damen und Herren,\\n"
         + "\\n"
         + "hiermit möchte ich einen dringenden Ausfall der Beleuchtung im Treppenhaus unseres Gebäudes melden. "
         + "Seit dem 8.Mai 2023 funktioniert das Licht im Treppenhaus nicht mehr, was zu erheblichen Unannehmlichkeiten "
@@ -401,5 +442,8 @@ public class TestData {
         + "Vielen Dank im Voraus.\\n"
         + "\\n"
         + "Mit freundlichen Grüßen";
+
+
+
 
 }

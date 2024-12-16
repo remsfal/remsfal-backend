@@ -47,6 +47,15 @@ public class SessionInfo {
             && getUserEmail() != null
             && !isExpired();
     }
+
+    public boolean shouldRenew() {
+        final Date expirationTime = claimsSet.getExpirationTime();
+        if(expirationTime == null) {
+            return false;
+        }
+        final long remainingTime = expirationTime.getTime() - System.currentTimeMillis();
+        return remainingTime < Duration.ofMinutes(5).toMillis();
+    }
     
     public Payload toPayload() {
         return new Payload(claimsSet.toJSONObject());
@@ -89,6 +98,12 @@ public class SessionInfo {
         public Builder expireAfter(final Duration ttl) {
             final Date expirationTime = new Date(System.currentTimeMillis() + ttl.toMillis());
             claimBuilder.expirationTime(expirationTime);
+            return this;
+        }
+        public Builder from(final SessionInfo sessionInfo) {
+            claimBuilder.subject(sessionInfo.getUserId());
+            claimBuilder.claim("email", sessionInfo.getUserEmail());
+            claimBuilder.expirationTime(sessionInfo.claimsSet.getExpirationTime());
             return this;
         }
 

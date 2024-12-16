@@ -14,6 +14,7 @@ import jakarta.validation.ReportAsSingleViolation;
 @Retention(RetentionPolicy.RUNTIME)
 @ReportAsSingleViolation
 public @interface NullOrNotBlank {
+
     String message() default "{invalid.NullOrNotBlank}";
 
     Class<?>[] groups() default {};

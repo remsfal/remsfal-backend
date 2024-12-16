@@ -21,9 +21,9 @@ import java.util.List;
 @Path(AddressEndpoint.CONTEXT + "/" + AddressEndpoint.VERSION + "/" + AddressEndpoint.SERVICE)
 public interface AddressEndpoint {
 
-    static final String CONTEXT = "api";
-    static final String VERSION = "v1";
-    static final String SERVICE = "address";
+    String CONTEXT = "api";
+    String VERSION = "v1";
+    String SERVICE = "address";
 
     @GET
     @Path("/countries")
@@ -38,8 +38,7 @@ public interface AddressEndpoint {
     @Operation(summary = "Retrieve supported countries.")
     @APIResponse(responseCode = "200", description = "A list of suggested cities")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-
-    List<AddressJson> getPossibleCities(@Parameter(description = "A zip code to map the city") 
-                                        @QueryParam("zip") @NotNull @Zip String zipCode);
+    List<AddressJson> getPossibleCities(@Parameter(description = "A zip code to map the city")
+        @QueryParam("zip") @NotNull @Zip String zipCode);
 
 }

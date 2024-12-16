@@ -36,7 +36,7 @@ public class SessionManager {
     
     public static final String KEY_ALGORITHM = "AES";
     
-    @ConfigProperty(name = "de.remsfal.auth.session.encryption-key") 
+    @ConfigProperty(name = "de.remsfal.auth.session.encryption-key")
     private Optional<String> sessionSecretKey;
 
     @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/")
@@ -114,6 +114,13 @@ public class SessionManager {
             throw new InternalServerErrorException("Invalid session cookie");
         }
         return decryptSessionObject(sessionCookie.getValue());
+    }
+
+    public NewCookie renewSessionCookie(final SessionInfo sessionInfo) {
+        SessionInfo info = SessionInfo.builder().from(sessionInfo)
+                .expireAfter(sessionCookieTimeout)
+                .build();
+        return encryptSessionCookie(info);
     }
 
     public NewCookie removalSessionCookie() {

@@ -25,61 +25,102 @@ import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 
 /**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface SiteEndpoint {
 
-    static final String SERVICE = "sites";
+    String SERVICE = "sites";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information for all bujildings.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @Operation(summary = "Retrieve information for all sites.")
+    @APIResponse(
+        responseCode = "401",
+        description = "No user authentication provided via session cookie"
+    )
     SiteListJson getSites(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the property", required = true)
+        @PathParam("propertyId") @NotNull @UUID String propertyId
+    );
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new site.")
-    @APIResponse(responseCode = "201", description = "Site created successfully",
-        headers = @Header(name = "Location", description = "URL of the new site"))
+    @APIResponse(
+        responseCode = "201",
+        description = "Site created successfully",
+        headers = @Header(name = "Location", description = "URL of the new site")
+    )
     Response createSite(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
-        @Parameter(description = "Site information", required = true) @Valid @ConvertGroup(to = PostValidation.class) SiteJson site);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the property", required = true)
+        @PathParam("propertyId") @NotNull @UUID String propertyId,
+        @Parameter(description = "Site information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) SiteJson site
+    );
 
     @GET
     @Path("/{siteId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a site.")
-    @APIResponse(responseCode = "404", description = "The site does not exist")
+    @APIResponse(
+        responseCode = "404",
+        description = "The site does not exist"
+    )
     SiteJson getSite(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") String propertyId,
-        @Parameter(description = "ID of the building", required = true) @PathParam("siteId") String siteId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the property", required = true)
+        @PathParam("propertyId") @NotNull @UUID String propertyId,
+        @Parameter(description = "ID of the site", required = true)
+        @PathParam("siteId") @NotNull @UUID String siteId
+    );
 
     @PATCH
     @Path("/{siteId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a building.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "The building does not exist")
+    @Operation(summary = "Update information of a site.")
+    @APIResponse(
+        responseCode = "401",
+        description = "No user authentication provided via session cookie"
+    )
+    @APIResponse(
+        responseCode = "404",
+        description = "The site does not exist"
+    )
     SiteJson updateSite(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
-        @Parameter(description = "ID of the building", required = true) @PathParam("siteId") @NotNull @UUID String siteId,
-        @Parameter(description = "Property information", required = true) @Valid @ConvertGroup(to = PatchValidation.class) SiteJson site);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the property", required = true)
+        @PathParam("propertyId") @NotNull @UUID String propertyId,
+        @Parameter(description = "ID of the site", required = true)
+        @PathParam("siteId") @NotNull @UUID String siteId,
+        @Parameter(description = "Site information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) SiteJson site
+    );
 
     @DELETE
     @Path("/{siteId}")
-    @Operation(summary = "Delete an existing building.")
-    @APIResponse(responseCode = "204", description = "The building was deleted successfully")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @Operation(summary = "Delete an existing site.")
+    @APIResponse(
+        responseCode = "204",
+        description = "The site was deleted successfully"
+    )
+    @APIResponse(
+        responseCode = "401",
+        description = "No user authentication provided via session cookie"
+    )
     void deleteSite(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") @NotNull @UUID String propertyId,
-        @Parameter(description = "ID of the building", required = true) @PathParam("siteId") @NotNull @UUID String siteId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the property", required = true)
+        @PathParam("propertyId") @NotNull @UUID String propertyId,
+        @Parameter(description = "ID of the site", required = true)
+        @PathParam("siteId") @NotNull @UUID String siteId
+    );
 
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.core.model.project.TaskModel.Status;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -31,6 +32,7 @@ public abstract class TaskItemJson {
     public abstract Status getStatus();
 
     @NotNull
+    @Nullable
     public abstract String getOwner();
 
     public static TaskItemJson valueOf(final TaskModel model) {

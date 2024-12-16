@@ -23,13 +23,13 @@ import de.remsfal.core.validation.PostValidation;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/" 
+@Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/"
     + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
     + "/{propertyId}/" + BuildingEndpoint.SERVICE
     + "/{buildingId}/" + ApartmentEndpoint.SERVICE)
 public interface ApartmentEndpoint {
 
-    static final String SERVICE = "apartments";
+    String SERVICE = "apartments";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -37,7 +37,8 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "201", description = "Apartment created successfully",
         headers = @Header(name = "Location", description = "URL of the new apartment"))
     Response createApartment(
-        @Parameter(description = "Apartment information", required = true) @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment);
+        @Parameter(description = "Apartment information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment);
 
     @GET
     @Path("/{apartmentId}")
