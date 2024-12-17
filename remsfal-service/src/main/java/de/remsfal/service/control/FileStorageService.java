@@ -1,6 +1,15 @@
 package de.remsfal.service.control;
 
-import io.minio.*;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.GetObjectArgs;
+import io.minio.StatObjectArgs;
+import io.minio.StatObjectResponse;
+import io.minio.Result;
+import io.minio.ListObjectsArgs;
+import io.minio.RemoveObjectArgs;
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.messages.Item;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
