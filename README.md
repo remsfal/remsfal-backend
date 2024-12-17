@@ -53,6 +53,9 @@ de.remsfal.auth.oidc.client-secret=<YOUR-SECRET>
 de.remsfal.auth.session.secret=<YOUR-CUSTOM-SESSION-SECRET>
 ```
 
+## JWT Token
+For the JWT token its highly recommended to replace the default private key and public key with your own.
+
 #### Run 
 
 To package and execute the application
