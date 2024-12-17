@@ -97,8 +97,8 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity>
             message.getSenderId()).name());
         messageJsonMap.put("MESSAGE_TYPE", message.getContentType());
 
-        if (message.getContentType() == ContentType.IMAGE) {
-            messageJsonMap.put("MESSAGE_CONTENT", message.getImageUrl());
+        if (message.getContentType() == ContentType.FILE) {
+            messageJsonMap.put("MESSAGE_CONTENT", message.getUrl());
         } else {
             messageJsonMap.put("MESSAGE_CONTENT", message.getContent());
         }
