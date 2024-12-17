@@ -53,6 +53,59 @@ de.remsfal.auth.oidc.client-secret=<YOUR-SECRET>
 de.remsfal.auth.session.secret=<YOUR-CUSTOM-SESSION-SECRET>
 ```
 
+
+#### Camunda run 
+Camunda is used for the workflow management. You can run it using the provided docker-compose.yml. 
+
+You can read more about the camunda engine [here](https://docs.camunda.org/manual/latest/user-guide/camunda-bpm-run).
+
+Camunda is running as a separate service in a docker container under the port 8081.
+
+It is started among the other services using the provided docker-compose.yml.
+
+```sh
+docker compose up -d
+```
+
+Once started Camunda copies the bpmn files from ./processes to the camunda engine.
+
+There is a test class [CamundaApiTest](remsfal-service/src/test/java/de/remsfal/core/CamundaApiTest.java) which is showcasing how the camunda engine can be used. 
+
+To run this test class you will need to start the camunda engine using the provided docker-compose.yml.
+
+You can run the test class using the following command:
+
+```sh
+ mvn test -Dgroups=camunda
+```
+
+
+You can access the camunda cockpit in browser under [`http://localhost:8081`](http://localhost:8081) with the credentials `demo/demo`.
+
+
+
+To interact with the camunda engine you can use the REST API. 
+
+You can read more about the camunda REST API [here](https://docs.camunda.org/manual/latest/reference/rest/).
+
+For example to start a process you can use the following endpoint:
+
+POST: http://localhost:8081/engine-rest/process-definition/key/{process-key}/start
+
+
+To get all open tasks you can use the following endpoint:
+
+GET: http://localhost:8081/engine-rest/task
+
+
+To complete a task you can use the following endpoint:
+
+POST: http://localhost:8081/engine-rest/task/{id}/complete
+
+You can find the id of the task in the response of the get task request.
+
+The implementation of the camunda engine is in a proof of concept state and is not integrated into the application. 
+
 #### Run 
 
 To package and execute the application
