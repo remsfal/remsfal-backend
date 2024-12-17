@@ -37,6 +37,10 @@ public interface GarageEndpoint {
             description = "Garage created successfully",
             headers = @Header(name = "Location", description = "URL of the new garage"))
     Response createGarage(
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") String projectId,
+            @Parameter(description = "ID of the building", required = true)
+            @PathParam("buildingId") String buildingId,
             @Parameter(description = "Garage information", required = true)
             @Valid @ConvertGroup(to = PostValidation.class) GarageJson garage
     );
@@ -49,10 +53,14 @@ public interface GarageEndpoint {
             responseCode = "404",
             description = "The garage does not exist")
     GarageJson getGarage(
-            @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
-            @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") String propertyId,
-            @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") String buildingId,
-            @Parameter(description = "ID of the garage", required = true) @PathParam("garageId") String garageId
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") String projectId,
+            @Parameter(description = "ID of the property", required = true)
+            @PathParam("propertyId") String propertyId,
+            @Parameter(description = "ID of the building", required = true)
+            @PathParam("buildingId") String buildingId,
+            @Parameter(description = "ID of the garage", required = true)
+            @PathParam("garageId") String garageId
     );
 
     @PATCH
