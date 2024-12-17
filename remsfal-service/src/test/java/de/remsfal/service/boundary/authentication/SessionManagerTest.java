@@ -1,127 +1,146 @@
 package de.remsfal.service.boundary.authentication;
 
+import de.remsfal.service.boundary.exception.TokenExpiredException;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.InternalServerErrorException;
+import de.remsfal.service.entity.dao.UserAuthenticationRepository;
+import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.UserAuthenticationEntity;
+
+import de.remsfal.service.entity.dto.UserEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@QuarkusTest
+
 class SessionManagerTest {
 
-    @Inject
     SessionManager sessionManager;
 
-    @Test
-    void encryptAndDecryptSessionObject_shouldWorkCorrectly() {
-        SessionInfo sessionInfo = SessionInfo.builder()
-                .userId("testUser")
-                .userEmail("test@example.com")
-                .expireAfter(Duration.ofMinutes(30))
-                .build();
+    UserAuthenticationRepository userAuthRepository;
 
-        String encrypted = sessionManager.encryptSessionObject(sessionInfo);
-        SessionInfo decrypted = sessionManager.decryptSessionObject(encrypted);
+    UserRepository userRepository;
 
-        assertEquals(sessionInfo.getUserId(), decrypted.getUserId());
-        assertEquals(sessionInfo.getUserEmail(), decrypted.getUserEmail());
-        assertFalse(decrypted.isExpired());
+    JWTManager jwtManager;
+
+    @BeforeEach
+    void setup() {
+        userRepository = Mockito.mock(UserRepository.class);
+        userAuthRepository = Mockito.mock(UserAuthenticationRepository.class);
+        jwtManager = Mockito.mock(JWTManager.class);
+
+        sessionManager = new SessionManager("/", NewCookie.SameSite.STRICT, Duration.ofMinutes(5), Duration.ofDays(7),
+                jwtManager, userAuthRepository, userRepository);
     }
 
-    @Test
-    void encryptSessionCookie_shouldReturnValidCookie() {
-        SessionInfo sessionInfo = SessionInfo.builder()
-                .userId("testUser")
-                .userEmail("test@example.com")
-                .expireAfter(Duration.ofMinutes(30))
-                .build();
-
-        NewCookie cookie = sessionManager.encryptSessionCookie(sessionInfo);
-
-        assertEquals(SessionManager.COOKIE_NAME, cookie.getName());
-        assertNotNull(cookie.getValue());
-        assertEquals("/;SameSite=Strict", cookie.getPath());
-        assertEquals(30 * 60, cookie.getMaxAge());
-    }
 
     @Test
-    void decryptSessionCookie_shouldReturnValidSessionInfo() {
-        SessionInfo sessionInfo = SessionInfo.builder()
-                .userId("testUser")
-                .userEmail("test@example.com")
-                .expireAfter(Duration.ofMinutes(30))
-                .build();
-        NewCookie cookie = sessionManager.encryptSessionCookie(sessionInfo);
+    void checkValidUserSession_withExpiredAccessToken_andValidRefreshToken_shouldPass() {
+        // Arrange
+        String userId = "testUser";
+        String email = "test@example.com";
+        String expiredAccessToken = "expiredAccessToken";
+        String validRefreshToken = "validRefreshToken";
 
-        SessionInfo decryptedSessionInfo = sessionManager.decryptSessionCookie(
-                new Cookie.Builder(cookie.getName()).value(cookie.getValue()).build()
+        Cookie accessTokenCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value(expiredAccessToken).build();
+        Cookie refreshTokenCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(validRefreshToken).build();
+
+        // Simuliere JWTManager Verhalten
+        when(jwtManager.verifyJWT(expiredAccessToken)).thenThrow(new TokenExpiredException("Expired"));
+        when(jwtManager.verifyJWT(validRefreshToken, true)).thenReturn(SessionInfo.builder()
+                .userId(userId)
+                .userEmail(email)
+                .expireAfter(Duration.ofMinutes(5))
+                .claim("refreshToken", validRefreshToken)
+                .build());
+        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
+        userAuthEntity.setRefreshToken(validRefreshToken);
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setEmail(email);
+        userAuthEntity.setUser(userEntity);
+        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
+
+        // Act
+        SessionInfo sessionInfo = sessionManager.checkValidUserSession(Map.of(
+                SessionManager.ACCESS_COOKIE_NAME, accessTokenCookie,
+                SessionManager.REFRESH_COOKIE_NAME, refreshTokenCookie)
         );
 
-        assertEquals(sessionInfo.getUserId(), decryptedSessionInfo.getUserId());
-        assertEquals(sessionInfo.getUserEmail(), decryptedSessionInfo.getUserEmail());
+        // Assert
+        assertNotNull(sessionInfo);
+        assertEquals(userId, sessionInfo.getUserId());
     }
 
     @Test
-    void renewSessionCookie_shouldExtendExpirationTime() {
-        SessionInfo sessionInfo = SessionInfo.builder()
-                .userId("testUser")
-                .userEmail("test@example.com")
-                .expireAfter(Duration.ofMinutes(1)) // Short expiration time
-                .build();
-        NewCookie cookie = sessionManager.encryptSessionCookie(sessionInfo);
+    void checkValidUserSession_withInvalidRefreshToken_shouldThrowException() {
+        // Arrange
+        String expiredAccessToken = "expiredAccessToken";
+        String invalidRefreshToken = "invalidRefreshToken";
 
-        NewCookie renewedCookie = sessionManager.renewSessionCookie(
-                sessionManager.decryptSessionCookie(new Cookie.Builder(cookie.getName()).value(cookie.getValue()).build())
-        );
+        Cookie accessTokenCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value(expiredAccessToken).build();
+        Cookie refreshTokenCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(invalidRefreshToken).build();
 
-        assertNotEquals(cookie.getValue(), renewedCookie.getValue());
-        assertEquals(SessionManager.COOKIE_NAME, renewedCookie.getName());
-    }
+        when(jwtManager.verifyJWT(expiredAccessToken)).thenThrow(new TokenExpiredException("Expired"));
+        when(jwtManager.verifyJWT(invalidRefreshToken, true)).thenThrow(new UnauthorizedException("Invalid"));
 
-    @Test
-    void removalSessionCookie_shouldReturnEmptyCookie() {
-        NewCookie removalCookie = sessionManager.removalSessionCookie();
-
-        assertEquals(SessionManager.COOKIE_NAME, removalCookie.getName());
-        assertEquals("", removalCookie.getValue());
-        assertEquals(0, removalCookie.getMaxAge());
-    }
-
-    @Test
-    void findSessionCookie_shouldReturnCorrectCookie() {
-        Map<String, Cookie> cookies = new HashMap<>();
-        cookies.put(SessionManager.COOKIE_NAME, new Cookie.Builder(SessionManager.COOKIE_NAME).value("testValue").build());
-
-        Cookie foundCookie = sessionManager.findSessionCookie(cookies);
-
-        assertNotNull(foundCookie);
-        assertEquals("testValue", foundCookie.getValue());
-    }
-
-    @Test
-    void decryptSessionCookie_shouldThrowExceptionForInvalidCookieName() {
-        Cookie invalidCookie = new Cookie.Builder("invalidCookie").value("testValue").build();
-
-        assertThrows(InternalServerErrorException.class, () ->
-                sessionManager.decryptSessionCookie(invalidCookie)
-        );
-    }
-
-    @Test
-    void decryptSessionObject_shouldThrowUnauthorizedExceptionForInvalidObject() {
-        String invalidSessionObject = "invalidSessionObject";
-
+        // Act & Assert
         assertThrows(UnauthorizedException.class, () ->
-                sessionManager.decryptSessionObject(invalidSessionObject)
+                sessionManager.checkValidUserSession(Map.of(
+                        SessionManager.ACCESS_COOKIE_NAME, accessTokenCookie,
+                        SessionManager.REFRESH_COOKIE_NAME, refreshTokenCookie)
+                )
         );
     }
+
+    @Test
+    void test_renewTokens() {
+        // Arrange
+        String userId = "testUser";
+        String email = "email@email.de";
+        String refreshToken = "refresh_token";
+        String accessToken = "access_token";
+
+        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
+        when(jwtManager.verifyJWT(refreshToken, true)).thenReturn(SessionInfo.builder()
+                .userId(userId)
+                .userEmail(email)
+                .expireAfter(Duration.ofMinutes(5))
+                .claim("refreshToken", refreshToken)
+                .build());
+        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
+        userAuthEntity.setRefreshToken(refreshToken);
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setEmail(email);
+        userAuthEntity.setUser(userEntity);
+        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
+        when(jwtManager.createJWT(any())).thenReturn(accessToken).thenReturn(refreshToken);
+
+        // Act
+        SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME, refreshCookie));
+
+        // Assert
+        assertEquals(accessToken, response.getAccessToken().getValue());
+        assertEquals(refreshToken, response.getRefreshToken().getValue());
+
+
+        verify(userAuthRepository, times(2)).findByUserId(userId);
+        verify(jwtManager, times(1)).verifyJWT(refreshToken, true);
+        verify(jwtManager, times(2)).createJWT(any());
+
+    }
+
+
 }

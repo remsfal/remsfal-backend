@@ -2,11 +2,7 @@ package de.remsfal.service.boundary;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.*;
 
 import java.net.URI;
 
@@ -22,7 +18,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import de.remsfal.core.api.AuthenticationEndpoint;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
-import de.remsfal.service.boundary.authentication.SessionInfo;
 import de.remsfal.service.boundary.authentication.SessionManager;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
 import de.remsfal.service.control.UserController;
@@ -86,12 +81,13 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         final URI redirectUri = getAbsoluteUriBuilder()
             .replacePath(route)
             .build();
-        final SessionInfo sessionInfo = sessionManager.sessionInfoBuilder()
+        final NewCookie accessToken = sessionManager.generateAccessToken(sessionManager.sessionInfoBuilder(SessionManager.ACCESS_COOKIE_NAME)
             .userId(user.getId())
             .userEmail(user.getEmail())
-            .build();
+            .build());
+        final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
         return redirect(redirectUri)
-            .cookie(sessionManager.encryptSessionCookie(sessionInfo))
+            .cookie(accessToken, refreshToken)
             .build();
     }
 
@@ -103,7 +99,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
             .replacePath("/")
             .build();
         return redirect(redirectUri)
-            .cookie(sessionManager.removalSessionCookie())
+            .cookie(sessionManager.removalCookie(SessionManager.ACCESS_COOKIE_NAME), sessionManager.removalCookie(SessionManager.REFRESH_COOKIE_NAME))
             .build();
     }
 
