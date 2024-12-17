@@ -66,7 +66,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
     void getSites_SUCCESS_emptyListIsReturned() {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -85,7 +85,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
     void createSite_SUCCESS_propertyIsCreated(final String json) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
@@ -108,7 +108,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
     void createSite_FAILED_noTitle() {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
@@ -121,7 +121,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
     void createSite_FAILED_noAddress() {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\"" + TestData.SITE_TITLE + "\"}")
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
@@ -136,7 +136,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             + "\"id\":\"" + TestData.SITE_ID + "\"}";
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
@@ -151,7 +151,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -174,7 +174,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -191,14 +191,14 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
@@ -214,7 +214,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
@@ -233,7 +233,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -268,7 +268,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
@@ -303,7 +303,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())

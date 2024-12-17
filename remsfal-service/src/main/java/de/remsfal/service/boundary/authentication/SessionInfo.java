@@ -3,9 +3,11 @@ package de.remsfal.service.boundary.authentication;
 import java.text.ParseException;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Map;
 
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTClaimsSet;
+import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 
 /**
  * @author Alexander Stanik [stanik@htw-berlin.de]
@@ -20,6 +22,17 @@ public class SessionInfo {
 
     public SessionInfo(final Payload payload) throws ParseException {
         this(JWTClaimsSet.parse(payload.toJSONObject()));
+    }
+
+    public Map<String, Object> getClaims() {
+        //clear all null values from the claims
+        JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
+        claimsSet.getClaims().forEach((key, value) -> {
+            if (value != null) {
+                builder.claim(key, value);
+            }
+        });
+        return builder.build().getClaims();
     }
 
     public String getUserId() {
@@ -40,6 +53,14 @@ public class SessionInfo {
             return true;
         }
         return expirationTime.before(new Date());
+    }
+
+    public long getExpireInSeconds() {
+        final Date expirationTime = claimsSet.getExpirationTime();
+        if (expirationTime == null) {
+            return 0;
+        }
+        return (expirationTime.getTime() - System.currentTimeMillis()) / 1000;
     }
     
     public boolean isValid() {
@@ -95,6 +116,11 @@ public class SessionInfo {
             return this;
         }
 
+        public Builder claim(final String name, final Object value) {
+            claimBuilder.claim(name, value);
+            return this;
+        }
+
         public Builder expireAfter(final Duration ttl) {
             final Date expirationTime = new Date(System.currentTimeMillis() + ttl.toMillis());
             claimBuilder.expirationTime(expirationTime);
@@ -104,6 +130,13 @@ public class SessionInfo {
             claimBuilder.subject(sessionInfo.getUserId());
             claimBuilder.claim("email", sessionInfo.getUserEmail());
             claimBuilder.expirationTime(sessionInfo.claimsSet.getExpirationTime());
+            return this;
+        }
+
+        public Builder from(final UserAuthenticationEntity userAuth) {
+            claimBuilder.subject(userAuth.getUser().getId());
+            claimBuilder.claim("email", userAuth.getUser().getEmail());
+            claimBuilder.claim("refreshToken", userAuth.getRefreshToken());
             return this;
         }
 

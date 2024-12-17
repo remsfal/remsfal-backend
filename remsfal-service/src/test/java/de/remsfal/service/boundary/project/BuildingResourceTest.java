@@ -34,7 +34,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -45,7 +45,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -55,7 +55,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -77,7 +77,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .get("/api/v1/projects/" + user1project1 + "/properties/" + user1property1 + "/buildings/" + TestData.BUILDING_ID_1)
                 .then()
@@ -89,7 +89,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -100,7 +100,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -110,7 +110,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         final String user1building1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -132,7 +132,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .get("/api/v1/projects/" + user1project1 + "/properties/" + user1property1 + "/buildings/" + user1building1)
                 .then()
@@ -144,7 +144,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -155,7 +155,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -165,7 +165,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -191,7 +191,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -201,7 +201,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -210,7 +210,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
                 .extract().path("id");
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -235,7 +235,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -246,7 +246,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -256,7 +256,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         final String user1building1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -278,7 +278,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -303,7 +303,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -314,7 +314,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -324,7 +324,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         final String user1building1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -370,7 +370,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -381,7 +381,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -391,7 +391,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
        given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -413,7 +413,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -438,7 +438,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -449,7 +449,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -459,7 +459,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         final String user1building1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -481,7 +481,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .delete("/api/v1/projects/" + user1project1 + "/properties/" + user1property1 + "/buildings/" + user1building1)
                 .then()
@@ -493,7 +493,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         final String user1project1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -504,7 +504,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
         final String json1 = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         final String user1property1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json1)
                 .post(BASE_PATH + "/" + user1project1 + "/properties")
@@ -514,7 +514,7 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
 
         final String user1building1 = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +

@@ -58,10 +58,14 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/my/callback"))
-            .cookie("remsfal_session", RestAssuredMatchers.detailedCookie()
+            .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
                 .path("/")
                 .sameSite("Strict")
-                .maxAge(60 * 30));
+                .maxAge(60 * 5))
+            .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(60 * 60 * 24 * 7));
 
         enties = entityManager
             .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
@@ -96,10 +100,14 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/"))
-            .cookie("remsfal_session", RestAssuredMatchers.detailedCookie()
-                .path("/")
-                .sameSite("Strict")
-                .maxAge(60 * 30));
+            .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
+                    .path("/")
+                    .sameSite("Strict")
+                    .maxAge(60 * 5))
+            .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
+                    .path("/")
+                    .sameSite("Strict")
+                    .maxAge(60 * 60 * 24 * 7));
 
         enties = entityManager
             .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
