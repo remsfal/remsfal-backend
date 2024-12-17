@@ -66,7 +66,7 @@ class JWTManagerTest {
 
         // Assert
         assertNotNull(jwt);
-        assertTrue(jwt.split("\\.").length == 3, "JWT should have three parts");
+        assertEquals(3, jwt.split("\\.").length, "JWT should have three parts");
     }
 
     @Test

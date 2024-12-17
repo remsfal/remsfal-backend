@@ -154,8 +154,18 @@ public class SessionManager {
                 .build();
     }
 
+    @Transactional
+    public void logout(Map<String, Cookie> cookies) {
+        Cookie refreshCookie = findRefreshTokenCookie(cookies);
+        if (refreshCookie != null) {
+            SessionInfo sessionInfo = decryptRefreshTokenCookie(refreshCookie);
+            userAuthRepository.deleteRefreshToken(sessionInfo.getUserId());
+        }
+    }
+
 
     public NewCookie removalCookie(String cookieName) {
+
         return new NewCookie.Builder(cookieName)
             .value("")
             .path(sessionCookiePath + getSameSiteWorkaround())

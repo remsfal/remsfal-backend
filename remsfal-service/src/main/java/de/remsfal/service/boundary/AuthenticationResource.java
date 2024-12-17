@@ -48,6 +48,8 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Inject
     Logger logger;
+    @Inject
+    HttpHeaders httpHeaders;
 
 
     @Override
@@ -98,6 +100,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         final URI redirectUri = getAbsoluteUriBuilder()
             .replacePath("/")
             .build();
+        sessionManager.logout(httpHeaders.getCookies());
         return redirect(redirectUri)
             .cookie(sessionManager.removalCookie(SessionManager.ACCESS_COOKIE_NAME), sessionManager.removalCookie(SessionManager.REFRESH_COOKIE_NAME))
             .build();

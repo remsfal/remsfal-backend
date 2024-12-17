@@ -34,9 +34,12 @@ public class HeaderExtensionResponseFilter  implements ContainerResponseFilter {
         try{
             Cookie accessToken = sessionManager.findAccessTokenCookie(requestContext.getCookies());
             if (accessToken == null) {
-                SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(requestContext.getCookies());
-                responseContext.getHeaders().add("Set-Cookie", response.getAccessToken());
-                responseContext.getHeaders().add("Set-Cookie", response.getRefreshToken());
+                Cookie refreshToken = sessionManager.findRefreshTokenCookie(requestContext.getCookies());
+                if (refreshToken != null) {
+                    SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(requestContext.getCookies());
+                    responseContext.getHeaders().add("Set-Cookie", response.getAccessToken());
+                    responseContext.getHeaders().add("Set-Cookie", response.getRefreshToken());
+                }
             }
             if (accessToken != null) {
                 try {

@@ -142,5 +142,95 @@ class SessionManagerTest {
 
     }
 
+    @Test
+    void test_renewTokens_noRefreshToken_shouldThrowException() {
+        // Arrange
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(Map.of()));
+    }
+
+    @Test
+    void test_renewTokens_invalidRefreshToken_shouldThrowException() {
+        // Arrange
+        String refreshToken = "refresh_token";
+        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
+        when(jwtManager.verifyJWT(refreshToken, true)).thenThrow(new UnauthorizedException("Invalid"));
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME, refreshCookie)));
+
+        verify(jwtManager, times(1)).verifyJWT(refreshToken, true);
+
+    }
+
+    @Test
+    void test_decryptAccessTokenCookie() {
+        // Arrange
+        String accessToken = "abc";
+        when(jwtManager.verifyJWT(accessToken)).thenReturn(SessionInfo.builder().userId("test").userEmail("1234@1234.de").build());
+        Cookie cookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value(accessToken).build();
+
+        // Act
+        SessionInfo sessionInfo = sessionManager.decryptAccessTokenCookie(cookie);
+
+        // Assert
+        assertNotNull(sessionInfo);
+        assertEquals("test", sessionInfo.getUserId());
+        assertEquals("1234@1234.de", sessionInfo.getUserEmail());
+
+        verify(jwtManager, times(1)).verifyJWT(accessToken);
+
+    }
+
+    @Test
+    void test_decryptRefreshTokenCookie() {
+        // Arrange
+        String refreshToken = "abc";
+        when(jwtManager.verifyJWT(refreshToken, true)).thenReturn(SessionInfo.builder().userId("test").userEmail("1234@1234.de").build());
+        Cookie cookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
+
+        // Act
+        SessionInfo sessionInfo = sessionManager.decryptRefreshTokenCookie(cookie);
+
+        // Assert
+        assertNotNull(sessionInfo);
+        assertEquals("test", sessionInfo.getUserId());
+        assertEquals("1234@1234.de", sessionInfo.getUserEmail());
+
+        verify(jwtManager, times(1)).verifyJWT(refreshToken, true);
+
+    }
+
+    @Test
+    void test_refreshcookie_get_deleted_when_logout() {
+        // Arrange
+        String userId = "testUser";
+        String email = "1234@1234.de";
+        String refreshToken = "refresh_token";
+
+        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
+        userAuthEntity.setRefreshToken(refreshToken);
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setEmail(email);
+        userAuthEntity.setUser(userEntity);
+        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
+        when(jwtManager.verifyJWT(any(), eq(true))).thenReturn(SessionInfo.builder()
+                .userId(userId)
+                .userEmail(email)
+                .expireAfter(Duration.ofMinutes(5))
+                .claim("refreshToken", refreshToken)
+                .build());
+
+
+
+        // Act
+        sessionManager.logout(Map.of(SessionManager.ACCESS_COOKIE_NAME, new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("abc").build(),
+                SessionManager.REFRESH_COOKIE_NAME, new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("abc").build()));
+
+
+        // Assert
+        verify(userAuthRepository, times(1)).deleteRefreshToken(userId);
+    }
 
 }
