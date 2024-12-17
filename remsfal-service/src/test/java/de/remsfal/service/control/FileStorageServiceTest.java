@@ -23,6 +23,7 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 
 @QuarkusTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FileStorageServiceTest {
 
     @Inject
@@ -30,17 +31,19 @@ public class FileStorageServiceTest {
 
     private static final String BUCKET_NAME = "test-bucket";
 
+    @Inject
+    MinioClient minioClient;
+
     @BeforeAll
-    public static void setup() throws Exception {
-        try (MinioClient client = MinioClient.builder()
-                .endpoint("http://localhost:9000")
-                .credentials("minioadmin", "minioadminpassword")
-                .build()) {
-            boolean bucketExists = client.bucketExists(BucketExistsArgs.builder().bucket(BUCKET_NAME).build());
+    public void setup() throws Exception {
+        try {
+            boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(BUCKET_NAME).build());
 
             if (!bucketExists) {
-                client.makeBucket(MakeBucketArgs.builder().bucket(BUCKET_NAME).build());
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(BUCKET_NAME).build());
             }
+        } catch (Exception e) {
+            fail("Failed to initialize MinIO bucket: " + e.getMessage());
         }
     }
 
