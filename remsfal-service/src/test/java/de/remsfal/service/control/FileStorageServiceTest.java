@@ -9,7 +9,6 @@ import jakarta.ws.rs.core.MediaType;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -23,7 +22,6 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 
 @QuarkusTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FileStorageServiceTest {
 
     @Inject
@@ -34,8 +32,8 @@ public class FileStorageServiceTest {
     @Inject
     MinioClient minioClient;
 
-    @BeforeAll
-    public void setup() throws Exception {
+    @BeforeEach
+    public void setup(){
         try {
             boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(BUCKET_NAME).build());
 
