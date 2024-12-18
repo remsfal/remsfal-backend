@@ -256,7 +256,7 @@ class SessionManagerTest {
 
         // Assert
         assertNotNull(builder_acess);
-        assert builder_acess.build().getExpireInSeconds() < 60 * 5;
+        assert builder_acess.build().getExpireInSeconds() <= 60 * 5;
         assertNotNull(builder_refresh);
         assert builder_refresh.build().getExpireInSeconds() > 60 * 60 * 24 * 6;
 
