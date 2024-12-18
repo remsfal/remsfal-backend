@@ -2,6 +2,7 @@ package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.core.api.AuthenticationEndpoint;
 import de.remsfal.service.boundary.exception.TokenExpiredException;
+import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.core.Cookie;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+@QuarkusTest
 class HeaderExtensionResponseFilterTest {
 
     private HeaderExtensionResponseFilter filter;

@@ -3,6 +3,7 @@ package de.remsfal.service.boundary.authentication;
 import com.nimbusds.jwt.JWTClaimsSet;
 import de.remsfal.service.boundary.exception.TokenExpiredException;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
+import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.jwt.algorithm.SignatureAlgorithm;
 import io.smallrye.jwt.build.Jwt;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
+@QuarkusTest
 class JWTManagerTest {
 
     private JWTManager jwtManager;

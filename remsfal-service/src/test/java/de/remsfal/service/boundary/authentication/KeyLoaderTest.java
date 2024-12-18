@@ -1,5 +1,6 @@
 package de.remsfal.service.boundary.authentication;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import java.security.PrivateKey;
@@ -8,6 +9,7 @@ import java.security.PublicKey;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@QuarkusTest
 class KeyLoaderTest {
 
     @Test
