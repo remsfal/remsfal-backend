@@ -24,7 +24,9 @@ import java.util.Set;
 import org.jboss.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
+/**
+ * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 @ApplicationScoped
 public class FileStorageService {
 
@@ -252,12 +254,20 @@ public class FileStorageService {
 
     private boolean isValidContentType(String contentType) {
         logger.infov("Checking if content type {0} is valid", contentType);
-        boolean isValid = allowedTypes.contains(contentType);
+
+        // Normalize the content type to remove parameters (e.g., charset=UTF-8)
+        String normalizedContentType = contentType.split(";")[0].trim();
+
+        // Check against the allowed types
+        boolean isValid = allowedTypes.contains(normalizedContentType);
+
         if (!isValid) {
             logger.warnv("Content type {0} is not allowed", contentType);
         }
+
         return isValid;
     }
+
 
     private List<InputPart> getFileInputParts(MultipartFormDataInput input) {
         logger.infov("Retrieving file input parts: {0}", input);
@@ -295,5 +305,9 @@ public class FileStorageService {
 
         logger.infov("Generated unique file name: {0}", candidate);
         return candidate;
+    }
+
+    public Set<String> getAllowedTypes() {
+        return allowedTypes;
     }
 }

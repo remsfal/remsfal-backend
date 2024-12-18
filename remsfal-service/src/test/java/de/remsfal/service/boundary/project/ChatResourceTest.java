@@ -4,9 +4,16 @@ package de.remsfal.service.boundary.project;
 import de.remsfal.core.model.project.ChatMessageModel;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.service.control.ChatMessageController;
+import de.remsfal.service.control.FileStorageService;
+import de.remsfal.service.entity.dto.ChatMessageEntity;
+import io.minio.Result;
+import io.minio.messages.Item;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
@@ -16,14 +23,24 @@ import de.remsfal.service.TestData;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.nio.file.Files;
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
+import java.nio.file.Path;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 class ChatResourceTest extends AbstractProjectResourceTest {
+
+    @Inject
+    FileStorageService fileStorageService;
+
+    @Inject
+    ChatMessageController chatMessageController;
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String CHAT_SESSION_TASK_PATH = BASE_PATH + "/tasks/{taskId}/chat";
@@ -927,4 +944,149 @@ class ChatResourceTest extends AbstractProjectResourceTest {
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
+
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_SUCCESS(String path) throws Exception {
+        // Create a temporary directory and file
+        Path tempDir = Files.createTempDirectory("test-upload");
+        Path tempFile = tempDir.resolve("test-file.txt");
+        Files.writeString(tempFile, "This is a test file content");
+        String fileName = tempFile.getFileName().toString();
+        String expectedBucketName = "remsfal-chat-files";
+
+        try {
+            // Perform the file upload and extract the fileId and fileUrl from the response
+            Map<String, String> response =
+                    given()
+                            .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
+                            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                            .when()
+                            .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                                    .replace("{taskId}", TASK_ID_1)
+                                    .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                            .then()
+                            .statusCode(Response.Status.CREATED.getStatusCode())
+                            .contentType(ContentType.JSON)
+                            .extract().as(new TypeRef<>() {
+                            });
+
+            String fileId = response.get("fileId");
+            String fileUrl = response.get("fileUrl");
+
+            // Verify the file metadata is persisted using ChatMessageController
+            ChatMessageEntity persistedMessage = chatMessageController.getChatMessage(fileId);
+
+            assertNotNull(persistedMessage, "Persisted message should not be null");
+            assertEquals(EXAMPLE_CHAT_SESSION_ID_1, persistedMessage.getChatSession().getId(),
+                    "Chat session ID should match");
+            assertEquals(ChatMessageModel.ContentType.FILE, persistedMessage.getContentType(),
+                    "Content type should match");
+            assertEquals(fileUrl, persistedMessage.getUrl(), "Persisted URL should match the returned file URL");
+            // Verify the file is stored in the MinIO bucket
+            verifyFileInBucket(expectedBucketName, fileName);
+
+        } finally {
+            // Clean up the temporary file and directory
+            Files.deleteIfExists(tempFile);
+            Files.deleteIfExists(tempDir);
+        }
+    }
+
+
+    private void verifyFileInBucket(String bucketName, String fileName) {
+        boolean fileExists = false;
+        try {
+            Iterable<Result<Item>> items = fileStorageService.listObjects(bucketName);
+            for (Result<Item> item : items) {
+                if (item.get().objectName().contains(fileName)) {
+                    fileExists = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            fail("Exception occurred while verifying the file in the bucket: " + e.getMessage(), e);
+        }
+        assertTrue(fileExists, "Uploaded file should exist in the bucket");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_MissingFilePart_FAILURE(String path) {
+        given()
+                .multiPart("someField", "someValue") // This ensures a valid multipart request with a boundary
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .when()
+                .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("No file part found in the form data"));
+
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_InvalidContentType_FAILURE(String path) throws Exception {
+        Path tempFile = Files.createTempFile("test-file", ".exe"); // Unsupported file type
+        try {
+            given()
+                    .multiPart("file", tempFile.toFile(), "application/x-msdownload")
+                    .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                    .when()
+                    .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                            .replace("{taskId}", TASK_ID_1)
+                            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                    .then()
+                    .statusCode(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode())
+                    .body("message", containsString("Unsupported Media Type: application/x-msdownload"));
+
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_EmptyInputStream_FAILURE(String path) {
+        given()
+                .multiPart("file", "", MediaType.TEXT_PLAIN) // Empty file content
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .when()
+                .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Failed to read file stream: unknown"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_ChatSessionClosed_FAILURE(String path) throws Exception {
+        runInTransaction(() -> {
+            entityManager.createQuery("UPDATE ChatSessionEntity SET status = :status WHERE id = :id")
+                    .setParameter("status", ChatSessionModel.Status.CLOSED)
+                    .setParameter("id", EXAMPLE_CHAT_SESSION_ID_1)
+                    .executeUpdate();
+        });
+
+        Path tempFile = Files.createTempFile("test-file", ".txt");
+        try {
+            given()
+                    .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
+                    .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                    .when()
+                    .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                            .replace("{taskId}", TASK_ID_1)
+                            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                    .then()
+                    .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
 }

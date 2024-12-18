@@ -21,6 +21,9 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import java.util.Map;
 import org.jboss.logging.Logger;
 
+/**
+ * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 @QuarkusTest
 public class FileStorageServiceTest {
 
