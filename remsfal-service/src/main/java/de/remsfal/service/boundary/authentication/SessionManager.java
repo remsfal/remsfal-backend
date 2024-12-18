@@ -6,18 +6,16 @@ import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.NewCookie.SameSite;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class SessionManager {
@@ -42,7 +40,15 @@ public class SessionManager {
 
     private UserRepository userRepository;
 
-    public SessionManager(@ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/") String sessionCookiePath, @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT") SameSite sessionCookieSameSite, @ConfigProperty(name = "de.remsfal.auth.access-token.timeout", defaultValue = "PT5M") Duration accessTokenTimeout, @ConfigProperty(name = "de.remsfal.auth.refresh-token.timeout", defaultValue = "P7D") Duration refreshTokenTimeout, JWTManager jwtManager, UserAuthenticationRepository userAuthRepository, UserRepository userRepository) {
+    public SessionManager(
+        @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/") String sessionCookiePath,
+        @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT")
+        SameSite sessionCookieSameSite,
+        @ConfigProperty(name = "de.remsfal.auth.access-token.timeout", defaultValue = "PT5M")
+        Duration accessTokenTimeout,
+        @ConfigProperty(name = "de.remsfal.auth.refresh-token.timeout", defaultValue = "P7D")
+        Duration refreshTokenTimeout, JWTManager jwtManager, UserAuthenticationRepository userAuthRepository,
+        UserRepository userRepository) {
         this.sessionCookiePath = sessionCookiePath;
         this.sessionCookieSameSite = sessionCookieSameSite;
         this.accessTokenTimeout = accessTokenTimeout;
@@ -54,8 +60,8 @@ public class SessionManager {
 
 
     public NewCookie generateAccessToken(SessionInfo sessionInfo) {
-        String jwt = jwtManager.createJWT(SessionInfo.builder().from(sessionInfo)
-                .expireAfter(accessTokenTimeout).build());
+        String jwt =
+            jwtManager.createJWT(SessionInfo.builder().from(sessionInfo).expireAfter(accessTokenTimeout).build());
         return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false);
     }
 
@@ -69,18 +75,16 @@ public class SessionManager {
         Optional<UserAuthenticationEntity> existingAuth = userAuthRepository.findByUserId(userId);
         if (existingAuth.isEmpty()) {
             UserAuthenticationEntity userAuthenticationEntity = new UserAuthenticationEntity();
-            userRepository.findByIdOptional(userId).ifPresentOrElse(
-                    userAuthenticationEntity::setUser,
-                    () -> { throw new UnauthorizedException("User not found: " + userId); }
-            );
+            userRepository.findByIdOptional(userId).ifPresentOrElse(userAuthenticationEntity::setUser, () -> {
+                throw new UnauthorizedException("User not found: " + userId);
+            });
             userAuthenticationEntity.setRefreshToken(refreshToken);
             userAuthRepository.persist(userAuthenticationEntity);
         } else {
             userAuthRepository.updateRefreshToken(userId, refreshToken);
         }
-        String jwt = jwtManager.createJWT(SessionInfo.builder().userId(userId)
-                .userEmail(userEmail)
-                .claim("refreshToken", refreshToken)
+        String jwt = jwtManager.createJWT(
+            SessionInfo.builder().userId(userId).userEmail(userEmail).claim("refreshToken", refreshToken)
                 .expireAfter(refreshTokenTimeout).build());
         return buildCookie(REFRESH_COOKIE_NAME, jwt, (int) refreshTokenTimeout.getSeconds(), true);
     }
@@ -96,10 +100,8 @@ public class SessionManager {
         SessionInfo refreshToken = decryptRefreshTokenCookie(refreshCookie);
         UserAuthenticationEntity userAuth = checkValidRefreshToken(refreshToken);
 
-        return new TokenRenewalResponse(
-            generateAccessToken(userAuth),
-            generateRefreshToken(refreshToken.getUserId(), refreshToken.getUserEmail())
-        );
+        return new TokenRenewalResponse(generateAccessToken(userAuth),
+            generateRefreshToken(refreshToken.getUserId(), refreshToken.getUserEmail()));
 
     }
 
@@ -145,13 +147,8 @@ public class SessionManager {
     }
 
     private NewCookie buildCookie(String name, String value, int maxAge, boolean httpOnly) {
-        return new NewCookie.Builder(name)
-                .value(value)
-                .path(sessionCookiePath + getSameSiteWorkaround())
-                .httpOnly(httpOnly)
-                .secure(true)
-                .maxAge(maxAge)
-                .build();
+        return new NewCookie.Builder(name).value(value).path(sessionCookiePath + getSameSiteWorkaround())
+            .httpOnly(httpOnly).secure(true).maxAge(maxAge).build();
     }
 
     @Transactional
@@ -166,13 +163,9 @@ public class SessionManager {
 
     public NewCookie removalCookie(String cookieName) {
 
-        return new NewCookie.Builder(cookieName)
-            .value("")
-            .path(sessionCookiePath + getSameSiteWorkaround())
+        return new NewCookie.Builder(cookieName).value("").path(sessionCookiePath + getSameSiteWorkaround())
             // sameSite is currently not supported
-            .sameSite(sessionCookieSameSite)
-            .maxAge(0)
-            .build();
+            .sameSite(sessionCookieSameSite).maxAge(0).build();
     }
 
     public SessionInfo.Builder sessionInfoBuilder(String CookieName) {
@@ -202,9 +195,8 @@ public class SessionManager {
 
     private String getSameSiteWorkaround() {
         // see: https://github.com/jakartaee/rest/issues/862
-        return ";SameSite="
-            + sessionCookieSameSite.name().substring(0,1).toUpperCase()
-            + sessionCookieSameSite.name().substring(1).toLowerCase();
+        return ";SameSite=" + sessionCookieSameSite.name().substring(0, 1).toUpperCase() +
+            sessionCookieSameSite.name().substring(1).toLowerCase();
     }
 
     public static class TokenRenewalResponse {

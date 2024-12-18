@@ -15,7 +15,7 @@ import org.jboss.logging.Logger;
 
 @Provider
 @Priority(Priorities.HEADER_DECORATOR + 1)
-public class HeaderExtensionResponseFilter  implements ContainerResponseFilter {
+public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
 
     @Inject
     SessionManager sessionManager;
@@ -24,19 +24,20 @@ public class HeaderExtensionResponseFilter  implements ContainerResponseFilter {
     Logger logger;
 
     @Override
-    public void filter(ContainerRequestContext requestContext,
-                       ContainerResponseContext responseContext) {
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
 
         if (AuthenticationEndpoint.isAuthenticationPath(requestContext.getUriInfo().getPath())) {
-            logger.infov("Skipping HeaderExtensionResponseFilter for authentication path: {0}", requestContext.getUriInfo().getPath());
+            logger.infov("Skipping HeaderExtensionResponseFilter for authentication path: {0}",
+                requestContext.getUriInfo().getPath());
             return;
         }
-        try{
+        try {
             Cookie accessToken = sessionManager.findAccessTokenCookie(requestContext.getCookies());
             if (accessToken == null) {
                 Cookie refreshToken = sessionManager.findRefreshTokenCookie(requestContext.getCookies());
                 if (refreshToken != null) {
-                    SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(requestContext.getCookies());
+                    SessionManager.TokenRenewalResponse response =
+                        sessionManager.renewTokens(requestContext.getCookies());
                     responseContext.getHeaders().add("Set-Cookie", response.getAccessToken());
                     responseContext.getHeaders().add("Set-Cookie", response.getRefreshToken());
                 }
@@ -46,7 +47,8 @@ public class HeaderExtensionResponseFilter  implements ContainerResponseFilter {
                     sessionManager.decryptAccessTokenCookie(accessToken);
                 } catch (TokenExpiredException e) {
                     logger.info("Accesstoken expired: " + e.getMessage());
-                    SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(requestContext.getCookies());
+                    SessionManager.TokenRenewalResponse response =
+                        sessionManager.renewTokens(requestContext.getCookies());
                     responseContext.getHeaders().add("Set-Cookie", response.getAccessToken());
                     responseContext.getHeaders().add("Set-Cookie", response.getRefreshToken());
                 }

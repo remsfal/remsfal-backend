@@ -1,6 +1,12 @@
 package de.remsfal.service.entity.dto;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 import java.util.Date;
 import java.util.Objects;
@@ -39,9 +45,7 @@ public abstract class AbstractMetaDataEntity {
     }
 
     private Date cloneDate(final Date date) {
-        return (Date) Optional.ofNullable(date)
-                .map(Date::clone)
-                .orElse(null);
+        return (Date) Optional.ofNullable(date).map(Date::clone).orElse(null);
     }
 
     @Override

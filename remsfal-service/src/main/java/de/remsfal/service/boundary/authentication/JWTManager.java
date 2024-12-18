@@ -7,13 +7,10 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import de.remsfal.service.boundary.exception.TokenExpiredException;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
 import io.smallrye.jwt.algorithm.SignatureAlgorithm;
+import io.smallrye.jwt.build.Jwt;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import io.smallrye.jwt.build.Jwt;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -51,17 +48,12 @@ public class JWTManager {
     }
 
 
-
     public final String createJWT(SessionInfo sessionInfo) {
 
         long expirationTime = System.currentTimeMillis() / 1000 + sessionInfo.getExpireInSeconds();
 
-        return Jwt.claims(sessionInfo.getClaims())
-            .issuer(issuer)
-            .expiresAt(expirationTime)
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .header("typ", "JWT")
-            .sign(privateKey);
+        return Jwt.claims(sessionInfo.getClaims()).issuer(issuer).expiresAt(expirationTime).jws()
+            .algorithm(SignatureAlgorithm.RS256).header("typ", "JWT").sign(privateKey);
     }
 
     public SessionInfo verifyJWT(String jwt) {
@@ -88,25 +80,24 @@ public class JWTManager {
     public SessionInfo verifyJWT(String jwt, boolean isRefreshToken) {
 
 
+        JWTClaimsSet claimsSet = verifyTokenManually(jwt, publicKey);
 
-            JWTClaimsSet claimsSet = verifyTokenManually(jwt, publicKey);
+        if (claimsSet == null) {
+            throw new UnauthorizedException("Invalid token");
+        }
+        if (isRefreshToken && claimsSet.getClaim("refreshToken") == null) {
+            throw new UnauthorizedException("Missing refresh token claim in token");
+        }
+        if (claimsSet.getExpirationTime().before(new Date())) {
+            throw new TokenExpiredException(isRefreshToken ? "Refresh token expired" : "Access token expired");
+        }
+        SessionInfo sessionInfo = new SessionInfo(claimsSet);
 
-            if (claimsSet == null) {
-                throw new UnauthorizedException("Invalid token");
-            }
-            if (isRefreshToken && claimsSet.getClaim("refreshToken") == null) {
-                throw new UnauthorizedException("Missing refresh token claim in token");
-            }
-            if (claimsSet.getExpirationTime().before(new Date())) {
-                throw new TokenExpiredException(isRefreshToken ? "Refresh token expired" : "Access token expired");
-            }
-            SessionInfo sessionInfo = new SessionInfo(claimsSet);
+        if (!sessionInfo.isValid()) {
+            throw new UnauthorizedException("Invalid token");
+        }
 
-            if (!sessionInfo.isValid()) {
-                throw new UnauthorizedException("Invalid token");
-            }
-
-            return sessionInfo;
+        return sessionInfo;
 
 
     }
