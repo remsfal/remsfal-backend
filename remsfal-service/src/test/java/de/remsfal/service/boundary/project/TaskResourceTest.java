@@ -51,7 +51,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\"}";
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(path, TestData.PROJECT_ID)
@@ -74,7 +74,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void createTask_FAILED_userIsNotMember(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -89,7 +89,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             + "\"id\":\"anyId\"}";
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(path, TestData.PROJECT_ID)
@@ -102,7 +102,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void createTask_FAILED_noTitle(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
             .post(path, TestData.PROJECT_ID)
@@ -118,7 +118,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         final Response res = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(path, TestData.PROJECT_ID)
@@ -139,7 +139,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(taskUrl)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -157,7 +157,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         final Response res = given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(json)
                 .post(path, TestData.PROJECT_ID)
@@ -169,7 +169,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
                 .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .get(path,TestData.PROJECT_ID)
                 .then()
                 .statusCode(Status.OK.getStatusCode())
@@ -184,7 +184,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void getTask_FAILED_userIsNotMember(String path) {
         final String taskId = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -194,14 +194,14 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.OK.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
@@ -219,7 +219,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         final String taskId = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -229,7 +229,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
@@ -240,7 +240,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void updateTask_SUCCESS_descriptionIsUpdated(String path) {
         final String taskId = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -250,7 +250,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.TASK_DESCRIPTION + "\"}")
             .patch(path + "/{taskId}", TestData.PROJECT_ID, taskId)
@@ -263,7 +263,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -275,7 +275,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void updateTask_FAILED_userIsNotMember(String path) {
         final String taskId = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -285,7 +285,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.TASK_DESCRIPTION + "\"}")
             .patch(path + "/{taskId}", TestData.PROJECT_ID, taskId)
@@ -298,7 +298,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void deleteTask_SUCCESS_taskIsdeleted(String path) {
         final String taskId = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -308,14 +308,14 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
@@ -326,7 +326,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void deleteTask_FAILED_userIsNotMember(String path) {
         final String taskId = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -336,7 +336,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .delete(path + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
@@ -369,7 +369,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .queryParam("owner", TestData.USER_ID_1)
             .get(path, TestData.PROJECT_ID)
             .then()
@@ -407,7 +407,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .queryParam("status", "OPEN")
             .get(path, TestData.PROJECT_ID)
             .then()
@@ -445,7 +445,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .queryParam("status", "OPEN")
             .queryParam("owner", TestData.USER_ID_1)
             .get(path, TestData.PROJECT_ID)
@@ -484,7 +484,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .get(path, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -500,7 +500,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     void getTasks_FAILED_userIsNotMember(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
             .post(path, TestData.PROJECT_ID)
@@ -510,7 +510,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .get(path, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
