@@ -90,28 +90,28 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
     @Test
     void getProperties_SUCCESS_propertiesCorrectlyReturned() {
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_1)
-            .setParameter(2, TestData.PROJECT_ID)
-            .setParameter(3, TestData.PROPERTY_TITLE_1)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY_1)
-            .setParameter(5, TestData.PROPERTY_DESCRIPTION_1)
-            .setParameter(6, TestData.PROPERTY_PLOT_AREA_1)
-            .executeUpdate());
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_2)
-            .setParameter(2, TestData.PROJECT_ID)
-            .setParameter(3, TestData.PROPERTY_TITLE_2)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY_2)
-            .setParameter(5, TestData.PROPERTY_DESCRIPTION_2)
-            .setParameter(6, TestData.PROPERTY_PLOT_AREA_2)
-            .executeUpdate());
+        // Insert test data
+        insertProperty(TestData.PROPERTY_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_1, TestData.PROPERTY_REG_ENTRY_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_PLOT_AREA_1);
+        insertProperty(TestData.PROPERTY_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_2, TestData.PROPERTY_REG_ENTRY_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_PLOT_AREA_2);
+
+        insertBuilding(TestData.BUILDING_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID_1, TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1, TestData.BUILDING_LIVING_SPACE_1, TestData.BUILDING_COMMERCIAL_SPACE_1, TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_1);
+        insertBuilding(TestData.BUILDING_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_ID_1, TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2, TestData.BUILDING_LIVING_SPACE_2, TestData.BUILDING_COMMERCIAL_SPACE_2, TestData.BUILDING_USABLE_SPACE_2, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_2);
+
+        insertApartment(TestData.APARTMENT_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_1, TestData.APARTMENT_LOCATION_1, TestData.APARTMENT_DESCRIPTION_1, TestData.APARTMENT_LIVING_SPACE_1, TestData.APARTMENT_USABLE_SPACE_1, TestData.APARTMENT_HEATING_SPACE_1);
+        insertApartment(TestData.APARTMENT_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_2, TestData.APARTMENT_LOCATION_2, TestData.APARTMENT_DESCRIPTION_2, TestData.APARTMENT_LIVING_SPACE_2, TestData.APARTMENT_USABLE_SPACE_2, TestData.APARTMENT_HEATING_SPACE_2);
+
+        insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1, TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1, TestData.COMMERCIAL_HEATING_SPACE_1);
+
+        insertGarage(TestData.GARAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_1, TestData.GARAGE_LOCATION_1, TestData.GARAGE_DESCRIPTION_1, TestData.GARAGE_USABLE_SPACE_1);
+        insertGarage(TestData.GARAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_2, TestData.GARAGE_LOCATION_2, TestData.GARAGE_DESCRIPTION_2, TestData.GARAGE_USABLE_SPACE_2);
+
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .queryParam("limit", 10)
+            .queryParam("offset", 0)
+            .queryParam("projectId", TestData.PROJECT_ID)
             .get(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -119,12 +119,115 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .and().body("first", Matchers.equalTo(0))
             .and().body("size", Matchers.equalTo(2))
             .and().body("total", Matchers.equalTo(2))
-            .and().body("properties.size()", Matchers.is(2))
-            .and().body("properties.id", Matchers.hasItems(TestData.PROPERTY_ID_1, TestData.PROPERTY_ID_2))
-            .and().body("properties.title", Matchers.hasItems(TestData.PROPERTY_TITLE_1, TestData.PROPERTY_TITLE_2))
-            .and().body("properties.landRegisterEntry", Matchers.hasItems(TestData.PROPERTY_REG_ENTRY_1, TestData.PROPERTY_REG_ENTRY_2))
-            .and().body("properties.description", Matchers.hasItems(TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_DESCRIPTION_2))
-            .and().body("properties.plotArea", Matchers.hasItems(TestData.PROPERTY_PLOT_AREA_1, TestData.PROPERTY_PLOT_AREA_2));
+            .and().body("nodes.size()", Matchers.is(2))
+            .and().body("nodes[0].key", Matchers.equalTo(TestData.PROPERTY_ID_2))
+            .and().body("nodes[1].key", Matchers.equalTo(TestData.PROPERTY_ID_1))
+            .and().body("nodes[0].data.type", Matchers.equalTo("property"))
+            .and().body("nodes[1].data.type", Matchers.equalTo("property"))
+            .and().body("nodes[0].data.title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+            .and().body("nodes[1].data.title", Matchers.equalTo(TestData.PROPERTY_TITLE_1))
+            .and().body("nodes[0].data.description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
+            .and().body("nodes[1].data.description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_1))
+            .and().body("nodes[1].children[0].key", Matchers.equalTo(TestData.BUILDING_ID_1))
+            .and().body("nodes[1].children[0].data.type", Matchers.equalTo("building"))
+            .and().body("nodes[1].children[0].data.title", Matchers.equalTo(TestData.BUILDING_TITLE_1))
+            .and().body("nodes[1].children[0].data.description", Matchers.equalTo(TestData.BUILDING_DESCRIPTION_1))
+            .and().body("nodes[1].children[1].key", Matchers.equalTo(TestData.BUILDING_ID_2))
+            .and().body("nodes[1].children[1].data.type", Matchers.equalTo("building"))
+            .and().body("nodes[1].children[1].data.title", Matchers.equalTo(TestData.BUILDING_TITLE_2))
+            .and().body("nodes[1].children[1].data.description", Matchers.equalTo(TestData.BUILDING_DESCRIPTION_2))
+            .and().body("nodes[1].children[0].children[0].key", Matchers.equalTo(TestData.APARTMENT_ID_1))
+            .and().body("nodes[1].children[0].children[0].data.type", Matchers.equalTo("apartment"))
+            .and().body("nodes[1].children[0].children[0].data.title", Matchers.equalTo(TestData.APARTMENT_TITLE_1))
+            .and().body("nodes[1].children[0].children[0].data.description", Matchers.equalTo(TestData.APARTMENT_DESCRIPTION_1))
+            .and().body("nodes[1].children[0].children[1].key", Matchers.equalTo(TestData.APARTMENT_ID_2))
+            .and().body("nodes[1].children[0].children[1].data.type", Matchers.equalTo("apartment"))
+            .and().body("nodes[1].children[0].children[1].data.title", Matchers.equalTo(TestData.APARTMENT_TITLE_2))
+            .and().body("nodes[1].children[0].children[1].data.description", Matchers.equalTo(TestData.APARTMENT_DESCRIPTION_2))
+            .and().body("nodes[1].children[0].children[2].key", Matchers.equalTo(TestData.COMMERCIAL_ID_1))
+            .and().body("nodes[1].children[0].children[2].data.type", Matchers.equalTo("commercial"))
+            .and().body("nodes[1].children[0].children[2].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
+            .and().body("nodes[1].children[0].children[2].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
+            .and().body("nodes[1].children[0].children[3].key", Matchers.equalTo(TestData.GARAGE_ID_1))
+            .and().body("nodes[1].children[0].children[3].data.type", Matchers.equalTo("garage"))
+            .and().body("nodes[1].children[0].children[3].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_1))
+            .and().body("nodes[1].children[0].children[3].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_1))
+            .and().body("nodes[1].children[0].children[4].key", Matchers.equalTo(TestData.GARAGE_ID_2))
+            .and().body("nodes[1].children[0].children[4].data.type", Matchers.equalTo("garage"))
+            .and().body("nodes[1].children[0].children[4].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_2))
+            .and().body("nodes[1].children[0].children[4].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
+            .log().body();
+    }
+
+    private void insertProperty(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .setParameter(3, params[2])
+                .setParameter(4, params[3])
+                .setParameter(5, params[4])
+                .setParameter(6, params[5])
+                .executeUpdate());
+    }
+
+    private void insertBuilding(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO BUILDING (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, LIVING_SPACE, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .setParameter(3, params[2])
+                .setParameter(4, params[3])
+                .setParameter(5, params[4])
+                .setParameter(6, params[5])
+                .setParameter(7, params[6])
+                .setParameter(8, params[7])
+                .setParameter(9, params[8])
+                .setParameter(10, params[9])
+                .executeUpdate());
+    }
+
+    private void insertApartment(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .setParameter(3, params[2])
+                .setParameter(4, params[3])
+                .setParameter(5, params[4])
+                .setParameter(6, params[5])
+                .setParameter(7, params[6])
+                .setParameter(8, params[7])
+                .setParameter(9, params[8])
+                .executeUpdate());
+    }
+
+    private void insertCommercial(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .setParameter(3, params[2])
+                .setParameter(4, params[3])
+                .setParameter(5, params[4])
+                .setParameter(6, params[5])
+                .setParameter(7, params[6])
+                .setParameter(8, params[7])
+                .setParameter(9, params[8])
+                .executeUpdate());
+    }
+
+    private void insertGarage(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO GARAGE (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .setParameter(3, params[2])
+                .setParameter(4, params[3])
+                .setParameter(5, params[4])
+                .setParameter(6, params[5])
+                .setParameter(7, params[6])
+                .executeUpdate());
     }
 
     @Test
@@ -150,7 +253,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .and().body("first", Matchers.equalTo(10))
             .and().body("size", Matchers.equalTo(0))
             .and().body("total", Matchers.equalTo(1))
-            .and().body("properties.size()", Matchers.is(0));
+            .and().body("nodes.size()", Matchers.is(0));
     }
 
     @Test
