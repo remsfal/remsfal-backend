@@ -1,4 +1,5 @@
 package de.remsfal.service.boundary.authentication;
+
 import com.nimbusds.jwt.JWTClaimsSet;
 import de.remsfal.service.boundary.exception.TokenExpiredException;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
@@ -11,12 +12,14 @@ import org.mockito.Mockito;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Date;
 
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class JWTManagerTest {
@@ -39,9 +42,9 @@ class JWTManagerTest {
 
         try (MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
             keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString()))
-                    .thenReturn(mockPrivateKey);
+                .thenReturn(mockPrivateKey);
             keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString()))
-                    .thenReturn(mockPublicKey);
+                .thenReturn(mockPublicKey);
         }
 
         jwtManager = new JWTManager();
@@ -54,10 +57,10 @@ class JWTManagerTest {
     void testCreateJWT() {
         // Arrange
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject("12345")
-                .claim("email", "user@example.de")
-                .expirationTime(new Date(System.currentTimeMillis() + 3600 * 1000))
-                .build();
+            .subject("12345")
+            .claim("email", "user@example.de")
+            .expirationTime(new Date(System.currentTimeMillis() + 3600 * 1000))
+            .build();
 
         SessionInfo sessionInfo = new SessionInfo(claims);
 
@@ -73,11 +76,11 @@ class JWTManagerTest {
     void testVerifyJWT_Success() {
         // Arrange
         String jwt = Jwt.claims()
-                .claim("sub", "12345")
-                .claim("email", "user@example.com")
-                .expiresAt(System.currentTimeMillis() / 1000 + 3600)
-                .jws().algorithm(SignatureAlgorithm.RS256)
-                .sign(mockPrivateKey);
+            .claim("sub", "12345")
+            .claim("email", "user@example.com")
+            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
+            .jws().algorithm(SignatureAlgorithm.RS256)
+            .sign(mockPrivateKey);
 
         // Act
         SessionInfo sessionInfo = jwtManager.verifyJWT(jwt);
@@ -92,14 +95,56 @@ class JWTManagerTest {
     void testVerifyJWT_ExpiredToken() {
         // Arrange
         String jwt = Jwt.claims()
-                .claim("sub", "12345")
-                .expiresAt(System.currentTimeMillis() / 1000 - 10) // Token expired
-                .jws().algorithm(SignatureAlgorithm.RS256)
-                .sign(mockPrivateKey);
+            .claim("sub", "12345")
+            .expiresAt(System.currentTimeMillis() / 1000 - 10) // Token expired
+            .jws().algorithm(SignatureAlgorithm.RS256)
+            .sign(mockPrivateKey);
 
         // Act & Assert
         assertThrows(TokenExpiredException.class, () -> jwtManager.verifyJWT(jwt));
     }
+
+    @Test
+    void testVerifyJqt_noClaims_fail() {
+        // Arrange
+        String jwt = Jwt.claims()
+            .jws().algorithm(SignatureAlgorithm.RS256)
+            .sign(mockPrivateKey);
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt));
+    }
+
+    @Test
+    void testVerifyJWT_missing_refreshtoken_fails() {
+        // Arrange
+        String jwt = Jwt.claims()
+            .claim("sub", "12345")
+            .claim("email", "1234")
+            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
+            .jws().algorithm(SignatureAlgorithm.RS256)
+            .sign(mockPrivateKey);
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt, true));
+
+
+    }
+
+    @Test
+    void testVerifyJWT_invalidSessionInfo_fails() {
+        // Arrange
+        String jwt = Jwt.claims()
+            .claim("sub", "12345")
+            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
+            .jws().algorithm(SignatureAlgorithm.RS256)
+            .sign(mockPrivateKey);
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt));
+
+    }
+
 
     @Test
     void testVerifyJWT_InvalidSignature() {
@@ -109,4 +154,44 @@ class JWTManagerTest {
         // Act & Assert
         assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt));
     }
+
+    @Test
+    void test_verifyTokenManually() {
+        // Arrange
+        String jwt = Jwt.claims()
+            .claim("sub", "12345")
+            .claim("email", "12345")
+            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
+            .jws().algorithm(SignatureAlgorithm.RS256)
+            .sign(mockPrivateKey);
+
+        // Act
+        JWTClaimsSet claims = jwtManager.verifyTokenManually(jwt, mockPublicKey);
+
+        // Assert
+        assertNotNull(claims);
+        assertEquals("12345", claims.getSubject());
+        assertEquals("12345", claims.getClaim("email"));
+    }
+
+    @Test
+    void test_verifyTokenManually_InvalidSignature() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        PrivateKey wrongKey = keyPair.getPrivate();
+
+
+        // Arrange
+        String jwt = Jwt.claims()
+            .claim("sub", "12345")
+            .claim("email", "12345")
+            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
+            .jws().algorithm(SignatureAlgorithm.RS256)
+            .sign(wrongKey);
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyTokenManually(jwt, mockPublicKey));
+    }
+
 }
