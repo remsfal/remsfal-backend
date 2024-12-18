@@ -6,6 +6,7 @@ import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
+@QuarkusTest
 class SessionManagerTest {
 
     SessionManager sessionManager;

@@ -4,6 +4,7 @@ import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
+import io.quarkus.test.junit.QuarkusTest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@QuarkusTest
 class UserAuthenticationRepositoryTest {
 
     private UserAuthenticationRepository repository;
