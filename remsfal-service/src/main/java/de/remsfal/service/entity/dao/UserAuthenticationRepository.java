@@ -11,10 +11,8 @@ import java.util.Optional;
 public class UserAuthenticationRepository extends AbstractRepository<UserAuthenticationEntity> {
 
     public Optional<UserAuthenticationEntity> findByUserId(final String userId) {
-        return getEntityManager().createNamedQuery("UserAuthenticationEntity.findByUserId", UserAuthenticationEntity.class)
-            .setParameter(PARAM_USER_ID, userId)
-            .getResultStream()
-            .findFirst();
+        return getEntityManager().createNamedQuery("UserAuthenticationEntity.findByUserId",
+            UserAuthenticationEntity.class).setParameter(PARAM_USER_ID, userId).getResultStream().findFirst();
     }
 
     public Optional<UserAuthenticationEntity> findByUserAuthentication(final UserModel user) {
@@ -23,9 +21,7 @@ public class UserAuthenticationRepository extends AbstractRepository<UserAuthent
 
     public void updateRefreshToken(final String userId, final String refreshToken) {
         getEntityManager().createNamedQuery("UserAuthenticationEntity.updateRefreshToken")
-            .setParameter("refreshToken", refreshToken)
-            .setParameter(PARAM_USER_ID, userId)
-                .executeUpdate();
+            .setParameter("refreshToken", refreshToken).setParameter(PARAM_USER_ID, userId).executeUpdate();
     }
 
     public void updateRefreshToken(final UserAuthenticationModel userAuthentication) {
@@ -38,8 +34,7 @@ public class UserAuthenticationRepository extends AbstractRepository<UserAuthent
 
     public void deleteRefreshToken(final String userId) {
         getEntityManager().createNamedQuery("UserAuthenticationEntity.deleteRefreshToken")
-            .setParameter(PARAM_USER_ID, userId)
-                .executeUpdate();
+            .setParameter(PARAM_USER_ID, userId).executeUpdate();
     }
 
     public void deleteRefreshToken(final UserAuthenticationModel userAuthentication) {

@@ -1,9 +1,6 @@
 package de.remsfal.service.boundary.authentication;
 
-import io.quarkus.arc.Arc; // Quarkus Dependency Injection Import
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -35,9 +32,9 @@ public class KeyLoader {
 
     private static PrivateKey parsePrivateKey(String pem) throws Exception {
         String base64Content = pem
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s+", "");
+            .replace("-----BEGIN PRIVATE KEY-----", "")
+            .replace("-----END PRIVATE KEY-----", "")
+            .replaceAll("\\s+", "");
 
         byte[] keyBytes = Base64.getDecoder().decode(base64Content);
 
@@ -46,13 +43,11 @@ public class KeyLoader {
     }
 
 
-
     private static PublicKey parsePublicKey(String pem) throws Exception {
         String base64Content = pem
-                .replace("-----BEGIN PUBLIC KEY-----", "")
-                .replace("-----END PUBLIC KEY-----", "")
-                .replaceAll("\\s+", "");
-
+            .replace("-----BEGIN PUBLIC KEY-----", "")
+            .replace("-----END PUBLIC KEY-----", "")
+            .replaceAll("\\s+", "");
 
         byte[] keyBytes = Base64.getDecoder().decode(base64Content);
 
