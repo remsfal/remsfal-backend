@@ -108,7 +108,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .queryParam("limit", 10)
             .queryParam("offset", 0)
             .queryParam("projectId", TestData.PROJECT_ID)
