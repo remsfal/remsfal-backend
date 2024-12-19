@@ -233,6 +233,7 @@ public interface ChatEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response uploadFile(
             @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input) throws Exception;
+            @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input)
+            throws Exception;
 
 }
