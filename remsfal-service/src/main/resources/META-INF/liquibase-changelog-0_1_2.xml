@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- ChangeSet to update ENUM and rename column -->
+    <changeSet id="remsfal-backend-0.1.2-rename-enum-and-column" author="parhamrahmani13762@gmail.com">
+
+        <!-- Modify the CONTENT_TYPE ENUM: Rename IMAGE to FILE -->
+        <sql>
+            ALTER TABLE CHAT_MESSAGE
+                MODIFY CONTENT_TYPE ENUM('TEXT', 'FILE') NOT NULL;
+        </sql>
+
+        <!-- Rename the IMAGE_URL column to URL -->
+        <renameColumn tableName="CHAT_MESSAGE"
+                      oldColumnName="IMAGE_URL"
+                      newColumnName="URL"
+                      columnDataType="varchar(255)"/>
+    </changeSet>
+
+</databaseChangeLog>

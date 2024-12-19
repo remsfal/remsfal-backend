@@ -1,13 +1,19 @@
 package de.remsfal.service.boundary.project;
 
+
+import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 
+import de.remsfal.core.model.project.ChatMessageModel.ContentType;
+import de.remsfal.service.control.FileStorageService;
+import jakarta.ws.rs.core.StreamingOutput;
 import org.jboss.logging.Logger;
 
 import com.google.gson.Gson;
@@ -28,7 +34,12 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
+/**
+ * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ */
 @RequestScoped
 public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
@@ -43,6 +54,11 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
     @Inject
     Logger logger;
+
+    @Inject
+    FileStorageService fileStorageService;
+
+    private final String bucketName = "remsfal-chat-files";
 
     @Override
     public Response createChatSession() {
@@ -293,22 +309,53 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
     }
 
+
+
     @Override
     public Response getChatMessage(String sessionId, String messageId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(messageId);
-            return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatMessageJson.valueOf(chatMessageEntity))
-                .build();
+            if (chatMessageEntity.getContentType().equals(ContentType.TEXT))
+                return Response.ok()
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(ChatMessageJson.valueOf(chatMessageEntity))
+                        .build();
+            if (chatMessageEntity.getContentType().equals(ContentType.FILE)) {
+                // Extract the file URL and derive the file name
+                String fileUrl = chatMessageEntity.getUrl();
+                String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+
+                // Download the file from the storage service
+                InputStream fileStream = fileStorageService.downloadFile(bucketName, fileName);
+                // Stream the file content to the client as a binary response
+                return Response.ok((StreamingOutput) output -> {
+                            byte[] buffer = new byte[8192];
+                            int bytesRead;
+
+                            // Read chunks from the file and write them to the HTTP response
+                            while (true) {
+                                bytesRead = fileStream.read(buffer);
+                                if (bytesRead == -1) {
+                                    break; // End of file reached
+                                }
+                                output.write(buffer, 0, bytesRead);
+                            }
+                        })
+                        .type(MediaType.APPLICATION_OCTET_STREAM)
+                        .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                        .build();
+            }
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get chat message", e);
             throw e;
         }
-
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity("{\"message\": \"The file type is not recognized\"}")
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @Override
@@ -353,7 +400,82 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         }
     }
 
-    public String jsonifyParticipantsMap(Map<String, ChatSessionModel.ParticipantRole> participants) {
+
+    @Override
+    public Response uploadFile(String sessionId, MultipartFormDataInput input) throws Exception {
+        try {
+            String userId = principal.getId();
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            checkPrivileges(projectId);
+
+            Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
+            List<InputPart> fileParts = formDataMap.get("file");
+            if (fileParts == null || fileParts.isEmpty()) {
+                logger.error("No 'file' part found in the form data");
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"message\": \"No file part found in the form data\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            for (InputPart inputPart : fileParts) {
+                String fileName = getFileName(inputPart.getHeaders());
+                if (!isFileNameValid(fileName)) {
+                    logger.error("Invalid file name: " + fileName);
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity("{\"message\": \"Invalid file name: " + fileName + "\"}")
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
+                }
+
+                String contentType = inputPart.getMediaType().toString();
+                if (!isContentTypeValid(contentType)) {
+                    logger.error("Invalid file type: " + contentType);
+                    return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
+                            .entity("{\"message\": \"Unsupported Media Type: " + contentType + "\"}")
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
+                }
+
+                try (InputStream fileStream = inputPart.getBody(InputStream.class, null)) {
+                    if (fileStream == null || fileStream.available() == 0) {
+                        logger.error("File stream is null or empty");
+                        return Response.status(Response.Status.BAD_REQUEST)
+                                .entity("{\"message\": \"Failed to read file stream: unknown\"}")
+                                .type(MediaType.APPLICATION_JSON)
+                                .build();
+                    }
+
+
+                    String fileUrl = fileStorageService.uploadFile(bucketName, input);
+
+                    ChatMessageEntity fileMetadataEntity = chatMessageController
+                            .sendChatMessage(sessionId, userId, ContentType.FILE, fileUrl);
+
+                    String jsonResponse = String.format("{\"fileId\": \"%s\", \"fileUrl\": \"%s\"}",
+                            fileMetadataEntity.getId(), fileUrl);
+
+                    return Response.status(Response.Status.CREATED)
+                            .entity(jsonResponse)
+                            .build();
+                }
+            }
+
+            throw new BadRequestException("No valid file uploaded");
+
+        } catch (Exception e) {
+            logger.error("Error during file upload", e);
+            throw e;
+        }
+    }
+
+
+
+
+
+    //---------------------Helper Methods---------------------
+
+    private String jsonifyParticipantsMap(Map<String, ChatSessionModel.ParticipantRole> participants) {
         List<Map<String, String>> participantList = new ArrayList<>();
         participants.forEach((id, role) -> {
             Map<String, String> participant = new HashMap<>();
@@ -364,4 +486,37 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         Gson gson = new Gson();
         return gson.toJson(participantList);
     }
+
+    private String getFileName(Map<String, List<String>> headers) {
+        List<String> contentDisposition = headers.get("Content-Disposition");
+        if (contentDisposition != null && !contentDisposition.isEmpty()) {
+            for (String part : contentDisposition.get(0).split(";")) {
+                if (part.trim().startsWith("filename")) {
+                    return part.split("=")[1].trim().replaceAll("\"", "");
+                }
+            }
+        }
+        return "unknown";
+    }
+
+    private boolean isFileNameValid(String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            return false;
+        }
+        return fileName.matches("^[\\w\\-. ]+$");
+    }
+
+    private boolean isContentTypeValid(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        // Normalize content type (remove charset if present)
+        String normalizedContentType = contentType.split(";")[0].trim();
+        Set <String> allowedTypes = fileStorageService.getAllowedTypes();
+        return allowedTypes.contains(normalizedContentType);
+    }
+
+
+
+
 }

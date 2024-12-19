@@ -44,8 +44,8 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
     @Column(name = "CONTENT")
     private String content;
 
-    @Column(name = "IMAGE_URL")
-    private String imageUrl;
+    @Column(name = "URL")
+    private String url;
 
     @Override
     public Date getTimestamp() {
@@ -115,18 +115,18 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
     }
 
     @Override
-    public String getImageUrl() {
-        return imageUrl;
+    public String getUrl() {
+        return url;
     }
 
-    public void setImageUrl(final String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setUrl(final String imageUrl) {
+        this.url = imageUrl;
     }
 
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sender.getId(), contentType, content, imageUrl, getCreatedAt());
+        return Objects.hash(id, sender.getId(), contentType, content, url, getCreatedAt());
     }
 
     @Override
@@ -138,7 +138,7 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
                 Objects.equals(getSenderId(), that.getSenderId()) &&
                 contentType == that.contentType &&
                 Objects.equals(content, that.content) &&
-                Objects.equals(imageUrl, that.imageUrl) &&
+                Objects.equals(url, that.url) &&
                 Objects.equals(getCreatedAt(), that.getCreatedAt());
     }
 }

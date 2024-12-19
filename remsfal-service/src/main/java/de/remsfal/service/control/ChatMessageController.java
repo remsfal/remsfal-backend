@@ -29,8 +29,6 @@ public class ChatMessageController {
         repository.updateTextChatMessage(messageId, content);
     }
 
-    // TODO: Implement image chat message update
-
     public void deleteChatMessage(String messageId) {
         logger.infov("Deleting chat message (messageId={0})", messageId);
         repository.deleteChatMessage(messageId);

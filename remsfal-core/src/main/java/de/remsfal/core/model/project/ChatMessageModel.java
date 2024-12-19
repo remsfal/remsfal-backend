@@ -22,14 +22,14 @@ public interface ChatMessageModel {
 
     enum ContentType {
         TEXT,
-        IMAGE
+        FILE
     }
 
     ContentType getContentType();
 
     String getContent();
 
-    String getImageUrl();
+    String getUrl();
 
     Date getTimestamp();
 

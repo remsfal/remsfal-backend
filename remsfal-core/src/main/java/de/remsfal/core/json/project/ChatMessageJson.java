@@ -51,7 +51,7 @@ public abstract class ChatMessageJson implements ChatMessageModel {
     @Null
     @Nullable
     @Override
-    public abstract String getImageUrl();
+    public abstract String getUrl();
 
     @Null
     @Nullable
@@ -78,7 +78,7 @@ public abstract class ChatMessageJson implements ChatMessageModel {
                 .senderId(model.getSenderId())
                 .contentType(model.getContentType())
                 .content(model.getContent())
-                .imageUrl(model.getImageUrl())
+                .url(model.getUrl())
                 .timestamp(model.getTimestamp())
                 .build();
     }

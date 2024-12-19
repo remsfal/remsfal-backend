@@ -4,26 +4,52 @@ package de.remsfal.service.boundary.project;
 import de.remsfal.core.model.project.ChatMessageModel;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.service.control.ChatMessageController;
+import de.remsfal.service.control.FileStorageService;
+import de.remsfal.service.entity.dto.ChatMessageEntity;
+import io.minio.Result;
+import io.minio.messages.Item;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import de.remsfal.service.TestData;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import java.nio.file.Path;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 class ChatResourceTest extends AbstractProjectResourceTest {
+
+    @Inject
+    FileStorageService fileStorageService;
+
+    @Inject
+    ChatMessageController chatMessageController;
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String CHAT_SESSION_TASK_PATH = BASE_PATH + "/tasks/{taskId}/chat";
@@ -34,8 +60,13 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     static final String TASK_ID_2 = UUID.randomUUID().toString();
     static final String EXAMPLE_CHAT_SESSION_ID_1 = UUID.randomUUID().toString();
     static final String EXAMPLE_CHAT_SESSION_ID_2 = UUID.randomUUID().toString();
+    static final String EXAMPLE_FILE_NAME_PREFIX = "example";
+    static final String EXAMPLE_FILE_NAME_SUFFIX = "txt";
+    static final String EXAMPLE_FILE_NAME = EXAMPLE_FILE_NAME_PREFIX + "." + EXAMPLE_FILE_NAME_SUFFIX;
+
     static final String CHAT_MESSAGE_ID_1 = UUID.randomUUID().toString();
     static final String CHAT_MESSAGE_ID_2 = UUID.randomUUID().toString();
+    static final String CHAT_MESSAGE_ID_3 = UUID.randomUUID().toString();
     static final String CHAT_MESSAGE_JSON_PAYLOAD = "{"
             + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
             + "\"sender_id\": \"" + TestData.USER_ID + "\","
@@ -55,11 +86,11 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             + "\"content\": null"
             + "}";
 
-
+    private final String bucketName = "remsfal-chat-files";
 
 
     @BeforeEach
-    protected void setup() {
+    protected void setup() throws Exception {
 
         // setup test users and projects , userId is the manager of all projects
         super.setupTestUsers();
@@ -184,6 +215,24 @@ class ChatResourceTest extends AbstractProjectResourceTest {
                 .setParameter(5, "Hello World")
                 .executeUpdate());
 
+        // create a file
+        Path tempDir = Files.createTempDirectory("test-");
+        Path tempFile = tempDir.resolve(EXAMPLE_FILE_NAME);
+        Files.writeString(tempFile, "Hello World");
+        String exampleFileName = tempFile.getFileName().toString();
+        MultipartFormDataInput exampleFile = createMultipartFormDataInput(exampleFileName, MediaType.TEXT_PLAIN, Files.readAllBytes(tempFile));
+        String exampleFileUrl = fileStorageService.uploadFile(bucketName, exampleFile);
+        // insert the metadata to CHAT_MESSAGE table and upload the file to minio bucket
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, URL) "
+                        +
+                        "VALUES (?,?,?,?,?)")
+                .setParameter(1, CHAT_MESSAGE_ID_3)
+                .setParameter(2, EXAMPLE_CHAT_SESSION_ID_1)
+                .setParameter(3, TestData.USER_ID_3)
+                .setParameter(4, ChatMessageModel.ContentType.FILE.name())
+                .setParameter(5, exampleFileUrl)
+                .executeUpdate());
     }
 
     @AfterEach
@@ -197,6 +246,8 @@ class ChatResourceTest extends AbstractProjectResourceTest {
                 .createNativeQuery("DELETE FROM CHAT_MESSAGE WHERE CHAT_SESSION_ID = ?")
                 .setParameter(1, EXAMPLE_CHAT_SESSION_ID_2)
                 .executeUpdate());
+
+        fileStorageService.deleteObject(bucketName, EXAMPLE_FILE_NAME);
     }
 
     // authentication test - same logic in all methods - no need for multiple tests
@@ -773,6 +824,25 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}"})
+    void getChatMessage_FILETYPE_SUCCESS(String path) {
+        String resolvedPath = path
+                .replace("{projectId}", TestData.PROJECT_ID_1)
+                .replace("{taskId}", TASK_ID_1)
+                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
+                .replace("{messageId}", CHAT_MESSAGE_ID_3);
+
+        given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .get(resolvedPath)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", containsString("filename=\"" + EXAMPLE_FILE_NAME + "\""))
+                .body(not(emptyString()));
+    }
+    @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages"})
     void getChatMessages_FAILURE(String path) {
         given()
@@ -927,4 +997,165 @@ class ChatResourceTest extends AbstractProjectResourceTest {
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
+
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_SUCCESS(String path) throws Exception {
+        // Create a temporary directory and file
+        Path tempDir = Files.createTempDirectory("test-upload");
+        Path tempFile = tempDir.resolve("test-file.txt");
+        Files.writeString(tempFile, "This is a test file content");
+        String fileName = tempFile.getFileName().toString();
+        String expectedBucketName = "remsfal-chat-files";
+
+        try {
+            // Perform the file upload and extract the fileId and fileUrl from the response
+            Map<String, String> response =
+                    given()
+                            .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
+                            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                            .when()
+                            .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                                    .replace("{taskId}", TASK_ID_1)
+                                    .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                            .then()
+                            .statusCode(Response.Status.CREATED.getStatusCode())
+                            .contentType(ContentType.JSON)
+                            .extract().as(new TypeRef<>() {
+                            });
+
+            String fileId = response.get("fileId");
+            String fileUrl = response.get("fileUrl");
+
+            // Verify the file metadata is persisted using ChatMessageController
+            ChatMessageEntity persistedMessage = chatMessageController.getChatMessage(fileId);
+
+            assertNotNull(persistedMessage, "Persisted message should not be null");
+            assertEquals(EXAMPLE_CHAT_SESSION_ID_1, persistedMessage.getChatSession().getId(),
+                    "Chat session ID should match");
+            assertEquals(ChatMessageModel.ContentType.FILE, persistedMessage.getContentType(),
+                    "Content type should match");
+            assertEquals(fileUrl, persistedMessage.getUrl(), "Persisted URL should match the returned file URL");
+            // Verify the file is stored in the MinIO bucket
+            verifyFileInBucket(expectedBucketName, fileName);
+
+        } finally {
+            // Clean up the temporary file and directory
+            Files.deleteIfExists(tempFile);
+            Files.deleteIfExists(tempDir);
+        }
+    }
+
+
+    private void verifyFileInBucket(String bucketName, String fileName) {
+        boolean fileExists = false;
+        try {
+            Iterable<Result<Item>> items = fileStorageService.listObjects(bucketName);
+            for (Result<Item> item : items) {
+                if (item.get().objectName().contains(fileName)) {
+                    fileExists = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            fail("Exception occurred while verifying the file in the bucket: " + e.getMessage(), e);
+        }
+        assertTrue(fileExists, "Uploaded file should exist in the bucket");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_MissingFilePart_FAILURE(String path) {
+        given()
+                .multiPart("someField", "someValue") // This ensures a valid multipart request with a boundary
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .when()
+                .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("No file part found in the form data"));
+
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_InvalidContentType_FAILURE(String path) throws Exception {
+        Path tempFile = Files.createTempFile("test-file", ".exe"); // Unsupported file type
+        try {
+            given()
+                    .multiPart("file", tempFile.toFile(), "application/x-msdownload")
+                    .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                    .when()
+                    .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                            .replace("{taskId}", TASK_ID_1)
+                            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                    .then()
+                    .statusCode(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode())
+                    .body("message", containsString("Unsupported Media Type: application/x-msdownload"));
+
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_EmptyInputStream_FAILURE(String path) {
+        given()
+                .multiPart("file", "", MediaType.TEXT_PLAIN) // Empty file content
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .when()
+                .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                        .replace("{taskId}", TASK_ID_1)
+                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Failed to read file stream: unknown"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
+    void uploadFile_ChatSessionClosed_FAILURE(String path) throws Exception {
+        runInTransaction(() -> {
+            entityManager.createQuery("UPDATE ChatSessionEntity SET status = :status WHERE id = :id")
+                    .setParameter("status", ChatSessionModel.Status.CLOSED)
+                    .setParameter("id", EXAMPLE_CHAT_SESSION_ID_1)
+                    .executeUpdate();
+        });
+
+        Path tempFile = Files.createTempFile("test-file", ".txt");
+        try {
+            given()
+                    .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
+                    .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                    .when()
+                    .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
+                            .replace("{taskId}", TASK_ID_1)
+                            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                    .then()
+                    .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    private MultipartFormDataInput createMultipartFormDataInput(String fileName, String contentType, byte[] content)
+            throws Exception {
+        MultipartFormDataInput input = mock(MultipartFormDataInput.class);
+        InputPart inputPart = mock(InputPart.class);
+
+        MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
+        headers.add("Content-Disposition", "form-data; name=\"file\"; filename=\"" + fileName + "\"");
+
+        when(inputPart.getHeaders()).thenReturn(headers);
+        when(inputPart.getMediaType()).thenReturn(MediaType.valueOf(contentType));
+        when(inputPart.getBody(InputStream.class, null)).thenReturn(new ByteArrayInputStream(content));
+        when(input.getFormDataMap()).thenReturn(Map.of("file", List.of(inputPart)));
+
+        return input;
+    }
 }

@@ -208,20 +208,23 @@ class ChatMessageRepositoryTest extends AbstractTest {
     @Test
     @Transactional
     void sendTextChatMessage_SUCCESS() {
-        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.TEXT, "This is a second test message");
+        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.TEXT,
+                "This is a second test message");
         ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
         assertEquals(2, chatSession.getMessages().size(), "Chat session should have 2 messages");
         assertEquals("This is a second test message", chatSession.getMessages().get(1).getContent(),
                 "Content of the second message should match");
     }
 
+
     @Test
     @Transactional
-    void sendImageChatMessage_SUCCESS() {
-        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.IMAGE, "https://example.com/image.jpg");
+    void sendFileMetadataChatMessage_SUCCESS() {
+        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.FILE,
+                "https://example.com/image.jpg");
         ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
         assertEquals(2, chatSession.getMessages().size(), "Chat session should have 2 messages");
-        assertEquals("https://example.com/image.jpg", chatSession.getMessages().get(1).getImageUrl(),
+        assertEquals("https://example.com/image.jpg", chatSession.getMessages().get(1).getUrl(),
                 "Image URL of the second message should match");
     }
 
@@ -306,7 +309,8 @@ class ChatMessageRepositoryTest extends AbstractTest {
         assertEquals("Content cannot be null or empty", exception3.getMessage(),
                 "Exception message should match for blank content");
 
-        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.IMAGE, "This is an image message");
+        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.FILE,
+                "This is an image message");
         String imageMessageId = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().get(1).getId();
         Exception exception4 = assertThrows(IllegalArgumentException.class, () ->
                 chatMessageRepository.updateTextChatMessage(imageMessageId, validContent));
@@ -326,8 +330,8 @@ class ChatMessageRepositoryTest extends AbstractTest {
         chatMessage.setChatSession(chatSessionRepository.findChatSessionById(CHAT_SESSION_ID));
         chatMessage.setSender(sender);
         chatMessage.setSenderId(TestData.USER_ID_2);
-        chatMessage.setContentType(ChatMessageEntity.ContentType.IMAGE);
-        chatMessage.setImageUrl("https://example.com/image.jpg");
+        chatMessage.setContentType(ChatMessageEntity.ContentType.FILE);
+        chatMessage.setUrl("https://example.com/image.jpg");
         chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().add(chatMessage);
         chatMessageRepository.persist(chatMessage);
 
@@ -371,8 +375,8 @@ class ChatMessageRepositoryTest extends AbstractTest {
         chatMessage.setChatSession(chatSessionRepository.findChatSessionById(CHAT_SESSION_ID));
         chatMessage.setSender(sender);
         chatMessage.setSenderId(TestData.USER_ID_2);
-        chatMessage.setContentType(ChatMessageEntity.ContentType.IMAGE);
-        chatMessage.setImageUrl("https://example.com/image.jpg");
+        chatMessage.setContentType(ChatMessageEntity.ContentType.FILE);
+        chatMessage.setUrl("https://example.com/image.jpg");
         chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().add(chatMessage);
         chatMessageRepository.persist(chatMessage);
 
@@ -397,7 +401,8 @@ class ChatMessageRepositoryTest extends AbstractTest {
 
         Exception exception4 = assertThrows(IllegalArgumentException.class, () ->
                 chatMessageRepository.updateImageURL(CHAT_MESSAGE_ID, validImageUrl));
-        assertEquals("Cannot update non-image message with updateImageURL() method", exception4.getMessage(), "Exception message should match for non-image message");
+        assertEquals("Cannot update non-image message with updateImageURL() method", exception4.getMessage(),
+                "Exception message should match for non-image message");
 
     }
 
