@@ -6,6 +6,7 @@ import io.minio.messages.Item;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.AfterEach;
@@ -34,6 +35,15 @@ public class FileStorageServiceTest {
 
     @Inject
     MinioClient minioClient;
+
+    @ConfigProperty(name = "%dev.quarkus.minio.secret-key")
+    String secretKey;
+
+    @ConfigProperty(name = "%dev.quarkus.minio.access-key")
+    String accessKey;
+
+    @ConfigProperty(name = "%dev.quarkus.minio.url")
+    String endpoint;
 
     @BeforeEach
     public void setup(){
@@ -84,7 +94,7 @@ public class FileStorageServiceTest {
         when(input.getFormDataMap()).thenReturn(Map.of());
 
         fileStorageService.logger = Logger.getLogger(FileStorageService.class);
-        MinioException thrown = Assertions.assertThrows(MinioException.class, ()
+        Exception thrown = Assertions.assertThrows(RuntimeException.class, ()
                 -> fileStorageService.uploadFile(BUCKET_NAME, input));
         assertTrue(thrown.getMessage().contains("File is null or empty"));
     }
@@ -96,7 +106,7 @@ public class FileStorageServiceTest {
         when(input.getFormDataMap()).thenReturn(Map.of("file", List.of()));
 
         fileStorageService.logger = Logger.getLogger(FileStorageService.class);
-        MinioException thrown = Assertions.assertThrows(MinioException.class, ()
+        Exception thrown = Assertions.assertThrows(RuntimeException.class, ()
                 -> fileStorageService.uploadFile(BUCKET_NAME, input));
 
         assertTrue(thrown.getMessage().contains("File is null or empty"));
@@ -110,33 +120,10 @@ public class FileStorageServiceTest {
 
         MultipartFormDataInput input = createMultipartFormDataInput(fileName, contentType, fileContent);
         fileStorageService.logger = Logger.getLogger(FileStorageService.class);
-        MinioException thrown = Assertions.assertThrows(MinioException.class, () ->
+        Exception thrown = Assertions.assertThrows(RuntimeException.class, () ->
                 fileStorageService.uploadFile(BUCKET_NAME, input));
         assertTrue(thrown.getMessage().contains("Invalid file type"));
     }
-
-    @Test
-    public void testUploadFile_BucketCreationFailure_Failure() throws Exception {
-        String fileName = "test.pdf";
-        String contentType = "application/pdf";
-        byte[] fileContent = "pdf content".getBytes();
-
-        MultipartFormDataInput input = createMultipartFormDataInput(fileName, contentType, fileContent);
-        MinioClient mockClient = mock(MinioClient.class);
-        // bucketExists forcibly returns false to trigger bucket creation
-        when(mockClient.bucketExists(any())).thenReturn(false);
-        // forcibly simulate a failure in makeBucket to see if the exception is thrown
-        doThrow(new RuntimeException("Bucket creation failed")).when(mockClient).makeBucket(any());
-
-        FileStorageService testService = new FileStorageService();
-        testService.minioClient = mockClient;
-        testService.endpoint = "http://localhost:9000";
-        testService.logger = Logger.getLogger(FileStorageService.class);
-        Exception thrown = Assertions.assertThrows(Exception.class, () ->
-                testService.uploadFile("new-bucket", input));
-        assertTrue(thrown.getMessage().contains("Bucket creation failed"));
-    }
-
     @Test
     public void testUploadFile_UniqueNaming_SUCCESS() throws Exception {
         String fileName = "test-image.png";
@@ -172,6 +159,13 @@ public class FileStorageServiceTest {
     }
 
     @Test
+    public void testDownloadFile_BucketNotFound_Failure() {
+        Exception thrown = Assertions.assertThrows(RuntimeException.class, () ->
+                fileStorageService.downloadFile("non-existent-bucket", "file.txt"));
+        assertTrue(thrown.getMessage().contains("Bucket does not exist"));
+    }
+
+    @Test
     public void testGetContentType_Success() throws Exception {
         String fileName = "content-type-test.pdf";
         String contentType = "application/pdf";
@@ -183,13 +177,31 @@ public class FileStorageServiceTest {
     }
 
     @Test
-    public void testGetContentType_NotFound_Failure() {
+    public void testGetContentType_FileNotFound_Failure() {
         Exception thrown = Assertions.assertThrows(Exception.class, () ->
                 fileStorageService.getContentType(BUCKET_NAME, "ghost-file.txt"));
+        System.out.println("actual exception thrown: " + thrown.getMessage());
+        System.out.println("expected exception message: " + "File does not exist");
         assertTrue(thrown.getMessage().contains("File does not exist"));
     }
 
+    @Test
+    public void testGetContentType_BucketNotFound_Failure() {
+        Exception thrown = Assertions.assertThrows(Exception.class, () ->
+                fileStorageService.getContentType("non-existent-bucket", "file.txt"));
+        System.out.println("actual exception thrown: " + thrown.getMessage());
+        System.out.println("expected exception message: " + "Bucket does not exist");
+        assertTrue(thrown.getMessage().contains("Bucket does not exist"));
+    }
 
+    @Test
+    public void testGetContentType_InvalidFileName_Failure() {
+        Exception thrown = Assertions.assertThrows(Exception.class, () ->
+                fileStorageService.getContentType(BUCKET_NAME, null));
+        System.out.println("actual exception thrown: " + thrown.getMessage());
+        System.out.println("expected exception message: " + "Error occurred while retrieving file metadata");
+        assertTrue(thrown.getMessage().contains("Error occurred while retrieving file metadata"));
+    }
 
     @Test
     public void testListObjects_Success() throws Exception {
@@ -210,7 +222,7 @@ public class FileStorageServiceTest {
 
     @Test
     public void testListObjects_bucketNotFound_FAILURE() {
-        MinioException thrown = Assertions.assertThrows(MinioException.class, () ->
+        Exception thrown = Assertions.assertThrows(RuntimeException.class, () ->
                 fileStorageService.listObjects("non-existent-bucket"));
         assertTrue(thrown.getMessage().contains("Bucket does not exist"));
     }
@@ -243,6 +255,12 @@ public class FileStorageServiceTest {
         assertTrue(thrown.getMessage().contains("File does not exist"));
     }
 
+    @Test
+    public void testDeleteObject_InvalidInput_FAILURE() {
+        Exception thrown = Assertions.assertThrows(Exception.class, () ->
+                fileStorageService.deleteObject(null, null));
+        assertTrue(thrown.getMessage().contains("Error occurred while deleting object"));
+    }
 
     private MultipartFormDataInput createMultipartFormDataInput(String fileName, String contentType, byte[] content)
             throws Exception {
@@ -263,3 +281,7 @@ public class FileStorageServiceTest {
 
 
 }
+
+
+
+

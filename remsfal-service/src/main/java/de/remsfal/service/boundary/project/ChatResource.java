@@ -429,7 +429,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
         } catch (Exception e) {
             logger.error("Error during file upload", e);
-            throw e; // Propagate the exception as-is
+            throw e;
         }
     }
 

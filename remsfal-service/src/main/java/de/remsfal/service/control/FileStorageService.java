@@ -54,24 +54,21 @@ public class FileStorageService {
     @Inject
     MinioClient minioClient;
 
-    public String uploadFile(String bucketName, MultipartFormDataInput input) throws Exception {
+    public String uploadFile(String bucketName, MultipartFormDataInput input) {
+        try{
         List<InputPart> inputParts = getFileInputParts(input);
-
         if (inputParts == null || inputParts.isEmpty()) {
             logger.error("File is null or empty");
             throw new MinioException("File is null or empty");
         }
-
         InputPart inputPart = inputParts.get(0);
         String originalFileName = extractFileName(inputPart.getHeaders());
         String contentType = inputPart.getMediaType().toString();
-
         if (!isValidContentType(contentType)) {
             logger.error("Invalid file type: " + contentType);
             throw new MinioException("Invalid file type: " + contentType);
         }
-
-        try (InputStream inputStream = inputPart.getBody(InputStream.class, null)) {
+        InputStream inputStream = inputPart.getBody(InputStream.class, null);
             ensureBucketExists(bucketName);
             String finalFileName = generateUniqueFileName(bucketName, originalFileName);
 
@@ -84,33 +81,24 @@ public class FileStorageService {
                             .contentType(contentType)
                             .build()
             );
-
             String fileUrl = constructFileUrl(bucketName, finalFileName);
             logger.infov("File uploaded successfully. URL: {0}", fileUrl);
             return fileUrl;
-
-        } catch (MinioException e) {
-            logger.error("Error uploading file to Minio", e);
-            throw e;
         } catch (Exception e) {
-            logger.error("Failed to process uploaded file", e);
-            throw e;
+            throw new RuntimeException("Failed to process uploaded file : " + e.getMessage(), e);
         }
     }
 
-    public InputStream downloadFile(String bucketName, String objectName) throws Exception {
+    public InputStream downloadFile(String bucketName, String objectName) {
+        try {
         logger.infov("Downloading file {0} from bucket {1}", objectName, bucketName);
-
         if (!checkBucketExists(bucketName)) {
             throw new MinioException("Bucket does not exist");
         }
-
         if (!objectExists(bucketName, objectName)) {
             logger.errorv("File {0} does not exist in bucket {1}", objectName, bucketName);
             throw new MinioException("File does not exist");
         }
-
-        try {
             GetObjectArgs args = GetObjectArgs.builder()
                     .bucket(bucketName)
                     .object(objectName)
@@ -120,24 +108,22 @@ public class FileStorageService {
             logger.infov("File {0} from bucket {1} downloaded successfully!", objectName, bucketName);
             return stream;
 
-        } catch (MinioException e) {
-            logger.error("Error downloading file from Minio", e);
-            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error downloading file from Minio : " + e.getMessage(), e);
         }
     }
 
-    public String getContentType(String bucketName, String objectName) throws Exception {
+    public String getContentType(String bucketName, String objectName) {
+        try {
         logger.infov("Retrieving metadata for file {0} in bucket {1}", objectName, bucketName);
-
-        if (!objectExists(bucketName, objectName)) {
-            throw new MinioException("File does not exist");
-        }
-
         if (!checkBucketExists(bucketName)) {
+            logger.warnv("Bucket {0} does not exist", bucketName);
             throw new MinioException("Bucket does not exist");
         }
-
-        try {
+        if (!objectExists(bucketName, objectName)) {
+            logger.warnv("File {0} does not exist in bucket {1}", objectName, bucketName);
+            throw new MinioException("File does not exist");
+        }
             StatObjectArgs args = StatObjectArgs.builder()
                     .bucket(bucketName)
                     .object(objectName)
@@ -145,49 +131,37 @@ public class FileStorageService {
 
             StatObjectResponse stat = minioClient.statObject(args);
             return stat.contentType();
-
-        } catch (MinioException e) {
-            throw new Exception("Error occurred while retrieving file metadata", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while retrieving file metadata : " + e.getMessage(), e);
         }
     }
-
-    public Iterable<Result<Item>> listObjects(String bucketName) throws Exception {
+    public Iterable<Result<Item>> listObjects(String bucketName) {
+        try {
         if (!checkBucketExists(bucketName)) {
             throw new MinioException("Bucket does not exist");
         }
-
-        try {
             logger.infov("Listing objects in bucket {0}", bucketName);
             return minioClient.listObjects(ListObjectsArgs.builder()
                     .bucket(bucketName).build());
         } catch (Exception e) {
-            logger.error("Error listing objects in bucket", e);
-            throw e;
+            throw new RuntimeException("Error occurred while listing objects : " + e.getMessage(), e);
         }
     }
 
-    public void deleteObject(String bucketName, String objectName) throws Exception {
+    public void deleteObject(String bucketName, String objectName) {
+        try {
         if (!objectExists(bucketName, objectName)) {
             logger.infov("Object {0} does not exist in bucket {1}", objectName, bucketName);
             throw new MinioException("File does not exist");
         }
-
-        if (!checkBucketExists(bucketName)) {
-            throw new MinioException("Bucket does not exist");
-        }
-
         logger.infov("Deleting object {0} from bucket {1}", objectName, bucketName);
-        try {
             minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("Not found")) {
-                throw new MinioException("File does not exist");
-            }
-            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while deleting object : " + e.getMessage(), e);
         }
     }
 
-    private boolean checkBucketExists(String bucketName) throws Exception {
+    public boolean checkBucketExists(String bucketName) throws Exception {
         logger.infov("Checking if bucket {0} exists", bucketName);
         boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
         logger.infov("Bucket {0} exists: {1}", bucketName, exists);
@@ -207,34 +181,36 @@ public class FileStorageService {
         minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     }
 
-    private boolean objectExists(String bucketName, String objectName) throws MinioException {
-        logger.infov("Checking if object {0} exists in bucket {1}", objectName, bucketName);
+    private boolean objectExists(String bucketName, String objectName) throws Exception {
         try {
-            minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(objectName).build());
-            logger.infov("Object {0} exists in bucket {1}", objectName, bucketName);
-            return true;
-        } catch (io.minio.errors.ErrorResponseException e) {
-            if (e.response().code() == 404) {
-                logger.infov("Object {0} does not exist in bucket {1}", objectName, bucketName);
-                return false;
+            logger.infov("Checking if the bucket {0} exists", bucketName);
+            if (!checkBucketExists(bucketName)) {
+                throw new MinioException("Bucket does not exist");
             }
-            logger.error("Error checking if object exists", e);
-            throw new MinioException("Error checking if object exists: " + e.getMessage());
-        } catch (Exception e) {
-            logger.error("Unexpected error while checking if object exists", e);
-            throw new MinioException("Unexpected error while checking if object exists: " + e.getMessage());
+            logger.infov("Checking if object {0} exists in bucket {1}", objectName, bucketName);
+                minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(objectName).build());
+                logger.infov("Object {0} exists in bucket {1}", objectName, bucketName);
+                return true;
+            } catch (io.minio.errors.ErrorResponseException e) {
+                if (e.response().code() == 404) {
+                    logger.infov("Object {0} does not exist in bucket {1}", objectName, bucketName);
+                    return false;
+                }
+                logger.error("Error checking if object exists", e);
+                throw new MinioException("Error checking if object exists: " + e.getMessage());
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Error occurred while checking if object exists : " + e.getMessage(), e);
         }
     }
 
     private String extractFileName(Map<String, List<String>> headers) {
         logger.infov("Retrieving file name from headers: {0}", headers);
         List<String> contentDispositionList = headers.get(CONTENT_DISPOSITION_HEADER);
-
         if (contentDispositionList == null || contentDispositionList.isEmpty()) {
             logger.warn("Content-Disposition header is missing");
             return DEFAULT_FILE_NAME;
         }
-
         String contentDisposition = contentDispositionList.get(0);
         for (String part : contentDisposition.split(";")) {
             part = part.trim();
@@ -247,24 +223,18 @@ public class FileStorageService {
                 }
             }
         }
-
         logger.warn("Filename not found in Content-Disposition header, using default name 'unknown'");
         return DEFAULT_FILE_NAME;
     }
 
     private boolean isValidContentType(String contentType) {
         logger.infov("Checking if content type {0} is valid", contentType);
-
         // Normalize the content type to remove parameters (e.g., charset=UTF-8)
         String normalizedContentType = contentType.split(";")[0].trim();
-
-        // Check against the allowed types
         boolean isValid = allowedTypes.contains(normalizedContentType);
-
         if (!isValid) {
             logger.warnv("Content type {0} is not allowed", contentType);
         }
-
         return isValid;
     }
 
@@ -288,21 +258,17 @@ public class FileStorageService {
 
     private String generateUniqueFileName(String bucketName, String fileName) throws Exception {
         logger.infov("Generating unique file name for '{0}' in bucket '{1}'", fileName, bucketName);
-
         if (!objectExists(bucketName, fileName)) {
             return fileName;
         }
-
         int dotIndex = fileName.lastIndexOf('.');
         String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
         String extension = (dotIndex == -1) ? "" : fileName.substring(dotIndex);
         int counter = 1;
         String candidate;
-
         do {
             candidate = String.format("%s(%d)%s", baseName, counter++, extension);
         } while (objectExists(bucketName, candidate));
-
         logger.infov("Generated unique file name: {0}", candidate);
         return candidate;
     }
