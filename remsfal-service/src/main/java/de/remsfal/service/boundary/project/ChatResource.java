@@ -7,6 +7,7 @@ import java.util.*;
 
 import de.remsfal.core.model.project.ChatMessageModel.ContentType;
 import de.remsfal.service.control.FileStorageService;
+import jakarta.ws.rs.core.StreamingOutput;
 import org.jboss.logging.Logger;
 
 import com.google.gson.Gson;
@@ -309,17 +310,46 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(messageId);
-            return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatMessageJson.valueOf(chatMessageEntity))
-                .build();
+            if (chatMessageEntity.getContentType().equals(ContentType.TEXT))
+                return Response.ok()
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(ChatMessageJson.valueOf(chatMessageEntity))
+                        .build();
+            if (chatMessageEntity.getContentType().equals(ContentType.FILE)) {
+                // Extract the file URL and derive the file name
+                String fileUrl = chatMessageEntity.getUrl();
+                String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+
+                // Download the file from the storage service
+                InputStream fileStream = fileStorageService.downloadFile(bucketName, fileName);
+                // Stream the file content to the client as a binary response
+                return Response.ok((StreamingOutput) output -> {
+                            byte[] buffer = new byte[8192];
+                            int bytesRead;
+
+                            // Read chunks from the file and write them to the HTTP response
+                            while (true) {
+                                bytesRead = fileStream.read(buffer);
+                                if (bytesRead == -1) {
+                                    break; // End of file reached
+                                }
+                                output.write(buffer, 0, bytesRead);
+                            }
+                        })
+                        .type(MediaType.APPLICATION_OCTET_STREAM)
+                        .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                        .build();
+            }
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get chat message", e);
             throw e;
         }
-
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity("{\"message\": \"The file type is not recognized\"}")
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @Override

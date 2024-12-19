@@ -164,7 +164,7 @@ public interface ChatEndpoint {
 
     @GET
     @Path("/{sessionId}/messages/{messageId}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
     @Operation(summary = "Get a chat message in a chat session")
     @APIResponse(responseCode = "200", description = "Chat message retrieved")
     @APIResponse(responseCode = "400", description = "Invalid input")
@@ -174,7 +174,7 @@ public interface ChatEndpoint {
     Response getChatMessage(
         @PathParam("sessionId") @NotNull @UUID String sessionId,
         @Parameter(description = "The chat message ID", required = true) @PathParam("messageId")
-        @NotNull @UUID String messageId);
+        @NotNull @UUID String messageId) throws Exception;
 
     @PUT
     @Path("/{sessionId}/messages/{messageId}")
