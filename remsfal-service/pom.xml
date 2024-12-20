@@ -16,7 +16,7 @@
 
     <properties>
         <quarkus.version>3.17.4</quarkus.version>
-        <google.version>2.7.0</google.version>
+        <google.version>2.7.1</google.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
     </properties>
@@ -107,12 +107,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- File Storage dependencies - Minio -->
+        <dependency>
+            <groupId>io.quarkiverse.minio</groupId>
+            <artifactId>quarkus-minio</artifactId>
+            <version>3.7.7</version>
+        </dependency>
+
         <!-- Bugfix dependencies -->
         <dependency>
             <!-- JDK 24 support -->
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.15.10</version>
+            <version>1.15.11</version>
         </dependency>
 
         <!-- TEST dependencies -->
