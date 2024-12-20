@@ -18,9 +18,10 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
- * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
 public interface ChatEndpoint {
 
@@ -163,7 +164,7 @@ public interface ChatEndpoint {
 
     @GET
     @Path("/{sessionId}/messages/{messageId}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
     @Operation(summary = "Get a chat message in a chat session")
     @APIResponse(responseCode = "200", description = "Chat message retrieved")
     @APIResponse(responseCode = "400", description = "Invalid input")
@@ -173,7 +174,7 @@ public interface ChatEndpoint {
     Response getChatMessage(
         @PathParam("sessionId") @NotNull @UUID String sessionId,
         @Parameter(description = "The chat message ID", required = true) @PathParam("messageId")
-        @NotNull @UUID String messageId);
+        @NotNull @UUID String messageId) throws Exception;
 
     @PUT
     @Path("/{sessionId}/messages/{messageId}")
@@ -218,4 +219,21 @@ public interface ChatEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getChatMessages(
         @PathParam("sessionId") @NotNull @UUID String sessionId);
+
+    @POST
+    @Path("/{sessionId}/messages/upload")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Send a file in a chat session")
+    @APIResponse(responseCode = "201", description = "File sent")
+    @APIResponse(responseCode = "400", description = "Invalid input")
+    @APIResponse(responseCode = "403", description = "Chat session is closed or archived")
+    @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
+    @APIResponse(responseCode = "500", description = "Internal server error")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    Response uploadFile(
+            @PathParam("sessionId") @NotNull @UUID String sessionId,
+            @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input)
+            throws Exception;
+
 }

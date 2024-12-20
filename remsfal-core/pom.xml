@@ -68,6 +68,11 @@
             <artifactId>microprofile-openapi-api</artifactId>
             <version>${version.open-api}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-multipart-provider</artifactId>
+            <version>6.2.11.Final</version>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
