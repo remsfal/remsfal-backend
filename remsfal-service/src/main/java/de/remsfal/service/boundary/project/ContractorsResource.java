@@ -15,12 +15,13 @@ public class ContractorsResource implements ContractorsEnpoint {
     TaskController taskController;
 
     @Override
-    public TaskListJson getTasks(String projectId, String ownerId, TaskModel.Status status) {
-        return TaskListJson.valueOf(taskController.getTasks(projectId, ownerId, Optional.ofNullable(status)));
+    public  TaskListJson getTasks(String ownerId, TaskModel.Status status) {
+        return  null ;
+        //return TaskListJson.valueOf(taskController.getTasks(ownerId, Optional.ofNullable(status)));
     }
 
     @Override
-    public TaskJson getTask(String projectId, String ownerId, String taskId) {
-        return TaskJson.valueOf(taskController.getTask(projectId, ownerId, taskId));
+    public TaskJson getTask(String ownerId, String taskId) {
+        return TaskJson.valueOf(taskController.getTask(ownerId, taskId));
     }
 }
