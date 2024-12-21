@@ -1,6 +1,6 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.core.api.ContractorsEnpoint;
+import de.remsfal.core.api.ContractorsEndpoint ;
 import de.remsfal.core.json.project.TaskJson;
 import de.remsfal.core.json.project.TaskListJson;
 import de.remsfal.core.model.project.TaskModel;
@@ -10,14 +10,13 @@ import jakarta.inject.Inject;
 import java.util.Optional;
 
 @RequestScoped
-public class ContractorsResource implements ContractorsEnpoint {
+public class ContractorsResource implements ContractorsEndpoint  {
     @Inject
     TaskController taskController;
 
     @Override
     public  TaskListJson getTasks(String ownerId, TaskModel.Status status) {
-        return  null ;
-        //return TaskListJson.valueOf(taskController.getTasks(ownerId, Optional.ofNullable(status)));
+        return TaskListJson.valueOf(taskController.getTasks(ownerId, Optional.ofNullable(status)));
     }
 
     @Override
