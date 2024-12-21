@@ -17,20 +17,21 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 /**
  * @author Quirt
  */
-public interface ContractorsEnpoint {
+
+@Path(ProjectEndpoint.VERSION + "/" + ProjectEndpoint.VERSION + "/" + ContractorsEndpoint.SERVICE)
+public interface ContractorsEndpoint {
     String SERVICE = "contractors";
 
     @GET
-    @Path("/{contractorId}/tasks")
+    @Path("/{ownerId}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all tasks.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     TaskListJson getTasks(
-            @Parameter(description = "Filter to return only tasks of a specific user") @PathParam("owner") @NotNull
-            @UUID String ownerId,
-            @Parameter(description = "Filter to return only tasks with a specific status") @QueryParam("status")
-            TaskModel.Status status);
-    ;
+        @Parameter(description = "Filter to return only tasks of a specific user") @PathParam("owner") @NotNull
+        @UUID String ownerId,
+        @Parameter(description = "Filter to return only tasks with a specific status") @QueryParam("status")
+        TaskModel.Status status);
 
     @GET
     @Path("/{ownerId}/tasks/{taskId}")
@@ -39,7 +40,8 @@ public interface ContractorsEnpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The property does not exist")
     TaskJson getTask(
-            @Parameter(description = "Filter to return only tasks of a specific user") @QueryParam("owner") @NotNull
-            @UUID String ownerId,
-            @Parameter(description = "ID of the task", required = true) @PathParam("taskId") @NotNull @UUID String taskId);
+        @Parameter(description = "Filter to return only tasks of a specific user") @QueryParam("owner") @NotNull
+        @UUID String ownerId,
+        @Parameter(description = "ID of the task", required = true) @PathParam("taskId") @NotNull @UUID String taskId);
+
 }
