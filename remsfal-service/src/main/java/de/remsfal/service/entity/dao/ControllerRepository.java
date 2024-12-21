@@ -4,7 +4,7 @@ import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.service.entity.dto.TaskEntity;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.RequestScoped;
+
 
 
 import java.util.List;

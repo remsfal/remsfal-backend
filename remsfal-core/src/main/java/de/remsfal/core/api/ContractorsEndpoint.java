@@ -27,6 +27,7 @@ public interface ContractorsEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all tasks.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = " Failed to Address")
     TaskListJson getTasks(
         @Parameter(description = "Filter to return only tasks of a specific user") @PathParam("owner") @NotNull
         @UUID String ownerId,
@@ -43,5 +44,4 @@ public interface ContractorsEndpoint {
         @Parameter(description = "Filter to return only tasks of a specific user") @QueryParam("owner") @NotNull
         @UUID String ownerId,
         @Parameter(description = "ID of the task", required = true) @PathParam("taskId") @NotNull @UUID String taskId);
-
 }
