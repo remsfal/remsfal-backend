@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonDeserialize(as = ImmutableTaskListJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class TaskListJson {
-//NUTZEN
     public abstract List<TaskItemJson> getTasks();
 
     public static TaskListJson valueOf(final List<? extends TaskModel> tasks) {

@@ -27,7 +27,6 @@ import de.remsfal.core.validation.UUID;
 @JsonDeserialize(as = ImmutableTaskJson.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public abstract class TaskJson implements TaskModel {
-//NUTZEN
     @Null
     @Nullable
     @Override
