@@ -68,7 +68,6 @@ class ApartmentRepositoryTest extends AbstractTest {
                 TestData.PROJECT_ID, buildingId);
         final ApartmentModel apartment = TestData.apartmentBuilder().build();
         assertTrue(found.isPresent());
-        assertNotNull(found);
         assertTrue(found.hashCode() != 0);
         assertEquals(apartment.getId(), found.get().getId());
         assertEquals(apartment.getTitle(), found.get().getTitle());
