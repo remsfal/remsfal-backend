@@ -1,13 +1,18 @@
 package de.remsfal.core.api.project;
 
+import de.remsfal.core.validation.PatchValidation;
+import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -24,9 +29,9 @@ import de.remsfal.core.validation.PostValidation;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/"
-    + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
-    + "/{propertyId}/" + BuildingEndpoint.SERVICE
-    + "/{buildingId}/" + GarageEndpoint.SERVICE)
+        + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
+        + "/{propertyId}/" + BuildingEndpoint.SERVICE
+        + "/{buildingId}/" + GarageEndpoint.SERVICE)
 public interface GarageEndpoint {
 
     String SERVICE = "garages";
@@ -34,21 +39,83 @@ public interface GarageEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new garage.")
-    @APIResponse(responseCode = "201", description = "Garage created successfully",
-        headers = @Header(name = "Location", description = "URL of the new garage"))
+    @APIResponse(
+            responseCode = "201",
+            description = "Garage created successfully",
+            headers = @Header(name = "Location", description = "URL of the new garage"))
     Response createGarage(
-        @Parameter(description = "Garage information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) GarageJson garage);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") String projectId,
+            @Parameter(description = "ID of the building", required = true)
+            @PathParam("buildingId") String buildingId,
+            @Parameter(description = "Garage information", required = true)
+            @Valid @ConvertGroup(to = PostValidation.class) GarageJson garage
+    );
 
     @GET
     @Path("/{garageId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a garage.")
-    @APIResponse(responseCode = "404", description = "The garage does not exist")
+    @APIResponse(
+            responseCode = "404",
+            description = "The garage does not exist")
     GarageJson getGarage(
-        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") String projectId,
-        @Parameter(description = "ID of the property", required = true) @PathParam("propertyId") String propertyId,
-        @Parameter(description = "ID of the building", required = true) @PathParam("buildingId") String buildingId,
-        @Parameter(description = "ID of the garage", required = true) @PathParam("garageId") String garageId);
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") String projectId,
+            @Parameter(description = "ID of the property", required = true)
+            @PathParam("propertyId") String propertyId,
+            @Parameter(description = "ID of the building", required = true)
+            @PathParam("buildingId") String buildingId,
+            @Parameter(description = "ID of the garage", required = true)
+            @PathParam("garageId") String garageId
+    );
+
+    @PATCH
+    @Path("/{garageId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Update information of a garage.")
+    @APIResponse(
+            responseCode = "401",
+            description = "No user authentication provided via session cookie"
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "The garage does not exist"
+    )
+    GarageJson updateGarage(
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the property", required = true)
+            @PathParam("propertyId") @NotNull @UUID String propertyId,
+            @Parameter(description = "ID of the building", required = true)
+            @PathParam("buildingId") @NotNull @UUID String buildingId,
+            @Parameter(description = "ID of the garage", required = true)
+            @PathParam("garageId") @NotNull @UUID String garageId,
+            @Parameter(description = "Garage information", required = true)
+            @Valid @ConvertGroup(to = PatchValidation.class) GarageJson garage
+    );
+
+    @DELETE
+    @Path("/{garageId}")
+    @Operation(summary = "Delete an existing garage.")
+    @APIResponse(
+            responseCode = "204",
+            description = "The garage was deleted successfully"
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "No user authentication provided via session cookie"
+    )
+    void deleteGarage(
+            @Parameter(description = "ID of the project", required = true)
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the property", required = true)
+            @PathParam("propertyId") @NotNull @UUID String propertyId,
+            @Parameter(description = "ID of the building", required = true)
+            @PathParam("buildingId") @NotNull @UUID String buildingId,
+            @Parameter(description = "ID of the garage", required = true)
+            @PathParam("garageId") @NotNull @UUID String garageId
+    );
 
 }
