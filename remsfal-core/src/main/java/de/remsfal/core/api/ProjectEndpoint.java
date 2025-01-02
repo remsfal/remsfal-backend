@@ -24,8 +24,12 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.api.project.ApartmentEndpoint;
+import de.remsfal.core.api.project.BuildingEndpoint;
 import de.remsfal.core.api.project.DefectEndpoint;
+import de.remsfal.core.api.project.GarageEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.api.project.SiteEndpoint;
 import de.remsfal.core.api.project.TaskEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
@@ -165,9 +169,24 @@ public interface ProjectEndpoint {
     @Path("/{projectId}/" + PropertyEndpoint.SERVICE)
     PropertyEndpoint getPropertyResource();
 
+    @Path("/{projectId}/" + SiteEndpoint.SERVICE)
+    SiteEndpoint getSiteResource();
+
+    @Path("/{projectId}/" + BuildingEndpoint.SERVICE)
+    BuildingEndpoint getBuildingResource();
+
+    @Path("/{projectId}/" + ApartmentEndpoint.SERVICE)
+    ApartmentEndpoint getApartmentResource();
+    
+    // TODO: Implement Commercial Endpoint
+
+    @Path("/{projectId}/" + GarageEndpoint.SERVICE)
+    GarageEndpoint getGarageResource();
+
     @Path("/{projectId}/" + TaskEndpoint.SERVICE)
     TaskEndpoint getTaskResource();
 
     @Path("/{projectId}/" + DefectEndpoint.SERVICE)
     DefectEndpoint getDefectResource();
+
 }

@@ -113,7 +113,7 @@ class SiteControllerTest extends AbstractTest {
             TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(site.getId());
 
-        final SiteModel result = siteController.getSite(TestData.PROJECT_ID, property.getId(), site.getId());
+        final SiteModel result = siteController.getSite(TestData.PROJECT_ID, site.getId());
         
         assertEquals(site.getId(), result.getId());
         assertEquals(site.getTitle(), result.getTitle());
@@ -134,7 +134,7 @@ class SiteControllerTest extends AbstractTest {
         assertNotNull(siteId);
         
         assertThrows(NotFoundException.class,
-            () -> siteController.getSite(TestData.PROJECT_ID_2, propertyId, siteId));
+            () -> siteController.getSite(TestData.PROJECT_ID_2, siteId));
     }
     
 }

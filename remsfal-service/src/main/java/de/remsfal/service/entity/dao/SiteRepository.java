@@ -14,16 +14,16 @@ import io.quarkus.panache.common.Parameters;
 @ApplicationScoped
 public class SiteRepository extends AbstractRepository<SiteEntity> {
 
-    public Optional<SiteEntity> findSiteById(final String projectId, final String propertyId, String siteId) {
-        return find("id = :id and projectId = :projectId and propertyId = :propertyId",
-                Parameters.with("id", siteId).and(PARAM_PROJECT_ID, projectId).and(PARAM_PROPERTY_ID, propertyId))
+    public Optional<SiteEntity> findSiteById(final String projectId, final String siteId) {
+        return find("id = :id and projectId = :projectId",
+                Parameters.with("id", siteId).and(PARAM_PROJECT_ID, projectId))
                 .singleResultOptional();
     }
 
 
-    public long deleteSiteById(String projectId, String propertyId, String siteId) {
-        return delete("id = :id and projectId = :projectId and propertyId = :propertyId",
-            Parameters.with("id", siteId).and(PARAM_PROJECT_ID, projectId).and(PARAM_PROPERTY_ID, propertyId));
+    public long deleteSiteById(final String projectId, final String siteId) {
+        return delete("id = :id and projectId = :projectId",
+            Parameters.with("id", siteId).and(PARAM_PROJECT_ID, projectId));
     }
 
 
