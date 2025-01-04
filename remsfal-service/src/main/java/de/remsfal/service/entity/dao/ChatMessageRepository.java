@@ -55,8 +55,8 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
 
             if (contentType == ContentType.TEXT) {
                 chatMessage.setContent(content);
-            } else if (contentType == ContentType.IMAGE) {
-                chatMessage.setImageUrl(content);
+            } else if (contentType == ContentType.FILE) {
+                chatMessage.setUrl(content);
             } else {
                 throw new IllegalArgumentException("Invalid content type");
             }
@@ -118,19 +118,19 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity>
         ChatSessionEntity session = message.getChatSession();
         String sessionId = session.getId();
 
-        if (message.getContentType() != ContentType.IMAGE) {
+        if (message.getContentType() != ContentType.FILE) {
             throw new IllegalArgumentException("Cannot update non-image message with updateImageURL() method");
         }
         if (newImageUrl == null || newImageUrl.isBlank()) {
             throw new IllegalArgumentException("Image URL cannot be null or empty");
         }
-        if (newImageUrl.equals(message.getImageUrl())) {
+        if (newImageUrl.equals(message.getUrl())) {
             throw new IllegalArgumentException("Image URL is the same as the current image URL");
         }
         if (session.getStatus() == ChatSessionModel.Status.CLOSED || session.getStatus() ==
                 ChatSessionModel.Status.ARCHIVED) {
             throw new IllegalStateException("ChatSession with ID " + sessionId + " is closed or archived");
         }
-        message.setImageUrl(newImageUrl);
+        message.setUrl(newImageUrl);
     }
 }

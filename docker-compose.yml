@@ -29,11 +29,25 @@ services:
   zeebe:
     image: camunda/zeebe:latest
     ports:
-      - "26500:26500" # gRPC-Port für Client-Verbindungen
+      - "26500:26500"
     environment:
       - ZEEBE_BROKER_CLUSTER_SIZE=1
       - ZEEBE_BROKER_PARTITIONS_COUNT=1
       - ZEEBE_BROKER_REPLICATION_FACTOR=1
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadminpassword
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./data/minio:/data
+      
 
 networks:
   remsfal:
