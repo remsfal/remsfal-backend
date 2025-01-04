@@ -54,57 +54,28 @@ de.remsfal.auth.session.secret=<YOUR-CUSTOM-SESSION-SECRET>
 ```
 
 
-#### Camunda run 
-Camunda is used for the workflow management. You can run it using the provided docker-compose.yml. 
+#### Zeebe run 
 
-You can read more about the camunda engine [here](https://docs.camunda.org/manual/latest/user-guide/camunda-bpm-run).
+Zeebe is a workflow engine for orchestrating microservices using BPMN 2.0 processes. This project integrates Zeebe with Camunda 8 BPMN Diagrams.
 
-Camunda is running as a separate service in a docker container under the port 8081.
+You can model your BPMN workflows in the Camunda Modeler. Please ensure that you are using the Camunda 8 BPMN Diagrams.
 
-It is started among the other services using the provided docker-compose.yml.
+Make sure the IDs and job types of the tasks are defined, as they will be used by the JobWorkers later. You can find the task IDs in the XML or set them in the Modeler. The task types must match the task types in the BPMN file. You can set them in the Modeler under Task definition → Task type.
 
-```sh
-docker compose up -d
-```
+The Zeebe client automatically deploys the BPMN files to the Zeebe broker. It is configured in the application.properties file. Place your BPMN workflow files in the remsfal-service/src/main/resources/processes directory, and they will be automatically deployed to Zeebe.
 
-Once started Camunda copies the bpmn files from ./processes to the camunda engine.
+You can start the process using the controller (see the example in ZeebeController.java). The controller will start the process with the given variables.
 
-There is a test class [CamundaApiTest](remsfal-service/src/test/java/de/remsfal/core/CamundaApiTest.java) which is showcasing how the camunda engine can be used. 
+The JobWorkers will automatically pick up the tasks and execute them. The JobWorkers for the example BPMN file are configured in ZeebeWorker.java.
 
-To run this test class you will need to start the camunda engine using the provided docker-compose.yml.
+This setup provides a foundational integration of Zeebe into your project.
 
-You can run the test class using the following command:
+To adapt this for your own workflow:
 
-```sh
- mvn test -Dgroups=camunda
-```
+Create a new BPMN file to reflect your process.
+Update your JobWorkers to handle the tasks specific to your workflow.
 
 
-You can access the camunda cockpit in browser under [`http://localhost:8081`](http://localhost:8081) with the credentials `demo/demo`.
-
-
-
-To interact with the camunda engine you can use the REST API. 
-
-You can read more about the camunda REST API [here](https://docs.camunda.org/manual/latest/reference/rest/).
-
-For example to start a process you can use the following endpoint:
-
-POST: http://localhost:8081/engine-rest/process-definition/key/{process-key}/start
-
-
-To get all open tasks you can use the following endpoint:
-
-GET: http://localhost:8081/engine-rest/task
-
-
-To complete a task you can use the following endpoint:
-
-POST: http://localhost:8081/engine-rest/task/{id}/complete
-
-You can find the id of the task in the response of the get task request.
-
-The implementation of the camunda engine is in a proof of concept state and is not integrated into the application. 
 
 #### Run 
 

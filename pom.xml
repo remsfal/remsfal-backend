@@ -97,9 +97,6 @@
                         <!-- includes>
                             <include>AuthenticationResourceMockitoTest.java</include>
                         </include -->
-                        <excludes>
-                            <exclude>**/CamundaApiTest.java</exclude>
-                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
