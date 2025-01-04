@@ -26,18 +26,14 @@ services:
     ports:
       - '9090:9090'
 
-  camunda:
-    image: camunda/camunda-bpm-platform:run-latest
-    container_name: camunda
+  zeebe:
+    image: camunda/zeebe:latest
     ports:
-      - "8081:8080"
+      - "26500:26500" # gRPC-Port für Client-Verbindungen
     environment:
-      - INIT_WITH_DEMO_DATA=false 
-      - CAMUNDA_BPM_RUN_EXAMPLE_ENABLED=false 
-    volumes:
-      - ./processes:/camunda/configuration/resources/processes
-    networks:
-      - remsfal
+      - ZEEBE_BROKER_CLUSTER_SIZE=1
+      - ZEEBE_BROKER_PARTITIONS_COUNT=1
+      - ZEEBE_BROKER_REPLICATION_FACTOR=1
 
 networks:
   remsfal:

@@ -124,6 +124,11 @@
             <artifactId>byte-buddy</artifactId>
             <version>1.15.10</version>
         </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.zeebe</groupId>
+            <artifactId>quarkus-zeebe</artifactId>
+            <version>1.6.0</version>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
@@ -149,6 +154,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jacoco</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.zeebe</groupId>
+            <artifactId>quarkus-zeebe-test</artifactId>
+            <version>1.6.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
