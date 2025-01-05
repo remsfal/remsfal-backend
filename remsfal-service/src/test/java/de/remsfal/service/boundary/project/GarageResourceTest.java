@@ -46,9 +46,8 @@ class GarageResourceTest extends AbstractProjectResourceTest {
         super.setupTestUsers();
     }
 
-    @Test
-    void getGarage_FAILED_garageDoesNotExist() {
-        final String projectId = given()
+    private String createProject() {
+        return given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
@@ -57,8 +56,10 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 .then()
                 .statusCode(Response.Status.CREATED.getStatusCode())
                 .extract().path("id");
+    }
 
-        final String propertyId = given()
+    private String createProperty(String projectId) {
+        return given()
                 .when()
                 .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
@@ -67,6 +68,24 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 .then()
                 .statusCode(Response.Status.CREATED.getStatusCode())
                 .extract().path("id");
+    }
+
+    private String createBuilding(String projectId, String propertyId) {
+        return given()
+                .when()
+                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BUILDING_JSON)
+                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
+                .then()
+                .statusCode(Response.Status.CREATED.getStatusCode())
+                .extract().path("id");
+    }
+
+    @Test
+    void getGarage_FAILED_garageDoesNotExist() {
+        final String projectId = createProject();
+        final String propertyId = createProperty(projectId);
 
         given()
                 .when()
@@ -79,35 +98,9 @@ class GarageResourceTest extends AbstractProjectResourceTest {
 
     @Test
     void getGarage_SUCCESS() {
-        final String projectId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROJECT_JSON)
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String propertyId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROPERTY_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String buildingId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BUILDING_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
+        final String projectId = createProject();
+        final String propertyId = createProperty(projectId);
+        final String buildingId = createBuilding(projectId, propertyId);
 
         final String garageId = given()
                 .when()
@@ -131,35 +124,9 @@ class GarageResourceTest extends AbstractProjectResourceTest {
 
     @Test
     void createGarage_SUCCESS() {
-        final String projectId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROJECT_JSON)
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String propertyId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROPERTY_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String buildingId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BUILDING_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
+        final String projectId = createProject();
+        final String propertyId = createProperty(projectId);
+        final String buildingId = createBuilding(projectId, propertyId);
 
         final String garageId = given()
                 .when()
@@ -183,35 +150,9 @@ class GarageResourceTest extends AbstractProjectResourceTest {
 
     @Test
     void updateGarage_SUCCESS() {
-        final String projectId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROJECT_JSON)
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String propertyId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROPERTY_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String buildingId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BUILDING_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
+        final String projectId = createProject();
+        final String propertyId = createProperty(projectId);
+        final String buildingId = createBuilding(projectId, propertyId);
 
         final String garageId = given()
                 .when()
@@ -252,35 +193,9 @@ class GarageResourceTest extends AbstractProjectResourceTest {
 
     @Test
     void deleteGarage_SUCCESS() {
-        final String projectId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROJECT_JSON)
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String propertyId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(ContentType.JSON)
-                .body(PROPERTY_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        final String buildingId = given()
-                .when()
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BUILDING_JSON)
-                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
+        final String projectId = createProject();
+        final String propertyId = createProperty(projectId);
+        final String buildingId = createBuilding(projectId, propertyId);
 
         final String garageId = given()
                 .when()
