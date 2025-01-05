@@ -38,18 +38,27 @@ class GarageControllerTest extends AbstractTest {
                 .executeUpdate());
     }
 
-    @Test
-    void createGarage_SUCCESS_idGenerated() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+    private PropertyModel createTestProperty() {
+        PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId(), "Property ID should not be null");
+        return property;
+    }
 
-        final BuildingModel building = TestData.buildingBuilder()
+    private BuildingModel createTestBuilding(PropertyModel property) {
+        BuildingModel building = TestData.buildingBuilder()
                 .id(null)
                 .address(TestData.addressBuilder().build())
                 .build();
 
-        final BuildingModel buildingResult = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+        BuildingModel buildingResult = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
         assertNotNull(buildingResult.getId(), "Building ID should not be null");
+        return buildingResult;
+    }
+
+    @Test
+    void createGarage_SUCCESS_idGenerated() {
+        final PropertyModel property = createTestProperty();
+        final BuildingModel buildingResult =createTestBuilding(property);
 
         final GarageModel garage = TestData.garageBuilder()
                 .id(null)
@@ -74,16 +83,8 @@ class GarageControllerTest extends AbstractTest {
 
     @Test
     void getGarage_SUCCESS_garageRetrieved() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
-        assertNotNull(property.getId(), "Property ID should not be null");
-
-        final BuildingModel building = TestData.buildingBuilder()
-                .id(null)
-                .address(TestData.addressBuilder().build())
-                .build();
-
-        final BuildingModel buildingResult = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
-        assertNotNull(buildingResult.getId(), "Building ID should not be null");
+        final PropertyModel property = createTestProperty();
+        final BuildingModel buildingResult = createTestBuilding(property);
 
         final GarageModel garage = TestData.garageBuilder()
                 .id(null)
@@ -103,16 +104,8 @@ class GarageControllerTest extends AbstractTest {
 
     @Test
     void updateGarage_SUCCESS() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
-        assertNotNull(property.getId(), "Property ID should not be null");
-
-        final BuildingModel building = TestData.buildingBuilder()
-                .id(null)
-                .address(TestData.addressBuilder().build())
-                .build();
-
-        final BuildingModel buildingResult = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
-        assertNotNull(buildingResult.getId(), "Building ID should not be null");
+        final PropertyModel property = createTestProperty();
+        final BuildingModel buildingResult = createTestBuilding(property);
 
         final GarageModel garage = TestData.garageBuilder()
                 .id(null)
@@ -143,16 +136,8 @@ class GarageControllerTest extends AbstractTest {
 
     @Test
     void deleteGarage_SUCCESS() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
-        assertNotNull(property.getId(), "Property ID should not be null");
-
-        final BuildingModel building = TestData.buildingBuilder()
-                .id(null)
-                .address(TestData.addressBuilder().build())
-                .build();
-
-        final BuildingModel buildingResult = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
-        assertNotNull(buildingResult.getId(), "Building ID should not be null");
+        final PropertyModel property = createTestProperty();
+        final BuildingModel buildingResult = createTestBuilding(property);
 
         final GarageModel garage = TestData.garageBuilder()
                 .id(null)
