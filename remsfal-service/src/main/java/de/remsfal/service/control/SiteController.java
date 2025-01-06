@@ -43,7 +43,7 @@ public class SiteController {
         entity.setUsableSpace(site.getUsableSpace());
         repository.persistAndFlush(entity);
         repository.getEntityManager().refresh(entity);
-        return getSite(projectId, propertyId, entity.getId());
+        return getSite(projectId, entity.getId());
     }
 
     public List<? extends SiteModel> getSites(final String projectId, final String propertyId) {
@@ -51,19 +51,19 @@ public class SiteController {
         return repository.findAllSites(projectId, propertyId);
     }
 
-    public SiteModel getSite(final String projectId, final String propertyId, final String siteId) {
-        logger.infov("Retrieving a site (projectId={0}, propertyId={1}, siteId={2})",
-            projectId, propertyId, siteId);
-        return repository.findSiteById(projectId, propertyId, siteId)
+    public SiteModel getSite(final String projectId, final String siteId) {
+        logger.infov("Retrieving a site (projectId={0}, siteId={1})",
+            projectId, siteId);
+        return repository.findSiteById(projectId, siteId)
             .orElseThrow(() -> new NotFoundException("Site not exist"));
     }
 
     @Transactional
-    public SiteModel updateSite(final String projectId, final String propertyId,
+    public SiteModel updateSite(final String projectId,
                                 final String siteId, final SiteJson site) {
-        logger.infov("Updating a site (projectId={0}, propertyId={1}, siteId={2}, site={3})",
-            projectId, propertyId, siteId, site);
-        final SiteEntity entity = repository.findSiteById(projectId, propertyId, siteId)
+        logger.infov("Updating a site (projectId={0}, siteId={1}, site={2})",
+            projectId, siteId, site);
+        final SiteEntity entity = repository.findSiteById(projectId, siteId)
             .orElseThrow(() -> new NotFoundException("Site not exist or user has no membership"));
         if (site.getTitle() != null) {
             entity.setTitle(site.getTitle());
@@ -84,9 +84,9 @@ public class SiteController {
     }
 
     @Transactional
-    public boolean deleteSite(String projectId, String propertyId, String siteId) {
-        logger.infov("Deleting a site (projectId={0}, propertyId={1}, siteId={2})", projectId, propertyId, siteId);
-        return repository.deleteSiteById(projectId, propertyId, siteId) > 0;
+    public boolean deleteSite(final String projectId, final String siteId) {
+        logger.infov("Deleting a site (projectId={0}, siteId={1})", projectId, siteId);
+        return repository.deleteSiteById(projectId, siteId) > 0;
     }
 
 }

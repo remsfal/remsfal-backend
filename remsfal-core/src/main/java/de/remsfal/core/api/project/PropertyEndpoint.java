@@ -126,4 +126,5 @@ public interface PropertyEndpoint {
 
     @Path("/{propertyId}/" + SiteEndpoint.SERVICE)
     SiteEndpoint getSiteResource();
+
 }
