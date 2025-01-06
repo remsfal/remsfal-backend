@@ -140,7 +140,7 @@ class HeaderExtensionResponseFilterTest {
 
         verify(headers).add("Set-Cookie", new NewCookie.Builder("newAccessToken").build());
         verify(headers).add("Set-Cookie", new NewCookie.Builder("newRefreshToken").build());
-        verify(logger).info(contains("Accesstoken expired"));
+        verify(logger).info(contains("Access token expired"));
     }
 
     @Test

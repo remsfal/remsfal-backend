@@ -1,22 +1,20 @@
 package de.remsfal.service.boundary.project;
 
+import de.remsfal.service.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import de.remsfal.service.TestData;
-import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.time.Duration;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class SiteResourceTest extends AbstractProjectResourceTest {
@@ -42,7 +40,8 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .setParameter(6, TestData.ADDRESS_COUNTRY)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO SITE (ID, PROJECT_ID, PROPERTY_ID, ADDRESS_ID, TITLE, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery(
+                "INSERT INTO SITE (ID, PROJECT_ID, PROPERTY_ID, ADDRESS_ID, TITLE, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, TestData.SITE_ID)
             .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_ID)
@@ -333,7 +332,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -341,7 +340,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"usableSpace\":\"56.7\"}")
             .patch("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
@@ -351,7 +350,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
