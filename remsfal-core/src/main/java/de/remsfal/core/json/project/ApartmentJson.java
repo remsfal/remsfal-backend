@@ -52,6 +52,20 @@ public abstract class ApartmentJson implements ApartmentModel {
 
     @Null
     @Nullable
-    public abstract Float getRent();
+    public abstract TenancyJson getTenancy();
+
+    public static ApartmentJson valueOf(ApartmentModel apartment) {
+        return apartment == null ? null : ImmutableApartmentJson.builder()
+                .id(apartment.getId())
+                .title(apartment.getTitle())
+                .description(apartment.getDescription())
+                .heatingSpace(apartment.getHeatingSpace())
+                .livingSpace(apartment.getLivingSpace())
+                .usableSpace(apartment.getUsableSpace())
+                .location(apartment.getLocation())
+                .tenancy(TenancyJson.valueOf(apartment.getTenancy()))
+                .build();
+
+    }
 
 }

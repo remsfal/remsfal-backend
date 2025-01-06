@@ -22,8 +22,12 @@ import de.remsfal.core.json.ProjectMemberJson;
 import de.remsfal.core.json.ProjectMemberListJson;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
+import de.remsfal.service.boundary.project.ApartmentResource;
+import de.remsfal.service.boundary.project.BuildingResource;
 import de.remsfal.service.boundary.project.DefectResource;
+import de.remsfal.service.boundary.project.GarageResource;
 import de.remsfal.service.boundary.project.PropertyResource;
+import de.remsfal.service.boundary.project.SiteResource;
 import de.remsfal.service.boundary.project.TaskResource;
 import de.remsfal.service.control.ProjectController;
 
@@ -49,6 +53,18 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<PropertyResource> propertyResource;
+
+    @Inject
+    Instance<SiteResource> siteResource;
+
+    @Inject
+    Instance<BuildingResource> buildingResource;
+
+    @Inject
+    Instance<ApartmentResource> apartmentResource;
+
+    @Inject
+    Instance<GarageResource> garageResource;
 
     @Inject
     Instance<TaskResource> taskResource;
@@ -120,6 +136,26 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public PropertyResource getPropertyResource() {
         return resourceContext.initResource(propertyResource.get());
+    }
+
+    @Override
+    public SiteResource getSiteResource() {
+        return resourceContext.initResource(siteResource.get());
+    }
+
+    @Override
+    public BuildingResource getBuildingResource() {
+        return resourceContext.initResource(buildingResource.get());
+    }
+
+    @Override
+    public ApartmentResource getApartmentResource() {
+        return resourceContext.initResource(apartmentResource.get());
+    }
+
+    @Override
+    public GarageResource getGarageResource() {
+        return resourceContext.initResource(garageResource.get());
     }
 
     @Override

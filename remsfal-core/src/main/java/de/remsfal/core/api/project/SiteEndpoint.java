@@ -73,8 +73,6 @@ public interface SiteEndpoint {
     SiteJson getSite(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the site", required = true)
         @PathParam("siteId") @NotNull @UUID String siteId
     );
@@ -95,8 +93,6 @@ public interface SiteEndpoint {
     SiteJson updateSite(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the site", required = true)
         @PathParam("siteId") @NotNull @UUID String siteId,
         @Parameter(description = "Site information", required = true)
@@ -117,8 +113,6 @@ public interface SiteEndpoint {
     void deleteSite(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId,
         @Parameter(description = "ID of the site", required = true)
         @PathParam("siteId") @NotNull @UUID String siteId
     );

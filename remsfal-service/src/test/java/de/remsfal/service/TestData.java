@@ -2,7 +2,6 @@ package de.remsfal.service;
 
 import java.time.LocalDate;
 import java.util.Locale;
-
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
@@ -216,7 +215,7 @@ public class TestData {
             .heatingSpace(TestData.BUILDING_HEATING_SPACE_1)
             .isDifferentHeatingSpace(true);
     }
-
+      
     // Test building 2
     public static final String BUILDING_ID_2 = "b9440c43-b5c0-4951-9c25-000000000002";
     public static final String BUILDING_TITLE_2 = "Bavariaplatz (Fam. Müller)";
@@ -237,6 +236,41 @@ public class TestData {
                 .usableSpace(TestData.BUILDING_USABLE_SPACE_2)
                 .heatingSpace(TestData.BUILDING_HEATING_SPACE_2)
                 .isDifferentHeatingSpace(false);
+    }
+  
+      // Default test tenancy
+    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
+    public static final String TENANCY_START = TestData.TENANCY_START_1;
+    public static final String TENANCY_END = TestData.TENANCY_END_1;
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
+        return tenancyBuilder1();
+    }
+
+    // Test tenancy 1
+    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_1 = "2007-12-01";
+    public static final String TENANCY_END_1 = "2025-01-30";
+
+    // Test tenancy 2
+    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_2 = "2010-05-03";
+    public static final String TENANCY_END_2 = "2030-04-23";
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
+        return ImmutableTenancyJson
+                .builder()
+                .id(TENANCY_ID_1)
+                .startOfRental(LocalDate.parse(TENANCY_START_1))
+                .endOfRental(LocalDate.parse(TENANCY_END_1));
+    }
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
+        return ImmutableTenancyJson
+                .builder()
+                .id(TENANCY_ID_2)
+                .startOfRental(LocalDate.parse(TENANCY_START_2))
+                .endOfRental(LocalDate.parse(TENANCY_END_2));
     }
 
     // Default test tenancy
@@ -282,7 +316,6 @@ public class TestData {
     public static final Float APARTMENT_LIVING_SPACE = TestData.APARTMENT_LIVING_SPACE_1;
     public static final Float APARTMENT_USABLE_SPACE = TestData.APARTMENT_USABLE_SPACE_1;
     public static final Float APARTMENT_HEATING_SPACE = TestData.APARTMENT_HEATING_SPACE_1;
-    public static final Float APARTMENT_RENT = TestData.APARTMENT_RENT_1;
 
     public static final ImmutableApartmentJson.Builder apartmentBuilder() {
         return apartmentBuilder1();
@@ -296,7 +329,6 @@ public class TestData {
     public static final Float APARTMENT_LIVING_SPACE_1 = 77.36f;
     public static final Float APARTMENT_USABLE_SPACE_1 = 0f;
     public static final Float APARTMENT_HEATING_SPACE_1 = 77.36f;
-    public static final Float APARTMENT_RENT_1 = 498.90f;
 
     public static final ImmutableApartmentJson.Builder apartmentBuilder1() {
         return ImmutableApartmentJson
@@ -307,11 +339,10 @@ public class TestData {
         .description(APARTMENT_DESCRIPTION_1)
         .livingSpace(APARTMENT_LIVING_SPACE_1)
         .usableSpace(APARTMENT_USABLE_SPACE_1)
-        .heatingSpace(APARTMENT_HEATING_SPACE_1)
-        .rent(APARTMENT_RENT_1);
+        .heatingSpace(APARTMENT_HEATING_SPACE_1);
     }
 
-    // Test apartment 1
+    // Test apartment 2
     public static final String APARTMENT_ID_2 = "b9440c43-b5c0-4951-9c24-000000000002";
     public static final String APARTMENT_TITLE_2 = "3 Zimmerwohnung 1.OG links";
     public static final String APARTMENT_LOCATION_2 = "1. OG links";
@@ -319,7 +350,6 @@ public class TestData {
     public static final Float APARTMENT_LIVING_SPACE_2 = 87.36f;
     public static final Float APARTMENT_USABLE_SPACE_2 = 0f;
     public static final Float APARTMENT_HEATING_SPACE_2 = 87.36f;
-    public static final Float APARTMENT_RENT_2 = 598.90f;
 
     public static final ImmutableApartmentJson.Builder apartmentBuilder2() {
         return ImmutableApartmentJson
@@ -330,8 +360,7 @@ public class TestData {
         .description(APARTMENT_DESCRIPTION_2)
         .livingSpace(APARTMENT_LIVING_SPACE_2)
         .usableSpace(APARTMENT_USABLE_SPACE_2)
-        .heatingSpace(APARTMENT_HEATING_SPACE_2)
-        .rent(APARTMENT_RENT_2);
+        .heatingSpace(APARTMENT_HEATING_SPACE_2);
     }
 
     // Default test commercial

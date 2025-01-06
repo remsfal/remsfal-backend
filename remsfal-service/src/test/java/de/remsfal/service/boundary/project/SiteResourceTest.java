@@ -327,4 +327,34 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .and().body("usableSpace", Matchers.equalTo(51.99f));
     }
 
+    @Test
+    void getAndDeleteSite_SUCCESS_shortcut() {
+        setupTestSites();
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID));
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"usableSpace\":\"56.7\"}")
+            .patch("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .and().body("usableSpace", Matchers.equalTo(56.7f));
+
+        given()
+            .when()
+            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+    }
+
 }
