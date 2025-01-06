@@ -1,16 +1,20 @@
 package de.remsfal.service.boundary.authentication;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class KeyLoader {
 
-    public static PrivateKey loadPrivateKey(String fileName) throws Exception {
+    public static PrivateKey loadPrivateKey(String fileName)
+        throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
             if (inputStream == null) {
                 throw new IllegalArgumentException("Private key file not found: " + fileName);
@@ -20,7 +24,8 @@ public class KeyLoader {
         }
     }
 
-    public static PublicKey loadPublicKey(String fileName) throws Exception {
+    public static PublicKey loadPublicKey(String fileName)
+        throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
             if (inputStream == null) {
                 throw new IllegalArgumentException("Public key file not found: " + fileName);
@@ -30,7 +35,7 @@ public class KeyLoader {
         }
     }
 
-    private static PrivateKey parsePrivateKey(String pem) throws Exception {
+    private static PrivateKey parsePrivateKey(String pem) throws NoSuchAlgorithmException, InvalidKeySpecException {
         String base64Content = pem
             .replace("-----BEGIN PRIVATE KEY-----", "")
             .replace("-----END PRIVATE KEY-----", "")
@@ -43,7 +48,7 @@ public class KeyLoader {
     }
 
 
-    private static PublicKey parsePublicKey(String pem) throws Exception {
+    private static PublicKey parsePublicKey(String pem) throws NoSuchAlgorithmException, InvalidKeySpecException {
         String base64Content = pem
             .replace("-----BEGIN PUBLIC KEY-----", "")
             .replace("-----END PUBLIC KEY-----", "")

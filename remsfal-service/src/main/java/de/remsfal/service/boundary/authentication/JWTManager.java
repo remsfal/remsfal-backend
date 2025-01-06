@@ -12,9 +12,12 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 
 @ApplicationScoped
@@ -33,10 +36,9 @@ public class JWTManager {
     private PublicKey publicKey;
 
     @PostConstruct
-    public void init() throws Exception {
+    public void init() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         privateKey = KeyLoader.loadPrivateKey(privateKeyLocation);
         publicKey = KeyLoader.loadPublicKey(publicKeyLocation);
-
     }
 
     public void setPrivateKey(PrivateKey privateKey) {
@@ -56,7 +58,7 @@ public class JWTManager {
             .algorithm(SignatureAlgorithm.RS256).header("typ", "JWT").sign(privateKey);
     }
 
-    public SessionInfo verifyJWT(String jwt) {
+    public SessionInfo verifyJWT(String jwt) throws UnauthorizedException, TokenExpiredException {
         return verifyJWT(jwt, false);
     }
 
@@ -77,7 +79,8 @@ public class JWTManager {
         }
     }
 
-    public SessionInfo verifyJWT(String jwt, boolean isRefreshToken) {
+    public SessionInfo verifyJWT(String jwt, boolean isRefreshToken)
+        throws UnauthorizedException, TokenExpiredException {
 
 
         JWTClaimsSet claimsSet = verifyTokenManually(jwt, publicKey);
