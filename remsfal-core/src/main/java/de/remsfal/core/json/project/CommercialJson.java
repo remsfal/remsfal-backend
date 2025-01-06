@@ -52,7 +52,7 @@ public abstract class CommercialJson implements CommercialModel {
 
     @Null
     @Nullable
-    public abstract Float getRent();
+    public abstract TenancyJson getTenancy();
 
     /**
      * Converts a {@link CommercialModel} to a {@link CommercialJson}.
@@ -69,7 +69,7 @@ public abstract class CommercialJson implements CommercialModel {
                 .commercialSpace(model.getCommercialSpace())
                 .usableSpace(model.getUsableSpace())
                 .heatingSpace(model.getHeatingSpace())
-                .rent(model.getRent())
+                .tenancy(TenancyJson.valueOf(model.getTenancy()))
                 .build();
     }
 

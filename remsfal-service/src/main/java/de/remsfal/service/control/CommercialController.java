@@ -1,5 +1,6 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.project.CommercialJson;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dto.CommercialEntity;
@@ -21,8 +22,14 @@ public class CommercialController {
     @Inject
     Logger logger;
 
+    CommercialJson commercialJson;
+
+
     @Inject
     CommercialRepository commercialRepository;
+
+    @Inject
+    TenancyController tenancyController;
 
     @Transactional
     public CommercialModel createCommercial(final String projectId, final String buildingId,
@@ -51,10 +58,6 @@ public class CommercialController {
 
         return entity;
     }
-    public List<? extends CommercialModel> getCommercials(final String projectId, final String buildingId) {
-        logger.infov("Retrieving all commercials (projectId={0}, buildingId={1})", projectId, buildingId);
-        return commercialRepository.findCommercialsByBuildingId(projectId, buildingId);
-    }
 
     @Transactional
     public CommercialModel updateCommercial(final String projectId, final String buildingId, final String commercialId,
@@ -75,18 +78,20 @@ public class CommercialController {
         if (commercial.getHeatingSpace() != null) {
             entity.setHeatingSpace(commercial.getHeatingSpace());
         }
-        if (commercial.getRent() != null) {
-            entity.setRent(commercial.getRent());
+        if (commercial.getTenancy() != null){
+            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), commercial.getTenancy()));
         }
         return commercialRepository.merge(entity);
     }
 
     @Transactional
-    public boolean deleteCommercial(final String projectId, final String buildingId, final String commercialId) {
-        logger.infov("Deleting a commercial (projectId={0}, buildingId={1}, commercialId={2})",
+    public void deleteCommercial(final String projectId, final String buildingId,
+                                final String commercialId) throws NotFoundException {
+        logger.infov("Delete a commercial (projectId{0} buildingId={1} commercialId{2})",
                 projectId, buildingId, commercialId);
-        return commercialRepository.deleteCommercialById(projectId, buildingId, commercialId) > 0;
+        if (commercialRepository.findCommercialById(projectId,buildingId,commercialId).isEmpty()) {
+            throw new NotFoundException("Commercial does not exist");
+        }
+        commercialRepository.deleteCommercialById(projectId, buildingId, commercialId);
     }
-
-
 }

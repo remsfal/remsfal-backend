@@ -7,9 +7,18 @@ import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
-import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
@@ -56,18 +65,6 @@ public interface CommercialEndpoint {
             @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the commercial unit", required = true)
             @PathParam("commercialId") @NotNull @UUID String commercialId
-    );
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve all commercials for a building.")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "No commercials found")
-    Response getCommercials(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId
     );
 
     @PATCH

@@ -239,6 +239,41 @@ public class TestData {
                 .isDifferentHeatingSpace(false);
     }
 
+    // Default test tenancy
+    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
+    public static final String TENANCY_START = TestData.TENANCY_START_1;
+    public static final String TENANCY_END = TestData.TENANCY_END_1;
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
+        return tenancyBuilder1();
+    }
+
+    // Test tenancy 1
+    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_1 = "2007-12-01";
+    public static final String TENANCY_END_1 = "2025-01-30";
+
+    // Test tenancy 2
+    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_2 = "2010-05-03";
+    public static final String TENANCY_END_2 = "2030-04-23";
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
+        return ImmutableTenancyJson
+                .builder()
+                .id(TENANCY_ID_1)
+                .startOfRental(LocalDate.parse(TENANCY_START_1))
+                .endOfRental(LocalDate.parse(TENANCY_END_1));
+    }
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
+        return ImmutableTenancyJson
+                .builder()
+                .id(TENANCY_ID_2)
+                .startOfRental(LocalDate.parse(TENANCY_START_2))
+                .endOfRental(LocalDate.parse(TENANCY_END_2));
+    }
+
     // Default test apartment
     public static final String APARTMENT_ID = TestData.APARTMENT_ID_1;
     public static final String APARTMENT_TITLE = TestData.APARTMENT_TITLE_1;
@@ -307,7 +342,6 @@ public class TestData {
     public static final Float COMMERCIAL_COMMERCIAL_SPACE = TestData.COMMERCIAL_COMMERCIAL_SPACE_1;
     public static final Float COMMERCIAL_USABLE_SPACE = TestData.COMMERCIAL_USABLE_SPACE_1;
     public static final Float COMMERCIAL_HEATING_SPACE = TestData.COMMERCIAL_HEATING_SPACE_1;
-    public static final Float COMMERCIAL_RENT = TestData.COMMERCIAL_RENT_1;
     
     public static final ImmutableCommercialJson.Builder commercialBuilder() {
         return commercialBuilder1();
@@ -321,7 +355,6 @@ public class TestData {
     public static final Float COMMERCIAL_COMMERCIAL_SPACE_1 = 423.92f;
     public static final Float COMMERCIAL_USABLE_SPACE_1 = 53.9f;
     public static final Float COMMERCIAL_HEATING_SPACE_1 = 204.27f;
-    public static final Float COMMERCIAL_RENT_1 = 3799.80f;
 
     public static final ImmutableCommercialJson.Builder commercialBuilder1() {
         return ImmutableCommercialJson
@@ -332,8 +365,7 @@ public class TestData {
         .description(COMMERCIAL_DESCRIPTION_1)
         .commercialSpace(COMMERCIAL_COMMERCIAL_SPACE_1)
         .usableSpace(COMMERCIAL_USABLE_SPACE_1)
-        .heatingSpace(COMMERCIAL_HEATING_SPACE_1)
-        .rent(COMMERCIAL_RENT_1);
+        .heatingSpace(COMMERCIAL_HEATING_SPACE_1);
     }
 
     // Default test garage
@@ -384,28 +416,6 @@ public class TestData {
         .location(GARAGE_LOCATION_2)
         .description(GARAGE_DESCRIPTION_2)
         .usableSpace(GARAGE_USABLE_SPACE_2);
-    }
-
-    // Default test tenancy
-    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
-    public static final String TENANCY_START = TestData.TENANCY_START_1;
-    public static final String TENANCY_END = TestData.TENANCY_END_1;
-    
-    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
-        return tenancyBuilder1();
-    }
-
-    // Test tenancy 1
-    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
-    public static final String TENANCY_START_1 = "2007-12-01";
-    public static final String TENANCY_END_1 = "2025-01-30";
-
-    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
-        return ImmutableTenancyJson
-        .builder()
-        .id(TENANCY_ID_1)
-        .startOfRental(LocalDate.parse(TENANCY_START_1))
-        .endOfRental(LocalDate.parse(TENANCY_END_1));
     }
 
     // Default test task

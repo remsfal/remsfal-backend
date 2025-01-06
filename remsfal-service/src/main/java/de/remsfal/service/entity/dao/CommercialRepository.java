@@ -8,9 +8,6 @@ import io.quarkus.panache.common.Parameters;
 import java.util.List;
 import java.util.Optional;
 
-
-import java.util.List;
-
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -26,12 +23,6 @@ public class CommercialRepository extends AbstractRepository<CommercialEntity> {
                 .setParameter("buildingId", buildingId)
                 .getResultList();
     }
-
-    public List<CommercialEntity> findCommercialsByBuildingId(final String projectId, final String buildingId) {
-        return find("projectId = :projectId and buildingId = :buildingId",
-                Parameters.with("projectId", projectId).and("buildingId", buildingId)).list();
-    }
-
     public Optional<CommercialEntity> findCommercialById(final String projectId, final String buildingId, final String commercialId) {
         return find("id = :id and projectId = :projectId and buildingId = :buildingId",
                 Parameters.with("id", commercialId)

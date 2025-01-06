@@ -10,7 +10,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
-import java.util.List;
 
 /**
  * Resource for managing Commercial units via the API.
@@ -24,8 +23,8 @@ public class CommercialResource extends ProjectSubResource implements Commercial
     @Override
     public Response createCommercial(final String projectId, final String buildingId, final CommercialJson commercial) {
         checkPrivileges(projectId);
-        CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
-        URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(CommercialJson.valueOf(model))
@@ -36,13 +35,6 @@ public class CommercialResource extends ProjectSubResource implements Commercial
     public CommercialJson getCommercial(final String projectId, final String buildingId, final String commercialId) {
         checkPrivileges(projectId);
         return CommercialJson.valueOf(controller.getCommercial(projectId, buildingId, commercialId));
-    }
-
-    @Override
-    public Response getCommercials(final String projectId, final String buildingId) {
-        checkPrivileges(projectId);
-        List<? extends CommercialModel> commercials = controller.getCommercials(projectId, buildingId);
-        return Response.ok(commercials).build();
     }
 
     @Override
