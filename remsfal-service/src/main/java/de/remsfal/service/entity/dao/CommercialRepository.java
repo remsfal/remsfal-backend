@@ -23,7 +23,9 @@ public class CommercialRepository extends AbstractRepository<CommercialEntity> {
                 .setParameter("buildingId", buildingId)
                 .getResultList();
     }
-    public Optional<CommercialEntity> findCommercialById(final String projectId, final String buildingId, final String commercialId) {
+    public Optional<CommercialEntity> findCommercialById(final String projectId,
+                                                         final String buildingId,
+                                                         final String commercialId) {
         return find("id = :id and projectId = :projectId and buildingId = :buildingId",
                 Parameters.with("id", commercialId)
                         .and("projectId", projectId)
