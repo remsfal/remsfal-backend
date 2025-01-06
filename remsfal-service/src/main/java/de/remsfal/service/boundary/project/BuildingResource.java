@@ -1,12 +1,11 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.core.api.project.ApartmentEndpoint;
 import de.remsfal.core.api.project.BuildingEndpoint;
-import de.remsfal.core.api.project.GarageEndpoint;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.control.BuildingController;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -18,6 +17,12 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Inject
     BuildingController controller;
+
+    @Inject
+    Instance<ApartmentResource> apartmentResource;
+
+    @Inject
+    Instance<GarageResource> garageResource;
 
     @Override
     public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
@@ -52,15 +57,13 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     }
 
     @Override
-    public ApartmentEndpoint getApartmentResource() {
-        // TODO Auto-generated method stub
-        return null;
+    public ApartmentResource getApartmentResource() {
+        return resourceContext.initResource(apartmentResource.get());
     }
 
     @Override
-    public GarageEndpoint getGarageResource() {
-        // TODO Auto-generated method stub
-        return null;
+    public GarageResource getGarageResource() {
+        return resourceContext.initResource(garageResource.get());
     }
 
 }

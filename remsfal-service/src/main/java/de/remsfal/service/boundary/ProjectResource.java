@@ -16,18 +16,16 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ProjectEndpoint;
-import de.remsfal.core.api.project.ApartmentEndpoint;
-import de.remsfal.core.api.project.BuildingEndpoint;
-import de.remsfal.core.api.project.GarageEndpoint;
-import de.remsfal.core.api.project.SiteEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.json.ProjectMemberJson;
 import de.remsfal.core.json.ProjectMemberListJson;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
+import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.BuildingResource;
 import de.remsfal.service.boundary.project.DefectResource;
+import de.remsfal.service.boundary.project.GarageResource;
 import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.boundary.project.SiteResource;
 import de.remsfal.service.boundary.project.TaskResource;
@@ -61,6 +59,12 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<BuildingResource> buildingResource;
+
+    @Inject
+    Instance<ApartmentResource> apartmentResource;
+
+    @Inject
+    Instance<GarageResource> garageResource;
 
     @Inject
     Instance<TaskResource> taskResource;
@@ -135,25 +139,23 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public SiteEndpoint getSiteResource() {
+    public SiteResource getSiteResource() {
         return resourceContext.initResource(siteResource.get());
     }
 
     @Override
-    public BuildingEndpoint getBuildingResource() {
+    public BuildingResource getBuildingResource() {
         return resourceContext.initResource(buildingResource.get());
     }
 
     @Override
-    public ApartmentEndpoint getApartmentResource() {
-        // TODO Auto-generated method stub
-        return null;
+    public ApartmentResource getApartmentResource() {
+        return resourceContext.initResource(apartmentResource.get());
     }
 
     @Override
-    public GarageEndpoint getGarageResource() {
-        // TODO Auto-generated method stub
-        return null;
+    public GarageResource getGarageResource() {
+        return resourceContext.initResource(garageResource.get());
     }
 
     @Override
