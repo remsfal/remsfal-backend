@@ -237,41 +237,6 @@ public class TestData {
                 .heatingSpace(TestData.BUILDING_HEATING_SPACE_2)
                 .isDifferentHeatingSpace(false);
     }
-  
-      // Default test tenancy
-    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
-    public static final String TENANCY_START = TestData.TENANCY_START_1;
-    public static final String TENANCY_END = TestData.TENANCY_END_1;
-
-    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
-        return tenancyBuilder1();
-    }
-
-    // Test tenancy 1
-    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
-    public static final String TENANCY_START_1 = "2007-12-01";
-    public static final String TENANCY_END_1 = "2025-01-30";
-
-    // Test tenancy 2
-    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000001";
-    public static final String TENANCY_START_2 = "2010-05-03";
-    public static final String TENANCY_END_2 = "2030-04-23";
-
-    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
-        return ImmutableTenancyJson
-                .builder()
-                .id(TENANCY_ID_1)
-                .startOfRental(LocalDate.parse(TENANCY_START_1))
-                .endOfRental(LocalDate.parse(TENANCY_END_1));
-    }
-
-    public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
-        return ImmutableTenancyJson
-                .builder()
-                .id(TENANCY_ID_2)
-                .startOfRental(LocalDate.parse(TENANCY_START_2))
-                .endOfRental(LocalDate.parse(TENANCY_END_2));
-    }
 
     // Default test tenancy
     public static final String TENANCY_ID = TestData.TENANCY_ID_1;
