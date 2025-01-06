@@ -11,8 +11,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
-import java.util.List;
-
 /**
  * Controller for managing Commercial units.
  */
@@ -49,7 +47,7 @@ public class CommercialController {
                                          final String buildingId, final String commercialId) {
         logger.infov("Retrieving a commercial (projectId={0}, buildingId={1}, commercialId={2})",
                 projectId, buildingId, commercialId);
-        CommercialEntity entity = commercialRepository.findByIdOptional(commercialId)
+        CommercialEntity entity = commercialRepository.findCommercialById(projectId, buildingId,commercialId)
                 .orElseThrow(() -> new NotFoundException("Commercial not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {

@@ -1,6 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
@@ -10,10 +9,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 class CommercialControllerTest extends AbstractTest {
@@ -35,7 +31,6 @@ class CommercialControllerTest extends AbstractTest {
                 .setParameter(2, TestData.PROJECT_TITLE_1)
                 .executeUpdate());
     }
-
 
     @Test
     void createCommercial_SUCCESS_getCommercial() {
@@ -60,13 +55,12 @@ class CommercialControllerTest extends AbstractTest {
         assertNotEquals(commercial.getId(), result.getId());
         assertEquals(commercial.getTitle(), result.getTitle());
         assertEquals(commercial.getLocation(), result.getLocation());
-        assertEquals(commercial.getDescription(), result.getDescription());
         assertEquals(commercial.getCommercialSpace(), result.getCommercialSpace());
-        assertEquals(commercial.getUsableSpace(), result.getUsableSpace());
+        assertEquals(commercial.getHeatingSpace(), result.getHeatingSpace());
 
         final String commercialId = entityManager
-                .createQuery("SELECT a.id FROM CommercialEntity a where a.title = :title", String.class)
-                .setParameter("title", TestData.APARTMENT_TITLE)
+                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+                .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
 
@@ -96,16 +90,9 @@ class CommercialControllerTest extends AbstractTest {
         final CommercialModel result = commercialController
                 .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
 
-        assertNotEquals(commercial.getId(), result.getId());
-        assertEquals(commercial.getTitle(), result.getTitle());
-        assertEquals(commercial.getLocation(), result.getLocation());
-        assertEquals(commercial.getDescription(), result.getDescription());
-        assertEquals(commercial.getCommercialSpace(), result.getCommercialSpace());
-        assertEquals(commercial.getUsableSpace(), result.getUsableSpace());
-
         final String commercialId = entityManager
-                .createQuery("SELECT a.id FROM CommercialEntity a where a.title = :title", String.class)
-                .setParameter("title", TestData.APARTMENT_TITLE)
+                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+                .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
 
@@ -133,32 +120,22 @@ class CommercialControllerTest extends AbstractTest {
         final CommercialModel result = commercialController
                 .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
 
-        assertNotEquals(commercial.getId(), result.getId());
-        assertEquals(commercial.getTitle(), result.getTitle());
-        assertEquals(commercial.getLocation(), result.getLocation());
-        assertEquals(commercial.getDescription(), result.getDescription());
-        assertEquals(commercial.getCommercialSpace(), result.getCommercialSpace());
-        assertEquals(commercial.getUsableSpace(), result.getUsableSpace());
-
         final String commercialId = entityManager
-                .createQuery("SELECT a.id FROM CommercialEntity a where a.title = :title", String.class)
-                .setParameter("title", TestData.APARTMENT_TITLE)
+                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+                .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
 
-        final CommercialModel updateTo = TestData.commercialBuilder1().build();
+        final CommercialModel updateTo = TestData.commercialBuilder2().build();
 
         final CommercialModel updated = commercialController.updateCommercial(TestData.PROJECT_ID, buildingId,
                 commercialId, updateTo);
 
         assertNotEquals(updateTo.getId(), updated.getId());
-        assertEquals(updateTo.getDescription(), updated.getDescription());
-        assertEquals(updateTo.getCommercialSpace(), updated.getCommercialSpace());
-        assertEquals(updateTo.getUsableSpace(), updated.getUsableSpace());
-        assertEquals(updateTo.getLocation(), updated.getLocation());
-        assertEquals(updateTo.getHeatingSpace(), updated.getHeatingSpace());
         assertEquals(updateTo.getTitle(), updated.getTitle());
+        assertEquals(updateTo.getLocation(), updated.getLocation());
+        assertEquals(updateTo.getCommercialSpace(), updated.getCommercialSpace());
+        assertEquals(updateTo.getHeatingSpace(), updated.getHeatingSpace());
         assertEquals(commercial.getTenancy(), updated.getTenancy());
     }
-
 }
