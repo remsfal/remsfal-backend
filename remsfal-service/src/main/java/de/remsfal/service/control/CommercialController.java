@@ -1,6 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.CommercialJson;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dto.CommercialEntity;
@@ -19,9 +18,6 @@ public class CommercialController {
 
     @Inject
     Logger logger;
-
-    CommercialJson commercialJson;
-
 
     @Inject
     CommercialRepository commercialRepository;
