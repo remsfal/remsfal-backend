@@ -42,23 +42,22 @@ public class SiteResource extends ProjectSubResource implements SiteEndpoint {
     }
 
     @Override
-    public SiteJson getSite(final String projectId, final String propertyId, final String siteId) {
+    public SiteJson getSite(final String projectId, final String siteId) {
         checkPrivileges(projectId);
-        final SiteModel model = controller.getSite(projectId, propertyId, siteId);
+        final SiteModel model = controller.getSite(projectId, siteId);
         return SiteJson.valueOf(model);
     }
 
     @Override
-    public SiteJson updateSite(final String projectId,
-                               final String propertyId, final String siteId, final SiteJson site) {
+    public SiteJson updateSite(final String projectId, final String siteId, final SiteJson site) {
         checkPrivileges(projectId);
-        return SiteJson.valueOf(controller.updateSite(projectId, propertyId, siteId, site));
+        return SiteJson.valueOf(controller.updateSite(projectId, siteId, site));
     }
 
     @Override
-    public void deleteSite(final String projectId, final String propertyId, final String siteId) {
+    public void deleteSite(final String projectId, final String siteId) {
         checkPrivileges(projectId);
-        controller.deleteSite(projectId, propertyId, siteId);
+        controller.deleteSite(projectId, siteId);
     }
 
 }

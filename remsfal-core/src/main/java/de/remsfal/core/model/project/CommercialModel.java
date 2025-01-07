@@ -3,7 +3,7 @@ package de.remsfal.core.model.project;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface CommercialModel {
+public interface CommercialModel extends RentalUnitModel {
 
     String getId();
 

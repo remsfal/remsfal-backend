@@ -44,7 +44,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
@@ -68,7 +68,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             + "\"id\":\"anyId\"}";
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
@@ -80,7 +80,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
     void createProperty_FAILED_noTitle() {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
@@ -108,7 +108,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .queryParam("limit", 10)
             .queryParam("offset", 0)
             .queryParam("projectId", TestData.PROJECT_ID)
@@ -244,7 +244,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .queryParam("offset", "10")
             .get(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
             .then()
@@ -267,14 +267,14 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
@@ -294,7 +294,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA_2 + "\"}";
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
@@ -309,7 +309,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID, TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -330,7 +330,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         final Response res = given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID)
@@ -353,7 +353,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(propertyUrl)
             .then()
             .statusCode(Status.OK.getStatusCode())

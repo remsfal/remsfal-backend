@@ -57,17 +57,7 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
                 return;
             }
 
-            final Cookie sessionCookie = sessionManager.findSessionCookie(requestContext.getCookies());
-            if (sessionCookie == null) {
-                logger.error("Session cookie was not provided");
-                throw new UnauthorizedException();
-            }
-
-            final SessionInfo sessionInfo = sessionManager.decryptSessionCookie(sessionCookie);
-            if (sessionInfo == null || !sessionInfo.isValid()) {
-                logger.errorv("Invalid session info: {0}", sessionInfo);
-                throw new UnauthorizedException();
-            }
+            final SessionInfo sessionInfo = sessionManager.checkValidUserSession(requestContext.getCookies());
 
             logger.info("method:" + requestContext.getMethod());
             logger.info("path:" + requestContext.getUriInfo().getPath());

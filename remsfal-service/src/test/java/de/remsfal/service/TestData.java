@@ -237,8 +237,8 @@ public class TestData {
                 .heatingSpace(TestData.BUILDING_HEATING_SPACE_2)
                 .isDifferentHeatingSpace(false);
     }
-  
-      // Default test tenancy
+
+    // Default test tenancy
     public static final String TENANCY_ID = TestData.TENANCY_ID_1;
     public static final String TENANCY_START = TestData.TENANCY_START_1;
     public static final String TENANCY_END = TestData.TENANCY_END_1;
@@ -336,7 +336,6 @@ public class TestData {
     public static final Float COMMERCIAL_COMMERCIAL_SPACE = TestData.COMMERCIAL_COMMERCIAL_SPACE_1;
     public static final Float COMMERCIAL_USABLE_SPACE = TestData.COMMERCIAL_USABLE_SPACE_1;
     public static final Float COMMERCIAL_HEATING_SPACE = TestData.COMMERCIAL_HEATING_SPACE_1;
-    public static final Float COMMERCIAL_RENT = TestData.COMMERCIAL_RENT_1;
     
     public static final ImmutableCommercialJson.Builder commercialBuilder() {
         return commercialBuilder1();
@@ -350,7 +349,6 @@ public class TestData {
     public static final Float COMMERCIAL_COMMERCIAL_SPACE_1 = 423.92f;
     public static final Float COMMERCIAL_USABLE_SPACE_1 = 53.9f;
     public static final Float COMMERCIAL_HEATING_SPACE_1 = 204.27f;
-    public static final Float COMMERCIAL_RENT_1 = 3799.80f;
 
     public static final ImmutableCommercialJson.Builder commercialBuilder1() {
         return ImmutableCommercialJson
@@ -361,8 +359,28 @@ public class TestData {
         .description(COMMERCIAL_DESCRIPTION_1)
         .commercialSpace(COMMERCIAL_COMMERCIAL_SPACE_1)
         .usableSpace(COMMERCIAL_USABLE_SPACE_1)
-        .heatingSpace(COMMERCIAL_HEATING_SPACE_1)
-        .rent(COMMERCIAL_RENT_1);
+        .heatingSpace(COMMERCIAL_HEATING_SPACE_1);
+    }
+
+    // Test commercial 1
+    public static final String COMMERCIAL_ID_2 = "b9440c43-b5c0-4951-9c23-000000000002";
+    public static final String COMMERCIAL_TITLE_2 = "Bäckerei Ekpmel";
+    public static final String COMMERCIAL_LOCATION_2 = "EG rechts";
+    public static final String COMMERCIAL_DESCRIPTION_2 = "Bäckerei mit Tischen hinter dem Haus";
+    public static final Float COMMERCIAL_COMMERCIAL_SPACE_2 = 450.92f;
+    public static final Float COMMERCIAL_USABLE_SPACE_2 = 100.9f;
+    public static final Float COMMERCIAL_HEATING_SPACE_2 = 134.27f;
+
+    public static final ImmutableCommercialJson.Builder commercialBuilder2() {
+        return ImmutableCommercialJson
+                .builder()
+                .id(COMMERCIAL_ID_2)
+                .title(COMMERCIAL_TITLE_2)
+                .location(COMMERCIAL_LOCATION_2)
+                .description(COMMERCIAL_DESCRIPTION_2)
+                .commercialSpace(COMMERCIAL_COMMERCIAL_SPACE_2)
+                .usableSpace(COMMERCIAL_USABLE_SPACE_2)
+                .heatingSpace(COMMERCIAL_HEATING_SPACE_2);
     }
 
     // Default test garage

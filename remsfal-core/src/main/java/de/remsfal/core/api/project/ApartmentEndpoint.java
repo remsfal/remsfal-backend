@@ -21,17 +21,12 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.api.ProjectEndpoint;
 import de.remsfal.core.json.project.ApartmentJson;
 import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/"
-    + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
-    + "/{propertyId}/" + BuildingEndpoint.SERVICE
-    + "/{buildingId}/" + ApartmentEndpoint.SERVICE)
 public interface ApartmentEndpoint {
 
     String SERVICE = "apartments";
