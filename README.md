@@ -66,7 +66,17 @@ The Zeebe client automatically deploys the BPMN files to the Zeebe broker. It is
 
 You can start the process using the controller (see the example in ZeebeController.java). The controller will start the process with the given variables.
 
-The JobWorkers will automatically pick up the tasks and execute them. The JobWorkers for the example BPMN file are configured in ZeebeWorker.java.
+The Controller for starting the process is configured in ZeebeController.java. The controller will start the given process with the given variables. They will be passed to the process as JSON. For example, the ticket-process.bpmn file has the processID "ticket-process" and a variable "approve". The JSON should look like this: 
+
+{
+  "processId": "ticket-process",
+  "variables": {
+    "approve": true
+  }
+}
+
+The JobWorkers will automatically pick up the tasks and execute them.
+The JobWorkers are configured in ZeebeWorker.java. The worker will pick up the tasks with the given task type and execute them. They are annotated with @ZeebeWorker. The task type must match the task type in the BPMN file. When the worker picks up the task, it will execute the given function. After the function is executed, the worker will complete the task and pass the result back to the Zeebe broker. Then the next task will be picked up by the worker. 
 
 This setup provides a foundational integration of Zeebe into your project.
 
