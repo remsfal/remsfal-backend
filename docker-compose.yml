@@ -1,4 +1,3 @@
-
 version: '3.8'
 services:
   mysql:
@@ -8,8 +7,6 @@ services:
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=REMSFAL
-
-
 
   grafana:
     networks:
@@ -29,6 +26,15 @@ services:
     ports:
       - '9090:9090'
 
+  zeebe:
+    image: camunda/zeebe:latest
+    ports:
+      - "26500:26500"
+    environment:
+      - ZEEBE_BROKER_CLUSTER_SIZE=1
+      - ZEEBE_BROKER_PARTITIONS_COUNT=1
+      - ZEEBE_BROKER_REPLICATION_FACTOR=1
+
   minio:
     image: minio/minio
     container_name: minio
@@ -41,6 +47,7 @@ services:
       - "9001:9001"
     volumes:
       - ./data/minio:/data
+      
 
 networks:
   remsfal:
