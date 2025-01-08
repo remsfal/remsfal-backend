@@ -1,39 +1,41 @@
-version: '3.8'
 services:
   mysql:
     image: mysql:lts
-    ports:
-      - "3306:3306"
+    container_name: mysql
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=REMSFAL
+    ports:
+      - "3306:3306"
 
   grafana:
-    networks:
-      - remsfal
     image: grafana/grafana-enterprise
     container_name: grafana
     restart: unless-stopped
     ports:
-      - '3001:3000'
+      - '3000:3000'
+    networks:
+      - remsfal
 
   prometheus:
     image: prom/prometheus
-    volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
-    networks:
-      - remsfal
+    container_name: prometheus
     ports:
       - '9090:9090'
+    networks:
+      - remsfal
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
 
   zeebe:
     image: camunda/zeebe:latest
-    ports:
-      - "26500:26500"
+    container_name: camunda
     environment:
       - ZEEBE_BROKER_CLUSTER_SIZE=1
       - ZEEBE_BROKER_PARTITIONS_COUNT=1
       - ZEEBE_BROKER_REPLICATION_FACTOR=1
+    ports:
+      - "26500:26500"
 
   minio:
     image: minio/minio
