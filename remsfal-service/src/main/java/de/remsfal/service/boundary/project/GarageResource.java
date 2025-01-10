@@ -18,7 +18,7 @@ public class GarageResource extends ProjectSubResource implements GarageEndpoint
     GarageController controller;
 
     @Override
-    public Response createGarage(String projectId, String buildingId, GarageJson garage) {
+    public Response createGarage(final String projectId, final String buildingId, final GarageJson garage) {
         checkPrivileges(projectId);
         final GarageModel model = controller.createGarage(projectId, buildingId, garage);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
@@ -29,24 +29,23 @@ public class GarageResource extends ProjectSubResource implements GarageEndpoint
     }
 
     @Override
-    public GarageJson getGarage(String projectId, String propertyId, String buildingId, String garageId) {
+    public GarageJson getGarage(final String projectId, final String garageId) {
         checkPrivileges(projectId);
-        final GarageModel model = controller.getGarage(projectId, buildingId, garageId);
+        final GarageModel model = controller.getGarage(projectId, garageId);
         return GarageJson.valueOf(model);
     }
 
     @Override
-    public GarageJson updateGarage(String projectId, String propertyId, String buildingId,
-                                   String garageId, GarageJson garage) {
+    public GarageJson updateGarage(final String projectId, final String garageId, final GarageJson garage) {
         checkPrivileges(projectId);
-        final GarageModel model = controller.updateGarage(projectId, buildingId, garageId, garage);
+        final GarageModel model = controller.updateGarage(projectId, garageId, garage);
         return GarageJson.valueOf(model);
     }
 
     @Override
-    public void deleteGarage(String projectId, String propertyId, String buildingId, String garageId) {
+    public void deleteGarage(final String projectId, final String garageId) {
         checkPrivileges(projectId);
-        controller.deleteGarage(projectId, buildingId, garageId);
+        controller.deleteGarage(projectId, garageId);
     }
 
 }

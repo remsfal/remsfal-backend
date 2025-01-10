@@ -93,7 +93,7 @@ class GarageControllerTest extends AbstractTest {
         final GarageModel garageResult = garageController.createGarage(TestData.PROJECT_ID, buildingResult.getId(), garage);
         assertNotNull(garageResult.getId(), "Garage ID should not be null");
 
-        final GarageModel result = garageController.getGarage(TestData.PROJECT_ID, buildingResult.getId(), garageResult.getId());
+        final GarageModel result = garageController.getGarage(TestData.PROJECT_ID, garageResult.getId());
 
         assertEquals(garageResult.getId(), result.getId(), "Garage ID should match");
         assertEquals(garageResult.getTitle(), result.getTitle(), "Garage title should match");
@@ -125,7 +125,7 @@ class GarageControllerTest extends AbstractTest {
         GarageJson updatedGarageJson = GarageJson.valueOf(garageModel);
 
         final GarageModel updatedGarage = garageController.updateGarage(
-                TestData.PROJECT_ID, buildingResult.getId(), garageResult.getId(), updatedGarageJson);
+                TestData.PROJECT_ID, garageResult.getId(), updatedGarageJson);
 
         assertEquals(garageResult.getId(), updatedGarage.getId(), "Garage ID should remain the same");
         assertEquals(updatedGarageJson.getTitle(), updatedGarage.getTitle(), "Garage title should be updated");
@@ -146,10 +146,10 @@ class GarageControllerTest extends AbstractTest {
         final GarageModel garageResult = garageController.createGarage(TestData.PROJECT_ID, buildingResult.getId(), garage);
         assertNotNull(garageResult.getId(), "Garage ID should not be null");
 
-        garageController.deleteGarage(TestData.PROJECT_ID, buildingResult.getId(), garageResult.getId());
+        garageController.deleteGarage(TestData.PROJECT_ID, garageResult.getId());
 
         assertThrows(NotFoundException.class,
-                () -> garageController.getGarage(TestData.PROJECT_ID, buildingResult.getId(), garageResult.getId()));
+                () -> garageController.getGarage(TestData.PROJECT_ID, garageResult.getId()));
     }
 
 }

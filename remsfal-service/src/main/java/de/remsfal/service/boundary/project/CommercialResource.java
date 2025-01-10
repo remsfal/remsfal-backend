@@ -33,23 +33,22 @@ public class CommercialResource extends ProjectSubResource implements Commercial
     }
 
     @Override
-    public CommercialJson getCommercial(final String projectId, final String buildingId, final String commercialId) {
+    public CommercialJson getCommercial(final String projectId, final String commercialId) {
         checkPrivileges(projectId);
-        return CommercialJson.valueOf(controller.getCommercial(projectId, buildingId, commercialId));
+        return CommercialJson.valueOf(controller.getCommercial(projectId, commercialId));
     }
 
     @Override
-    public CommercialJson updateCommercial(final String projectId,
-                                           final String buildingId, final String commercialId,
+    public CommercialJson updateCommercial(final String projectId, final String commercialId,
                                            final CommercialJson commercial) {
         checkPrivileges(projectId);
-        return CommercialJson.valueOf(controller.updateCommercial(projectId, buildingId, commercialId, commercial));
+        return CommercialJson.valueOf(controller.updateCommercial(projectId, commercialId, commercial));
     }
 
     @Override
-    public void deleteCommercial(final String projectId, final String buildingId,
-                                 final String commercialId) {
+    public void deleteCommercial(final String projectId, final String commercialId) {
         checkPrivileges(projectId);
-        controller.deleteCommercial(projectId, buildingId, commercialId);
+        controller.deleteCommercial(projectId, commercialId);
     }
+
 }

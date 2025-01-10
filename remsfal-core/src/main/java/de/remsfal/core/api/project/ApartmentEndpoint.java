@@ -57,8 +57,6 @@ public interface ApartmentEndpoint {
     ApartmentJson getApartment(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the building", required = true)
-        @PathParam("buildingId") @NotNull @UUID String buildingId,
         @Parameter(description = "ID of the apartment", required = true)
         @PathParam("apartmentId") @NotNull @UUID String apartmentId
     );
@@ -73,8 +71,6 @@ public interface ApartmentEndpoint {
     ApartmentJson updateApartment(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the apartment", required = true)
             @PathParam("apartmentId") @NotNull @UUID String apartmentId,
             @Parameter(description = "Apartment object with information", required = true)
@@ -89,8 +85,6 @@ public interface ApartmentEndpoint {
     void deleteApartment(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the apartment", required = true)
             @PathParam("apartmentId") @NotNull @UUID String apartmentId
     );

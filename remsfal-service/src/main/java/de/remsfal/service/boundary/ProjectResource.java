@@ -24,6 +24,7 @@ import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.BuildingResource;
+import de.remsfal.service.boundary.project.CommercialResource;
 import de.remsfal.service.boundary.project.DefectResource;
 import de.remsfal.service.boundary.project.GarageResource;
 import de.remsfal.service.boundary.project.PropertyResource;
@@ -62,6 +63,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<ApartmentResource> apartmentResource;
+
+    @Inject
+    Instance<CommercialResource> commercialResource;
 
     @Inject
     Instance<GarageResource> garageResource;
@@ -151,6 +155,11 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public ApartmentResource getApartmentResource() {
         return resourceContext.initResource(apartmentResource.get());
+    }
+
+    @Override
+    public CommercialResource getCommercialResource() {
+        return resourceContext.initResource(commercialResource.get());
     }
 
     @Override
