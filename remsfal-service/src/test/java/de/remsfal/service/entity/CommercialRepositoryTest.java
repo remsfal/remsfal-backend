@@ -64,7 +64,7 @@ class CommercialRepositoryTest extends AbstractTest {
 
     @Test
     void testCommercialById() {
-        final Optional<CommercialEntity> found = repository.findCommercialById(TestData.PROJECT_ID, buildingId, TestData.COMMERCIAL_ID);
+        final Optional<CommercialEntity> found = repository.findCommercialById(TestData.PROJECT_ID, TestData.COMMERCIAL_ID);
         final CommercialModel commercial = TestData.commercialBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
@@ -75,7 +75,7 @@ class CommercialRepositoryTest extends AbstractTest {
     @Test
     void testDeleteCommercialById() {
         final long deleteCommercialById = runInTransaction(() ->
-                repository.deleteCommercialById(TestData.PROJECT_ID, buildingId,TestData.COMMERCIAL_ID));
+                repository.deleteCommercialById(TestData.PROJECT_ID, TestData.COMMERCIAL_ID));
         assertEquals(1, deleteCommercialById);
     }
 }

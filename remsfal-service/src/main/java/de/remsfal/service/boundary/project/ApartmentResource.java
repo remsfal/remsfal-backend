@@ -30,26 +30,25 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     }
 
     @Override
-    public ApartmentJson getApartment(final String projectId, final String buildingId,
-                                      final String apartmentId) {
+    public ApartmentJson getApartment(final String projectId, final String apartmentId) {
         checkPrivileges(projectId);
-        final ApartmentModel model = controller.getApartment(projectId, buildingId, apartmentId);
+        final ApartmentModel model = controller.getApartment(projectId, apartmentId);
 
         return ApartmentJson.valueOf(model);
     }
 
     @Override
-    public ApartmentJson updateApartment(final String projectId, final String buildingId,
-                                         final String apartmentId, final ApartmentJson apartment) {
+    public ApartmentJson updateApartment(final String projectId, final String apartmentId,
+        final ApartmentJson apartment) {
         checkPrivileges(projectId);
-        return ApartmentJson.valueOf(controller.updateApartment(
-                projectId, buildingId, apartmentId, apartment));
+        return ApartmentJson
+            .valueOf(controller.updateApartment(projectId, apartmentId, apartment));
     }
 
     @Override
-    public void deleteApartment(final String projectId, final String buildingId,
-                                final String apartmentId) {
+    public void deleteApartment(final String projectId, final String apartmentId) {
         checkPrivileges(projectId);
-        controller.deleteApartment(projectId, buildingId, apartmentId);
+        controller.deleteApartment(projectId, apartmentId);
     }
+
 }

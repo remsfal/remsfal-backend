@@ -105,8 +105,9 @@ public interface BuildingEndpoint {
 
     @Path("/{buildingId}/" + ApartmentEndpoint.SERVICE)
     ApartmentEndpoint getApartmentResource();
-    
-    // TODO: Implement Commercial Endpoint
+
+    @Path("/{buildingId}/" + CommercialEndpoint.SERVICE)
+    CommercialEndpoint getCommercialResource();
 
     @Path("/{buildingId}/" + GarageEndpoint.SERVICE)
     GarageEndpoint getGarageResource();

@@ -26,6 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.api.project.ApartmentEndpoint;
 import de.remsfal.core.api.project.BuildingEndpoint;
+import de.remsfal.core.api.project.CommercialEndpoint;
 import de.remsfal.core.api.project.DefectEndpoint;
 import de.remsfal.core.api.project.GarageEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
@@ -177,8 +178,9 @@ public interface ProjectEndpoint {
 
     @Path("/{projectId}/" + ApartmentEndpoint.SERVICE)
     ApartmentEndpoint getApartmentResource();
-    
-    // TODO: Implement Commercial Endpoint
+
+    @Path("/{projectId}/" + CommercialEndpoint.SERVICE)
+    CommercialEndpoint getCommercialResource();
 
     @Path("/{projectId}/" + GarageEndpoint.SERVICE)
     GarageEndpoint getGarageResource();

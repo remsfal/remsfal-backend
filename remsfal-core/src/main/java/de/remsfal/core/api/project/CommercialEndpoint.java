@@ -1,6 +1,5 @@
 package de.remsfal.core.api.project;
 
-import de.remsfal.core.api.ProjectEndpoint;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
@@ -30,10 +29,6 @@ import de.remsfal.core.json.project.CommercialJson;
 /**
  * Endpoint for managing Commercial properties within buildings.
  */
-@Path(ProjectEndpoint.CONTEXT + "/" + ProjectEndpoint.VERSION + "/"
-        + ProjectEndpoint.SERVICE + "/{projectId}/" + PropertyEndpoint.SERVICE
-        + "/{propertyId}/" + BuildingEndpoint.SERVICE
-        + "/{buildingId}/" + CommercialEndpoint.SERVICE)
 public interface CommercialEndpoint {
 
     String SERVICE = "commercials";
@@ -61,8 +56,6 @@ public interface CommercialEndpoint {
     CommercialJson getCommercial(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the commercial unit", required = true)
             @PathParam("commercialId") @NotNull @UUID String commercialId
     );
@@ -77,8 +70,6 @@ public interface CommercialEndpoint {
     CommercialJson updateCommercial(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the commercial unit", required = true)
             @PathParam("commercialId") @NotNull @UUID String commercialId,
             @Parameter(description = "Commercial unit object with information", required = true)
@@ -93,9 +84,8 @@ public interface CommercialEndpoint {
     void deleteCommercial(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the commercial unit", required = true)
             @PathParam("commercialId") @NotNull @UUID String commercialId
     );
+
 }
