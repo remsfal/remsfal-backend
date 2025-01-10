@@ -64,8 +64,7 @@ class ApartmentRepositoryTest extends AbstractTest {
 
     @Test
     void testFindByIds_and_hashcode() {
-        final Optional<ApartmentEntity> found = repository.findByIds(TestData.APARTMENT_ID,
-                TestData.PROJECT_ID, buildingId);
+        final Optional<ApartmentEntity> found = repository.findByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID);
         final ApartmentModel apartment = TestData.apartmentBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
@@ -76,8 +75,7 @@ class ApartmentRepositoryTest extends AbstractTest {
     @Test
     void testRemoveApartmentByIds() {
         final long removeApartmentByIds = runInTransaction(() ->
-                repository.removeApartmentByIds(TestData.APARTMENT_ID,
-                TestData.PROJECT_ID, buildingId));
+                repository.removeApartmentByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID));
         assertEquals(1, removeApartmentByIds);
     }
 }

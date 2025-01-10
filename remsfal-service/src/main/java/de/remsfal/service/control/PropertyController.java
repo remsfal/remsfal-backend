@@ -180,7 +180,8 @@ public class PropertyController {
         ProjectTreeNode buildingNode = new ProjectTreeNode(building.getId(), buildingData);
 
         // Add apartment nodes
-        List<ApartmentEntity> apartments = apartmentRepository.findApartmentByBuildingId(building.getId());
+        List<ApartmentEntity> apartments = apartmentRepository
+            .findApartmentsByBuildingId(building.getProjectId(), building.getId());
         for (ApartmentEntity apartment : apartments) {
             String apartmentTenantName = getFullTenantName(apartment.getTenancy());
             NodeData apartmentData = new NodeData(
@@ -194,7 +195,8 @@ public class PropertyController {
         }
 
         // Add commercial nodes
-        List<CommercialEntity> commercials = commercialRepository.findCommercialByBuildingId(building.getId());
+        List<CommercialEntity> commercials = commercialRepository
+            .findCommercialsByBuildingId(building.getProjectId(), building.getId());
         for (CommercialEntity commercial : commercials) {
             String commercialTenantName = getFullTenantName(commercial.getTenancy());
             NodeData commercialData = new NodeData(
@@ -208,7 +210,8 @@ public class PropertyController {
         }
 
         // Add garage nodes
-        List<GarageEntity> garages = garageRepository.findGarageByBuildingId(building.getId());
+        List<GarageEntity> garages = garageRepository
+            .findGaragesByBuildingId(building.getProjectId(), building.getId());
         for (GarageEntity garage : garages) {
             String garageTenantName = getFullTenantName(garage.getTenancy());
             NodeData garageData = new NodeData(

@@ -70,7 +70,7 @@ class ApartmentControllerTest extends AbstractTest {
         assertEquals(result.getId(), apartmentId);
 
         final ApartmentModel getResult = apartmentController
-                .getApartment(TestData.PROJECT_ID, buildingId, apartmentId);
+                .getApartment(TestData.PROJECT_ID, apartmentId);
 
         assertEquals(result, getResult);
     }
@@ -108,8 +108,8 @@ class ApartmentControllerTest extends AbstractTest {
                 .getSingleResult();
         assertEquals(result.getId(), apartmentId);
 
-        apartmentController.deleteApartment(TestData.PROJECT_ID, buildingId, apartmentId);
-        assertThrows(NotFoundException.class, () -> apartmentController.getApartment(TestData.PROJECT_ID, buildingId, apartmentId));
+        apartmentController.deleteApartment(TestData.PROJECT_ID, apartmentId);
+        assertThrows(NotFoundException.class, () -> apartmentController.getApartment(TestData.PROJECT_ID, apartmentId));
     }
 
     @Test
@@ -147,7 +147,7 @@ class ApartmentControllerTest extends AbstractTest {
 
         final ApartmentModel updateTo = TestData.apartmentBuilder2().build();
 
-        final ApartmentModel updated = apartmentController.updateApartment(TestData.PROJECT_ID, buildingId,
+        final ApartmentModel updated = apartmentController.updateApartment(TestData.PROJECT_ID,
                 apartmentId, updateTo);
 
         assertNotEquals(updateTo.getId(), updated.getId());
