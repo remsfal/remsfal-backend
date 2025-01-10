@@ -1,7 +1,6 @@
 package de.remsfal.service.entity.dao;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.CommercialEntity;
 import io.quarkus.panache.common.Parameters;
 
