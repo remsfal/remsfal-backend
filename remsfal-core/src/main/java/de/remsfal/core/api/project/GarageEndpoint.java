@@ -57,10 +57,6 @@ public interface GarageEndpoint {
     GarageJson getGarage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") String projectId,
-            @Parameter(description = "ID of the property", required = true)
-            @PathParam("propertyId") String propertyId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") String buildingId,
             @Parameter(description = "ID of the garage", required = true)
             @PathParam("garageId") String garageId
     );
@@ -81,10 +77,6 @@ public interface GarageEndpoint {
     GarageJson updateGarage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the property", required = true)
-            @PathParam("propertyId") @NotNull @UUID String propertyId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the garage", required = true)
             @PathParam("garageId") @NotNull @UUID String garageId,
             @Parameter(description = "Garage information", required = true)
@@ -105,10 +97,6 @@ public interface GarageEndpoint {
     void deleteGarage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the property", required = true)
-            @PathParam("propertyId") @NotNull @UUID String propertyId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
             @Parameter(description = "ID of the garage", required = true)
             @PathParam("garageId") @NotNull @UUID String garageId
     );

@@ -65,7 +65,7 @@ class CommercialControllerTest extends AbstractTest {
         assertEquals(result.getId(), commercialId);
 
         final CommercialModel getResult = commercialController
-                .getCommercial(TestData.PROJECT_ID, buildingId, commercialId);
+                .getCommercial(TestData.PROJECT_ID, commercialId);
 
         assertEquals(result, getResult);
     }
@@ -96,8 +96,8 @@ class CommercialControllerTest extends AbstractTest {
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
 
-        commercialController.deleteCommercial(TestData.PROJECT_ID, buildingId, commercialId);
-        assertThrows(NotFoundException.class, () -> commercialController.getCommercial(TestData.PROJECT_ID, buildingId, commercialId));
+        commercialController.deleteCommercial(TestData.PROJECT_ID, commercialId);
+        assertThrows(NotFoundException.class, () -> commercialController.getCommercial(TestData.PROJECT_ID, commercialId));
     }
 
     @Test
@@ -128,7 +128,7 @@ class CommercialControllerTest extends AbstractTest {
 
         final CommercialModel updateTo = TestData.commercialBuilder2().build();
 
-        final CommercialModel updated = commercialController.updateCommercial(TestData.PROJECT_ID, buildingId,
+        final CommercialModel updated = commercialController.updateCommercial(TestData.PROJECT_ID,
                 commercialId, updateTo);
 
         assertNotEquals(updateTo.getId(), updated.getId());

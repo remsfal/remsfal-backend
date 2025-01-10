@@ -1,8 +1,9 @@
 package de.remsfal.service.boundary.authentication;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+
+import de.remsfal.service.boundary.exception.InvalidTokenException;
 import de.remsfal.service.boundary.exception.TokenExpiredException;
-import de.remsfal.service.boundary.exception.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.jwt.algorithm.SignatureAlgorithm;
 import io.smallrye.jwt.build.Jwt;
@@ -113,7 +114,7 @@ class JWTManagerTest {
             .sign(mockPrivateKey);
 
         // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt));
+        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt));
     }
 
     @Test
@@ -127,7 +128,7 @@ class JWTManagerTest {
             .sign(mockPrivateKey);
 
         // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt, true));
+        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt, true));
 
 
     }
@@ -142,7 +143,7 @@ class JWTManagerTest {
             .sign(mockPrivateKey);
 
         // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt));
+        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt));
 
     }
 
@@ -153,7 +154,7 @@ class JWTManagerTest {
         String jwt = "invalid.jwt.token";
 
         // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyJWT(jwt));
+        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt));
     }
 
     @Test
@@ -192,7 +193,7 @@ class JWTManagerTest {
             .sign(wrongKey);
 
         // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> jwtManager.verifyTokenManually(jwt, mockPublicKey));
+        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyTokenManually(jwt, mockPublicKey));
     }
 
 }

@@ -5,9 +5,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import de.remsfal.service.entity.dto.ApartmentEntity;
 
-import java.util.Optional;
 import java.util.List;
-
+import java.util.Optional;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -15,28 +14,21 @@ import java.util.List;
 @ApplicationScoped
 public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
 
-    private static final String BUILDING_ID = "buildingId";
+    public List<ApartmentEntity> findApartmentsByBuildingId(final String projectId, final String buildingId) {
+        return find("projectId = :projectId and buildingId = :buildingId",
+            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId))
+                .list();
+    }
 
-    public Optional<ApartmentEntity> findByIds(final String apartmentId,
-                                               final String projectId, final String buildingId) {
-        return find("id = :id and projectId = :projectId and buildingId = :buildingId",
-                Parameters.with("id", apartmentId).and("projectId", projectId)
-                        .and(BUILDING_ID, buildingId))
+    public Optional<ApartmentEntity> findByIds(final String projectId, final String apartmentId) {
+        return find("id = :id and projectId = :projectId",
+            Parameters.with(PARAM_ID, apartmentId).and(PARAM_PROJECT_ID, projectId))
                 .singleResultOptional();
     }
 
-    public long removeApartmentByIds(final String apartmentId,
-                                     final String projectId, final String buildingId) {
-        return delete("id = :id and projectId = :projectId and buildingId = :buildingId",
-                Parameters.with("id", apartmentId).and("projectId", projectId)
-                        .and(BUILDING_ID, buildingId));
+    public long removeApartmentByIds(final String projectId, final String apartmentId) {
+        return delete("id = :id and projectId = :projectId",
+            Parameters.with(PARAM_ID, apartmentId).and(PARAM_PROJECT_ID, projectId));
     }
 
-    public List<ApartmentEntity> findApartmentByBuildingId(final String buildingId) {
-        return getEntityManager()
-                .createQuery("SELECT a FROM ApartmentEntity a WHERE a.buildingId = :buildingId", ApartmentEntity.class)
-                .setParameter(BUILDING_ID, buildingId)
-                .getResultList();
-    }
 }
-
