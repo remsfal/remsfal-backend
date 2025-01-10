@@ -48,6 +48,25 @@ services:
     volumes:
       - ./data/minio:/data
       
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra
+    ports:
+      - "9042:9042"  # CQL native transport port
+      - "7000:7000"  # Intra-node communication (optional)
+      - "7001:7001"  # TLS intra-node communication (optional)
+      - "7199:7199"  # JMX monitoring (optional)
+    environment:
+      - CASSANDRA_CLUSTER_NAME=REMSFAL-CASSANDRA-CLUSTER
+      - CASSANDRA_USER=admin
+      - CASSANDRA_PASSWORD=admin
+    volumes:
+      - ./data/cassandra:/var/lib/cassandra
+    healthcheck:
+      test: [ "CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 networks:
   remsfal:

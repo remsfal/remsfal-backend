@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<changelogs>
+    <script>V1__create_keyspace.cql</script>
+    <script>V2__create_active_table.cql</script>
+    <script>V3__create_archived_table.cql</script>
+    <script>V4__create_chat_sessions.cql</script>
+</changelogs>
