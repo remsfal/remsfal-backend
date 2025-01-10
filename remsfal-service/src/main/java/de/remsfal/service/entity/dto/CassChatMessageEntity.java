@@ -3,57 +3,68 @@ package de.remsfal.service.entity.dto;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.project.ChatMessageModel;
-import de.remsfal.core.model.project.ChatSessionModel;
+import de.remsfal.core.model.project.CassChatMessageModel;
 
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * DTO for a chat message stored in Cassandra.
+ */
 @Entity
-public class CassChatMessageEntity implements ChatMessageModel {
+public class CassChatMessageEntity implements CassChatMessageModel {
 
     @PartitionKey
     private UUID chatSessionId; // Partition key for horizontal scaling
 
     @ClusteringColumn
-    private UUID messageId; // Clustering column for sorting
+    private UUID messageId; // Unique ID for the message (Clustering column)
 
-    private UUID senderId;
-    private String contentType;
-    private String content;
-    private String url;
-    private Date createdAt;
+    private UUID senderId; // ID of the sender
 
-    // Getters and Setters
+    private String contentType; // Content type (TEXT, FILE)
+
+    private String content; // Text content of the message
+
+    private String url; // File URL if the content type is FILE
+
+    private Date createdAt; // Timestamp of message creation
+
+    // Getters and setters
     @Override
-    public String getId() {
-        return messageId != null ? messageId.toString() : null;
+    public UUID getChatSessionId() {
+        return chatSessionId;
+    }
+
+    public void setChatSessionId(UUID chatSessionId) {
+        this.chatSessionId = chatSessionId;
     }
 
     @Override
-    public ChatSessionModel getChatSession() {
-        return null; // ChatSession is managed in MySQL and not directly available here
+    public UUID getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(UUID messageId) {
+        this.messageId = messageId;
     }
 
     @Override
-    public String getChatSessionId() {
-        return chatSessionId != null ? chatSessionId.toString() : null;
+    public UUID getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(UUID senderId) {
+        this.senderId = senderId;
     }
 
     @Override
-    public UserModel getSender() {
-        return null; // Sender is managed separately
+    public String getContentType() {
+        return contentType;
     }
 
-    @Override
-    public String getSenderId() {
-        return senderId != null ? senderId.toString() : null;
-    }
-
-    @Override
-    public ContentType getContentType() {
-        return contentType != null ? ContentType.valueOf(contentType) : null;
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
     @Override
@@ -61,39 +72,22 @@ public class CassChatMessageEntity implements ChatMessageModel {
         return content;
     }
 
+    public void setContent(String content) {
+        this.content = content;
+    }
+
     @Override
     public String getUrl() {
         return url;
     }
 
-    @Override
-    public Date getTimestamp() {
-        return createdAt;
-    }
-
-    // Additional setters for the entity
-    public void setChatSessionId(UUID chatSessionId) {
-        this.chatSessionId = chatSessionId;
-    }
-
-    public void setMessageId(UUID messageId) {
-        this.messageId = messageId;
-    }
-
-    public void setSenderId(UUID senderId) {
-        this.senderId = senderId;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    @Override
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
     public void setCreatedAt(Date createdAt) {
