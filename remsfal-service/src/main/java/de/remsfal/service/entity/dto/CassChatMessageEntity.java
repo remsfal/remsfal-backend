@@ -4,12 +4,13 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import de.remsfal.core.model.project.CassChatMessageModel;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-public class CassChatMessageEntity {
+public class CassChatMessageEntity implements CassChatMessageModel {
 
     @PartitionKey
     private UUID chatSessionId;

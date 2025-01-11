@@ -1,5 +1,6 @@
 package de.remsfal.core.model.project;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -20,5 +21,5 @@ public interface CassChatMessageModel {
 
     String getUrl(); // File URL if the content type is FILE
 
-    Date getCreatedAt(); // Timestamp when the message was created
+    Instant getCreatedAt(); // Timestamp when the message was created
 }
