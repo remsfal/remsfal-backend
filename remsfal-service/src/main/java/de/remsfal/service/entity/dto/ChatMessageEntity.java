@@ -92,7 +92,7 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
         }
     }
 
-    public void setChatSession(ChatSessionEntity chatSession) {
+    public void  setChatSession(ChatSessionEntity chatSession) {
         this.chatSession = chatSession;
     }
 
