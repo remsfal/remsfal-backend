@@ -20,7 +20,7 @@ public interface CassChatSessionModel {
 
     String getStatus(); // Session status (e.g., OPEN, CLOSED, ARCHIVED)
 
-    Map<String, String> getParticipants(); // Map of participant ID to role
+    Map<UUID, String> getParticipants(); // Map of participant ID to role
 
     Instant getCreatedAt(); // Timestamp when the session was created
 

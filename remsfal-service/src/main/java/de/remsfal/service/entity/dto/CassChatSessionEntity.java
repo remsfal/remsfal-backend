@@ -25,7 +25,7 @@ public class CassChatSessionEntity implements CassChatSessionModel {
     private UUID task_id; // ID of the associated task
     private String task_type; // Task type (DEFECT, TASK)
     private String status; // Session status (OPEN, CLOSED, ARCHIVED)
-    private Map<String, String> participants; // Participant ID to role mapping
+    private Map<UUID, String> participants; // Participant ID to role mapping
     private Instant created_at; // Timestamp of session creation
     private Instant modified_at; // Timestamp of last session modification
 
@@ -77,11 +77,11 @@ public class CassChatSessionEntity implements CassChatSessionModel {
     }
 
     @Override
-    public Map<String, String> getParticipants() {
+    public Map<UUID, String> getParticipants() {
         return participants;
     }
 
-    public void setParticipants(Map<String, String> participants) {
+    public void setParticipants(Map<UUID, String> participants) {
         this.participants = participants;
     }
 
@@ -116,7 +116,7 @@ public class CassChatSessionEntity implements CassChatSessionModel {
         entity.setTaskId(row.getUuid("task_id"));
         entity.setTaskType(row.getString("task_type"));
         entity.setStatus(row.getString("status"));
-        entity.setParticipants(row.getMap("participants", String.class, String.class));
+        entity.setParticipants(row.getMap("participants", UUID.class, String.class));
         entity.setCreatedAt(row.getInstant("created_at"));
         entity.setModifiedAt(row.getInstant("modified_at"));
         return entity;

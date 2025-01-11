@@ -25,6 +25,8 @@ class CassChatSessionRepositoryTest {
     static final UUID PROJECT_ID = UUID.randomUUID();
     static final UUID SESSION_ID = UUID.randomUUID();
     static final UUID TASK_ID = UUID.randomUUID();
+    static final UUID USER_ID_1 = UUID.randomUUID();
+    static final UUID USER_ID_2 = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
@@ -34,17 +36,17 @@ class CassChatSessionRepositoryTest {
         testSession.setTaskId(TASK_ID);
         testSession.setTaskType("TASK");
         testSession.setStatus("OPEN");
-        testSession.setParticipants(Map.of("user1", "INITIATOR", "user2", "HANDLER"));
+        testSession.setParticipants(Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER"));
         testSession.setCreatedAt(Instant.now());
         testSession.setModifiedAt(Instant.now());
 
         chatSessionRepository.save(testSession);
     }
 
-    @AfterEach
+    /*@AfterEach
     void tearDown() {
         chatSessionRepository.delete(PROJECT_ID, SESSION_ID); // Include PROJECT_ID
-    }
+    }*/
 
 
     @Test

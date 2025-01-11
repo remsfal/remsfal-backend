@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS REMSFAL.chat_sessions (
                                              session_id UUID,                -- Clustering column
                                              task_id UUID,
                                              task_type TEXT,
-                                             participants MAP<TEXT, TEXT>,   -- Participant ID -> Role
+                                             participants MAP<UUID, TEXT>,   -- Participant ID -> Role
                                              status TEXT,
                                              created_at TIMESTAMP,
                                              modified_at TIMESTAMP,
