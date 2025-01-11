@@ -4,6 +4,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -20,26 +21,35 @@ import java.util.Comparator;
 import java.util.stream.IntStream;
 
 @ApplicationScoped
-public class CassandraInit {
+public class CassandraExecutor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraInit.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraExecutor.class);
 
     private static final String CHANGELOGS_XML_PATH = "src/main/resources/cassandra/changelogs/cassandra-changelogs.xml";
     private static final String CQL_SCRIPTS_DIRECTORY = "src/main/resources/cassandra/changelogs/cql-scripts";
 
+    @ConfigProperty(name = "quarkus.cassandra.contact-points")
+    String cassandraContactPoints;
+
+    @ConfigProperty(name = "quarkus.cassandra.local-datacenter")
+    String cassandraLocalDatacenter;
+
+
     public void onStartup(@Observes StartupEvent event) {
-        try (CqlSession session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress("127.0.0.1", 9042)) // Update host/port if necessary
-                .withLocalDatacenter("datacenter1") // Match your Cassandra configuration
+        try (
+                CqlSession session = CqlSession.builder()
+                .addContactPoint(getContactPoint(cassandraContactPoints))
+                .withLocalDatacenter(cassandraLocalDatacenter)
                 .build()) {
 
             LOGGER.info("Initializing Cassandra schema...");
 
-            // Parse and sort changelog entries
+            // get all the scripts from the changelog xml
+            LOGGER.info("Parsing Cassandra changelogs XML in {}", CHANGELOGS_XML_PATH);
             Document changelog = parseChangelogXML();
             NodeList scripts = changelog.getElementsByTagName("script");
 
-            // Execute each CQL script in order
+            // Execute each CQL script retrieved from the changelog
             Arrays.stream(getSortedChangelogs(scripts))
                     .forEach(scriptPath -> executeCQLScript(session, scriptPath));
 
@@ -62,6 +72,7 @@ public class CassandraInit {
     }
 
     private String[] getSortedChangelogs(NodeList scripts) {
+        LOGGER.info("Found {} CQL scripts in changelog", scripts.getLength());
         return Arrays.stream(IntStream.range(0, scripts.getLength())
                         .mapToObj(scripts::item)
                         .map(scriptNode -> scriptNode.getTextContent().trim())
@@ -72,6 +83,7 @@ public class CassandraInit {
 
     private void executeCQLScript(CqlSession session, String scriptFileName) {
         try {
+            LOGGER.info("Executing script: {}", scriptFileName);
             Path scriptPath = Path.of(CQL_SCRIPTS_DIRECTORY, scriptFileName);
             String cqlScript = Files.readString(scriptPath);
 
@@ -84,5 +96,13 @@ public class CassandraInit {
             LOGGER.error("Failed to execute script: {}", scriptFileName, e);
             throw new RuntimeException("CQL script execution failed", e);
         }
+    }
+
+    private InetSocketAddress getContactPoint(String contactPoints) {
+        String[] contactPointsArray = contactPoints.split(":");
+        if (contactPointsArray.length != 2) {
+            throw new IllegalArgumentException("Invalid format. Expected format: host:port");
+        }
+        return new InetSocketAddress(contactPointsArray[0], Integer.parseInt(contactPointsArray[1]));
     }
 }
