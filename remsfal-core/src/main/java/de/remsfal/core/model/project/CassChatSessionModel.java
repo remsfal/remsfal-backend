@@ -24,5 +24,5 @@ public interface CassChatSessionModel {
 
     Instant getCreatedAt(); // Timestamp when the session was created
 
-    Instant getModifiedAt(); // Timestamp when the session was last modified
+    Instant  getModifiedAt(); // Timestamp when the session was last modified
 }
