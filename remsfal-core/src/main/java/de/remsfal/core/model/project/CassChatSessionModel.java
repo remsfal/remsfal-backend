@@ -1,5 +1,6 @@
 package de.remsfal.core.model.project;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public interface CassChatSessionModel {
 
     Map<String, String> getParticipants(); // Map of participant ID to role
 
-    Date getCreatedAt(); // Timestamp when the session was created
+    Instant getCreatedAt(); // Timestamp when the session was created
 
-    Date getModifiedAt(); // Timestamp when the session was last modified
+    Instant getModifiedAt(); // Timestamp when the session was last modified
 }

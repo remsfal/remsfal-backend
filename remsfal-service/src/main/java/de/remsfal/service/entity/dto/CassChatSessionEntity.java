@@ -1,11 +1,12 @@
 package de.remsfal.service.entity.dto;
 
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import de.remsfal.core.model.project.CassChatSessionModel;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,58 +17,54 @@ import java.util.UUID;
 public class CassChatSessionEntity implements CassChatSessionModel {
 
     @PartitionKey
-    private UUID projectId; // Partition key for horizontal scaling
+    private UUID project_id; // Partition key for horizontal scaling
 
     @ClusteringColumn
-    private UUID sessionId; // Unique ID for the session (Clustering column)
+    private UUID session_id; // Unique ID for the session (Clustering column)
 
-    private UUID taskId; // ID of the associated task
-
-    private String taskType; // Task type (DEFECT, TASK)
-
+    private UUID task_id; // ID of the associated task
+    private String task_type; // Task type (DEFECT, TASK)
     private String status; // Session status (OPEN, CLOSED, ARCHIVED)
-
     private Map<String, String> participants; // Participant ID to role mapping
-
-    private Date createdAt; // Timestamp of session creation
-
-    private Date modifiedAt; // Timestamp of last session modification
+    private Instant created_at; // Timestamp of session creation
+    private Instant modified_at; // Timestamp of last session modification
 
     // Getters and setters
+
     @Override
     public UUID getProjectId() {
-        return projectId;
+        return project_id;
     }
 
-    public void setProjectId(UUID projectId) {
-        this.projectId = projectId;
+    public void setProjectId(UUID project_id) {
+        this.project_id = project_id;
     }
 
     @Override
     public UUID getSessionId() {
-        return sessionId;
+        return session_id;
     }
 
-    public void setSessionId(UUID sessionId) {
-        this.sessionId = sessionId;
+    public void setSessionId(UUID session_id) {
+        this.session_id = session_id;
     }
 
     @Override
     public UUID getTaskId() {
-        return taskId;
+        return task_id;
     }
 
-    public void setTaskId(UUID taskId) {
-        this.taskId = taskId;
+    public void setTaskId(UUID task_id) {
+        this.task_id = task_id;
     }
 
     @Override
     public String getTaskType() {
-        return taskType;
+        return task_type;
     }
 
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
+    public void setTaskType(String task_type) {
+        this.task_type = task_type;
     }
 
     @Override
@@ -89,20 +86,39 @@ public class CassChatSessionEntity implements CassChatSessionModel {
     }
 
     @Override
-    public Date getCreatedAt() {
-        return createdAt;
+    public Instant getCreatedAt() {
+        return created_at;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setCreatedAt(Instant created_at) {
+        this.created_at = created_at;
     }
 
     @Override
-    public Date getModifiedAt() {
-        return modifiedAt;
+    public Instant getModifiedAt() {
+        return modified_at;
     }
 
-    public void setModifiedAt(Date modifiedAt) {
-        this.modifiedAt = modifiedAt;
+    public void setModifiedAt(Instant modified_at) {
+        this.modified_at = modified_at;
+    }
+
+    /**
+     * Maps a Cassandra row to a `CassChatSessionEntity`.
+     *
+     * @param row The Cassandra row.
+     * @return The mapped entity.
+     */
+    public static CassChatSessionEntity mapRow(Row row) {
+        CassChatSessionEntity entity = new CassChatSessionEntity();
+        entity.setProjectId(row.getUuid("project_id"));
+        entity.setSessionId(row.getUuid("session_id"));
+        entity.setTaskId(row.getUuid("task_id"));
+        entity.setTaskType(row.getString("task_type"));
+        entity.setStatus(row.getString("status"));
+        entity.setParticipants(row.getMap("participants", String.class, String.class));
+        entity.setCreatedAt(row.getInstant("created_at"));
+        entity.setModifiedAt(row.getInstant("modified_at"));
+        return entity;
     }
 }

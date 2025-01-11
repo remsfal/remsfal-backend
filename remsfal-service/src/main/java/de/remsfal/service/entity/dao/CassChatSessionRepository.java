@@ -1,7 +1,12 @@
 package de.remsfal.service.entity.dao;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import de.remsfal.service.cassandra.CassandraService;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
 import de.remsfal.service.entity.dto.CassChatSessionEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,43 +22,54 @@ public class CassChatSessionRepository {
     private static final String TABLE = "chat_sessions";
 
     @Inject
-    CassandraService cassandraService;
+    CqlSession cqlSession;
 
     public void save(CassChatSessionEntity session) {
-        var insertQuery = QueryBuilder.insertInto(KEYSPACE, TABLE)
-                .value("projectId", QueryBuilder.literal(session.getProjectId()))
-                .value("sessionId", QueryBuilder.literal(session.getSessionId()))
-                .value("taskId", QueryBuilder.literal(session.getTaskId()))
-                .value("taskType", QueryBuilder.literal(session.getTaskType()))
+        Insert insertQuery = QueryBuilder.insertInto(KEYSPACE, TABLE)
+                .value("project_id", QueryBuilder.literal(session.getProjectId()))
+                .value("session_id", QueryBuilder.literal(session.getSessionId()))
+                .value("task_id", QueryBuilder.literal(session.getTaskId()))
+                .value("task_type", QueryBuilder.literal(session.getTaskType()))
                 .value("status", QueryBuilder.literal(session.getStatus()))
                 .value("participants", QueryBuilder.literal(session.getParticipants()))
-                .value("createdAt", QueryBuilder.literal(session.getCreatedAt()))
-                .value("modifiedAt", QueryBuilder.literal(session.getModifiedAt()));
+                .value("created_at", QueryBuilder.literal(session.getCreatedAt()))
+                .value("modified_at", QueryBuilder.literal(session.getModifiedAt()));
 
-        cassandraService.save(KEYSPACE, TABLE, session, insertQuery);
+        cqlSession.execute(insertQuery.build());
     }
 
-    public Optional<CassChatSessionEntity> findById(UUID sessionId) {
-        var selectQuery = QueryBuilder.selectFrom(KEYSPACE, TABLE)
+    public Optional<CassChatSessionEntity> findById(UUID projectId, UUID sessionId) {
+        Select selectQuery = QueryBuilder.selectFrom(KEYSPACE, TABLE)
                 .all()
-                .whereColumn("sessionId").isEqualTo(QueryBuilder.literal(sessionId));
-        return cassandraService.findById(KEYSPACE, TABLE, sessionId, CassChatSessionEntity.class, selectQuery);
+                .whereColumn("project_id").isEqualTo(QueryBuilder.literal(projectId))
+                .whereColumn("session_id").isEqualTo(QueryBuilder.literal(sessionId));
+
+        ResultSet resultSet = cqlSession.execute(selectQuery.build());
+        return resultSet.all().stream().map(CassChatSessionEntity::mapRow).findFirst();
     }
 
     public List<CassChatSessionEntity> findAll() {
-        var selectQuery = QueryBuilder.selectFrom(KEYSPACE, TABLE).all();
-        return cassandraService.findAll(KEYSPACE, TABLE, CassChatSessionEntity.class, selectQuery);
+        Select selectQuery = QueryBuilder.selectFrom(KEYSPACE, TABLE).all();
+        ResultSet resultSet = cqlSession.execute(selectQuery.build());
+        return resultSet.all().stream().map(CassChatSessionEntity::mapRow).toList();
     }
 
     public void update(CassChatSessionEntity session) {
-        var updateQuery = QueryBuilder.update(KEYSPACE, TABLE)
+        Update updateQuery = QueryBuilder.update(KEYSPACE, TABLE)
                 .setColumn("status", QueryBuilder.literal(session.getStatus()))
-                .setColumn("modifiedAt", QueryBuilder.literal(session.getModifiedAt()))
-                .whereColumn("sessionId").isEqualTo(QueryBuilder.literal(session.getSessionId()));
-        cassandraService.update(KEYSPACE, TABLE, updateQuery);
+                .setColumn("modified_at", QueryBuilder.literal(session.getModifiedAt()))
+                .whereColumn("project_id").isEqualTo(QueryBuilder.literal(session.getProjectId()))
+                .whereColumn("session_id").isEqualTo(QueryBuilder.literal(session.getSessionId()));
+
+        cqlSession.execute(updateQuery.build());
     }
 
-    public void delete(UUID sessionId) {
-        cassandraService.delete(KEYSPACE, TABLE, sessionId);
+    public void delete(UUID projectId, UUID sessionId) {
+        Delete deleteQuery = QueryBuilder.deleteFrom(KEYSPACE, TABLE)
+                .whereColumn("project_id").isEqualTo(QueryBuilder.literal(projectId))
+                .whereColumn("session_id").isEqualTo(QueryBuilder.literal(sessionId));
+
+        cqlSession.execute(deleteQuery.build());
     }
 }
+

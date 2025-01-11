@@ -1,37 +1,30 @@
 package de.remsfal.service.entity.dto;
 
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import de.remsfal.core.model.project.CassChatMessageModel;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 
-/**
- * DTO for a chat message stored in Cassandra.
- */
 @Entity
-public class CassChatMessageEntity implements CassChatMessageModel {
+public class CassChatMessageEntity {
 
     @PartitionKey
-    private UUID chatSessionId; // Partition key for horizontal scaling
+    private UUID chatSessionId;
 
     @ClusteringColumn
-    private UUID messageId; // Unique ID for the message (Clustering column)
+    private UUID messageId;
 
-    private UUID senderId; // ID of the sender
+    private UUID senderId;
+    private String contentType;
+    private String content;
+    private String url;
+    private Instant createdAt;
 
-    private String contentType; // Content type (TEXT, FILE)
+    // Getters and setters for all fields
 
-    private String content; // Text content of the message
-
-    private String url; // File URL if the content type is FILE
-
-    private Date createdAt; // Timestamp of message creation
-
-    // Getters and setters
-    @Override
     public UUID getChatSessionId() {
         return chatSessionId;
     }
@@ -40,7 +33,6 @@ public class CassChatMessageEntity implements CassChatMessageModel {
         this.chatSessionId = chatSessionId;
     }
 
-    @Override
     public UUID getMessageId() {
         return messageId;
     }
@@ -49,7 +41,6 @@ public class CassChatMessageEntity implements CassChatMessageModel {
         this.messageId = messageId;
     }
 
-    @Override
     public UUID getSenderId() {
         return senderId;
     }
@@ -58,7 +49,6 @@ public class CassChatMessageEntity implements CassChatMessageModel {
         this.senderId = senderId;
     }
 
-    @Override
     public String getContentType() {
         return contentType;
     }
@@ -67,7 +57,6 @@ public class CassChatMessageEntity implements CassChatMessageModel {
         this.contentType = contentType;
     }
 
-    @Override
     public String getContent() {
         return content;
     }
@@ -76,7 +65,6 @@ public class CassChatMessageEntity implements CassChatMessageModel {
         this.content = content;
     }
 
-    @Override
     public String getUrl() {
         return url;
     }
@@ -85,12 +73,42 @@ public class CassChatMessageEntity implements CassChatMessageModel {
         this.url = url;
     }
 
-    @Override
-    public Date getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    /**
+     * Maps a Cassandra row to a `CassChatMessageEntity`.
+     *
+     * @param row The Cassandra row.
+     * @return The mapped entity.
+     */
+    public static CassChatMessageEntity mapRow(Row row) {
+        CassChatMessageEntity entity = new CassChatMessageEntity();
+        entity.setChatSessionId(row.getUuid("chat_session_id"));
+        entity.setMessageId(row.getUuid("message_id"));
+        entity.setSenderId(row.getUuid("sender_id"));
+        entity.setContentType(row.getString("content_type"));
+        entity.setContent(row.getString("content"));
+        entity.setUrl(row.getString("url"));
+        entity.setCreatedAt(row.getInstant("created_at"));
+        return entity;
+    }
+
+    @Override
+    public String toString() {
+        return "CassChatMessageEntity{" +
+                "chatSessionId=" + chatSessionId +
+                ", messageId=" + messageId +
+                ", senderId=" + senderId +
+                ", contentType='" + contentType + '\'' +
+                ", content='" + content + '\'' +
+                ", url='" + url + '\'' +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }
