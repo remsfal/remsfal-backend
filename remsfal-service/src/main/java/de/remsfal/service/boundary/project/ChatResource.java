@@ -3,30 +3,21 @@ package de.remsfal.service.boundary.project;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
-import de.remsfal.core.model.project.ChatMessageModel.ContentType;
+import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.service.control.FileStorageService;
+import de.remsfal.service.entity.dto.ChatMessageEntity;
+import de.remsfal.service.entity.dto.ChatSessionEntity;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.jboss.logging.Logger;
-
 import com.google.gson.Gson;
-
 import de.remsfal.core.api.project.ChatEndpoint;
 import de.remsfal.core.json.project.ChatMessageJson;
 import de.remsfal.core.json.project.ChatSessionJson;
-import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.service.control.ChatMessageController;
 import de.remsfal.service.control.ChatSessionController;
 import de.remsfal.service.control.TaskController;
-import de.remsfal.service.entity.dto.ChatMessageEntity;
-import de.remsfal.service.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -36,6 +27,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
+import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
+import de.remsfal.service.entity.dao.ChatMessageRepository.ContentType;
 
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
@@ -75,13 +70,13 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             if (defectId != null && taskController.getDefect(projectId, defectId) == null)
                 throw new NotFoundException("Defect does not exist");
 
-            ChatSessionModel.TaskType taskType = (taskId != null && !taskId.isBlank())
-                ? ChatSessionModel.TaskType.TASK : ChatSessionModel.TaskType.DEFECT;
+            TaskType taskType = (taskId != null && !taskId.isBlank())
+                ? TaskType.TASK : TaskType.DEFECT;
             String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
 
             ChatSessionModel session = chatSessionController
                 .createChatSession(projectId, associatedId, taskType, userId);
-            URI location = uri.getAbsolutePathBuilder().path(session.getId()).build();
+            URI location = uri.getAbsolutePathBuilder().path(session.getSessionId().toString()).build();
             return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(ChatSessionJson.valueOf(session))
@@ -97,11 +92,15 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         try {
             String projectId = uri.getPathParameters().getFirst("projectId");
             checkPrivileges(projectId);
-            ChatSessionModel session = chatSessionController.getChatSession(sessionId);
-            return Response.ok(uri.getAbsolutePath())
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatSessionJson.valueOf(session))
-                .build();
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            Optional<ChatSessionEntity> session = chatSessionController.getChatSession(projectId, taskId, sessionId);
+            if (session.isPresent())
+                return Response.ok()
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(ChatSessionJson.valueOf(session.get()))
+                        .build();
+            else
+                throw new NoSuchElementException("Chat session not found");
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
@@ -115,7 +114,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         try {
             String projectId = uri.getPathParameters().getFirst("projectId");
             checkPrivileges(projectId);
-            chatSessionController.deleteChatSession(sessionId);
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            chatSessionController.deleteChatSession(projectId, taskId, sessionId);
             return Response.noContent().build();
         } catch (Exception e) {
             logger.error("Failed to delete chat session", e);
@@ -124,20 +124,26 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response updateChatSessionStatus(String sessionId, ChatSessionModel.Status status) {
+    public Response updateChatSessionStatus(String sessionId, String status) {
         try {
             String projectId = uri.getPathParameters().getFirst("projectId");
             checkPrivileges(projectId);
-            if (status != ChatSessionModel.Status.ARCHIVED && status != ChatSessionModel.Status.OPEN
-                && status != ChatSessionModel.Status.CLOSED) {
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            if (!Objects.equals(status, Status.OPEN.name())
+                && !Objects.equals(status, Status.CLOSED.name())) {
                 throw new BadRequestException("Status must be provided");
             }
-            chatSessionController.updateChatSessionStatus(sessionId, status);
-            ChatSessionEntity updatedSession = chatSessionController.getChatSession(sessionId);
-            return Response.ok()
+            chatSessionController.updateChatSessionStatus(projectId, taskId
+                    , sessionId, Status.valueOf(status));
+            Optional<ChatSessionEntity> updatedSession =
+                    chatSessionController.getChatSession(projectId, taskId, sessionId);
+            if (updatedSession.isPresent())
+                return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
-                .entity(ChatSessionJson.valueOf(updatedSession))
+                .entity(ChatSessionJson.valueOf(updatedSession.get()))
                 .build();
+            else
+                throw new NoSuchElementException("Chat session not found");
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         } catch (NoSuchElementException e) {
@@ -152,10 +158,12 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response joinChatSession(String sessionId) {
         String userId = principal.getId(); // Get user ID from session
         checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+        String projectId = uri.getPathParameters().getFirst("projectId");
+        String taskId = uri.getPathParameters().getFirst("taskId");
         try {
-            chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.OBSERVER);
-            Map<String, ChatSessionModel.ParticipantRole> participants =
-                chatSessionController.getChatSession(sessionId).getParticipants();
+            chatSessionController.addParticipant(projectId, taskId, sessionId, userId, ParticipantRole.OBSERVER);
+            Map<UUID, String> participants =
+                chatSessionController.getParticipants(projectId, taskId, sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -175,8 +183,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response getParticipants(String sessionId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-            Map<String, ChatSessionModel.ParticipantRole> participants =
-                chatSessionController.getParticipants(sessionId);
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            Map<UUID, String> participants =
+                chatSessionController.getParticipants(projectId, taskId, sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -193,11 +203,13 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     @Override
     public Response getParticipant(String sessionId, String participantId) {
         try {
+            UUID participantUUID = UUID.fromString(participantId);
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-            ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
-            if (participants.containsKey(participantId)) {
-                String json = jsonifyParticipantsMap(Map.of(participantId, participants.get(participantId)));
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            Map<UUID, String> participants = chatSessionController.getParticipants(projectId, taskId, sessionId);
+            if (participants.containsKey(participantUUID)) {
+                String json = jsonifyParticipantsMap(Map.of(participantUUID, participants.get(participantUUID)));
                 return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
                     .entity(json)
@@ -215,21 +227,30 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
     @Override
     public Response changeParticipantRole(String sessionId, String participantId,
-        ChatSessionModel.ParticipantRole role) {
+        String role) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-            ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            UUID participantUUId = UUID.fromString(participantId);
+            Map<UUID, String> participants = chatSessionController.getParticipants(projectId, taskId, sessionId);
 
-            if (!participants.containsKey(participantId)) {
+            if (!participants.containsKey(participantUUId)) {
                 throw new NoSuchElementException("Participant not found");
             }
+            if (!role.equals(ParticipantRole.OBSERVER.name())
+                && !role.equals(ParticipantRole.HANDLER.name())
+                && !role.equals(ParticipantRole.INITIATOR.name())) {
+                throw new BadRequestException("Role must be provided or Invalid role");
+            }
 
-            chatSessionController.updateParticipantRole(sessionId, participantId, role);
-            if (!chatSessionController.getParticipantRole(sessionId, participantId).equals(role)) {
+            chatSessionController
+                    .updateParticipantRole(projectId, taskId, sessionId, participantId,
+                            ParticipantRole.valueOf(role));
+            if (!chatSessionController.getParticipantRole(projectId, taskId, sessionId, participantId).equals(role)) {
                 throw new InternalServerErrorException("Failed to change participant role");
             }
-            String json = jsonifyParticipantsMap(Map.of(participantId, role));
+            String json = jsonifyParticipantsMap(Map.of(participantUUId, role));
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
                 .entity(json)
@@ -246,13 +267,15 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response removeParticipant(String sessionId, String participantId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-            ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
-            Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
-
-            if (!participants.containsKey(participantId)) {
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            UUID participantUUID = UUID.fromString(participantId);
+            Map<UUID, String> participants = chatSessionController.getParticipants(projectId, taskId, sessionId);
+            if (!participants.containsKey(participantUUID)) {
                 throw new NotFoundException("Participant not found");
             }
-            chatSessionController.removeParticipant(sessionId, participantId);
+            chatSessionController
+                    .removeParticipant(projectId, taskId, sessionId, participantId);
             return Response.noContent().build();
         } catch (Exception e) {
             logger.error("Failed to remove participant from chat session", e);
@@ -277,7 +300,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
             ChatMessageEntity entity = chatMessageController.sendChatMessage(
                 sessionId, userId, message.getContentType(), message.getContent());
-            URI location = uri.getAbsolutePathBuilder().path(entity.getId()).build();
+            URI location = uri.getAbsolutePathBuilder().path(entity.getMessageId().toString()).build();
             return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(ChatMessageJson.valueOf(entity))
@@ -296,9 +319,11 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response getChatMessages(String sessionId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            String taskId = uri.getPathParameters().getFirst("taskId");
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
-                .entity(chatSessionController.exportChatLogs(sessionId))
+                .entity(chatSessionController.exportChatLogs(projectId, taskId, sessionId))
                 .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
@@ -315,13 +340,13 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response getChatMessage(String sessionId, String messageId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-            ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(messageId);
-            if (chatMessageEntity.getContentType().equals(ContentType.TEXT))
+            ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(sessionId, messageId);
+            if (chatMessageEntity.getContentType().equals(ContentType.TEXT.name()))
                 return Response.ok()
                         .type(MediaType.APPLICATION_JSON)
                         .entity(ChatMessageJson.valueOf(chatMessageEntity))
                         .build();
-            if (chatMessageEntity.getContentType().equals(ContentType.FILE)) {
+            if (chatMessageEntity.getContentType().equals(ContentType.FILE.name())) {
                 // Extract the file URL and derive the file name
                 String fileUrl = chatMessageEntity.getUrl();
                 String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
@@ -366,8 +391,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             if (Objects.requireNonNull(message.getContent()).length() > maxPayloadSize) {
                 throw new BadRequestException("Payload size exceeds limit");
             }
-            chatMessageController.updateTextChatMessage(messageId, message.getContent());
-            ChatMessageEntity updatedMessage = chatMessageController.getChatMessage(messageId);
+            chatMessageController.updateTextChatMessage(sessionId, messageId, message.getContent());
+            ChatMessageEntity updatedMessage = chatMessageController.getChatMessage(sessionId, messageId);
             if (updatedMessage.getContent().equals(message.getContent())) {
                 return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
@@ -388,12 +413,16 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response deleteChatMessage(String sessionId, String messageId) {
         try {
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
-            if (chatSessionController.getChatSession(sessionId) == null)
+            String projectId = uri.getPathParameters().getFirst("projectId");
+            String taskId = uri.getPathParameters().getFirst("taskId");
+            if (chatSessionController.getChatSession(projectId, taskId, sessionId).isPresent()) {
+                chatMessageController.deleteChatMessage(sessionId, messageId);
+                return Response.noContent().build();
+            } else {
                 throw new NotFoundException("Chat session not found");
-            chatMessageController.deleteChatMessage(messageId);
-            return Response.noContent().build();
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
+            }
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Failed to delete message", e);
             throw e;
@@ -450,10 +479,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     String fileUrl = fileStorageService.uploadFile(bucketName, input);
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
-                            .sendChatMessage(sessionId, userId, ContentType.FILE, fileUrl);
+                            .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
 
                     String jsonResponse = String.format("{\"fileId\": \"%s\", \"fileUrl\": \"%s\"}",
-                            fileMetadataEntity.getId(), fileUrl);
+                            fileMetadataEntity.getMessageId(), fileUrl);
 
                     return Response.status(Response.Status.CREATED)
                             .entity(jsonResponse)
@@ -475,12 +504,12 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
     //---------------------Helper Methods---------------------
 
-    private String jsonifyParticipantsMap(Map<String, ChatSessionModel.ParticipantRole> participants) {
+    private String jsonifyParticipantsMap(Map<UUID, String> participants) {
         List<Map<String, String>> participantList = new ArrayList<>();
         participants.forEach((id, role) -> {
             Map<String, String> participant = new HashMap<>();
-            participant.put("userId", id);
-            participant.put("userRole", role.toString());
+            participant.put("userId", id.toString());
+            participant.put("userRole", role);
             participantList.add(participant);
         });
         Gson gson = new Gson();

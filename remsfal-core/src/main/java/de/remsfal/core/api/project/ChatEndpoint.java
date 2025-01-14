@@ -1,7 +1,6 @@
 package de.remsfal.core.api.project;
 
 import de.remsfal.core.json.project.ChatMessageJson;
-import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -48,7 +47,8 @@ public interface ChatEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getChatSession(
-        @PathParam("sessionId") @NotNull @UUID String sessionId);
+        @PathParam("sessionId") @NotNull @UUID String sessionId
+    );
 
     @DELETE
     @Path("/{sessionId}")
@@ -75,7 +75,7 @@ public interface ChatEndpoint {
     Response updateChatSessionStatus(
         @PathParam("sessionId") @NotNull @UUID String sessionId,
         @Parameter(description = "New status for the chat session", required = true)
-        @Valid @NotNull ChatSessionModel.Status status);
+        @Valid @NotNull String status);
 
     @POST
     @Path("/{sessionId}")
@@ -131,7 +131,7 @@ public interface ChatEndpoint {
         @Parameter(description = "The participant ID", required = true) @PathParam("participantId")
         @NotNull @UUID String participantId,
         @Parameter(description = "New role for the participant", required = true)
-        @Valid @NotNull ChatSessionModel.ParticipantRole role);
+        @Valid @NotNull String role);
 
     @DELETE
     @Path("/{sessionId}/participants/{participantId}")

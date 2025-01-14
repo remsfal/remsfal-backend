@@ -1,17 +1,19 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.model.project.ChatSessionModel;
+import de.remsfal.service.entity.dao.ChatMessageRepository;
 import de.remsfal.service.entity.dao.ChatSessionRepository;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
-import de.remsfal.core.model.project.ChatSessionModel.Status;
-import de.remsfal.core.model.project.ChatSessionModel.ParticipantRole;
-import de.remsfal.core.model.project.ChatSessionModel.TaskType;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
+import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
 
 @RequestScoped
 public class ChatSessionController {
@@ -20,7 +22,10 @@ public class ChatSessionController {
     Logger logger;
 
     @Inject
-    ChatSessionRepository repository;
+    ChatSessionRepository chatSessionRepository;
+
+    @Inject
+    ChatMessageRepository chatMessageRepository;
 
     @Inject
     UserController userController;
@@ -31,73 +36,88 @@ public class ChatSessionController {
         if (userController.getUser(userId) == null) {
             throw new IllegalArgumentException("User with ID " + userId + " not found");
         }
-        Map<String, ParticipantRole> participants = Map.of(userId, ParticipantRole.INITIATOR);
-        return repository.createChatSession(projectId, taskId, taskType, participants);
+        Map<UUID, String> participants = Map.of(UUID.fromString(userId), ParticipantRole.INITIATOR.name());
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        return chatSessionRepository.createChatSession(projectUUID, taskUUID, taskType.name(), participants);
     }
 
-    @Transactional
-    public void updateChatSessionStatus(String sessionId, Status status) {
+    public void updateChatSessionStatus(String projectId, String taskId, String sessionId, Status status) {
         logger.infov("Updating chat session status (sessionId={0}, status={1})", sessionId, status);
-        repository.updateSessionStatus(sessionId, status);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        UUID sessionUUID = UUID.fromString(sessionId);
+        chatSessionRepository.updateSessionStatus(projectUUID, sessionUUID, taskUUID,  status.name());
     }
 
-    @Transactional
-    public void addParticipant(String sessionId, String userId, ParticipantRole role) {
+    public void addParticipant(String projectId, String taskId, String sessionId, String userId, ParticipantRole role) {
         logger.infov("Adding participant to chat session (sessionId={0}, participantId={1})", sessionId, userId);
-        repository.addParticipant(sessionId, userId, role);
+        UUID sessionUUID = UUID.fromString(sessionId);
+        UUID userUUID = UUID.fromString(userId);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        chatSessionRepository.addParticipant(projectUUID, sessionUUID,taskUUID,  userUUID, role.name());
     }
 
-    @Transactional
-    public void removeParticipant(String sessionId, String userId) {
+    public void removeParticipant(String projectId, String taskId, String sessionId, String userId) {
         logger.infov("Removing participant from chat session (sessionId={0}, participantId={1})",
                 sessionId, userId);
-        repository.deleteMember(sessionId, userId);
+        UUID sessionUUID = UUID.fromString(sessionId);
+        UUID userUUID = UUID.fromString(userId);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        chatSessionRepository.deleteMember(projectUUID, sessionUUID,taskUUID, userUUID);
     }
 
-    @Transactional
-    public void updateParticipantRole(String sessionId, String userId, ParticipantRole role) {
+    public void updateParticipantRole(String projectId, String taskId, String sessionId, String userId, ParticipantRole role) {
         logger.infov("Updating participant role in chat session (sessionId={0}, participantId={1})",
                 sessionId, userId);
-        repository.changeParticipantRole(sessionId, userId, role);
+        UUID sessionUUID = UUID.fromString(sessionId);
+        UUID userUUID = UUID.fromString(userId);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        chatSessionRepository.changeParticipantRole(projectUUID, sessionUUID, taskUUID, userUUID, role.name());
     }
 
-    @Transactional
-    public String exportChatLogs(String sessionId) {
+    public String exportChatLogs(String projectId, String taskId,String sessionId) {
         logger.infov("Exporting chat session (sessionId={0})", sessionId);
-        return repository.exportChatLogsAsJsonString(sessionId);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        UUID sessionUUID = UUID.fromString(sessionId);
+        return chatMessageRepository.exportChatLogsAsJsonString(projectUUID, sessionUUID, taskUUID);
     }
 
-    @Transactional
-    public void deleteChatSession(String sessionId) {
+    public void deleteChatSession(String projectId, String taskId, String sessionId) {
         logger.infov("Deleting chat session (sessionId={0})", sessionId);
-        try {
-            long deletedCount = repository.deleteChatSession(sessionId);
-            if (deletedCount > 0) {
-                logger.infov("Chat session with ID {0} deleted successfully", sessionId);
-            } else {
-                logger.infov("No chat session found with ID {0} to delete", sessionId);
-                throw new NotFoundException("Chat session not found");
-            }
-        }  catch (Exception e) {
-            logger.errorv("Error deleting chat session with ID {0}", sessionId, e);
-            throw e;
-        }
+            UUID projectUUID = UUID.fromString(projectId);
+            UUID taskUUID = UUID.fromString(taskId);
+            UUID sessionUUID = UUID.fromString(sessionId);
+            chatSessionRepository.deleteSession(projectUUID, sessionUUID, taskUUID);
     }
 
 
-    @Transactional
-    public ChatSessionEntity getChatSession(String sessionId) {
+    public Optional<ChatSessionEntity> getChatSession(String projectId, String taskId, String sessionId) {
         logger.infov("Retrieving chat session (sessionId={0})", sessionId);
-        return repository.findChatSessionById(sessionId);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        UUID sessionUUID = UUID.fromString(sessionId);
+        return chatSessionRepository.findSessionById(projectUUID, sessionUUID, taskUUID);
     }
 
-    public Map<String, ParticipantRole> getParticipants(String sessionId) {
+    public Map<UUID, String> getParticipants(String projectId, String taskId,String sessionId) {
         logger.infov("Retrieving participants (sessionId={0})", sessionId);
-        return repository.findChatSessionById(sessionId).getParticipants();
+        UUID sessionUUID = UUID.fromString(sessionId);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        return chatSessionRepository.findParticipantsById(projectUUID, sessionUUID, taskUUID);
     }
 
-    public ParticipantRole getParticipantRole(String sessionId, String userId) {
+    public String getParticipantRole(String projectId, String taskId,String sessionId, String userId) {
         logger.infov("Retrieving participant role (sessionId={0}, participantId={1})", sessionId, userId);
-        return repository.findParticipantRole(sessionId, userId);
+        UUID sessionUUID = UUID.fromString(sessionId);
+        UUID projectUUID = UUID.fromString(projectId);
+        UUID taskUUID = UUID.fromString(taskId);
+        UUID userUUID = UUID.fromString(userId);
+        return chatSessionRepository.findParticipantRole(projectUUID, sessionUUID, taskUUID, userUUID);
     }
 }

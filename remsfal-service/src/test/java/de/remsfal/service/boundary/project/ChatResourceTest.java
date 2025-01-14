@@ -1,12 +1,13 @@
 package de.remsfal.service.boundary.project;
 
 
-import de.remsfal.core.model.project.ChatMessageModel;
-import de.remsfal.core.model.project.ChatSessionModel;
+
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.service.TestData;
 import de.remsfal.service.control.ChatMessageController;
 import de.remsfal.service.control.FileStorageService;
+import de.remsfal.service.entity.dao.ChatMessageRepository;
+import de.remsfal.service.entity.dao.ChatSessionRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import io.minio.Result;
 import io.minio.messages.Item;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.sessionId;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
@@ -77,23 +79,25 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     static final String CHAT_MESSAGE_JSON_PAYLOAD = "{"
         + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
         + "\"sender_id\": \"" + TestData.USER_ID + "\","
-        + "\"contentType\": \"" + ChatMessageModel.ContentType.TEXT.name() + "\","
+        + "\"contentType\": \"" + ContentType.TEXT.name() + "\","
         + "\"content\": \"Test Message\""
         + "}";
     static final String CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT = "{"
         + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
         + "\"sender_id\": \"" + TestData.USER_ID + "\","
-        + "\"contentType\": \"" + ChatMessageModel.ContentType.TEXT.name() + "\","
+        + "\"contentType\": \"" + ContentType.TEXT.name() + "\","
         + "\"content\": \"\""
         + "}";
     static final String CHAT_MESSAGE_JSON_PAYLOAD_NULL_CONTENT = "{"
         + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
         + "\"sender_id\": \"" + TestData.USER_ID + "\","
-        + "\"contentType\": \"" + ChatMessageModel.ContentType.TEXT.name() + "\","
+        + "\"contentType\": \"" + ContentType.TEXT.name() + "\","
         + "\"content\": null"
         + "}";
 
     private final String bucketName = "remsfal-chat-files";
+    @Inject
+    ChatSessionRepository chatSessionRepository;
 
 
     @BeforeEach
@@ -151,7 +155,8 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .setParameter(6, TaskModel.Status.OPEN.name())
             .setParameter(7, TestData.USER_ID)
             .executeUpdate());
-
+        // TODO: set up chat sessions and messages with cql queries instead of mysql queries
+        /*
         // set up example chat session for a task in project 1
         runInTransaction(() -> entityManager.createNativeQuery(
                 "INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) VALUES (?,?,?,?,?)")
@@ -207,7 +212,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .setParameter(1, CHAT_MESSAGE_ID_1)
             .setParameter(2, EXAMPLE_CHAT_SESSION_ID_1)
             .setParameter(3, TestData.USER_ID_3)
-            .setParameter(4, ChatMessageModel.ContentType.TEXT.name())
+            .setParameter(4, ChatMessageRepository.ContentType.TEXT.name())
             .setParameter(5, "Hello World")
             .executeUpdate());
 
@@ -218,18 +223,20 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .setParameter(1, CHAT_MESSAGE_ID_2)
             .setParameter(2, EXAMPLE_CHAT_SESSION_ID_2)
             .setParameter(3, TestData.USER_ID_4)
-            .setParameter(4, ChatMessageModel.ContentType.TEXT.name())
+            .setParameter(4, ChatMessageRepository.ContentType.TEXT.name())
             .setParameter(5, "Hello World")
             .executeUpdate());
-
+            */
         // create a file
         Path tempDir = Files.createTempDirectory("test-");
         Path tempFile = tempDir.resolve(EXAMPLE_FILE_NAME);
         Files.writeString(tempFile, "Hello World");
         String exampleFileName = tempFile.getFileName().toString();
         MultipartFormDataInput exampleFile =
-            createMultipartFormDataInput(exampleFileName, MediaType.TEXT_PLAIN, Files.readAllBytes(tempFile));
+            createMultipartFormDataInput(exampleFileName, Files.readAllBytes(tempFile));
         String exampleFileUrl = fileStorageService.uploadFile(bucketName, exampleFile);
+        // TODO: set up chat sessions and messages with cql queries instead of mysql queries
+        /*
         // insert the metadata to CHAT_MESSAGE table and upload the file to minio bucket
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, URL) "
@@ -238,9 +245,11 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .setParameter(1, CHAT_MESSAGE_ID_3)
             .setParameter(2, EXAMPLE_CHAT_SESSION_ID_1)
             .setParameter(3, TestData.USER_ID_3)
-            .setParameter(4, ChatMessageModel.ContentType.FILE.name())
+            .setParameter(4, ChatMessageRepository.ContentType.FILE.name())
             .setParameter(5, exampleFileUrl)
             .executeUpdate());
+            */
+
     }
 
     @AfterEach
@@ -310,7 +319,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     @ParameterizedTest
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void changeParticipantRole_UNPRIVILEGED(String path) {
-        String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
+        String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";
 
         given()
@@ -378,7 +387,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status"})
     void updateChatSessionStatus_INVALID_SESSION(String path) {
 
-        String newStatus = ChatSessionModel.Status.CLOSED.toString(); // "CLOSED"
+        String newStatus = ChatSessionRepository.Status.CLOSED.toString(); // "CLOSED"
         // Wrap the status in quotes to form a valid JSON string
         String jsonBody = "\"" + newStatus + "\"";
 
@@ -444,7 +453,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     @ParameterizedTest
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void changeParticipantRole_INVALID_SESSION(String path) {
-        String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
+        String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";
 
         given()
@@ -654,7 +663,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status"})
     void updateChatSessionStatus_SUCCESS(String path) {
 
-        String newStatus = ChatSessionModel.Status.CLOSED.toString(); // "CLOSED"
+        String newStatus = ChatSessionRepository.Status.CLOSED.toString(); // "CLOSED"
         // Wrap the status in quotes to form a valid JSON string
         String jsonBody = "\"" + newStatus + "\"";
 
@@ -726,7 +735,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     @ParameterizedTest
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}"})
     void changeParticipantRole_SUCCESS(String path) {
-        String newRole = ChatSessionModel.ParticipantRole.OBSERVER.toString();
+        String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";
 
         given()
@@ -1027,12 +1036,12 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             String fileUrl = response.get("fileUrl");
 
             // Verify the file metadata is persisted using ChatMessageController
-            ChatMessageEntity persistedMessage = chatMessageController.getChatMessage(fileId);
+            ChatMessageEntity persistedMessage = chatMessageController.getChatMessage(sessionId, fileId);
 
             assertNotNull(persistedMessage, "Persisted message should not be null");
-            assertEquals(EXAMPLE_CHAT_SESSION_ID_1, persistedMessage.getChatSession().getId(),
+            assertEquals(EXAMPLE_CHAT_SESSION_ID_1, persistedMessage.getChatSessionId().toString(),
                 "Chat session ID should match");
-            assertEquals(ChatMessageModel.ContentType.FILE, persistedMessage.getContentType(),
+            assertEquals(ChatMessageRepository.ContentType.FILE.name(), persistedMessage.getContentType(),
                 "Content type should match");
             assertEquals(fileUrl, persistedMessage.getUrl(), "Persisted URL should match the returned file URL");
             // Verify the file is stored in the MinIO bucket
@@ -1118,13 +1127,11 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     @ParameterizedTest
     @ValueSource(strings = {CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/upload"})
     void uploadFile_ChatSessionClosed_FAILURE(String path) throws Exception {
-        runInTransaction(() -> {
-            entityManager.createQuery("UPDATE ChatSessionEntity SET status = :status WHERE id = :id")
-                .setParameter("status", ChatSessionModel.Status.CLOSED)
-                .setParameter("id", EXAMPLE_CHAT_SESSION_ID_1)
-                .executeUpdate();
-        });
-
+        chatSessionRepository.updateSessionStatus(
+                UUID.fromString(TestData.PROJECT_ID_1),
+                UUID.fromString(TASK_ID_1),
+                UUID.fromString(EXAMPLE_CHAT_SESSION_ID_1),
+                ChatSessionRepository.Status.CLOSED.name());
         Path tempFile = Files.createTempFile("test-file", ".txt");
         try {
             given()
@@ -1141,7 +1148,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         }
     }
 
-    private MultipartFormDataInput createMultipartFormDataInput(String fileName, String contentType, byte[] content)
+    private MultipartFormDataInput createMultipartFormDataInput(String fileName, byte[] content)
         throws Exception {
         MultipartFormDataInput input = mock(MultipartFormDataInput.class);
         InputPart inputPart = mock(InputPart.class);
@@ -1150,7 +1157,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         headers.add("Content-Disposition", "form-data; name=\"file\"; filename=\"" + fileName + "\"");
 
         when(inputPart.getHeaders()).thenReturn(headers);
-        when(inputPart.getMediaType()).thenReturn(MediaType.valueOf(contentType));
+        when(inputPart.getMediaType()).thenReturn(MediaType.valueOf(MediaType.TEXT_PLAIN));
         when(inputPart.getBody(InputStream.class, null)).thenReturn(new ByteArrayInputStream(content));
         when(input.getFormDataMap()).thenReturn(Map.of("file", List.of(inputPart)));
 

@@ -1,144 +1,115 @@
 package de.remsfal.service.entity.dto;
 
-import java.util.Date;
-import java.util.Objects;
-
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import de.remsfal.core.model.project.ChatMessageModel;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
-@Table(name = "CHAT_MESSAGE")
-public class ChatMessageEntity extends AbstractEntity implements ChatMessageModel {
+public class ChatMessageEntity implements ChatMessageModel {
 
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    @NotBlank
-    private String id;
+    @PartitionKey
+    private UUID chatSessionId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "CHAT_SESSION_ID", referencedColumnName = "ID", nullable = false)
-    @NotNull
-    private ChatSessionEntity chatSession;
+    @ClusteringColumn
+    private UUID messageId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "SENDER_ID", referencedColumnName = "ID", nullable = false)
-    @NotNull
-    private UserEntity sender;
-
-
-    @Column(name = "CONTENT_TYPE", nullable = false)
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private ContentType contentType;
-
-    @Column(name = "CONTENT")
+    private UUID senderId;
+    private String contentType;
     private String content;
-
-    @Column(name = "URL")
     private String url;
+    private Instant createdAt;
 
-    @Override
-    public Date getTimestamp() {
-        return getCreatedAt();
+    // Getters and setters for all fields
+
+    public UUID getChatSessionId() {
+        return chatSessionId;
     }
 
-    @Override
-    public String getId() {
-        return id;
+    public void setChatSessionId(UUID chatSessionId) {
+        this.chatSessionId = chatSessionId;
     }
 
-    @Override
-    public void setId(final String id) {
-        this.id = id;
+    public UUID getMessageId() {
+        return messageId;
     }
 
-    @Override
-    public ChatSessionEntity getChatSession() {
-        return chatSession;
+    public void setMessageId(UUID messageId) {
+        this.messageId = messageId;
     }
 
-    @Override
-    public String getChatSessionId() {
-        return chatSession != null ? chatSession.getId() : null;
+    public UUID getSenderId() {
+        return senderId;
     }
 
-    @Override
-    public UserEntity getSender() {
-        return sender;
+    public void setSenderId(UUID senderId) {
+        this.senderId = senderId;
     }
 
-    public void setSender(UserEntity sender) {
-        this.sender = sender;
-    }
-
-    public String getSenderId() {
-        return sender != null ? sender.getId() : null;
-    }
-
-    public void setSenderId(String senderId) {
-        if (sender != null) sender.setId(senderId);
-        else {
-            throw new IllegalArgumentException("UserEntity is null");
-        }
-    }
-
-    public void  setChatSession(ChatSessionEntity chatSession) {
-        this.chatSession = chatSession;
-    }
-
-    @Override
-    public ContentType getContentType() {
+    public String getContentType() {
         return contentType;
     }
 
-    public void setContentType(final ContentType contentType) {
+    public void setContentType(String contentType) {
         this.contentType = contentType;
     }
 
-    @Override
     public String getContent() {
         return content;
     }
 
-    public void setContent(final String content) {
+    public void setContent(String content) {
         this.content = content;
     }
 
-    @Override
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(final String imageUrl) {
-        this.url = imageUrl;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, sender.getId(), contentType, content, url, getCreatedAt());
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    /**
+     * Maps a Cassandra row to a `CassChatMessageEntity`.
+     *
+     * @param row The Cassandra row.
+     * @return The mapped entity.
+     */
+    public static ChatMessageEntity mapRow(Row row) {
+        ChatMessageEntity entity = new ChatMessageEntity();
+        entity.setChatSessionId(row.getUuid("chat_session_id"));
+        entity.setMessageId(row.getUuid("message_id"));
+        entity.setSenderId(row.getUuid("sender_id"));
+        entity.setContentType(row.getString("content_type"));
+        entity.setContent(row.getString("content"));
+        entity.setUrl(row.getString("url"));
+        entity.setCreatedAt(row.getInstant("created_at"));
+        return entity;
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof ChatMessageEntity that)) return false;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(getChatSessionId(), that.getChatSessionId()) &&
-                Objects.equals(getSenderId(), that.getSenderId()) &&
-                contentType == that.contentType &&
-                Objects.equals(content, that.content) &&
-                Objects.equals(url, that.url) &&
-                Objects.equals(getCreatedAt(), that.getCreatedAt());
+    public String toString() {
+        return "CassChatMessageEntity{" +
+                "chatSessionId=" + chatSessionId +
+                ", messageId=" + messageId +
+                ", senderId=" + senderId +
+                ", contentType='" + contentType + '\'' +
+                ", content='" + content + '\'' +
+                ", url='" + url + '\'' +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }

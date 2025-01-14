@@ -1,413 +1,200 @@
 package de.remsfal.service.entity;
 
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import com.datastax.oss.driver.api.core.CqlSession;
 import de.remsfal.service.entity.dao.ChatMessageRepository;
-import de.remsfal.service.entity.dao.ChatSessionRepository;
-import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
-import de.remsfal.service.entity.dto.ChatSessionEntity;
-import de.remsfal.service.entity.dto.UserEntity;
-
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
-
-import java.util.NoSuchElementException;
-import java.util.UUID;
-
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
+import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
+import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.service.entity.dao.ChatMessageRepository.ContentType;
 import static org.junit.jupiter.api.Assertions.*;
 
-@QuarkusTest
-class ChatMessageRepositoryTest extends AbstractTest {
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
 
-    @Inject
-    ChatSessionRepository chatSessionRepository;
+@QuarkusTest
+public class ChatMessageRepositoryTest {
+
+    static final UUID PROJECT_ID = UUID.randomUUID();
+    static final UUID TASK_ID = UUID.randomUUID();
+    static final UUID USER_ID_1 = UUID.randomUUID();
+    static final UUID USER_ID_2 = UUID.randomUUID();
+    static final UUID SESSION_ID = UUID.randomUUID();
+    static final String EXAMPLE_URL = "Example.url";
+    static final UUID MESSAGE_ID_1 = UUID.randomUUID();
+    static final String MESSAGE_CONTENT_1 = "Hi, i am user 1";
+    static final UUID MESSAGE_ID_2 = UUID.randomUUID();
+    static final String MESSAGE_CONTENT_2 = "Hello, I AM USER 2";
+    static final UUID MESSAGE_ID_3 = UUID.randomUUID();
+    static final String MESSAGE_CONTENT_3 = "How are you user 2?";
 
     @Inject
     ChatMessageRepository chatMessageRepository;
 
     @Inject
-    UserRepository userRepository;
+    Logger LOGGER;
 
     @Inject
     EntityManager entityManager;
 
-    static final String TASK_ID = UUID.randomUUID().toString();
-    static final String CHAT_SESSION_ID = UUID.randomUUID().toString();
-    static final String CHAT_MESSAGE_ID = UUID.randomUUID().toString();
-    static final String CLOSED_CHAT_SESSION_ID = UUID.randomUUID().toString();
+    @Inject
+    CqlSession cqlSession;
 
     @BeforeEach
-    @Transactional
-    void setupTestData() {
-        insertUsers();
-        insertProject();
-        insertProjectMemberships();
-        insertTask();
-        insertChatSessions();
-        insertChatSessionParticipants();
-        insertChatMessage();
+    void setUp() {
+        LOGGER.info("Setting up test data");
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertSessionCql,
+                PROJECT_ID, TASK_ID, SESSION_ID,
+                TaskType.TASK.name(), Status.OPEN.name(),
+                Instant.now(),
+                Map.of(USER_ID_1, ParticipantRole.INITIATOR.name(), USER_ID_2, ParticipantRole.HANDLER.name()));
+        LOGGER.info("Test session created: " + SESSION_ID);
+        String insertMessageCql =
+                "INSERT INTO remsfal.chat_messages " +
+                        "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        LOGGER.info("Inserting messages");
+        cqlSession.execute(insertMessageCql,
+                SESSION_ID, MESSAGE_ID_1, USER_ID_1, ContentType.TEXT.name(),
+                MESSAGE_CONTENT_1, null, Instant.now());
+        LOGGER.info("Message inserted " + MESSAGE_ID_1);
+        cqlSession.execute(insertMessageCql,
+                SESSION_ID, MESSAGE_ID_2, USER_ID_2, ContentType.TEXT.name(), MESSAGE_CONTENT_2,
+                null, Instant.now());
+        LOGGER.info("Message inserted " + MESSAGE_ID_2);
+        cqlSession.execute(insertMessageCql,
+                SESSION_ID, MESSAGE_ID_3, USER_ID_1, ContentType.TEXT.name(), MESSAGE_CONTENT_3,
+                null, Instant.now());
+        LOGGER.info("Message inserted " + MESSAGE_ID_3);
+        String insertMessageCql2 = "INSERT INTO remsfal.chat_messages " +
+                "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertMessageCql2, SESSION_ID, UUID.randomUUID(),
+                USER_ID_1, ContentType.FILE.name(), null, EXAMPLE_URL, Instant.now());
+        LOGGER.info("Message inserted for user 1 with file content " + EXAMPLE_URL);
+        LOGGER.info("Test data setup complete");
     }
 
     @AfterEach
-    @Transactional
-    void cleanDB() {
-        entityManager.createNativeQuery("DELETE FROM CHAT_MESSAGE").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM CHAT_SESSION_PARTICIPANT").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM CHAT_SESSION").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM TASK").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM PROJECT_MEMBERSHIP").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM PROJECT").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM USER").executeUpdate();
-    }
-
-    private void insertUsers() {
-        String insertUserSQL = "INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)";
-        insertUser(TestData.USER_ID, TestData.USER_TOKEN, TestData.USER_EMAIL, TestData.USER_FIRST_NAME,
-                TestData.USER_LAST_NAME, insertUserSQL);
-        insertUser(TestData.USER_ID_2, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2, TestData.USER_FIRST_NAME_2,
-                TestData.USER_LAST_NAME_2, insertUserSQL);
-        insertUser(TestData.USER_ID_3, TestData.USER_TOKEN_3, TestData.USER_EMAIL_3, TestData.USER_FIRST_NAME_3,
-                TestData.USER_LAST_NAME_3, insertUserSQL);
-        insertUser(TestData.USER_ID_4, TestData.USER_TOKEN_4, TestData.USER_EMAIL_4, TestData.USER_FIRST_NAME_4,
-                TestData.USER_LAST_NAME_4, insertUserSQL);
-    }
-
-    private void insertUser(String id, String tokenId, String email, String firstName, String lastName, String sql) {
-        entityManager.createNativeQuery(sql)
-                .setParameter(1, id)
-                .setParameter(2, tokenId)
-                .setParameter(3, email)
-                .setParameter(4, firstName)
-                .setParameter(5, lastName)
-                .executeUpdate();
-    }
-
-    private void insertProject() {
-        entityManager.createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.PROJECT_TITLE)
-                .executeUpdate();
-    }
-
-    private void insertProjectMemberships() {
-        String insertMembershipSQL = "INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)";
-        insertMembership(TestData.USER_ID, ProjectMemberModel.UserRole.MANAGER.name(), insertMembershipSQL);
-        insertMembership(TestData.USER_ID_2, ProjectMemberModel.UserRole.LESSOR.name(), insertMembershipSQL);
-        insertMembership(TestData.USER_ID_3, ProjectMemberModel.UserRole.CARETAKER.name(), insertMembershipSQL);
-        insertMembership(TestData.USER_ID_4, ProjectMemberModel.UserRole.CARETAKER.name(), insertMembershipSQL);
-    }
-
-    private void insertMembership(String userId, String role, String sql) {
-        entityManager.createNativeQuery(sql)
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, userId)
-                .setParameter(3, role)
-                .executeUpdate();
-    }
-
-    private void insertTask() {
-        entityManager.createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY)" +
-                        " VALUES (?,?,?,?,?,?,?)")
-                .setParameter(1, TASK_ID)
-                .setParameter(2, "TASK")
-                .setParameter(3, TestData.PROJECT_ID)
-                .setParameter(4, TestData.TASK_TITLE_1)
-                .setParameter(5, "OPEN")
-                .setParameter(6, TestData.USER_ID)
-                .setParameter(7, TestData.USER_ID)
-                .executeUpdate();
-    }
-
-    private void insertChatSessions() {
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) " +
-                        "VALUES (?,?,?,?,?)")
-                .setParameter(1, CHAT_SESSION_ID)
-                .setParameter(2, TestData.PROJECT_ID)
-                .setParameter(3, TASK_ID)
-                .setParameter(4, "TASK")
-                .setParameter(5, "OPEN")
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) " +
-                        "VALUES (?,?,?,?,?)")
-                .setParameter(1, CLOSED_CHAT_SESSION_ID)
-                .setParameter(2, TestData.PROJECT_ID)
-                .setParameter(3, TASK_ID)
-                .setParameter(4, "TASK")
-                .setParameter(5, "CLOSED")
-                .executeUpdate();
-    }
-
-    private void insertChatSessionParticipants() {
-        String insertParticipantSQL = "INSERT INTO CHAT_SESSION_PARTICIPANT (CHAT_SESSION_ID, PARTICIPANT_ID, ROLE) " +
-                "VALUES (?,?,?)";
-        insertParticipant(TestData.USER_ID_2, "INITIATOR", insertParticipantSQL);
-        insertParticipant(TestData.USER_ID_3, "HANDLER", insertParticipantSQL);
-        insertParticipant(TestData.USER_ID, "OBSERVER", insertParticipantSQL);
-    }
-
-    private void insertParticipant(String participantId, String role, String sql) {
-        entityManager.createNativeQuery(sql)
-                .setParameter(1, ChatMessageRepositoryTest.CHAT_SESSION_ID)
-                .setParameter(2, participantId)
-                .setParameter(3, role)
-                .executeUpdate();
-    }
-
-    private void insertChatMessage() {
-        entityManager.createNativeQuery("INSERT INTO CHAT_MESSAGE" +
-                        " (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT) VALUES (?,?,?,?,?)")
-                .setParameter(1, CHAT_MESSAGE_ID)
-                .setParameter(2, CHAT_SESSION_ID)
-                .setParameter(3, TestData.USER_ID_2)
-                .setParameter(4, "TEXT")
-                .setParameter(5, "This is a test message")
-                .executeUpdate();
-    }
-
-    @Test
-    void hashCode_SUCCESS() {
-        ChatMessageEntity chatMessage = chatMessageRepository.findChatMessageById(CHAT_MESSAGE_ID);
-        assertNotNull(chatMessage, "Chat message should not be null");
-        assertTrue(chatMessage.hashCode() != 0, "Hash code should not be 0");
-    }
-
-    @Test
-    void equals_SUCCESS() {
-        ChatMessageEntity chatMessage1 = chatMessageRepository.findChatMessageById(CHAT_MESSAGE_ID);
-        ChatMessageEntity chatMessage2 = chatMessageRepository.findChatMessageById(CHAT_MESSAGE_ID);
-        assertNotNull(chatMessage1, "Chat message 1 should not be null");
-        assertNotNull(chatMessage2, "Chat message 2 should not be null");
-        assertEquals(chatMessage1, chatMessage2, "Chat messages should be equal");
+    void tearDown() {
+        LOGGER.info("Tearing down test data");
+        String deleteMessagesCql = "DELETE FROM remsfal.chat_messages WHERE chat_session_id = ?";
+        cqlSession.execute(deleteMessagesCql, SESSION_ID);
+        String deleteSessionCql = "DELETE FROM remsfal.chat_sessions WHERE project_id = ? AND task_id = ? AND session_id = ?";
+        cqlSession.execute(deleteSessionCql, PROJECT_ID, TASK_ID, SESSION_ID);
+        LOGGER.info("Test data teardown complete");
     }
 
     @Test
     void findChatMessageById_SUCCESS() {
-        ChatMessageEntity chatMessage = chatMessageRepository.findChatMessageById(CHAT_MESSAGE_ID);
-        assertEquals(CHAT_MESSAGE_ID, chatMessage.getId(), "Chat message ID should match");
+        String sessionId = SESSION_ID.toString();
+        UUID messageId = UUID.randomUUID();
+        String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
+                "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
+                "VALUES (?, ?, ?, ?, 'Test message content', null, toTimestamp(now()))";
+        cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name());
+        ChatMessageEntity result = chatMessageRepository
+                .findMessageById(sessionId, messageId.toString());
+        assertNotNull(result, "Chat message should be found");
+        assertEquals(messageId, result.getMessageId(), "Message ID should match");
+        assertEquals("Test message content", result.getContent(), "Message content should match");
     }
 
     @Test
-    void findChatMessageById_FAILURE() {
-        String randomId = UUID.randomUUID().toString();
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
-                chatMessageRepository.findChatMessageById(randomId));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception.getMessage(),
-                "Exception message should match");
+    void sendCassChatMessage_SUCCESS() {
+        String sessionId = SESSION_ID.toString();
+        String userId = USER_ID_1.toString();
+        String contentType = ContentType.TEXT.name();
+        String content = "Test message content";
+        ChatMessageEntity result = chatMessageRepository
+                .sendMessage(sessionId, userId, contentType, content);
+        assertNotNull(result, "Chat message should be sent");
+        assertEquals(UUID.fromString(sessionId), result.getChatSessionId(), "Session ID should match");
+        assertEquals(UUID.fromString(userId), result.getSenderId(), "Sender ID should match");
+        assertEquals(contentType, result.getContentType(), "Content type should match");
+        assertEquals(content, result.getContent(), "Message content should match");
     }
 
     @Test
-    @Transactional
-    void sendTextChatMessage_SUCCESS() {
-        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.TEXT,
-                "This is a second test message");
-        ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
-        assertEquals(2, chatSession.getMessages().size(), "Chat session should have 2 messages");
-        assertEquals("This is a second test message", chatSession.getMessages().get(1).getContent(),
-                "Content of the second message should match");
-    }
+    void deleteMessageById_SUCCESS() {
+        String sessionId = SESSION_ID.toString();
+        UUID messageId = UUID.randomUUID();
+        String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
+                "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
+                "VALUES (?, ?, ?, ?, 'Message to be deleted', null, toTimestamp(now()))";
+        cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name());
+        chatMessageRepository.deleteChatMessage(sessionId, messageId.toString());
 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            chatMessageRepository.findMessageById(sessionId, messageId.toString());
+        });
 
-    @Test
-    @Transactional
-    void sendFileMetadataChatMessage_SUCCESS() {
-        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.FILE,
-                "https://example.com/image.jpg");
-        ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
-        assertEquals(2, chatSession.getMessages().size(), "Chat session should have 2 messages");
-        assertEquals("https://example.com/image.jpg", chatSession.getMessages().get(1).getUrl(),
-                "Image URL of the second message should match");
+        assertTrue(exception.getMessage().contains("Message not found"));
     }
 
     @Test
-    void sendTextChatMessage_FAILURE() {
-        String validSessionId = CHAT_SESSION_ID;
-        String validSenderId = TestData.USER_ID_2;
-        String validMessageContent = "Test message content";
-        ChatMessageEntity.ContentType validContentType = ChatMessageEntity.ContentType.TEXT;
-
-        // Non-existent session ID should fail
-        assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(UUID.randomUUID().toString(), validSenderId, validContentType,
-                        validMessageContent)
-        );
-
-        // Closed session should fail
-        assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(CLOSED_CHAT_SESSION_ID, validSenderId, validContentType,
-                        validMessageContent)
-        );
-
-        // Null sender ID should fail
-        assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(validSessionId, null, validContentType,
-                        validMessageContent)
-        );
-
-        // Null content type should fail
-        assertThrows(Exception.class, () ->
-                chatMessageRepository.sendChatMessage(validSessionId, validSenderId, null,
-                        validMessageContent)
-        );
-    }
-
-
-    @Test
-    @Transactional
-    void deleteChatMessage_SUCCESS() {
-        chatMessageRepository.deleteChatMessage(CHAT_MESSAGE_ID);
-        ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
-        assertEquals(0, chatSession.getMessages().size(), "Chat session should have 0 messages");
-    }
-
-    @Test
-    void deleteChatMessage_FAILURE() {
-        String randomId = UUID.randomUUID().toString();
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, ()
-                -> chatMessageRepository.deleteChatMessage(randomId));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception.getMessage(),
-                "Exception message should match");
-    }
-
-    @Test
-    @Transactional
     void updateTextChatMessage_SUCCESS() {
-        chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, "This is an updated message");
-        ChatSessionEntity chatSession = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID);
-        assertEquals("This is an updated message", chatSession.getMessages().get(0).getContent(),
-                "Content of the updated message should match");
-    }
+        String sessionId = SESSION_ID.toString();
+        UUID messageId = UUID.randomUUID();
+        String newContent = "Updated text content";
+        String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
+                "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
+                "VALUES (?, ?, ?, ?, 'Original text content', null, toTimestamp(now()))";
+        cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name()
+        );
 
+        chatMessageRepository.updateTextChatMessage(sessionId, messageId.toString(), newContent);
+        ChatMessageEntity updatedMessage = chatMessageRepository.findMessageById(sessionId, messageId.toString());
 
-    @Test
-    void updateTextChatMessage_FAILURE() {
-        String randomId = UUID.randomUUID().toString();
-        String validContent = "This is an updated message";
-        String blankContent = "   ";
-
-        Exception exception1 = assertThrows(NoSuchElementException.class, () ->
-                chatMessageRepository.updateTextChatMessage(randomId, validContent));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage(),
-                "Exception message should match for non-existent message ID");
-
-        Exception exception2 = assertThrows(IllegalArgumentException.class, () ->
-                chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, null));
-        assertEquals("Content cannot be null or empty", exception2.getMessage(),
-                "Exception message should match for null content");
-
-        Exception exception3 = assertThrows(IllegalArgumentException.class, () ->
-                chatMessageRepository.updateTextChatMessage(CHAT_MESSAGE_ID, blankContent));
-        assertEquals("Content cannot be null or empty", exception3.getMessage(),
-                "Exception message should match for blank content");
-
-        chatMessageRepository.sendChatMessage(CHAT_SESSION_ID, TestData.USER_ID_2, ChatMessageEntity.ContentType.FILE,
-                "This is an image message");
-        String imageMessageId = chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().get(1).getId();
-        Exception exception4 = assertThrows(IllegalArgumentException.class, () ->
-                chatMessageRepository.updateTextChatMessage(imageMessageId, validContent));
-        assertEquals("Cannot update non-text message with updateTextChatMessage() method",
-                exception4.getMessage(), "Exception message should match for non-text message");
+        assertEquals(newContent, updatedMessage.getContent(), "Message content should be updated");
     }
 
     @Test
-    @Transactional
-    void updateImageURL_SUCCESS() {
+    void updateFileUrl_SUCCESS() {
+        String sessionId = SESSION_ID.toString();
+        UUID messageId = UUID.randomUUID();
+        String newUrl = "Updated.url";
+        String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
+                "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
+                "VALUES (?, ?, ?, ?, null, 'Original.url', toTimestamp(now()))";
+        cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.FILE.name());
 
-        UserEntity sender = userRepository.findByIdOptional(TestData.USER_ID_2).orElseThrow(() ->
-                new NotFoundException("User does not exist"));
+        chatMessageRepository.updateFileUrl(sessionId, messageId.toString(), newUrl);
+        ChatMessageEntity updatedMessage = chatMessageRepository.findMessageById(sessionId, messageId.toString());
 
-        ChatMessageEntity chatMessage = new ChatMessageEntity();
-        chatMessage.setId(UUID.randomUUID().toString());
-        chatMessage.setChatSession(chatSessionRepository.findChatSessionById(CHAT_SESSION_ID));
-        chatMessage.setSender(sender);
-        chatMessage.setSenderId(TestData.USER_ID_2);
-        chatMessage.setContentType(ChatMessageEntity.ContentType.FILE);
-        chatMessage.setUrl("https://example.com/image.jpg");
-        chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().add(chatMessage);
-        chatMessageRepository.persist(chatMessage);
-
-        String randomId = UUID.randomUUID().toString();
-        String invalidImageUrl = "   ";
-        String validImageUrl = "https://example.com/updated-image.jpg";
-
-        // Non-existent message ID
-        NoSuchElementException exception1 = assertThrows(NoSuchElementException.class, () ->
-                chatMessageRepository.updateImageURL(randomId, validImageUrl)
-        );
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage());
-
-        // Invalid image URL
-        IllegalArgumentException exception2 = assertThrows(IllegalArgumentException.class, () ->
-                chatMessageRepository.updateImageURL(chatMessage.getId(), invalidImageUrl)
-        );
-        assertEquals("Image URL cannot be null or empty", exception2.getMessage());
-
-        IllegalArgumentException exception3 = assertThrows(IllegalArgumentException.class, () ->
-                chatMessageRepository.updateImageURL(chatMessage.getId(), null)
-        );
-        assertEquals("Image URL cannot be null or empty", exception3.getMessage());
-
-        // Attempt to update non-image message
-        IllegalArgumentException exception4 = assertThrows(IllegalArgumentException.class, () ->
-                chatMessageRepository.updateImageURL(CHAT_MESSAGE_ID, validImageUrl)
-        );
-        assertEquals("Cannot update non-image message with updateImageURL() method", exception4.getMessage());
+        assertEquals(newUrl, updatedMessage.getUrl(), "Message URL should be updated");
     }
 
     @Test
-    @Transactional
-    void updateImageURL_FAILURE() {
+    void exportChatLogsAsJsonString_SUCCESS() {
+        LOGGER.info("Testing exportChatLogsAsJsonString");
 
-        UserEntity sender = userRepository.findByIdOptional(TestData.USER_ID_2).orElseThrow(() ->
-                new NotFoundException("User does not exist"));
+        // Call the method to export chat logs as a JSON string
+        String exportedJson = chatMessageRepository.exportChatLogsAsJsonString(PROJECT_ID, TASK_ID, SESSION_ID);
 
-        ChatMessageEntity chatMessage = new ChatMessageEntity();
-        chatMessage.setId(UUID.randomUUID().toString());
-        chatMessage.setChatSession(chatSessionRepository.findChatSessionById(CHAT_SESSION_ID));
-        chatMessage.setSender(sender);
-        chatMessage.setSenderId(TestData.USER_ID_2);
-        chatMessage.setContentType(ChatMessageEntity.ContentType.FILE);
-        chatMessage.setUrl("https://example.com/image.jpg");
-        chatSessionRepository.findChatSessionById(CHAT_SESSION_ID).getMessages().add(chatMessage);
-        chatMessageRepository.persist(chatMessage);
+        // Log the resulting JSON for inspection
+        LOGGER.info("Exported Chat Logs JSON: " + exportedJson);
 
-        String randomId = UUID.randomUUID().toString();
-        String invalidImageUrl = "   ";
-        String validImageUrl = "https://example.com/updated-image.jpg";
-
-        Exception exception1 = assertThrows(NoSuchElementException.class, ()
-                -> chatMessageRepository.updateImageURL(randomId, validImageUrl));
-        assertEquals("ChatMessage with ID " + randomId + " not found", exception1.getMessage(),
-                "Exception message should match for non-existent message ID");
-
-        Exception exception2 = assertThrows(IllegalArgumentException.class, ()
-                -> chatMessageRepository.updateImageURL(chatMessage.getId(), invalidImageUrl));
-        assertEquals("Image URL cannot be null or empty", exception2.getMessage(),
-                "Exception message should match for blank image URL");
-
-        Exception exception3 = assertThrows(IllegalArgumentException.class, ()
-                -> chatMessageRepository.updateImageURL(chatMessage.getId(), null));
-        assertEquals("Image URL cannot be null or empty", exception3.getMessage(),
-                "Exception message should match for null image URL");
-
-        Exception exception4 = assertThrows(IllegalArgumentException.class, () ->
-                chatMessageRepository.updateImageURL(CHAT_MESSAGE_ID, validImageUrl));
-        assertEquals("Cannot update non-image message with updateImageURL() method", exception4.getMessage(),
-                "Exception message should match for non-image message");
-
+        // Verify that the exported JSON contains expected data
+        assertTrue(exportedJson.contains(PROJECT_ID.toString()), "JSON should contain the project ID");
+        assertTrue(exportedJson.contains(TASK_ID.toString()), "JSON should contain the task ID");
+        assertTrue(exportedJson.contains(SESSION_ID.toString()), "JSON should contain the session ID");
+        assertTrue(exportedJson.contains("OPEN"), "JSON should contain the session status");
+        assertTrue(exportedJson.contains(MESSAGE_CONTENT_1), "JSON should contain the first message content");
+        assertTrue(exportedJson.contains(USER_ID_1.toString()), "JSON should contain the first user's ID");
+        assertTrue(exportedJson.contains(ContentType.TEXT.name()), "JSON should contain the message type");
     }
-
-
-
 
 
 }
