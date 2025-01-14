@@ -1,5 +1,5 @@
--- Script: V2__create_active_table.cql
-CREATE TABLE IF NOT EXISTS REMSFAL.active_chat_messages (
+-- Script: V2__create_chat_messages_table.cql
+CREATE TABLE IF NOT EXISTS REMSFAL.chat_messages (
                                                             chat_session_id UUID,
                                                             message_id UUID,
                                                             sender_id UUID,

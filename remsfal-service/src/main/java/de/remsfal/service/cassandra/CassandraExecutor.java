@@ -34,30 +34,49 @@ public class CassandraExecutor {
     @ConfigProperty(name = "quarkus.cassandra.local-datacenter")
     String cassandraLocalDatacenter;
 
+    private static final String KEYSPACE_NAME = "REMSFAL";
 
     public void onStartup(@Observes StartupEvent event) {
         try (
                 CqlSession session = CqlSession.builder()
-                .addContactPoint(getContactPoint(cassandraContactPoints))
-                .withLocalDatacenter(cassandraLocalDatacenter)
-                .build()) {
+                        .addContactPoint(getContactPoint(cassandraContactPoints))
+                        .withLocalDatacenter(cassandraLocalDatacenter)
+                        .build()) {
 
-            LOGGER.info("Initializing Cassandra schema...");
+            LOGGER.info("Initializing Cassandra...");
 
-            // get all the scripts from the changelog xml
-            LOGGER.info("Parsing Cassandra changelogs XML in {}", CHANGELOGS_XML_PATH);
-            Document changelog = parseChangelogXML();
-            NodeList scripts = changelog.getElementsByTagName("script");
+            // Ensure keyspace exists
+            ensureKeyspaceExists(session);
 
-            // Execute each CQL script retrieved from the changelog
-            Arrays.stream(getSortedChangelogs(scripts))
-                    .forEach(scriptPath -> executeCQLScript(session, scriptPath));
+            // Process changelogs
+            processChangelogs(session);
 
-            LOGGER.info("Cassandra schema initialization completed.");
+            LOGGER.info("Cassandra initialization completed.");
         } catch (Exception e) {
             LOGGER.error("Error during Cassandra initialization", e);
             throw new RuntimeException("Failed to initialize Cassandra", e);
         }
+    }
+
+    private void ensureKeyspaceExists(CqlSession session) {
+        LOGGER.info("Ensuring keyspace '{}' exists.", KEYSPACE_NAME);
+        String createKeyspaceCQL = String.format(
+                "CREATE KEYSPACE IF NOT EXISTS %s " +
+                        "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};",
+                KEYSPACE_NAME
+        );
+        session.execute(createKeyspaceCQL);
+        LOGGER.info("Keyspace '{}' ensured.", KEYSPACE_NAME);
+    }
+
+    private void processChangelogs(CqlSession session) {
+        LOGGER.info("Parsing Cassandra changelogs XML in {}", CHANGELOGS_XML_PATH);
+        Document changelog = parseChangelogXML();
+        NodeList scripts = changelog.getElementsByTagName("script");
+
+        LOGGER.info("Found {} CQL scripts in changelog", scripts.getLength());
+        Arrays.stream(getSortedChangelogs(scripts))
+                .forEach(scriptPath -> executeCQLScript(session, scriptPath));
     }
 
     private Document parseChangelogXML() {
@@ -72,12 +91,11 @@ public class CassandraExecutor {
     }
 
     private String[] getSortedChangelogs(NodeList scripts) {
-        LOGGER.info("Found {} CQL scripts in changelog", scripts.getLength());
         return Arrays.stream(IntStream.range(0, scripts.getLength())
                         .mapToObj(scripts::item)
                         .map(scriptNode -> scriptNode.getTextContent().trim())
                         .toArray(String[]::new))
-                .sorted(Comparator.naturalOrder()) // Ensure version order: V1, V2, etc.
+                .sorted(Comparator.naturalOrder())
                 .toArray(String[]::new);
     }
 
@@ -86,11 +104,7 @@ public class CassandraExecutor {
             LOGGER.info("Executing script: {}", scriptFileName);
             Path scriptPath = Path.of(CQL_SCRIPTS_DIRECTORY, scriptFileName);
             String cqlScript = Files.readString(scriptPath);
-
-            // Include the filename in the CQL as a comment
-            String cqlWithComment = "-- Executing script: " + scriptFileName + "\n" + cqlScript;
-            session.execute(cqlWithComment);
-
+            session.execute(cqlScript);
             LOGGER.info("Executed script: {}", scriptFileName);
         } catch (Exception e) {
             LOGGER.error("Failed to execute script: {}", scriptFileName, e);
@@ -106,3 +120,4 @@ public class CassandraExecutor {
         return new InetSocketAddress(contactPointsArray[0], Integer.parseInt(contactPointsArray[1]));
     }
 }
+
