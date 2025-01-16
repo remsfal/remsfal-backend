@@ -9,13 +9,16 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.*;
 import java.util.stream.Collectors;
-
+import java.util.Optional;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Collections;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import java.time.Instant;
 import java.util.List;
@@ -33,7 +36,10 @@ public class ChatMessageRepository {
     CqlSession cqlSession;
 
     @Inject
-    ChatSessionRepository cassChatSessionRepository;
+    ChatSessionRepository chatSessionRepository;
+
+    @Inject
+    Logger logger;
 
     public enum ContentType {
         TEXT, FILE
@@ -41,6 +47,7 @@ public class ChatMessageRepository {
 
     public ChatMessageEntity findMessageById(String sessionId, String messageId) {
         try {
+            logger.info("SessionId: "+ sessionId + " messageId: " + messageId);
             Select selectQuery = QueryBuilder.selectFrom(KEYSPACE, ChatMessageRepository.TABLE)
                     .all()
                     .whereColumn("chat_session_id").isEqualTo(QueryBuilder.literal(UUID.fromString(sessionId)))
@@ -64,6 +71,9 @@ public class ChatMessageRepository {
             }
             if (ContentType.FILE.name().equals(contentType) && content.isBlank()) {
                 throw new IllegalArgumentException("File URL cannot be blank");
+            }
+            if (sessionId == null || sessionId.isBlank()) {
+                throw new IllegalArgumentException("Session ID is null or blank");
             }
 
             ChatMessageEntity message = new ChatMessageEntity();
@@ -132,7 +142,7 @@ public class ChatMessageRepository {
 
     public String exportChatLogsAsJsonString(UUID projectId, UUID taskId, UUID sessionId) {
         Optional<ChatSessionEntity> sessionOpt =
-                cassChatSessionRepository.findSessionById(projectId, sessionId, taskId);
+                chatSessionRepository.findSessionById(projectId, sessionId, taskId);
         if (sessionOpt.isEmpty()) {
             throw new RuntimeException("Session not found");
         }
@@ -167,7 +177,8 @@ public class ChatMessageRepository {
         messageJsonMap.put("MESSAGE_ID", message.getMessageId());
         messageJsonMap.put("SENDER_ID", message.getSenderId());
         messageJsonMap.put("MEMBER_ROLE",
-                cassChatSessionRepository.findParticipantRole(projectId, message.getChatSessionId(), taskId, message.getSenderId()));
+                chatSessionRepository.findParticipantRole(projectId, message.getChatSessionId(),
+                        taskId, message.getSenderId()));
         messageJsonMap.put("MESSAGE_TYPE", message.getContentType());
 
         if (message.getContentType().equals(ContentType.FILE.name())) {

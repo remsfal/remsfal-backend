@@ -25,8 +25,10 @@ public class CassandraExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraExecutor.class);
 
-    private static final String CHANGELOGS_XML_PATH = "src/main/resources/cassandra/changelogs/cassandra-changelogs.xml";
-    private static final String CQL_SCRIPTS_DIRECTORY = "src/main/resources/cassandra/changelogs/cql-scripts";
+    private static final String CHANGELOGS_XML_PATH =
+            "src/main/resources/cassandra/changelogs/cassandra-changelogs.xml";
+    private static final String CQL_SCRIPTS_DIRECTORY =
+            "src/main/resources/cassandra/changelogs/cql-scripts";
 
     @ConfigProperty(name = "quarkus.cassandra.contact-points")
     String cassandraContactPoints;

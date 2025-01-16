@@ -8,7 +8,6 @@ import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,8 +16,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.Instant;
-import java.util.*;
-
+import java.util.UUID;
+import java.util.Map;
+import java.util.Optional;
 @ApplicationScoped
 public class ChatSessionRepository {
 
@@ -39,8 +39,6 @@ public class ChatSessionRepository {
     @Inject
     Logger LOGGER;
 
-    @Inject
-    ObjectMapper objectMapper;
 
     public enum TaskType {
         TASK,
@@ -205,6 +203,11 @@ public class ChatSessionRepository {
     }
     public void updateSessionStatus(UUID projectId, UUID sessionId, UUID taskId, String status) {
         try {
+            LOGGER.info("HERE: "+ sessionId);
+            Optional<ChatSessionEntity> session = findSessionById(projectId, sessionId, taskId);
+            if (session.isEmpty()) {
+                throw new IllegalArgumentException("Session " + sessionId.toString() + " doesn't exist.");
+            }
             if (!Status.OPEN.name().equals(status) && !Status.CLOSED.name().equals(status)) {
                 throw new IllegalArgumentException("Invalid status: " + status);
             }

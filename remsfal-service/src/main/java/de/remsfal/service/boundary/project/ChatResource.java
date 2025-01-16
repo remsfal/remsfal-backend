@@ -3,8 +3,15 @@ package de.remsfal.service.boundary.project;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.*;
-
+import java.util.Optional;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.service.control.FileStorageService;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
@@ -75,7 +82,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
 
             ChatSessionModel session = chatSessionController
-                .createChatSession(projectId, associatedId, taskType, userId);
+                .createChatSession(projectId, associatedId, taskType.name(), userId);
             URI location = uri.getAbsolutePathBuilder().path(session.getSessionId().toString()).build();
             return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
@@ -126,6 +133,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     @Override
     public Response updateChatSessionStatus(String sessionId, String status) {
         try {
+            if (status.startsWith("\"") && status.endsWith("\"")) {
+                status = status.substring(1, status.length() - 1);
+            }
             String projectId = uri.getPathParameters().getFirst("projectId");
             checkPrivileges(projectId);
             String taskId = uri.getPathParameters().getFirst("taskId");
@@ -229,6 +239,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response changeParticipantRole(String sessionId, String participantId,
         String role) {
         try {
+            if (role.startsWith("\"") && role.endsWith("\"")) {
+                role = role.substring(1, role.length() - 1);
+            }
             checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             String projectId = uri.getPathParameters().getFirst("projectId");
             String taskId = uri.getPathParameters().getFirst("taskId");
@@ -323,7 +336,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             String taskId = uri.getPathParameters().getFirst("taskId");
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
-                .entity(chatSessionController.exportChatLogs(projectId, taskId, sessionId))
+                .entity(chatSessionController.exportChatLogs(projectId,sessionId, taskId ))
                 .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
@@ -480,12 +493,19 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                             .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
-
-                    String jsonResponse = String.format("{\"fileId\": \"%s\", \"fileUrl\": \"%s\"}",
-                            fileMetadataEntity.getMessageId(), fileUrl);
+                    String mergedJson = String.format(
+                            "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
+                                    " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
+                            fileMetadataEntity.getMessageId(),
+                            fileUrl,
+                            fileMetadataEntity.getChatSessionId(),
+                            fileMetadataEntity.getCreatedAt(),
+                            fileMetadataEntity.getSenderId()
+                    );
 
                     return Response.status(Response.Status.CREATED)
-                            .entity(jsonResponse)
+                            .entity(mergedJson)
+                            .type(MediaType.APPLICATION_JSON)
                             .build();
                 }
             }

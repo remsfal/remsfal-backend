@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
-import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
 
 @RequestScoped
 public class ChatSessionController {
@@ -31,7 +30,7 @@ public class ChatSessionController {
     UserController userController;
 
     @Transactional
-    public ChatSessionModel createChatSession(String projectId, String taskId, TaskType taskType, String userId) {
+    public ChatSessionModel createChatSession(String projectId, String taskId, String taskType, String userId) {
         logger.infov("Creating chat session (projectId={0}, taskId={1})", projectId, taskId);
         if (userController.getUser(userId) == null) {
             throw new IllegalArgumentException("User with ID " + userId + " not found");
@@ -39,7 +38,7 @@ public class ChatSessionController {
         Map<UUID, String> participants = Map.of(UUID.fromString(userId), ParticipantRole.INITIATOR.name());
         UUID projectUUID = UUID.fromString(projectId);
         UUID taskUUID = UUID.fromString(taskId);
-        return chatSessionRepository.createChatSession(projectUUID, taskUUID, taskType.name(), participants);
+        return chatSessionRepository.createChatSession(projectUUID, taskUUID, taskType, participants);
     }
 
     public void updateChatSessionStatus(String projectId, String taskId, String sessionId, Status status) {
