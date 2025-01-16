@@ -56,7 +56,8 @@ public class CassandraExecutor {
             LOGGER.info("Cassandra initialization completed.");
         } catch (Exception e) {
             LOGGER.error("Error during Cassandra initialization", e);
-            throw new RuntimeException("Failed to initialize Cassandra", e);
+            throw new RuntimeException("Failed to initialize Cassandra" +
+                    "On " + cassandraContactPoints, e);
         }
     }
 
