@@ -22,7 +22,7 @@ import java.util.Optional;
 @ApplicationScoped
 public class ChatSessionRepository {
 
-    @ConfigProperty(name = "quarkus.cassandra.keyspace")
+    @ConfigProperty(name = "%dev.quarkus.cassandra.keyspace")
     String KEYSPACE;
 
     private static final String TABLE = "chat_sessions";

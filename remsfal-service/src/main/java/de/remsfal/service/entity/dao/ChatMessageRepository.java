@@ -27,7 +27,7 @@ import java.util.UUID;
 @ApplicationScoped
 public class ChatMessageRepository {
 
-    @ConfigProperty(name = "quarkus.cassandra.keyspace")
+    @ConfigProperty(name = "%dev.quarkus.cassandra.keyspace")
     String KEYSPACE;
 
     private static final String TABLE = "chat_messages";
