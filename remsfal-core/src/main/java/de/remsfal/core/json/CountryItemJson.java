@@ -17,7 +17,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Schema(description = "A country item of a list")
 @JsonDeserialize(as = ImmutableCountryItemJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class CountryItemJson {
 
     @NotNull

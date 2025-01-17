@@ -16,7 +16,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Schema(description = "A task item with basic information")
 @JsonDeserialize(as = ImmutableTaskItemJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TaskItemJson {
 
     @NotNull

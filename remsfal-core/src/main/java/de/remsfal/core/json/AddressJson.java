@@ -21,7 +21,7 @@ import de.remsfal.core.validation.Zip;
 @Value.Style(validationMethod = Value.Style.ValidationMethod.NONE)
 @Schema(description = "The address of a customer, a building or a site")
 @JsonDeserialize(as = ImmutableAddressJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class AddressJson implements AddressModel {
 
     @NullOrNotBlank

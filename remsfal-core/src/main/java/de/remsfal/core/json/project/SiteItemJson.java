@@ -15,7 +15,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Schema(description = "A site item with basic information")
 @JsonDeserialize(as = ImmutableSiteItemJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class SiteItemJson {
 
     @NotNull

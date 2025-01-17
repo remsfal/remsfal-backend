@@ -21,7 +21,7 @@ import java.util.Date;
 @Value.Immutable
 @Schema(description = "A single chat message")
 @JsonDeserialize(as = ImmutableChatMessageJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ChatMessageJson implements ChatMessageModel {
 
     @Null

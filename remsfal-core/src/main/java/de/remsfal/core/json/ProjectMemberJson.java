@@ -22,7 +22,7 @@ import de.remsfal.core.model.ProjectMemberModel;
 @Value.Immutable
 @Schema(description = "Project member information in context of a project")
 @JsonDeserialize(as = ImmutableProjectMemberJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectMemberJson implements ProjectMemberModel {
 
     @Nullable

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @Value.Immutable
 @Schema(description = "A list of project members")
 @JsonDeserialize(as = ImmutableProjectMemberListJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectMemberListJson {
 
 
