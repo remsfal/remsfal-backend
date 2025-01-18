@@ -50,7 +50,7 @@ class ProjectMemberListJsonTest {
             return role;
         }
         @Override
-        public boolean isActive() {
+        public Boolean isActive() {
             return isActive;
         }
     }

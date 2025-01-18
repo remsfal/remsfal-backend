@@ -12,13 +12,13 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class MemberResourceTest extends AbstractProjectResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/members";
-/*
+    static final String MEMBER_PATH = BASE_PATH + "/{memberId}";
+
     @Override
     @BeforeEach
     protected void setupTestProperties() {
@@ -28,378 +28,167 @@ class MemberResourceTest extends AbstractProjectResourceTest {
     }
 
     @Test
-    void addProjectMemeber_SUCCESS_multiUser() {
+    void getProjectMembers_FAILED_notMember() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + TestData.PROJECT_ID_1 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-                .post(BASE_PATH,  TestData.PROJECT_ID)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
-                .get(BASE_PATH,  TestData.PROJECT_ID)
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + TestData.PROJECT_ID_1 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-                .post(BASE_PATH,  TestData.PROJECT_ID)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId2 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
-
-        final String user1projectId3 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_3 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + TestData.PROJECT_ID_1 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-                .post(BASE_PATH + "/" + user1projectId3 + "/members")
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId3 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
-
-        final String user1projectId4 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_4 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + TestData.PROJECT_ID_1 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-                .post(BASE_PATH + "/" + user1projectId4 + "/members")
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId4 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
-
-        final String user1projectId5 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_5 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + TestData.PROJECT_ID_1 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-                .post(BASE_PATH + "/" + user1projectId5 + "/members")
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId5 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1));
-
-        long entries1 = entityManager
-                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
-                .setParameter("projectTitle", TestData.PROJECT_TITLE_1)
-                .getSingleResult();
-        assertEquals(2, entries1);
-
-        long entries2 = entityManager
-                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
-                .setParameter("projectTitle", TestData.PROJECT_TITLE_2)
-                .getSingleResult();
-        assertEquals(2, entries2);
-
-        long entries3 = entityManager
-                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
-                .setParameter("projectTitle", TestData.PROJECT_TITLE_4)
-                .getSingleResult();
-        assertEquals(2, entries3);
-
-        long entries4 = entityManager
-                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
-                .setParameter("projectTitle", TestData.PROJECT_TITLE_5)
-                .getSingleResult();
-        assertEquals(2, entries4);
-
-        long entries5 = entityManager
-                .createQuery("SELECT count(m) FROM ProjectEntity p JOIN p.memberships m WHERE p.title = :projectTitle", Long.class)
-                .setParameter("projectTitle", TestData.PROJECT_TITLE_5)
-                .getSingleResult();
-        assertEquals(2, entries5);
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
+            .get(BASE_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
-    void addProjectMemeber_noAuthentication() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void addProjectMember_FAILED_notMember() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON);
-
-        given()
-                .when()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + TestData.PROJECT_ID_1 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-                .post(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Matchers.equalTo(401));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"LESSOR\"}")
+            .post(BASE_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
-    void getProjectMembers_SUCCESS() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void updateProjectMember_FAILED_notMember() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .body("members.id", Matchers.hasItem(TestData.USER_ID_1));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{\"role\":\"LESSOR\"}")
+            .patch(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
-    void updateProjectMember_SUCCESS() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void deleteProjectMember_FAILED_notMember() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + user1projectId1 + "\",  \"id\":\"" + TestData.USER_ID_1 + "\", \"role\":\"LESSOR\", \"email\":\"max.mustermann@example.org\", \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .patch(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_1)
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("id", Matchers.equalTo(user1projectId1))
-                .and().body("title", Matchers.equalTo(TestData.PROJECT_TITLE_1))
-                .and().body("members[0].role", Matchers.equalTo("LESSOR"));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
+            .delete(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
-    void updateProjectMember_noRole() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void deleteProjectMember_FAILED_notOwner() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + user1projectId1 + "\",  \"id\":\"" + TestData.USER_ID_1 + "\", \"email\":\"max.mustermann@example.org\", \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .patch(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_1)
-                .then()
-                .statusCode(Status.BAD_REQUEST.getStatusCode());
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .delete(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
-    void updateProjectMember_noAuthentication() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void updateProjectMember_FAILED_emailMustBeNull() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON);
-
-        given()
-                .when()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"projectId\":\" " + TestData.PROJECT_ID_2 + "\",  \"id\":\"" + TestData.USER_ID_2 + "\", \"role\":\"LESSOR\", \"email\":\"" + TestData.USER_EMAIL_2 + "\"}")
-                .post(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Matchers.equalTo(401));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"LESSOR\"}")
+            .patch(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test
-    void deleteProjectMember_SUCCESS() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void getProjectMembers_SUCCESS_oneMemberReturned() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON);
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .delete(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_2)
-                .then()
-                .statusCode(Matchers.equalTo(204));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .get(BASE_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("members.size()", Matchers.equalTo(1))
+            .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1))
+            .and().body("members.email", Matchers.hasItem(TestData.USER_EMAIL_1))
+            .and().body("members.isActive", Matchers.hasItem(true))
+            .and().body("members.role", Matchers.hasItem("MANAGER"));
     }
 
     @Test
-    void deleteProjectMember_noFound() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void addProjectMember_SUCCESS_newMemberReturned() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON);
-
-        given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .delete(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_1)
-                .then()
-                .statusCode(Matchers.equalTo(404));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"email\":\"newUser@example.org\",  \"role\":\"STAFF\"}")
+            .post(BASE_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.notNullValue())
+            .and().body("email", Matchers.equalTo("newUser@example.org"))
+            .and().body("isActive", Matchers.is(false))
+            .and().body("role", Matchers.equalTo("STAFF"));
     }
 
     @Test
-    void deleteProjectMember_noAuthentication() {
-        final String user1projectId1 = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).contentType(MediaType.APPLICATION_JSON)
-                .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Status.CREATED.getStatusCode())
-                .extract().path("id");
-
+    void addProjectMember_SUCCESS_existingMemberReturned() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100))).get(BASE_PATH + "/" + user1projectId1 + "/members")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON);
-
-        given()
-                .when()
-                .contentType(MediaType.APPLICATION_JSON)
-                .delete(BASE_PATH + "/" + user1projectId1 + "/members/" + TestData.USER_ID_1)
-                .then()
-                .statusCode(Matchers.equalTo(401));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"LESSOR\"}")
+            .post(BASE_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(TestData.USER_ID_2))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2))
+            .and().body("isActive", Matchers.is(true))
+            .and().body("role", Matchers.equalTo("LESSOR"));
     }
-*/
+
+    @Test
+    void updateProjectMember_SUCCESS_memberWithChangedRoleReturned() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{\"role\":\"PROPRIETOR\"}")
+            .patch(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(TestData.USER_ID_1))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_1))
+            .and().body("isActive", Matchers.is(true))
+            .and().body("role", Matchers.equalTo("PROPRIETOR"));
+    }
+
+    @Test
+    void deleteProjectMember_SUCCESS_userDeleted() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"PROPRIETOR\"}")
+            .post(BASE_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
+            .delete(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+    }
+
 }

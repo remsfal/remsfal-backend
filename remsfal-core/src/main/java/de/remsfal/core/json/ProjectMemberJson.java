@@ -41,12 +41,14 @@ public abstract class ProjectMemberJson implements ProjectMemberModel {
     @Email(groups = PostValidation.class)
     @NotBlank(groups = PostValidation.class)
     @Size(groups = PostValidation.class, max = 255, message = "The email cannot be longer than 255 characters")
+    @Nullable
     @Override
     public abstract String getEmail();
 
     @Null
+    @Nullable
     @Override
-    public abstract boolean isActive();
+    public abstract Boolean isActive();
 
     @NotNull
     @Override

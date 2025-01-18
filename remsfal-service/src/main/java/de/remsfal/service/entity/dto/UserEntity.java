@@ -90,7 +90,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     @Override
-    public boolean isActive() {
+    public Boolean isActive() {
         return tokenId != null;
     }
 

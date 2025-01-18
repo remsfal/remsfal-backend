@@ -44,7 +44,7 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getEmail();
 
     @Override
-    public abstract boolean isActive();
+    public abstract Boolean isActive();
 
     @JsonIgnore
     @Null

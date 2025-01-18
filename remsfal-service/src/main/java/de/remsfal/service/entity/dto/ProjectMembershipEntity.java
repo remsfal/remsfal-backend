@@ -93,7 +93,7 @@ public class ProjectMembershipEntity extends AbstractEntity implements ProjectMe
     }
 
     @Override
-    public boolean isActive() {
+    public Boolean isActive() {
         return user.isActive();
     }
 

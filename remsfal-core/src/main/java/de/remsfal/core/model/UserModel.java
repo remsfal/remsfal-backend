@@ -11,6 +11,6 @@ public interface UserModel {
 
     String getName();
 
-    boolean isActive();
+    Boolean isActive();
 
 }
