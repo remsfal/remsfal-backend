@@ -1,19 +1,15 @@
 package de.remsfal.core.json.project;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ChatMessageModel;
-import de.remsfal.core.model.project.ChatSessionModel;
-import de.remsfal.core.validation.UUID;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Null;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
-
-import java.util.Date;
+import java.time.Instant;
+import java.util.UUID;
 
 /**
  * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
@@ -27,22 +23,19 @@ public abstract class ChatMessageJson implements ChatMessageModel {
     @Null
     @Nullable
     @Override
-    @UUID
-    public abstract String getId();
+    public abstract UUID getMessageId();
 
     @Nullable
     @Override
-    @UUID
-    public abstract String getChatSessionId();
+    public abstract UUID getChatSessionId();
 
     @Nullable
     @Override
-    @UUID
-    public abstract String getSenderId();
+    public abstract UUID getSenderId();
 
     @Nullable
     @Override
-    public abstract ContentType getContentType();
+    public abstract String getContentType();
 
     @Nullable
     @Override
@@ -56,30 +49,18 @@ public abstract class ChatMessageJson implements ChatMessageModel {
     @Null
     @Nullable
     @Override
-    public abstract Date getTimestamp();
-
-    @Null
-    @Nullable
-    @Override
-    @JsonIgnore
-    public abstract ChatSessionModel getChatSession();
-
-    @Null
-    @Nullable
-    @Override
-    @JsonIgnore
-    public abstract UserModel getSender();
+    public abstract Instant getCreatedAt();
 
     public static ChatMessageJson valueOf(final ChatMessageModel model)
     {
         return ImmutableChatMessageJson.builder()
-                .id(model.getId())
+                .messageId(model.getMessageId())
                 .chatSessionId(model.getChatSessionId())
                 .senderId(model.getSenderId())
                 .contentType(model.getContentType())
                 .content(model.getContent())
                 .url(model.getUrl())
-                .timestamp(model.getTimestamp())
+                .createdAt(model.getCreatedAt())
                 .build();
     }
 

@@ -1,36 +1,24 @@
 package de.remsfal.core.model.project;
 
-import de.remsfal.core.model.UserModel;
-
-import java.util.Date;
+import java.time.Instant;
+import java.util.UUID;
 
 /**
- * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ * Represents a chat message in Cassandra.
  */
 public interface ChatMessageModel {
 
-    String getId();
+    UUID getChatSessionId(); // Partition key for horizontal scaling
 
-    ChatSessionModel getChatSession();
+    UUID getMessageId(); // Unique ID for the message (Clustering column)
 
-    String getChatSessionId();
+    UUID getSenderId(); // ID of the sender
 
-    UserModel getSender();
+    String getContentType(); // Content type (e.g., TEXT, FILE)
 
-    String getSenderId();
+    String getContent(); // Text content of the message
 
+    String getUrl(); // File URL if the content type is FILE
 
-    enum ContentType {
-        TEXT,
-        FILE
-    }
-
-    ContentType getContentType();
-
-    String getContent();
-
-    String getUrl();
-
-    Date getTimestamp();
-
+    Instant getCreatedAt(); // Timestamp when the message was created
 }
