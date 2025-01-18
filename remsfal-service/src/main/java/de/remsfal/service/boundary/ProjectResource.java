@@ -2,9 +2,7 @@ package de.remsfal.service.boundary;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
-import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ResourceContext;
@@ -18,8 +16,6 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.api.ProjectEndpoint;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
-import de.remsfal.core.json.ProjectMemberJson;
-import de.remsfal.core.json.ProjectMemberListJson;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.boundary.project.ApartmentResource;
@@ -27,6 +23,7 @@ import de.remsfal.service.boundary.project.BuildingResource;
 import de.remsfal.service.boundary.project.CommercialResource;
 import de.remsfal.service.boundary.project.DefectResource;
 import de.remsfal.service.boundary.project.GarageResource;
+import de.remsfal.service.boundary.project.MemberResource;
 import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.boundary.project.SiteResource;
 import de.remsfal.service.boundary.project.TaskResource;
@@ -51,6 +48,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     ProjectController controller;
+
+    @Inject
+    Instance<MemberResource> memberResource;
 
     @Inject
     Instance<PropertyResource> propertyResource;
@@ -110,31 +110,8 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public Response addProjectMember(final String projectId, final ProjectMemberJson member) {
-        final ProjectModel model =  controller.addProjectMember(principal, projectId, member);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
-        return Response.created(location)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ProjectJson.valueOf(model))
-                .build();
-    }
-
-    @Override
-    public ProjectMemberListJson getProjectMembers(final String projectId) {
-        final Set<? extends ProjectMemberModel> model = controller.getProjectMembers(principal, projectId);
-        return ProjectMemberListJson.valueOfSet(model);
-    }
-
-    @Override
-    public ProjectJson updateProjectMember(final String projectId,
-                                           final String memberId, final ProjectMemberJson project) {
-        final ProjectModel model = controller.changeProjectMemberRole(principal, projectId, project);
-        return ProjectJson.valueOf(model);
-    }
-
-    @Override
-    public void deleteProjectMember(final String projectId, final String memberId) {
-        controller.removeProjectMember(principal, projectId, memberId);
+    public MemberResource getMemberResource() {
+        return resourceContext.initResource(memberResource.get());
     }
 
     @Override

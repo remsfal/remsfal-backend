@@ -58,4 +58,8 @@ public class ProjectRepository extends AbstractRepository<ProjectEntity> {
             .executeUpdate() > 0;
     }
 
+    public ProjectMembershipEntity merge(final ProjectMembershipEntity entity) {
+        return getEntityManager().merge(entity);
+    }
+
 }

@@ -7,7 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Value.Immutable
 @Schema(description = "Encapsulated data of a project tree node")
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public interface NodeDataJson {
 
     @Schema(description = "Type of the node (e.g., 'property', 'building')", required = true, examples = "property")

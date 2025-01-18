@@ -5,13 +5,7 @@ package de.remsfal.core.model.project;
  */
 public interface ApartmentModel extends RentalUnitModel {
 
-    String getId();
-
-    String getTitle();
-
     String getLocation();
-
-    String getDescription();
 
     Float getLivingSpace();
 

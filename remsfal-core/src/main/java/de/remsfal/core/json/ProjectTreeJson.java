@@ -10,7 +10,7 @@ import java.util.List;
 
 @Value.Immutable
 @Schema(description = "A paginated list of project tree nodes")
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectTreeJson {
 
     @Schema(

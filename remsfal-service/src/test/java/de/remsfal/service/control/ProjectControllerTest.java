@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.core.json.ImmutableProjectJson;
 import de.remsfal.core.json.ImmutableProjectMemberJson;
 import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectMemberModel.UserRole;
+import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractTest;
@@ -67,7 +66,7 @@ class ProjectControllerTest extends AbstractTest {
 
         final String userRole = entityManager
             .createNativeQuery(
-                "SELECT USER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
+                "SELECT MEMBER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
             .setParameter("projectId", projectId)
             .setParameter("userId", userId)
             .getSingleResult()
@@ -225,13 +224,14 @@ class ProjectControllerTest extends AbstractTest {
         final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .id(user2.getId())
             .email(user2.getEmail())
-            .role(UserRole.MANAGER)
+            .isActive(true)
+            .role(MemberRole.MANAGER)
             .build();
         projectController.addProjectMember(user1, project.getId(), member2);
         
         final String userRole = entityManager
             .createNativeQuery(
-                "SELECT USER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
+                "SELECT MEMBER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
             .setParameter("projectId", project.getId())
             .setParameter("userId", member2.getId())
             .getSingleResult()
@@ -257,26 +257,29 @@ class ProjectControllerTest extends AbstractTest {
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
 
-        final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
+        ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_2)
-            .role(UserRole.PROPRIETOR)
+            .isActive(false)
+            .role(MemberRole.PROPRIETOR)
             .build();
-        project = projectController.addProjectMember(user, project.getId(), member2);
-        assertEquals(2, project.getMembers().size());
+        member2 = projectController.addProjectMember(user, project.getId(), member2);
+        assertNotNull(member2.getId());
         
-        final ProjectMemberModel member3 = ImmutableProjectMemberJson.builder()
+        ProjectMemberModel member3 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_3)
-            .role(UserRole.MANAGER)
+            .isActive(true)
+            .role(MemberRole.MANAGER)
             .build();
-        project = projectController.addProjectMember(user, project.getId(), member3);
-        assertEquals(3, project.getMembers().size());
+        member3 = projectController.addProjectMember(user, project.getId(), member3);
+        assertEquals(TestData.USER_EMAIL_3, member3.getEmail());
         
-        final ProjectMemberModel member4 = ImmutableProjectMemberJson.builder()
+        ProjectMemberModel member4 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_4)
-            .role(UserRole.LESSOR)
+            .isActive(false)
+            .role(MemberRole.LESSOR)
             .build();
-        project = projectController.addProjectMember(user, project.getId(), member4);
-        assertEquals(4, project.getMembers().size());
+        member4 = projectController.addProjectMember(user, project.getId(), member4);
+        assertEquals(MemberRole.LESSOR, member4.getRole());
         
         final long enties = entityManager
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership where membership.project.id = :projectId", Long.class)
@@ -298,7 +301,8 @@ class ProjectControllerTest extends AbstractTest {
 
         final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_2)
-            .role(UserRole.LESSOR)
+            .isActive(false)
+            .role(MemberRole.LESSOR)
             .build();
         projectController.addProjectMember(user, project.getId(), member2);
         long enties = entityManager
@@ -317,13 +321,9 @@ class ProjectControllerTest extends AbstractTest {
         assertEquals(TestData.USER_EMAIL_2, model.getEmail());
         final UserModel user2 = model;
         
-        assertThrows(ForbiddenException.class,
-            () -> projectController.removeProjectMember(user2, project.getId(), member2.getId()));
         assertNotNull(user2.getId());
 
-        final ProjectModel updatedProject = projectController.removeProjectMember(user, project.getId(), user2.getId());
-        assertNotNull(updatedProject);
-        assertEquals(1, updatedProject.getMembers().size());
+        assertTrue(projectController.removeProjectMember(project.getId(), user2.getId()));
         enties = entityManager
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
             .getSingleResult();
@@ -331,7 +331,7 @@ class ProjectControllerTest extends AbstractTest {
     }
 
     @Test
-    void changeProjectMemberRole(){
+    void changeProjectMemberRole_SUCCESS_roleChanged(){
         final UserModel user = userController
                 .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
@@ -339,27 +339,17 @@ class ProjectControllerTest extends AbstractTest {
                 ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
 
-        final ProjectMemberModel memberRequest = ImmutableProjectMemberJson.builder()
-                .email(TestData.USER_EMAIL_2)
-                .role(UserRole.LESSOR)
-                .build();
-
-        final ProjectMemberModel memberExpected = ImmutableProjectMemberJson.builder()
-                .email(TestData.USER_EMAIL_2)
-                .role(UserRole.MANAGER)
-                .build();
-
-        projectController.addProjectMember(user, project.getId(), memberRequest);
-
-        final ProjectModel projectResponse = projectController.changeProjectMemberRole(user, project.getId(), memberExpected);
-        Set<? extends ProjectMemberModel> projectMemberModel = projectResponse.getMembers();
-
-        Iterator<? extends ProjectMemberModel> iter = projectMemberModel.iterator();
-        ProjectMemberModel model = iter.next();
-        if(model.getEmail().equals(TestData.USER_EMAIL_2) && iter.hasNext()) {
-            model = iter.next();
-        }
-        assertEquals(UserRole.MANAGER, model.getRole());
+        final ProjectMemberModel memberResponse = projectController
+            .changeProjectMemberRole(project.getId(), user.getId(), MemberRole.LESSOR);
+        assertEquals(MemberRole.LESSOR, memberResponse.getRole());
+        final String userRole = entityManager
+            .createNativeQuery(
+                "SELECT MEMBER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
+            .setParameter("projectId", project.getId())
+            .setParameter("userId", user.getId())
+            .getSingleResult()
+            .toString();
+        assertEquals("LESSOR", userRole);
     }
     
 }

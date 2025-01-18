@@ -31,7 +31,7 @@ public class DefectResource extends ProjectSubResource implements DefectEndpoint
 
     @Override
     public TaskListJson getDefects(String projectId, String ownerId, Status status) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         if(ownerId == null || ownerId.isBlank()) {
             return TaskListJson.valueOf(defectController.getDefects(projectId, Optional.ofNullable(status)));
         } else {
@@ -41,7 +41,7 @@ public class DefectResource extends ProjectSubResource implements DefectEndpoint
 
     @Override
     public Response createDefects(String projectId, TaskJson defect) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         final TaskModel model = defectController.createDefect(projectId, principal, defect);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -52,19 +52,19 @@ public class DefectResource extends ProjectSubResource implements DefectEndpoint
 
     @Override
     public TaskJson getDefect(String projectId, String defectId) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         return TaskJson.valueOf(defectController.getDefect(projectId, defectId));
     }
 
     @Override
     public TaskJson updateDefect(String projectId, String defectId, TaskJson defect) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         return TaskJson.valueOf(defectController.updateDefect(projectId, defectId, defect));
     }
 
     @Override
     public void deleteDefect(String projectId, String defectId) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         defectController.deleteDefect(projectId, defectId);
     }
 

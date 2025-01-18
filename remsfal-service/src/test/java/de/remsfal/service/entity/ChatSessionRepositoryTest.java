@@ -12,14 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.remsfal.core.model.ProjectMemberModel.UserRole;
+import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.model.project.ChatSessionModel.ParticipantRole;
 import de.remsfal.service.AbstractTest;
@@ -93,28 +92,28 @@ class ChatSessionRepositoryTest extends AbstractTest {
                 .executeUpdate();
 
         // Insert project memberships
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.USER_ID)
-                .setParameter(3, UserRole.MANAGER.name())
+                .setParameter(3, MemberRole.MANAGER.name())
                 .executeUpdate();
 
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.USER_ID_2)
-                .setParameter(3, UserRole.LESSOR.name())
+                .setParameter(3, MemberRole.LESSOR.name())
                 .executeUpdate();
 
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.USER_ID_3)
-                .setParameter(3, UserRole.CARETAKER.name()) // Ensure "CARETAKER" is a valid enum constant
+                .setParameter(3, MemberRole.STAFF.name())
                 .executeUpdate();
 
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.USER_ID_4)
-                .setParameter(3, UserRole.CARETAKER.name()) // Ensure "CARETAKER" is a valid enum constant
+                .setParameter(3, MemberRole.STAFF.name())
                 .executeUpdate();
 
         entityManager.createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -176,31 +175,6 @@ class ChatSessionRepositoryTest extends AbstractTest {
                 .setParameter(5, "Hello, this is a test message. I am the handler.")
                 .executeUpdate();
 
-    }
-
-    @AfterEach
-    @Transactional
-    protected void cleanDB() {
-        // Delete CHAT_MESSAGE entries first
-        entityManager.createNativeQuery("DELETE FROM CHAT_MESSAGE").executeUpdate();
-
-        // Then delete CHAT_SESSION_PARTICIPANT entries
-        entityManager.createNativeQuery("DELETE FROM CHAT_SESSION_PARTICIPANT").executeUpdate();
-
-        // Delete CHAT_SESSION entries
-        entityManager.createNativeQuery("DELETE FROM CHAT_SESSION").executeUpdate();
-
-        // Delete TASK entries
-        entityManager.createNativeQuery("DELETE FROM TASK").executeUpdate();
-
-        // Delete PROJECT_MEMBERSHIP entries
-        entityManager.createNativeQuery("DELETE FROM PROJECT_MEMBERSHIP").executeUpdate();
-
-        // Delete PROJECT entries
-        entityManager.createNativeQuery("DELETE FROM PROJECT").executeUpdate();
-
-        // Finally, delete USER entries
-        entityManager.createNativeQuery("DELETE FROM USER").executeUpdate();
     }
 
     @Test

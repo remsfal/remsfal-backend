@@ -5,12 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.immutable.ImmutableStyle;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.validation.PostValidation;
@@ -19,10 +20,11 @@ import de.remsfal.core.validation.Title;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A building as part of a property")
 @JsonDeserialize(as = ImmutableBuildingJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class BuildingJson implements BuildingModel {
 
     @Null

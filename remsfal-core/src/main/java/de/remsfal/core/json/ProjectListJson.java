@@ -18,7 +18,7 @@ import de.remsfal.core.model.ProjectModel;
 @Value.Immutable
 @Schema(description = "A list of projects")
 @JsonDeserialize(as = ImmutableProjectListJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectListJson {
 
     @Schema(description = "Index of the first element in projects list of total available entries, starting at 1",

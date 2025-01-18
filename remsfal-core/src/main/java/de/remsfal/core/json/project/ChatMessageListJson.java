@@ -14,7 +14,7 @@ import java.util.List;
 @Value.Immutable
 @Schema(description = "A list of chat messages")
 @JsonDeserialize(as = ImmutableChatMessageListJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ChatMessageListJson {
 
     public abstract List<ChatMessageJson> getMessages();

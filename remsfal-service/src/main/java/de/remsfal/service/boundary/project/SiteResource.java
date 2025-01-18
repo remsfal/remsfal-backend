@@ -25,14 +25,14 @@ public class SiteResource extends ProjectSubResource implements SiteEndpoint {
 
     @Override
     public SiteListJson getSites(final String projectId, final String propertyId) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         List<? extends SiteModel> sites = controller.getSites(projectId, propertyId);
         return SiteListJson.valueOf(sites);
     }
 
     @Override
     public Response createSite(final String projectId, final String propertyId, final SiteJson site) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         final SiteModel model = controller.createSite(projectId, propertyId, site);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -43,20 +43,20 @@ public class SiteResource extends ProjectSubResource implements SiteEndpoint {
 
     @Override
     public SiteJson getSite(final String projectId, final String siteId) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         final SiteModel model = controller.getSite(projectId, siteId);
         return SiteJson.valueOf(model);
     }
 
     @Override
     public SiteJson updateSite(final String projectId, final String siteId, final SiteJson site) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         return SiteJson.valueOf(controller.updateSite(projectId, siteId, site));
     }
 
     @Override
     public void deleteSite(final String projectId, final String siteId) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         controller.deleteSite(projectId, siteId);
     }
 

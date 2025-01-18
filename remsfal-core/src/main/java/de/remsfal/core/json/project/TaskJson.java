@@ -25,7 +25,7 @@ import de.remsfal.core.validation.UUID;
 @Value.Immutable
 @Schema(description = "A task")
 @JsonDeserialize(as = ImmutableTaskJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TaskJson implements TaskModel {
 
     @Null

@@ -15,7 +15,7 @@ import java.util.List;
 @Value.Immutable
 @Schema(description = "A list of properties")
 @JsonDeserialize(as = ImmutablePropertyJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class PropertyListJson {
 
     @Schema(

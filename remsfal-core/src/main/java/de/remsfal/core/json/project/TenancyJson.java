@@ -8,22 +8,24 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.immutable.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.project.TenancyModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A tenancy of a rentable unit")
 @JsonDeserialize(as = ImmutableTenancyJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TenancyJson implements TenancyModel {
 
     @Null

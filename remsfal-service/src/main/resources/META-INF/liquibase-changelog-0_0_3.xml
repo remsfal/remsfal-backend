@@ -29,7 +29,7 @@
             <column name="USER_ID" type="char(36)">
                 <constraints nullable="false" />
             </column>
-            <column name="USER_ROLE" type="ENUM('PROPRIETOR', 'MANAGER', 'LESSOR', 'CARETAKER')">
+            <column name="MEMBER_ROLE" type="ENUM('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')">
                 <constraints nullable="false" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">

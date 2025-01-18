@@ -44,12 +44,12 @@ class ProjectMembershipEntityTest {
         entity1 = new ProjectMembershipEntity();
         entity1.setProject(project1);
         entity1.setUser(user1);
-        entity1.setRole(ProjectMemberModel.UserRole.MANAGER);
+        entity1.setRole(ProjectMemberModel.MemberRole.MANAGER);
 
         entity2 = new ProjectMembershipEntity();
         entity2.setProject(project1);
         entity2.setUser(user1);
-        entity2.setRole(ProjectMemberModel.UserRole.MANAGER);
+        entity2.setRole(ProjectMemberModel.MemberRole.MANAGER);
     }
 
     //Tests if equality of ProjectMember objects is based on equality of project, user & role
@@ -80,7 +80,7 @@ class ProjectMembershipEntityTest {
     @Test
     @DisplayName("Test two unequal objects (different role)")
     void testEqualsDifferentRoles () {
-        entity2.setRole(ProjectMemberModel.UserRole.LESSOR);
+        entity2.setRole(ProjectMemberModel.MemberRole.LESSOR);
 
         assertNotEquals(entity1, entity2);
     }
@@ -90,7 +90,7 @@ class ProjectMembershipEntityTest {
     void testToString() {
         ProjectMembershipEntity entity3 = new ProjectMembershipEntity();
         entity3.setUser(user2);
-        entity3.setRole(ProjectMemberModel.UserRole.LESSOR);
+        entity3.setRole(ProjectMemberModel.MemberRole.LESSOR);
 
         user2.setEmail(USER_EMAIL);
         user2.setFirstName(USER_FIRST_NAME);

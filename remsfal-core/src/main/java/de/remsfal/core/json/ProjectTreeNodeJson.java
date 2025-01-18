@@ -10,7 +10,7 @@ import java.util.List;
 
 @Value.Immutable
 @Schema(description = "A tree node representing a project entity")
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectTreeNodeJson {
 
     @Schema(description = "Key of the node", required = true, examples = "Property 1")

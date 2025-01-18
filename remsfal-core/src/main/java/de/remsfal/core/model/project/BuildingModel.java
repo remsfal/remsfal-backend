@@ -5,15 +5,9 @@ import de.remsfal.core.model.AddressModel;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface BuildingModel {
-
-    String getId();
-
-    String getTitle();
+public interface BuildingModel extends RentalUnitModel {
 
     AddressModel getAddress();
-
-    String getDescription();
 
     Float getLivingSpace();
 

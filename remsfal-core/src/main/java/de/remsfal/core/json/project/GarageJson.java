@@ -20,7 +20,7 @@ import de.remsfal.core.model.project.GarageModel;
 @Value.Immutable
 @Schema(description = "A garage inside a building")
 @JsonDeserialize(as = ImmutableGarageJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class GarageJson implements GarageModel {
 
     @Null

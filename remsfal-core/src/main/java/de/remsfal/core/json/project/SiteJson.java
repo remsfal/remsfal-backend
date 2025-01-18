@@ -7,12 +7,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.immutable.ImmutableStyle;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.core.validation.PostValidation;
@@ -21,10 +22,11 @@ import de.remsfal.core.validation.Title;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A site as part of a property")
 @JsonDeserialize(as = ImmutableSiteJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class SiteJson implements SiteModel {
 
     @Null

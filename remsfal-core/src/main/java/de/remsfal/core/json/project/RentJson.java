@@ -22,7 +22,7 @@ import de.remsfal.core.model.project.RentModel;
 @Value.Immutable
 @Schema(description = "A rent of a tenancy")
 @JsonDeserialize(as = ImmutableRentJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class RentJson implements RentModel {
 
     @NotNull

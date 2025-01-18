@@ -43,7 +43,7 @@ class TaskRepositoryTest extends AbstractTest {
             .setParameter(2, TestData.PROJECT_TITLE)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.USER_ID)
             .setParameter(3, "MANAGER")

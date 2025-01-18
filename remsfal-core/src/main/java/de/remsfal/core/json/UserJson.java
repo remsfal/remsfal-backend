@@ -12,22 +12,24 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.immutable.ImmutableStyle;
 import de.remsfal.core.model.CustomerModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "User information globally")
 @JsonDeserialize(as = ImmutableUserJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class UserJson implements CustomerModel {
 
     @Null(groups = PostValidation.class)
@@ -91,6 +93,7 @@ public abstract class UserJson implements CustomerModel {
         return ImmutableUserJson.builder()
             .id(model.getId())
             .email(model.getEmail())
+            .active(model.isActive())
             .firstName(model.getFirstName())
             .lastName(model.getLastName())
             .address(AddressJson.valueOf(model.getAddress()))

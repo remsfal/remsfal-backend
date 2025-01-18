@@ -61,13 +61,11 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     private final String bucketName = "remsfal-chat-files";
 
     @Override
-    public Response createChatSession() {
+    public Response createChatSession(final String projectId) {
+        checkWritePermissions(projectId);
         try {
-            String userId = principal.getId(); // Get user ID from session
-            String projectId = uri.getPathParameters().getFirst("projectId");
             String taskId = uri.getPathParameters().getFirst("taskId");
             String defectId = uri.getPathParameters().getFirst("defectId");
-            checkPrivileges(projectId);
             if ((taskId == null || taskId.isBlank()) && (defectId == null || defectId.isBlank()))
                 throw new BadRequestException("Task ID or defect ID must be provided");
             if (taskId != null && taskController.getTask(projectId, taskId) == null)
@@ -80,7 +78,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
 
             ChatSessionModel session = chatSessionController
-                .createChatSession(projectId, associatedId, taskType, userId);
+                .createChatSession(projectId, associatedId, taskType, principal.getId());
             URI location = uri.getAbsolutePathBuilder().path(session.getId()).build();
             return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
@@ -93,10 +91,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response getChatSession(String sessionId) {
+    public Response getChatSession(final String projectId, final String sessionId) {
+        checkWritePermissions(projectId);
         try {
-            String projectId = uri.getPathParameters().getFirst("projectId");
-            checkPrivileges(projectId);
             ChatSessionModel session = chatSessionController.getChatSession(sessionId);
             return Response.ok(uri.getAbsolutePath())
                 .type(MediaType.APPLICATION_JSON)
@@ -111,10 +108,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response deleteChatSession(String sessionId) {
+    public Response deleteChatSession(final String projectId, final String sessionId) {
+        checkWritePermissions(projectId);
         try {
-            String projectId = uri.getPathParameters().getFirst("projectId");
-            checkPrivileges(projectId);
             chatSessionController.deleteChatSession(sessionId);
             return Response.noContent().build();
         } catch (Exception e) {
@@ -124,10 +120,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response updateChatSessionStatus(String sessionId, ChatSessionModel.Status status) {
+    public Response updateChatSessionStatus(final String projectId, final String sessionId,
+        final ChatSessionModel.Status status) {
+        checkWritePermissions(projectId);
         try {
-            String projectId = uri.getPathParameters().getFirst("projectId");
-            checkPrivileges(projectId);
             if (status != ChatSessionModel.Status.ARCHIVED && status != ChatSessionModel.Status.OPEN
                 && status != ChatSessionModel.Status.CLOSED) {
                 throw new BadRequestException("Status must be provided");
@@ -149,11 +145,11 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response joinChatSession(String sessionId) {
-        String userId = principal.getId(); // Get user ID from session
-        checkPrivileges(uri.getPathParameters().getFirst("projectId"));
+    public Response joinChatSession(final String projectId, final String sessionId) {
+        checkWritePermissions(projectId);
         try {
-            chatSessionController.addParticipant(sessionId, userId, ChatSessionModel.ParticipantRole.OBSERVER);
+            chatSessionController.addParticipant(sessionId, principal.getId(),
+                ChatSessionModel.ParticipantRole.OBSERVER);
             Map<String, ChatSessionModel.ParticipantRole> participants =
                 chatSessionController.getChatSession(sessionId).getParticipants();
             String json = jsonifyParticipantsMap(participants);
@@ -172,9 +168,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response getParticipants(String sessionId) {
+    public Response getParticipants(final String projectId, final String sessionId) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             Map<String, ChatSessionModel.ParticipantRole> participants =
                 chatSessionController.getParticipants(sessionId);
             String json = jsonifyParticipantsMap(participants);
@@ -191,9 +187,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response getParticipant(String sessionId, String participantId) {
+    public Response getParticipant(final String projectId, final String sessionId, final String participantId) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
             Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
             if (participants.containsKey(participantId)) {
@@ -214,10 +210,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response changeParticipantRole(String sessionId, String participantId,
-        ChatSessionModel.ParticipantRole role) {
+    public Response changeParticipantRole(final String projectId, final String sessionId, final String participantId,
+        final ChatSessionModel.ParticipantRole role) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
             Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
 
@@ -243,9 +239,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response removeParticipant(String sessionId, String participantId) {
+    public Response removeParticipant(final String projectId, final String sessionId, final String participantId) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             ChatSessionEntity chatSessionEntity = chatSessionController.getChatSession(sessionId);
             Map<String, ChatSessionModel.ParticipantRole> participants = chatSessionEntity.getParticipants();
 
@@ -261,10 +257,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response sendMessage(String sessionId, ChatMessageJson message) {
+    public Response sendMessage(final String projectId, final String sessionId, final ChatMessageJson message) {
+        checkWritePermissions(projectId);
         try {
             String userId = principal.getId(); // Get user ID from session
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
 
             if (message.getContent() == null || message.getContent().isBlank()) {
                 throw new BadRequestException("Message content cannot be null or empty");
@@ -293,9 +289,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response getChatMessages(String sessionId) {
+    public Response getChatMessages(final String projectId, final String sessionId) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
                 .entity(chatSessionController.exportChatLogs(sessionId))
@@ -312,9 +308,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
 
     @Override
-    public Response getChatMessage(String sessionId, String messageId) {
+    public Response getChatMessage(final String projectId, final String sessionId, final String messageId) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             ChatMessageEntity chatMessageEntity = chatMessageController.getChatMessage(messageId);
             if (chatMessageEntity.getContentType().equals(ContentType.TEXT))
                 return Response.ok()
@@ -359,9 +355,10 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response updateChatMessage(String sessionId, String messageId, ChatMessageJson message) {
+    public Response updateChatMessage(final String projectId, final String sessionId,
+        final String messageId, final ChatMessageJson message) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             int maxPayloadSize = 8000;
             if (Objects.requireNonNull(message.getContent()).length() > maxPayloadSize) {
                 throw new BadRequestException("Payload size exceeds limit");
@@ -385,9 +382,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     }
 
     @Override
-    public Response deleteChatMessage(String sessionId, String messageId) {
+    public Response deleteChatMessage(final String projectId, final String sessionId, final String messageId) {
+        checkWritePermissions(projectId);
         try {
-            checkPrivileges(uri.getPathParameters().getFirst("projectId"));
             if (chatSessionController.getChatSession(sessionId) == null)
                 throw new NotFoundException("Chat session not found");
             chatMessageController.deleteChatMessage(messageId);
@@ -402,12 +399,9 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
 
     @Override
-    public Response uploadFile(String sessionId, MultipartFormDataInput input) throws Exception {
+    public Response uploadFile(final String projectId, final String sessionId, final MultipartFormDataInput input) {
+        checkWritePermissions(projectId);
         try {
-            String userId = principal.getId();
-            String projectId = uri.getPathParameters().getFirst("projectId");
-            checkPrivileges(projectId);
-
             Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
             List<InputPart> fileParts = formDataMap.get("file");
             if (fileParts == null || fileParts.isEmpty()) {
@@ -450,7 +444,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                     String fileUrl = fileStorageService.uploadFile(bucketName, input);
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
-                            .sendChatMessage(sessionId, userId, ContentType.FILE, fileUrl);
+                            .sendChatMessage(sessionId, principal.getId(), ContentType.FILE, fileUrl);
 
                     String jsonResponse = String.format("{\"fileId\": \"%s\", \"fileUrl\": \"%s\"}",
                             fileMetadataEntity.getId(), fileUrl);
@@ -465,7 +459,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
         } catch (Exception e) {
             logger.error("Error during file upload", e);
-            throw e;
+            throw new InternalServerErrorException(e);
         }
     }
 

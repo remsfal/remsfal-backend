@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
  */
 public interface CustomerModel extends UserModel {
 
+    @Override
     default String getName() {
         return String.format("%s %s", this.getFirstName(), this.getLastName()).trim();
     }
