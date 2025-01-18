@@ -30,10 +30,10 @@ public class CassandraExecutor {
     private static final String CQL_SCRIPTS_DIRECTORY =
             "src/main/resources/cassandra/changelogs/cql-scripts";
 
-    @ConfigProperty(name = "%dev.quarkus.cassandra.contact-points")
+    @ConfigProperty(name = "quarkus.cassandra.contact-points")
     String cassandraContactPoints;
 
-    @ConfigProperty(name = "%dev.quarkus.cassandra.local-datacenter")
+    @ConfigProperty(name = "quarkus.cassandra.local-datacenter")
     String cassandraLocalDatacenter;
 
     private static final String KEYSPACE_NAME = "REMSFAL";
