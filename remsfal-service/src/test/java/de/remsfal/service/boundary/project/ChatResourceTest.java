@@ -59,8 +59,8 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     ChatMessageController chatMessageController;
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
-    static final String CHAT_SESSION_TASK_PATH = BASE_PATH + "/tasks/{taskId}/chat";
-    static final String CHAT_SESSION_DEFECT_PATH = BASE_PATH + "/defects/{defectId}/chat";
+    static final String CHAT_SESSION_TASK_PATH = BASE_PATH + "/tasks/{taskId}/chats";
+    static final String CHAT_SESSION_DEFECT_PATH = BASE_PATH + "/defects/{defectId}/chats";
     static final String CHAT_SESSION_TASK_PATH_WITH_SESSION_ID = CHAT_SESSION_TASK_PATH + "/{sessionId}";
 
     static final String TASK_ID_1 = UUID.randomUUID().toString();
@@ -275,8 +275,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -287,9 +286,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path.replace("{projectId}", UUID.randomUUID().toString()).replace("{taskId}",
-                    TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .delete(path, UUID.randomUUID().toString(), TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
@@ -297,9 +294,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}",
-                    TASK_ID_1)
-                .replace("{sessionId}", UUID.randomUUID().toString()))
+            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -317,10 +312,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{participantId}", TestData.USER_ID_4))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -349,8 +341,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", nonExistingSessionId))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, nonExistingSessionId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -366,9 +357,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
@@ -386,9 +375,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", UUID.randomUUID().toString()))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -401,9 +388,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{participantId}", nonExistingParticipantId))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, nonExistingParticipantId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -414,9 +399,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{participantId}", TestData.USER_ID_4))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -432,10 +415,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{participantId}", TestData.USER_ID_3))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -451,10 +431,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", UUID.randomUUID().toString())
-                .replace("{participantId}", TestData.USER_ID_4))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString(), TestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
@@ -492,8 +469,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .post(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
@@ -507,8 +483,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", emptySessionId))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, emptySessionId)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
@@ -520,9 +495,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_2)
-                .replace("{sessionId}", UUID.randomUUID().toString()))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_2, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
@@ -530,9 +503,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -626,8 +597,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -661,9 +631,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("status", equalTo(newStatus));
@@ -694,9 +662,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_2)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_2))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_2, EXAMPLE_CHAT_SESSION_ID_2)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("[0].userId", equalTo(TestData.USER_ID_4))
@@ -710,10 +676,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{participantId}", TestData.USER_ID_4))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("[0].userId", equalTo(TestData.USER_ID_4))
@@ -732,10 +695,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{participantId}", TestData.USER_ID_4))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("[0].userId", equalTo(TestData.USER_ID_4))
@@ -751,10 +711,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .delete(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{participantId}", TestData.USER_ID_3))
+            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
 
@@ -781,8 +738,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -804,9 +760,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{messageId}", CHAT_MESSAGE_ID_1))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -845,16 +799,14 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", UUID.randomUUID().toString()))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -892,9 +844,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{messageId}", CHAT_MESSAGE_ID_1))
+            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -955,9 +905,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
-                .replace("{messageId}", CHAT_MESSAGE_ID_1))
+            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
@@ -1012,9 +960,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
                     .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
                     .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                     .when()
-                    .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                        .replace("{taskId}", TASK_ID_1)
-                        .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                    .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                     .then()
                     .statusCode(Response.Status.CREATED.getStatusCode())
                     .contentType(ContentType.JSON)
@@ -1067,9 +1013,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .multiPart("someField", "someValue") // This ensures a valid multipart request with a boundary
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .when()
-            .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
             .body("message", equalTo("No file part found in the form data"));
@@ -1086,9 +1030,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
                 .multiPart("file", tempFile.toFile(), "application/x-msdownload")
                 .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .when()
-                .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                    .replace("{taskId}", TASK_ID_1)
-                    .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                 .then()
                 .statusCode(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode())
                 .body("message", containsString("Unsupported Media Type: application/x-msdownload"));
@@ -1105,9 +1047,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .multiPart("file", "", MediaType.TEXT_PLAIN) // Empty file content
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .when()
-            .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                .replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
             .body("message", equalTo("Failed to read file stream: unknown"));
@@ -1129,9 +1069,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
                 .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
                 .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .when()
-                .post(path.replace("{projectId}", TestData.PROJECT_ID_1)
-                    .replace("{taskId}", TASK_ID_1)
-                    .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
         } finally {
