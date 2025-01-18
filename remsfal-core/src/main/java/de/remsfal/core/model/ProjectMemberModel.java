@@ -23,11 +23,7 @@ public interface ProjectMemberModel extends UserModel {
         }
 
         public boolean isPrivileged() {
-            if(leadership <= 25) {
-                return true;
-            } else {
-                return false;
-            }
+            return leadership <= 25;
         }
     }
 
