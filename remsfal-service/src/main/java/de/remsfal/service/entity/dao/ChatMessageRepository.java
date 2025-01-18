@@ -101,7 +101,8 @@ public class ChatMessageRepository {
             }
             ChatMessageEntity message = findMessageById(sessionId, messageId);
             if (!ContentType.TEXT.name().equals(message.getContentType())) {
-                throw new IllegalArgumentException("Cannot update non-text message with updateTextChatMessage() method");
+                throw new IllegalArgumentException("Cannot update non-text message " +
+                        "with updateTextChatMessage() method");
             }
             if (newContent.equals(message.getContent())) {
                 throw new IllegalArgumentException("Content is the same as the current content");
@@ -193,7 +194,8 @@ public class ChatMessageRepository {
     public void deleteMessagesFromSession(String sessionId) {
         try {
             List<ChatMessageEntity> messages = findMessagesByChatSession(UUID.fromString(sessionId));
-            messages.forEach(message -> deleteMessage(UUID.fromString(sessionId), message.getMessageId()));
+            messages.forEach(message ->
+                    deleteMessage(UUID.fromString(sessionId), message.getMessageId()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

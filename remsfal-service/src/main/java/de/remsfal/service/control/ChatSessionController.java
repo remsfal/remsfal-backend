@@ -49,8 +49,10 @@ public class ChatSessionController {
         chatSessionRepository.updateSessionStatus(projectUUID, sessionUUID, taskUUID,  status.name());
     }
 
-    public void addParticipant(String projectId, String taskId, String sessionId, String userId, ParticipantRole role) {
-        logger.infov("Adding participant to chat session (sessionId={0}, participantId={1})", sessionId, userId);
+    public void addParticipant(String projectId, String taskId,
+                               String sessionId, String userId, ParticipantRole role) {
+        logger.infov("Adding participant to chat session" +
+                " (sessionId={0}, participantId={1})", sessionId, userId);
         UUID sessionUUID = UUID.fromString(sessionId);
         UUID userUUID = UUID.fromString(userId);
         UUID projectUUID = UUID.fromString(projectId);
@@ -68,7 +70,8 @@ public class ChatSessionController {
         chatSessionRepository.deleteMember(projectUUID, sessionUUID,taskUUID, userUUID);
     }
 
-    public void updateParticipantRole(String projectId, String taskId, String sessionId, String userId, ParticipantRole role) {
+    public void updateParticipantRole(String projectId, String taskId,
+                                      String sessionId, String userId, ParticipantRole role) {
         logger.infov("Updating participant role in chat session (sessionId={0}, participantId={1})",
                 sessionId, userId);
         UUID sessionUUID = UUID.fromString(sessionId);
