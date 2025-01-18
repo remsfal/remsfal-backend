@@ -8,13 +8,13 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 class ProjectMemberListJsonTest {
 
     @Test
     void testValueOfSet() {
         Set<ProjectMemberModel> models = new HashSet<>();
-        ProjectMemberModel model1 = new EntityProjectMemberModel("1", "John", "john@example.com", ProjectMemberModel.UserRole.LESSOR);
+        ProjectMemberModel model1 = new EntityProjectMemberModel(
+            "1", "John", "john@example.com", true, ProjectMemberModel.MemberRole.LESSOR);
         models.add(model1);
         ProjectMemberListJson result = ProjectMemberListJson.valueOfSet(models);
         assertEquals(1, result.getMembers().size());
@@ -24,11 +24,13 @@ class ProjectMemberListJsonTest {
         private String id;
         private String name;
         private String email;
-        private UserRole role;
-        public EntityProjectMemberModel(String id, String name, String email, UserRole role) {
+        private boolean isActive;
+        private MemberRole role;
+        public EntityProjectMemberModel(String id, String name, String email, boolean isActive, MemberRole role) {
             this.id = id;
             this.name = name;
             this.email = email;
+            this.isActive = isActive;
             this.role = role;
         }
         @Override
@@ -44,9 +46,12 @@ class ProjectMemberListJsonTest {
             return email;
         }
         @Override
-        public UserRole getRole() {
+        public MemberRole getRole() {
             return role;
+        }
+        @Override
+        public boolean isActive() {
+            return isActive;
         }
     }
 }
-

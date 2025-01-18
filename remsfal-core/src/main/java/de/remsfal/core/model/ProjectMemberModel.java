@@ -5,26 +5,25 @@ package de.remsfal.core.model;
  */
 public interface ProjectMemberModel extends UserModel {
 
-    public enum UserRole {
-        PROPRIETOR(10), // Eigentuemer
-        MANAGER(20), // Verwalter
-        LESSOR(30), // Vermieter
-        CARETAKER(40), // Hausmeister
-        CONTRACTOR(50), // Auftragnehmer / Berater
-        TENANCY(80); // Mieter
-        
+    public enum MemberRole {
+        PROPRIETOR(10),   // Eigentuemer
+        MANAGER(20),      // Verwalter
+        LESSOR(30),       // Vermieter
+        STAFF(40),        // Mitarbeiter
+        COLLABORATOR(50); // Kollaborateur
+
         private int leadership;
-        
-        private UserRole(final int leadership) {
+
+        private MemberRole(final int leadership) {
             this.leadership = leadership;
         }
-        
+
         public int getLeadershipLevel() {
             return leadership;
         }
 
         public boolean isPrivileged() {
-            if(leadership <= 20) {
+            if(leadership <= 25) {
                 return true;
             } else {
                 return false;
@@ -32,7 +31,7 @@ public interface ProjectMemberModel extends UserModel {
         }
     }
 
-    UserRole getRole();
+    MemberRole getRole();
 
     default boolean isPrivileged() {
         if(getRole() == null) {

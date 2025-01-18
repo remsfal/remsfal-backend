@@ -12,6 +12,9 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
 @MappedSuperclass
 public abstract class AbstractMetaDataEntity {
 

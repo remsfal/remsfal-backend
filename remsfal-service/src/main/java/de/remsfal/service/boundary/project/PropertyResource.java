@@ -32,7 +32,7 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public ProjectTreeJson getProperties(final String projectId, final Integer offset, final Integer limit) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         List<ProjectTreeNodeModel> treeNodes = controller.getProjectTree(projectId, offset, limit);
 
         return ProjectTreeJson.valueOf(treeNodes, offset, controller.countProperties(projectId));
@@ -40,7 +40,7 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public Response createProperty(final String projectId, final PropertyJson property) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         final PropertyModel model = controller.createProperty(projectId, property);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -51,20 +51,20 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public PropertyJson getProperty(final String projectId, final String propertyId) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         final PropertyModel model = controller.getProperty(projectId, propertyId);
         return PropertyJson.valueOf(model);
     }
 
     @Override
     public PropertyJson updateProperty(final String projectId, final String propertyId, final PropertyJson property) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         return PropertyJson.valueOf(controller.updateProperty(projectId, propertyId, property));
     }
 
     @Override
     public void deleteProperty(final String projectId, final String propertyId) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         controller.deleteProperty(projectId, propertyId);
     }
 

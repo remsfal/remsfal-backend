@@ -105,21 +105,21 @@ class ChatResourceTest extends AbstractProjectResourceTest {
 
         // setup  user roles
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID_1)
             .setParameter(2, TestData.USER_ID_2)
-            .setParameter(3, "CARETAKER")
+            .setParameter(3, "STAFF")
             .executeUpdate());
 
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID_1)
             .setParameter(2, TestData.USER_ID_3)
             .setParameter(3, "LESSOR")
             .executeUpdate());
 
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID_1)
             .setParameter(2, TestData.USER_ID_4)
             .setParameter(3, "PROPRIETOR")
@@ -264,8 +264,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
     void getChatSession_UNAUTHENTICATED(String path) {
         given()
             .when()
-            .get(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
     }
@@ -643,8 +642,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
-                .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1))
+            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }

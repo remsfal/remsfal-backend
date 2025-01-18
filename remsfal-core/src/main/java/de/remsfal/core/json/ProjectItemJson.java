@@ -26,7 +26,7 @@ public abstract class ProjectItemJson {
     public abstract String getName();
 
     @NotNull
-    public abstract ProjectMemberModel.UserRole getMemberRole();
+    public abstract ProjectMemberModel.MemberRole getMemberRole();
 
     public static ProjectItemJson valueOf(final ProjectModel model, final UserModel user) {
         final ImmutableProjectItemJson.Builder builder = ImmutableProjectItemJson.builder()

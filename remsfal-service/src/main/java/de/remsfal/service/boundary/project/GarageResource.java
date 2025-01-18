@@ -19,7 +19,7 @@ public class GarageResource extends ProjectSubResource implements GarageEndpoint
 
     @Override
     public Response createGarage(final String projectId, final String buildingId, final GarageJson garage) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         final GarageModel model = controller.createGarage(projectId, buildingId, garage);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -30,21 +30,21 @@ public class GarageResource extends ProjectSubResource implements GarageEndpoint
 
     @Override
     public GarageJson getGarage(final String projectId, final String garageId) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         final GarageModel model = controller.getGarage(projectId, garageId);
         return GarageJson.valueOf(model);
     }
 
     @Override
     public GarageJson updateGarage(final String projectId, final String garageId, final GarageJson garage) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         final GarageModel model = controller.updateGarage(projectId, garageId, garage);
         return GarageJson.valueOf(model);
     }
 
     @Override
     public void deleteGarage(final String projectId, final String garageId) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         controller.deleteGarage(projectId, garageId);
     }
 

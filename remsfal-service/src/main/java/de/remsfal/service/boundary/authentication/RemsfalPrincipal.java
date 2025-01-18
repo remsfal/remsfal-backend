@@ -33,4 +33,9 @@ public class RemsfalPrincipal implements Principal, UserModel {
         return user.getName();
     }
 
+    @Override
+    public boolean isActive() {
+        return user.isActive();
+    }
+
 }

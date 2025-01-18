@@ -43,6 +43,9 @@ public abstract class UserJson implements CustomerModel {
     @Override
     public abstract String getEmail();
 
+    @Override
+    public abstract boolean isActive();
+
     @JsonIgnore
     @Null
     @Nullable
@@ -93,6 +96,7 @@ public abstract class UserJson implements CustomerModel {
         return ImmutableUserJson.builder()
             .id(model.getId())
             .email(model.getEmail())
+            .active(model.isActive())
             .firstName(model.getFirstName())
             .lastName(model.getLastName())
             .address(AddressJson.valueOf(model.getAddress()))

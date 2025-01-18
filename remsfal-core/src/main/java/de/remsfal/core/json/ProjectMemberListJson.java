@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectMemberListJson {
 
-
     @NotNull
     public abstract List<ProjectMemberJson> getMembers();
 
@@ -35,5 +34,4 @@ public abstract class ProjectMemberListJson {
         return ImmutableProjectMemberListJson.builder().members(members).build();
     }
 
-    // TODO: pagination
 }

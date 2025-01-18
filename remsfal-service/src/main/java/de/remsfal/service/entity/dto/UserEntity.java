@@ -90,6 +90,11 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     @Override
+    public boolean isActive() {
+        return tokenId != null;
+    }
+
+    @Override
     public String getEmail() {
         return email;
     }

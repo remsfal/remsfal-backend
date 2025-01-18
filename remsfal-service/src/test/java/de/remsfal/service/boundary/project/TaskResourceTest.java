@@ -15,7 +15,6 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
@@ -209,28 +208,20 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void getTask_FAILED_userIsNotPrivileged(String path) {
+    void createTask_FAILED_userIsNotPrivileged(String path) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.USER_ID_2)
-            .setParameter(3, "CARETAKER")
+            .setParameter(3, "STAFF")
             .executeUpdate());
-
-        final String taskId = given()
-            .when()
-            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
-            .then()
-            .statusCode(Status.CREATED.getStatusCode())
-            .extract().path("id");
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-            .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
+            .post(path, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
