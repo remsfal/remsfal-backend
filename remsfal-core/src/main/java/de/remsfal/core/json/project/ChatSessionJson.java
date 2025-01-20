@@ -3,6 +3,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import de.remsfal.core.immutable.ImmutableStyle;
 import de.remsfal.core.model.project.ChatSessionModel;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Null;
@@ -16,9 +17,10 @@ import java.util.UUID;
  * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
 @Value.Immutable
+@ImmutableStyle
 @Schema(description = "A chat session")
 @JsonDeserialize(as = ImmutableChatSessionJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ChatSessionJson implements ChatSessionModel {
 
     @Override
