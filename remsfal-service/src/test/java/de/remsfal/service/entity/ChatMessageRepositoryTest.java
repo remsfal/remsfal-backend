@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @QuarkusTest
-public class ChatMessageRepositoryTest {
+class ChatMessageRepositoryTest {
 
     static final UUID PROJECT_ID = UUID.randomUUID();
     static final UUID TASK_ID = UUID.randomUUID();
