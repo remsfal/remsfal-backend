@@ -1,7 +1,9 @@
 package de.remsfal.service.control;
 
-import io.minio.*;
-import io.minio.errors.MinioException;
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
+import io.minio.MinioClient;
+import io.minio.Result;
 import io.minio.messages.Item;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;

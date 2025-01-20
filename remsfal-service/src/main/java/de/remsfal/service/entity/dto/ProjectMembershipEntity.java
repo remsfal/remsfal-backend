@@ -43,9 +43,9 @@ public class ProjectMembershipEntity extends AbstractEntity implements ProjectMe
     @JoinColumn(name = "USER_ID", columnDefinition = "char")
     UserEntity user;
     
-    @Column(name = "USER_ROLE")
+    @Column(name = "MEMBER_ROLE")
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    private MemberRole role;
 
     @Override
     public String getId() {
@@ -74,12 +74,17 @@ public class ProjectMembershipEntity extends AbstractEntity implements ProjectMe
     }
 
     @Override
-    public UserRole getRole() {
+    public MemberRole getRole() {
         return role;
     }
 
-    public void setRole(UserRole role) {
+    public void setRole(MemberRole role) {
         this.role = role;
+    }
+
+    @Override
+    public String getEmail() {
+        return user.getEmail();
     }
 
     @Override
@@ -88,15 +93,15 @@ public class ProjectMembershipEntity extends AbstractEntity implements ProjectMe
     }
 
     @Override
-    public String getEmail() {
-        return user.getEmail();
+    public Boolean isActive() {
+        return user.isActive();
     }
-    
+
     @Override
     public int hashCode() {
         return id.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

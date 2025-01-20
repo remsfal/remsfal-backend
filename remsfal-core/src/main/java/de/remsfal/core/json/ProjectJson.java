@@ -10,35 +10,40 @@ import jakarta.validation.constraints.Size;
 import java.util.Set;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.immutable.ImmutableStyle;
 import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A project")
 @JsonDeserialize(as = ImmutableProjectJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectJson implements ProjectModel {
 
     @Null
     @Nullable
+    @Override
     public abstract String getId();
 
     @NotNull
     @NotBlank
     @Size(min = 1, max = 99, message = "The title must be between 1 and 255 characters")
+    @Override
     public abstract String getTitle();
 
     @Null
     @Nullable
+    @Override
     public abstract Set<ProjectMemberJson> getMembers();
 
     public static ProjectJson valueOf(final ProjectModel model) {

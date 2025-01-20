@@ -6,9 +6,11 @@ package de.remsfal.core.model;
 public interface UserModel {
 
     String getId();
-    
+
     String getEmail();
-    
+
     String getName();
-    
+
+    Boolean isActive();
+
 }

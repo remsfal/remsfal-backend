@@ -16,7 +16,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Schema(description = "A project item with the user's member role only")
 @JsonDeserialize(as = ImmutableProjectJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectItemJson {
 
     @NotNull
@@ -26,7 +26,7 @@ public abstract class ProjectItemJson {
     public abstract String getName();
 
     @NotNull
-    public abstract ProjectMemberModel.UserRole getMemberRole();
+    public abstract ProjectMemberModel.MemberRole getMemberRole();
 
     public static ProjectItemJson valueOf(final ProjectModel model, final UserModel user) {
         final ImmutableProjectItemJson.Builder builder = ImmutableProjectItemJson.builder()

@@ -14,7 +14,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Schema(description = "A project item with the user's member role only")
 @JsonDeserialize(as = ImmutablePropertyJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class PropertyItemJson {
 
     @NotNull
