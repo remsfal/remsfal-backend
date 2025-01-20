@@ -38,14 +38,14 @@ public class ChatMessageRepositoryTest {
     ChatMessageRepository chatMessageRepository;
 
     @Inject
-    Logger LOGGER;
+    Logger logger;
 
     @Inject
     CqlSession cqlSession;
 
     @BeforeEach
     void setUp() {
-        LOGGER.info("Setting up test data");
+        logger.info("Setting up test data");
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
                 "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -54,41 +54,41 @@ public class ChatMessageRepositoryTest {
                 TaskType.TASK.name(), Status.OPEN.name(),
                 Instant.now(),
                 Map.of(USER_ID_1, ParticipantRole.INITIATOR.name(), USER_ID_2, ParticipantRole.HANDLER.name()));
-        LOGGER.info("Test session created: " + SESSION_ID);
+        logger.info("Test session created: " + SESSION_ID);
         String insertMessageCql =
                 "INSERT INTO remsfal.chat_messages " +
                         "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        LOGGER.info("Inserting messages");
+        logger.info("Inserting messages");
         cqlSession.execute(insertMessageCql,
                 SESSION_ID, MESSAGE_ID_1, USER_ID_1, ContentType.TEXT.name(),
                 MESSAGE_CONTENT_1, null, Instant.now());
-        LOGGER.info("Message inserted " + MESSAGE_ID_1);
+        logger.info("Message inserted " + MESSAGE_ID_1);
         cqlSession.execute(insertMessageCql,
                 SESSION_ID, MESSAGE_ID_2, USER_ID_2, ContentType.TEXT.name(), MESSAGE_CONTENT_2,
                 null, Instant.now());
-        LOGGER.info("Message inserted " + MESSAGE_ID_2);
+        logger.info("Message inserted " + MESSAGE_ID_2);
         cqlSession.execute(insertMessageCql,
                 SESSION_ID, MESSAGE_ID_3, USER_ID_1, ContentType.TEXT.name(), MESSAGE_CONTENT_3,
                 null, Instant.now());
-        LOGGER.info("Message inserted " + MESSAGE_ID_3);
+        logger.info("Message inserted " + MESSAGE_ID_3);
         String insertMessageCql2 = "INSERT INTO remsfal.chat_messages " +
                 "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertMessageCql2, SESSION_ID, UUID.randomUUID(),
                 USER_ID_1, ContentType.FILE.name(), null, EXAMPLE_URL, Instant.now());
-        LOGGER.info("Message inserted for user 1 with file content " + EXAMPLE_URL);
-        LOGGER.info("Test data setup complete");
+        logger.info("Message inserted for user 1 with file content " + EXAMPLE_URL);
+        logger.info("Test data setup complete");
     }
 
     @AfterEach
     void tearDown() {
-        LOGGER.info("Tearing down test data");
+        logger.info("Tearing down test data");
         String deleteMessagesCql = "DELETE FROM remsfal.chat_messages WHERE chat_session_id = ?";
         cqlSession.execute(deleteMessagesCql, SESSION_ID);
         String deleteSessionCql = "DELETE FROM remsfal.chat_sessions WHERE project_id = ? AND task_id = ? AND session_id = ?";
         cqlSession.execute(deleteSessionCql, PROJECT_ID, TASK_ID, SESSION_ID);
-        LOGGER.info("Test data teardown complete");
+        logger.info("Test data teardown complete");
     }
 
     @Test
@@ -172,13 +172,13 @@ public class ChatMessageRepositoryTest {
 
     @Test
     void exportChatLogsAsJsonString_SUCCESS() {
-        LOGGER.info("Testing exportChatLogsAsJsonString");
+        logger.info("Testing exportChatLogsAsJsonString");
 
         // Call the method to export chat logs as a JSON string
         String exportedJson = chatMessageRepository.exportChatLogsAsJsonString(PROJECT_ID, TASK_ID, SESSION_ID);
 
         // Log the resulting JSON for inspection
-        LOGGER.info("Exported Chat Logs JSON: " + exportedJson);
+        logger.info("Exported Chat Logs JSON: " + exportedJson);
 
         // Verify that the exported JSON contains expected data
         assertTrue(exportedJson.contains(PROJECT_ID.toString()), "JSON should contain the project ID");

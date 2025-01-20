@@ -61,7 +61,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     FileStorageService fileStorageService;
 
     private final String bucketName = "remsfal-chat-files";
-    private final String NOT_FOUND_SESSION_MESSAGE= "Chat session not found";
+    private static final String notFoundSessionMessage = "Chat session not found";
 
     @Override
     public Response createChatSession(final String projectId) {
@@ -108,7 +108,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                         .entity(ChatSessionJson.valueOf(session.get()))
                         .build();
             else
-                throw new NoSuchElementException(NOT_FOUND_SESSION_MESSAGE);
+                throw new NoSuchElementException(notFoundSessionMessage);
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
@@ -159,7 +159,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                 .entity(ChatSessionJson.valueOf(updatedSession.get()))
                 .build();
             else
-                throw new NoSuchElementException(NOT_FOUND_SESSION_MESSAGE);
+                throw new NoSuchElementException(notFoundSessionMessage);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         } catch (NoSuchElementException e) {
@@ -450,7 +450,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                 chatMessageController.deleteChatMessage(sessionId, messageId);
                 return Response.noContent().build();
             } else {
-                throw new NotFoundException(NOT_FOUND_SESSION_MESSAGE);
+                throw new NotFoundException(notFoundSessionMessage);
             }
         } catch (NotFoundException e) {
             throw e;

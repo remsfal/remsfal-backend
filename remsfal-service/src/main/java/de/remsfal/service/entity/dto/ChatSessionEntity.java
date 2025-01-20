@@ -20,14 +20,14 @@ public class ChatSessionEntity implements ChatSessionModel {
     private UUID project_id; // Partition key for horizontal scaling
 
     @ClusteringColumn
-    private UUID session_id; // Unique ID for the session (Clustering column)
+    private UUID sessionId; // Unique ID for the session (Clustering column)
 
-    private UUID task_id; // ID of the associated task
-    private String task_type; // Task type (DEFECT, TASK)
+    private UUID taskId; // ID of the associated task
+    private String taskType; // Task type (DEFECT, TASK)
     private String status; // Session status (OPEN, CLOSED, ARCHIVED)
     private Map<UUID, String> participants; // Participant ID to role mapping
-    private Instant created_at; // Timestamp of session creation
-    private Instant modified_at; // Timestamp of last session modification
+    private Instant createdAt; // Timestamp of session creation
+    private Instant modifiedAt; // Timestamp of last session modification
 
     // Getters and setters
 
@@ -42,29 +42,29 @@ public class ChatSessionEntity implements ChatSessionModel {
 
     @Override
     public UUID getSessionId() {
-        return session_id;
+        return sessionId;
     }
 
     public void setSessionId(UUID session_id) {
-        this.session_id = session_id;
+        this.sessionId = session_id;
     }
 
     @Override
     public UUID getTaskId() {
-        return task_id;
+        return taskId;
     }
 
     public void setTaskId(UUID task_id) {
-        this.task_id = task_id;
+        this.taskId = task_id;
     }
 
     @Override
     public String getTaskType() {
-        return task_type;
+        return taskType;
     }
 
     public void setTaskType(String task_type) {
-        this.task_type = task_type;
+        this.taskType = task_type;
     }
 
     @Override
@@ -87,20 +87,20 @@ public class ChatSessionEntity implements ChatSessionModel {
 
     @Override
     public Instant getCreatedAt() {
-        return created_at;
+        return createdAt;
     }
 
     public void setCreatedAt(Instant created_at) {
-        this.created_at = created_at;
+        this.createdAt = created_at;
     }
 
     @Override
     public Instant getModifiedAt() {
-        return modified_at;
+        return modifiedAt;
     }
 
     public void setModifiedAt(Instant modified_at) {
-        this.modified_at = modified_at;
+        this.modifiedAt = modified_at;
     }
 
     /**
