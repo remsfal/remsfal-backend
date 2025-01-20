@@ -5,7 +5,6 @@ import de.remsfal.service.entity.dao.ChatMessageRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +14,6 @@ import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
 import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.service.entity.dao.ChatMessageRepository.ContentType;
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -41,9 +39,6 @@ public class ChatMessageRepositoryTest {
 
     @Inject
     Logger LOGGER;
-
-    @Inject
-    EntityManager entityManager;
 
     @Inject
     CqlSession cqlSession;
@@ -136,9 +131,8 @@ public class ChatMessageRepositoryTest {
         cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name());
         chatMessageRepository.deleteChatMessage(sessionId, messageId.toString());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            chatMessageRepository.findMessageById(sessionId, messageId.toString());
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatMessageRepository.findMessageById(sessionId, messageId.toString()));
 
         assertTrue(exception.getMessage().contains("Message not found"));
     }

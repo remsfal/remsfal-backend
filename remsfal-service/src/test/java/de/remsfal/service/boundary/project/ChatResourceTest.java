@@ -739,7 +739,7 @@ class ChatResourceTest extends AbstractProjectResourceTest {
             .body("PROJECT_ID", equalTo(TestData.PROJECT_ID_1))
             .body("TASK_TYPE", equalTo("TASK"))
             .body("messages[1].DATETIME", notNullValue())
-            .body("messages[1].MESSAGE_ID", notNullValue())
+            .body("messages[1].message_id", notNullValue())
             .body("messages[1].SENDER_ID", equalTo(TestData.USER_ID_3))
             .body("messages[1].MEMBER_ROLE", equalTo("HANDLER"))
             .body("messages[1].MESSAGE_TYPE", equalTo("TEXT"))

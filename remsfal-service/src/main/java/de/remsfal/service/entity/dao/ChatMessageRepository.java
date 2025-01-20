@@ -19,7 +19,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +30,9 @@ public class ChatMessageRepository {
     String KEYSPACE;
 
     private static final String TABLE = "chat_messages";
+    private final String CHAT_SESSION_ID_COLUMN = "chat_session_id";
+    private final String MESSAGE_ID_COLUMN = "message_id";
+
 
     @Inject
     CqlSession cqlSession;
@@ -50,8 +52,10 @@ public class ChatMessageRepository {
             logger.info("SessionId: "+ sessionId + " messageId: " + messageId);
             Select selectQuery = QueryBuilder.selectFrom(KEYSPACE, ChatMessageRepository.TABLE)
                     .all()
-                    .whereColumn("chat_session_id").isEqualTo(QueryBuilder.literal(UUID.fromString(sessionId)))
-                    .whereColumn("message_id").isEqualTo(QueryBuilder.literal(UUID.fromString(messageId)));
+                    .whereColumn(CHAT_SESSION_ID_COLUMN)
+                    .isEqualTo(QueryBuilder.literal(UUID.fromString(sessionId)))
+                    .whereColumn(MESSAGE_ID_COLUMN)
+                    .isEqualTo(QueryBuilder.literal(UUID.fromString(messageId)));
 
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             return resultSet.all().stream().map(ChatMessageEntity::mapRow).findFirst()
@@ -175,7 +179,7 @@ public class ChatMessageRepository {
         Map<String, Object> messageJsonMap = new LinkedHashMap<>();
         // Format Instant to ISO-8601 string
         messageJsonMap.put("DATETIME", message.getCreatedAt().toString());
-        messageJsonMap.put("MESSAGE_ID", message.getMessageId());
+        messageJsonMap.put(MESSAGE_ID_COLUMN, message.getMessageId());
         messageJsonMap.put("SENDER_ID", message.getSenderId());
         messageJsonMap.put("MEMBER_ROLE",
                 chatSessionRepository.findParticipantRole(projectId, message.getChatSessionId(),
@@ -204,8 +208,8 @@ public class ChatMessageRepository {
     private void saveMessage(ChatMessageEntity message) {
         try {
             Insert insertQuery = QueryBuilder.insertInto(KEYSPACE, ChatMessageRepository.TABLE)
-                    .value("chat_session_id", QueryBuilder.literal(message.getChatSessionId()))
-                    .value("message_id", QueryBuilder.literal(message.getMessageId()))
+                    .value(CHAT_SESSION_ID_COLUMN, QueryBuilder.literal(message.getChatSessionId()))
+                    .value(MESSAGE_ID_COLUMN, QueryBuilder.literal(message.getMessageId()))
                     .value("sender_id", QueryBuilder.literal(message.getSenderId()))
                     .value("content_type", QueryBuilder.literal(message.getContentType()))
                     .value("content", QueryBuilder.literal(message.getContent()))
@@ -222,16 +226,18 @@ public class ChatMessageRepository {
         Update updateQuery = QueryBuilder.update(KEYSPACE, ChatMessageRepository.TABLE)
                 .setColumn("content", QueryBuilder.literal(message.getContent()))
                 .setColumn("url", QueryBuilder.literal(message.getUrl()))
-                .whereColumn("chat_session_id").isEqualTo(QueryBuilder.literal(message.getChatSessionId()))
-                .whereColumn("message_id").isEqualTo(QueryBuilder.literal(message.getMessageId()));
+                .whereColumn(CHAT_SESSION_ID_COLUMN)
+                .isEqualTo(QueryBuilder.literal(message.getChatSessionId()))
+                .whereColumn(MESSAGE_ID_COLUMN)
+                .isEqualTo(QueryBuilder.literal(message.getMessageId()));
 
         cqlSession.execute(updateQuery.build());
     }
 
     private void deleteMessage(UUID chatSessionId, UUID messageId) {
         Delete deleteQuery = QueryBuilder.deleteFrom(KEYSPACE, ChatMessageRepository.TABLE)
-                .whereColumn("chat_session_id").isEqualTo(QueryBuilder.literal(chatSessionId))
-                .whereColumn("message_id").isEqualTo(QueryBuilder.literal(messageId));
+                .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId))
+                .whereColumn(MESSAGE_ID_COLUMN).isEqualTo(QueryBuilder.literal(messageId));
 
         cqlSession.execute(deleteQuery.build());
     }
@@ -239,7 +245,7 @@ public class ChatMessageRepository {
     private List<ChatMessageEntity> findMessagesByChatSession(UUID chatSessionId) {
         Select selectQuery = QueryBuilder.selectFrom(KEYSPACE, ChatMessageRepository.TABLE)
                 .all()
-                .whereColumn("chat_session_id").isEqualTo(QueryBuilder.literal(chatSessionId));
+                .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId));
         ResultSet resultSet = cqlSession.execute(selectQuery.build());
         return resultSet.all().stream().map(ChatMessageEntity::mapRow).toList();
     }

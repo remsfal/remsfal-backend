@@ -1,7 +1,6 @@
 package de.remsfal.core.api.project;
 
 import de.remsfal.core.json.project.ChatMessageJson;
-import de.remsfal.core.model.project.ChatSessionModel;
 import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
