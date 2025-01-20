@@ -22,7 +22,7 @@ import de.remsfal.core.model.project.PropertyModel;
 @Value.Immutable
 @Schema(description = "A property")
 @JsonDeserialize(as = ImmutablePropertyJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class PropertyJson implements PropertyModel {
 
     @Null

@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.core.validation.PatchValidation;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -22,30 +24,43 @@ import de.remsfal.core.model.ProjectMemberModel;
 @Value.Immutable
 @Schema(description = "Project member information in context of a project")
 @JsonDeserialize(as = ImmutableProjectMemberJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectMemberJson implements ProjectMemberModel {
 
-    @Nullable
-    public abstract String getId();
-    
     @Null
     @Nullable
+    @Override
+    public abstract String getId();
+
+    @Null
+    @Nullable
+    @Override
     public abstract String getName();
 
-    @Email
-    @NotBlank
-    @Size(max = 255, message = "The email cannot be longer than 255 characters")
+    @Null(groups = PatchValidation.class)
+    @Email(groups = PostValidation.class)
+    @NotBlank(groups = PostValidation.class)
+    @Size(groups = PostValidation.class, max = 255, message = "The email cannot be longer than 255 characters")
+    @Nullable
+    @Override
     public abstract String getEmail();
 
+    @Null
+    @Nullable
+    @Override
+    public abstract Boolean isActive();
+
     @NotNull
-    public abstract UserRole getRole();
+    @Override
+    public abstract MemberRole getRole();
 
     public static ProjectMemberJson valueOf(final ProjectMemberModel model) {
         return ImmutableProjectMemberJson.builder()
             .id(model.getId())
-            .role(model.getRole())
             .name(model.getName())
             .email(model.getEmail())
+            .isActive(model.isActive())
+            .role(model.getRole())
             .build();
     }
 }

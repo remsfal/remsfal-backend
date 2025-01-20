@@ -19,7 +19,6 @@ import jakarta.ws.rs.NotFoundException;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,18 +56,6 @@ class ChatMessageRepositoryTest extends AbstractTest {
         insertChatMessage();
     }
 
-    @AfterEach
-    @Transactional
-    void cleanDB() {
-        entityManager.createNativeQuery("DELETE FROM CHAT_MESSAGE").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM CHAT_SESSION_PARTICIPANT").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM CHAT_SESSION").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM TASK").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM PROJECT_MEMBERSHIP").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM PROJECT").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM USER").executeUpdate();
-    }
-
     private void insertUsers() {
         String insertUserSQL = "INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)";
         insertUser(TestData.USER_ID, TestData.USER_TOKEN, TestData.USER_EMAIL, TestData.USER_FIRST_NAME,
@@ -99,11 +86,11 @@ class ChatMessageRepositoryTest extends AbstractTest {
     }
 
     private void insertProjectMemberships() {
-        String insertMembershipSQL = "INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, USER_ROLE) VALUES (?,?,?)";
-        insertMembership(TestData.USER_ID, ProjectMemberModel.UserRole.MANAGER.name(), insertMembershipSQL);
-        insertMembership(TestData.USER_ID_2, ProjectMemberModel.UserRole.LESSOR.name(), insertMembershipSQL);
-        insertMembership(TestData.USER_ID_3, ProjectMemberModel.UserRole.CARETAKER.name(), insertMembershipSQL);
-        insertMembership(TestData.USER_ID_4, ProjectMemberModel.UserRole.CARETAKER.name(), insertMembershipSQL);
+        String insertMembershipSQL = "INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)";
+        insertMembership(TestData.USER_ID, ProjectMemberModel.MemberRole.MANAGER.name(), insertMembershipSQL);
+        insertMembership(TestData.USER_ID_2, ProjectMemberModel.MemberRole.LESSOR.name(), insertMembershipSQL);
+        insertMembership(TestData.USER_ID_3, ProjectMemberModel.MemberRole.STAFF.name(), insertMembershipSQL);
+        insertMembership(TestData.USER_ID_4, ProjectMemberModel.MemberRole.STAFF.name(), insertMembershipSQL);
     }
 
     private void insertMembership(String userId, String role, String sql) {

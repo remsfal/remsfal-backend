@@ -213,7 +213,7 @@ public class TestData {
             .commercialSpace(TestData.BUILDING_COMMERCIAL_SPACE_1)
             .usableSpace(TestData.BUILDING_USABLE_SPACE_1)
             .heatingSpace(TestData.BUILDING_HEATING_SPACE_1)
-            .isDifferentHeatingSpace(true);
+            .differentHeatingSpace(true);
     }
       
     // Test building 2
@@ -235,7 +235,7 @@ public class TestData {
                 .commercialSpace(TestData.BUILDING_COMMERCIAL_SPACE_2)
                 .usableSpace(TestData.BUILDING_USABLE_SPACE_2)
                 .heatingSpace(TestData.BUILDING_HEATING_SPACE_2)
-                .isDifferentHeatingSpace(false);
+                .differentHeatingSpace(false);
     }
 
     // Default test tenancy

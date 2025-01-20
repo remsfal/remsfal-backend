@@ -13,8 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectMemberModel.UserRole;
+import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
 
@@ -63,7 +62,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         this.memberships = memberships;
     }
 
-    public void addMember(final UserEntity userEntity, final UserRole role) {
+    public void addMember(final UserEntity userEntity, final MemberRole role) {
         if(memberships == null) {
             memberships = new HashSet<>();
         }
@@ -82,16 +81,6 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
             }
         }
         return false;
-    }
-
-    public void changeMemberRole(ProjectMemberModel member) {
-        Iterator<ProjectMembershipEntity> iter = memberships.iterator();
-        while(iter.hasNext()) {
-            ProjectMembershipEntity entity = iter.next();
-            if(entity.getUser().getId().equals(member.getId())) {
-                entity.setRole(member.getRole());
-            }
-        }
     }
 
     @Override

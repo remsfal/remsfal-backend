@@ -29,7 +29,7 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Override
     public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -40,7 +40,7 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Override
     public BuildingJson getBuilding(String projectId, String buildingId) {
-        checkPrivileges(projectId);
+        checkReadPermissions(projectId);
         final BuildingModel model = controller.getBuilding(projectId, buildingId);
 
         return BuildingJson.valueOf(model);
@@ -48,14 +48,14 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Override
     public BuildingJson updateBuilding(String projectId, String buildingId, BuildingJson building) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         final BuildingModel model = controller.updateBuilding(projectId, buildingId, building);
         return BuildingJson.valueOf(model);
     }
 
     @Override
     public void deleteBuilding(String projectId, String buildingId) {
-        checkPrivileges(projectId);
+        checkWritePermissions(projectId);
         controller.deleteBuilding(projectId, buildingId);
     }
 

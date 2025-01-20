@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @Value.Immutable
 @Schema(description = "A list of sites")
 @JsonDeserialize(as = ImmutableSiteListJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class SiteListJson {
 
     public abstract List<SiteItemJson> getSites();

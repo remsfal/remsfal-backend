@@ -20,9 +20,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @Value.Immutable
 @Schema(description = "A list of project members")
 @JsonDeserialize(as = ImmutableProjectMemberListJson.class)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectMemberListJson {
-
 
     @NotNull
     public abstract List<ProjectMemberJson> getMembers();
@@ -35,5 +34,4 @@ public abstract class ProjectMemberListJson {
         return ImmutableProjectMemberListJson.builder().members(members).build();
     }
 
-    // TODO: pagination
 }
