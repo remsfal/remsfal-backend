@@ -176,7 +176,6 @@ public class ChatMessageRepository {
             return Collections.emptyMap();
         }
         Map<String, Object> messageJsonMap = new LinkedHashMap<>();
-        // Format Instant to ISO-8601 string
         messageJsonMap.put("DATETIME", message.getCreatedAt().toString());
         messageJsonMap.put(messageIdColumn, message.getMessageId());
         messageJsonMap.put("SENDER_ID", message.getSenderId());

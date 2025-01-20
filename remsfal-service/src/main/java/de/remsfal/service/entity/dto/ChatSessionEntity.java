@@ -17,17 +17,15 @@ import java.util.UUID;
 public class ChatSessionEntity implements ChatSessionModel {
 
     @PartitionKey
-    private UUID project_id; // Partition key for horizontal scaling
-
+    private UUID project_id;
     @ClusteringColumn
-    private UUID sessionId; // Unique ID for the session (Clustering column)
-
-    private UUID taskId; // ID of the associated task
-    private String taskType; // Task type (DEFECT, TASK)
-    private String status; // Session status (OPEN, CLOSED, ARCHIVED)
-    private Map<UUID, String> participants; // Participant ID to role mapping
-    private Instant createdAt; // Timestamp of session creation
-    private Instant modifiedAt; // Timestamp of last session modification
+    private UUID sessionId;
+    private UUID taskId;
+    private String taskType;
+    private String status;
+    private Map<UUID, String> participants;
+    private Instant createdAt;
+    private Instant modifiedAt;
 
     // Getters and setters
 

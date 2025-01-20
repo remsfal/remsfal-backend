@@ -9,19 +9,19 @@ import java.util.UUID;
  */
 public interface ChatSessionModel {
 
-    UUID getProjectId(); // Partition key for horizontal scaling
+    UUID getProjectId();
 
-    UUID getSessionId(); // Unique ID for the session (Clustering column)
+    UUID getSessionId();
 
-    UUID getTaskId(); // ID of the associated task
+    UUID getTaskId();
 
-    String getTaskType(); // Task type (e.g., DEFECT, TASK)
+    String getTaskType();
 
-    String getStatus(); // Session status (e.g., OPEN, CLOSED, ARCHIVED)
+    String getStatus();
 
-    Map<UUID, String> getParticipants(); // Map of participant ID to role
+    Map<UUID, String> getParticipants();
 
-    Instant getCreatedAt(); // Timestamp when the session was created
+    Instant getCreatedAt();
 
-    Instant  getModifiedAt(); // Timestamp when the session was last modified
+    Instant  getModifiedAt();
 }

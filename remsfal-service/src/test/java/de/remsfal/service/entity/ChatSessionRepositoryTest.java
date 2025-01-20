@@ -12,6 +12,7 @@ import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.time.Instant;
 import java.util.Map;
@@ -99,21 +100,31 @@ class ChatSessionRepositoryTest {
     @Test
     void createChatSession_INVALID_TASK_TYPE() {
         logger.info("Testing createChatSession with invalid task type");
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            chatSessionRepository.createChatSession(PROJECT_ID, TASK_ID,
-                    "INVALID_TASK_TYPE", Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER"));
-        });
+
+        Executable executable = () -> chatSessionRepository.createChatSession(
+                PROJECT_ID,
+                TASK_ID,
+                "INVALID_TASK_TYPE",
+                Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER")
+        );
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                executable);
+
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-        assertTrue(exception.getMessage().contains("Invalid task type"),
-                "Exception message should contain 'Invalid task type'");
+
+        assertTrue(
+                exception.getMessage().contains("Invalid task type"),
+                "Exception message should contain 'Invalid task type'"
+        );
     }
+
 
     @Test
     void createChatSession_DATABASE_ERROR() {
         logger.info("Testing createChatSession with database error");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.createChatSession(null, null, "TASK", null);
-        });
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.createChatSession(null, null, "TASK", null));
         assertTrue(exception.getMessage().contains("An error occurred while creating the session"),
                 "Exception message should contain 'An error occurred while creating the session'");
     }
@@ -155,9 +166,8 @@ class ChatSessionRepositoryTest {
         UUID randomProjectId = UUID.randomUUID();
         UUID randomSessionId = UUID.randomUUID();
         UUID randomTaskId = UUID.randomUUID();
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.findStatusById(randomProjectId, randomSessionId,randomTaskId);
-        });
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findStatusById(randomProjectId, randomSessionId,randomTaskId));
         System.out.println(exception.getMessage());
         assertTrue(exception.getMessage().contains("An error occurred while fetching the status"));
     }
@@ -187,9 +197,8 @@ class ChatSessionRepositoryTest {
         UUID randomProjectId = UUID.randomUUID();
         UUID randomSessionId = UUID.randomUUID();
         UUID randomTaskId = UUID.randomUUID();
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.findTaskTypeById(randomProjectId, randomSessionId, randomTaskId);
-        });
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findTaskTypeById(randomProjectId, randomSessionId, randomTaskId));
         System.out.println(exception.getMessage());
         assertTrue(exception.getMessage().contains("An error occurred while fetching the task type"));
     }
@@ -197,7 +206,8 @@ class ChatSessionRepositoryTest {
     @Test
     void findParticipantRole_SUCCESS() {
         logger.info("Testing findParticipantRole with valid data");
-        String role = chatSessionRepository.findParticipantRole(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1);
+        String role = chatSessionRepository
+                .findParticipantRole(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1);
         assertNotNull(role, "Role should not be null");
         assertEquals("INITIATOR", role, "Role should match the expected value");
     }
@@ -205,20 +215,27 @@ class ChatSessionRepositoryTest {
     @Test
     void findParticipantRole_NO_PARTICIPANTS() {
         logger.info("Testing findParticipantRole with no participants");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.findParticipantRole(PROJECT_ID, SESSION_ID, TASK_ID, UUID.randomUUID());
-        });
+        Executable executable = () -> chatSessionRepository.findParticipantRole(
+                PROJECT_ID,
+                SESSION_ID,
+                TASK_ID,
+                UUID.randomUUID()
+        );
 
-        assertTrue(exception.getMessage().contains("An error occurred while fetching the participant role"),
-                "Exception message should contain 'No participants found'");
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while fetching the participant role"),
+                "Exception message should contain 'No participants found'"
+        );
     }
+
 
     @Test
     void findParticipantRole_DATABASE_ERROR() {
         logger.info("Testing findParticipantRole with database error");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.findParticipantRole(null, null, null, null);
-        });
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findParticipantRole(null, null, null, null));
         assertTrue(exception.getMessage().contains("An error occurred while fetching the participant role"),
                 "Exception message should contain 'An error occurred while fetching the participant role'");
     }
@@ -234,9 +251,8 @@ class ChatSessionRepositoryTest {
     @Test
     void updateSessionStatus_INVALID_STATUS() {
         logger.info("Testing updateSessionStatus with invalid status");
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            chatSessionRepository.updateSessionStatus(PROJECT_ID, SESSION_ID, TASK_ID, "INVALID_STATUS");
-        });
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionRepository.updateSessionStatus(PROJECT_ID, SESSION_ID, TASK_ID, "INVALID_STATUS"));
         assertTrue(exception.getMessage().contains("Invalid status: "),
                 "Exception message should contain 'Invalid status'");
     }
@@ -244,9 +260,8 @@ class ChatSessionRepositoryTest {
     @Test
     void updateSessionSatus_DATABASE_ERROR() {
         logger.info("Testing updateSessionStatus with database error");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.updateSessionStatus(null, null, null, "CLOSED");
-        });
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.updateSessionStatus(null, null, null, "CLOSED"));
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
         logger.info("EXCEPTION EXPECTED: " + "An error occurred while updating the status");
         assertTrue(exception.getMessage().contains("An error occurred while updating the status"),
@@ -265,25 +280,33 @@ class ChatSessionRepositoryTest {
     @Test
     void addParticipant_NO_ROW_FOUND() {
         logger.info("Testing addParticipant with no row found");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.addParticipant(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                    USER_ID_2, "OBSERVER");
-        });
-        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-        logger.info("EXCEPTION EXPECTED: " + "No participants found for the given projectId and sessionId");
+        Executable executable = () -> chatSessionRepository.addParticipant(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                USER_ID_2,
+                "OBSERVER"
+        );
 
-        assertTrue(exception.getMessage().contains("No participants found for the given projectId and sessionId"),
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: No participants found for the given projectId and sessionId");
+
+        assertTrue(
+                exception.getMessage().contains("No participants found for the given projectId and sessionId"),
                 "Exception message should contain " +
-                        "'No participants found for the given projectId and sessionId'");
+                        "'No participants found for the given projectId and sessionId'"
+        );
     }
+
 
     @Test
     void addParticipant_INVALID_ROLE() {
         logger.info("Testing addParticipant with invalid role");
         UUID userId = UUID.fromString(TestData.USER_ID_3);
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, userId, "INVALID_ROLE");
-        });
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, userId, "INVALID_ROLE"));
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
         logger.info("EXCEPTION EXPECTED: " + "Invalid role: INVALID_ROLE");
         assertTrue(exception.getMessage().contains("Invalid role: "),
@@ -293,21 +316,28 @@ class ChatSessionRepositoryTest {
     @Test
     void addParticipant_NONEXISTENT_USER() {
         logger.info("Testing addParticipant with nonexistent user");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, UUID.randomUUID(), "OBSERVER");
-        });
+        Executable executable = () -> chatSessionRepository.addParticipant(
+                PROJECT_ID,
+                SESSION_ID,
+                TASK_ID,
+                UUID.randomUUID(),
+                "OBSERVER"
+        );
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-        logger.info("EXCEPTION EXPECTED: " + "User not found");
-        assertTrue(exception.getMessage().contains("User not found"),
-                "Exception message should contain 'User not found'");
+        logger.info("EXCEPTION EXPECTED: User not found");
+        assertTrue(
+                exception.getMessage().contains("User not found"),
+                "Exception message should contain 'User not found'"
+        );
     }
+
 
     @Test
     void addParticipant_PARTICIPANT_ALREADY_EXISTS() {
         logger.info("Testing addParticipant with participant already exists");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1, "OBSERVER");
-        });
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1, "OBSERVER"));
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
         logger.info("EXCEPTION EXPECTED: " + "User already exists in the session");
         assertTrue(exception.getMessage().contains("User already exists in the session"),
@@ -318,9 +348,8 @@ class ChatSessionRepositoryTest {
     void addParticipant_INITIATOR_ALREADY_EXISTS() {
         logger.info("Testing addParticipant with initiator already exists");
         UUID userId = UUID.fromString(TestData.USER_ID_3);
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, userId, "INITIATOR");
-        });
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, userId, "INITIATOR"));
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
         logger.info("EXCEPTION EXPECTED: " + "Initiator already exists in the session");
         assertTrue(exception.getMessage().contains("Initiator already exists in the session"),
@@ -339,13 +368,20 @@ class ChatSessionRepositoryTest {
     @Test
     void changeParticipantRole_NO_ROW_FOUND() {
         logger.info("Testing changeParticipantRole with no row found");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.changeParticipantRole(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                    USER_ID_1, "HANDLER");
-        });
-        assertTrue(exception.getMessage().contains("An error occurred while changing the participant role"),
-                "Exception message should contain 'An error occurred while changing the participant role'");
+        Executable executable = () -> chatSessionRepository.changeParticipantRole(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                USER_ID_1,
+                "HANDLER"
+        );
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+        assertTrue(
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain 'An error occurred while changing the participant role'"
+        );
     }
+
 
     @Test
     void removeParticipant_SUCCESS() {
@@ -358,14 +394,21 @@ class ChatSessionRepositoryTest {
     @Test
     void removeParticipant_NO_ROW_FOUND() {
         logger.info("Testing removeParticipant with no row found");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            chatSessionRepository.deleteMember(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), USER_ID_1);
-        });
+        Executable executable = () -> chatSessionRepository.deleteMember(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                USER_ID_1
+        );
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-        logger.info("EXCEPTION EXPECTED: " + "No participants found for the given projectId and sessionId");
-        assertTrue(exception.getMessage().contains("No participants found for the given projectId and sessionId"),
-                "Exception message should contain " +
-                        "'No participants found for the given projectId and sessionId'");
+        logger.info("EXCEPTION EXPECTED: No participants found for the given projectId and sessionId");
+
+        assertTrue(
+                exception.getMessage().contains("No participants found for the given projectId and sessionId"),
+                "Exception message should contain 'No participants found for the given projectId and sessionId'"
+        );
     }
+
 
 }

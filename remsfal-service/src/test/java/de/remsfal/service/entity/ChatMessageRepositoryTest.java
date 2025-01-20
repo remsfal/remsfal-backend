@@ -13,6 +13,8 @@ import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
 import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
 import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.service.entity.dao.ChatMessageRepository.ContentType;
+import org.junit.jupiter.api.function.Executable;
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.time.Instant;
 import java.util.Map;
@@ -128,14 +130,18 @@ class ChatMessageRepositoryTest {
         String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
                 "(chat_session_id, message_id, sender_id, content_type, content, url, created_at) " +
                 "VALUES (?, ?, ?, ?, 'Message to be deleted', null, toTimestamp(now()))";
+
         cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name());
+
         chatMessageRepository.deleteChatMessage(sessionId, messageId.toString());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                chatMessageRepository.findMessageById(sessionId, messageId.toString()));
+        Executable executable = () -> chatMessageRepository.findMessageById(sessionId, messageId.toString());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
 
         assertTrue(exception.getMessage().contains("Message not found"));
     }
+
 
     @Test
     void updateTextChatMessage_SUCCESS() {
@@ -173,14 +179,8 @@ class ChatMessageRepositoryTest {
     @Test
     void exportChatLogsAsJsonString_SUCCESS() {
         logger.info("Testing exportChatLogsAsJsonString");
-
-        // Call the method to export chat logs as a JSON string
         String exportedJson = chatMessageRepository.exportChatLogsAsJsonString(PROJECT_ID, TASK_ID, SESSION_ID);
-
-        // Log the resulting JSON for inspection
         logger.info("Exported Chat Logs JSON: " + exportedJson);
-
-        // Verify that the exported JSON contains expected data
         assertTrue(exportedJson.contains(PROJECT_ID.toString()), "JSON should contain the project ID");
         assertTrue(exportedJson.contains(TASK_ID.toString()), "JSON should contain the task ID");
         assertTrue(exportedJson.contains(SESSION_ID.toString()), "JSON should contain the session ID");

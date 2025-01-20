@@ -8,17 +8,17 @@ import java.util.UUID;
  */
 public interface ChatMessageModel {
 
-    UUID getChatSessionId(); // Partition key for horizontal scaling
+    UUID getChatSessionId();
 
-    UUID getMessageId(); // Unique ID for the message (Clustering column)
+    UUID getMessageId();
 
-    UUID getSenderId(); // ID of the sender
+    UUID getSenderId();
 
-    String getContentType(); // Content type (e.g., TEXT, FILE)
+    String getContentType();
 
-    String getContent(); // Text content of the message
+    String getContent();
 
-    String getUrl(); // File URL if the content type is FILE
+    String getUrl();
 
-    Instant getCreatedAt(); // Timestamp when the message was created
+    Instant getCreatedAt();
 }
