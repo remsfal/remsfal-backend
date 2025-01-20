@@ -465,7 +465,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response uploadFile(
             final String projectId,
             final String sessionId,
-            final MultipartFormDataInput input) throws Exception {
+            final MultipartFormDataInput input){
         try {
             String userId = principal.getId();
             checkWritePermissions(projectId);
@@ -534,7 +534,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
 
         } catch (Exception e) {
             logger.error("Error during file upload", e);
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 

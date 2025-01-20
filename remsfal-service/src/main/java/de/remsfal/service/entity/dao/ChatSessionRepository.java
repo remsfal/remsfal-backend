@@ -219,52 +219,22 @@ public class ChatSessionRepository {
     }
     public void addParticipant(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String role) {
         try {
-            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                    projectId, sessionId, taskId);
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
-            if (row != null) {
-                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN,
-                        UUID.class, String.class);
-                assert participants != null;
-                for (Map.Entry<UUID, String> entry : participants.entrySet()) {
-                    LOGGER.info("Participant ID: " + entry.getKey() + ", Role: "
-                            + entry.getValue());
-                }
 
-                if (participants.containsKey(userId)) {
-                    throw new IllegalArgumentException("User already exists in the session");
-                }
-                if (!ParticipantRole.INITIATOR.name().equals(role) &&
-                        !ParticipantRole.HANDLER.name().equals(role) &&
-                        !ParticipantRole.OBSERVER.name().equals(role)) {
-                    throw new IllegalArgumentException("Invalid role: " + role);
-                }
-                if (ParticipantRole.INITIATOR.name().equals(role)) {
-                    participants.forEach((k, v) -> {
-                        if (ParticipantRole.INITIATOR.name().equals(v)) {
-                            throw new IllegalArgumentException("Initiator already exists in the session");
-                        }
-                    });
-                }
-                if (userRepository.findById(userId.toString()) == null) {
-                    throw new IllegalArgumentException("User not found");
-                }
-                participants.put(userId, role);
-                Update updateQuery = QueryBuilder.update(KEYSPACE, TABLE)
-                        .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
-                        .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                        .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
-                        .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
-                        .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
-                cqlSession.execute(updateQuery.build());
-            } else {
+            if (row == null) {
                 throw new IllegalArgumentException(NOT_FOUND_PARTICIPANTS);
             }
+
+            Map<UUID, String> participants = getParticipants(row);
+
+            logParticipants(participants);
+            validateParticipantAddition(participants, userId, role);
+            addParticipantToDatabase(projectId, sessionId, taskId, userId, role, participants);
         } catch (IllegalArgumentException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("An error occurred while adding the participant", e);
         }
     }
@@ -360,6 +330,65 @@ public class ChatSessionRepository {
                 .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
                 .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
     }
+
+    private Map<UUID, String> getParticipants(Row row) {
+        Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
+        if (participants == null) {
+            throw new IllegalArgumentException("Participants map is null");
+        }
+        return participants;
+    }
+
+    private void logParticipants(Map<UUID, String> participants) {
+        participants.forEach((key, value) -> LOGGER.info("Participant ID: " + key + ", Role: " + value));
+    }
+
+    private void validateParticipantAddition(Map<UUID, String> participants, UUID userId, String role) {
+        if (participants.containsKey(userId)) {
+            throw new IllegalArgumentException("User already exists in the session");
+        }
+
+        if (!isValidRole(role)) {
+            throw new IllegalArgumentException("Invalid role: " + role);
+        }
+
+        if (ParticipantRole.INITIATOR.name().equals(role)) {
+            ensureNoExistingInitiator(participants);
+        }
+
+        if (userRepository.findById(userId.toString()) == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+    }
+
+    private boolean isValidRole(String role) {
+        return ParticipantRole.INITIATOR.name().equals(role)
+                || ParticipantRole.HANDLER.name().equals(role)
+                || ParticipantRole.OBSERVER.name().equals(role);
+    }
+
+    private void ensureNoExistingInitiator(Map<UUID, String> participants) {
+        participants.forEach((key, value) -> {
+            if (ParticipantRole.INITIATOR.name().equals(value)) {
+                throw new IllegalArgumentException("Initiator already exists in the session");
+            }
+        });
+    }
+
+    private void addParticipantToDatabase(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String role,
+                                          Map<UUID, String> participants) {
+        participants.put(userId, role);
+
+        Update updateQuery = QueryBuilder.update(KEYSPACE, TABLE)
+                .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+                .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+                .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
+
+        cqlSession.execute(updateQuery.build());
+    }
+
 
 }
 

@@ -263,7 +263,6 @@ public interface ChatEndpoint {
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input)
-            throws Exception;
+            @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input);
 
 }
