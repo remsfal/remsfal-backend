@@ -215,7 +215,8 @@ public interface ChatEndpoint {
             @PathParam("sessionId") @NotNull @UUID String sessionId,
             @Parameter(description = "The chat message ID", required = true) @PathParam("messageId")
             @NotNull @UUID String messageId,
-            @Parameter(description = "Updated message content", required = true) @Valid @NotNull ChatMessageJson message);
+            @Parameter(description = "Updated message content", required = true)
+            @Valid @NotNull ChatMessageJson message);
 
     @DELETE
     @Path("/{sessionId}/messages/{messageId}")
