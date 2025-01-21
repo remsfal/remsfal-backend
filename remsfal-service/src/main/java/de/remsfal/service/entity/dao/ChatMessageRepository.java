@@ -30,8 +30,8 @@ public class ChatMessageRepository {
     String keyspace;
 
     private static final String TABLE = "chat_messages";
-    private static final String chatSessionIdColumn = "chat_session_id";
-    private static final String messageIdColumn = "message_id";
+    private static final String CHAT_SESSION_ID_COLUMN = "chat_session_id";
+    private static final String MESSAGE_ID_COLUMN = "message_id";
 
     @Inject
     CqlSession cqlSession;
@@ -51,9 +51,9 @@ public class ChatMessageRepository {
             logger.info("SessionId: "+ sessionId + " messageId: " + messageId);
             Select selectQuery = QueryBuilder.selectFrom(keyspace, ChatMessageRepository.TABLE)
                     .all()
-                    .whereColumn(chatSessionIdColumn)
+                    .whereColumn(CHAT_SESSION_ID_COLUMN)
                     .isEqualTo(QueryBuilder.literal(UUID.fromString(sessionId)))
-                    .whereColumn(messageIdColumn)
+                    .whereColumn(MESSAGE_ID_COLUMN)
                     .isEqualTo(QueryBuilder.literal(UUID.fromString(messageId)));
 
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
@@ -177,7 +177,7 @@ public class ChatMessageRepository {
         }
         Map<String, Object> messageJsonMap = new LinkedHashMap<>();
         messageJsonMap.put("DATETIME", message.getCreatedAt().toString());
-        messageJsonMap.put(messageIdColumn, message.getMessageId());
+        messageJsonMap.put(MESSAGE_ID_COLUMN, message.getMessageId());
         messageJsonMap.put("SENDER_ID", message.getSenderId());
         messageJsonMap.put("MEMBER_ROLE",
                 chatSessionRepository.findParticipantRole(projectId, message.getChatSessionId(),
@@ -206,8 +206,8 @@ public class ChatMessageRepository {
     private void saveMessage(ChatMessageEntity message) {
         try {
             Insert insertQuery = QueryBuilder.insertInto(keyspace, ChatMessageRepository.TABLE)
-                    .value(chatSessionIdColumn, QueryBuilder.literal(message.getChatSessionId()))
-                    .value(messageIdColumn, QueryBuilder.literal(message.getMessageId()))
+                    .value(CHAT_SESSION_ID_COLUMN, QueryBuilder.literal(message.getChatSessionId()))
+                    .value(MESSAGE_ID_COLUMN, QueryBuilder.literal(message.getMessageId()))
                     .value("sender_id", QueryBuilder.literal(message.getSenderId()))
                     .value("content_type", QueryBuilder.literal(message.getContentType()))
                     .value("content", QueryBuilder.literal(message.getContent()))
@@ -224,9 +224,9 @@ public class ChatMessageRepository {
         Update updateQuery = QueryBuilder.update(keyspace, ChatMessageRepository.TABLE)
                 .setColumn("content", QueryBuilder.literal(message.getContent()))
                 .setColumn("url", QueryBuilder.literal(message.getUrl()))
-                .whereColumn(chatSessionIdColumn)
+                .whereColumn(CHAT_SESSION_ID_COLUMN)
                 .isEqualTo(QueryBuilder.literal(message.getChatSessionId()))
-                .whereColumn(messageIdColumn)
+                .whereColumn(MESSAGE_ID_COLUMN)
                 .isEqualTo(QueryBuilder.literal(message.getMessageId()));
 
         cqlSession.execute(updateQuery.build());
@@ -234,8 +234,8 @@ public class ChatMessageRepository {
 
     private void deleteMessage(UUID chatSessionId, UUID messageId) {
         Delete deleteQuery = QueryBuilder.deleteFrom(keyspace, ChatMessageRepository.TABLE)
-                .whereColumn(chatSessionIdColumn).isEqualTo(QueryBuilder.literal(chatSessionId))
-                .whereColumn(messageIdColumn).isEqualTo(QueryBuilder.literal(messageId));
+                .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId))
+                .whereColumn(MESSAGE_ID_COLUMN).isEqualTo(QueryBuilder.literal(messageId));
 
         cqlSession.execute(deleteQuery.build());
     }
@@ -243,7 +243,7 @@ public class ChatMessageRepository {
     private List<ChatMessageEntity> findMessagesByChatSession(UUID chatSessionId) {
         Select selectQuery = QueryBuilder.selectFrom(keyspace, ChatMessageRepository.TABLE)
                 .all()
-                .whereColumn(chatSessionIdColumn).isEqualTo(QueryBuilder.literal(chatSessionId));
+                .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId));
         ResultSet resultSet = cqlSession.execute(selectQuery.build());
         return resultSet.all().stream().map(ChatMessageEntity::mapRow).toList();
     }

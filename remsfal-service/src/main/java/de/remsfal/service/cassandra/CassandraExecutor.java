@@ -25,9 +25,9 @@ public class CassandraExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(CassandraExecutor.class);
 
-    private static final String changelogsXmlPath =
+    private static final String CHANGELOGS_XML_PATH =
             "src/main/resources/cassandra/changelogs/cassandra-changelogs.xml";
-    private static final String cqlScriptsDirectory =
+    private static final String CQL_SCRIPTS_DIRECTORY =
             "src/main/resources/cassandra/changelogs/cql-scripts";
 
     @ConfigProperty(name = "quarkus.cassandra.contact-points")
@@ -36,7 +36,7 @@ public class CassandraExecutor {
     @ConfigProperty(name = "quarkus.cassandra.local-datacenter")
     String cassandraLocalDatacenter;
 
-    private static final String keyspaceName = "REMSFAL";
+    private static final String KEYSPACE_NAME = "REMSFAL";
 
     public void onStartup(@Observes StartupEvent event) {
         try (
@@ -58,18 +58,18 @@ public class CassandraExecutor {
     }
 
     private void ensureKeyspaceExists(CqlSession session) {
-        logger.info("Ensuring keyspace '{}' exists.", keyspaceName);
+        logger.info("Ensuring keyspace '{}' exists.", KEYSPACE_NAME);
         String createKeyspaceCQL = String.format(
                 "CREATE KEYSPACE IF NOT EXISTS %s " +
                         "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};",
-                keyspaceName
+                KEYSPACE_NAME
         );
         session.execute(createKeyspaceCQL);
-        logger.info("Keyspace '{}' ensured.", keyspaceName);
+        logger.info("Keyspace '{}' ensured.", KEYSPACE_NAME);
     }
 
     private void processChangelogs(CqlSession session) {
-        logger.info("Parsing Cassandra changelogs XML in {}", changelogsXmlPath);
+        logger.info("Parsing Cassandra changelogs XML in {}", CHANGELOGS_XML_PATH);
         Document changelog = parseChangelogXML();
         NodeList scripts = changelog.getElementsByTagName("script");
 
@@ -80,7 +80,7 @@ public class CassandraExecutor {
 
     private Document parseChangelogXML() {
         try {
-            File xmlFile = new File(changelogsXmlPath);
+            File xmlFile = new File(CHANGELOGS_XML_PATH);
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
@@ -114,7 +114,7 @@ public class CassandraExecutor {
     private void executeCQLScript(CqlSession session, String scriptFileName) {
         try {
             logger.info("Executing script: {}", scriptFileName);
-            Path scriptPath = Path.of(cqlScriptsDirectory, scriptFileName);
+            Path scriptPath = Path.of(CQL_SCRIPTS_DIRECTORY, scriptFileName);
             String cqlScript = Files.readString(scriptPath);
             session.execute(cqlScript);
             logger.info("Executed script: {}", scriptFileName);

@@ -17,7 +17,7 @@ import java.util.UUID;
 public class ChatSessionEntity implements ChatSessionModel {
 
     @PartitionKey
-    private UUID project_id;
+    private UUID projectId;
     @ClusteringColumn
     private UUID sessionId;
     private UUID taskId;
@@ -31,11 +31,11 @@ public class ChatSessionEntity implements ChatSessionModel {
 
     @Override
     public UUID getProjectId() {
-        return project_id;
+        return projectId;
     }
 
-    public void setProjectId(UUID project_id) {
-        this.project_id = project_id;
+    public void setProjectId(UUID projectId) {
+        this.projectId = projectId;
     }
 
     @Override
@@ -43,8 +43,8 @@ public class ChatSessionEntity implements ChatSessionModel {
         return sessionId;
     }
 
-    public void setSessionId(UUID session_id) {
-        this.sessionId = session_id;
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
     }
 
     @Override
@@ -52,8 +52,8 @@ public class ChatSessionEntity implements ChatSessionModel {
         return taskId;
     }
 
-    public void setTaskId(UUID task_id) {
-        this.taskId = task_id;
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
     }
 
     @Override
@@ -61,8 +61,8 @@ public class ChatSessionEntity implements ChatSessionModel {
         return taskType;
     }
 
-    public void setTaskType(String task_type) {
-        this.taskType = task_type;
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
     }
 
     @Override
@@ -88,8 +88,8 @@ public class ChatSessionEntity implements ChatSessionModel {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant created_at) {
-        this.createdAt = created_at;
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override
@@ -97,8 +97,8 @@ public class ChatSessionEntity implements ChatSessionModel {
         return modifiedAt;
     }
 
-    public void setModifiedAt(Instant modified_at) {
-        this.modifiedAt = modified_at;
+    public void setModifiedAt(Instant modifiedAt) {
+        this.modifiedAt = modifiedAt;
     }
 
     /**

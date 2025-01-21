@@ -61,17 +61,17 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     FileStorageService fileStorageService;
 
     private final String bucketName = "remsfal-chat-files";
-    private static final String notFoundSessionMessage = "Chat session not found";
-    private static final String taskIdConstant = "taskId";
-    private static final String defectIdConstant = "defectId";
+    private static final String NOT_FOUND_SESSION_MESSAGE = "Chat session not found";
+    private static final String TASK_ID_CONSTANT = "taskId";
+    private static final String DEFECT_ID_CONSTANT = "defectId";
 
     @Override
     public Response createChatSession(final String projectId) {
         try {
             checkWritePermissions(projectId);
             String userId = principal.getId(); // Get user ID from session
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             if (taskId != null && taskController.getTask(projectId, taskId) == null)
                 throw new NotFoundException("Task does not exist");
@@ -98,8 +98,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response getChatSession(final String projectId, final String sessionId) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             Optional<ChatSessionEntity> session = chatSessionController
@@ -110,7 +110,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                         .entity(ChatSessionJson.valueOf(session.get()))
                         .build();
             else
-                throw new NoSuchElementException(notFoundSessionMessage);
+                throw new NoSuchElementException(NOT_FOUND_SESSION_MESSAGE);
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
@@ -123,8 +123,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response deleteChatSession(final String projectId, final String sessionId) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             chatSessionController.deleteChatSession(projectId, id, sessionId);
@@ -140,8 +140,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                                             final String sessionId, String status) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             if (status.startsWith("\"") && status.endsWith("\"")) {
                 status = status.substring(1, status.length() - 1);
@@ -161,7 +161,7 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                 .entity(ChatSessionJson.valueOf(updatedSession.get()))
                 .build();
             else
-                throw new NoSuchElementException(notFoundSessionMessage);
+                throw new NoSuchElementException(NOT_FOUND_SESSION_MESSAGE);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         } catch (NoSuchElementException e) {
@@ -177,8 +177,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
         try {
         checkWritePermissions(projectId);
         String userId = principal.getId(); // Get user ID from session
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             chatSessionController.addParticipant(projectId, id,
@@ -204,8 +204,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response getParticipants(final String projectId, final String sessionId) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             Map<UUID, String> participants =
@@ -227,8 +227,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response getParticipant(final String projectId, final String sessionId, final String participantId) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             UUID participantUUID = UUID.fromString(participantId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
@@ -256,8 +256,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                                           String role) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             role = cleanRole(role);
             UUID participantUUID = UUID.fromString(participantId);
@@ -284,8 +284,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
     public Response removeParticipant(final String projectId, final String sessionId, final String participantId) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             UUID participantUUID = UUID.fromString(participantId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
@@ -340,8 +340,8 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
                                     final String sessionId) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             return Response.ok()
@@ -444,15 +444,15 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             final String sessionId, final String messageId) {
         try {
             checkWritePermissions(projectId);
-            String taskId = uri.getPathParameters().getFirst(taskIdConstant);
-            String defectId = uri.getPathParameters().getFirst(defectIdConstant);
+            String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
+            String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             if (chatSessionController.getChatSession(projectId, id, sessionId).isPresent()) {
                 chatMessageController.deleteChatMessage(sessionId, messageId);
                 return Response.noContent().build();
             } else {
-                throw new NotFoundException(notFoundSessionMessage);
+                throw new NotFoundException(NOT_FOUND_SESSION_MESSAGE);
             }
         } catch (NotFoundException e) {
             throw e;

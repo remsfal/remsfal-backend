@@ -24,16 +24,16 @@ public class ChatSessionRepository {
     String keyspace;
 
     private static final String TABLE = "chat_sessions";
-    private static final String projectIdColumn = "project_id";
-    private static final String sessionIdColumn = "session_id";
-    private static final String taskIdColumn = "task_id";
-    private static final String statusColumn = "status";
-    private static final String participantsColumn = "participants";
-    private static final String taskTypeColumn = "task_type";
-    private static final String modifiedAtColumn = "modified_at";
-    private static final String notFoundParticipants =
+    private static final String PROJECT_ID_COLUMN = "project_id";
+    private static final String SESSION_ID_COLUMN = "session_id";
+    private static final String TASK_ID_COLUMN = "task_id";
+    private static final String STATUS_COLUMN = "status";
+    private static final String PARTICIPANTS_COLUMN = "participants";
+    private static final String TASK_TYPE_COLUMN = "task_type";
+    private static final String MODIFIED_AT_COLUMN = "modified_at";
+    private static final String NOT_FOUND_PARTICIPANTS =
             "No participants found for the given projectId and sessionId";
-    private static final String errorSessionFetch = "An error occurred while fetching the session";
+    private static final String ERROR_SESSION_FETCH = "An error occurred while fetching the session";
 
 
 
@@ -47,7 +47,7 @@ public class ChatSessionRepository {
     UserRepository userRepository;
 
     @Inject
-    Logger LOGGER;
+    Logger logger;
 
 
     public enum TaskType {
@@ -99,9 +99,9 @@ public class ChatSessionRepository {
         try {
             Select selectQuery = QueryBuilder.selectFrom(keyspace, TABLE)
                     .all()
-                    .whereColumn(projectIdColumn).isEqualTo(QueryBuilder.literal(projectId))
-                    .whereColumn(sessionIdColumn).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(taskIdColumn).isEqualTo(QueryBuilder.literal(taskId));
+                    .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                    .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                    .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
@@ -110,18 +110,18 @@ public class ChatSessionRepository {
                 return Optional.empty();
             }
         } catch (Exception e) {
-            throw new RuntimeException(errorSessionFetch, e);
+            throw new RuntimeException(ERROR_SESSION_FETCH, e);
         }
     }
 
     public String findStatusById(UUID projectId, UUID sessionId, UUID taskId) {
         try {
-            Select selectQuery = makeSelectQuery(statusColumn,
+            Select selectQuery = makeSelectQuery(STATUS_COLUMN,
                     projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
-                return row.getString(statusColumn);
+                return row.getString(STATUS_COLUMN);
             } else {
                 throw new RuntimeException("No status found for the given projectId " + projectId +
                         " and sessionId " + sessionId +
@@ -134,28 +134,28 @@ public class ChatSessionRepository {
 
     public Map<UUID,String> findParticipantsById(UUID projectId, UUID sessionId, UUID taskId) {
         try {
-            Select selectQuery = makeSelectQuery(participantsColumn,
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
                     projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
-                return row.getMap(participantsColumn, UUID.class, String.class);
+                return row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
             } else {
-                throw new RuntimeException(notFoundParticipants);
+                throw new RuntimeException(NOT_FOUND_PARTICIPANTS);
             }
         } catch (Exception e) {
-            throw new RuntimeException(errorSessionFetch, e);
+            throw new RuntimeException(ERROR_SESSION_FETCH, e);
         }
     }
 
     public String findTaskTypeById(UUID projectId, UUID sessionId, UUID taskId) {
         try {
-            Select selectQuery = makeSelectQuery(taskTypeColumn,
+            Select selectQuery = makeSelectQuery(TASK_TYPE_COLUMN,
                     projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
-                return row.getString(taskTypeColumn);
+                return row.getString(TASK_TYPE_COLUMN);
             } else {
                 throw new RuntimeException("No task type found for the given projectId and sessionId");
             }
@@ -166,13 +166,13 @@ public class ChatSessionRepository {
 
     public String findParticipantRole(UUID projectId, UUID sessionId, UUID taskId, UUID userId) {
         try {
-            Select selectQuery = makeSelectQuery(participantsColumn,
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
                     projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
                 Map<UUID, String> participants =
-                        row.getMap(participantsColumn, UUID.class, String.class);
+                        row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
                 assert participants != null;
                 String role = participants.get(userId);
                 if (role != null) {
@@ -181,7 +181,7 @@ public class ChatSessionRepository {
                     throw new RuntimeException("No participants found for the given userId");
                 }
             } else {
-                throw new RuntimeException(notFoundParticipants);
+                throw new RuntimeException(NOT_FOUND_PARTICIPANTS);
             }
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while fetching the participant role", e);
@@ -199,15 +199,15 @@ public class ChatSessionRepository {
             }
 
             if (Status.CLOSED.name().equals(status)) {
-                LOGGER.info("Deleting chat messages for sessionId=" + sessionId);
+                logger.info("Deleting chat messages for sessionId=" + sessionId);
                 chatMessageRepository.deleteMessagesFromSession(sessionId.toString());
             }
             Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                    .setColumn(statusColumn, QueryBuilder.literal(status))
-                    .setColumn(modifiedAtColumn, QueryBuilder.literal(Instant.now()))
-                    .whereColumn(projectIdColumn).isEqualTo(QueryBuilder.literal(projectId))
-                    .whereColumn(sessionIdColumn).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(taskIdColumn).isEqualTo(QueryBuilder.literal(taskId));
+                    .setColumn(STATUS_COLUMN, QueryBuilder.literal(status))
+                    .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+                    .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                    .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                    .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
             cqlSession.execute(updateQuery.build());
         }
         catch (IllegalArgumentException e) {
@@ -219,12 +219,12 @@ public class ChatSessionRepository {
     }
     public void addParticipant(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String role) {
         try {
-            Select selectQuery = makeSelectQuery(participantsColumn, projectId, sessionId, taskId);
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
 
             if (row == null) {
-                throw new IllegalArgumentException(notFoundParticipants);
+                throw new IllegalArgumentException(NOT_FOUND_PARTICIPANTS);
             }
 
             Map<UUID, String> participants = getParticipants(row);
@@ -241,21 +241,21 @@ public class ChatSessionRepository {
 
     public void changeParticipantRole(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String newRole) {
         try {
-            Select selectQuery = makeSelectQuery(participantsColumn,
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
                     projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
-                Map<UUID, String> participants = row.getMap(participantsColumn,
+                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN,
                         UUID.class, String.class);
                 assert participants != null;
                 participants.put(userId, newRole);
                 Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                        .setColumn(participantsColumn, QueryBuilder.literal(participants))
-                        .setColumn(modifiedAtColumn, QueryBuilder.literal(Instant.now()))
-                        .whereColumn(projectIdColumn).isEqualTo(QueryBuilder.literal(projectId))
-                        .whereColumn(sessionIdColumn).isEqualTo(QueryBuilder.literal(sessionId))
-                        .whereColumn(taskIdColumn).isEqualTo(QueryBuilder.literal(taskId));
+                        .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+                        .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+                        .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                        .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                        .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
                 cqlSession.execute(updateQuery.build());
             } else {
                 throw new RuntimeException("An error occurred while changing the participant role");
@@ -267,24 +267,24 @@ public class ChatSessionRepository {
 
     public void deleteMember(UUID projectId, UUID sessionId, UUID taskId, UUID userId) {
         try {
-            Select selectQuery = makeSelectQuery(participantsColumn,
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
                     projectId, sessionId, taskId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
-                Map<UUID, String> participants = row.getMap(participantsColumn, UUID.class,
+                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class,
                         String.class);
                 assert participants != null;
                 participants.remove(userId);
                 Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                        .setColumn(participantsColumn, QueryBuilder.literal(participants))
-                        .setColumn(modifiedAtColumn, QueryBuilder.literal(Instant.now()))
-                        .whereColumn(projectIdColumn).isEqualTo(QueryBuilder.literal(projectId))
-                        .whereColumn(sessionIdColumn).isEqualTo(QueryBuilder.literal(sessionId))
-                        .whereColumn(taskIdColumn).isEqualTo(QueryBuilder.literal(taskId));
+                        .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+                        .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+                        .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                        .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                        .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
                 cqlSession.execute(updateQuery.build());
             } else {
-                throw new IllegalArgumentException(notFoundParticipants);
+                throw new IllegalArgumentException(NOT_FOUND_PARTICIPANTS);
             }
         }
         catch (IllegalArgumentException e) {
@@ -298,10 +298,10 @@ public class ChatSessionRepository {
     public void deleteSession(UUID projectId, UUID sessionId, UUID taskId) {
         try {
             Delete deleteQuery = QueryBuilder.deleteFrom(keyspace, TABLE)
-                    .whereColumn(projectIdColumn).isEqualTo(QueryBuilder.literal(projectId))
-                    .whereColumn(sessionIdColumn).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(taskIdColumn).isEqualTo(QueryBuilder.literal(taskId));
-            LOGGER.info("Executing delete query: " + deleteQuery.asCql());
+                    .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                    .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                    .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
+            logger.info("Executing delete query: " + deleteQuery.asCql());
             cqlSession.execute(deleteQuery.build());
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while deleting the session", e);
@@ -310,15 +310,15 @@ public class ChatSessionRepository {
 
     private void save(ChatSessionEntity session) {
         Insert insertQuery = QueryBuilder.insertInto(keyspace, TABLE)
-                .value(projectIdColumn, QueryBuilder.literal(session.getProjectId()))
-                .value(sessionIdColumn, QueryBuilder.literal(session.getSessionId()))
-                .value(taskIdColumn, QueryBuilder.literal(session.getTaskId()))
-                .value(taskTypeColumn, QueryBuilder.literal(session.getTaskType()))
-                .value(statusColumn, QueryBuilder.literal(session.getStatus()))
-                .value(participantsColumn, QueryBuilder.literal(session.getParticipants()))
+                .value(PROJECT_ID_COLUMN, QueryBuilder.literal(session.getProjectId()))
+                .value(SESSION_ID_COLUMN, QueryBuilder.literal(session.getSessionId()))
+                .value(TASK_ID_COLUMN, QueryBuilder.literal(session.getTaskId()))
+                .value(TASK_TYPE_COLUMN, QueryBuilder.literal(session.getTaskType()))
+                .value(STATUS_COLUMN, QueryBuilder.literal(session.getStatus()))
+                .value(PARTICIPANTS_COLUMN, QueryBuilder.literal(session.getParticipants()))
                 .value("created_at", QueryBuilder.literal(session.getCreatedAt()))
-                .value(modifiedAtColumn, QueryBuilder.literal(session.getModifiedAt()));
-        LOGGER.info("Executing insert query: " + insertQuery.asCql());
+                .value(MODIFIED_AT_COLUMN, QueryBuilder.literal(session.getModifiedAt()));
+        logger.info("Executing insert query: " + insertQuery.asCql());
         cqlSession.execute(insertQuery.build());
     }
 
@@ -326,13 +326,13 @@ public class ChatSessionRepository {
     {
         return QueryBuilder.selectFrom(keyspace, TABLE)
                 .column(column)
-                .whereColumn(projectIdColumn).isEqualTo(QueryBuilder.literal(projectId))
-                .whereColumn(sessionIdColumn).isEqualTo(QueryBuilder.literal(sessionId))
-                .whereColumn(taskIdColumn).isEqualTo(QueryBuilder.literal(taskId));
+                .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
     }
 
     private Map<UUID, String> getParticipants(Row row) {
-        Map<UUID, String> participants = row.getMap(participantsColumn, UUID.class, String.class);
+        Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
         if (participants == null) {
             throw new IllegalArgumentException("Participants map is null");
         }
@@ -340,7 +340,7 @@ public class ChatSessionRepository {
     }
 
     private void logParticipants(Map<UUID, String> participants) {
-        participants.forEach((key, value) -> LOGGER.info("Participant ID: " + key + ", Role: " + value));
+        participants.forEach((key, value) -> logger.info("Participant ID: " + key + ", Role: " + value));
     }
 
     private void validateParticipantAddition(Map<UUID, String> participants, UUID userId, String role) {
@@ -380,11 +380,11 @@ public class ChatSessionRepository {
         participants.put(userId, role);
 
         Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                .setColumn(participantsColumn, QueryBuilder.literal(participants))
-                .setColumn(modifiedAtColumn, QueryBuilder.literal(Instant.now()))
-                .whereColumn(projectIdColumn).isEqualTo(QueryBuilder.literal(projectId))
-                .whereColumn(sessionIdColumn).isEqualTo(QueryBuilder.literal(sessionId))
-                .whereColumn(taskIdColumn).isEqualTo(QueryBuilder.literal(taskId));
+                .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+                .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+                .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+                .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+                .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
 
         cqlSession.execute(updateQuery.build());
     }
