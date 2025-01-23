@@ -1,47 +1,27 @@
 package de.remsfal.core.model.project;
 
-import java.util.Date;
-import java.util.List;
+import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 /**
- * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ * Represents a chat session in Cassandra.
  */
 public interface ChatSessionModel {
 
-    String getId();
+    UUID getProjectId();
 
-    String getProjectId();
+    UUID getSessionId();
 
-    String getTaskId();
+    UUID getTaskId();
 
-    enum TaskType {
-        DEFECT,
-        TASK
-    }
+    String getTaskType();
 
-    TaskType getTaskType();
+    String getStatus();
 
-    Map<String, ParticipantRole> getParticipants();
+    Map<UUID, String> getParticipants();
 
-    enum ParticipantRole {
-        INITIATOR,
-        HANDLER,
-        OBSERVER
-    }
+    Instant getCreatedAt();
 
-    List<? extends ChatMessageModel> getMessages();
-
-    Status getStatus();
-
-    enum Status {
-        OPEN,
-        CLOSED,
-        ARCHIVED
-    }
-
-    Date getCreatedAt();
-
-    Date getModifiedAt();
-
+    Instant  getModifiedAt();
 }
