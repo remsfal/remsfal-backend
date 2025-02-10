@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <quarkus.version>3.17.7</quarkus.version>
+        <quarkus.version>3.18.2</quarkus.version>
         <google.version>2.7.1</google.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
