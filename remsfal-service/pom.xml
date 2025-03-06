@@ -16,7 +16,7 @@
 
     <properties>
         <quarkus.version>3.17.7</quarkus.version>
-        <google.version>2.7.1</google.version>
+        <google.version>2.7.2</google.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
     </properties>
@@ -118,7 +118,7 @@
             <!-- JDK 24 support -->
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.16.1</version>
+            <version>1.17.1</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
