@@ -1,5 +1,7 @@
 package de.remsfal.service.boundary;
 
+import com.datastax.oss.quarkus.test.CassandraTestResource;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 
 @QuarkusTest
+@QuarkusTestResource(CassandraTestResource.class)
 class AddressResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/address";

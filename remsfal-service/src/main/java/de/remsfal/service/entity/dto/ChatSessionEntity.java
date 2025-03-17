@@ -1,172 +1,122 @@
 package de.remsfal.service.entity.dto;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import de.remsfal.core.model.project.ChatSessionModel;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapKeyColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * DTO for a chat session stored in Cassandra.
+ */
 @Entity
-@Table(name = "CHAT_SESSION")
-public class ChatSessionEntity extends AbstractEntity implements ChatSessionModel {
+public class ChatSessionEntity implements ChatSessionModel {
 
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    @NotBlank
-    private String id;
+    @PartitionKey
+    private UUID projectId;
+    @ClusteringColumn
+    private UUID sessionId;
+    private UUID taskId;
+    private String taskType;
+    private String status;
+    private Map<UUID, String> participants;
+    private Instant createdAt;
+    private Instant modifiedAt;
 
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, length = 36)
-    @NotBlank
-    private String projectId;
+    // Getters and setters
 
     @Override
-    public String getProjectId() {
+    public UUID getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(String projectId) {
+    public void setProjectId(UUID projectId) {
         this.projectId = projectId;
     }
 
-    @Column(name = "TASK_ID", columnDefinition = "char", nullable = false, length = 36)
-    @NotBlank
-    private String taskId;
+    @Override
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
 
     @Override
-    public String getTaskId() {
+    public UUID getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(String taskId) {
+    public void setTaskId(UUID taskId) {
         this.taskId = taskId;
     }
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "TASK_TYPE", nullable = false)
-    @NotNull
-    private TaskType taskType;
-
     @Override
-    public TaskType getTaskType() {
+    public String getTaskType() {
         return taskType;
     }
 
-    public void setTaskType(TaskType taskType) {
+    public void setTaskType(String taskType) {
         this.taskType = taskType;
     }
 
-    /**
-     * Participants map: participantId -> ParticipantRole
-     */
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "CHAT_SESSION_PARTICIPANT", joinColumns = @JoinColumn(name = "CHAT_SESSION_ID"))
-    @MapKeyColumn(name = "PARTICIPANT_ID", columnDefinition = "char(36)", length = 36)
-    @Column(name = "ROLE")
-    @Enumerated(EnumType.STRING)
-    private Map<String, ParticipantRole> participants = new HashMap<>();
-
     @Override
-    public Map<String, ParticipantRole> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(Map<String, ParticipantRole> participants) {
-        this.participants = participants;
-    }
-
-    @OneToMany(mappedBy = "chatSession", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @OrderBy("createdAt ASC") // Ensure consistent order
-    private List<ChatMessageEntity> messages = new ArrayList<>();
-
-
-    @Override
-    public List<ChatMessageEntity> getMessages() {
-        return messages;
-    }
-
-    // Status of the chat session: OPEN, CLOSED, ARCHIVED
-    @Enumerated(EnumType.STRING)
-    @Column(name = "STATUS", nullable = false)
-    @NotNull
-    private Status status;
-
-    @Override
-    public Status getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-
-
-
     @Override
-    public Date getCreatedAt() {
-        return super.getCreatedAt();
+    public Map<UUID, String> getParticipants() {
+        return participants;
     }
 
-    @Override
-    public Date getModifiedAt() {
-        return super.getModifiedAt();
-    }
-
-    public void addMessage(ChatMessageEntity message) {
-        if (messages == null) {
-            messages = new ArrayList<>();
-        }
-        messages.add(message);
-        message.setChatSession(this); // Ensures bidirectional relationship
-    }
-
-
-    // Equals and hashCode methods
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, projectId, taskId, taskType, status, getCreatedAt(), getModifiedAt());
+    public void setParticipants(Map<UUID, String> participants) {
+        this.participants = participants;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof ChatSessionEntity that)) return false;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(projectId, that.projectId) &&
-                Objects.equals(taskId, that.taskId) &&
-                taskType == that.taskType &&
-                status == that.status &&
-                Objects.equals(getCreatedAt(), that.getCreatedAt()) &&
-                Objects.equals(getModifiedAt(), that.getModifiedAt());
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @Override
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(Instant modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    /**
+     * Maps a Cassandra row to a `CassChatSessionEntity`.
+     *
+     * @param row The Cassandra row.
+     * @return The mapped entity.
+     */
+    public static ChatSessionEntity mapRow(Row row) {
+        ChatSessionEntity entity = new ChatSessionEntity();
+        entity.setProjectId(row.getUuid("project_id"));
+        entity.setSessionId(row.getUuid("session_id"));
+        entity.setTaskId(row.getUuid("task_id"));
+        entity.setTaskType(row.getString("task_type"));
+        entity.setStatus(row.getString("status"));
+        entity.setParticipants(row.getMap("participants", UUID.class, String.class));
+        entity.setCreatedAt(row.getInstant("created_at"));
+        entity.setModifiedAt(row.getInstant("modified_at"));
+        return entity;
+    }
 }

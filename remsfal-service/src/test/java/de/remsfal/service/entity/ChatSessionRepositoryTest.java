@@ -1,608 +1,413 @@
 package de.remsfal.service.entity;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
-import de.remsfal.core.model.project.ChatSessionModel;
-import de.remsfal.core.model.project.ChatSessionModel.ParticipantRole;
-import de.remsfal.service.AbstractTest;
+import com.datastax.oss.driver.api.core.CqlSession;
 import de.remsfal.service.TestData;
-import de.remsfal.service.entity.dao.ChatSessionRepository;
-import de.remsfal.service.entity.dao.UserRepository;
-import de.remsfal.service.entity.dto.ChatMessageEntity;
 import de.remsfal.service.entity.dto.ChatSessionEntity;
-import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.entity.dao.ChatSessionRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-class ChatSessionRepositoryTest extends AbstractTest {
+class ChatSessionRepositoryTest {
 
     @Inject
-    ChatSessionRepository repository;
+    ChatSessionRepository chatSessionRepository;
 
     @Inject
-    UserRepository userRepository;
+    Logger logger;
+
+    @Inject
+    CqlSession cqlSession;
 
     @Inject
     EntityManager entityManager;
 
-    String TASK_ID = UUID.randomUUID().toString();
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    static final UUID PROJECT_ID = UUID.randomUUID();
+    static final UUID TASK_ID = UUID.randomUUID();
+    static final UUID USER_ID_1 = UUID.randomUUID();
+    static final UUID USER_ID_2 = UUID.randomUUID();
+    static final UUID SESSION_ID = UUID.randomUUID();
 
     @BeforeEach
     @Transactional
-    protected void setupTestChatSessions() throws InterruptedException {
-        // Insert users
-        entityManager.createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
-                .setParameter(1, TestData.USER_ID)
-                .setParameter(2, TestData.USER_TOKEN)
-                .setParameter(3, TestData.USER_EMAIL)
-                .setParameter(4, TestData.USER_FIRST_NAME)
-                .setParameter(5, TestData.USER_LAST_NAME)
-                .executeUpdate();
+    void setUp() {
 
-        entityManager.createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
-                .setParameter(1, TestData.USER_ID_2)
-                .setParameter(2, TestData.USER_TOKEN_2)
-                .setParameter(3, TestData.USER_EMAIL_2)
-                .setParameter(4, TestData.USER_FIRST_NAME_2)
-                .setParameter(5, TestData.USER_LAST_NAME_2)
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
+        logger.info("Setting up test data");
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertSessionCql,
+                PROJECT_ID, TASK_ID, SESSION_ID,
+                ChatSessionRepository.TaskType.TASK.name(), ChatSessionRepository.Status.OPEN.name(),
+                Instant.now(),
+                Map.of(USER_ID_1, ChatSessionRepository.ParticipantRole.INITIATOR.name(), USER_ID_2,
+                        ChatSessionRepository.ParticipantRole.HANDLER.name()));
+        logger.info("Test session created: " + SESSION_ID);
+        entityManager.createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) " +
+                        "VALUES (?,?,?,?,?)")
                 .setParameter(1, TestData.USER_ID_3)
                 .setParameter(2, TestData.USER_TOKEN_3)
                 .setParameter(3, TestData.USER_EMAIL_3)
                 .setParameter(4, TestData.USER_FIRST_NAME_3)
                 .setParameter(5, TestData.USER_LAST_NAME_3)
                 .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
-                .setParameter(1, TestData.USER_ID_4)
-                .setParameter(2, TestData.USER_TOKEN_4)
-                .setParameter(3, TestData.USER_EMAIL_4)
-                .setParameter(4, TestData.USER_FIRST_NAME_4)
-                .setParameter(5, TestData.USER_LAST_NAME_4)
-                .executeUpdate();
-
-        // Insert project
-        entityManager.createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.PROJECT_TITLE)
-                .executeUpdate();
-
-        // Insert project memberships
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.USER_ID)
-                .setParameter(3, MemberRole.MANAGER.name())
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.USER_ID_2)
-                .setParameter(3, MemberRole.LESSOR.name())
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.USER_ID_3)
-                .setParameter(3, MemberRole.STAFF.name())
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.USER_ID_4)
-                .setParameter(3, MemberRole.STAFF.name())
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-                .setParameter(1, TASK_ID)
-                .setParameter(2, "TASK")
-                .setParameter(3, TestData.PROJECT_ID)
-                .setParameter(4, TestData.TASK_TITLE_1)
-                .setParameter(5, "OPEN")
-                .setParameter(6, TestData.USER_ID)
-                .setParameter(7, TestData.USER_ID)
-                .executeUpdate();
-
-        // Insert chat session
-        String CHAT_SESSION_ID = UUID.randomUUID().toString();
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION (ID, PROJECT_ID, TASK_ID, TASK_TYPE, STATUS) VALUES (?,?,?,?,?)")
-                .setParameter(1, CHAT_SESSION_ID)
-                .setParameter(2, TestData.PROJECT_ID)
-                .setParameter(3, TASK_ID)
-                .setParameter(4, "TASK")
-                .setParameter(5, "OPEN")
-                .executeUpdate();
-
-        // Insert chat session participants
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION_PARTICIPANT (CHAT_SESSION_ID, PARTICIPANT_ID, ROLE) VALUES (?,?,?)")
-                .setParameter(1, CHAT_SESSION_ID)
-                .setParameter(2, TestData.USER_ID_2)
-                .setParameter(3, "INITIATOR")
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION_PARTICIPANT (CHAT_SESSION_ID, PARTICIPANT_ID, ROLE) VALUES (?,?,?)")
-                .setParameter(1, CHAT_SESSION_ID)
-                .setParameter(2, TestData.USER_ID_3)
-                .setParameter(3, "HANDLER")
-                .executeUpdate();
-
-        entityManager.createNativeQuery("INSERT INTO CHAT_SESSION_PARTICIPANT (CHAT_SESSION_ID, PARTICIPANT_ID, ROLE) VALUES (?,?,?)")
-                .setParameter(1, CHAT_SESSION_ID)
-                .setParameter(2, TestData.USER_ID)
-                .setParameter(3, "OBSERVER")
-                .executeUpdate();
-
-        // Insert chat messages
-        entityManager.createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT) VALUES (?,?,?,?,?)")
-                .setParameter(1, UUID.randomUUID().toString())
-                .setParameter(2, CHAT_SESSION_ID)
-                .setParameter(3, TestData.USER_ID_2)
-                .setParameter(4, "TEXT")
-                .setParameter(5, "Hello, this is a test message. I am the initiator.")
-                .executeUpdate();
-
-        // Introduce a minimal delay to ensure distinct CREATED_AT
-        Thread.sleep(1000); // Sleep for 1 second
-
-        entityManager.createNativeQuery("INSERT INTO CHAT_MESSAGE (ID, CHAT_SESSION_ID, SENDER_ID, CONTENT_TYPE, CONTENT) VALUES (?,?,?,?,?)")
-                .setParameter(1, UUID.randomUUID().toString())
-                .setParameter(2, CHAT_SESSION_ID)
-                .setParameter(3, TestData.USER_ID_3)
-                .setParameter(4, "TEXT")
-                .setParameter(5, "Hello, this is a test message. I am the handler.")
-                .executeUpdate();
-
+        logger.info("Test data setup complete");
     }
 
-    @Test
-    void hashCode_SUCCESS_chatSessionEntity() {
-        final ChatSessionEntity entity = repository.findChatSessionsByProjectId(TestData.PROJECT_ID).get(0);
-        assertNotNull(entity, "ChatSessionEntity should not be null");
-        assertTrue(entity.hashCode() != 0, "Hash code should not be zero");
+    @AfterEach
+    @Transactional
+    void tearDown() {
+        logger.info("Tearing down test data");
+        chatSessionRepository.deleteSession(PROJECT_ID, SESSION_ID, TASK_ID);
+        Optional<ChatSessionEntity> deletedSession = chatSessionRepository
+                .findSessionById(PROJECT_ID, SESSION_ID, TASK_ID);
+        assertFalse(deletedSession.isPresent(), "Session should be deleted from the database");
+        logger.info("Test data teardown complete");
+        entityManager.createNativeQuery("DELETE FROM USER").executeUpdate();
+
     }
-
-    @Test
-    void equals_SUCCESS_chatSessionEntity() {
-        final List<ChatSessionEntity> entities = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(entities, "Entities list should not be null");
-        assertEquals(1, entities.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity entity1 = entities.get(0);
-        final ChatSessionEntity entity2 = repository.findChatSessionById(entity1.getId());
-
-        assertNotNull(entity2, "Retrieved ChatSessionEntity should not be null");
-        assertEquals(entity1, entity2, "Both ChatSessionEntities should be equal");
-    }
-
-    @Test
-    void findChatSessionById_SUCCESS() {
-        final List<ChatSessionEntity> entities = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(entities, "Entities list should not be null");
-        assertEquals(1, entities.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity expectedSession = entities.get(0);
-        final ChatSessionEntity actualSession = repository.findChatSessionById(expectedSession.getId());
-
-        assertNotNull(actualSession, "Retrieved ChatSessionEntity should not be null");
-        assertEquals(expectedSession, actualSession, "Retrieved ChatSessionEntity should match the expected session");
-    }
-
-    @Test
-    void exportChatLogs_WITH_MESSAGES() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final List<ChatMessageEntity> messages = repository.exportChatLogs(session.getId());
-
-        assertNotNull(messages, "Exported chat logs should not be null");
-        assertEquals(2, messages.size(), "There should be two chat messages");
-
-        assertTrue(messages.get(0).getTimestamp().before(messages.get(1).getTimestamp()) ||
-                        messages.get(0).getTimestamp().equals(messages.get(1).getTimestamp()),
-                "Chat messages should be sorted by timestamp ascending");
-
-        ChatMessageEntity firstMessage = messages.get(0);
-        ChatMessageEntity secondMessage = messages.get(1);
-
-        assertEquals(TestData.USER_ID_2, firstMessage.getSenderId(), "First message should be from the initiator");
-        assertEquals("Hello, this is a test message. I am the initiator.", firstMessage.getContent(), "First message content should match");
-
-        assertEquals(TestData.USER_ID_3, secondMessage.getSenderId(), "Second message should be from the handler");
-        assertEquals("Hello, this is a test message. I am the handler.", secondMessage.getContent(), "Second message content should match");
-    }
-
-   @Test
-    void exportChatLogsAsJsonString_SUCCESS() throws Exception {
-
-        final String projectId = TestData.PROJECT_ID;
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(projectId);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final String json = repository.exportChatLogsAsJsonString(session.getId());
-
-        JsonNode rootNode = objectMapper.readTree(json);
-
-        assertTrue(rootNode.has("CHAT_SESSION_ID"), "JSON should contain CHAT_SESSION_ID");
-        assertTrue(rootNode.has("TASK_ID"), "JSON should contain TASK_ID");
-        assertTrue(rootNode.has("PROJECT_ID"), "JSON should contain PROJECT_ID");
-        assertTrue(rootNode.has("TASK_TYPE"), "JSON should contain TASK_TYPE");
-        assertTrue(rootNode.has("messages"), "JSON should contain messages");
-
-        assertEquals(session.getId(), rootNode.get("CHAT_SESSION_ID").asText(), "CHAT_SESSION_ID should match");
-        assertEquals(session.getTaskId(), rootNode.get("TASK_ID").asText(), "TASK_ID should match");
-        assertEquals(session.getProjectId(), rootNode.get("PROJECT_ID").asText(), "PROJECT_ID should match");
-        assertEquals(session.getTaskType().toString(), rootNode.get("TASK_TYPE").asText(), "TASK_TYPE should match");
-
-        JsonNode messagesNode = rootNode.get("messages");
-        assertTrue(messagesNode.isArray(), "messages should be an array");
-        assertEquals(session.getMessages().size(), messagesNode.size(), "Number of messages should match");
-
-        for (int i = 0; i < messagesNode.size(); i++) {
-            JsonNode messageNode = messagesNode.get(i);
-            ChatMessageEntity message = session.getMessages().get(i);
-
-            assertEquals(message.getId(), messageNode.get("MESSAGE_ID").asText(), "MESSAGE_ID should match");
-            assertEquals(message.getSenderId(), messageNode.get("SENDER_ID").asText(), "SENDER_ID should match");
-            assertEquals(message.getContentType().toString(), messageNode.get("MESSAGE_TYPE").asText(), "MESSAGE_TYPE should match");
-            assertEquals(message.getContent(), messageNode.get("MESSAGE_CONTENT").asText(), "MESSAGE_CONTENT should match");
-            assertNotNull(messageNode.get("DATETIME"), "DATETIME should not be null");
-            assertNotNull(messageNode.get("MEMBER_ROLE"), "MEMBER_ROLE should not be null");
-        }
-    }
-
-    @Test
-        void findParticipantRole_SUCCESS() {
-            final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-            assertNotNull(sessions, "Sessions list should not be null");
-            assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-            final ChatSessionEntity session = sessions.get(0);
-
-            ParticipantRole role1 = repository.findParticipantRole(session.getId(), TestData.USER_ID_2);
-            assertEquals(ParticipantRole.INITIATOR, role1, "User should have INITIATOR role");
-
-            ParticipantRole role2 = repository.findParticipantRole(session.getId(), TestData.USER_ID_3);
-            assertEquals(ParticipantRole.HANDLER, role2, "User should have HANDLER role");
-
-            ParticipantRole role3 = repository.findParticipantRole(session.getId(), TestData.USER_ID);
-            assertEquals(ParticipantRole.OBSERVER, role3, "User should have OBSERVER role");
-        }
-
-    @Test
-    void findChatSessionsByProjectId_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        assertEquals(TestData.PROJECT_ID, session.getProjectId(), "Project ID should match");
-    }
-
-    @Test
-    void findChatSessionsByParticipantId_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByParticipantId(TestData.USER_ID_2);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        String expectedSessionId = repository.findChatSessionsByProjectId(TestData.PROJECT_ID).get(0).getId();
-        String actualResult = sessions.get(0).getId();
-        assertEquals(expectedSessionId, actualResult, "Session ID should match");
-    }
-
     @Test
     void createChatSession_SUCCESS() {
-        final String projectId = TestData.PROJECT_ID;
-        final String taskId = TASK_ID;
-        final Map<String, ParticipantRole> participants = new HashMap<>();
-        participants.put(TestData.USER_ID, ParticipantRole.INITIATOR);
-        participants.put(TestData.USER_ID_2, ParticipantRole.HANDLER);
-        participants.put(TestData.USER_ID_3, ParticipantRole.OBSERVER);
-        final ChatSessionModel.TaskType taskType = ChatSessionModel.TaskType.TASK;
-
-        final ChatSessionEntity session = repository.createChatSession(projectId, taskId, taskType , participants);
-
-        assertNotNull(session, "ChatSessionEntity should not be null");
-        assertEquals(projectId, session.getProjectId(), "Project ID should match");
-        assertEquals(taskId, session.getTaskId(), "Task ID should match");
-        assertEquals("TASK", session.getTaskType().name(), "Task type should match");
-        assertEquals("OPEN", session.getStatus().name(), "Status should be OPEN");
-        assertEquals(participants, session.getParticipants(), "Participants should match");
+        logger.info("Testing createChatSession with valid task type");
+        ChatSessionEntity session = chatSessionRepository.createChatSession(PROJECT_ID,
+                TASK_ID,
+                "TASK", Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER"));
+        assertNotNull(session, "Session should be created");
+        assertEquals(PROJECT_ID, session.getProjectId(), "Project ID should match");
+        assertEquals(TASK_ID, session.getTaskId(), "Task ID should match");
+        assertEquals("TASK", session.getTaskType(), "Task type should match");
+        assertEquals("OPEN", session.getStatus(), "Status should be OPEN");
+        assertEquals(2, session.getParticipants().size(),
+                "Participants should match the initial value");
+        assertNotNull(session.getCreatedAt(), "Created at should not be null");
+        assertNotNull(session.getModifiedAt(), "Modified at should not be null");
     }
 
     @Test
-    void createChatSession_FAILURE() {
-        String taskId = TASK_ID;
-        ChatSessionModel.TaskType taskType = ChatSessionModel.TaskType.TASK;
-        Map<String, ParticipantRole> participants = new HashMap<>();
-        participants.put(TestData.USER_ID, ParticipantRole.INITIATOR);
+    void createChatSession_INVALID_TASK_TYPE() {
+        logger.info("Testing createChatSession with invalid task type");
 
-        // Null project ID should fail
-        assertThrows(Exception.class, () -> {
-            repository.createChatSession(null, taskId, taskType, participants);
-        }, "Expected an exception for null projectId");
+        Executable executable = () -> chatSessionRepository.createChatSession(
+                PROJECT_ID,
+                TASK_ID,
+                "INVALID_TASK_TYPE",
+                Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER")
+        );
 
-        // Null task ID should fail
-        assertThrows(Exception.class, () -> {
-            repository.createChatSession(TestData.PROJECT_ID, null, taskType, participants);
-        }, "Expected an exception for null taskId");
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                executable);
 
-        // Null task type should fail
-        assertThrows(Exception.class, () -> {
-            repository.createChatSession(TestData.PROJECT_ID, taskId, null, participants);
-        }, "Expected an exception for null taskType");
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+
+        assertTrue(
+                exception.getMessage().contains("Invalid task type"),
+                "Exception message should contain 'Invalid task type'"
+        );
     }
 
 
+    @Test
+    void createChatSession_DATABASE_ERROR() {
+        logger.info("Testing createChatSession with database error");
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.createChatSession(null, null, "TASK", null));
+        assertTrue(exception.getMessage().contains("An error occurred while creating the session"),
+                "Exception message should contain 'An error occurred while creating the session'");
+    }
 
+    @Test
+    void findSessionById_SUCCESS() {
+        logger.info("Testing findById");
+        Optional<ChatSessionEntity> session = chatSessionRepository
+                .findSessionById(PROJECT_ID, SESSION_ID, TASK_ID);
+        assertTrue(session.isPresent(), "Session should exist in the database");
+        logger.info("Session found: " + session.get().getSessionId() + " - " + session.get().getStatus());
+        assertEquals(SESSION_ID, session.get().getSessionId(), "Session ID should match");
+    }
+
+    @Test
+    void findSessionById_FAILURE() {
+        logger.info("Testing findById with random IDs to test failure scenario");
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomTaskId = UUID.randomUUID();
+        Optional<ChatSessionEntity> session = chatSessionRepository.findSessionById(randomProjectId,
+                randomSessionId,
+                randomTaskId);
+        assertFalse(session.isPresent(), "Session should not exist in the database");
+    }
+
+    @Test
+    void findSessionStatusById_SUCCESS() {
+        logger.info("Testing findStatusById");
+        String status = chatSessionRepository
+                .findStatusById(PROJECT_ID, SESSION_ID, TASK_ID);
+        logger.info(SESSION_ID + " Status found: " + status);
+        assertEquals("OPEN", status, "Status should match the initial value");
+    }
+
+    @Test
+    void findSessionStatusById_FAILURE() {
+        logger.info("Testing findStatusById with random IDs to test failure scenario");
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomTaskId = UUID.randomUUID();
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findStatusById(randomProjectId, randomSessionId,randomTaskId));
+        System.out.println(exception.getMessage());
+        assertTrue(exception.getMessage().contains("An error occurred while fetching the status"));
+    }
+
+    @Test
+    void findSessionParticipantsById_SUCCESS() {
+        logger.info("Testing findParticipantsById");
+        Map<UUID, String> participants = chatSessionRepository
+                .findParticipantsById(PROJECT_ID, SESSION_ID, TASK_ID);
+        for (Map.Entry<UUID, String> entry : participants.entrySet()) {
+            logger.info("Participant: " + entry.getKey() + " - " + entry.getValue());
+        }
+        assertEquals(2, participants.size(), "Participants should match the initial value");
+    }
+
+    @Test
+    void findTaskTypeById_SUCCESS() {
+        logger.info("Testing findTaskTypeById");
+        String taskType = chatSessionRepository.findTaskTypeById(PROJECT_ID, SESSION_ID, TASK_ID);
+        logger.info(SESSION_ID + " Task type found: " + taskType);
+        assertEquals("TASK", taskType, "Task type should match the initial value");
+    }
+
+    @Test
+    void findTaskTypeById_FAILURE() {
+        logger.info("Testing findTaskTypeById with random IDs to test failure scenario");
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomTaskId = UUID.randomUUID();
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findTaskTypeById(randomProjectId, randomSessionId, randomTaskId));
+        System.out.println(exception.getMessage());
+        assertTrue(exception.getMessage().contains("An error occurred while fetching the task type"));
+    }
+
+    @Test
+    void findParticipantRole_SUCCESS() {
+        logger.info("Testing findParticipantRole with valid data");
+        String role = chatSessionRepository
+                .findParticipantRole(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1);
+        assertNotNull(role, "Role should not be null");
+        assertEquals("INITIATOR", role, "Role should match the expected value");
+    }
+
+    @Test
+    void findParticipantRole_NO_PARTICIPANTS() {
+        logger.info("Testing findParticipantRole with no participants");
+        Executable executable = () -> chatSessionRepository.findParticipantRole(
+                PROJECT_ID,
+                SESSION_ID,
+                TASK_ID,
+                UUID.randomUUID()
+        );
+
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while fetching the participant role"),
+                "Exception message should contain 'No participants found'"
+        );
+    }
+
+
+    @Test
+    void findParticipantRole_DATABASE_ERROR() {
+        logger.info("Testing findParticipantRole with database error");
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findParticipantRole(null, null, null, null));
+        assertTrue(exception.getMessage().contains("An error occurred while fetching the participant role"),
+                "Exception message should contain 'An error occurred while fetching the participant role'");
+    }
 
     @Test
     void updateSessionStatus_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
+        logger.info("Testing updateSessionStatus with valid data");
+        chatSessionRepository.updateSessionStatus(PROJECT_ID, SESSION_ID, TASK_ID, "CLOSED");
+        String status = chatSessionRepository.findStatusById(PROJECT_ID, SESSION_ID, TASK_ID);
+        assertEquals("CLOSED", status, "Status should be updated to CLOSED");
+    }
 
-        final ChatSessionEntity session = sessions.get(0);
-        final ChatSessionModel.Status newStatus = ChatSessionModel.Status.CLOSED;
+    @Test
+    void updateSessionStatus_INVALID_STATUS() {
+        logger.info("Testing updateSessionStatus with invalid status");
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionRepository.updateSessionStatus(PROJECT_ID, SESSION_ID, TASK_ID, "INVALID_STATUS"));
+        assertTrue(exception.getMessage().contains("Invalid status: "),
+                "Exception message should contain 'Invalid status'");
+    }
 
-        final ChatSessionEntity updatedSession = repository.updateSessionStatus(session.getId(), newStatus);
-        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
-        assertEquals(newStatus, updatedSession.getStatus(), "Status should be updated");
+    @Test
+    void updateSessionSatus_DATABASE_ERROR() {
+        logger.info("Testing updateSessionStatus with database error");
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.updateSessionStatus(null, null, null, "CLOSED"));
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: " + "An error occurred while updating the status");
+        assertTrue(exception.getMessage().contains("An error occurred while updating the status"),
+                "Exception message should contain 'An error occurred while updating the status'");
     }
 
     @Test
     void addParticipant_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final String participantId = TestData.USER_ID_4;
-        final ParticipantRole role = ParticipantRole.OBSERVER;
-
-        final ChatSessionEntity updatedSession = repository.addParticipant(session.getId(), participantId, role);
-        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
-        assertEquals(role, updatedSession.getParticipants().get(participantId), "Participant role should be updated");
+        logger.info("Testing addParticipant with valid data");
+        UUID userId = UUID.fromString(TestData.USER_ID_3);
+        chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, userId , "OBSERVER");
+        Map<UUID, String> participants = chatSessionRepository.findParticipantsById(PROJECT_ID, SESSION_ID, TASK_ID);
+        assertEquals("OBSERVER", participants.get(userId), "Role should match the expected value");
     }
 
     @Test
-    void addParticipant_FAILURE() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
+    void addParticipant_NO_ROW_FOUND() {
+        logger.info("Testing addParticipant with no row found");
+        Executable executable = () -> chatSessionRepository.addParticipant(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                USER_ID_2,
+                "OBSERVER"
+        );
 
-        final ChatSessionEntity session = sessions.get(0);
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
 
-        final String participantId = TestData.USER_ID_2;
-        final ParticipantRole role = ParticipantRole.OBSERVER;
-        final String participantId2 = TestData.USER_ID_4;
-        final ParticipantRole role2 = ParticipantRole.INITIATOR;
-        final String participantId3 = TestData.USER_ID_4;
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: No participants found for the given projectId and sessionId");
 
-        IllegalArgumentException exception1 = assertThrows(IllegalArgumentException.class, () -> repository.addParticipant(session.getId(), participantId, role));
-        assertEquals("Participant with ID " + participantId + " already exists in session " + session.getId(), exception1.getMessage(), "Exception message should match");
+        assertTrue(
+                exception.getMessage().contains("No participants found for the given projectId and sessionId"),
+                "Exception message should contain " +
+                        "'No participants found for the given projectId and sessionId'"
+        );
+    }
 
-        IllegalArgumentException exception2 = assertThrows(IllegalArgumentException.class, () -> repository.addParticipant(session.getId(), participantId2, role2));
-        assertEquals("Only one participant can have the role INITIATOR", exception2.getMessage(), "Exception message should match");
 
-        IllegalArgumentException exception3 = assertThrows(IllegalArgumentException.class, () -> repository.addParticipant(session.getId(), participantId3, null));
-        assertEquals("Role is required", exception3.getMessage(), "Exception message should match");
+    @Test
+    void addParticipant_INVALID_ROLE() {
+        logger.info("Testing addParticipant with invalid role");
+        UUID userId = UUID.fromString(TestData.USER_ID_3);
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, userId, "INVALID_ROLE"));
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: " + "Invalid role: INVALID_ROLE");
+        assertTrue(exception.getMessage().contains("Invalid role: "),
+                "Exception message should contain 'Invalid role'");
+    }
+
+    @Test
+    void addParticipant_NONEXISTENT_USER() {
+        logger.info("Testing addParticipant with nonexistent user");
+        Executable executable = () -> chatSessionRepository.addParticipant(
+                PROJECT_ID,
+                SESSION_ID,
+                TASK_ID,
+                UUID.randomUUID(),
+                "OBSERVER"
+        );
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: User not found");
+        assertTrue(
+                exception.getMessage().contains("User not found"),
+                "Exception message should contain 'User not found'"
+        );
+    }
+
+
+    @Test
+    void addParticipant_PARTICIPANT_ALREADY_EXISTS() {
+        logger.info("Testing addParticipant with participant already exists");
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1, "OBSERVER"));
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: " + "User already exists in the session");
+        assertTrue(exception.getMessage().contains("User already exists in the session"),
+                "Exception message should contain 'User already exists in the session'");
+    }
+
+    @Test
+    void addParticipant_INITIATOR_ALREADY_EXISTS() {
+        logger.info("Testing addParticipant with initiator already exists");
+        UUID userId = UUID.fromString(TestData.USER_ID_3);
+        Exception exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.addParticipant(PROJECT_ID, SESSION_ID, TASK_ID, userId, "INITIATOR"));
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: " + "Initiator already exists in the session");
+        assertTrue(exception.getMessage().contains("Initiator already exists in the session"),
+                "Exception message should contain 'Initiator already exists in the session'");
     }
 
     @Test
     void changeParticipantRole_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final String participantId = TestData.USER_ID_3;
-        final ParticipantRole newRole = ParticipantRole.OBSERVER;
-
-        final ChatSessionEntity updatedSession = repository.changeParticipantRole(session.getId(), participantId, newRole);
-        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
-        assertEquals(newRole, updatedSession.getParticipants().get(participantId), "Participant role should be updated");
+        logger.info("Testing changeParticipantRole with valid data");
+        chatSessionRepository.changeParticipantRole(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1, "HANDLER");
+        Map<UUID, String> participants = chatSessionRepository.findParticipantsById(PROJECT_ID, SESSION_ID, TASK_ID);
+        assertEquals("HANDLER", participants.get(USER_ID_1),
+                "Role should match the expected value");
     }
 
     @Test
-    void changeParticipantRole_FAILURE() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final String sessionId = session.getId();
-
-        final ParticipantRole initiatorRole = ParticipantRole.INITIATOR;
-        final String existingParticipantId = TestData.USER_ID_3;
-
-        Exception exception2 = assertThrows(IllegalArgumentException.class, () -> repository.changeParticipantRole(sessionId, existingParticipantId, initiatorRole));
-        assertEquals("The role INITIATOR can not be changed or assigned to another participant or more than one participant", exception2.getMessage(), "Exception message should match");
-
-        Exception exception3 = assertThrows(IllegalArgumentException.class, () -> repository.changeParticipantRole(sessionId, existingParticipantId, null));
-        assertEquals("Role is required", exception3.getMessage(), "Exception message should match");
+    void changeParticipantRole_NO_ROW_FOUND() {
+        logger.info("Testing changeParticipantRole with no row found");
+        Executable executable = () -> chatSessionRepository.changeParticipantRole(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                USER_ID_1,
+                "HANDLER"
+        );
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+        assertTrue(
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain 'An error occurred while changing the participant role'"
+        );
     }
 
 
     @Test
-    @Transactional
-    void mergeSession_SUCCESS() {
-
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        assertNotNull(session, "ChatSessionEntity should not be null");
-
-        entityManager.detach(session);
-        session.setStatus(ChatSessionModel.Status.CLOSED);
-
-        ChatSessionEntity mergedSession = repository.mergeSession(session);
-        assertNotNull(mergedSession, "Merged ChatSessionEntity should not be null");
-        assertEquals(ChatSessionModel.Status.CLOSED, mergedSession.getStatus(), "Merged session status should be CLOSED");
-
-        entityManager.flush();
-        entityManager.clear();
-
-        ChatSessionEntity updatedSession = repository.findChatSessionById(session.getId());
-        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
-        assertEquals(ChatSessionModel.Status.CLOSED, updatedSession.getStatus(), "Chat session status should be updated to CLOSED");
+    void removeParticipant_SUCCESS() {
+        logger.info("Testing removeParticipant with valid data");
+        chatSessionRepository.deleteMember(PROJECT_ID, SESSION_ID, TASK_ID, USER_ID_1);
+        Map<UUID, String> participants = chatSessionRepository.findParticipantsById(PROJECT_ID, SESSION_ID, TASK_ID);
+        assertNull(participants.get(USER_ID_1), "Participant should be removed");
     }
 
     @Test
-    void deleteChatSession_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
+    void removeParticipant_NO_ROW_FOUND() {
+        logger.info("Testing removeParticipant with no row found");
+        Executable executable = () -> chatSessionRepository.deleteMember(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                USER_ID_1
+        );
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+        logger.info("EXCEPTION EXPECTED: No participants found for the given projectId and sessionId");
 
-        final ChatSessionEntity session = sessions.get(0);
-        final String sessionId = session.getId();
-
-        long deletedCount = repository.deleteChatSession(sessionId);
-
-        assertEquals(1, deletedCount, "Chat session should be deleted");
-
-        List<ChatSessionEntity> remainingSessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertTrue(remainingSessions.isEmpty(), "Chat session should not be found");
-    }
-
-
-
-    @Test
-    void deleteMember_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final String sessionId = session.getId();
-        final String participantId = TestData.USER_ID_3;
-
-        ChatSessionEntity updatedSession = repository.deleteMember(sessionId, participantId);
-        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
-        Map<String, ParticipantRole> participants = updatedSession.getParticipants();
-        for (Map.Entry<String, ParticipantRole> entry : participants.entrySet()) {
-            assertNotEquals(participantId, entry.getKey(), "Participant should be removed from the session");
-        }
-
-    }
-
-    @Test
-    @Transactional
-    void updateTaskType_SUCCESS() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final String sessionId = session.getId();
-        final ChatSessionModel.TaskType newTaskType = ChatSessionModel.TaskType.DEFECT;
-
-        ChatSessionEntity updatedSession = repository.updateTaskType(sessionId, newTaskType);
-        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
-        assertEquals(newTaskType, updatedSession.getTaskType(), "Task type should be updated");
-    }
-
-    @Test
-    void updateTaskType_FAILURE() {
-        final List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        final ChatSessionEntity session = sessions.get(0);
-        final String sessionId = session.getId();
-
-        Exception exception1 = assertThrows(IllegalArgumentException.class, () -> repository.updateTaskType(sessionId, null));
-        assertEquals("TaskType is required", exception1.getMessage(), "Exception message should match");
-
-        ChatSessionModel.TaskType existingTaskType = session.getTaskType();
-        Exception exception2 = assertThrows(IllegalArgumentException.class, () -> repository.updateTaskType(sessionId, existingTaskType));
-        assertEquals("TaskType is already set to " + existingTaskType, exception2.getMessage(), "Exception message should match");
-    }
-
-    @Test
-    @Transactional
-    void removeParticipantWithMessages_SUCCESS() {
-        // Arrange
-        List<ChatSessionEntity> sessions = repository.findChatSessionsByProjectId(TestData.PROJECT_ID);
-        assertNotNull(sessions, "Sessions list should not be null");
-        assertEquals(1, sessions.size(), "There should be exactly one chat session");
-
-        ChatSessionEntity session = sessions.get(0);
-        String sessionId = session.getId();
-        String participantId = TestData.USER_ID_3; // Handler who has sent messages
-
-        // Verify that the participant exists before removal
-        assertTrue(session.getParticipants().containsKey(participantId), "Participant should exist before removal");
-
-        // Count messages sent by participant before removal
-        long messagesBeforeRemoval = session.getMessages().stream()
-                .filter(message -> participantId.equals(message.getSenderId()))
-                .count();
-        assertTrue(messagesBeforeRemoval > 0, "Participant should have messages before removal");
-
-        // Act
-        ChatSessionEntity updatedSession = repository.deleteMember(sessionId, participantId);
-
-        // Assert
-
-        // 1. Verify participant is removed from the session
-        assertNotNull(updatedSession, "Updated ChatSessionEntity should not be null");
-        Map<String, ParticipantRole> updatedParticipants = updatedSession.getParticipants();
-        assertFalse(updatedParticipants.containsKey(participantId), "Participant should be removed from the session");
-
-        // 2. Reload session to ensure changes are persisted
-        ChatSessionEntity reloadedSession = repository.findChatSessionById(sessionId);
-        assertNotNull(reloadedSession, "Reloaded ChatSessionEntity should not be null");
-        Map<String, ParticipantRole> reloadedParticipants = reloadedSession.getParticipants();
-        assertFalse(reloadedParticipants.containsKey(participantId), "Participant should be removed from the session after reload");
-
-        // 3. Verify messages sent by the removed participant still exist
-        List<ChatMessageEntity> messages = repository.exportChatLogs(sessionId);
-        long messagesAfterRemoval = messages.stream()
-                .filter(message -> participantId.equals(message.getSenderId()))
-                .count();
-        assertEquals(messagesBeforeRemoval, messagesAfterRemoval, "Messages sent by the removed participant should still exist");
-
-        // 4. Verify that the sender_id in messages still references the correct UserEntity
-        messages.stream()
-                .filter(message -> participantId.equals(message.getSenderId()))
-                .forEach(message -> {
-                    assertNotNull(message.getSenderId(), "Sender ID should not be null");
-                    assertEquals(participantId, message.getSenderId(), "Sender ID should match the removed participant's ID");
-                });
-
-        // 5. Ensure that the UserEntity still exists in the USER table
-        UserEntity user = userRepository.findByIdOptional(participantId).orElse(null);
-        assertNotNull(user, "UserEntity should still exist in the USER table");
-        assertEquals(participantId, user.getId(), "UserEntity ID should match the removed participant's ID");
+        assertTrue(
+                exception.getMessage().contains("No participants found for the given projectId and sessionId"),
+                "Exception message should contain 'No participants found for the given projectId and sessionId'"
+        );
     }
 
 

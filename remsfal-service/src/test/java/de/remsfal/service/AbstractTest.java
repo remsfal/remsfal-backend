@@ -47,8 +47,6 @@ public abstract class AbstractTest {
     void cleanDB() {
         runInTransaction(() -> {
             entityManager.createQuery("DELETE FROM AddressEntity").executeUpdate();
-            entityManager.createQuery("DELETE FROM ChatMessageEntity").executeUpdate();
-            entityManager.createQuery("DELETE FROM ChatSessionEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM ProjectEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM TaskEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();

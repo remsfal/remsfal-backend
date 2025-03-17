@@ -4,8 +4,6 @@ import de.remsfal.service.entity.dao.ChatMessageRepository;
 import de.remsfal.service.entity.dto.ChatMessageEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import de.remsfal.core.model.project.ChatMessageModel.ContentType;
-
 import org.jboss.logging.Logger;
 
 @RequestScoped
@@ -17,29 +15,27 @@ public class ChatMessageController {
     @Inject
     ChatMessageRepository repository;
 
-    public ChatMessageEntity sendChatMessage(String sessionId, String userId, ContentType contentType, String content)
+    public ChatMessageEntity sendChatMessage(String sessionId, String userId, String contentType, String content)
     {
         logger.infov("Sending chat message (sessionId={0}, userEntity={1}, contentType={2})",
                 sessionId, userId, contentType);
-        return repository.sendChatMessage(sessionId, userId, contentType, content);
+        return repository.sendMessage(sessionId, userId, contentType, content);
     }
 
-    public void updateTextChatMessage(String messageId, String content) {
+    public void updateTextChatMessage(String sessionId, String messageId, String content) {
         logger.infov("Updating text chat message (messageId={0}, content={1})", messageId, content);
-        repository.updateTextChatMessage(messageId, content);
+        repository.updateTextChatMessage(sessionId, messageId, content);
     }
 
-    public void deleteChatMessage(String messageId) {
+    public void deleteChatMessage(String sessionId, String messageId) {
         logger.infov("Deleting chat message (messageId={0})", messageId);
-        repository.deleteChatMessage(messageId);
+        repository.deleteChatMessage(sessionId, messageId);
     }
 
-    public ChatMessageEntity getChatMessage(String messageId) {
+    public ChatMessageEntity getChatMessage(String sessionId, String messageId) {
         logger.infov("Getting chat message (messageId={0})", messageId);
-        return repository.findChatMessageById(messageId);
+        return repository.findMessageById(sessionId, messageId);
     }
-
-
 
 }
 
