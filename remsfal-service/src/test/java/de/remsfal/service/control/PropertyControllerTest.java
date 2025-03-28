@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.json.project.ImmutablePropertyJson;
+import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -172,7 +173,7 @@ class PropertyControllerTest extends AbstractTest {
         final PropertyModel createdProperty1 = propertyController.createProperty(TestData.PROJECT_ID, property1);
         final PropertyModel createdProperty2 = propertyController.createProperty(TestData.PROJECT_ID, property2);
         // Act
-        List<? extends PropertyModel> properties = propertyController.getProperties(TestData.PROJECT_ID, 0, 100);
+        List<RentalUnitTreeNodeJson> properties = propertyController.getPropertyTree(TestData.PROJECT_ID);
         // Assert
         assertEquals(2, properties.size());
         assertProperty(property1, createdProperty1);

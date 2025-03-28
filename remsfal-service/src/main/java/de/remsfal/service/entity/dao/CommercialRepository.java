@@ -13,10 +13,9 @@ import java.util.Optional;
 @ApplicationScoped
 public class CommercialRepository extends AbstractRepository<CommercialEntity> {
 
-    public List<CommercialEntity> findCommercialsByBuildingId(final String projectId, final String buildingId) {
-        return find("projectId = :projectId and buildingId = :buildingId",
-            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId))
-                .list();
+    public List<CommercialEntity> findAllCommercials(final String projectId, final String buildingId) {
+        return list("projectId = :projectId and buildingId = :buildingId",
+            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId));
     }
 
     public Optional<CommercialEntity> findCommercialById(final String projectId, final String commercialId) {

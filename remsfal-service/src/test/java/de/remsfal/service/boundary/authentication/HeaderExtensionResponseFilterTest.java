@@ -94,7 +94,6 @@ class HeaderExtensionResponseFilterTest {
         );
         Map<String, Cookie> cookies = new HashMap<>();
         Cookie refreshToken = new Cookie.Builder("refreshToken").build();
-        Cookie accessToken = new Cookie.Builder("accessToken").build();
         cookies.put("refreshToken", refreshToken);
 
         SessionManager.TokenRenewalResponse tokenResponse = mock(SessionManager.TokenRenewalResponse.class);
@@ -123,7 +122,7 @@ class HeaderExtensionResponseFilterTest {
             "/test123"
         );
         Map<String, Cookie> cookies = new HashMap<>();
-        Cookie accessToken = new Cookie("accessToken", "mockAccessToken");
+        Cookie accessToken = new Cookie.Builder("accessToken").value("mockAccessToken").build();
         cookies.put("accessToken", accessToken);
 
         SessionManager.TokenRenewalResponse tokenResponse = mock(SessionManager.TokenRenewalResponse.class);

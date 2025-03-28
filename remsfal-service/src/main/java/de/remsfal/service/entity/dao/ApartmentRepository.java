@@ -14,10 +14,9 @@ import java.util.Optional;
 @ApplicationScoped
 public class ApartmentRepository extends AbstractRepository<ApartmentEntity> {
 
-    public List<ApartmentEntity> findApartmentsByBuildingId(final String projectId, final String buildingId) {
-        return find("projectId = :projectId and buildingId = :buildingId",
-            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId))
-                .list();
+    public List<ApartmentEntity> findAllApartments(final String projectId, final String buildingId) {
+        return list("projectId = :projectId and buildingId = :buildingId",
+            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId));
     }
 
     public Optional<ApartmentEntity> findByIds(final String projectId, final String apartmentId) {

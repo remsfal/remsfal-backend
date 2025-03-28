@@ -248,8 +248,6 @@ class SessionManagerTest {
     @Test
     void test_get_macthing_sessionInfoBuilder() {
         // Arrange
-        String userId = "testUser";
-        String email = "1234@1234.de";
 
         // Act
         SessionInfo.Builder builder_acess = sessionManager.sessionInfoBuilder(SessionManager.ACCESS_COOKIE_NAME);

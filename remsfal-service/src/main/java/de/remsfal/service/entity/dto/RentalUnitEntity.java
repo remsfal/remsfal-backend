@@ -76,6 +76,13 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
         this.usableSpace = usableSpace;
     }
 
+    public String getTenantName() {
+        if (tenancy != null && tenancy.getTenant() != null) {
+            return tenancy.getTenant().getLastName() + ", " + tenancy.getTenant().getFirstName();
+        }
+        return "";
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
