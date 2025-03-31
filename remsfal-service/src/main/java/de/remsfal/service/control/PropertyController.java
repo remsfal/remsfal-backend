@@ -23,7 +23,6 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -114,7 +113,7 @@ public class PropertyController {
 
         return properties.stream()
                 .map(this::buildPropertyNode)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private RentalUnitTreeNodeJson buildPropertyNode(final PropertyEntity property) {
@@ -134,11 +133,11 @@ public class PropertyController {
 
         List<RentalUnitTreeNodeJson> buildingTree = buildings.stream()
             .map(this::buildBuildingNode)
-            .collect(Collectors.toList());
+            .toList();
         
         List<RentalUnitTreeNodeJson> siteTree = sites.stream()
             .map(unit -> this.buildRentalUnitNode(unit, UnitType.SITE))
-            .collect(Collectors.toList());
+            .toList();
         
         return ImmutableRentalUnitTreeNodeJson.builder()
             .key(property.getId())
@@ -162,19 +161,19 @@ public class PropertyController {
             .findAllApartments(building.getProjectId(), building.getId())
             .stream()
             .map(unit -> this.buildRentalUnitNode(unit, UnitType.APARTMENT))
-            .collect(Collectors.toList());
+            .toList();
         
         List<RentalUnitTreeNodeJson> commercialTree = commercialRepository
             .findAllCommercials(building.getProjectId(), building.getId())
             .stream()
             .map(unit -> this.buildRentalUnitNode(unit, UnitType.COMMERCIAL))
-            .collect(Collectors.toList());
+            .toList();
         
         List<RentalUnitTreeNodeJson> garageTree = garageRepository
             .findAllGarages(building.getProjectId(), building.getId())
             .stream()
             .map(unit -> this.buildRentalUnitNode(unit, UnitType.GARAGE))
-            .collect(Collectors.toList());
+            .toList();
         
         return ImmutableRentalUnitTreeNodeJson.builder()
             .key(building.getId())
