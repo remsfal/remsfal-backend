@@ -117,7 +117,7 @@ class SiteResourceTest extends AbstractProjectResourceTest {
     }
 
     @Test
-    void createSite_FAILED_noAddress() {
+    void createSite_SUCCESS_noAddress() {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -125,8 +125,12 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .body("{ \"title\":\"" + TestData.SITE_TITLE + "\"}")
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
-            .statusCode(Status.BAD_REQUEST.getStatusCode())
-            .body("parameterViolations.path", Matchers.hasItem("createSite.site.address"));
+            .statusCode(Status.CREATED.getStatusCode())
+            .contentType(ContentType.JSON)
+            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID)
+                .replace("{propertyId}", TestData.PROPERTY_ID) + "/"))
+            .and().body("id", Matchers.notNullValue())
+            .and().body("title", Matchers.equalTo(TestData.SITE_TITLE));
     }
 
     @Test

@@ -27,7 +27,7 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     private String propertyId;
 
     @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID", nullable = false)
+    @JoinColumn(name = "ADDRESS_ID")
     private AddressEntity address;
 
     @Override

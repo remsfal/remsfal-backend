@@ -1,11 +1,10 @@
 package de.remsfal.core.json.project;
 
-import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
+import de.remsfal.core.validation.Title;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -30,9 +29,9 @@ public abstract class PropertyJson implements PropertyModel {
     @Override
     public abstract String getId();
 
-    @NullOrNotBlank
+    @Title
     @NotBlank(groups = PostValidation.class)
-    @Size(max=255)
+    @Nullable
     @Override
     public abstract String getTitle();
 

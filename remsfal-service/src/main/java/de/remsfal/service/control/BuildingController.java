@@ -42,17 +42,12 @@ public class BuildingController {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
             projectId, propertyId, building);
         BuildingEntity entity = BuildingEntity.fromModel(building);
-        AddressEntity address = new AddressEntity();
-        address.setCountry(building.getAddress().getCountry());
-        address.setCity(building.getAddress().getCity());
-        address.setStreet(building.getAddress().getStreet());
-        address.setZip(building.getAddress().getZip());
-        address.setProvince(building.getAddress().getProvince());
-        entity.setAddress(address);
         entity.generateId();
-        entity.getAddress().generateId();
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
+        if(entity.getAddress() != null) {
+            entity.getAddress().generateId();
+        }
         buildingRepository.persistAndFlush(entity);
         buildingRepository.getEntityManager().refresh(entity);
         return getBuilding(projectId, entity.getId());
