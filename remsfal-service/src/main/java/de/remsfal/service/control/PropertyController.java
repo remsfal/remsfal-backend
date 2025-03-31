@@ -1,6 +1,10 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.model.ProjectTreeNodeModel;
+import de.remsfal.core.json.project.ImmutableRentalUnitNodeDataJson;
+import de.remsfal.core.json.project.ImmutableRentalUnitTreeNodeJson;
+import de.remsfal.core.json.project.RentalUnitNodeDataJson;
+import de.remsfal.core.json.project.RentalUnitNodeDataJson.UnitType;
+import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
@@ -8,15 +12,10 @@ import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dao.SiteRepository;
-import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
-import de.remsfal.service.entity.dto.CommercialEntity;
-import de.remsfal.service.entity.dto.GarageEntity;
-import de.remsfal.service.entity.dto.NodeData;
-import de.remsfal.service.entity.dto.ProjectTreeNode;
 import de.remsfal.service.entity.dto.PropertyEntity;
+import de.remsfal.service.entity.dto.RentalUnitEntity;
 import de.remsfal.service.entity.dto.SiteEntity;
-import de.remsfal.service.entity.dto.TenancyEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -24,7 +23,6 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -62,12 +60,6 @@ public class PropertyController {
         propertyRepository.persistAndFlush(entity);
         propertyRepository.getEntityManager().refresh(entity);
         return getProperty(projectId, entity.getId());
-    }
-
-    public List<? extends PropertyModel> getProperties(final String projectId,
-                                                       final Integer offset, final Integer limit) {
-        logger.infov("Retrieving up to {1} properties (projectId = {0})", projectId, limit);
-        return propertyRepository.findPropertiesByProjectId(projectId, offset, limit);
     }
 
     public PropertyModel getProperty(final String projectId, final String propertyId) {
@@ -113,125 +105,99 @@ public class PropertyController {
         return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
-    public List<ProjectTreeNodeModel> getProjectTree(
-            final String projectId, final Integer offset, final Integer limit) {
-        logger.infov("Retrieving up to {1} properties (projectId = {0})", projectId, limit);
+    public List<RentalUnitTreeNodeJson> getPropertyTree(final String projectId) {
+        logger.infov("Retrieving properties (projectId = {0})", projectId);
 
         // Fetch properties for the project
-        List<PropertyEntity> properties = propertyRepository.findPropertiesByProjectId(projectId, offset, limit);
+        List<PropertyEntity> properties = propertyRepository.findPropertiesByProjectId(projectId);
 
         return properties.stream()
                 .map(this::buildPropertyNode)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    private ProjectTreeNode buildPropertyNode(PropertyEntity property) {
-        List<BuildingEntity> buildings = buildingRepository.findBuildingByPropertyId(property.getId());
-        List<SiteEntity> sites = siteRepository.findSiteByPropertyId(property.getId());
+    private RentalUnitTreeNodeJson buildPropertyNode(final PropertyEntity property) {
+        List<BuildingEntity> buildings = buildingRepository.findAllBuildings(property.getProjectId(), property.getId());
+        List<SiteEntity> sites = siteRepository.findAllSites(property.getProjectId(), property.getId());
 
-        NodeData propertyData = new NodeData(
-                "property",
-                property.getTitle(),
-                property.getDescription(),
-                "",
-                0
-        );
+        RentalUnitNodeDataJson data = ImmutableRentalUnitNodeDataJson.builder()
+            .id(property.getId())
+            .type(UnitType.PROPERTY)
+            .title(property.getTitle())
+            .description(property.getDescription())
+            // TODO: PropertyEntity have to inherit from RentalUnitEntity
+            .tenant("")
+            // TODO: sum usable space
+            .usableSpace(0F)
+            .build();
 
-        ProjectTreeNode propertyNode = new ProjectTreeNode(property.getId(), propertyData);
-
-        float sumUsableSpace = 0;
-
-        // Add building nodes
-        for (BuildingEntity building : buildings) {
-            ProjectTreeNode buildingNode = buildBuildingNode(building);
-            propertyNode.addChild(buildingNode);
-            sumUsableSpace += building.getUsableSpace();
-        }
-
-        // Add site nodes
-        for (SiteEntity site : sites) {
-            NodeData siteData = new NodeData(
-                    "site",
-                    site.getTitle(),
-                    site.getDescription(),
-                    "",
-                    site.getUsableSpace()
-            );
-            ProjectTreeNode siteNode = new ProjectTreeNode(site.getId(), siteData);
-            propertyNode.addChild(siteNode);
-            sumUsableSpace += site.getUsableSpace();
-        }
-
-        propertyData.setUsableSpace(sumUsableSpace);
-        return propertyNode;
+        List<RentalUnitTreeNodeJson> buildingTree = buildings.stream()
+            .map(this::buildBuildingNode)
+            .toList();
+        
+        List<RentalUnitTreeNodeJson> siteTree = sites.stream()
+            .map(unit -> this.buildRentalUnitNode(unit, UnitType.SITE))
+            .toList();
+        
+        return ImmutableRentalUnitTreeNodeJson.builder()
+            .key(property.getId())
+            .data(data)
+            .addAllChildren(buildingTree)
+            .addAllChildren(siteTree)
+            .build();
     }
 
-    private ProjectTreeNode buildBuildingNode(BuildingEntity building) {
-        String tenantName = getFullTenantName(building.getTenancy());
+    private RentalUnitTreeNodeJson buildBuildingNode(final BuildingEntity building) {
+        RentalUnitNodeDataJson data = ImmutableRentalUnitNodeDataJson.builder()
+            .id(building.getId())
+            .type(UnitType.BUILDING)
+            .title(building.getTitle())
+            .description(building.getDescription())
+            .tenant(building.getTenantName())
+            .usableSpace(building.getUsableSpace())
+            .build();
 
-        NodeData buildingData = new NodeData(
-                "building",
-                building.getTitle(),
-                building.getDescription(),
-                tenantName,
-                building.getUsableSpace()
-        );
-
-        ProjectTreeNode buildingNode = new ProjectTreeNode(building.getId(), buildingData);
-
-        // Add apartment nodes
-        List<ApartmentEntity> apartments = apartmentRepository
-            .findApartmentsByBuildingId(building.getProjectId(), building.getId());
-        for (ApartmentEntity apartment : apartments) {
-            String apartmentTenantName = getFullTenantName(apartment.getTenancy());
-            NodeData apartmentData = new NodeData(
-                    "apartment",
-                    apartment.getTitle(),
-                    apartment.getDescription(),
-                    apartmentTenantName,
-                    apartment.getUsableSpace()
-            );
-            buildingNode.addChild(new ProjectTreeNode(apartment.getId(), apartmentData));
-        }
-
-        // Add commercial nodes
-        List<CommercialEntity> commercials = commercialRepository
-            .findCommercialsByBuildingId(building.getProjectId(), building.getId());
-        for (CommercialEntity commercial : commercials) {
-            String commercialTenantName = getFullTenantName(commercial.getTenancy());
-            NodeData commercialData = new NodeData(
-                    "commercial",
-                    commercial.getTitle(),
-                    commercial.getDescription(),
-                    commercialTenantName,
-                    commercial.getUsableSpace()
-            );
-            buildingNode.addChild(new ProjectTreeNode(commercial.getId(), commercialData));
-        }
-
-        // Add garage nodes
-        List<GarageEntity> garages = garageRepository
-            .findGaragesByBuildingId(building.getProjectId(), building.getId());
-        for (GarageEntity garage : garages) {
-            String garageTenantName = getFullTenantName(garage.getTenancy());
-            NodeData garageData = new NodeData(
-                    "garage",
-                    garage.getTitle(),
-                    garage.getDescription(),
-                    garageTenantName,
-                    garage.getUsableSpace()
-            );
-            buildingNode.addChild(new ProjectTreeNode(garage.getId(), garageData));
-        }
-
-        return buildingNode;
+        List<RentalUnitTreeNodeJson> apartmentTree = apartmentRepository
+            .findAllApartments(building.getProjectId(), building.getId())
+            .stream()
+            .map(unit -> this.buildRentalUnitNode(unit, UnitType.APARTMENT))
+            .toList();
+        
+        List<RentalUnitTreeNodeJson> commercialTree = commercialRepository
+            .findAllCommercials(building.getProjectId(), building.getId())
+            .stream()
+            .map(unit -> this.buildRentalUnitNode(unit, UnitType.COMMERCIAL))
+            .toList();
+        
+        List<RentalUnitTreeNodeJson> garageTree = garageRepository
+            .findAllGarages(building.getProjectId(), building.getId())
+            .stream()
+            .map(unit -> this.buildRentalUnitNode(unit, UnitType.GARAGE))
+            .toList();
+        
+        return ImmutableRentalUnitTreeNodeJson.builder()
+            .key(building.getId())
+            .data(data)
+            .addAllChildren(apartmentTree)
+            .addAllChildren(commercialTree)
+            .addAllChildren(garageTree)
+            .build();
     }
 
-    private String getFullTenantName(TenancyEntity tenancy) {
-        if (tenancy != null && tenancy.getTenant() != null) {
-            return tenancy.getTenant().getLastName() + ", " + tenancy.getTenant().getFirstName();
-        }
-        return "";
+    private RentalUnitTreeNodeJson buildRentalUnitNode(final RentalUnitEntity rentalUnit, final UnitType type) {
+        RentalUnitNodeDataJson data = ImmutableRentalUnitNodeDataJson.builder()
+            .id(rentalUnit.getId())
+            .type(type)
+            .title(rentalUnit.getTitle())
+            .description(rentalUnit.getDescription())
+            .tenant(rentalUnit.getTenantName())
+            .usableSpace(rentalUnit.getUsableSpace())
+            .build();
+
+        return ImmutableRentalUnitTreeNodeJson.builder()
+            .key(rentalUnit.getId())
+            .data(data)
+            .build();
     }
 
 }

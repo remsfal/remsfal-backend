@@ -1,8 +1,7 @@
 package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
-
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -14,6 +13,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.immutable.ImmutableStyle;
 import de.remsfal.core.model.project.ApartmentModel;
+import de.remsfal.core.validation.PostValidation;
+import de.remsfal.core.validation.Title;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -27,33 +28,37 @@ public abstract class ApartmentJson implements ApartmentModel {
 
     @Null
     @Nullable
+    @Override
     public abstract String getId();
 
-    @NotNull
+    @Title
+    @NotBlank(groups = PostValidation.class)
+    @Nullable
+    @Override
     public abstract String getTitle();
 
-    @Null
     @Nullable
+    @Override
     public abstract String getLocation();
 
-    @Null
     @Nullable
+    @Override
     public abstract String getDescription();
 
-    @Null
     @Nullable
+    @Override
     public abstract Float getLivingSpace();
 
-    @Null
     @Nullable
+    @Override
     public abstract Float getUsableSpace();
 
-    @Null
     @Nullable
+    @Override
     public abstract Float getHeatingSpace();
 
-    @Null
     @Nullable
+    @Override
     public abstract TenancyJson getTenancy();
 
     public static ApartmentJson valueOf(ApartmentModel apartment) {

@@ -13,10 +13,9 @@ import java.util.Optional;
 @ApplicationScoped
 public class GarageRepository extends AbstractRepository<GarageEntity> {
 
-    public List<GarageEntity> findGaragesByBuildingId(final String projectId, final String buildingId) {
-        return find("projectId = :projectId and buildingId = :buildingId",
-            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId))
-                .list();
+    public List<GarageEntity> findAllGarages(final String projectId, final String buildingId) {
+        return list("projectId = :projectId and buildingId = :buildingId",
+            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId));
     }
 
     public Optional<GarageEntity> findByIds(final String projectId, final String garageId) {
