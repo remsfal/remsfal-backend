@@ -39,7 +39,9 @@ public class SiteController {
         entity.setPropertyId(propertyId);
         entity.setTitle(site.getTitle());
         entity.setDescription(site.getDescription());
-        entity.setAddress(addressController.updateAddress(entity.getAddress(), site.getAddress()));
+        if(site.getAddress() != null) {
+            entity.setAddress(addressController.updateAddress(entity.getAddress(), site.getAddress()));
+        }
         entity.setUsableSpace(site.getUsableSpace());
         repository.persistAndFlush(entity);
         repository.getEntityManager().refresh(entity);

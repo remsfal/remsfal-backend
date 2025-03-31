@@ -1,26 +1,21 @@
 package de.remsfal.core.api.project;
 
-import de.remsfal.core.json.ProjectTreeJson;
 import de.remsfal.core.json.project.PropertyJson;
+import de.remsfal.core.json.project.PropertyListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -42,13 +37,9 @@ public interface PropertyEndpoint {
         responseCode = "401",
         description = "No user authentication provided via session cookie"
     )
-    ProjectTreeJson getProperties(
+    PropertyListJson getProperties(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "Offset of the first property to return")
-        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
-        @Parameter(description = "Maximum number of properties to return")
-        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
+        @PathParam("projectId") @NotNull @UUID String projectId
     );
 
     @POST

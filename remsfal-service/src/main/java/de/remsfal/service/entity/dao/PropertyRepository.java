@@ -13,12 +13,9 @@ import java.util.Optional;
 @ApplicationScoped
 public class PropertyRepository extends AbstractRepository<PropertyEntity> {
 
-    public List<PropertyEntity> findPropertiesByProjectId(final String projectId, final int offset, final int limit) {
-        return getEntityManager().createNamedQuery("PropertyEntity.findByProjectId", PropertyEntity.class)
-                .setParameter(PARAM_PROJECT_ID, projectId)
-                .setFirstResult(offset)
-                .setMaxResults(limit)
-                .getResultList();
+    public List<PropertyEntity> findPropertiesByProjectId(final String projectId) {
+        return list("projectId = :projectId",
+            Parameters.with(PARAM_PROJECT_ID, projectId));
     }
 
     public Optional<PropertyEntity> findPropertyById(final String projectId, final String propertyId) {

@@ -19,10 +19,10 @@
             <column name="PROPERTY_ID" type="char(36)">
                 <constraints nullable="false" />
              </column>
-            <column name="TITLE" type="varchar(255)" />
-            <column name="ADDRESS_ID" type="char(36)">
+            <column name="TITLE" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
+            <column name="ADDRESS_ID" type="char(36)" />
             <column name="DESCRIPTION" type="clob" />
             <column name="TENANCY_ID" type="char(36)" />
             <column name="LIVING_SPACE" type="DECIMAL(10, 2)" />
