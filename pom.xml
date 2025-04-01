@@ -13,6 +13,7 @@
 
     <modules>
         <module>remsfal-core</module>
+        <module>remsfal-chat</module>
         <module>remsfal-service</module>
     </modules>
 
