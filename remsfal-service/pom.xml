@@ -5,7 +5,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>remsfal-service</artifactId>
-    <name>remsfal - Service uber-JAR (jar)</name>
+    <name>remsfal - Main Service uber-JAR (jar)</name>
 
     <parent>
         <groupId>de.remsfal</groupId>
