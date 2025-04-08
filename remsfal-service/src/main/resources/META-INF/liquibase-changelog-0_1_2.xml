@@ -35,6 +35,8 @@
         </createIndex>
     </changeSet>
 
+    <!-- Mark for a possible cleanup -->
+
     <changeSet id="remsfal-backend-0.1.2-rename-enum-and-column" author="parhamrahmani13762@gmail.com">
 
         <!-- Modify the CONTENT_TYPE ENUM: Rename IMAGE to FILE -->

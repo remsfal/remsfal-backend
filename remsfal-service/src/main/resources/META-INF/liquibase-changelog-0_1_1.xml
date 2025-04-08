@@ -9,6 +9,8 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
+    <!-- Mark for a possible cleanup -->
+
     <!-- ChangeSet for Chat Session -->
     <changeSet id="remsfal-backend-0.1.1-chat-session" author="parhamrahmani13762@gmail.com">
         <createTable tableName="CHAT_SESSION">
@@ -53,6 +55,8 @@
 
     </changeSet>
 
+    <!-- Mark for a possible cleanup -->
+
     <!-- ChangeSet for Chat Session Participant -->
     <changeSet id="remsfal-backend-0.1.1-chat-session-participant" author="parhamrahmani13762@gmail.com">
         <createTable tableName="CHAT_SESSION_PARTICIPANT">
@@ -88,6 +92,8 @@
             <column name="PARTICIPANT_ID"/>
         </createIndex>
     </changeSet>
+
+    <!-- Mark for a possible cleanup -->
 
     <!-- ChangeSet for Chat Message -->
     <changeSet id="remsfal-backend-0.1.1-chat-message" author="parhamrahmani13762@gmail.com">
