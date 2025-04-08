@@ -31,11 +31,6 @@
 
         <createIndex tableName="USERAUTHENTICATION" indexName="idx_user_authentication_user_id">
             <column name="USER_ID"/>
-        <!-- Modify the CONTENT_TYPE ENUM: Rename IMAGE to FILE -->
         </createIndex>
     </changeSet>
-
-    <!-- Mark for a possible cleanup -->
-
-
 </databaseChangeLog>
