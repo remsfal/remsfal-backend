@@ -1,140 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
-#
-# Author: Parham Rahmani [parhamrahmani13762@gmail.com]
-#
--->
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <!-- ChangeSet for Chat Session -->
-    <changeSet id="remsfal-backend-0.1.1-chat-session" author="parhamrahmani13762@gmail.com">
-        <createTable tableName="CHAT_SESSION">
-            <column name="ID" type="char(36)">
-                <constraints nullable="false" primaryKey="true"/>
+    <changeSet id="1-create-user-authentication" author="gflachs">
+        <!-- Create USERAUTHENTICATION Table -->
+        <createTable tableName="USERAUTHENTICATION">
+            <column name="USER_ID" type="CHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="REFRESH_TOKEN" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="CREATED_AT" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="TASK_ID" type="char(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="TASK_TYPE" type="ENUM('TASK', 'DEFECT')">
-                <constraints nullable="false"/>
-            </column>
-            <column name="STATUS" type="ENUM('OPEN', 'CLOSED', 'ARCHIVED')" defaultValue="OPEN">
-                <constraints nullable="false"/>
-            </column>
-            <column name="CREATED_AT" type="timestamp(3)" defaultValueComputed="CURRENT_TIMESTAMP(3)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="MODIFIED_AT" type="timestamp(3)" defaultValueComputed="CURRENT_TIMESTAMP(3)">
+            <column name="MODIFIED_AT" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <!-- Add Foreign Key Constraint -->
+        <addForeignKeyConstraint
+                constraintName="FK_USERAUTHENTICATION_USER_ID"
+                baseTableName="USERAUTHENTICATION"
+                baseColumnNames="USER_ID"
+                referencedTableName="USER"
+                referencedColumnNames="ID"
+                onDelete="CASCADE"/>
 
-        <addForeignKeyConstraint constraintName="FK_CHAT_SESSION_PROJECT_ID"
-                                 baseTableName="CHAT_SESSION" baseColumnNames="PROJECT_ID"
-                                 referencedTableName="PROJECT" referencedColumnNames="ID"
-                                 onDelete="CASCADE" onUpdate="RESTRICT"/>
-        <createIndex indexName="IDX_CHAT_SESSION_PROJECT_ID" tableName="CHAT_SESSION">
-            <column name="PROJECT_ID"/>
-        </createIndex>
-
-        <addForeignKeyConstraint constraintName="FK_CHAT_SESSION_TASK_ID"
-                                 baseTableName="CHAT_SESSION" baseColumnNames="TASK_ID"
-                                 referencedTableName="TASK" referencedColumnNames="ID"
-                                 onDelete="CASCADE" onUpdate="RESTRICT"/>
-        <createIndex indexName="IDX_CHAT_SESSION_TASK_ID" tableName="CHAT_SESSION">
-            <column name="TASK_ID"/>
-        </createIndex>
-
-    </changeSet>
-
-    <!-- ChangeSet for Chat Session Participant -->
-    <changeSet id="remsfal-backend-0.1.1-chat-session-participant" author="parhamrahmani13762@gmail.com">
-        <createTable tableName="CHAT_SESSION_PARTICIPANT">
-            <column name="CHAT_SESSION_ID" type="char(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="PARTICIPANT_ID" type="char(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="ROLE" type="ENUM('INITIATOR','HANDLER','OBSERVER')">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <addPrimaryKey tableName="CHAT_SESSION_PARTICIPANT" constraintName="PK_CHAT_SESSION_PARTICIPANT"
-                       columnNames="CHAT_SESSION_ID,PARTICIPANT_ID"/>
-
-        <addForeignKeyConstraint constraintName="FK_CSP_CHAT_SESSION_ID"
-                                 baseTableName="CHAT_SESSION_PARTICIPANT" baseColumnNames="CHAT_SESSION_ID"
-                                 referencedTableName="CHAT_SESSION" referencedColumnNames="ID"
-                                 onDelete="CASCADE" onUpdate="RESTRICT"/>
-
-        <addForeignKeyConstraint constraintName="FK_CSP_PARTICIPANT_ID"
-                                 baseTableName="CHAT_SESSION_PARTICIPANT" baseColumnNames="PARTICIPANT_ID"
-                                 referencedTableName="USER" referencedColumnNames="ID"
-                                 onDelete="CASCADE" onUpdate="RESTRICT"/>
-
-        <createIndex indexName="IDX_CSP_SESSION_ID" tableName="CHAT_SESSION_PARTICIPANT">
-            <column name="CHAT_SESSION_ID"/>
-        </createIndex>
-
-        <createIndex indexName="IDX_CSP_PARTICIPANT_ID" tableName="CHAT_SESSION_PARTICIPANT">
-            <column name="PARTICIPANT_ID"/>
+        <createIndex tableName="USERAUTHENTICATION" indexName="idx_user_authentication_user_id">
+            <column name="USER_ID"/>
         </createIndex>
     </changeSet>
-
-    <!-- ChangeSet for Chat Message -->
-    <changeSet id="remsfal-backend-0.1.1-chat-message" author="parhamrahmani13762@gmail.com">
-        <createTable tableName="CHAT_MESSAGE">
-            <column name="ID" type="char(36)">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="CHAT_SESSION_ID" type="char(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="SENDER_ID" type="char(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="CONTENT_TYPE" type="ENUM('TEXT','IMAGE')">
-                <constraints nullable="false"/>
-            </column>
-            <column name="CONTENT" type="clob"/>
-            <column name="IMAGE_URL" type="varchar(255)"/>
-            <column name="CREATED_AT" type="timestamp(3)" defaultValueComputed="CURRENT_TIMESTAMP(3)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="MODIFIED_AT" type="timestamp(3)" defaultValueComputed="CURRENT_TIMESTAMP(3)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <addForeignKeyConstraint constraintName="FK_CHAT_MESSAGE_SESSION_ID"
-                                 baseTableName="CHAT_MESSAGE" baseColumnNames="CHAT_SESSION_ID"
-                                 referencedTableName="CHAT_SESSION" referencedColumnNames="ID"
-                                 onDelete="CASCADE" onUpdate="RESTRICT"/>
-
-        <addForeignKeyConstraint constraintName="FK_CHAT_MESSAGE_SENDER_ID"
-                                 baseTableName="CHAT_MESSAGE" baseColumnNames="SENDER_ID"
-                                 referencedTableName="USER" referencedColumnNames="ID"
-                                 onDelete="NO ACTION" onUpdate="RESTRICT"/>
-
-        <createIndex indexName="IDX_CHAT_MESSAGE_SESSION_ID" tableName="CHAT_MESSAGE">
-            <column name="CHAT_SESSION_ID"/>
-        </createIndex>
-
-        <createIndex indexName="IDX_CHAT_MESSAGE_CREATED_AT" tableName="CHAT_MESSAGE">
-            <column name="CREATED_AT"/>
-        </createIndex>
-
-        <createIndex indexName="IDX_CHAT_MESSAGE_MODIFIED_AT" tableName="CHAT_MESSAGE">
-            <column name="MODIFIED_AT"/>
-        </createIndex>
-    </changeSet>
-
 </databaseChangeLog>
