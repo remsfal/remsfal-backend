@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary;
+package de.remsfal.notification.boundary;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;

@@ -13,8 +13,10 @@
 
     <modules>
         <module>remsfal-core</module>
+        <module>remsfal-notification</module>
         <module>remsfal-chat</module>
         <module>remsfal-service</module>
+        <module>wrap-up</module>
     </modules>
 
     <scm>
@@ -29,6 +31,7 @@
     </issueManagement>
 
     <properties>
+        <resources-plugin.version>3.3.1</resources-plugin.version>
         <compiler-plugin.version>3.14.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,6 +40,8 @@
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
         <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
+        <jandex-plugin.version>1.2.3</jandex-plugin.version>
+        <jacoco-plugin.version>0.8.13</jacoco-plugin.version>
         <sonar-plugin.version>5.1.0.4751</sonar-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -66,6 +71,11 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${resources-plugin.version}</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${compiler-plugin.version}</version>
                     <configuration>
@@ -88,11 +98,11 @@
                             </java.util.logging.manager>
                             <maven.home>${maven.home}</maven.home>
                             <quarkus.jacoco.data-file>
-                                ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec
+                                ${project.build.directory}/site/jacoco/jacoco.exec
                             </quarkus.jacoco.data-file>
                             <quarkus.jacoco.reuse-data-file>true</quarkus.jacoco.reuse-data-file>
                             <quarkus.jacoco.report-location>
-                                ${maven.multiModuleProjectDirectory}/target/site/jacoco
+                                ${project.build.directory}/site/jacoco
                             </quarkus.jacoco.report-location>
                         </systemPropertyVariables>
                         <!-- includes>
@@ -122,11 +132,6 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                    <version>${sonar-plugin.version}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${checkstyle-plugin.version}</version>
@@ -146,6 +151,21 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.jboss.jandex</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${jandex-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
