@@ -23,6 +23,11 @@
         </dependency>
         <dependency>
             <groupId>de.remsfal</groupId>
+            <artifactId>remsfal-notification</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.remsfal</groupId>
             <artifactId>remsfal-chat</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -52,6 +57,9 @@
                                     <directory>${maven.multiModuleProjectDirectory}/remsfal-core/target/classes</directory>
                                 </resource>
                                 <resource>
+                                    <directory>${maven.multiModuleProjectDirectory}/remsfal-notification/target/classes</directory>
+                                </resource>
+                                <resource>
                                     <directory>${maven.multiModuleProjectDirectory}/remsfal-chat/target/classes</directory>
                                 </resource>
                                 <resource>
@@ -78,6 +86,7 @@
                                     <directory>${maven.multiModuleProjectDirectory}</directory>
                                     <includes>
                                         <include>remsfal-core/target/site/jacoco/jacoco.exec</include>
+                                        <include>remsfal-notification/target/site/jacoco/jacoco.exec</include>
                                         <include>remsfal-chat/target/site/jacoco/jacoco.exec</include>
                                         <include>remsfal-service/target/site/jacoco/jacoco.exec</include>
                                     </includes>
