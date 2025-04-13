@@ -37,7 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.style.configDirectory>src/main/style</project.style.configDirectory>
-        <surefire-plugin.version>3.5.2</surefire-plugin.version>
+        <surefire-plugin.version>3.5.3</surefire-plugin.version>
         <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
         <jandex-plugin.version>1.2.3</jandex-plugin.version>
