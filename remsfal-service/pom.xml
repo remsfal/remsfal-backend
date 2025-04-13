@@ -5,7 +5,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>remsfal-service</artifactId>
-    <name>remsfal - Service uber-JAR (jar)</name>
+    <name>remsfal - Main Service uber-JAR (jar)</name>
 
     <parent>
         <groupId>de.remsfal</groupId>
@@ -218,10 +218,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>com.datastax.oss.quarkus</groupId>
