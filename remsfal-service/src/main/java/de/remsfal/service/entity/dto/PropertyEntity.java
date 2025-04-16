@@ -2,7 +2,6 @@ package de.remsfal.service.entity.dto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
@@ -16,10 +15,6 @@ import de.remsfal.core.model.project.PropertyModel;
 @Table(name = "PROPERTY")
 public class PropertyEntity extends AbstractEntity implements PropertyModel {
 
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
-    
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String projectId;
 
@@ -34,16 +29,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
 
     @Column(name = "PLOT_AREA")
     private Integer plotArea;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getProjectId() {
         return projectId;
@@ -96,7 +81,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
         }
         if (o instanceof PropertyEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(projectId, e.projectId)
                 && Objects.equals(title, e.title)
                 && Objects.equals(landRegisterEntry, e.landRegisterEntry)
@@ -104,11 +88,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
                 && Objects.equals(plotArea, e.plotArea);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static PropertyEntity fromModel(PropertyModel property) {

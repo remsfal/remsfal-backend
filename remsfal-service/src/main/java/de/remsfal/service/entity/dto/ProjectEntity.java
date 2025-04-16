@@ -9,7 +9,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -24,26 +23,12 @@ import de.remsfal.core.model.UserModel;
 @Table(name = "PROJECT")
 public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
-    
     @Column(name = "TITLE")
     private String title;
     
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ProjectMembershipEntity> memberships;
     
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
-
     @Override
     public String getTitle() {
         return title;
@@ -84,25 +69,16 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-    
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o instanceof ProjectEntity e) {
+            return super.equals(e)
+                && Objects.equals(title, e.title)
+                && Objects.equals(memberships, e.memberships);
         }
-        if (!(o instanceof ProjectEntity)) {
-            return false;
-        }
-        final ProjectEntity entity = (ProjectEntity) o;
-        return Objects.equals(id, entity.id) &&
-            Objects.equals(title, entity.title) &&
-            Objects.equals(memberships, entity.memberships);
+        return false;
     }
 
 }

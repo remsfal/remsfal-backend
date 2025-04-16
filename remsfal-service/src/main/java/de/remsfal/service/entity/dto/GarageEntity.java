@@ -2,7 +2,6 @@ package de.remsfal.service.entity.dto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
@@ -16,25 +15,11 @@ import de.remsfal.core.model.project.GarageModel;
 @Table(name = "GARAGE")
 public class GarageEntity extends RentalUnitEntity implements GarageModel {
 
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
-    
     @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String buildingId;
 
     @Column(name = "LOCATION")
     private String location;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getBuildingId() {
         return buildingId;
@@ -60,16 +45,10 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
         }
         if (o instanceof GarageEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(buildingId, e.buildingId)
                 && Objects.equals(location, e.location);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static GarageEntity fromModel(GarageModel garage) {

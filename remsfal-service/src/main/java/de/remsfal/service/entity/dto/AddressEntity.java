@@ -2,7 +2,6 @@ package de.remsfal.service.entity.dto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.Locale;
@@ -16,10 +15,6 @@ import de.remsfal.core.model.AddressModel;
 @Entity
 @Table(name = "ADDRESS")
 public class AddressEntity extends AbstractEntity implements AddressModel {
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "STREET", nullable = false)
     private String street;
@@ -35,15 +30,6 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
 
     @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
     private String country;
-
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
 
     public String getStreet() {
         return street;
@@ -91,7 +77,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
             return true;
         }
         if (o instanceof AddressEntity e) {
-            return Objects.equals(id, e.id)
+            return super.equals(e)
                 && Objects.equals(street, e.street)
                 && Objects.equals(city, e.city)
                 && Objects.equals(province, e.province)
@@ -99,11 +85,6 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
                 && Objects.equals(country, e.country);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public String toString() {

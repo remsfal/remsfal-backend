@@ -17,7 +17,6 @@ import static de.remsfal.service.TestData.USER_FIRST_NAME;
 import static de.remsfal.service.TestData.USER_ID_1;
 import static de.remsfal.service.TestData.USER_ID_2;
 import static de.remsfal.service.TestData.USER_LAST_NAME;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -101,9 +100,4 @@ class ProjectMembershipEntityTest {
         assertEquals(expectedString, entity3.toString());
     }
 
-    @Test
-    @DisplayName("Tests if setId() throws IllegalArgumentException if manually set")
-    void testSetId () {
-        assertThrows(IllegalArgumentException.class, () -> entity1.setId("Id"));
-    }
 }

@@ -7,7 +7,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
@@ -21,10 +20,6 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
         TASK,
         DEFECT
     }
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "TYPE", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -57,16 +52,6 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
 
     @Column(name = "CREATED_BY", columnDefinition = "char", length = 36)
     private String createdBy;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
 
     public TaskType getType() {
         return type;
@@ -157,33 +142,24 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o instanceof TaskEntity e) {
+            return super.equals(e)
+                && Objects.equals(type, e.type)
+                && Objects.equals(projectId, e.projectId)
+                && Objects.equals(title, e.title)
+                && Objects.equals(status, e.status)
+                && Objects.equals(ownerId, e.ownerId)
+                && Objects.equals(description, e.description)
+                && Objects.equals(blockedBy, e.blockedBy)
+                && Objects.equals(relatedTo, e.relatedTo)
+                && Objects.equals(duplicateOf, e.duplicateOf)
+                && Objects.equals(createdBy, e.createdBy);
         }
-        if (!(o instanceof TaskEntity)) {
-            return false;
-        }
-        final TaskEntity entity = (TaskEntity) o;
-        return Objects.equals(id, entity.id) &&
-            Objects.equals(type, entity.type) &&
-            Objects.equals(projectId, entity.projectId) &&
-            Objects.equals(title, entity.title) &&
-            Objects.equals(status, entity.status) &&
-            Objects.equals(ownerId, entity.ownerId) &&
-            Objects.equals(description, entity.description) &&
-            Objects.equals(blockedBy, entity.blockedBy) &&
-            Objects.equals(relatedTo, entity.relatedTo) &&
-            Objects.equals(duplicateOf, entity.duplicateOf) &&
-            Objects.equals(createdBy, entity.createdBy);
+        return false;
     }
 
 }

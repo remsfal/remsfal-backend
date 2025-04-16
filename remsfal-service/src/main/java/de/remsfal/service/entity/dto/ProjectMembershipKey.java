@@ -46,15 +46,11 @@ public class ProjectMembershipKey implements Serializable {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o instanceof ProjectMembershipKey e) {
+            return Objects.equals(projectId, e.projectId)
+                && Objects.equals(userId, e.userId);
         }
-        if (!(o instanceof ProjectMembershipKey)) {
-            return false;
-        }
-        final ProjectMembershipKey key = (ProjectMembershipKey) o;
-        return Objects.equals(projectId, key.projectId) &&
-            Objects.equals(userId, key.userId);
+        return false;
     }
 
 }

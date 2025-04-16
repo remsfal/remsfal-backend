@@ -6,7 +6,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -18,10 +17,6 @@ import java.util.Objects;
 @Entity
 @Table(name = "BUILDING")
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String propertyId;
@@ -41,16 +36,6 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
     @Column(name = "DIFFERENT_HEATING_SPACE", columnDefinition = "TINYINT")
     private Boolean differentHeatingSpace;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
 
     public String getPropertyId() {
         return propertyId;
@@ -112,7 +97,6 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         }
         if (o instanceof BuildingEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(propertyId, e.propertyId)
                 && Objects.equals(address, e.address)
                 && Objects.equals(livingSpace, e.livingSpace)
@@ -121,11 +105,6 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
                 && Objects.equals(differentHeatingSpace, e.differentHeatingSpace);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static BuildingEntity fromModel(BuildingModel building) {

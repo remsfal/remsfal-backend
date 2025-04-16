@@ -9,7 +9,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -22,10 +21,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "TENANCY")
 public class TenancyEntity extends AbstractEntity implements TenancyModel {
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String projectId;
@@ -44,16 +39,6 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
 
     @Column(name = "END_OF_RENTAL", columnDefinition = "date")
     private LocalDate endOfRental;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getProjectId() {
         return projectId;
@@ -106,18 +91,12 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
         }
         if (o instanceof TenancyEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(rent, e.rent)
                 && Objects.equals(tenant, e.tenant)
                 && Objects.equals(startOfRental, e.startOfRental)
                 && Objects.equals(endOfRental, e.endOfRental);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
 }

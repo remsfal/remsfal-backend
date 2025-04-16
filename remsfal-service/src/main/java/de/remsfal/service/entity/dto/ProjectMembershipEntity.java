@@ -28,7 +28,7 @@ import de.remsfal.core.model.ProjectMemberModel;
 @NamedQuery(name = "ProjectMembershipEntity.removeByProjectIdAndUserId",
     query = "DELETE FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
 @Table(name = "PROJECT_MEMBERSHIP")
-public class ProjectMembershipEntity extends AbstractEntity implements ProjectMemberModel {
+public class ProjectMembershipEntity extends AbstractMetaDataEntity implements ProjectMemberModel {
 
     @EmbeddedId
     private ProjectMembershipKey id = new ProjectMembershipKey();
@@ -50,11 +50,6 @@ public class ProjectMembershipEntity extends AbstractEntity implements ProjectMe
     @Override
     public String getId() {
         return user.getId();
-    }
-
-    @Override
-    public void setId(String id) {
-        throw new IllegalArgumentException("This entiy uses a composite key!");
     }
 
     public ProjectEntity getProject() {

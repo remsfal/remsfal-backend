@@ -11,7 +11,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -33,10 +32,6 @@ import de.remsfal.core.model.CustomerModel;
 @Entity
 @Table(name = "USER")
 public class UserEntity extends AbstractEntity implements CustomerModel {
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "TOKEN_ID", unique = true)
     private String tokenId;
@@ -70,16 +65,6 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
 
     public String getTokenId() {
         return tokenId;
@@ -193,31 +178,22 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o instanceof UserEntity e) {
+            return super.equals(e)
+                && Objects.equals(tokenId, e.tokenId)
+                && Objects.equals(email, e.email)
+                && Objects.equals(firstName, e.firstName)
+                && Objects.equals(lastName, e.lastName)
+                && Objects.equals(address, e.address)
+                && Objects.equals(mobilePhoneNumber, e.mobilePhoneNumber)
+                && Objects.equals(businessPhoneNumber, e.businessPhoneNumber)
+                && Objects.equals(privatePhoneNumber, e.privatePhoneNumber);
         }
-        if (!(o instanceof UserEntity)) {
-            return false;
-        }
-        final UserEntity entity = (UserEntity) o;
-        return Objects.equals(id, entity.id) &&
-            Objects.equals(tokenId, entity.tokenId) &&
-            Objects.equals(email, entity.email) &&
-            Objects.equals(firstName, entity.firstName) &&
-            Objects.equals(lastName, entity.lastName) &&
-            Objects.equals(address, entity.address) &&
-            Objects.equals(mobilePhoneNumber, entity.mobilePhoneNumber) &&
-            Objects.equals(businessPhoneNumber, entity.businessPhoneNumber) &&
-            Objects.equals(privatePhoneNumber, entity.privatePhoneNumber);
+        return false;
     }
 
 }
