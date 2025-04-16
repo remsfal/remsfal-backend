@@ -69,18 +69,12 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         }
         if (o instanceof CommercialEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(buildingId, e.buildingId)
                 && Objects.equals(location, e.location)
                 && Objects.equals(commercialSpace, e.commercialSpace)
                 && Objects.equals(heatingSpace, e.heatingSpace);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static CommercialEntity fromModel(CommercialModel commercial) {

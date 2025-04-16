@@ -97,7 +97,6 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         }
         if (o instanceof BuildingEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(propertyId, e.propertyId)
                 && Objects.equals(address, e.address)
                 && Objects.equals(livingSpace, e.livingSpace)
@@ -106,11 +105,6 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
                 && Objects.equals(differentHeatingSpace, e.differentHeatingSpace);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static BuildingEntity fromModel(BuildingModel building) {

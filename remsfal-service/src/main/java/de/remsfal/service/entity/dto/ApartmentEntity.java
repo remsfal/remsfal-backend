@@ -69,18 +69,12 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
         }
         if (o instanceof ApartmentEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(buildingId, e.buildingId)
                 && Objects.equals(location, e.location)
                 && Objects.equals(livingSpace, e.livingSpace)
                 && Objects.equals(heatingSpace, e.heatingSpace);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static ApartmentEntity fromModel(ApartmentModel apartment) {

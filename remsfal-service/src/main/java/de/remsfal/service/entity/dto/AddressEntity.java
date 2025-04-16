@@ -77,7 +77,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
             return true;
         }
         if (o instanceof AddressEntity e) {
-            return Objects.equals(id, e.id)
+            return super.equals(e)
                 && Objects.equals(street, e.street)
                 && Objects.equals(city, e.city)
                 && Objects.equals(province, e.province)

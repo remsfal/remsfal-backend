@@ -81,7 +81,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
         }
         if (o instanceof PropertyEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(projectId, e.projectId)
                 && Objects.equals(title, e.title)
                 && Objects.equals(landRegisterEntry, e.landRegisterEntry)
@@ -89,11 +88,6 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
                 && Objects.equals(plotArea, e.plotArea);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static PropertyEntity fromModel(PropertyModel property) {

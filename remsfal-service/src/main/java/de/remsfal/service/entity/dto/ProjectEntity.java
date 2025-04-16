@@ -69,25 +69,16 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-    
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o instanceof ProjectEntity e) {
+            return super.equals(e)
+                && Objects.equals(title, e.title)
+                && Objects.equals(memberships, e.memberships);
         }
-        if (!(o instanceof ProjectEntity)) {
-            return false;
-        }
-        final ProjectEntity entity = (ProjectEntity) o;
-        return Objects.equals(id, entity.id) &&
-            Objects.equals(title, entity.title) &&
-            Objects.equals(memberships, entity.memberships);
+        return false;
     }
 
 }

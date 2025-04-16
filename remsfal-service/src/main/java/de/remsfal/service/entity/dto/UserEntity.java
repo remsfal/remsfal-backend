@@ -178,31 +178,22 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o instanceof UserEntity e) {
+            return super.equals(e)
+                && Objects.equals(tokenId, e.tokenId)
+                && Objects.equals(email, e.email)
+                && Objects.equals(firstName, e.firstName)
+                && Objects.equals(lastName, e.lastName)
+                && Objects.equals(address, e.address)
+                && Objects.equals(mobilePhoneNumber, e.mobilePhoneNumber)
+                && Objects.equals(businessPhoneNumber, e.businessPhoneNumber)
+                && Objects.equals(privatePhoneNumber, e.privatePhoneNumber);
         }
-        if (!(o instanceof UserEntity)) {
-            return false;
-        }
-        final UserEntity entity = (UserEntity) o;
-        return Objects.equals(id, entity.id) &&
-            Objects.equals(tokenId, entity.tokenId) &&
-            Objects.equals(email, entity.email) &&
-            Objects.equals(firstName, entity.firstName) &&
-            Objects.equals(lastName, entity.lastName) &&
-            Objects.equals(address, entity.address) &&
-            Objects.equals(mobilePhoneNumber, entity.mobilePhoneNumber) &&
-            Objects.equals(businessPhoneNumber, entity.businessPhoneNumber) &&
-            Objects.equals(privatePhoneNumber, entity.privatePhoneNumber);
+        return false;
     }
 
 }

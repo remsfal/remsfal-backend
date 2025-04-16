@@ -49,16 +49,10 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
         }
         if (o instanceof SiteEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(propertyId, e.propertyId)
                 && Objects.equals(address, e.address);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
 }

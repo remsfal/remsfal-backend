@@ -99,7 +99,6 @@ public class RentEntity extends AbstractEntity implements RentModel {
         }
         if (o instanceof RentEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(billingCycle, e.billingCycle)
                 && Objects.equals(firstPaymentDate, e.firstPaymentDate)
                 && Objects.equals(lastPaymentDate, e.lastPaymentDate)
@@ -108,11 +107,6 @@ public class RentEntity extends AbstractEntity implements RentModel {
                 && Objects.equals(heatingCostsPrepayment, e.heatingCostsPrepayment);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
 }

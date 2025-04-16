@@ -45,16 +45,10 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
         }
         if (o instanceof GarageEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(buildingId, e.buildingId)
                 && Objects.equals(location, e.location);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     public static GarageEntity fromModel(GarageModel garage) {

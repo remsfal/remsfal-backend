@@ -91,18 +91,12 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
         }
         if (o instanceof TenancyEntity e) {
             return super.equals(e)
-                && Objects.equals(id, e.id)
                 && Objects.equals(rent, e.rent)
                 && Objects.equals(tenant, e.tenant)
                 && Objects.equals(startOfRental, e.startOfRental)
                 && Objects.equals(endOfRental, e.endOfRental);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
 }
