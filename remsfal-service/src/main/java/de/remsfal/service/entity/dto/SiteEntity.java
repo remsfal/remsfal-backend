@@ -3,7 +3,6 @@ package de.remsfal.service.entity.dto;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -19,26 +18,12 @@ import de.remsfal.core.model.project.SiteModel;
 @Table(name = "SITE")
 public class SiteEntity extends RentalUnitEntity implements SiteModel {
 
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
-
     @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String propertyId;
 
     @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "ADDRESS_ID")
     private AddressEntity address;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getPropertyId() {
         return propertyId;

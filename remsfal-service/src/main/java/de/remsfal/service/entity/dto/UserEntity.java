@@ -11,7 +11,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -33,10 +32,6 @@ import de.remsfal.core.model.CustomerModel;
 @Entity
 @Table(name = "USER")
 public class UserEntity extends AbstractEntity implements CustomerModel {
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "TOKEN_ID", unique = true)
     private String tokenId;
@@ -70,16 +65,6 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
 
     public String getTokenId() {
         return tokenId;

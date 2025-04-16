@@ -2,7 +2,6 @@ package de.remsfal.service.entity.dto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
@@ -16,10 +15,6 @@ import de.remsfal.core.model.project.CommercialModel;
 @Table(name = "COMMERCIAL")
 public class CommercialEntity extends RentalUnitEntity implements CommercialModel {
 
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
-
     @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String buildingId;
 
@@ -31,16 +26,6 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
 
     @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
     private Float heatingSpace;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getBuildingId() {
         return buildingId;

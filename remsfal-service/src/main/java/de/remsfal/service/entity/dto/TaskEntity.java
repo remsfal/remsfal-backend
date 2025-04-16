@@ -7,7 +7,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
@@ -21,10 +20,6 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
         TASK,
         DEFECT
     }
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "TYPE", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -57,16 +52,6 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
 
     @Column(name = "CREATED_BY", columnDefinition = "char", length = 36)
     private String createdBy;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
 
     public TaskType getType() {
         return type;

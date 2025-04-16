@@ -10,7 +10,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
@@ -19,10 +18,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "RENT")
 public class RentEntity extends AbstractEntity implements RentModel {
-
-    @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    private String id;
 
     @Column(name = "BILLING_CYCLE", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -42,15 +37,6 @@ public class RentEntity extends AbstractEntity implements RentModel {
 
     @Column(name = "HEATING_COSTS_PREPAYMENT", columnDefinition = "decimal",  precision=6, scale=2)
     private BigDecimal heatingCostsPrepayment;
-
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(final String id) {
-        this.id = id;
-    }
 
     @Override
     public BillingCycle getBillingCycle() {
