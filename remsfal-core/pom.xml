@@ -17,6 +17,7 @@
     <properties>
         <version.immutables>2.10.1</version.immutables>
         <version.jackson>2.18.3</version.jackson>
+        <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.validation>3.1.1</version.validation>
         <version.jax-rs>4.0.0</version.jax-rs>
@@ -48,6 +49,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>${version.jackson}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <version>${version.cdi-api}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.annotation</groupId>

@@ -28,6 +28,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.datastax.oss.quarkus</groupId>
+                <artifactId>cassandra-quarkus-bom</artifactId>
+                <version>1.2.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -48,6 +55,53 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-jackson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-multipart</artifactId>
+        </dependency>
+        <!-- Hibernate ORM specific dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <!-- JDBC driver dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-mysql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-liquibase</artifactId>
+        </dependency>
+        <!-- File Storage dependencies - Minio -->
+        <dependency>
+            <groupId>io.quarkiverse.minio</groupId>
+            <artifactId>quarkus-minio</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+        <!-- Cassandra dependencies -->
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-core</artifactId>
+            <version>4.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-mapper-runtime</artifactId>
+            <version>4.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss.quarkus</groupId>
+            <artifactId>cassandra-quarkus-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss.quarkus</groupId>
+            <artifactId>cassandra-quarkus-mapper-processor</artifactId>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
@@ -58,6 +112,11 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss.quarkus</groupId>
+            <artifactId>cassandra-quarkus-test-framework</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -83,6 +142,18 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.datastax.oss.quarkus</groupId>
+                            <artifactId>cassandra-quarkus-mapper-processor</artifactId>
+                            <version>1.2.0</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
         </plugins>
     </build>

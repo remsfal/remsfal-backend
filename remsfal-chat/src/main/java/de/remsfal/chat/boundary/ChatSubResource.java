@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary.project;
+package de.remsfal.chat.boundary;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -6,15 +6,15 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
-import de.remsfal.core.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
-import de.remsfal.service.control.ProjectController;
+import de.remsfal.chat.control.AuthorizationController;
+import de.remsfal.core.authentication.RemsfalPrincipal;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class ProjectSubResource {
+public class ChatSubResource {
 
     @Context
     protected UriInfo uri;
@@ -26,14 +26,14 @@ public class ProjectSubResource {
     protected RemsfalPrincipal principal;
 
     @Inject
-    protected ProjectController projectController;
+    protected AuthorizationController authorizationController;
 
     public boolean checkReadPermissions(final String projectId) {
-        return projectController.getProjectMemberRole(principal, projectId) != null;
+        return authorizationController.getProjectMemberRole(principal, projectId) != null;
     }
 
     public boolean checkWritePermissions(final String projectId) {
-        if (!projectController.getProjectMemberRole(principal, projectId).isPrivileged()) {
+        if (!authorizationController.getProjectMemberRole(principal, projectId).isPrivileged()) {
             throw new ForbiddenException("Inadequate user rights");
         } else {
             return true;
@@ -41,7 +41,7 @@ public class ProjectSubResource {
     }
 
     public boolean checkOwnerPermissions(final String projectId) {
-        if (projectController.getProjectMemberRole(principal, projectId) != MemberRole.PROPRIETOR) {
+        if (authorizationController.getProjectMemberRole(principal, projectId) != MemberRole.PROPRIETOR) {
             throw new ForbiddenException("Owner rights are required");
         } else {
             return true;

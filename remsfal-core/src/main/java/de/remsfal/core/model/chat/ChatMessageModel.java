@@ -1,4 +1,4 @@
-package de.remsfal.core.model.project;
+package de.remsfal.core.model.chat;
 
 import java.time.Instant;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package de.remsfal.service.control;
+package de.remsfal.chat.control;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
@@ -12,6 +12,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.AfterEach;
+
+import de.remsfal.chat.control.FileStorageService;
+
 import org.junit.jupiter.api.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

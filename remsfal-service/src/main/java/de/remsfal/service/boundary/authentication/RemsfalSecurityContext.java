@@ -2,6 +2,7 @@ package de.remsfal.service.boundary.authentication;
 
 import java.security.Principal;
 
+import de.remsfal.core.authentication.RemsfalPrincipal;
 import jakarta.ws.rs.core.SecurityContext;
 
 /**

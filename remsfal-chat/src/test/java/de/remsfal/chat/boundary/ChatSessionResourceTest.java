@@ -1,13 +1,18 @@
-package de.remsfal.service.boundary.project;
+package de.remsfal.chat.boundary;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+
+import de.remsfal.chat.control.ChatMessageController;
+import de.remsfal.chat.control.FileStorageService;
+import de.remsfal.chat.entity.dao.ChatMessageRepository;
+import de.remsfal.chat.entity.dao.ChatSessionRepository;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.TaskType;
+import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.service.TestData;
-import de.remsfal.service.control.ChatMessageController;
-import de.remsfal.service.control.FileStorageService;
-import de.remsfal.service.entity.dao.ChatMessageRepository;
-import de.remsfal.service.entity.dao.ChatSessionRepository;
-import de.remsfal.service.entity.dto.ChatMessageEntity;
+import de.remsfal.service.boundary.project.AbstractProjectResourceTest;
 import io.minio.Result;
 import io.minio.messages.Item;
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,9 +39,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
-import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyString;
@@ -52,7 +55,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class ChatResourceTest extends AbstractProjectResourceTest {
+class ChatSessionResourceTest extends AbstractProjectResourceTest {
 
     @Inject
     FileStorageService fileStorageService;

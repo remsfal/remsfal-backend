@@ -1,4 +1,4 @@
-package de.remsfal.service.entity.dao;
+package de.remsfal.chat.entity.dao;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -8,7 +8,8 @@ import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
-import de.remsfal.service.entity.dto.ChatSessionEntity;
+
+import de.remsfal.chat.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -35,8 +36,6 @@ public class ChatSessionRepository {
             "No participants found for the given projectId and sessionId";
     private static final String ERROR_SESSION_FETCH = "An error occurred while fetching the session";
 
-
-
     @Inject
     ChatMessageRepository chatMessageRepository;
 
@@ -44,11 +43,7 @@ public class ChatSessionRepository {
     CqlSession cqlSession;
 
     @Inject
-    UserRepository userRepository;
-
-    @Inject
     Logger logger;
-
 
     public enum TaskType {
         TASK,
@@ -354,10 +349,6 @@ public class ChatSessionRepository {
 
         if (ParticipantRole.INITIATOR.name().equals(role)) {
             ensureNoExistingInitiator(participants);
-        }
-
-        if (userRepository.findById(userId.toString()) == null) {
-            throw new IllegalArgumentException("User not found");
         }
     }
 

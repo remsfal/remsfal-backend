@@ -1,9 +1,11 @@
-package de.remsfal.service.control;
+package de.remsfal.chat.control;
 
-import de.remsfal.core.model.project.ChatSessionModel;
-import de.remsfal.service.entity.dao.ChatMessageRepository;
-import de.remsfal.service.entity.dao.ChatSessionRepository;
-import de.remsfal.service.entity.dto.ChatSessionEntity;
+import de.remsfal.chat.entity.dao.ChatMessageRepository;
+import de.remsfal.chat.entity.dao.ChatSessionRepository;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
+import de.remsfal.chat.entity.dto.ChatSessionEntity;
+import de.remsfal.core.model.chat.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -11,8 +13,6 @@ import org.jboss.logging.Logger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
 
 @RequestScoped
 public class ChatSessionController {
@@ -26,15 +26,9 @@ public class ChatSessionController {
     @Inject
     ChatMessageRepository chatMessageRepository;
 
-    @Inject
-    UserController userController;
-
     @Transactional
     public ChatSessionModel createChatSession(String projectId, String taskId, String taskType, String userId) {
         logger.infov("Creating chat session (projectId={0}, taskId={1})", projectId, taskId);
-        if (userController.getUser(userId) == null) {
-            throw new IllegalArgumentException("User with ID " + userId + " not found");
-        }
         Map<UUID, String> participants = Map.of(UUID.fromString(userId), ParticipantRole.INITIATOR.name());
         UUID projectUUID = UUID.fromString(projectId);
         UUID taskUUID = UUID.fromString(taskId);

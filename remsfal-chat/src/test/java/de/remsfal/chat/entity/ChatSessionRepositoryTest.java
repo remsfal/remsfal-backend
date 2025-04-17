@@ -1,9 +1,10 @@
-package de.remsfal.service.entity;
+package de.remsfal.chat.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+
+import de.remsfal.chat.entity.dao.ChatSessionRepository;
+import de.remsfal.chat.entity.dto.ChatSessionEntity;
 import de.remsfal.service.TestData;
-import de.remsfal.service.entity.dto.ChatSessionEntity;
-import de.remsfal.service.entity.dao.ChatSessionRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;

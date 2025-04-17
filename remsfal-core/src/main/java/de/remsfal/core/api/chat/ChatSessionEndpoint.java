@@ -1,6 +1,6 @@
-package de.remsfal.core.api.project;
+package de.remsfal.core.api.chat;
 
-import de.remsfal.core.json.project.ChatMessageJson;
+import de.remsfal.core.json.chat.ChatMessageJson;
 import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -22,7 +22,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
-public interface ChatEndpoint {
+public interface ChatSessionEndpoint {
 
     String SERVICE = "chats";
 

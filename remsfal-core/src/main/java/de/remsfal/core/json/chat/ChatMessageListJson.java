@@ -1,8 +1,12 @@
-package de.remsfal.core.json.project;
+package de.remsfal.core.json.chat;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import de.remsfal.core.json.chat.ImmutableChatMessageListJson;
+import de.remsfal.core.json.chat.ImmutableChatMessageListJson.Builder;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 

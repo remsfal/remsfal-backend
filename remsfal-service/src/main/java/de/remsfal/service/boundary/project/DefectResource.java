@@ -1,8 +1,6 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.core.api.project.ChatEndpoint;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -25,9 +23,6 @@ public class DefectResource extends ProjectSubResource implements DefectEndpoint
 
     @Inject
     TaskController defectController;
-
-    @Inject
-    Instance<ChatEndpoint> chatEndpoint;
 
     @Override
     public TaskListJson getDefects(String projectId, String ownerId, Status status) {
@@ -66,11 +61,6 @@ public class DefectResource extends ProjectSubResource implements DefectEndpoint
     public void deleteDefect(String projectId, String defectId) {
         checkWritePermissions(projectId);
         defectController.deleteDefect(projectId, defectId);
-    }
-
-    @Override
-    public ChatEndpoint getChatSessionResource() {
-        return resourceContext.initResource(chatEndpoint.get());
     }
 
 }

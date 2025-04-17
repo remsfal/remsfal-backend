@@ -4,9 +4,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
 import de.remsfal.core.api.UserEndpoint;
+import de.remsfal.core.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
-import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.UserController;
 
 /**

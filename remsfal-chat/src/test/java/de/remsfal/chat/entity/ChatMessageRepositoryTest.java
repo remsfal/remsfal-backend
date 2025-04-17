@@ -1,18 +1,19 @@
-package de.remsfal.service.entity;
+package de.remsfal.chat.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import de.remsfal.service.entity.dao.ChatMessageRepository;
-import de.remsfal.service.entity.dto.ChatMessageEntity;
+
+import de.remsfal.chat.entity.dao.ChatMessageRepository;
+import de.remsfal.chat.entity.dao.ChatMessageRepository.ContentType;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.TaskType;
+import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
-import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
-import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.service.entity.dao.ChatMessageRepository.ContentType;
 import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;

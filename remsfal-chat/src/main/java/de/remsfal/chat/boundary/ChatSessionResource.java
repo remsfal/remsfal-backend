@@ -1,30 +1,37 @@
-package de.remsfal.service.boundary.project;
-
+package de.remsfal.chat.boundary;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Optional;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import de.remsfal.core.model.project.ChatSessionModel;
-import de.remsfal.service.control.FileStorageService;
-import de.remsfal.service.entity.dto.ChatMessageEntity;
-import de.remsfal.service.entity.dto.ChatSessionEntity;
-import jakarta.ws.rs.core.StreamingOutput;
+import java.util.UUID;
+
 import org.jboss.logging.Logger;
-import com.google.gson.Gson;
-import de.remsfal.core.api.project.ChatEndpoint;
-import de.remsfal.core.json.project.ChatMessageJson;
-import de.remsfal.core.json.project.ChatSessionJson;
-import de.remsfal.service.control.ChatMessageController;
-import de.remsfal.service.control.ChatSessionController;
-import de.remsfal.service.control.TaskController;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.remsfal.chat.control.ChatMessageController;
+import de.remsfal.chat.control.ChatSessionController;
+import de.remsfal.chat.control.FileStorageService;
+import de.remsfal.chat.entity.dao.ChatMessageRepository.ContentType;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
+import de.remsfal.chat.entity.dao.ChatSessionRepository.TaskType;
+import de.remsfal.chat.entity.dto.ChatMessageEntity;
+import de.remsfal.chat.entity.dto.ChatSessionEntity;
+import de.remsfal.core.api.chat.ChatSessionEndpoint;
+import de.remsfal.core.json.chat.ChatMessageJson;
+import de.remsfal.core.json.chat.ChatSessionJson;
+import de.remsfal.core.model.chat.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -32,27 +39,19 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import de.remsfal.service.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.service.entity.dao.ChatSessionRepository.Status;
-import de.remsfal.service.entity.dao.ChatSessionRepository.TaskType;
-import de.remsfal.service.entity.dao.ChatMessageRepository.ContentType;
+import jakarta.ws.rs.core.StreamingOutput;
 
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
 @RequestScoped
-public class ChatResource extends ProjectSubResource implements ChatEndpoint {
+public class ChatSessionResource extends ChatSubResource implements ChatSessionEndpoint {
 
     @Inject
     ChatSessionController chatSessionController;
 
     @Inject
     ChatMessageController chatMessageController;
-
-    @Inject
-    TaskController taskController;
 
     @Inject
     Logger logger;
@@ -73,10 +72,6 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
             String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
-            if (taskId != null && taskController.getTask(projectId, taskId) == null)
-                throw new NotFoundException("Task does not exist");
-            if (defectId != null && taskController.getDefect(projectId, defectId) == null)
-                throw new NotFoundException("Defect does not exist");
             TaskType taskType = (taskId != null && !taskId.isBlank())
                 ? TaskType.TASK : TaskType.DEFECT;
             String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
@@ -554,8 +549,14 @@ public class ChatResource extends ProjectSubResource implements ChatEndpoint {
             participant.put("userRole", role);
             participantList.add(participant);
         });
-        Gson gson = new Gson();
-        return gson.toJson(participantList);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(participantList);
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return "";
+        }
     }
 
     private String getFileName(Map<String, List<String>> headers) {

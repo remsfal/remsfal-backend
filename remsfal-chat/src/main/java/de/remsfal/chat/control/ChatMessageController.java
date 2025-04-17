@@ -1,10 +1,11 @@
-package de.remsfal.service.control;
+package de.remsfal.chat.control;
 
-import de.remsfal.service.entity.dao.ChatMessageRepository;
-import de.remsfal.service.entity.dto.ChatMessageEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
+
+import de.remsfal.chat.entity.dao.ChatMessageRepository;
+import de.remsfal.chat.entity.dto.ChatMessageEntity;
 
 @RequestScoped
 public class ChatMessageController {

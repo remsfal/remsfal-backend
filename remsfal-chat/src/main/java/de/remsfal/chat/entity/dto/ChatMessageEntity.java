@@ -1,10 +1,11 @@
-package de.remsfal.service.entity.dto;
+package de.remsfal.chat.entity.dto;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import de.remsfal.core.model.project.ChatMessageModel;
+
+import de.remsfal.core.model.chat.ChatMessageModel;
 
 import java.time.Instant;
 import java.util.UUID;

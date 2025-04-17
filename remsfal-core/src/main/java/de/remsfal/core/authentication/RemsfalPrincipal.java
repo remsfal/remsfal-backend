@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary.authentication;
+package de.remsfal.core.authentication;
 
 import java.security.Principal;
 

@@ -14,10 +14,10 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ProjectEndpoint;
+import de.remsfal.core.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.model.ProjectModel;
-import de.remsfal.service.boundary.authentication.RemsfalPrincipal;
 import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.BuildingResource;
 import de.remsfal.service.boundary.project.CommercialResource;

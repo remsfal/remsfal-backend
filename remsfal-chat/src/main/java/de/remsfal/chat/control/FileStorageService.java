@@ -1,4 +1,4 @@
-package de.remsfal.service.control;
+package de.remsfal.chat.control;
 
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;

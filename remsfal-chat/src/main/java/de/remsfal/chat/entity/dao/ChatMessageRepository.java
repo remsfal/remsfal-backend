@@ -1,4 +1,4 @@
-package de.remsfal.service.entity.dao;
+package de.remsfal.chat.entity.dao;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -7,14 +7,16 @@ import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
-import de.remsfal.service.entity.dto.ChatMessageEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.remsfal.chat.entity.dto.ChatMessageEntity;
+import de.remsfal.chat.entity.dto.ChatSessionEntity;
+
 import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collections;
-import de.remsfal.service.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

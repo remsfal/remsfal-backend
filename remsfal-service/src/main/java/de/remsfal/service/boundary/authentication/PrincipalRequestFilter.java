@@ -18,6 +18,7 @@ import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.AuthenticationEndpoint;
+import de.remsfal.core.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.exception.UnauthorizedException;
 import de.remsfal.service.control.UserController;

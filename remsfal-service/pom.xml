@@ -29,13 +29,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>com.datastax.oss.quarkus</groupId>
-                <artifactId>cassandra-quarkus-bom</artifactId>
-                <version>1.2.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -55,10 +48,6 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-multipart</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -105,12 +94,6 @@
                     <artifactId>gson</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- File Storage dependencies - Minio -->
-        <dependency>
-            <groupId>io.quarkiverse.minio</groupId>
-            <artifactId>quarkus-minio</artifactId>
-            <version>3.8.1</version>
         </dependency>
 
         <!-- Bugfix dependencies -->
@@ -162,35 +145,6 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.datastax.oss/java-driver-core -->
-        <dependency>
-            <groupId>com.datastax.oss</groupId>
-            <artifactId>java-driver-core</artifactId>
-            <version>4.17.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.datastax.oss/java-driver-mapper-runtime -->
-        <dependency>
-            <groupId>com.datastax.oss</groupId>
-            <artifactId>java-driver-mapper-runtime</artifactId>
-            <version>4.17.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.datastax.oss.quarkus/cassandra-quarkus-client -->
-        <dependency>
-            <groupId>com.datastax.oss.quarkus</groupId>
-            <artifactId>cassandra-quarkus-client</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.datastax.oss.quarkus/cassandra-quarkus-mapper-processor -->
-        <dependency>
-            <groupId>com.datastax.oss.quarkus</groupId>
-            <artifactId>cassandra-quarkus-mapper-processor</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
-        <dependency>
-            <groupId>com.datastax.oss.quarkus</groupId>
-            <artifactId>cassandra-quarkus-test-framework</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
     <build>
         <finalName>remsfal-service</finalName>
@@ -215,18 +169,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>com.datastax.oss.quarkus</groupId>
-                            <artifactId>cassandra-quarkus-mapper-processor</artifactId>
-                            <version>1.2.0</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
             </plugin>
         </plugins>
     </build>
