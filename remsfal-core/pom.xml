@@ -23,6 +23,8 @@
         <version.jax-rs>4.0.0</version.jax-rs>
         <version.resteasy>6.2.12.Final</version.resteasy>
         <version.open-api>4.0.2</version.open-api>
+        <version.config-api>3.1</version.config-api>
+        <version.nimbus>10.0.2</version.nimbus>
     </properties>
 
     <dependencyManagement>
@@ -31,6 +33,13 @@
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
                 <version>5.12.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-bom</artifactId>
+                <version>5.17.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -54,6 +63,7 @@
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <version>${version.cdi-api}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.annotation</groupId>
@@ -77,17 +87,30 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-multipart-provider</artifactId>
             <version>${version.resteasy}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
             <version>${version.open-api}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${version.config-api}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<project
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>remsfal-chat</artifactId>
+    <name>remsfal - Chat Service uber-JAR (jar)</name>
+
+    <parent>
+        <groupId>de.remsfal</groupId>
+        <artifactId>remsfal-services</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.datastax.oss.quarkus</groupId>
+                <artifactId>cassandra-quarkus-bom</artifactId>
+                <version>1.2.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>de.remsfal</groupId>
+            <artifactId>remsfal-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-multipart</artifactId>
+        </dependency>
+        <!-- Hibernate ORM specific dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <!-- JDBC driver dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-mysql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-liquibase</artifactId>
+        </dependency>
+        <!-- File Storage dependencies - Minio -->
+        <dependency>
+            <groupId>io.quarkiverse.minio</groupId>
+            <artifactId>quarkus-minio</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+        <!-- Cassandra dependencies -->
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-core</artifactId>
+            <version>4.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-mapper-runtime</artifactId>
+            <version>4.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss.quarkus</groupId>
+            <artifactId>cassandra-quarkus-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss.quarkus</groupId>
+            <artifactId>cassandra-quarkus-mapper-processor</artifactId>
+        </dependency>
+
+        <!-- TEST dependencies -->
+        <dependency>
+            <groupId>com.datastax.oss.quarkus</groupId>
+            <artifactId>cassandra-quarkus-test-framework</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <finalName>remsfal-chat</finalName>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus.platform</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.datastax.oss.quarkus</groupId>
+                            <artifactId>cassandra-quarkus-mapper-processor</artifactId>
+                            <version>1.2.0</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

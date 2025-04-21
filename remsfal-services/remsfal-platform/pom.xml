@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<project
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>remsfal-platform</artifactId>
+    <name>remsfal - Main Platform Service uber-JAR (jar)</name>
+
+    <parent>
+        <groupId>de.remsfal</groupId>
+        <artifactId>remsfal-services</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <google.version>2.7.2</google.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>de.remsfal</groupId>
+            <artifactId>remsfal-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Hibernate ORM specific dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <!-- JDBC driver dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-mysql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-liquibase</artifactId>
+        </dependency>
+        <!-- third party dependencies -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>${google.version}</version>
+        </dependency>
+
+        <!-- Bugfix dependencies -->
+        <dependency>
+            <!-- JDK 24 support -->
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.17.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.zeebe</groupId>
+            <artifactId>quarkus-zeebe</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
+        <!-- TEST dependencies -->
+        <dependency>
+            <groupId>io.quarkiverse.zeebe</groupId>
+            <artifactId>quarkus-zeebe-test</artifactId>
+            <version>1.6.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <finalName>remsfal-service</finalName>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus.platform</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

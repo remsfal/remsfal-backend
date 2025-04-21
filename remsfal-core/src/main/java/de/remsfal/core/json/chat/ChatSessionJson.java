@@ -1,19 +1,21 @@
 package de.remsfal.core.json.chat;
 
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import de.remsfal.core.immutable.ImmutableStyle;
-import de.remsfal.core.json.chat.ImmutableChatSessionJson;
 import de.remsfal.core.model.chat.ChatSessionModel;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Null;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
-import java.time.Instant;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
