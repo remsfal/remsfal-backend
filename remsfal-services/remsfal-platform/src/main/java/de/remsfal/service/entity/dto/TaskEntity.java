@@ -16,14 +16,9 @@ import jakarta.persistence.Table;
 @Table(name = "TASK")
 public class TaskEntity extends AbstractEntity implements TaskModel {
 
-    public enum TaskType {
-        TASK,
-        DEFECT
-    }
-
     @Column(name = "TYPE", nullable = false)
     @Enumerated(EnumType.STRING)
-    private TaskType type;
+    private Type type;
 
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable=false, length = 36)
     private String projectId;
@@ -53,11 +48,11 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Column(name = "CREATED_BY", columnDefinition = "char", length = 36)
     private String createdBy;
 
-    public TaskType getType() {
+    public Type getType() {
         return type;
     }
 
-    public void setType(final TaskType type) {
+    public void setType(final Type type) {
         this.type = type;
     }
 

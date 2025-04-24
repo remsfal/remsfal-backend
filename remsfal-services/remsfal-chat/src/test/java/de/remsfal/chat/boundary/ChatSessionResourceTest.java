@@ -41,8 +41,6 @@ import de.remsfal.chat.control.FileStorageService;
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
-import de.remsfal.chat.entity.dao.ChatSessionRepository.TaskType;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import io.minio.Result;
 import io.minio.messages.Item;
@@ -126,31 +124,31 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         super.setupTestMemberships();
         logger.info("Setting up chat sessions and messages");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
-            "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            "(project_id, task_id, session_id, created_at, participants) " +
+            "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatSessionCql,
             PROJECT_ID_1_UUID, TASK_ID_1_UUID, EXAMPLE_CHAT_SESSION_ID_1_UUID,
-            TaskType.TASK.name(), Status.OPEN.name(), Instant.now(),
+            Instant.now(),
             Map.of(
                 USER_ID_4_UUID, ParticipantRole.INITIATOR.name(),
                 USER_ID_3_UUID, ParticipantRole.HANDLER.name()));
         logger.info("Session 1 " + EXAMPLE_CHAT_SESSION_ID_1 +
             " created. " +
-            "On project " + TestData.PROJECT_ID_1 + " and " + TaskType.TASK.name() + ": TASK_ID_1.");
+            "On project " + TestData.PROJECT_ID_1 + ": TASK_ID_1.");
         logger.info("Session 1 participants: " + TestData.USER_ID_4 + " as " + ParticipantRole.INITIATOR.name() +
             " and " + TestData.USER_ID_3 + " as " + ParticipantRole.HANDLER.name());
         String insertChatSessionCql2 = "INSERT INTO remsfal.chat_sessions " +
-            "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            "(project_id, task_id, session_id, created_at, participants) " +
+            "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatSessionCql2,
             PROJECT_ID_1_UUID, TASK_ID_2_UUID, EXAMPLE_CHAT_SESSION_ID_2_UUID,
-            TaskType.DEFECT.name(), Status.OPEN.name(), Instant.now(),
+            Instant.now(),
             Map.of(
                 USER_ID_4_UUID, ParticipantRole.INITIATOR.name(),
                 USER_ID_3_UUID, ParticipantRole.HANDLER.name()));
         logger.info("Session 2 " + EXAMPLE_CHAT_SESSION_ID_2 +
             " created. " +
-            "On project " + TestData.PROJECT_ID + " and " + TaskType.DEFECT.name() + ": TASK_ID_2.");
+            "On project " + TestData.PROJECT_ID + ": TASK_ID_2.");
         logger.info("Session 2 participants: " + TestData.USER_ID_4 + " as " + ParticipantRole.INITIATOR.name() +
             " and " + TestData.USER_ID_3 + " as " + ParticipantRole.HANDLER.name());
         String insertChatMessageCql = "INSERT INTO remsfal.chat_messages " +
@@ -270,40 +268,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .get(path, TestData.PROJECT_ID_1, TASK_ID_1, nonExistingSessionId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
-    }
-
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status" })
-    void updateChatSessionStatus_FAILURE_INVALID_STATUS(String path) {
-        String invalidStatus = "INVALID_STATUS";
-        String jsonBody = "\"" + invalidStatus + "\"";
-
-        given()
-            .body(jsonBody)
-            .contentType(MediaType.APPLICATION_JSON)
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
-            .then()
-            .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status" })
-    void updateChatSessionStatus_INVALID_SESSION(String path) {
-
-        String newStatus = ChatSessionRepository.Status.CLOSED.name(); // "CLOSED"
-        String jsonBody = "\"" + newStatus + "\"";
-        logger.info("HERE STATUS: " + jsonBody);
-
-        given()
-            .body(jsonBody)
-            .contentType(MediaType.APPLICATION_JSON)
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
-            .then()
-            .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
@@ -480,23 +444,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
 
-    // success tests
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_DEFECT_PATH })
-    void createChatSession_OnDefect_SUCCESS(String path) {
-        given()
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(ContentType.JSON)
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_2)
-            .then()
-            .statusCode(Response.Status.CREATED.getStatusCode())
-            .contentType(ContentType.JSON)
-            .header("Location", Matchers.containsString(path.replace("{projectId}",
-                TestData.PROJECT_ID_1).replace("{defectId}", TASK_ID_2)))
-            .and().body("sessionId", notNullValue());
-    }
-
     @ParameterizedTest
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH })
     void createChatSession_OnTask_SUCCESS(String path) {
@@ -536,25 +483,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/status" })
-    void updateChatSessionStatus_SUCCESS(String path) {
-
-        String newStatus = ChatSessionRepository.Status.CLOSED.toString(); // "CLOSED"
-        // Wrap the status in quotes to form a valid JSON string
-        String jsonBody = "\"" + newStatus + "\"";
-
-        given()
-            .body(jsonBody)
-            .contentType(MediaType.APPLICATION_JSON)
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .body("status", equalTo(newStatus));
     }
 
     @ParameterizedTest
@@ -664,7 +592,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body("CHAT_SESSION_ID", equalTo(EXAMPLE_CHAT_SESSION_ID_1))
             .body("TASK_ID", equalTo(TASK_ID_1))
             .body("PROJECT_ID", equalTo(TestData.PROJECT_ID_1))
-            .body("TASK_TYPE", equalTo("TASK"))
             .body("messages[1].DATETIME", notNullValue())
             .body("messages[1].message_id", notNullValue())
             .body("messages[1].SENDER_ID", equalTo(TestData.USER_ID_3))
@@ -968,11 +895,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void uploadFile_ChatSessionClosed_FAILURE(String path) throws Exception {
         logger.info("expected session id: " + EXAMPLE_CHAT_SESSION_ID_1);
         logger.info("actual session id: " + EXAMPLE_CHAT_SESSION_ID_1_UUID);
-        chatSessionRepository.updateSessionStatus(
-            PROJECT_ID_1_UUID,
-            EXAMPLE_CHAT_SESSION_ID_1_UUID,
-            TASK_ID_1_UUID,
-            ChatSessionRepository.Status.CLOSED.name());
         Path tempFile = Files.createTempFile("test-file", ".txt");
         try {
             given()

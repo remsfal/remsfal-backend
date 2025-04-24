@@ -5,8 +5,6 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
-import de.remsfal.chat.entity.dao.ChatSessionRepository.TaskType;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -50,11 +48,10 @@ class ChatMessageRepositoryTest {
     void setUp() {
         logger.info("Setting up test data");
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
-                "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(project_id, task_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertSessionCql,
                 PROJECT_ID, TASK_ID, SESSION_ID,
-                TaskType.TASK.name(), Status.OPEN.name(),
                 Instant.now(),
                 Map.of(USER_ID_1, ParticipantRole.INITIATOR.name(), USER_ID_2, ParticipantRole.HANDLER.name()));
         logger.info("Test session created: " + SESSION_ID);
@@ -185,7 +182,6 @@ class ChatMessageRepositoryTest {
         assertTrue(exportedJson.contains(PROJECT_ID.toString()), "JSON should contain the project ID");
         assertTrue(exportedJson.contains(TASK_ID.toString()), "JSON should contain the task ID");
         assertTrue(exportedJson.contains(SESSION_ID.toString()), "JSON should contain the session ID");
-        assertTrue(exportedJson.contains("OPEN"), "JSON should contain the session status");
         assertTrue(exportedJson.contains(MESSAGE_CONTENT_1), "JSON should contain the first message content");
         assertTrue(exportedJson.contains(USER_ID_1.toString()), "JSON should contain the first user's ID");
         assertTrue(exportedJson.contains(ContentType.TEXT.name()), "JSON should contain the message type");

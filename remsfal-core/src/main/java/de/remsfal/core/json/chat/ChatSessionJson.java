@@ -40,16 +40,8 @@ public abstract class ChatSessionJson implements ChatSessionModel {
 
     @Nullable
     @Override
-    public abstract String getTaskType();
-
-    @Nullable
-    @Override
     @JsonIgnore
     public abstract Map<java.util.UUID, String> getParticipants();
-
-    @Nullable
-    @Override
-    public abstract String getStatus();
 
     @Null
     @Nullable
@@ -66,8 +58,6 @@ public abstract class ChatSessionJson implements ChatSessionModel {
                 .sessionId(model.getSessionId())
                 .projectId(model.getProjectId())
                 .taskId(model.getTaskId())
-                .taskType(model.getTaskType())
-                .status(model.getStatus())
                 .createdAt(model.getCreatedAt())
                 .modifiedAt(model.getModifiedAt())
                 .build();

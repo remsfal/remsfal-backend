@@ -19,7 +19,6 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import de.remsfal.core.json.project.SiteJson;
-import de.remsfal.core.json.project.SiteListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
@@ -30,20 +29,6 @@ import de.remsfal.core.validation.UUID;
 public interface SiteEndpoint {
 
     String SERVICE = "sites";
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information for all sites.")
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
-    SiteListJson getSites(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId
-    );
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

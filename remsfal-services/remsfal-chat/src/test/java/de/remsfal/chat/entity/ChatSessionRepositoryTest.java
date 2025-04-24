@@ -49,11 +49,10 @@ class ChatSessionRepositoryTest {
 
         logger.info("Setting up test data");
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
-                "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(project_id, task_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertSessionCql,
                 PROJECT_ID, TASK_ID, SESSION_ID,
-                ChatSessionRepository.TaskType.TASK.name(), ChatSessionRepository.Status.OPEN.name(),
                 Instant.now(),
                 Map.of(USER_ID_1, ChatSessionRepository.ParticipantRole.INITIATOR.name(), USER_ID_2,
                         ChatSessionRepository.ParticipantRole.HANDLER.name()));
@@ -86,12 +85,10 @@ class ChatSessionRepositoryTest {
         logger.info("Testing createChatSession with valid task type");
         ChatSessionEntity session = chatSessionRepository.createChatSession(PROJECT_ID,
                 TASK_ID,
-                "TASK", Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER"));
+                Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER"));
         assertNotNull(session, "Session should be created");
         assertEquals(PROJECT_ID, session.getProjectId(), "Project ID should match");
         assertEquals(TASK_ID, session.getTaskId(), "Task ID should match");
-        assertEquals("TASK", session.getTaskType(), "Task type should match");
-        assertEquals("OPEN", session.getStatus(), "Status should be OPEN");
         assertEquals(2, session.getParticipants().size(),
                 "Participants should match the initial value");
         assertNotNull(session.getCreatedAt(), "Created at should not be null");
@@ -99,33 +96,10 @@ class ChatSessionRepositoryTest {
     }
 
     @Test
-    void createChatSession_INVALID_TASK_TYPE() {
-        logger.info("Testing createChatSession with invalid task type");
-
-        Executable executable = () -> chatSessionRepository.createChatSession(
-                PROJECT_ID,
-                TASK_ID,
-                "INVALID_TASK_TYPE",
-                Map.of(USER_ID_1, "INITIATOR", USER_ID_2, "HANDLER")
-        );
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                executable);
-
-        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-
-        assertTrue(
-                exception.getMessage().contains("Invalid task type"),
-                "Exception message should contain 'Invalid task type'"
-        );
-    }
-
-
-    @Test
     void createChatSession_DATABASE_ERROR() {
         logger.info("Testing createChatSession with database error");
         Exception exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.createChatSession(null, null, "TASK", null));
+                chatSessionRepository.createChatSession(null, null, null));
         assertTrue(exception.getMessage().contains("An error occurred while creating the session"),
                 "Exception message should contain 'An error occurred while creating the session'");
     }
@@ -136,7 +110,7 @@ class ChatSessionRepositoryTest {
         Optional<ChatSessionEntity> session = chatSessionRepository
                 .findSessionById(PROJECT_ID, SESSION_ID, TASK_ID);
         assertTrue(session.isPresent(), "Session should exist in the database");
-        logger.info("Session found: " + session.get().getSessionId() + " - " + session.get().getStatus());
+        logger.info("Session found: " + session.get().getSessionId());
         assertEquals(SESSION_ID, session.get().getSessionId(), "Session ID should match");
     }
 
@@ -153,27 +127,6 @@ class ChatSessionRepositoryTest {
     }
 
     @Test
-    void findSessionStatusById_SUCCESS() {
-        logger.info("Testing findStatusById");
-        String status = chatSessionRepository
-                .findStatusById(PROJECT_ID, SESSION_ID, TASK_ID);
-        logger.info(SESSION_ID + " Status found: " + status);
-        assertEquals("OPEN", status, "Status should match the initial value");
-    }
-
-    @Test
-    void findSessionStatusById_FAILURE() {
-        logger.info("Testing findStatusById with random IDs to test failure scenario");
-        UUID randomProjectId = UUID.randomUUID();
-        UUID randomSessionId = UUID.randomUUID();
-        UUID randomTaskId = UUID.randomUUID();
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.findStatusById(randomProjectId, randomSessionId,randomTaskId));
-        System.out.println(exception.getMessage());
-        assertTrue(exception.getMessage().contains("An error occurred while fetching the status"));
-    }
-
-    @Test
     void findSessionParticipantsById_SUCCESS() {
         logger.info("Testing findParticipantsById");
         Map<UUID, String> participants = chatSessionRepository
@@ -182,26 +135,6 @@ class ChatSessionRepositoryTest {
             logger.info("Participant: " + entry.getKey() + " - " + entry.getValue());
         }
         assertEquals(2, participants.size(), "Participants should match the initial value");
-    }
-
-    @Test
-    void findTaskTypeById_SUCCESS() {
-        logger.info("Testing findTaskTypeById");
-        String taskType = chatSessionRepository.findTaskTypeById(PROJECT_ID, SESSION_ID, TASK_ID);
-        logger.info(SESSION_ID + " Task type found: " + taskType);
-        assertEquals("TASK", taskType, "Task type should match the initial value");
-    }
-
-    @Test
-    void findTaskTypeById_FAILURE() {
-        logger.info("Testing findTaskTypeById with random IDs to test failure scenario");
-        UUID randomProjectId = UUID.randomUUID();
-        UUID randomSessionId = UUID.randomUUID();
-        UUID randomTaskId = UUID.randomUUID();
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.findTaskTypeById(randomProjectId, randomSessionId, randomTaskId));
-        System.out.println(exception.getMessage());
-        assertTrue(exception.getMessage().contains("An error occurred while fetching the task type"));
     }
 
     @Test
@@ -239,34 +172,6 @@ class ChatSessionRepositoryTest {
                 chatSessionRepository.findParticipantRole(null, null, null, null));
         assertTrue(exception.getMessage().contains("An error occurred while fetching the participant role"),
                 "Exception message should contain 'An error occurred while fetching the participant role'");
-    }
-
-    @Test
-    void updateSessionStatus_SUCCESS() {
-        logger.info("Testing updateSessionStatus with valid data");
-        chatSessionRepository.updateSessionStatus(PROJECT_ID, SESSION_ID, TASK_ID, "CLOSED");
-        String status = chatSessionRepository.findStatusById(PROJECT_ID, SESSION_ID, TASK_ID);
-        assertEquals("CLOSED", status, "Status should be updated to CLOSED");
-    }
-
-    @Test
-    void updateSessionStatus_INVALID_STATUS() {
-        logger.info("Testing updateSessionStatus with invalid status");
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                chatSessionRepository.updateSessionStatus(PROJECT_ID, SESSION_ID, TASK_ID, "INVALID_STATUS"));
-        assertTrue(exception.getMessage().contains("Invalid status: "),
-                "Exception message should contain 'Invalid status'");
-    }
-
-    @Test
-    void updateSessionSatus_DATABASE_ERROR() {
-        logger.info("Testing updateSessionStatus with database error");
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.updateSessionStatus(null, null, null, "CLOSED"));
-        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-        logger.info("EXCEPTION EXPECTED: " + "An error occurred while updating the status");
-        assertTrue(exception.getMessage().contains("An error occurred while updating the status"),
-                "Exception message should contain 'An error occurred while updating the status'");
     }
 
     @Test
@@ -390,6 +295,5 @@ class ChatSessionRepositoryTest {
                 "Exception message should contain 'No participants found for the given projectId and sessionId'"
         );
     }
-
 
 }

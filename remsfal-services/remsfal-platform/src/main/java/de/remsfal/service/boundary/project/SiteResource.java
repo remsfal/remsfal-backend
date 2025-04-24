@@ -2,7 +2,6 @@ package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.SiteEndpoint;
 import de.remsfal.core.json.project.SiteJson;
-import de.remsfal.core.json.project.SiteListJson;
 import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.control.SiteController;
 
@@ -12,7 +11,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
-import java.util.List;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -22,13 +20,6 @@ public class SiteResource extends ProjectSubResource implements SiteEndpoint {
 
     @Inject
     SiteController controller;
-
-    @Override
-    public SiteListJson getSites(final String projectId, final String propertyId) {
-        checkReadPermissions(projectId);
-        List<? extends SiteModel> sites = controller.getSites(projectId, propertyId);
-        return SiteListJson.valueOf(sites);
-    }
 
     @Override
     public Response createSite(final String projectId, final String propertyId, final SiteJson site) {

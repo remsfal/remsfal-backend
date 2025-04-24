@@ -3,7 +3,6 @@ package de.remsfal.chat.control;
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
 import de.remsfal.core.model.chat.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
@@ -27,20 +26,12 @@ public class ChatSessionController {
     ChatMessageRepository chatMessageRepository;
 
     @Transactional
-    public ChatSessionModel createChatSession(String projectId, String taskId, String taskType, String userId) {
+    public ChatSessionModel createChatSession(String projectId, String taskId, String userId) {
         logger.infov("Creating chat session (projectId={0}, taskId={1})", projectId, taskId);
         Map<UUID, String> participants = Map.of(UUID.fromString(userId), ParticipantRole.INITIATOR.name());
         UUID projectUUID = UUID.fromString(projectId);
         UUID taskUUID = UUID.fromString(taskId);
-        return chatSessionRepository.createChatSession(projectUUID, taskUUID, taskType, participants);
-    }
-
-    public void updateChatSessionStatus(String projectId, String taskId, String sessionId, Status status) {
-        logger.infov("Updating chat session status (sessionId={0}, status={1})", sessionId, status);
-        UUID projectUUID = UUID.fromString(projectId);
-        UUID taskUUID = UUID.fromString(taskId);
-        UUID sessionUUID = UUID.fromString(sessionId);
-        chatSessionRepository.updateSessionStatus(projectUUID, sessionUUID, taskUUID, status.name());
+        return chatSessionRepository.createChatSession(projectUUID, taskUUID, participants);
     }
 
     public void addParticipant(String projectId, String taskId,

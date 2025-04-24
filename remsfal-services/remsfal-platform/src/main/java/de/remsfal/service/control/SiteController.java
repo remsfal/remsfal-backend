@@ -10,8 +10,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
-import java.util.List;
-
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -46,11 +44,6 @@ public class SiteController {
         repository.persistAndFlush(entity);
         repository.getEntityManager().refresh(entity);
         return getSite(projectId, entity.getId());
-    }
-
-    public List<? extends SiteModel> getSites(final String projectId, final String propertyId) {
-        logger.infov("Retrieving all sites (projectId={0}, propertyId={1}", projectId, propertyId);
-        return repository.findAllSites(projectId, propertyId);
     }
 
     public SiteModel getSite(final String projectId, final String siteId) {

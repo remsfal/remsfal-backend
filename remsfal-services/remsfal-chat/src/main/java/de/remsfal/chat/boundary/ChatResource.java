@@ -19,12 +19,7 @@ public class ChatResource implements ChatEndpoint {
     Instance<ChatSessionResource> chatSessionResource;
 
     @Override
-    public ChatSessionResource getTaskChatSessionResource() {
-        return resourceContext.initResource(chatSessionResource.get());
-    }
-
-    @Override
-    public ChatSessionResource getDefectChatSessionResource() {
+    public ChatSessionResource getChatSessionResource() {
         return resourceContext.initResource(chatSessionResource.get());
     }
 

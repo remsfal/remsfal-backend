@@ -11,13 +11,9 @@ public interface ChatSessionModel {
 
     UUID getProjectId();
 
-    UUID getSessionId();
-
     UUID getTaskId();
 
-    String getTaskType();
-
-    String getStatus();
+    UUID getSessionId();
 
     Map<UUID, String> getParticipants();
 

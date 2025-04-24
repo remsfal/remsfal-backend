@@ -15,11 +15,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.project.TaskModel.Status;
+import de.remsfal.core.model.project.TaskModel.Type;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
 import de.remsfal.service.entity.dao.TaskRepository;
 import de.remsfal.service.entity.dto.TaskEntity;
-import de.remsfal.service.entity.dto.TaskEntity.TaskType;
 
 @QuarkusTest
 class TaskRepositoryTest extends AbstractTest {
@@ -73,7 +73,7 @@ class TaskRepositoryTest extends AbstractTest {
 
     @Test
     void hashCode_SUCCESS_taskEntity() {
-        final List<TaskEntity> entities = repository.findTaskByProjectId(TaskType.DEFECT, TestData.PROJECT_ID);
+        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID);
         assertNotNull(entities);
         assertEquals(1, entities.size());
         assertTrue(entities.get(0).hashCode() != 0);
@@ -81,11 +81,11 @@ class TaskRepositoryTest extends AbstractTest {
     
     @Test
     void equals_SUCCESS_taskEntity() {
-        final List<TaskEntity> entities = repository.findTaskByProjectId(TaskType.DEFECT, TestData.PROJECT_ID);
+        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID);
         assertNotNull(entities);
         assertEquals(1, entities.size());
         
-        final List<TaskEntity> copy = repository.findTaskByProjectId(TaskType.DEFECT, TestData.PROJECT_ID, Status.PENDING);
+        final List<TaskEntity> copy = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID, Status.PENDING);
         assertNotNull(entities);
         assertEquals(copy.get(0), entities.get(0));
     }

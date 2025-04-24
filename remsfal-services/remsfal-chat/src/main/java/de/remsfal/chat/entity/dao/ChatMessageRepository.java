@@ -160,8 +160,6 @@ public class ChatMessageRepository {
         chatSessionJsonMap.put("CHAT_SESSION_ID", session.getSessionId());
         chatSessionJsonMap.put("TASK_ID", session.getTaskId());
         chatSessionJsonMap.put("PROJECT_ID", session.getProjectId());
-        chatSessionJsonMap.put("TASK_TYPE", session.getTaskType());
-        chatSessionJsonMap.put("STATUS", session.getStatus());
         chatSessionJsonMap.put("messages", messages.stream()
             .map(message -> mapChatMessageToJson(message, projectId, taskId))
             .collect(Collectors.toList()));

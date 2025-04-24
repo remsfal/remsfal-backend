@@ -52,27 +52,6 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .executeUpdate());
     }
 
-    @Test
-    void getSites_FAILED_noAuthentication() {
-        given()
-            .when()
-            .get(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
-            .then()
-            .statusCode(Status.UNAUTHORIZED.getStatusCode());
-    }
-
-    @Test
-    void getSites_SUCCESS_emptyListIsReturned() {
-        given()
-            .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("sites.size()", Matchers.is(0));
-    }
-
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = "{ \"title\":\"" + TestData.SITE_TITLE + "\","
         + "\"address\":{"
@@ -169,23 +148,6 @@ class SiteResourceTest extends AbstractProjectResourceTest {
             .and().body("address.country", Matchers.nullValue())
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION))
             .and().body("usableSpace", Matchers.equalTo(TestData.SITE_USABLE_SPACE));
-    }
-
-    @Test
-    void getSites_SUCCESS_siteCorrectlyReturned() {
-        setupTestSites();
-
-        given()
-            .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("sites.size()", Matchers.is(1))
-            .and().body("sites.id", Matchers.hasItems(TestData.SITE_ID))
-            .and().body("sites.name", Matchers.hasItems(TestData.SITE_TITLE))
-            .and().body("sites.title", Matchers.hasItems(TestData.SITE_TITLE));
     }
 
     @Test
