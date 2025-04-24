@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+#
+# TODO @Eyad Remove this with issue 
+# https://github.com/remsfal/remsfal-backend/issues/315
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-init" author="alexander.stanik@htw-berlin.de">
+        <createIndex tableName="DATABASECHANGELOG" indexName="IDX_DATE_ORDER_EXECUTED">
+            <column name="DATEEXECUTED"/>
+            <column name="ORDEREXECUTED"/>
+        </createIndex>
+        <addPrimaryKey tableName="DATABASECHANGELOG" constraintName="PK_DATABASECHANGELOG"
+                columnNames="ID,AUTHOR,FILENAME"/>
+    </changeSet>
+
+    <changeSet id="remsfal-backend-test" author="alexander.stanik@htw-berlin.de">
+        <createTable tableName="USER">
+            <column name="ID" type="char(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="TOKEN_ID" type="varchar(255)" />
+            <column name="EMAIL" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="FIRST_NAME" type="varchar(255)" />
+            <column name="LAST_NAME" type="varchar(255)" />
+        </createTable>
+
+        <addUniqueConstraint tableName="USER" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
+        <addUniqueConstraint tableName="USER" columnNames="TOKEN_ID" constraintName="UNIQUE_TOKEN_ID" />
+
+        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="USER">
+            <column name="EMAIL" type="varchar(255)" />
+        </createIndex>
+        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="USER">
+            <column name="TOKEN_ID" type="varchar(255)" />
+        </createIndex>
+
+        <createTable tableName="PROJECT_MEMBERSHIP">
+            <column name="PROJECT_ID" type="char(36)">
+                <constraints nullable="false" />
+            </column>
+            <column name="USER_ID" type="char(36)">
+                <constraints nullable="false" />
+            </column>
+            <column name="MEMBER_ROLE" type="ENUM('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="PROJECT_MEMBERSHIP" constraintName="PK_PROJECT_MEMBERSHIP"
+                columnNames="PROJECT_ID,USER_ID"/>
+    </changeSet>
+</databaseChangeLog>

@@ -44,7 +44,6 @@ import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.Status;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.TaskType;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
-import de.remsfal.core.model.project.TaskModel;
 import io.minio.Result;
 import io.minio.messages.Item;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -123,56 +122,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @BeforeEach
     protected void setup() throws Exception {
         logger.info("Setting up test data");
-        logger.info("Setting up test users and projects. User " + TestData.USER_ID +
-            " is the manager of all projects.");
         super.setupTestUsers();
-        logger.info("Setting up project memberships");
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-            .setParameter(1, TestData.PROJECT_ID_1)
-            .setParameter(2, TestData.USER_ID_2)
-            .setParameter(3, "STAFF")
-            .executeUpdate());
-        logger.info("User " + TestData.USER_ID_2 + " is a caretaker in project " + TestData.PROJECT_ID_1);
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-            .setParameter(1, TestData.PROJECT_ID_1)
-            .setParameter(2, TestData.USER_ID_3)
-            .setParameter(3, "LESSOR")
-            .executeUpdate());
-        logger.info("User " + TestData.USER_ID_3 + " is a lessor in project " + TestData.PROJECT_ID_1);
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-            .setParameter(1, TestData.PROJECT_ID_1)
-            .setParameter(2, TestData.USER_ID_4)
-            .setParameter(3, "PROPRIETOR")
-            .executeUpdate());
-        logger.info("User " + TestData.USER_ID_4 + " is a proprietor in project " + TestData.PROJECT_ID_1);
-        logger.info("Setting up tasks and defects on project " + TestData.PROJECT_ID_1);
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, DESCRIPTION, STATUS, CREATED_BY)"
-                +
-                " VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, TASK_ID_1)
-            .setParameter(2, "TASK")
-            .setParameter(3, TestData.PROJECT_ID_1)
-            .setParameter(4, TestData.TASK_TITLE_1)
-            .setParameter(5, TestData.TASK_DESCRIPTION_1)
-            .setParameter(6, TaskModel.Status.OPEN.name())
-            .setParameter(7, TestData.USER_ID)
-            .executeUpdate());
-        runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, DESCRIPTION, STATUS, CREATED_BY)"
-                +
-                " VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, TASK_ID_2)
-            .setParameter(2, "DEFECT")
-            .setParameter(3, TestData.PROJECT_ID_1)
-            .setParameter(4, "DEFECT TITLE")
-            .setParameter(5, "DEFECT DESCRIPTION")
-            .setParameter(6, TaskModel.Status.OPEN.name())
-            .setParameter(7, TestData.USER_ID)
-            .executeUpdate());
+        super.setupTestMemberships();
         logger.info("Setting up chat sessions and messages");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
             "(project_id, task_id, session_id, task_type, status, created_at, participants) " +
@@ -306,21 +257,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
-    }
-
-    // validation tests
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH })
-    void createChatSession_FAILURE_INVALID_TASK(String path) {
-        // invalid input - non-existing taskId in the database
-        String nonExistingTaskId = UUID.randomUUID().toString();
-        given()
-            .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(ContentType.JSON)
-            .post(path, TestData.PROJECT_ID_1, nonExistingTaskId)
-            .then()
-            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")

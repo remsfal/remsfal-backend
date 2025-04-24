@@ -1,7 +1,7 @@
 package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.core.api.AuthenticationEndpoint;
-import de.remsfal.core.authentication.TokenExpiredException;
+import de.remsfal.common.authentication.TokenExpiredException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;

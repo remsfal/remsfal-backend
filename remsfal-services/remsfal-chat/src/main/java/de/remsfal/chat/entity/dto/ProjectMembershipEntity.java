@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
@@ -19,13 +20,15 @@ import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 @Entity
 @Deprecated
 @NamedQuery(name = "ProjectMembershipEntity.findByProjectIdAndUserId",
-    query = "SELECT m FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
+    query = "SELECT m FROM ProjectMembershipEntity m WHERE m.projectId = :projectId AND m.userId = :userId")
 @Table(name = "PROJECT_MEMBERSHIP")
 public class ProjectMembershipEntity {
 
+    @Id
     @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, length = 36)
     public String projectId;
-    
+
+    @Id
     @Column(name = "USER_ID", columnDefinition = "char", nullable = false, length = 36)
     public String userId;
 

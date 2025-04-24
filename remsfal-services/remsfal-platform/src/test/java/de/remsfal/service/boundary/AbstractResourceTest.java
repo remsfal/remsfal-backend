@@ -1,17 +1,17 @@
 package de.remsfal.service.boundary;
 
+import java.time.Duration;
+import java.util.Map;
+
+import de.remsfal.common.authentication.SessionInfo;
+import de.remsfal.service.AbstractTest;
+import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.authentication.SessionManager;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Cookie;
 import jakarta.inject.Inject;
-import de.remsfal.core.authentication.SessionInfo;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
-import de.remsfal.service.boundary.authentication.SessionManager;
-
-import java.time.Duration;
-import java.util.Map;
 
 public abstract class AbstractResourceTest extends AbstractTest {
 

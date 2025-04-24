@@ -5,7 +5,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>remsfal-platform</artifactId>
-    <name>remsfal - Main Platform Service uber-JAR (jar)</name>
+    <name>remsfal - Main Platform Service (uber-jar)</name>
 
     <parent>
         <groupId>de.remsfal</groupId>
@@ -17,6 +17,7 @@
     <properties>
         <google.version>2.7.2</google.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>de.remsfal</groupId>
@@ -71,16 +72,21 @@
             <artifactId>quarkus-zeebe-test</artifactId>
             <version>1.6.0</version>
             <scope>test</scope>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.apache.logging.log4j</groupId>
+            		<artifactId>log4j-api</artifactId>
+            	</exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
+
     <build>
         <finalName>remsfal-service</finalName>
-        <testResources>
-            <testResource>
-                <directory>${project.basedir}/src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>io.quarkus.platform</groupId>

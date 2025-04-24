@@ -1,18 +1,17 @@
 package de.remsfal.service.boundary;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import de.remsfal.service.TestData;
-
 import static io.restassured.RestAssured.given;
 
 import java.time.Duration;
 
-import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.remsfal.service.TestData;
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
+import jakarta.ws.rs.core.Response.Status;
 
 @QuarkusTest
 class AddressResourceTest extends AbstractResourceTest {

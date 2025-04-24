@@ -5,7 +5,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>remsfal-chat</artifactId>
-    <name>remsfal - Chat Service uber-JAR (jar)</name>
+    <name>remsfal - Chat Service (uber-jar)</name>
 
     <parent>
         <groupId>de.remsfal</groupId>
@@ -25,6 +25,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>de.remsfal</groupId>
@@ -86,6 +87,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <finalName>remsfal-chat</finalName>
         <plugins>

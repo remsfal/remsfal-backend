@@ -104,8 +104,8 @@
                             </quarkus.jacoco.report-location>
                         </systemPropertyVariables>
                         <!-- includes>
-                            <include>AuthenticationResourceMockitoTest.java</include>
-                        </include -->
+                            <include>ApartmentResourceTest.java</include>
+                        </includes -->
                     </configuration>
                 </plugin>
                 <plugin>
@@ -122,7 +122,8 @@
                                     <native.image.path>
                                         ${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                                     <java.util.logging.manager>
-                                        org.jboss.logmanager.LogManager</java.util.logging.manager>
+                                        org.jboss.logmanager.LogManager
+                                    </java.util.logging.manager>
                                     <maven.home>${maven.home}</maven.home>
                                 </systemPropertyVariables>
                             </configuration>

@@ -5,7 +5,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>remsfal-notification</artifactId>
-    <name>remsfal - Notification Service uber-JAR (jar)</name>
+    <name>remsfal - Notification Service (uber-jar)</name>
 
     <parent>
         <groupId>de.remsfal</groupId>

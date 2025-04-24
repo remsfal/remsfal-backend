@@ -2,8 +2,9 @@ package de.remsfal.service.boundary;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+
+import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.api.AuthenticationEndpoint;
-import de.remsfal.core.authentication.UnauthorizedException;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 import de.remsfal.service.boundary.authentication.SessionManager;

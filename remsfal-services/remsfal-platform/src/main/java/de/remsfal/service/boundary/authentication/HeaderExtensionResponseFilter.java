@@ -1,7 +1,7 @@
 package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.core.api.AuthenticationEndpoint;
-import de.remsfal.core.authentication.TokenExpiredException;
+import de.remsfal.common.authentication.TokenExpiredException;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;

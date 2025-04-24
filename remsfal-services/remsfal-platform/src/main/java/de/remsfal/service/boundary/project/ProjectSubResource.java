@@ -6,7 +6,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
-import de.remsfal.core.authentication.RemsfalPrincipal;
+import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.service.control.ProjectController;
 

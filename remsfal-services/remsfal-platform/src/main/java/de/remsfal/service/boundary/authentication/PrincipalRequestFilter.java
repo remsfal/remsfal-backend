@@ -2,6 +2,15 @@ package de.remsfal.service.boundary.authentication;
 
 import java.io.IOException;
 
+import org.jboss.logging.Logger;
+
+import de.remsfal.common.authentication.RemsfalPrincipal;
+import de.remsfal.common.authentication.RemsfalSecurityContext;
+import de.remsfal.common.authentication.SessionInfo;
+import de.remsfal.common.authentication.UnauthorizedException;
+import de.remsfal.core.api.AuthenticationEndpoint;
+import de.remsfal.core.model.UserModel;
+import de.remsfal.service.control.UserController;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
@@ -14,16 +23,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
-
-import org.jboss.logging.Logger;
-
-import de.remsfal.core.api.AuthenticationEndpoint;
-import de.remsfal.core.authentication.RemsfalPrincipal;
-import de.remsfal.core.authentication.RemsfalSecurityContext;
-import de.remsfal.core.authentication.SessionInfo;
-import de.remsfal.core.authentication.UnauthorizedException;
-import de.remsfal.core.model.UserModel;
-import de.remsfal.service.control.UserController;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

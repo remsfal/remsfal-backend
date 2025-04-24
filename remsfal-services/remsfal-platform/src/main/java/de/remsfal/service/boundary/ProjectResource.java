@@ -14,7 +14,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ProjectEndpoint;
-import de.remsfal.core.authentication.RemsfalPrincipal;
+import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.model.ProjectModel;

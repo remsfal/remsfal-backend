@@ -315,26 +315,6 @@ class ChatSessionRepositoryTest {
     }
 
     @Test
-    void addParticipant_NONEXISTENT_USER() {
-        logger.info("Testing addParticipant with nonexistent user");
-        Executable executable = () -> chatSessionRepository.addParticipant(
-                PROJECT_ID,
-                SESSION_ID,
-                TASK_ID,
-                UUID.randomUUID(),
-                "OBSERVER"
-        );
-        RuntimeException exception = assertThrows(RuntimeException.class, executable);
-        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-        logger.info("EXCEPTION EXPECTED: User not found");
-        assertTrue(
-                exception.getMessage().contains("User not found"),
-                "Exception message should contain 'User not found'"
-        );
-    }
-
-
-    @Test
     void addParticipant_PARTICIPANT_ALREADY_EXISTS() {
         logger.info("Testing addParticipant with participant already exists");
         Exception exception = assertThrows(RuntimeException.class, () ->

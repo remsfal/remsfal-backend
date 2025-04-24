@@ -185,15 +185,13 @@ public class FileStorageServiceTest {
         MultipartFormDataInput input = createMultipartFormDataInput(fileName, contentType, fileContent);
         fileStorageService.uploadFile(BUCKET_NAME, input);
         String returnedContentType = fileStorageService.getContentType(BUCKET_NAME, fileName);
-        assertEquals("application/pdf", returnedContentType, "Content type should be application/pdf");
+        assertEquals("application/pdf", returnedContentType);
     }
 
     @Test
     public void testGetContentType_FileNotFound_Failure() {
         Exception thrown = assertThrows(Exception.class, () ->
                 fileStorageService.getContentType(BUCKET_NAME, "ghost-file.txt"));
-        System.out.println("actual exception thrown: " + thrown.getMessage());
-        System.out.println("expected exception message: " + "File does not exist");
         assertTrue(thrown.getMessage().contains("File does not exist"));
     }
 
@@ -201,8 +199,6 @@ public class FileStorageServiceTest {
     public void testGetContentType_BucketNotFound_Failure() {
         Exception thrown = assertThrows(Exception.class, () ->
                 fileStorageService.getContentType("non-existent-bucket", "file.txt"));
-        System.out.println("actual exception thrown: " + thrown.getMessage());
-        System.out.println("expected exception message: " + "Bucket does not exist");
         assertTrue(thrown.getMessage().contains("Bucket does not exist"));
     }
 
@@ -210,8 +206,6 @@ public class FileStorageServiceTest {
     public void testGetContentType_InvalidFileName_Failure() {
         Exception thrown = assertThrows(Exception.class, () ->
                 fileStorageService.getContentType(BUCKET_NAME, null));
-        System.out.println("actual exception thrown: " + thrown.getMessage());
-        System.out.println("expected exception message: " + "Error occurred while retrieving file metadata");
         assertTrue(thrown.getMessage().contains("Error occurred while retrieving file metadata"));
     }
 

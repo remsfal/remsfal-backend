@@ -1,9 +1,9 @@
 package de.remsfal.service.boundary.authentication;
 
-import de.remsfal.core.authentication.JWTManager;
-import de.remsfal.core.authentication.SessionInfo;
-import de.remsfal.core.authentication.TokenExpiredException;
-import de.remsfal.core.authentication.UnauthorizedException;
+import de.remsfal.common.authentication.JWTManager;
+import de.remsfal.common.authentication.SessionInfo;
+import de.remsfal.common.authentication.TokenExpiredException;
+import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
