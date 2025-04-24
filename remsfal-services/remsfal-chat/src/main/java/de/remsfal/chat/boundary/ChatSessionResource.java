@@ -592,8 +592,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     private Map<UUID, String> getParticipantsMap(String projectId, String sessionId, String taskId, String defectId) {
-        return (taskId == null || taskId.isBlank()) ? chatSessionController.getParticipants(projectId, defectId, sessionId) : chatSessionController.getParticipants(projectId,
-            taskId, sessionId);
+        return (taskId == null || taskId.isBlank())
+            ? chatSessionController.getParticipants(projectId, defectId, sessionId)
+            : chatSessionController.getParticipants(projectId, taskId, sessionId);
     }
 
     private void validateParticipant(Map<UUID, String> participants, UUID participantUUID) {
