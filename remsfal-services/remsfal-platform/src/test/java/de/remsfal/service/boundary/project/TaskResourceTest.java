@@ -7,7 +7,6 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import de.remsfal.service.TestData;
 
@@ -26,7 +25,6 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String TASK_PATH = BASE_PATH + "/tasks";
-    static final String DEFECT_PATH = BASE_PATH + "/defects";
 
     @BeforeEach
     protected void setupTestProjects() {
@@ -34,30 +32,26 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         super.setupTestProjects();
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void getTasks_FAILED_noAuthentication(String path) {
+    void getTasks_FAILED_noAuthentication() {
         given()
             .when()
-            .get(path, TestData.PROJECT_ID)
+            .get(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void createTask_SUCCESS_taskIsCreated(String path) {
+    void createTask_SUCCESS_taskIsCreated() {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\"}";
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
-            .header("location", Matchers.containsString(path.replace("{projectId}", TestData.PROJECT_ID)))
+            .header("location", Matchers.containsString(TASK_PATH.replace("{projectId}", TestData.PROJECT_ID)))
             .and().body("id", Matchers.notNullValue())
             .and().body("title", Matchers.equalTo(TestData.TASK_TITLE));
 
@@ -68,22 +62,18 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         assertEquals(1, enties);
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void createTask_FAILED_userIsNotMember(String path) {
+    void createTask_FAILED_userIsNotMember() {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void createTask_FAILED_idIsProvided(String path) {
+    void createTask_FAILED_idIsProvided() {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
             + "\"id\":\"anyId\"}";
         given()
@@ -91,27 +81,23 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void createTask_FAILED_noTitle(String path) {
+    void createTask_FAILED_noTitle() {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void getTask_SUCCESS_sameTaskIsReturned(String path) {
+    void getTask_SUCCESS_sameTaskIsReturned() {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
             + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
 
@@ -120,7 +106,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .thenReturn();
 
         final String taskId = res.then()
@@ -148,9 +134,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { DEFECT_PATH })
-    void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL(String path) {
+    void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL() {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
                 + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
 
@@ -159,7 +143,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
                 .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(json)
-                .post(path, TestData.PROJECT_ID)
+                .post(TASK_PATH, TestData.PROJECT_ID)
                 .thenReturn();
 
         final String taskId = res.then()
@@ -169,7 +153,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         given()
                 .when()
                 .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .get(path,TestData.PROJECT_ID)
+                .get(TASK_PATH, TestData.PROJECT_ID)
                 .then()
                 .statusCode(Status.OK.getStatusCode())
                 .contentType(ContentType.JSON)
@@ -178,15 +162,13 @@ class TaskResourceTest extends AbstractProjectResourceTest {
                 .and().body("tasks.status", Matchers.hasItems("PENDING"));
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void getTask_FAILED_userIsNotMember(String path) {
+    void getTask_FAILED_userIsNotMember() {
         final String taskId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -194,21 +176,19 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.OK.getStatusCode());
 
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-            .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void createTask_FAILED_userIsNotPrivileged(String path) {
+    void createTask_FAILED_userIsNotPrivileged() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
@@ -221,20 +201,18 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void updateTask_SUCCESS_descriptionIsUpdated(String path) {
+    void updateTask_SUCCESS_descriptionIsUpdated() {
         final String taskId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -244,7 +222,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.TASK_DESCRIPTION + "\"}")
-            .patch(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .patch(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -255,21 +233,19 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
     }
-    
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void updateTask_FAILED_userIsNotMember(String path) {
+
+    void updateTask_FAILED_userIsNotMember() {
         final String taskId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -279,20 +255,18 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.TASK_DESCRIPTION + "\"}")
-            .patch(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .patch(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void deleteTask_SUCCESS_taskIsdeleted(String path) {
+    void deleteTask_SUCCESS_taskIsdeleted() {
         final String taskId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -300,27 +274,25 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .delete(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void deleteTask_FAILED_userIsNotMember(String path) {
+    void deleteTask_FAILED_userIsNotMember() {
         final String taskId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -329,13 +301,13 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .delete(path + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .delete(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK", DEFECT_PATH + ",DEFECT" })
+    @CsvSource({ TASK_PATH + ",TASK"})
     void getTasks_SUCCESS_myTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -373,7 +345,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK", DEFECT_PATH + ",DEFECT" })
+    @CsvSource({ TASK_PATH + ",TASK"})
     void getTasks_SUCCESS_openTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -411,7 +383,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK", DEFECT_PATH + ",DEFECT" })
+    @CsvSource({ TASK_PATH + ",TASK"})
     void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -450,7 +422,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK", DEFECT_PATH + ",DEFECT" })
+    @CsvSource({ TASK_PATH + ",TASK"})
     void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -486,15 +458,13 @@ class TaskResourceTest extends AbstractProjectResourceTest {
             .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1, TestData.USER_ID_2));
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { TASK_PATH, DEFECT_PATH })
-    void getTasks_FAILED_userIsNotMember(String path) {
+    void getTasks_FAILED_userIsNotMember() {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(path, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -502,7 +472,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID)
+            .get(TASK_PATH, TestData.PROJECT_ID)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }

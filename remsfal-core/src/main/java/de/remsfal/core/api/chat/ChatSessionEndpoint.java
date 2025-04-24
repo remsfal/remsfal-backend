@@ -37,7 +37,9 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createChatSession(
             @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId);
+            @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId);
 
     @GET
     @Path("/{sessionId}")
@@ -51,6 +53,8 @@ public interface ChatSessionEndpoint {
     Response getChatSession(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @DELETE
@@ -65,24 +69,9 @@ public interface ChatSessionEndpoint {
     Response deleteChatSession(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId);
-
-    @PUT
-    @Path("/{sessionId}/status")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update chat session status")
-    @APIResponse(responseCode = "200", description = "Chat session status updated")
-    @APIResponse(responseCode = "400", description = "Invalid input")
-    @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
-    @APIResponse(responseCode = "500", description = "Internal server error")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response updateChatSessionStatus(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "New status for the chat session", required = true)
-            @Valid @NotNull String status);
 
     @POST
     @Path("/{sessionId}")
@@ -97,6 +86,8 @@ public interface ChatSessionEndpoint {
     Response joinChatSession(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @GET
@@ -111,6 +102,8 @@ public interface ChatSessionEndpoint {
     Response getParticipants(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @GET
@@ -125,9 +118,11 @@ public interface ChatSessionEndpoint {
     Response getParticipant(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The participant ID", required = true) @PathParam("participantId")
-            @NotNull @UUID String participantId);
+            @Parameter(description = "The participant ID", required = true)
+            @PathParam("participantId") @NotNull @UUID String participantId);
 
     @PUT
     @Path("/{sessionId}/participants/{participantId}")
@@ -142,6 +137,8 @@ public interface ChatSessionEndpoint {
     Response changeParticipantRole(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
             @Parameter(description = "The participant ID", required = true) @PathParam("participantId")
             @NotNull @UUID String participantId,
@@ -160,6 +157,8 @@ public interface ChatSessionEndpoint {
     Response removeParticipant(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
             @Parameter(description = "The participant ID to remove", required = true)
             @PathParam("participantId") @NotNull @UUID String participantId);
@@ -178,6 +177,8 @@ public interface ChatSessionEndpoint {
     Response sendMessage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
             @Parameter(description = "Message content", required = true) @Valid @NotNull ChatMessageJson message);
 
@@ -193,9 +194,11 @@ public interface ChatSessionEndpoint {
     Response getChatMessage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The chat message ID", required = true) @PathParam("messageId")
-            @NotNull @UUID String messageId) throws Exception;
+            @Parameter(description = "The chat message ID", required = true)
+            @PathParam("messageId") @NotNull @UUID String messageId) throws Exception;
 
     @PUT
     @Path("/{sessionId}/messages/{messageId}")
@@ -211,9 +214,11 @@ public interface ChatSessionEndpoint {
     Response updateChatMessage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The chat message ID", required = true) @PathParam("messageId")
-            @NotNull @UUID String messageId,
+            @Parameter(description = "The chat message ID", required = true)
+            @PathParam("messageId") @NotNull @UUID String messageId,
             @Parameter(description = "Updated message content", required = true)
             @Valid @NotNull ChatMessageJson message);
 
@@ -230,6 +235,8 @@ public interface ChatSessionEndpoint {
     Response deleteChatMessage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
             @Parameter(description = "The chat message ID to delete", required = true) @PathParam("messageId")
             @NotNull @UUID String messageId);
@@ -246,6 +253,8 @@ public interface ChatSessionEndpoint {
     Response getChatMessages(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @POST
@@ -262,6 +271,8 @@ public interface ChatSessionEndpoint {
     Response uploadFile(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
+            @Parameter(description = "ID of the task", required = true)
+            @PathParam("taskId") @NotNull @UUID String taskId,
             @PathParam("sessionId") @NotNull @UUID String sessionId,
             @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input);
 

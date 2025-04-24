@@ -61,7 +61,7 @@
             <column name="ID" type="char(36)">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="TYPE" type="ENUM('TASK', 'DEFECT')">
+            <column name="TYPE" type="ENUM('TASK', 'DEFECT', 'MAINTENANCE')">
                 <constraints nullable="false" />
             </column>
             <column name="PROJECT_ID" type="char(36)">

@@ -21,7 +21,6 @@ import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.BuildingResource;
 import de.remsfal.service.boundary.project.CommercialResource;
-import de.remsfal.service.boundary.project.DefectResource;
 import de.remsfal.service.boundary.project.GarageResource;
 import de.remsfal.service.boundary.project.MemberResource;
 import de.remsfal.service.boundary.project.PropertyResource;
@@ -72,9 +71,6 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<TaskResource> taskResource;
-
-    @Inject
-    Instance<DefectResource> defectResource;
 
     @Override
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
@@ -147,11 +143,6 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public TaskResource getTaskResource() {
         return resourceContext.initResource(taskResource.get());
-    }
-
-    @Override
-    public DefectResource getDefectResource() {
-        return resourceContext.initResource(defectResource.get());
     }
 
 }

@@ -2,7 +2,6 @@ package de.remsfal.core.api.chat;
 
 import jakarta.ws.rs.Path;
 
-import de.remsfal.core.api.project.DefectEndpoint;
 import de.remsfal.core.api.project.TaskEndpoint;
 
 /**
@@ -16,9 +15,6 @@ public interface ChatEndpoint {
     String SERVICE = "projects";
 
     @Path("/{projectId}/" + TaskEndpoint.SERVICE + "/{taskId}/" + ChatSessionEndpoint.SERVICE)
-    ChatSessionEndpoint getTaskChatSessionResource();
-
-    @Path("/{projectId}/" + DefectEndpoint.SERVICE + "/{taskId}/" + ChatSessionEndpoint.SERVICE)
-    ChatSessionEndpoint getDefectChatSessionResource();
+    ChatSessionEndpoint getChatSessionResource();
 
 }

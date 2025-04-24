@@ -22,8 +22,6 @@ public class ChatSessionEntity implements ChatSessionModel {
     @ClusteringColumn
     private UUID sessionId;
     private UUID taskId;
-    private String taskType;
-    private String status;
     private Map<UUID, String> participants;
     private Instant createdAt;
     private Instant modifiedAt;
@@ -55,24 +53,6 @@ public class ChatSessionEntity implements ChatSessionModel {
 
     public void setTaskId(UUID taskId) {
         this.taskId = taskId;
-    }
-
-    @Override
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
-
-    @Override
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     @Override
@@ -113,8 +93,6 @@ public class ChatSessionEntity implements ChatSessionModel {
         entity.setProjectId(row.getUuid("project_id"));
         entity.setSessionId(row.getUuid("session_id"));
         entity.setTaskId(row.getUuid("task_id"));
-        entity.setTaskType(row.getString("task_type"));
-        entity.setStatus(row.getString("status"));
         entity.setParticipants(row.getMap("participants", UUID.class, String.class));
         entity.setCreatedAt(row.getInstant("created_at"));
         entity.setModifiedAt(row.getInstant("modified_at"));

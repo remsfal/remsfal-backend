@@ -46,16 +46,6 @@ public class ChatSessionRepository {
     @Inject
     Logger logger;
 
-    public enum TaskType {
-        TASK,
-        DEFECT
-    }
-
-    public enum Status {
-        OPEN,
-        CLOSED
-    }
-
     public enum ParticipantRole {
         INITIATOR,
         HANDLER,
@@ -63,20 +53,13 @@ public class ChatSessionRepository {
     }
 
     public ChatSessionEntity createChatSession(UUID projectId,
-        UUID taskId,
-        String taskType,
-        Map<UUID, String> participants) {
+        UUID taskId, Map<UUID, String> participants) {
         try {
-            if (!TaskType.TASK.name().equals(taskType) && !TaskType.DEFECT.name().equals(taskType)) {
-                throw new IllegalArgumentException("Invalid task type: " + taskType);
-            }
             ChatSessionEntity session = new ChatSessionEntity();
             UUID sessionId = UUID.randomUUID();
             session.setProjectId(projectId);
             session.setSessionId(sessionId);
             session.setTaskId(taskId);
-            session.setTaskType(taskType);
-            session.setStatus("OPEN");
             session.setParticipants(participants);
             session.setCreatedAt(Instant.now());
             session.setModifiedAt(Instant.now());
@@ -182,35 +165,6 @@ public class ChatSessionRepository {
         }
     }
 
-    public void updateSessionStatus(UUID projectId, UUID sessionId, UUID taskId, String status) {
-        try {
-            Optional<ChatSessionEntity> session = findSessionById(projectId, sessionId, taskId);
-            if (session.isEmpty()) {
-                throw new IllegalArgumentException("Session " + sessionId.toString()
-                    + " doesn't exist.");
-            }
-            if (!Status.OPEN.name().equals(status) && !Status.CLOSED.name().equals(status)) {
-                throw new IllegalArgumentException("Invalid status: " + status);
-            }
-
-            if (Status.CLOSED.name().equals(status)) {
-                logger.info("Deleting chat messages for sessionId=" + sessionId);
-                chatMessageRepository.deleteMessagesFromSession(sessionId.toString());
-            }
-            Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                .setColumn(STATUS_COLUMN, QueryBuilder.literal(status))
-                .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
-                .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
-                .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
-            cqlSession.execute(updateQuery.build());
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("An error occurred while updating the status", e);
-        }
-    }
-
     public void addParticipant(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String role) {
         try {
             Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, taskId);
@@ -305,8 +259,6 @@ public class ChatSessionRepository {
             .value(PROJECT_ID_COLUMN, QueryBuilder.literal(session.getProjectId()))
             .value(SESSION_ID_COLUMN, QueryBuilder.literal(session.getSessionId()))
             .value(TASK_ID_COLUMN, QueryBuilder.literal(session.getTaskId()))
-            .value(TASK_TYPE_COLUMN, QueryBuilder.literal(session.getTaskType()))
-            .value(STATUS_COLUMN, QueryBuilder.literal(session.getStatus()))
             .value(PARTICIPANTS_COLUMN, QueryBuilder.literal(session.getParticipants()))
             .value("created_at", QueryBuilder.literal(session.getCreatedAt()))
             .value(MODIFIED_AT_COLUMN, QueryBuilder.literal(session.getModifiedAt()));

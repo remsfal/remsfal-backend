@@ -13,6 +13,14 @@ public interface TaskModel {
 
     String getTitle();
 
+    public enum Type {
+        TASK,
+        DEFECT,
+        MAINTENANCE
+    }
+
+    Type getType();
+
     public enum Status {
         PENDING,
         OPEN,
