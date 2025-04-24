@@ -100,10 +100,15 @@
                                     <directory>${maven.multiModuleProjectDirectory}</directory>
                                     <includes>
                                         <include>remsfal-core/${dataFile}</include>
-                                        <include>${serviceDirectory}/remsfal-common/${dataFile}</include>
-                                        <include>${serviceDirectory}/remsfal-notification/${dataFile}</include>
-                                        <include>${serviceDirectory}/remsfal-chat/${dataFile}</include>
-                                        <include>${serviceDirectory}/remsfal-platform/${dataFile}</include>
+                                    </includes>
+                                </fileSet>
+                                <fileSet>
+                                    <directory>${serviceDirectory}</directory>
+                                    <includes>
+                                        <include>remsfal-common/${dataFile}</include>
+                                        <include>remsfal-notification/${dataFile}</include>
+                                        <include>remsfal-chat/${dataFile}</include>
+                                        <include>remsfal-platform/${dataFile}</include>
                                     </includes>
                                 </fileSet>
                             </fileSets>

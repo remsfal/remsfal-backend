@@ -3,6 +3,8 @@ package de.remsfal.common.authentication;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTClaimsSet;
 
+import io.quarkus.test.junit.QuarkusTest;
+
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
@@ -12,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@QuarkusTest
 class SessionInfoTest {
 
     @Test
