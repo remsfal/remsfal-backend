@@ -1,0 +1,26 @@
+include:
+  - remsfal-chat/docker-compose.yml
+  - remsfal-platform/docker-compose.yml
+services:
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    networks:
+      - remsfal
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - '9090:9090'
+    networks:
+      - remsfal
+    volumes:
+      - "./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml"
+
+networks:
+  remsfal:
+    driver: bridge
