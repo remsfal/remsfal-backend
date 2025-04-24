@@ -23,6 +23,11 @@
         </dependency>
         <dependency>
             <groupId>de.remsfal</groupId>
+            <artifactId>remsfal-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.remsfal</groupId>
             <artifactId>remsfal-notification</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -33,10 +38,16 @@
         </dependency>
         <dependency>
             <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-service</artifactId>
+            <artifactId>remsfal-platform</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+    <properties>
+        <serviceDirectory>${maven.multiModuleProjectDirectory}/remsfal-services</serviceDirectory>
+        <dataFile>target/site/jacoco/jacoco.exec</dataFile>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -57,13 +68,16 @@
                                     <directory>${maven.multiModuleProjectDirectory}/remsfal-core/target/classes</directory>
                                 </resource>
                                 <resource>
-                                    <directory>${maven.multiModuleProjectDirectory}/remsfal-notification/target/classes</directory>
+                                    <directory>${serviceDirectory}/remsfal-common/target/classes</directory>
                                 </resource>
                                 <resource>
-                                    <directory>${maven.multiModuleProjectDirectory}/remsfal-chat/target/classes</directory>
+                                    <directory>${serviceDirectory}/remsfal-notification/target/classes</directory>
                                 </resource>
                                 <resource>
-                                    <directory>${maven.multiModuleProjectDirectory}/remsfal-service/target/classes</directory>
+                                    <directory>${serviceDirectory}/remsfal-chat/target/classes</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${serviceDirectory}/remsfal-platform/target/classes</directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -85,14 +99,20 @@
                                 <fileSet>
                                     <directory>${maven.multiModuleProjectDirectory}</directory>
                                     <includes>
-                                        <include>remsfal-core/target/site/jacoco/jacoco.exec</include>
-                                        <include>remsfal-notification/target/site/jacoco/jacoco.exec</include>
-                                        <include>remsfal-chat/target/site/jacoco/jacoco.exec</include>
-                                        <include>remsfal-service/target/site/jacoco/jacoco.exec</include>
+                                        <include>remsfal-core/${dataFile}</include>
+                                    </includes>
+                                </fileSet>
+                                <fileSet>
+                                    <directory>${serviceDirectory}</directory>
+                                    <includes>
+                                        <include>remsfal-common/${dataFile}</include>
+                                        <include>remsfal-notification/${dataFile}</include>
+                                        <include>remsfal-chat/${dataFile}</include>
+                                        <include>remsfal-platform/${dataFile}</include>
                                     </includes>
                                 </fileSet>
                             </fileSets>
-                            <destFile>${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec</destFile>
+                            <destFile>${maven.multiModuleProjectDirectory}/${dataFile}</destFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -103,7 +123,7 @@
                         <phase>verify</phase>
                         <configuration>
                             <title>remsfal-backend</title>
-                            <dataFile>${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.exec</dataFile>
+                            <dataFile>${maven.multiModuleProjectDirectory}/${dataFile}</dataFile>
                             <outputDirectory>${maven.multiModuleProjectDirectory}/target/site/jacoco</outputDirectory>
                         </configuration>
                     </execution>

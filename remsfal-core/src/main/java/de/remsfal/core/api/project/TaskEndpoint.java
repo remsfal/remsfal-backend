@@ -93,7 +93,4 @@ public interface TaskEndpoint {
         String projectId,
         @Parameter(description = "ID of the task", required = true) @PathParam("taskId") @NotNull @UUID String taskId);
 
-    @Path("/{taskId}/" + ChatEndpoint.SERVICE)
-    ChatEndpoint getChatSessionResource();
-
 }

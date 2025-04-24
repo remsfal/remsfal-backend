@@ -128,7 +128,4 @@ public interface DefectEndpoint {
         @PathParam("defectId") @NotNull @UUID String defectId
     );
 
-    @Path("/{defectId}/" + ChatEndpoint.SERVICE)
-    ChatEndpoint getChatSessionResource();
-
 }
