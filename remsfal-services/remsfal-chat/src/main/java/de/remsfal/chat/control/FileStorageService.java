@@ -24,6 +24,7 @@ import java.util.Set;
 import org.jboss.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
@@ -35,15 +36,14 @@ public class FileStorageService {
     private static final String DEFAULT_FILE_NAME = "unknown";
 
     private final Set<String> allowedTypes = Set.of(
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "text/plain",
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/json"
-    );
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "text/plain",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/json");
 
     @ConfigProperty(name = "%dev.quarkus.minio.url")
     String endpoint;
@@ -55,32 +55,31 @@ public class FileStorageService {
     MinioClient minioClient;
 
     public String uploadFile(String bucketName, MultipartFormDataInput input) {
-        try{
-        List<InputPart> inputParts = getFileInputParts(input);
-        if (inputParts == null || inputParts.isEmpty()) {
-            logger.error("File is null or empty");
-            throw new MinioException("File is null or empty");
-        }
-        InputPart inputPart = inputParts.get(0);
-        String originalFileName = extractFileName(inputPart.getHeaders());
-        String contentType = inputPart.getMediaType().toString();
-        if (!isValidContentType(contentType)) {
-            logger.error("Invalid file type: " + contentType);
-            throw new MinioException("Invalid file type: " + contentType);
-        }
-        InputStream inputStream = inputPart.getBody(InputStream.class, null);
+        try {
+            List<InputPart> inputParts = getFileInputParts(input);
+            if (inputParts == null || inputParts.isEmpty()) {
+                logger.error("File is null or empty");
+                throw new MinioException("File is null or empty");
+            }
+            InputPart inputPart = inputParts.get(0);
+            String originalFileName = extractFileName(inputPart.getHeaders());
+            String contentType = inputPart.getMediaType().toString();
+            if (!isValidContentType(contentType)) {
+                logger.error("Invalid file type: " + contentType);
+                throw new MinioException("Invalid file type: " + contentType);
+            }
+            InputStream inputStream = inputPart.getBody(InputStream.class, null);
             ensureBucketExists(bucketName);
             String finalFileName = generateUniqueFileName(bucketName, originalFileName);
 
             logger.infov("Uploading file {0} to bucket {1} as {2}", originalFileName, bucketName, finalFileName);
             minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(finalFileName)
-                            .stream(inputStream, -1, 10485760)
-                            .contentType(contentType)
-                            .build()
-            );
+                PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(finalFileName)
+                    .stream(inputStream, -1, 10485760)
+                    .contentType(contentType)
+                    .build());
             String fileUrl = constructFileUrl(bucketName, finalFileName);
             logger.infov("File uploaded successfully. URL: {0}", fileUrl);
             return fileUrl;
@@ -91,18 +90,18 @@ public class FileStorageService {
 
     public InputStream downloadFile(String bucketName, String objectName) {
         try {
-        logger.infov("Downloading file {0} from bucket {1}", objectName, bucketName);
-        if (!checkBucketExists(bucketName)) {
-            throw new MinioException("Bucket does not exist");
-        }
-        if (!objectExists(bucketName, objectName)) {
-            logger.errorv("File {0} does not exist in bucket {1}", objectName, bucketName);
-            throw new MinioException("File does not exist");
-        }
+            logger.infov("Downloading file {0} from bucket {1}", objectName, bucketName);
+            if (!checkBucketExists(bucketName)) {
+                throw new MinioException("Bucket does not exist");
+            }
+            if (!objectExists(bucketName, objectName)) {
+                logger.errorv("File {0} does not exist in bucket {1}", objectName, bucketName);
+                throw new MinioException("File does not exist");
+            }
             GetObjectArgs args = GetObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(objectName)
-                    .build();
+                .bucket(bucketName)
+                .object(objectName)
+                .build();
 
             InputStream stream = minioClient.getObject(args);
             logger.infov("File {0} from bucket {1} downloaded successfully!", objectName, bucketName);
@@ -115,19 +114,19 @@ public class FileStorageService {
 
     public String getContentType(String bucketName, String objectName) {
         try {
-        logger.infov("Retrieving metadata for file {0} in bucket {1}", objectName, bucketName);
-        if (!checkBucketExists(bucketName)) {
-            logger.warnv("Bucket {0} does not exist", bucketName);
-            throw new MinioException("Bucket does not exist");
-        }
-        if (!objectExists(bucketName, objectName)) {
-            logger.warnv("File {0} does not exist in bucket {1}", objectName, bucketName);
-            throw new MinioException("File does not exist");
-        }
+            logger.infov("Retrieving metadata for file {0} in bucket {1}", objectName, bucketName);
+            if (!checkBucketExists(bucketName)) {
+                logger.warnv("Bucket {0} does not exist", bucketName);
+                throw new MinioException("Bucket does not exist");
+            }
+            if (!objectExists(bucketName, objectName)) {
+                logger.warnv("File {0} does not exist in bucket {1}", objectName, bucketName);
+                throw new MinioException("File does not exist");
+            }
             StatObjectArgs args = StatObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(objectName)
-                    .build();
+                .bucket(bucketName)
+                .object(objectName)
+                .build();
 
             StatObjectResponse stat = minioClient.statObject(args);
             return stat.contentType();
@@ -135,14 +134,15 @@ public class FileStorageService {
             throw new RuntimeException("Error occurred while retrieving file metadata : " + e.getMessage(), e);
         }
     }
+
     public Iterable<Result<Item>> listObjects(String bucketName) {
         try {
-        if (!checkBucketExists(bucketName)) {
-            throw new MinioException("Bucket does not exist");
-        }
+            if (!checkBucketExists(bucketName)) {
+                throw new MinioException("Bucket does not exist");
+            }
             logger.infov("Listing objects in bucket {0}", bucketName);
             return minioClient.listObjects(ListObjectsArgs.builder()
-                    .bucket(bucketName).build());
+                .bucket(bucketName).build());
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while listing objects : " + e.getMessage(), e);
         }
@@ -150,11 +150,11 @@ public class FileStorageService {
 
     public void deleteObject(String bucketName, String objectName) {
         try {
-        if (!objectExists(bucketName, objectName)) {
-            logger.infov("Object {0} does not exist in bucket {1}", objectName, bucketName);
-            throw new MinioException("File does not exist");
-        }
-        logger.infov("Deleting object {0} from bucket {1}", objectName, bucketName);
+            if (!objectExists(bucketName, objectName)) {
+                logger.infov("Object {0} does not exist in bucket {1}", objectName, bucketName);
+                throw new MinioException("File does not exist");
+            }
+            logger.infov("Deleting object {0} from bucket {1}", objectName, bucketName);
             minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while deleting object : " + e.getMessage(), e);
@@ -188,18 +188,17 @@ public class FileStorageService {
                 throw new MinioException("Bucket does not exist");
             }
             logger.infov("Checking if object {0} exists in bucket {1}", objectName, bucketName);
-                minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(objectName).build());
-                logger.infov("Object {0} exists in bucket {1}", objectName, bucketName);
-                return true;
-            } catch (io.minio.errors.ErrorResponseException e) {
-                if (e.response().code() == 404) {
-                    logger.infov("Object {0} does not exist in bucket {1}", objectName, bucketName);
-                    return false;
-                }
-                logger.error("Error checking if object exists", e);
-                throw new MinioException("Error checking if object exists: " + e.getMessage());
-        }
-        catch (Exception e) {
+            minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(objectName).build());
+            logger.infov("Object {0} exists in bucket {1}", objectName, bucketName);
+            return true;
+        } catch (io.minio.errors.ErrorResponseException e) {
+            if (e.response().code() == 404) {
+                logger.infov("Object {0} does not exist in bucket {1}", objectName, bucketName);
+                return false;
+            }
+            logger.error("Error checking if object exists", e);
+            throw new MinioException("Error checking if object exists: " + e.getMessage());
+        } catch (Exception e) {
             throw new RuntimeException("Error occurred while checking if object exists : " + e.getMessage(), e);
         }
     }
@@ -237,7 +236,6 @@ public class FileStorageService {
         }
         return isValid;
     }
-
 
     private List<InputPart> getFileInputParts(MultipartFormDataInput input) {
         logger.infov("Retrieving file input parts: {0}", input);

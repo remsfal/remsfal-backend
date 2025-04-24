@@ -14,7 +14,7 @@ import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
- * @deprecated TODO @Eyad Remove this with issue 
+ * @deprecated TODO @Eyad Remove this with issue
  * https://github.com/remsfal/remsfal-backend/issues/315
  */
 @Entity

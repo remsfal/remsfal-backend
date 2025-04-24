@@ -45,22 +45,23 @@ public class ChatMessageRepository {
     Logger logger;
 
     public enum ContentType {
-        TEXT, FILE
+        TEXT,
+        FILE
     }
 
     public ChatMessageEntity findMessageById(String sessionId, String messageId) {
         try {
-            logger.info("SessionId: "+ sessionId + " messageId: " + messageId);
+            logger.info("SessionId: " + sessionId + " messageId: " + messageId);
             Select selectQuery = QueryBuilder.selectFrom(keyspace, ChatMessageRepository.TABLE)
-                    .all()
-                    .whereColumn(CHAT_SESSION_ID_COLUMN)
-                    .isEqualTo(QueryBuilder.literal(UUID.fromString(sessionId)))
-                    .whereColumn(MESSAGE_ID_COLUMN)
-                    .isEqualTo(QueryBuilder.literal(UUID.fromString(messageId)));
+                .all()
+                .whereColumn(CHAT_SESSION_ID_COLUMN)
+                .isEqualTo(QueryBuilder.literal(UUID.fromString(sessionId)))
+                .whereColumn(MESSAGE_ID_COLUMN)
+                .isEqualTo(QueryBuilder.literal(UUID.fromString(messageId)));
 
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             return resultSet.all().stream().map(ChatMessageEntity::mapRow).findFirst()
-                    .orElseThrow(() -> new RuntimeException("Message not found"));
+                .orElseThrow(() -> new RuntimeException("Message not found"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -107,7 +108,7 @@ public class ChatMessageRepository {
             ChatMessageEntity message = findMessageById(sessionId, messageId);
             if (!ContentType.TEXT.name().equals(message.getContentType())) {
                 throw new IllegalArgumentException("Cannot update non-text message " +
-                        "with updateTextChatMessage() method");
+                    "with updateTextChatMessage() method");
             }
             if (newContent.equals(message.getContent())) {
                 throw new IllegalArgumentException("Content is the same as the current content");
@@ -148,7 +149,7 @@ public class ChatMessageRepository {
 
     public String exportChatLogsAsJsonString(UUID projectId, UUID taskId, UUID sessionId) {
         Optional<ChatSessionEntity> sessionOpt =
-                chatSessionRepository.findSessionById(projectId, sessionId, taskId);
+            chatSessionRepository.findSessionById(projectId, sessionId, taskId);
         if (sessionOpt.isEmpty()) {
             throw new RuntimeException("Session not found");
         }
@@ -162,8 +163,8 @@ public class ChatMessageRepository {
         chatSessionJsonMap.put("TASK_TYPE", session.getTaskType());
         chatSessionJsonMap.put("STATUS", session.getStatus());
         chatSessionJsonMap.put("messages", messages.stream()
-                .map(message -> mapChatMessageToJson(message, projectId, taskId))
-                .collect(Collectors.toList()));
+            .map(message -> mapChatMessageToJson(message, projectId, taskId))
+            .collect(Collectors.toList()));
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -182,8 +183,8 @@ public class ChatMessageRepository {
         messageJsonMap.put(MESSAGE_ID_COLUMN, message.getMessageId());
         messageJsonMap.put("SENDER_ID", message.getSenderId());
         messageJsonMap.put("MEMBER_ROLE",
-                chatSessionRepository.findParticipantRole(projectId, message.getChatSessionId(),
-                        taskId, message.getSenderId()));
+            chatSessionRepository.findParticipantRole(projectId, message.getChatSessionId(),
+                taskId, message.getSenderId()));
         messageJsonMap.put("MESSAGE_TYPE", message.getContentType());
 
         if (message.getContentType().equals(ContentType.FILE.name())) {
@@ -194,12 +195,10 @@ public class ChatMessageRepository {
         return messageJsonMap;
     }
 
-
     public void deleteMessagesFromSession(String sessionId) {
         try {
             List<ChatMessageEntity> messages = findMessagesByChatSession(UUID.fromString(sessionId));
-            messages.forEach(message ->
-                    deleteMessage(UUID.fromString(sessionId), message.getMessageId()));
+            messages.forEach(message -> deleteMessage(UUID.fromString(sessionId), message.getMessageId()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -208,13 +207,13 @@ public class ChatMessageRepository {
     private void saveMessage(ChatMessageEntity message) {
         try {
             Insert insertQuery = QueryBuilder.insertInto(keyspace, ChatMessageRepository.TABLE)
-                    .value(CHAT_SESSION_ID_COLUMN, QueryBuilder.literal(message.getChatSessionId()))
-                    .value(MESSAGE_ID_COLUMN, QueryBuilder.literal(message.getMessageId()))
-                    .value("sender_id", QueryBuilder.literal(message.getSenderId()))
-                    .value("content_type", QueryBuilder.literal(message.getContentType()))
-                    .value("content", QueryBuilder.literal(message.getContent()))
-                    .value("url", QueryBuilder.literal(message.getUrl()))
-                    .value("created_at", QueryBuilder.literal(message.getCreatedAt()));
+                .value(CHAT_SESSION_ID_COLUMN, QueryBuilder.literal(message.getChatSessionId()))
+                .value(MESSAGE_ID_COLUMN, QueryBuilder.literal(message.getMessageId()))
+                .value("sender_id", QueryBuilder.literal(message.getSenderId()))
+                .value("content_type", QueryBuilder.literal(message.getContentType()))
+                .value("content", QueryBuilder.literal(message.getContent()))
+                .value("url", QueryBuilder.literal(message.getUrl()))
+                .value("created_at", QueryBuilder.literal(message.getCreatedAt()));
 
             cqlSession.execute(insertQuery.build());
         } catch (Exception e) {
@@ -224,28 +223,28 @@ public class ChatMessageRepository {
 
     private void update(ChatMessageEntity message) {
         Update updateQuery = QueryBuilder.update(keyspace, ChatMessageRepository.TABLE)
-                .setColumn("content", QueryBuilder.literal(message.getContent()))
-                .setColumn("url", QueryBuilder.literal(message.getUrl()))
-                .whereColumn(CHAT_SESSION_ID_COLUMN)
-                .isEqualTo(QueryBuilder.literal(message.getChatSessionId()))
-                .whereColumn(MESSAGE_ID_COLUMN)
-                .isEqualTo(QueryBuilder.literal(message.getMessageId()));
+            .setColumn("content", QueryBuilder.literal(message.getContent()))
+            .setColumn("url", QueryBuilder.literal(message.getUrl()))
+            .whereColumn(CHAT_SESSION_ID_COLUMN)
+            .isEqualTo(QueryBuilder.literal(message.getChatSessionId()))
+            .whereColumn(MESSAGE_ID_COLUMN)
+            .isEqualTo(QueryBuilder.literal(message.getMessageId()));
 
         cqlSession.execute(updateQuery.build());
     }
 
     private void deleteMessage(UUID chatSessionId, UUID messageId) {
         Delete deleteQuery = QueryBuilder.deleteFrom(keyspace, ChatMessageRepository.TABLE)
-                .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId))
-                .whereColumn(MESSAGE_ID_COLUMN).isEqualTo(QueryBuilder.literal(messageId));
+            .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId))
+            .whereColumn(MESSAGE_ID_COLUMN).isEqualTo(QueryBuilder.literal(messageId));
 
         cqlSession.execute(deleteQuery.build());
     }
 
     private List<ChatMessageEntity> findMessagesByChatSession(UUID chatSessionId) {
         Select selectQuery = QueryBuilder.selectFrom(keyspace, ChatMessageRepository.TABLE)
-                .all()
-                .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId));
+            .all()
+            .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId));
         ResultSet resultSet = cqlSession.execute(selectQuery.build());
         return resultSet.all().stream().map(ChatMessageEntity::mapRow).toList();
     }

@@ -16,10 +16,9 @@ public class ChatMessageController {
     @Inject
     ChatMessageRepository repository;
 
-    public ChatMessageEntity sendChatMessage(String sessionId, String userId, String contentType, String content)
-    {
+    public ChatMessageEntity sendChatMessage(String sessionId, String userId, String contentType, String content) {
         logger.infov("Sending chat message (sessionId={0}, userEntity={1}, contentType={2})",
-                sessionId, userId, contentType);
+            sessionId, userId, contentType);
         return repository.sendMessage(sessionId, userId, contentType, content);
     }
 
@@ -39,4 +38,3 @@ public class ChatMessageController {
     }
 
 }
-

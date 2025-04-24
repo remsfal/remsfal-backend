@@ -72,8 +72,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
             String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
-            TaskType taskType = (taskId != null && !taskId.isBlank())
-                ? TaskType.TASK : TaskType.DEFECT;
+            TaskType taskType = (taskId != null && !taskId.isBlank()) ? TaskType.TASK : TaskType.DEFECT;
             String associatedId = (taskId != null && !taskId.isBlank()) ? taskId : defectId;
 
             ChatSessionModel session = chatSessionController
@@ -98,12 +97,12 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             Optional<ChatSessionEntity> session = chatSessionController
-                        .getChatSession(projectId, id, sessionId);
+                .getChatSession(projectId, id, sessionId);
             if (session.isPresent())
                 return Response.ok()
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(ChatSessionJson.valueOf(session.get()))
-                        .build();
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(ChatSessionJson.valueOf(session.get()))
+                    .build();
             else
                 throw new NoSuchElementException(NOT_FOUND_SESSION_MESSAGE);
         } catch (NoSuchElementException e) {
@@ -132,7 +131,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     @Override
     public Response updateChatSessionStatus(final String projectId,
-                                            final String sessionId, String status) {
+        final String sessionId, String status) {
         try {
             checkWritePermissions(projectId);
             String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
@@ -146,15 +145,14 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 throw new BadRequestException("Status must be provided");
             }
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
-           chatSessionController.updateChatSessionStatus(projectId, id
-                    , sessionId, Status.valueOf(status));
+            chatSessionController.updateChatSessionStatus(projectId, id, sessionId, Status.valueOf(status));
             Optional<ChatSessionEntity> updatedSession =
-                    chatSessionController.getChatSession(projectId, id, sessionId);
+                chatSessionController.getChatSession(projectId, id, sessionId);
             if (updatedSession.isPresent())
                 return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatSessionJson.valueOf(updatedSession.get()))
-                .build();
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(ChatSessionJson.valueOf(updatedSession.get()))
+                    .build();
             else
                 throw new NoSuchElementException(NOT_FOUND_SESSION_MESSAGE);
         } catch (IllegalArgumentException e) {
@@ -170,16 +168,16 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     @Override
     public Response joinChatSession(final String projectId, final String sessionId) {
         try {
-        checkWritePermissions(projectId);
-        String userId = principal.getId(); // Get user ID from session
+            checkWritePermissions(projectId);
+            String userId = principal.getId(); // Get user ID from session
             String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
             String defectId = uri.getPathParameters().getFirst(DEFECT_ID_CONSTANT);
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             chatSessionController.addParticipant(projectId, id,
-                    sessionId, userId, ParticipantRole.OBSERVER);
+                sessionId, userId, ParticipantRole.OBSERVER);
             Map<UUID, String> participants =
-                    chatSessionController.getParticipants(projectId, id, sessionId);
+                chatSessionController.getParticipants(projectId, id, sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -204,7 +202,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             Map<UUID, String> participants =
-                        chatSessionController.getParticipants(projectId, id, sessionId);
+                chatSessionController.getParticipants(projectId, id, sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -228,10 +226,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             UUID participantUUID = UUID.fromString(participantId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             Map<UUID, String> participants =
-                    chatSessionController.getParticipants(projectId, id, sessionId);
+                chatSessionController.getParticipants(projectId, id, sessionId);
             if (participants.containsKey(participantUUID)) {
-                String json = jsonifyParticipantsMap
-                        (Map.of(participantUUID, participants.get(participantUUID)));
+                String json = jsonifyParticipantsMap(Map.of(participantUUID, participants.get(participantUUID)));
                 return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
                     .entity(json)
@@ -246,9 +243,10 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw e;
         }
     }
+
     @Override
     public Response changeParticipantRole(final String projectId, final String sessionId, final String participantId,
-                                          String role) {
+        String role) {
         try {
             checkWritePermissions(projectId);
             String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
@@ -257,16 +255,16 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             role = cleanRole(role);
             UUID participantUUID = UUID.fromString(participantId);
             Map<UUID, String> participants =
-                    getParticipantsMap(projectId, sessionId, taskId, defectId);
+                getParticipantsMap(projectId, sessionId, taskId, defectId);
             validateParticipant(participants, participantUUID);
             validateRole(role);
             updateParticipantRole(projectId, sessionId, taskId, defectId, participantId, role);
             validateRoleUpdate(projectId, sessionId, taskId, defectId, participantId, role);
             String json = jsonifyParticipantsMap(Map.of(participantUUID, role));
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(json)
-                    .build();
+                .type(MediaType.APPLICATION_JSON)
+                .entity(json)
+                .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
@@ -285,12 +283,12 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             UUID participantUUID = UUID.fromString(participantId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             Map<UUID, String> participants = chatSessionController
-                    .getParticipants(projectId, id, sessionId);
+                .getParticipants(projectId, id, sessionId);
             if (!participants.containsKey(participantUUID)) {
                 throw new NotFoundException("Participant not found");
             }
             chatSessionController
-                    .removeParticipant(projectId, id, sessionId, participantId);
+                .removeParticipant(projectId, id, sessionId, participantId);
             return Response.noContent().build();
         } catch (Exception e) {
             logger.error("Failed to remove participant from chat session", e);
@@ -300,8 +298,8 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     @Override
     public Response sendMessage(final String projectId,
-                                final String sessionId,
-                                final ChatMessageJson message) {
+        final String sessionId,
+        final ChatMessageJson message) {
         try {
             checkWritePermissions(projectId);
             String userId = principal.getId(); // Get user ID from session
@@ -315,7 +313,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             ChatMessageEntity entity = chatMessageController.sendChatMessage(
                 sessionId, userId, message.getContentType(), message.getContent());
             URI location = uri.getAbsolutePathBuilder()
-                    .path(entity.getMessageId().toString()).build();
+                .path(entity.getMessageId().toString()).build();
             return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(ChatMessageJson.valueOf(entity))
@@ -332,7 +330,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     @Override
     public Response getChatMessages(final String projectId,
-                                    final String sessionId) {
+        final String sessionId) {
         try {
             checkWritePermissions(projectId);
             String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
@@ -340,9 +338,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             validateTaskOrDefect(taskId, defectId);
             String id = (taskId == null || taskId.isBlank()) ? defectId : taskId;
             return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(chatSessionController.exportChatLogs(projectId, sessionId, id))
-                    .build();
+                .type(MediaType.APPLICATION_JSON)
+                .entity(chatSessionController.exportChatLogs(projectId, sessionId, id))
+                .build();
 
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
@@ -355,17 +353,17 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     @Override
     public Response getChatMessage(final String projectId,
-                                   final String sessionId,
-                                   final String messageId) {
+        final String sessionId,
+        final String messageId) {
         try {
             checkWritePermissions(projectId);
             ChatMessageEntity chatMessageEntity =
-                    chatMessageController.getChatMessage(sessionId, messageId);
+                chatMessageController.getChatMessage(sessionId, messageId);
             if (chatMessageEntity.getContentType().equals(ContentType.TEXT.name()))
                 return Response.ok()
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(ChatMessageJson.valueOf(chatMessageEntity))
-                        .build();
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(ChatMessageJson.valueOf(chatMessageEntity))
+                    .build();
             if (chatMessageEntity.getContentType().equals(ContentType.FILE.name())) {
                 // Extract the file URL and derive the file name
                 String fileUrl = chatMessageEntity.getUrl();
@@ -375,21 +373,21 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 InputStream fileStream = fileStorageService.downloadFile(bucketName, fileName);
                 // Stream the file content to the client as a binary response
                 return Response.ok((StreamingOutput) output -> {
-                            byte[] buffer = new byte[8192];
-                            int bytesRead;
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
 
-                            // Read chunks from the file and write them to the HTTP response
-                            while (true) {
-                                bytesRead = fileStream.read(buffer);
-                                if (bytesRead == -1) {
-                                    break; // End of file reached
-                                }
-                                output.write(buffer, 0, bytesRead);
-                            }
-                        })
-                        .type(MediaType.APPLICATION_OCTET_STREAM)
-                        .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                        .build();
+                    // Read chunks from the file and write them to the HTTP response
+                    while (true) {
+                        bytesRead = fileStream.read(buffer);
+                        if (bytesRead == -1) {
+                            break; // End of file reached
+                        }
+                        output.write(buffer, 0, bytesRead);
+                    }
+                })
+                    .type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .build();
             }
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
@@ -398,16 +396,15 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw e;
         }
         return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"message\": \"The file type is not recognized\"}")
-                .type(MediaType.APPLICATION_JSON)
-                .build();
+            .entity("{\"message\": \"The file type is not recognized\"}")
+            .type(MediaType.APPLICATION_JSON)
+            .build();
     }
 
     @Override
-    public Response updateChatMessage(final String projectId
-                                    , final String sessionId,
-                                      final String messageId,
-                                      final ChatMessageJson message) {
+    public Response updateChatMessage(final String projectId, final String sessionId,
+        final String messageId,
+        final ChatMessageJson message) {
         try {
             checkWritePermissions(projectId);
             int maxPayloadSize = 8000;
@@ -416,7 +413,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             }
             chatMessageController.updateTextChatMessage(sessionId, messageId, message.getContent());
             ChatMessageEntity updatedMessage =
-                    chatMessageController.getChatMessage(sessionId, messageId);
+                chatMessageController.getChatMessage(sessionId, messageId);
             if (updatedMessage.getContent().equals(message.getContent())) {
                 return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
@@ -435,8 +432,8 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     @Override
     public Response deleteChatMessage(
-            final String projectId,
-            final String sessionId, final String messageId) {
+        final String projectId,
+        final String sessionId, final String messageId) {
         try {
             checkWritePermissions(projectId);
             String taskId = uri.getPathParameters().getFirst(TASK_ID_CONSTANT);
@@ -457,12 +454,11 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
         }
     }
 
-
     @Override
     public Response uploadFile(
-            final String projectId,
-            final String sessionId,
-            final MultipartFormDataInput input){
+        final String projectId,
+        final String sessionId,
+        final MultipartFormDataInput input) {
         try {
             String userId = principal.getId();
             checkWritePermissions(projectId);
@@ -471,9 +467,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             if (fileParts == null || fileParts.isEmpty()) {
                 logger.error("No 'file' part found in the form data");
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"message\": \"No file part found in the form data\"}")
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
+                    .entity("{\"message\": \"No file part found in the form data\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
             }
 
             for (InputPart inputPart : fileParts) {
@@ -481,49 +477,47 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 if (!isFileNameValid(fileName)) {
                     logger.error("Invalid file name: " + fileName);
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity("{\"message\": \"Invalid file name: " + fileName + "\"}")
-                            .type(MediaType.APPLICATION_JSON)
-                            .build();
+                        .entity("{\"message\": \"Invalid file name: " + fileName + "\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
                 }
 
                 String contentType = inputPart.getMediaType().toString();
                 if (!isContentTypeValid(contentType)) {
                     logger.error("Invalid file type: " + contentType);
                     return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
-                            .entity("{\"message\": \"Unsupported Media Type: "
-                                    + contentType + "\"}")
-                            .type(MediaType.APPLICATION_JSON)
-                            .build();
+                        .entity("{\"message\": \"Unsupported Media Type: "
+                            + contentType + "\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
                 }
 
                 try (InputStream fileStream = inputPart.getBody(InputStream.class, null)) {
                     if (fileStream == null || fileStream.available() == 0) {
                         logger.error("File stream is null or empty");
                         return Response.status(Response.Status.BAD_REQUEST)
-                                .entity("{\"message\": \"Failed to read file stream: unknown\"}")
-                                .type(MediaType.APPLICATION_JSON)
-                                .build();
+                            .entity("{\"message\": \"Failed to read file stream: unknown\"}")
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
                     }
-
 
                     String fileUrl = fileStorageService.uploadFile(bucketName, input);
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
-                            .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
+                        .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
                     String mergedJson = String.format(
-                            "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
-                                    " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
-                            fileMetadataEntity.getMessageId(),
-                            fileUrl,
-                            fileMetadataEntity.getChatSessionId(),
-                            fileMetadataEntity.getCreatedAt(),
-                            fileMetadataEntity.getSenderId()
-                    );
+                        "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
+                            " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
+                        fileMetadataEntity.getMessageId(),
+                        fileUrl,
+                        fileMetadataEntity.getChatSessionId(),
+                        fileMetadataEntity.getCreatedAt(),
+                        fileMetadataEntity.getSenderId());
 
                     return Response.status(Response.Status.CREATED)
-                            .entity(mergedJson)
-                            .type(MediaType.APPLICATION_JSON)
-                            .build();
+                        .entity(mergedJson)
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
                 }
             }
 
@@ -535,11 +529,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
         }
     }
 
-
-
-
-
-    //---------------------Helper Methods---------------------
+    // ---------------------Helper Methods---------------------
 
     private String jsonifyParticipantsMap(Map<UUID, String> participants) {
         List<Map<String, String>> participantList = new ArrayList<>();
@@ -584,10 +574,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
         }
         // Normalize content type (remove charset if present)
         String normalizedContentType = contentType.split(";")[0].trim();
-        Set <String> allowedTypes = fileStorageService.getAllowedTypes();
+        Set<String> allowedTypes = fileStorageService.getAllowedTypes();
         return allowedTypes.contains(normalizedContentType);
     }
-
 
     private void validateTaskOrDefect(String taskId, String defectId) {
         if ((taskId == null || taskId.isBlank()) && (defectId == null || defectId.isBlank())) {
@@ -602,11 +591,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
         return role;
     }
 
-    private Map<UUID, String> getParticipantsMap
-            (String projectId, String sessionId, String taskId, String defectId) {
-        return (taskId == null || taskId.isBlank())
-                ? chatSessionController.getParticipants(projectId, defectId, sessionId)
-                : chatSessionController.getParticipants(projectId, taskId, sessionId);
+    private Map<UUID, String> getParticipantsMap(String projectId, String sessionId, String taskId, String defectId) {
+        return (taskId == null || taskId.isBlank()) ? chatSessionController.getParticipants(projectId, defectId, sessionId) : chatSessionController.getParticipants(projectId,
+            taskId, sessionId);
     }
 
     private void validateParticipant(Map<UUID, String> participants, UUID participantUUID) {
@@ -617,41 +604,37 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     private void validateRole(String role) {
         if (!role.equals(ParticipantRole.OBSERVER.name())
-                && !role.equals(ParticipantRole.HANDLER.name())
-                && !role.equals(ParticipantRole.INITIATOR.name())) {
+            && !role.equals(ParticipantRole.HANDLER.name())
+            && !role.equals(ParticipantRole.INITIATOR.name())) {
             throw new BadRequestException("Role must be provided or Invalid role");
         }
     }
 
-    private void updateParticipantRole
-            (String projectId, String sessionId, String taskId, String defectId,
-                                       String participantId, String role) {
+    private void updateParticipantRole(String projectId, String sessionId, String taskId, String defectId,
+        String participantId, String role) {
         if (taskId == null || taskId.isBlank()) {
             chatSessionController
-                    .updateParticipantRole(projectId, defectId, sessionId, participantId,
+                .updateParticipantRole(projectId, defectId, sessionId, participantId,
                     ParticipantRole.valueOf(role));
         } else {
             chatSessionController
-                    .updateParticipantRole(projectId, taskId, sessionId, participantId,
+                .updateParticipantRole(projectId, taskId, sessionId, participantId,
                     ParticipantRole.valueOf(role));
         }
     }
 
-    private void validateRoleUpdate
-            (String projectId, String sessionId, String taskId, String defectId,
-                                    String participantId, String role) {
+    private void validateRoleUpdate(String projectId, String sessionId, String taskId, String defectId,
+        String participantId, String role) {
         boolean roleUpdated = (taskId != null
-                && chatSessionController
+            && chatSessionController
                 .getParticipantRole(projectId, taskId, sessionId, participantId).equals(role))
-                || (defectId != null
+            || (defectId != null
                 && chatSessionController
-                .getParticipantRole(projectId, defectId, sessionId, participantId).equals(role));
+                    .getParticipantRole(projectId, defectId, sessionId, participantId).equals(role));
 
         if (!roleUpdated) {
             throw new InternalServerErrorException("Failed to change participant role");
         }
     }
-
-
 
 }
