@@ -38,7 +38,7 @@
         </dependency>
         <dependency>
             <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-service</artifactId>
+            <artifactId>remsfal-platform</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
