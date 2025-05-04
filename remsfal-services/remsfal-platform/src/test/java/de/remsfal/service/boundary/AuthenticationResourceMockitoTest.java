@@ -13,6 +13,7 @@ import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 
 import static io.restassured.RestAssured.given;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.when;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response.Status;
+
+import java.util.concurrent.TimeUnit;
 
 @QuarkusTest
 class AuthenticationResourceMockitoTest extends AbstractResourceTest {
@@ -115,13 +118,10 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .getSingleResult();
         assertEquals(1, enties);
         // TODO: Use Awaitility to test AuthenticationEvent
-        try {
-            Thread.sleep(3000);
-            assertEquals(1, observer.getNumberOfEvents());
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        await()
+            .atMost(5, TimeUnit.SECONDS)       // Maximum time to wait
+            .pollInterval(500, TimeUnit.MILLISECONDS) // frequency of checking
+            .until(() -> observer.getNumberOfEvents() == 1);  // Condition to wait for
     }
 
     @Test
