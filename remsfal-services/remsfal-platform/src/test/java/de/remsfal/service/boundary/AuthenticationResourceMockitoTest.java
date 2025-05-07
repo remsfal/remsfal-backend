@@ -117,7 +117,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .setParameter("email", TestData.USER_EMAIL_1)
             .getSingleResult();
         assertEquals(1, enties);
-        // TODO: Use Awaitility to test AuthenticationEvent
+
         await()
             .atMost(5, TimeUnit.SECONDS)       // Maximum time to wait
             .pollInterval(500, TimeUnit.MILLISECONDS) // frequency of checking
