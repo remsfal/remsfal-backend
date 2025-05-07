@@ -46,7 +46,9 @@
         <sonar.coverage.jacoco.xmlReportPaths>
             ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.java.checkstyle.reportPaths>${project.build.directory}/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
+        <sonar.java.checkstyle.reportPaths>
+            ${maven.multiModuleProjectDirectory}/target/checkstyle-result.xml
+        </sonar.java.checkstyle.reportPaths>
         <sonar.cpd.exclusions>
                 de.remsfal.service.entity.dto\**
         </sonar.cpd.exclusions>
@@ -141,15 +143,6 @@
                         <failsOnError>true</failsOnError>
                         <linkXRef>false</linkXRef>
                     </configuration>
-                    <executions>
-                        <execution>
-                            <id>validate</id>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.jboss.jandex</groupId>
