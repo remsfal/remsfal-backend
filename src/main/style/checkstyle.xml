@@ -25,6 +25,10 @@
     <module name="TreeWalker">
         <module name="AvoidStarImport" />
         <module name="Indentation">
+            <!-- Indentation level: 4 spaces per indentation level (matches formatter) -->
+            <property name="basicOffset" value="4"/>
+            <!-- Tab width: tabs are interpreted as 4 spaces (matches formatter) -->
+            <property name="tabWidth" value="4"/>
             <property name="forceStrictCondition" value="true"/>
             <property name="severity" value="warning"/>
         </module>
