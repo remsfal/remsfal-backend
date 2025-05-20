@@ -28,6 +28,7 @@
             <property name="forceStrictCondition" value="true"/>
             <property name="severity" value="warning"/>
         </module>
+        <module name="CommentsIndentation"/>
         <module name="AnnotationLocation">
             <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
             <property name="allowSamelineParameterizedAnnotation" value="false"/>
