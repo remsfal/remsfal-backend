@@ -4,6 +4,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
+import de.remsfal.chat.AbstractTest;
 import de.remsfal.chat.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -23,7 +24,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-class ChatSessionRepositoryTest {
+public class ChatSessionRepositoryTest extends AbstractTest {
 
     @Inject
     ChatSessionRepository chatSessionRepository;
@@ -46,7 +47,6 @@ class ChatSessionRepositoryTest {
     @BeforeEach
     @Transactional
     void setUp() {
-
         logger.info("Setting up test data");
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
                 "(project_id, task_id, session_id, created_at, participants) " +

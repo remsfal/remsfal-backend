@@ -2,6 +2,7 @@ package de.remsfal.chat.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
+import de.remsfal.chat.AbstractTest;
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @QuarkusTest
-class ChatMessageRepositoryTest {
+public class ChatMessageRepositoryTest extends AbstractTest {
 
     static final UUID PROJECT_ID = UUID.randomUUID();
     static final UUID TASK_ID = UUID.randomUUID();
