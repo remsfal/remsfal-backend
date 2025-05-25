@@ -18,10 +18,10 @@ public interface RentModel {
 
     LocalDate getLastPaymentDate();
 
-    Float getBasicRent();
+    Float getBasicRent(); // Nettokaltmiete
 
-    Float getOperatingCostsPrepayment();
+    Float getOperatingCostsPrepayment(); // Betriebskostenvorauszahlung
 
-    Float getHeatingCostsPrepayment();
+    Float getHeatingCostsPrepayment(); // Heizkostenvorauszahlung
 
 }

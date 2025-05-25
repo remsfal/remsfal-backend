@@ -16,6 +16,7 @@ import java.util.List;
 @JsonDeserialize(as = ImmutablePropertyJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class PropertyListJson {
+    // Validation is not required, because it is read-only.
 
     public abstract List<RentalUnitTreeNodeJson> getProperties();
 

@@ -1,4 +1,4 @@
-package de.remsfal.core.json.project;
+package de.remsfal.core.json.tenancy;
 
 import java.util.List;
 
@@ -15,11 +15,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "A list of tasks")
+@Schema(description = "A list of tasks from a tenant's perspective")
 @JsonDeserialize(as = ImmutableTaskListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TaskListJson {
-    // Validation is not required, because it is read-only.
+    // Validation is not required, because it is read-only for tenants.
 
     public abstract List<TaskItemJson> getTasks();
 

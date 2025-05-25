@@ -1,6 +1,8 @@
 package de.remsfal.service.control;
 
+import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.TenancyModel;
 import de.remsfal.service.entity.dto.RentEntity;
@@ -21,6 +23,16 @@ public class TenancyController {
 
     @Inject
     UserController userController;
+
+    public List<TenancyModel> getTenancies(RemsfalPrincipal principal) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public TenancyModel getTenancy(final UserModel tenant, final String tenancyId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     @Transactional(TxType.MANDATORY)
     public TenancyEntity updateTenancy(final String projectId, TenancyEntity entity, final TenancyModel tenancy) {

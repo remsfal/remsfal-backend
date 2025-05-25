@@ -1,10 +1,9 @@
-package de.remsfal.core.api.project;
+package de.remsfal.core.api.tenancy;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
@@ -20,8 +19,8 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.project.TaskJson;
-import de.remsfal.core.json.project.TaskListJson;
+import de.remsfal.core.json.tenancy.TaskJson;
+import de.remsfal.core.json.tenancy.TaskListJson;
 import de.remsfal.core.model.project.TaskModel.Status;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -39,10 +38,8 @@ public interface TaskEndpoint {
     @Operation(summary = "Retrieve information for all tasks.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     TaskListJson getTasks(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "Filter to return only tasks of a specific user")
-        @QueryParam("owner") @UUID String ownerId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
         @Parameter(description = "Filter to return only tasks with a specific status")
         @QueryParam("status") Status status);
 
@@ -53,8 +50,8 @@ public interface TaskEndpoint {
         headers = @Header(name = "Location", description = "URL of the new task"))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createTask(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
         @Parameter(description = "Task information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) TaskJson task);
 
@@ -65,8 +62,8 @@ public interface TaskEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The property does not exist")
     TaskJson getTask(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
         @Parameter(description = "ID of the task", required = true)
         @PathParam("taskId") @NotNull @UUID String taskId);
 
@@ -78,22 +75,11 @@ public interface TaskEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The task does not exist")
     TaskJson updateTask(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
         @Parameter(description = "ID of the task", required = true)
         @PathParam("taskId") @NotNull @UUID String taskId,
         @Parameter(description = "Task information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) TaskJson task);
-
-    @DELETE
-    @Path("/{taskId}")
-    @Operation(summary = "Delete an existing task.")
-    @APIResponse(responseCode = "204", description = "The task was deleted successfully")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    void deleteTask(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the task", required = true)
-        @PathParam("taskId") @NotNull @UUID String taskId);
 
 }

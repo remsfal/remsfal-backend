@@ -1,4 +1,4 @@
-package de.remsfal.core.json.project;
+package de.remsfal.core.json.tenancy;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +10,7 @@ import java.util.Date;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -23,7 +24,7 @@ import de.remsfal.core.validation.UUID;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "A task")
+@Schema(description = "A task from a tenant's perspective")
 @JsonDeserialize(as = ImmutableTaskJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TaskJson implements TaskModel {
@@ -35,6 +36,7 @@ public abstract class TaskJson implements TaskModel {
 
     @Null
     @Nullable
+    @JsonIgnore
     @Override
     public abstract String getProjectId();
 
@@ -55,6 +57,7 @@ public abstract class TaskJson implements TaskModel {
 
     @UUID
     @Nullable
+    @JsonIgnore
     @Override
     public abstract String getOwnerId();
 
@@ -64,16 +67,19 @@ public abstract class TaskJson implements TaskModel {
 
     @UUID
     @Nullable
+    @JsonIgnore
     @Override
     public abstract String getBlockedBy();
 
     @UUID
     @Nullable
+    @JsonIgnore
     @Override
     public abstract String getRelatedTo();
 
     @UUID
     @Nullable
+    @JsonIgnore
     @Override
     public abstract String getDuplicateOf();
 
@@ -84,23 +90,19 @@ public abstract class TaskJson implements TaskModel {
 
     @Null
     @Nullable
+    @JsonIgnore
     @Override
     public abstract Date getModifiedAt();
 
     public static TaskJson valueOf(final TaskModel model) {
+        // don't copy ignored fields
         return ImmutableTaskJson.builder()
                 .id(model.getId())
-                .projectId(model.getProjectId())
                 .title(model.getTitle())
                 .type(model.getType())
                 .status(model.getStatus())
-                .ownerId(model.getOwnerId())
                 .description(model.getDescription())
-                .blockedBy(model.getBlockedBy())
-                .relatedTo(model.getRelatedTo())
-                .duplicateOf(model.getDuplicateOf())
                 .createdAt(model.getCreatedAt())
-                .modifiedAt(model.getModifiedAt())
                 .build();
     }
 

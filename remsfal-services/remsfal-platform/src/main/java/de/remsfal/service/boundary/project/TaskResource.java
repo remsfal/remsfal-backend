@@ -25,7 +25,7 @@ public class TaskResource extends ProjectSubResource implements TaskEndpoint {
     TaskController taskController;
 
     @Override
-    public TaskListJson getTasks(String projectId, String ownerId, Status status) {
+    public TaskListJson getTasks(final String projectId, final String ownerId, final Status status) {
         checkReadPermissions(projectId);
         if(ownerId == null || ownerId.isBlank()) {
             return TaskListJson.valueOf(taskController.getTasks(projectId, Optional.ofNullable(status)));
@@ -35,7 +35,7 @@ public class TaskResource extends ProjectSubResource implements TaskEndpoint {
     }
 
     @Override
-    public Response createTasks(String projectId, TaskJson task) {
+    public Response createTask(final String projectId, final TaskJson task) {
         checkWritePermissions(projectId);
         final TaskModel model = taskController.createTask(projectId, principal, task);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
@@ -46,19 +46,19 @@ public class TaskResource extends ProjectSubResource implements TaskEndpoint {
     }
 
     @Override
-    public TaskJson getTask(String projectId, String taskId) {
+    public TaskJson getTask(final String projectId, final String taskId) {
         checkReadPermissions(projectId);
         return TaskJson.valueOf(taskController.getTask(projectId, taskId));
     }
 
     @Override
-    public TaskJson updateTask(String projectId, String taskId, TaskJson task) {
+    public TaskJson updateTask(final String projectId, final String taskId, final TaskJson task) {
         checkWritePermissions(projectId);
         return TaskJson.valueOf(taskController.updateTask(projectId, taskId, task));
     }
 
     @Override
-    public void deleteTask(String projectId, String taskId) {
+    public void deleteTask(final String projectId, final String taskId) {
         checkWritePermissions(projectId);
         taskController.deleteTask(projectId, taskId);
     }
