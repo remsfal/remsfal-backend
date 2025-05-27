@@ -7,16 +7,16 @@ import java.time.LocalDate;
  */
 public interface RentModel {
 
+    LocalDate getFirstPaymentDate();
+
+    LocalDate getLastPaymentDate();
+
     public enum BillingCycle {
         WEEKLY,
         MONTHLY;
     }
 
     BillingCycle getBillingCycle();
-
-    LocalDate getFirstPaymentDate();
-
-    LocalDate getLastPaymentDate();
 
     Float getBasicRent(); // Nettokaltmiete
 

@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -34,7 +33,6 @@ public abstract class TaskJson implements TaskModel {
     @Override
     public abstract String getId();
 
-    @Null
     @Nullable
     @JsonIgnore
     @Override
@@ -55,29 +53,27 @@ public abstract class TaskJson implements TaskModel {
     @Override
     public abstract Status getStatus();
 
-    @UUID
     @Nullable
     @JsonIgnore
     @Override
     public abstract String getOwnerId();
 
+    @NullOrNotBlank
+    @NotBlank(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract String getDescription();
 
-    @UUID
     @Nullable
     @JsonIgnore
     @Override
     public abstract String getBlockedBy();
 
-    @UUID
     @Nullable
     @JsonIgnore
     @Override
     public abstract String getRelatedTo();
 
-    @UUID
     @Nullable
     @JsonIgnore
     @Override
@@ -88,7 +84,6 @@ public abstract class TaskJson implements TaskModel {
     @Override
     public abstract Date getCreatedAt();
 
-    @Null
     @Nullable
     @JsonIgnore
     @Override

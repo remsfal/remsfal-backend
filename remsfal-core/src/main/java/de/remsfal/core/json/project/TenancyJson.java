@@ -40,7 +40,7 @@ public abstract class TenancyJson implements TenancyModel {
     @Valid
     @Nullable
     @Override
-    public abstract UserJson getTenant();
+    public abstract List<UserJson> getTenants();
 
     @Nullable
     @Override
@@ -57,7 +57,7 @@ public abstract class TenancyJson implements TenancyModel {
         return ImmutableTenancyJson.builder()
             .id(model.getId())
             .rent(RentJson.valueOfList(model.getRent()))
-            .tenant(UserJson.valueOf(model.getTenant()))
+            .tenants(model.getTenants().stream().map(UserJson::valueOf).toList())
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
             .build();

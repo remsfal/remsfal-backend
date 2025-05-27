@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 
 import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

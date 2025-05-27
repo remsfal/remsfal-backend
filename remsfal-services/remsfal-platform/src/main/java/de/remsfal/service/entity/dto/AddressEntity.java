@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import de.remsfal.core.model.AddressModel;
+import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

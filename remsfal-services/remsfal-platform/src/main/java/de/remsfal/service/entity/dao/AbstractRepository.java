@@ -1,12 +1,12 @@
 package de.remsfal.service.entity.dao;
 
-import de.remsfal.service.entity.dto.AbstractMetaDataEntity;
+import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-abstract class AbstractRepository<Entity extends AbstractMetaDataEntity>
+abstract class AbstractRepository<Entity extends MetaDataEntity>
     implements PanacheRepositoryBase<Entity, String> {
 
     protected static final String PARAM_ID = "id";

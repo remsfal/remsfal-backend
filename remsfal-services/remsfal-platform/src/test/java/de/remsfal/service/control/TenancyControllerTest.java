@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
-import de.remsfal.service.entity.dto.RentEntity;
+import de.remsfal.service.entity.dto.superclass.RentEntity;
 
 @QuarkusTest
 class TenancyControllerTest extends AbstractTest {

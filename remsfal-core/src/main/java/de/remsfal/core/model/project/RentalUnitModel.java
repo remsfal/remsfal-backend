@@ -11,8 +11,6 @@ public interface RentalUnitModel {
 
     String getDescription();
 
-    TenancyModel getTenancy();
-
     Float getUsableSpace();
 
 }
