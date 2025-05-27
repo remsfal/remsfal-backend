@@ -36,6 +36,42 @@ jobs:
         run: mvn --batch-mode --update-snapshots package
       - name: Verify JAR artifact exists
         run: ls -l remsfal-service/target/remsfal-service-runner.jar
+      
+      - name: Copy OpenAPI Specs
+        run: |
+          mkdir export
+          cp remsfal-services/remsfal-chat/target/openapi/* export/
+          cp remsfal-services/remsfal-notification/target/openapi/* export/
+          cp remsfal-services/remsfal-platform/target/openapi/* export/
+
+      - name: Clone target frontend repo
+        env:
+          TOKEN: ${{ secrets.PAT }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+
+          git clone https://x-access-token:${TOKEN}@github.com/<user>/<frontend-repo>.git target-repo
+          cd target-repo
+
+          git checkout -b sync-from-source || git checkout sync-from-source
+
+          cp -r ../export/* frontend/src/helper/openapi/
+
+          git add frontend/src/helper/openapi/
+          git commit -m "Update generated files from source repo" || echo "No changes to commit"
+          git push origin sync-from-source
+
+      - name: Push files to target repo via PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: "Automated OpenAPI Spec upload"
+          title: "Sync OpenAPI Spec"
+          body: "This PR contains updated OpenAPI Spec from the remsfal backend."
+          branch: sync-from-source
+          repository: Faust-toM/remsfal-frontend
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
