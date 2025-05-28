@@ -13,7 +13,7 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "GARAGE")
+@Table(name = "STORAGE")
 public class GarageEntity extends RentalUnitEntity implements GarageModel {
 
     @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)

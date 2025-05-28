@@ -95,7 +95,7 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_PROJECT_FK" tableName="TASK">
-            <column name="TYPE" type="ENUM('TASK', 'DEFECT')" />
+            <column name="TYPE" type="ENUM('TASK', 'DEFECT', 'MAINTENANCE')" />
             <column name="PROJECT_ID" type="char(36)" />
         </createIndex>
     </changeSet>

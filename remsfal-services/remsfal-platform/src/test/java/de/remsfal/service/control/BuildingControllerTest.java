@@ -322,7 +322,7 @@ class BuildingControllerTest extends AbstractTest {
             .getId();
         assertNotNull(buildingId);
         
-        final GarageModel garage = TestData.garageBuilder().build();
+        final GarageModel garage = TestData.storageBuilder().build();
         final GarageModel result = buildingController
             .createGarage(TestData.PROJECT_ID, buildingId, garage);
         
@@ -334,7 +334,7 @@ class BuildingControllerTest extends AbstractTest {
         
         final String garageId = entityManager
             .createQuery("SELECT g.id FROM GarageEntity g where g.title = :title", String.class)
-            .setParameter("title", TestData.GARAGE_TITLE)
+            .setParameter("title", TestData.STORAGE_TITLE)
             .getSingleResult();
         assertEquals(result.getId(), garageId);
 

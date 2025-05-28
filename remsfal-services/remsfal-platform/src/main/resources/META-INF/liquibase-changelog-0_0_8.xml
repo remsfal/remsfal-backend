@@ -8,23 +8,24 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-backend-0.0.5-site" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="SITE">
+    <changeSet id="remsfal-backend-0.1.0-storage" author="alexander.stanik@htw-berlin.de">
+        <createTable tableName="STORAGE">
             <column name="ID" type="char(36)">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="PROJECT_ID" type="char(36)">
                 <constraints nullable="false" />
             </column>
-            <column name="PROPERTY_ID" type="char(36)">
+            <column name="BUILDING_ID" type="char(36)">
                 <constraints nullable="false" />
              </column>
             <column name="TITLE" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="ADDRESS_ID" type="char(36)" />
+            <column name="LOCATION" type="varchar(255)" />
             <column name="DESCRIPTION" type="clob" />
-            <column name="USABLE_SPACE" type="decimal(10, 2)" />
+            <column name="TENANCY_ID" type="char(36)" />
+            <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
@@ -33,29 +34,29 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_SITE_PROJECT_ID"
-            baseTableName="SITE" baseColumnNames="PROJECT_ID"
+        <addForeignKeyConstraint constraintName="FK_STORAGE_PROJECT_ID"
+            baseTableName="STORAGE" baseColumnNames="PROJECT_ID"
             referencedTableName="PROJECT" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_SITE_PROPERTY_ID"
-            baseTableName="SITE" baseColumnNames="PROPERTY_ID"
-            referencedTableName="PROPERTY" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="FK_STORAGE_BUILDING_ID"
+            baseTableName="STORAGE" baseColumnNames="BUILDING_ID"
+            referencedTableName="BUILDING" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROJECT_FK" tableName="SITE">
+        <createIndex indexName="IDX_PROJECT_FK" tableName="STORAGE">
             <column name="PROJECT_ID" type="char(36)" />
         </createIndex>
 
-        <createIndex indexName="IDX_PROPERTY_FK" tableName="SITE">
-            <column name="PROPERTY_ID" type="char(36)" />
+        <createIndex indexName="IDX_BUILDING_FK" tableName="STORAGE">
+            <column name="BUILDING_ID" type="char(36)" />
         </createIndex>
 
-        <createTable tableName="SITE_RENT">
+        <createTable tableName="STORAGE_RENT">
             <column name="TENANCY_ID" type="char(36)">
                 <constraints nullable="false" />
             </column>
-            <column name="SITE_ID" type="char(36)">
+            <column name="STORAGE_ID" type="char(36)">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
@@ -74,17 +75,17 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_SITE_RENT_TENANCY_ID"
-            baseTableName="SITE_RENT" baseColumnNames="TENANCY_ID"
+        <addForeignKeyConstraint constraintName="FK_STORAGE_RENT_TENANCY_ID"
+            baseTableName="STORAGE_RENT" baseColumnNames="TENANCY_ID"
             referencedTableName="TENANCY" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_SITE_RENT_SITE_ID"
-            baseTableName="SITE_RENT" baseColumnNames="SITE_ID"
-            referencedTableName="SITE" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="FK_STORAGE_RENT_STORAGE_ID"
+            baseTableName="STORAGE_RENT" baseColumnNames="STORAGE_ID"
+            referencedTableName="STORAGE" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TENANCY_FK" tableName="SITE_RENT">
+        <createIndex indexName="IDX_TENANCY_FK" tableName="STORAGE_RENT">
             <column name="TENANCY_ID" type="char(36)" />
         </createIndex>
     </changeSet>

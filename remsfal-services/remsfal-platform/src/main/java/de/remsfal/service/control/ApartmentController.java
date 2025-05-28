@@ -70,9 +70,6 @@ public class ApartmentController {
         if (apartment.getUsableSpace() != null) {
             entity.setUsableSpace(apartment.getUsableSpace());
         }
-        if (apartment.getTenancy() != null) {
-            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), apartment.getTenancy()));
-        }
         return apartmentRepository.merge(entity);
     }
 

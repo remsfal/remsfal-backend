@@ -6,9 +6,9 @@ import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.core.json.project.ImmutableCommercialJson;
-import de.remsfal.core.json.project.ImmutableGarageJson;
 import de.remsfal.core.json.project.ImmutablePropertyJson;
 import de.remsfal.core.json.project.ImmutableSiteJson;
+import de.remsfal.core.json.project.ImmutableStorageJson;
 import de.remsfal.core.json.project.ImmutableTenancyJson;
 
 public class TestData {
@@ -383,54 +383,54 @@ public class TestData {
                 .heatingSpace(COMMERCIAL_HEATING_SPACE_2);
     }
 
-    // Default test garage
-    public static final String GARAGE_ID = TestData.GARAGE_ID_1;
-    public static final String GARAGE_TITLE = TestData.GARAGE_TITLE_1;
-    public static final String GARAGE_LOCATION = TestData.GARAGE_LOCATION_1;
-    public static final String GARAGE_DESCRIPTION = TestData.GARAGE_DESCRIPTION_1;
-    public static final Float GARAGE_USABLE_SPACE = TestData.GARAGE_USABLE_SPACE_1;
-    public static final Float GARAGE_RENT = TestData.GARAGE_RENT_1;
+    // Default test STORAGE
+    public static final String STORAGE_ID = TestData.STORAGE_ID_1;
+    public static final String STORAGE_TITLE = TestData.STORAGE_TITLE_1;
+    public static final String STORAGE_LOCATION = TestData.STORAGE_LOCATION_1;
+    public static final String STORAGE_DESCRIPTION = TestData.STORAGE_DESCRIPTION_1;
+    public static final Float STORAGE_USABLE_SPACE = TestData.STORAGE_USABLE_SPACE_1;
+    public static final Float STORAGE_RENT = TestData.STORAGE_RENT_1;
     
-    public static final ImmutableGarageJson.Builder garageBuilder() {
-        return garageBuilder1();
+    public static final ImmutableStorageJson.Builder storageBuilder() {
+        return storageBuilder();
     }
 
-    // Test garage 1
-    public static final String GARAGE_ID_1 = "b9440c43-b5c0-4951-9c22-000000000001";
-    public static final String GARAGE_TITLE_1 = "Tiefgarage 1";
-    public static final String GARAGE_LOCATION_1 = "1. Garage links";
-    public static final String GARAGE_DESCRIPTION_1 = "Tiefgarage";
-    public static final Float GARAGE_USABLE_SPACE_1 = 12.8f;
-    public static final Float GARAGE_RENT_1 = 80f;
+    // Test STORAGE 1
+    public static final String STORAGE_ID_1 = "b9440c43-b5c0-4951-9c22-000000000001";
+    public static final String STORAGE_TITLE_1 = "TiefSTORAGE 1";
+    public static final String STORAGE_LOCATION_1 = "1. STORAGE links";
+    public static final String STORAGE_DESCRIPTION_1 = "TiefSTORAGE";
+    public static final Float STORAGE_USABLE_SPACE_1 = 12.8f;
+    public static final Float STORAGE_RENT_1 = 80f;
 
     public static final Locale ADDRESS_LOCALE_1 = new Locale("DE");
 
-    public static final ImmutableGarageJson.Builder garageBuilder1() {
-        return ImmutableGarageJson
+    public static final ImmutableStorageJson.Builder storageBuilder1() {
+        return ImmutableStorageJson
         .builder()
-        .id(GARAGE_ID_1)
-        .title(GARAGE_TITLE_1)
-        .location(GARAGE_LOCATION_1)
-        .description(GARAGE_DESCRIPTION_1)
-        .usableSpace(GARAGE_USABLE_SPACE_1);
+        .id(STORAGE_ID_1)
+        .title(STORAGE_TITLE_1)
+        .location(STORAGE_LOCATION_1)
+        .description(STORAGE_DESCRIPTION_1)
+        .usableSpace(STORAGE_USABLE_SPACE_1);
     }
 
-    // Test garage 2
-    public static final String GARAGE_ID_2 = "b9440c43-b5c0-4951-9c22-000000000002";
-    public static final String GARAGE_TITLE_2 = "Tiefgarage 2";
-    public static final String GARAGE_LOCATION_2 = "2. Garage rechts";
-    public static final String GARAGE_DESCRIPTION_2 = "Tiefgarage";
-    public static final Float GARAGE_USABLE_SPACE_2 = 12.8f;
-    public static final Float GARAGE_RENT_2 = 80f;
+    // Test STORAGE 2
+    public static final String STORAGE_ID_2 = "b9440c43-b5c0-4951-9c22-000000000002";
+    public static final String STORAGE_TITLE_2 = "TiefSTORAGE 2";
+    public static final String STORAGE_LOCATION_2 = "2. STORAGE rechts";
+    public static final String STORAGE_DESCRIPTION_2 = "TiefSTORAGE";
+    public static final Float STORAGE_USABLE_SPACE_2 = 12.8f;
+    public static final Float STORAGE_RENT_2 = 80f;
 
-    public static final ImmutableGarageJson.Builder garageBuilder2() {
-        return ImmutableGarageJson
+    public static final ImmutableStorageJson.Builder storageBuilder2() {
+        return ImmutableStorageJson
         .builder()
-        .id(GARAGE_ID_2)
-        .title(GARAGE_TITLE_2)
-        .location(GARAGE_LOCATION_2)
-        .description(GARAGE_DESCRIPTION_2)
-        .usableSpace(GARAGE_USABLE_SPACE_2);
+        .id(STORAGE_ID_2)
+        .title(STORAGE_TITLE_2)
+        .location(STORAGE_LOCATION_2)
+        .description(STORAGE_DESCRIPTION_2)
+        .usableSpace(STORAGE_USABLE_SPACE_2);
     }
 
     // Default test task

@@ -64,9 +64,6 @@ public class CommercialController {
         if (commercial.getHeatingSpace() != null) {
             entity.setHeatingSpace(commercial.getHeatingSpace());
         }
-        if (commercial.getTenancy() != null){
-            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), commercial.getTenancy()));
-        }
         return commercialRepository.merge(entity);
     }
 

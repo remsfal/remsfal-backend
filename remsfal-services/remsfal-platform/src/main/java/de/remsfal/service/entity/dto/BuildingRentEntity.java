@@ -5,6 +5,7 @@ import java.util.Objects;
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
@@ -14,6 +15,7 @@ import jakarta.persistence.Table;
 @Table(name = "BUILDING_RENT")
 public class BuildingRentEntity extends RentEntity {
 
+    @Id
     @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String buildingId;
 

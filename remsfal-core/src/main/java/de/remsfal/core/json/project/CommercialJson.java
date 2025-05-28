@@ -57,10 +57,6 @@ public abstract class CommercialJson implements CommercialModel {
     @Override
     public abstract Float getHeatingSpace();
 
-    @Nullable
-    @Override
-    public abstract TenancyJson getTenancy();
-
     /**
      * Converts a {@link CommercialModel} to a {@link CommercialJson}.
      *
@@ -76,7 +72,6 @@ public abstract class CommercialJson implements CommercialModel {
                 .commercialSpace(model.getCommercialSpace())
                 .usableSpace(model.getUsableSpace())
                 .heatingSpace(model.getHeatingSpace())
-                .tenancy(TenancyJson.valueOf(model.getTenancy()))
                 .build();
     }
 

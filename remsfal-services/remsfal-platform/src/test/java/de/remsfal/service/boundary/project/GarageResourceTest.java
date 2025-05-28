@@ -35,10 +35,10 @@ class GarageResourceTest extends AbstractProjectResourceTest {
         "     \"country\": \"" + TestData.ADDRESS_COUNTRY + "\"" +
         " } }";
 
-    private static final String GARAGE_JSON = "{ \"title\": \"" + TestData.GARAGE_TITLE + "\"," +
-        " \"description\": \"" + TestData.GARAGE_DESCRIPTION + "\"," +
+    private static final String GARAGE_JSON = "{ \"title\": \"" + TestData.STORAGE_TITLE + "\"," +
+        " \"description\": \"" + TestData.STORAGE_DESCRIPTION + "\"," +
         " \"usableSpace\": " + 12.8f + "," +
-        " \"location\": \"" + TestData.GARAGE_LOCATION + "\" }";
+        " \"location\": \"" + TestData.STORAGE_LOCATION + "\" }";
 
     @BeforeEach
     protected void setupTestUsers() {
@@ -120,7 +120,7 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 garageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.GARAGE_TITLE));
+            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
     }
 
     @Test
@@ -147,7 +147,7 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 garageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.GARAGE_TITLE));
+            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
     }
 
     @Test
@@ -166,10 +166,10 @@ class GarageResourceTest extends AbstractProjectResourceTest {
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
 
-        final String updatedGarageJson = "{ \"title\": \"" + TestData.GARAGE_TITLE_2 + "\"," +
-            " \"description\": \"" + TestData.GARAGE_DESCRIPTION_2 + "\"," +
+        final String updatedGarageJson = "{ \"title\": \"" + TestData.STORAGE_TITLE_2 + "\"," +
+            " \"description\": \"" + TestData.STORAGE_DESCRIPTION_2 + "\"," +
             " \"usableSpace\": " + 15.5f + "," +
-            " \"location\": \"" + TestData.GARAGE_LOCATION_2 + "\" }";
+            " \"location\": \"" + TestData.STORAGE_LOCATION_2 + "\" }";
 
         given()
             .when()
@@ -190,10 +190,10 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 garageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.GARAGE_TITLE_2))
-            .body("description", org.hamcrest.Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
+            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE_2))
+            .body("description", org.hamcrest.Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
             .body("usableSpace", org.hamcrest.Matchers.equalTo(15.5f))
-            .body("location", org.hamcrest.Matchers.equalTo(TestData.GARAGE_LOCATION_2));
+            .body("location", org.hamcrest.Matchers.equalTo(TestData.STORAGE_LOCATION_2));
     }
 
     @Test

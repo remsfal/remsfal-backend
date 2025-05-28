@@ -9,6 +9,7 @@ import de.remsfal.core.model.project.RentModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 
 /**
@@ -17,9 +18,11 @@ import jakarta.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
+    @Id
     @Column(name = "TENANCY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String tenancyId;
 
+    @Id
     @Column(name = "FIRST_PAYMENT", columnDefinition = "date", nullable = false)
     private LocalDate firstPaymentDate;
 

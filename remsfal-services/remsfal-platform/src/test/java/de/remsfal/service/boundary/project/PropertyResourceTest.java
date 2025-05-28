@@ -102,8 +102,8 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1, TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1, TestData.COMMERCIAL_HEATING_SPACE_1);
 
-        insertGarage(TestData.GARAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_1, TestData.GARAGE_LOCATION_1, TestData.GARAGE_DESCRIPTION_1, TestData.GARAGE_USABLE_SPACE_1);
-        insertGarage(TestData.GARAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_2, TestData.GARAGE_LOCATION_2, TestData.GARAGE_DESCRIPTION_2, TestData.GARAGE_USABLE_SPACE_2);
+        insertGarage(TestData.STORAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_1, TestData.STORAGE_LOCATION_1, TestData.STORAGE_DESCRIPTION_1, TestData.STORAGE_USABLE_SPACE_1);
+        insertGarage(TestData.STORAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_2, TestData.STORAGE_LOCATION_2, TestData.STORAGE_DESCRIPTION_2, TestData.STORAGE_USABLE_SPACE_2);
 
 
         given()
@@ -142,14 +142,14 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .and().body("properties[1].children[0].children[2].data.type", Matchers.equalTo("COMMERCIAL"))
             .and().body("properties[1].children[0].children[2].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
             .and().body("properties[1].children[0].children[2].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.GARAGE_ID_1))
-            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("GARAGE"))
-            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_1))
-            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.GARAGE_ID_2))
-            .and().body("properties[1].children[0].children[4].data.type", Matchers.equalTo("GARAGE"))
-            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_2))
-            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
+            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.STORAGE_ID_1))
+            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("STORAGE"))
+            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_1))
+            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_1))
+            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.STORAGE_ID_2))
+            .and().body("properties[1].children[0].children[4].data.type", Matchers.equalTo("STORAGE"))
+            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
+            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
             .log().body();
     }
 

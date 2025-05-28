@@ -109,7 +109,7 @@ public interface BuildingEndpoint {
     @Path("/{buildingId}/" + CommercialEndpoint.SERVICE)
     CommercialEndpoint getCommercialResource();
 
-    @Path("/{buildingId}/" + GarageEndpoint.SERVICE)
-    GarageEndpoint getGarageResource();
+    @Path("/{buildingId}/" + StorageEndpoint.SERVICE)
+    StorageEndpoint getGarageResource();
 
 }

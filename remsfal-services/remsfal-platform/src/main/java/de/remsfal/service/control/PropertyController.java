@@ -153,7 +153,6 @@ public class PropertyController {
             .type(UnitType.BUILDING)
             .title(building.getTitle())
             .description(building.getDescription())
-            .tenant(building.getTenantName())
             .usableSpace(building.getUsableSpace())
             .build();
 
@@ -190,7 +189,6 @@ public class PropertyController {
             .type(type)
             .title(rentalUnit.getTitle())
             .description(rentalUnit.getDescription())
-            .tenant(rentalUnit.getTenantName())
             .usableSpace(rentalUnit.getUsableSpace())
             .build();
 
