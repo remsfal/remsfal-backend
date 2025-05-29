@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary.project;
+package de.remsfal.service.boundary.tenancy;
 
 import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.AbstractResourceTest;
@@ -17,7 +17,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-class CommercialResourceTest extends AbstractResourceTest {
+class TenancyResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/properties/{propertyId}/" +
         "buildings/{buildingId}/commercials";

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 
 @QuarkusTest
-class PropertyResourceTest extends AbstractProjectResourceTest {
+class PropertyResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects";
 
@@ -151,77 +152,6 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
             .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
             .log().body();
-    }
-
-    private void insertProperty(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .executeUpdate());
-    }
-
-    private void insertBuilding(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO BUILDING (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, LIVING_SPACE, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .setParameter(10, params[9])
-                .executeUpdate());
-    }
-
-    private void insertApartment(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .executeUpdate());
-    }
-
-    private void insertCommercial(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .executeUpdate());
-    }
-
-    private void insertStorage(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO STORAGE (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .executeUpdate());
     }
 
     @Test

@@ -1,7 +1,6 @@
 package de.remsfal.service;
 
 import java.time.LocalDate;
-import java.util.Locale;
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
@@ -62,15 +61,14 @@ public class TestData {
 
     // Test address 1
     public static final String ADDRESS_ID_1 = "00550c43-b5c0-4951-9c29-000000000001";
-    public static final String ADDRESS_STREET_1 = "Maximiliankorso 9901";
+    public static final String ADDRESS_STREET_1 = "Badstraße 12";
     public static final String ADDRESS_CITY_1 = "Berlin";
     public static final String ADDRESS_PROVINCE_1 = "Berlin";
-    public static final String ADDRESS_ZIP_1 = "13467";
+    public static final String ADDRESS_ZIP_1 = "13357";
     public static final String ADDRESS_COUNTRY_1 = "DE";
-    
+
     public static final ImmutableAddressJson.Builder addressBuilder1() {
-        return ImmutableAddressJson
-            .builder()
+        return ImmutableAddressJson.builder()
             .street(ADDRESS_STREET_1)
             .city(ADDRESS_CITY_1)
             .province(ADDRESS_PROVINCE_1)
@@ -80,20 +78,308 @@ public class TestData {
 
     // Test address 2
     public static final String ADDRESS_ID_2 = "00550c43-b5c0-4951-9c29-000000000002";
-    public static final String ADDRESS_STREET_2 = "Alexanderplatz 100";
+    public static final String ADDRESS_STREET_2 = "Turmstraße 34";
     public static final String ADDRESS_CITY_2 = "Berlin";
     public static final String ADDRESS_PROVINCE_2 = "Berlin";
-    public static final String ADDRESS_ZIP_2 = "10178";
+    public static final String ADDRESS_ZIP_2 = "10551";
     public static final String ADDRESS_COUNTRY_2 = "DE";
 
     public static final ImmutableAddressJson.Builder addressBuilder2() {
-        return ImmutableAddressJson
-                .builder()
-                .street(ADDRESS_STREET_2)
-                .city(ADDRESS_CITY_2)
-                .province(ADDRESS_PROVINCE_2)
-                .zip(ADDRESS_ZIP_2)
-                .countryCode(ADDRESS_COUNTRY_2);
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_2)
+            .city(ADDRESS_CITY_2)
+            .province(ADDRESS_PROVINCE_2)
+            .zip(ADDRESS_ZIP_2)
+            .countryCode(ADDRESS_COUNTRY_2);
+    }
+
+    // Test address 3
+    public static final String ADDRESS_ID_3 = "00550c43-b5c0-4951-9c29-000000000003";
+    public static final String ADDRESS_STREET_3 = "Chausseestraße 101";
+    public static final String ADDRESS_CITY_3 = "Berlin";
+    public static final String ADDRESS_PROVINCE_3 = "Berlin";
+    public static final String ADDRESS_ZIP_3 = "10115";
+    public static final String ADDRESS_COUNTRY_3 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder3() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_3)
+            .city(ADDRESS_CITY_3)
+            .province(ADDRESS_PROVINCE_3)
+            .zip(ADDRESS_ZIP_3)
+            .countryCode(ADDRESS_COUNTRY_3);
+    }
+
+    // Test address 4
+    public static final String ADDRESS_ID_4 = "00550c43-b5c0-4951-9c29-000000000004";
+    public static final String ADDRESS_STREET_4 = "Elisenstraße 7";
+    public static final String ADDRESS_CITY_4 = "München";
+    public static final String ADDRESS_PROVINCE_4 = "Bayern";
+    public static final String ADDRESS_ZIP_4 = "80335";
+    public static final String ADDRESS_COUNTRY_4 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder4() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_4)
+            .city(ADDRESS_CITY_4)
+            .province(ADDRESS_PROVINCE_4)
+            .zip(ADDRESS_ZIP_4)
+            .countryCode(ADDRESS_COUNTRY_4);
+    }
+
+    // Test address 5
+    public static final String ADDRESS_ID_5 = "00550c43-b5c0-4951-9c29-000000000005";
+    public static final String ADDRESS_STREET_5 = "Poststraße 3";
+    public static final String ADDRESS_CITY_5 = "Leipzig";
+    public static final String ADDRESS_PROVINCE_5 = "Sachsen";
+    public static final String ADDRESS_ZIP_5 = "04109";
+    public static final String ADDRESS_COUNTRY_5 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder5() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_5)
+            .city(ADDRESS_CITY_5)
+            .province(ADDRESS_PROVINCE_5)
+            .zip(ADDRESS_ZIP_5)
+            .countryCode(ADDRESS_COUNTRY_5);
+    }
+
+    // Test address 6
+    public static final String ADDRESS_ID_6 = "00550c43-b5c0-4951-9c29-000000000006";
+    public static final String ADDRESS_STREET_6 = "Seestraße 48";
+    public static final String ADDRESS_CITY_6 = "Berlin";
+    public static final String ADDRESS_PROVINCE_6 = "Berlin";
+    public static final String ADDRESS_ZIP_6 = "13353";
+    public static final String ADDRESS_COUNTRY_6 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder6() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_6)
+            .city(ADDRESS_CITY_6)
+            .province(ADDRESS_PROVINCE_6)
+            .zip(ADDRESS_ZIP_6)
+            .countryCode(ADDRESS_COUNTRY_6);
+    }
+
+    // Test address 7
+    public static final String ADDRESS_ID_7 = "00550c43-b5c0-4951-9c29-000000000007";
+    public static final String ADDRESS_STREET_7 = "Hafenstraße 23";
+    public static final String ADDRESS_CITY_7 = "Hamburg";
+    public static final String ADDRESS_PROVINCE_7 = "Hamburg";
+    public static final String ADDRESS_ZIP_7 = "20359";
+    public static final String ADDRESS_COUNTRY_7 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder7() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_7)
+            .city(ADDRESS_CITY_7)
+            .province(ADDRESS_PROVINCE_7)
+            .zip(ADDRESS_ZIP_7)
+            .countryCode(ADDRESS_COUNTRY_7);
+    }
+
+    // Test address 8
+    public static final String ADDRESS_ID_8 = "00550c43-b5c0-4951-9c29-000000000008";
+    public static final String ADDRESS_STREET_8 = "Neue Straße 9";
+    public static final String ADDRESS_CITY_8 = "Ulm";
+    public static final String ADDRESS_PROVINCE_8 = "Baden-Württemberg";
+    public static final String ADDRESS_ZIP_8 = "89073";
+    public static final String ADDRESS_COUNTRY_8 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder8() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_8)
+            .city(ADDRESS_CITY_8)
+            .province(ADDRESS_PROVINCE_8)
+            .zip(ADDRESS_ZIP_8)
+            .countryCode(ADDRESS_COUNTRY_8);
+    }
+
+    // Test address 9
+    public static final String ADDRESS_ID_9 = "00550c43-b5c0-4951-9c29-000000000009";
+    public static final String ADDRESS_STREET_9 = "Münchner Straße 22";
+    public static final String ADDRESS_CITY_9 = "Frankfurt am Main";
+    public static final String ADDRESS_PROVINCE_9 = "Hessen";
+    public static final String ADDRESS_ZIP_9 = "60329";
+    public static final String ADDRESS_COUNTRY_9 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder9() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_9)
+            .city(ADDRESS_CITY_9)
+            .province(ADDRESS_PROVINCE_9)
+            .zip(ADDRESS_ZIP_9)
+            .countryCode(ADDRESS_COUNTRY_9);
+    }
+
+    // Test address 10
+    public static final String ADDRESS_ID_10 = "00550c43-b5c0-4951-9c29-000000000010";
+    public static final String ADDRESS_STREET_10 = "Berliner Straße 81";
+    public static final String ADDRESS_CITY_10 = "Hamburg";
+    public static final String ADDRESS_PROVINCE_10 = "Hamburg";
+    public static final String ADDRESS_ZIP_10 = "22049";
+    public static final String ADDRESS_COUNTRY_10 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder10() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_10)
+            .city(ADDRESS_CITY_10)
+            .province(ADDRESS_PROVINCE_10)
+            .zip(ADDRESS_ZIP_10)
+            .countryCode(ADDRESS_COUNTRY_10);
+    }
+
+    // Test address 11
+    public static final String ADDRESS_ID_11 = "00550c43-b5c0-4951-9c29-000000000011";
+    public static final String ADDRESS_STREET_11 = "Theaterstraße 4";
+    public static final String ADDRESS_CITY_11 = "Aachen";
+    public static final String ADDRESS_PROVINCE_11 = "Nordrhein-Westfalen";
+    public static final String ADDRESS_ZIP_11 = "52062";
+    public static final String ADDRESS_COUNTRY_11 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder11() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_11)
+            .city(ADDRESS_CITY_11)
+            .province(ADDRESS_PROVINCE_11)
+            .zip(ADDRESS_ZIP_11)
+            .countryCode(ADDRESS_COUNTRY_11);
+    }
+
+    // Test address 12
+    public static final String ADDRESS_ID_12 = "00550c43-b5c0-4951-9c29-000000000012";
+    public static final String ADDRESS_STREET_12 = "Opernplatz 1";
+    public static final String ADDRESS_CITY_12 = "Frankfurt am Main";
+    public static final String ADDRESS_PROVINCE_12 = "Hessen";
+    public static final String ADDRESS_ZIP_12 = "60313";
+    public static final String ADDRESS_COUNTRY_12 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder12() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_12)
+            .city(ADDRESS_CITY_12)
+            .province(ADDRESS_PROVINCE_12)
+            .zip(ADDRESS_ZIP_12)
+            .countryCode(ADDRESS_COUNTRY_12);
+    }
+
+    // Test address 13
+    public static final String ADDRESS_ID_13 = "00550c43-b5c0-4951-9c29-000000000013";
+    public static final String ADDRESS_STREET_13 = "Goethestraße 45";
+    public static final String ADDRESS_CITY_13 = "Frankfurt am Main";
+    public static final String ADDRESS_PROVINCE_13 = "Hessen";
+    public static final String ADDRESS_ZIP_13 = "60313";
+    public static final String ADDRESS_COUNTRY_13 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder13() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_13)
+            .city(ADDRESS_CITY_13)
+            .province(ADDRESS_PROVINCE_13)
+            .zip(ADDRESS_ZIP_13)
+            .countryCode(ADDRESS_COUNTRY_13);
+    }
+
+    // Test address 14
+    public static final String ADDRESS_ID_14 = "00550c43-b5c0-4951-9c29-000000000014";
+    public static final String ADDRESS_STREET_14 = "Lessingstraße 12";
+    public static final String ADDRESS_CITY_14 = "Dresden";
+    public static final String ADDRESS_PROVINCE_14 = "Sachsen";
+    public static final String ADDRESS_ZIP_14 = "01069";
+    public static final String ADDRESS_COUNTRY_14 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder14() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_14)
+            .city(ADDRESS_CITY_14)
+            .province(ADDRESS_PROVINCE_14)
+            .zip(ADDRESS_ZIP_14)
+            .countryCode(ADDRESS_COUNTRY_14);
+    }
+
+    // Test address 15
+    public static final String ADDRESS_ID_15 = "00550c43-b5c0-4951-9c29-000000000015";
+    public static final String ADDRESS_STREET_15 = "Schillerstraße 9";
+    public static final String ADDRESS_CITY_15 = "Mannheim";
+    public static final String ADDRESS_PROVINCE_15 = "Baden-Württemberg";
+    public static final String ADDRESS_ZIP_15 = "68165";
+    public static final String ADDRESS_COUNTRY_15 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder15() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_15)
+            .city(ADDRESS_CITY_15)
+            .province(ADDRESS_PROVINCE_15)
+            .zip(ADDRESS_ZIP_15)
+            .countryCode(ADDRESS_COUNTRY_15);
+    }
+
+    // Test address 16
+    public static final String ADDRESS_ID_16 = "00550c43-b5c0-4951-9c29-000000000016";
+    public static final String ADDRESS_STREET_16 = "Goethestraße 2";
+    public static final String ADDRESS_CITY_16 = "München";
+    public static final String ADDRESS_PROVINCE_16 = "Bayern";
+    public static final String ADDRESS_ZIP_16 = "80336";
+    public static final String ADDRESS_COUNTRY_16 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder16() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_16)
+            .city(ADDRESS_CITY_16)
+            .province(ADDRESS_PROVINCE_16)
+            .zip(ADDRESS_ZIP_16)
+            .countryCode(ADDRESS_COUNTRY_16);
+    }
+
+    // Test address 17
+    public static final String ADDRESS_ID_17 = "00550c43-b5c0-4951-9c29-000000000017";
+    public static final String ADDRESS_STREET_17 = "Schlossallee 1";
+    public static final String ADDRESS_CITY_17 = "Berlin";
+    public static final String ADDRESS_PROVINCE_17 = "Berlin";
+    public static final String ADDRESS_ZIP_17 = "14059";
+    public static final String ADDRESS_COUNTRY_17 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder17() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_17)
+            .city(ADDRESS_CITY_17)
+            .province(ADDRESS_PROVINCE_17)
+            .zip(ADDRESS_ZIP_17)
+            .countryCode(ADDRESS_COUNTRY_17);
+    }
+
+    // Test address 18
+    public static final String ADDRESS_ID_18 = "00550c43-b5c0-4951-9c29-000000000018";
+    public static final String ADDRESS_STREET_18 = "Parkstraße 6";
+    public static final String ADDRESS_CITY_18 = "Potsdam";
+    public static final String ADDRESS_PROVINCE_18 = "Brandenburg";
+    public static final String ADDRESS_ZIP_18 = "14482";
+    public static final String ADDRESS_COUNTRY_18 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder18() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_18)
+            .city(ADDRESS_CITY_18)
+            .province(ADDRESS_PROVINCE_18)
+            .zip(ADDRESS_ZIP_18)
+            .countryCode(ADDRESS_COUNTRY_18);
+    }
+
+    // Test address 19 (Bonus: Museumstraße)
+    public static final String ADDRESS_ID_19 = "00550c43-b5c0-4951-9c29-000000000019";
+    public static final String ADDRESS_STREET_19 = "Museumstraße 5";
+    public static final String ADDRESS_CITY_19 = "Bonn";
+    public static final String ADDRESS_PROVINCE_19 = "Nordrhein-Westfalen";
+    public static final String ADDRESS_ZIP_19 = "53111";
+    public static final String ADDRESS_COUNTRY_19 = "DE";
+
+    public static final ImmutableAddressJson.Builder addressBuilder19() {
+        return ImmutableAddressJson.builder()
+            .street(ADDRESS_STREET_19)
+            .city(ADDRESS_CITY_19)
+            .province(ADDRESS_PROVINCE_19)
+            .zip(ADDRESS_ZIP_19)
+            .countryCode(ADDRESS_COUNTRY_19);
     }
 
 
@@ -238,41 +524,6 @@ public class TestData {
                 .differentHeatingSpace(false);
     }
 
-    // Default test tenancy
-    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
-    public static final String TENANCY_START = TestData.TENANCY_START_1;
-    public static final String TENANCY_END = TestData.TENANCY_END_1;
-
-    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
-        return tenancyBuilder1();
-    }
-
-    // Test tenancy 1
-    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
-    public static final String TENANCY_START_1 = "2007-12-01";
-    public static final String TENANCY_END_1 = "2025-01-30";
-
-    // Test tenancy 2
-    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000001";
-    public static final String TENANCY_START_2 = "2010-05-03";
-    public static final String TENANCY_END_2 = "2030-04-23";
-
-    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
-        return ImmutableTenancyJson
-                .builder()
-                .id(TENANCY_ID_1)
-                .startOfRental(LocalDate.parse(TENANCY_START_1))
-                .endOfRental(LocalDate.parse(TENANCY_END_1));
-    }
-
-    public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
-        return ImmutableTenancyJson
-                .builder()
-                .id(TENANCY_ID_2)
-                .startOfRental(LocalDate.parse(TENANCY_START_2))
-                .endOfRental(LocalDate.parse(TENANCY_END_2));
-    }
-
     // Default test apartment
     public static final String APARTMENT_ID = TestData.APARTMENT_ID_1;
     public static final String APARTMENT_TITLE = TestData.APARTMENT_TITLE_1;
@@ -397,13 +648,11 @@ public class TestData {
 
     // Test STORAGE 1
     public static final String STORAGE_ID_1 = "b9440c43-b5c0-4951-9c22-000000000001";
-    public static final String STORAGE_TITLE_1 = "TiefSTORAGE 1";
-    public static final String STORAGE_LOCATION_1 = "1. STORAGE links";
-    public static final String STORAGE_DESCRIPTION_1 = "TiefSTORAGE";
+    public static final String STORAGE_TITLE_1 = "Tiefgarage 1";
+    public static final String STORAGE_LOCATION_1 = "1";
+    public static final String STORAGE_DESCRIPTION_1 = "Tiefgarage 1 links";
     public static final Float STORAGE_USABLE_SPACE_1 = 12.8f;
     public static final Float STORAGE_RENT_1 = 80f;
-
-    public static final Locale ADDRESS_LOCALE_1 = new Locale("DE");
 
     public static final ImmutableStorageJson.Builder storageBuilder1() {
         return ImmutableStorageJson
@@ -417,9 +666,9 @@ public class TestData {
 
     // Test STORAGE 2
     public static final String STORAGE_ID_2 = "b9440c43-b5c0-4951-9c22-000000000002";
-    public static final String STORAGE_TITLE_2 = "TiefSTORAGE 2";
-    public static final String STORAGE_LOCATION_2 = "2. STORAGE rechts";
-    public static final String STORAGE_DESCRIPTION_2 = "TiefSTORAGE";
+    public static final String STORAGE_TITLE_2 = "Tiefgarage 2";
+    public static final String STORAGE_LOCATION_2 = "2";
+    public static final String STORAGE_DESCRIPTION_2 = "Tiefgarage 2 rechts";
     public static final Float STORAGE_USABLE_SPACE_2 = 12.8f;
     public static final Float STORAGE_RENT_2 = 80f;
 
@@ -431,6 +680,41 @@ public class TestData {
         .location(STORAGE_LOCATION_2)
         .description(STORAGE_DESCRIPTION_2)
         .usableSpace(STORAGE_USABLE_SPACE_2);
+    }
+
+    // Default test tenancy
+    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
+    public static final String TENANCY_START = TestData.TENANCY_START_1;
+    public static final String TENANCY_END = TestData.TENANCY_END_1;
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
+        return tenancyBuilder1();
+    }
+
+    // Test tenancy 1
+    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_1 = "2007-12-01";
+    public static final String TENANCY_END_1 = "2025-01-30";
+
+    // Test tenancy 2
+    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000001";
+    public static final String TENANCY_START_2 = "2010-05-03";
+    public static final String TENANCY_END_2 = "2030-04-23";
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
+        return ImmutableTenancyJson
+                .builder()
+                .id(TENANCY_ID_1)
+                .startOfRental(LocalDate.parse(TENANCY_START_1))
+                .endOfRental(LocalDate.parse(TENANCY_END_1));
+    }
+
+    public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
+        return ImmutableTenancyJson
+                .builder()
+                .id(TENANCY_ID_2)
+                .startOfRental(LocalDate.parse(TENANCY_START_2))
+                .endOfRental(LocalDate.parse(TENANCY_END_2));
     }
 
     // Default test task

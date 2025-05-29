@@ -1,6 +1,7 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
@@ -14,7 +15,7 @@ import java.time.Duration;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class MemberResourceTest extends AbstractProjectResourceTest {
+class MemberResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/members";
     static final String MEMBER_PATH = BASE_PATH + "/{memberId}";

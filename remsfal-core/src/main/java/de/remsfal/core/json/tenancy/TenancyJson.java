@@ -12,9 +12,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.immutable.ImmutableStyle;
-import de.remsfal.core.json.project.RentalUnitNodeDataJson.UnitType;
 import de.remsfal.core.model.project.TenancyModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
+import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

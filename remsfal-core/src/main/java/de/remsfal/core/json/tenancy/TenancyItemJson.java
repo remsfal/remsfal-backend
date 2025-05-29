@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.json.project.RentalUnitNodeDataJson.UnitType;
+import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.TenancyModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
