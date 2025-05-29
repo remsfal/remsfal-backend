@@ -1,6 +1,6 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.GarageJson;
+import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.model.project.GarageModel;
 import de.remsfal.service.entity.dao.GarageRepository;
 import de.remsfal.service.entity.dto.GarageEntity;
@@ -40,7 +40,7 @@ public class GarageController {
     }
 
     @Transactional
-    public GarageModel updateGarage(final String projectId, final String garageId, final GarageJson garage) {
+    public GarageModel updateGarage(final String projectId, final String garageId, final StorageJson garage) {
         logger.infov("Updating a garage (projectId={0}, garageId={1}, garage={2})",
                 projectId, garageId, garage);
         final GarageEntity entity = garageRepository.findByIds(projectId, garageId)

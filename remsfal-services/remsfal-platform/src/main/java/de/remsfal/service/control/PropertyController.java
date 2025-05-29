@@ -3,9 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.json.project.ImmutableRentalUnitNodeDataJson;
 import de.remsfal.core.json.project.ImmutableRentalUnitTreeNodeJson;
 import de.remsfal.core.json.project.RentalUnitNodeDataJson;
-import de.remsfal.core.json.project.RentalUnitNodeDataJson.UnitType;
 import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
 import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
@@ -14,8 +14,8 @@ import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dao.SiteRepository;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.PropertyEntity;
-import de.remsfal.service.entity.dto.RentalUnitEntity;
 import de.remsfal.service.entity.dto.SiteEntity;
+import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -153,7 +153,6 @@ public class PropertyController {
             .type(UnitType.BUILDING)
             .title(building.getTitle())
             .description(building.getDescription())
-            .tenant(building.getTenantName())
             .usableSpace(building.getUsableSpace())
             .build();
 
@@ -172,7 +171,7 @@ public class PropertyController {
         List<RentalUnitTreeNodeJson> garageTree = garageRepository
             .findAllGarages(building.getProjectId(), building.getId())
             .stream()
-            .map(unit -> this.buildRentalUnitNode(unit, UnitType.GARAGE))
+            .map(unit -> this.buildRentalUnitNode(unit, UnitType.STORAGE))
             .toList();
         
         return ImmutableRentalUnitTreeNodeJson.builder()
@@ -190,7 +189,6 @@ public class PropertyController {
             .type(type)
             .title(rentalUnit.getTitle())
             .description(rentalUnit.getDescription())
-            .tenant(rentalUnit.getTenantName())
             .usableSpace(rentalUnit.getUsableSpace())
             .build();
 

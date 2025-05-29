@@ -48,11 +48,6 @@ public abstract class SiteJson implements SiteModel {
     @Override
     public abstract String getDescription();
 
-    @Valid
-    @Nullable
-    @Override
-    public abstract TenancyJson getTenancy();
-
     @Nullable
     @Override
     public abstract Float getUsableSpace();
@@ -63,7 +58,6 @@ public abstract class SiteJson implements SiteModel {
             .title(model.getTitle())
             .address(AddressJson.valueOf(model.getAddress()))
             .description(model.getDescription())
-            .tenancy(TenancyJson.valueOf(model.getTenancy()))
             .usableSpace(model.getUsableSpace())
             .build();
     }

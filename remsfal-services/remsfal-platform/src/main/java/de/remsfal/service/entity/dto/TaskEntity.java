@@ -3,6 +3,7 @@ package de.remsfal.service.entity.dto;
 import java.util.Objects;
 
 import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

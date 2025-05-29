@@ -69,9 +69,6 @@ public class SiteController {
         if (site.getAddress() != null) {
             entity.setAddress(addressController.updateAddress(entity.getAddress(), site.getAddress()));
         }
-        if (site.getTenancy() != null) {
-            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), site.getTenancy()));
-        }
         if (site.getUsableSpace() != null) {
             entity.setUsableSpace(site.getUsableSpace());
         }

@@ -5,13 +5,20 @@ package de.remsfal.core.model.project;
  */
 public interface RentalUnitModel {
 
+    public enum UnitType {
+        PROPERTY,
+        SITE,
+        BUILDING,
+        APARTMENT,
+        STORAGE,
+        COMMERCIAL
+    }
+
     String getId();
 
     String getTitle();
 
     String getDescription();
-
-    TenancyModel getTenancy();
 
     Float getUsableSpace();
 

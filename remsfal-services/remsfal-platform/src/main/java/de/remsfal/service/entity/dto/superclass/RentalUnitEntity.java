@@ -1,14 +1,11 @@
-package de.remsfal.service.entity.dto;
+package de.remsfal.service.entity.dto.superclass;
 
 import de.remsfal.core.model.project.RentalUnitModel;
 
 import java.util.Objects;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.OneToOne;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -24,10 +21,6 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
 
     @Column(name = "DESCRIPTION")
     private String description;
-
-    @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "TENANCY_ID")
-    private TenancyEntity tenancy;
 
     @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
     private Float usableSpace;
@@ -59,28 +52,12 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
     }
 
     @Override
-    public TenancyEntity getTenancy() {
-        return tenancy;
-    }
-
-    public void setTenancy(final TenancyEntity tenancy) {
-        this.tenancy = tenancy;
-    }
-
-    @Override
     public Float getUsableSpace() {
         return usableSpace;
     }
 
     public void setUsableSpace(final Float usableSpace) {
         this.usableSpace = usableSpace;
-    }
-
-    public String getTenantName() {
-        if (tenancy != null && tenancy.getTenant() != null) {
-            return tenancy.getTenant().getLastName() + ", " + tenancy.getTenant().getFirstName();
-        }
-        return "";
     }
 
     @Override
@@ -93,7 +70,6 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
                 && Objects.equals(projectId, e.projectId)
                 && Objects.equals(title, e.title)
                 && Objects.equals(description, e.description)
-                && Objects.equals(tenancy, e.tenancy)
                 && Objects.equals(usableSpace, e.usableSpace);
         }
         return false;
@@ -101,7 +77,7 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), projectId, title, description, tenancy, usableSpace);
+        return Objects.hash(super.hashCode(), projectId, title, description, usableSpace);
     }
 
 }

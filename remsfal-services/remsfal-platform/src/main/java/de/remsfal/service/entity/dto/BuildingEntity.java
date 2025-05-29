@@ -2,6 +2,7 @@ package de.remsfal.service.entity.dto;
 
 
 import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

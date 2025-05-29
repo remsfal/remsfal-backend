@@ -21,13 +21,13 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.project.GarageJson;
+import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface GarageEndpoint {
+public interface StorageEndpoint {
 
     String SERVICE = "garages";
 
@@ -44,7 +44,7 @@ public interface GarageEndpoint {
             @Parameter(description = "ID of the building", required = true)
             @PathParam("buildingId") String buildingId,
             @Parameter(description = "Garage information", required = true)
-            @Valid @ConvertGroup(to = PostValidation.class) GarageJson garage
+            @Valid @ConvertGroup(to = PostValidation.class) StorageJson garage
     );
 
     @GET
@@ -54,7 +54,7 @@ public interface GarageEndpoint {
     @APIResponse(
             responseCode = "404",
             description = "The garage does not exist")
-    GarageJson getGarage(
+    StorageJson getGarage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") String projectId,
             @Parameter(description = "ID of the garage", required = true)
@@ -74,13 +74,13 @@ public interface GarageEndpoint {
             responseCode = "404",
             description = "The garage does not exist"
     )
-    GarageJson updateGarage(
+    StorageJson updateGarage(
             @Parameter(description = "ID of the project", required = true)
             @PathParam("projectId") @NotNull @UUID String projectId,
             @Parameter(description = "ID of the garage", required = true)
             @PathParam("garageId") @NotNull @UUID String garageId,
             @Parameter(description = "Garage information", required = true)
-            @Valid @ConvertGroup(to = PatchValidation.class) GarageJson garage
+            @Valid @ConvertGroup(to = PatchValidation.class) StorageJson garage
     );
 
     @DELETE

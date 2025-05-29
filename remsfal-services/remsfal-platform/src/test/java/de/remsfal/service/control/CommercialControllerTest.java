@@ -136,6 +136,5 @@ class CommercialControllerTest extends AbstractTest {
         assertEquals(updateTo.getLocation(), updated.getLocation());
         assertEquals(updateTo.getCommercialSpace(), updated.getCommercialSpace());
         assertEquals(updateTo.getHeatingSpace(), updated.getHeatingSpace());
-        assertEquals(commercial.getTenancy(), updated.getTenancy());
     }
 }

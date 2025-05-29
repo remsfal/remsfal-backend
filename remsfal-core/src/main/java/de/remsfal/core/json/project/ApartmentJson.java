@@ -21,7 +21,7 @@ import de.remsfal.core.validation.Title;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "An apartment inside a building")
+@Schema(description = "An apartment inside a building according to WoFIV")
 @JsonDeserialize(as = ImmutableApartmentJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ApartmentJson implements ApartmentModel {
@@ -57,10 +57,6 @@ public abstract class ApartmentJson implements ApartmentModel {
     @Override
     public abstract Float getHeatingSpace();
 
-    @Nullable
-    @Override
-    public abstract TenancyJson getTenancy();
-
     public static ApartmentJson valueOf(ApartmentModel apartment) {
         return apartment == null ? null : ImmutableApartmentJson.builder()
                 .id(apartment.getId())
@@ -70,7 +66,6 @@ public abstract class ApartmentJson implements ApartmentModel {
                 .livingSpace(apartment.getLivingSpace())
                 .usableSpace(apartment.getUsableSpace())
                 .location(apartment.getLocation())
-                .tenancy(TenancyJson.valueOf(apartment.getTenancy()))
                 .build();
 
     }

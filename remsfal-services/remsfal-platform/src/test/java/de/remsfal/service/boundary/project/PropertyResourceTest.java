@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 
 @QuarkusTest
-class PropertyResourceTest extends AbstractProjectResourceTest {
+class PropertyResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects";
 
@@ -102,8 +103,8 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1, TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1, TestData.COMMERCIAL_HEATING_SPACE_1);
 
-        insertGarage(TestData.GARAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_1, TestData.GARAGE_LOCATION_1, TestData.GARAGE_DESCRIPTION_1, TestData.GARAGE_USABLE_SPACE_1);
-        insertGarage(TestData.GARAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_2, TestData.GARAGE_LOCATION_2, TestData.GARAGE_DESCRIPTION_2, TestData.GARAGE_USABLE_SPACE_2);
+        insertStorage(TestData.STORAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_1, TestData.STORAGE_LOCATION_1, TestData.STORAGE_DESCRIPTION_1, TestData.STORAGE_USABLE_SPACE_1);
+        insertStorage(TestData.STORAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_2, TestData.STORAGE_LOCATION_2, TestData.STORAGE_DESCRIPTION_2, TestData.STORAGE_USABLE_SPACE_2);
 
 
         given()
@@ -142,86 +143,15 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .and().body("properties[1].children[0].children[2].data.type", Matchers.equalTo("COMMERCIAL"))
             .and().body("properties[1].children[0].children[2].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
             .and().body("properties[1].children[0].children[2].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.GARAGE_ID_1))
-            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("GARAGE"))
-            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_1))
-            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.GARAGE_ID_2))
-            .and().body("properties[1].children[0].children[4].data.type", Matchers.equalTo("GARAGE"))
-            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_2))
-            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
+            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.STORAGE_ID_1))
+            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("STORAGE"))
+            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_1))
+            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_1))
+            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.STORAGE_ID_2))
+            .and().body("properties[1].children[0].children[4].data.type", Matchers.equalTo("STORAGE"))
+            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
+            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
             .log().body();
-    }
-
-    private void insertProperty(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .executeUpdate());
-    }
-
-    private void insertBuilding(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO BUILDING (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, LIVING_SPACE, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .setParameter(10, params[9])
-                .executeUpdate());
-    }
-
-    private void insertApartment(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .executeUpdate());
-    }
-
-    private void insertCommercial(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .executeUpdate());
-    }
-
-    private void insertGarage(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO GARAGE (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .executeUpdate());
     }
 
     @Test

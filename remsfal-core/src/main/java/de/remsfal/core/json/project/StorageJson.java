@@ -19,10 +19,10 @@ import de.remsfal.core.validation.Title;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Value.Immutable
-@Schema(description = "A garage inside a building")
-@JsonDeserialize(as = ImmutableGarageJson.class)
+@Schema(description = "A storage inside a building but with living space according to WoFIV")
+@JsonDeserialize(as = ImmutableStorageJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class GarageJson implements GarageModel {
+public abstract class StorageJson implements GarageModel {
 
     @Null
     @Nullable
@@ -47,7 +47,7 @@ public abstract class GarageJson implements GarageModel {
     @Override
     public abstract Float getUsableSpace();
 
-    public static GarageJson valueOf(final GarageModel model) {
+    public static StorageJson valueOf(final GarageModel model) {
         if (model == null) {
             return null;
         }
@@ -67,7 +67,7 @@ public abstract class GarageJson implements GarageModel {
             usableSpace = 0.0F;
         }
 
-        return ImmutableGarageJson.builder()
+        return ImmutableStorageJson.builder()
                 .id(model.getId())
                 .title(model.getTitle())
                 .location(location)

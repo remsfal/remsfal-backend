@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.core.model.project.TaskModel.Status;
+import de.remsfal.core.model.project.TaskModel.Type;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
@@ -18,20 +18,18 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableTaskItemJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TaskItemJson {
+    // Validation is not required, because it is read-only.
 
-    @NotNull
     public abstract String getId();
 
-    @NotNull
     public abstract String getName();
 
-    @NotNull
     public abstract String getTitle();
 
-    @NotNull
+    public abstract Type getType();
+
     public abstract Status getStatus();
 
-    @NotNull
     @Nullable
     public abstract String getOwner();
 
@@ -40,6 +38,7 @@ public abstract class TaskItemJson {
             .id(model.getId())
             .name(model.getTitle())
             .title(model.getTitle())
+            .type(model.getType())
             .status(model.getStatus())
             .owner(model.getOwnerId())
             .build();

@@ -1,7 +1,7 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.GarageJson;
-import de.remsfal.core.json.project.ImmutableGarageJson;
+import de.remsfal.core.json.project.StorageJson;
+import de.remsfal.core.json.project.ImmutableStorageJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.GarageModel;
 import de.remsfal.core.model.project.PropertyModel;
@@ -60,7 +60,7 @@ class GarageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult =createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final GarageModel garage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
@@ -75,7 +75,7 @@ class GarageControllerTest extends AbstractTest {
 
         final GarageEntity entity = entityManager
                 .createQuery("SELECT g FROM GarageEntity g WHERE g.title = :title", GarageEntity.class)
-                .setParameter("title", TestData.GARAGE_TITLE)
+                .setParameter("title", TestData.STORAGE_TITLE)
                 .getSingleResult();
         assertEquals(garageResult.getId(), entity.getId());
         assertEquals(garageResult.getTitle(), entity.getTitle());
@@ -86,7 +86,7 @@ class GarageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final GarageModel garage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
@@ -107,14 +107,14 @@ class GarageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final GarageModel garage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
         final GarageModel garageResult = garageController.createGarage(TestData.PROJECT_ID, buildingResult.getId(), garage);
         assertNotNull(garageResult.getId(), "Garage ID should not be null");
 
-        GarageModel garageModel = ImmutableGarageJson.builder()
+        GarageModel garageModel = ImmutableStorageJson.builder()
                 .id(garageResult.getId())
                 .title("Updated Garage Title")
                 .location("Updated Location")
@@ -122,7 +122,7 @@ class GarageControllerTest extends AbstractTest {
                 .usableSpace(350.0f)
                 .build();
 
-        GarageJson updatedGarageJson = GarageJson.valueOf(garageModel);
+        StorageJson updatedGarageJson = StorageJson.valueOf(garageModel);
 
         final GarageModel updatedGarage = garageController.updateGarage(
                 TestData.PROJECT_ID, garageResult.getId(), updatedGarageJson);
@@ -139,7 +139,7 @@ class GarageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final GarageModel garage = TestData.storageBuilder()
                 .id(null)
                 .build();
 

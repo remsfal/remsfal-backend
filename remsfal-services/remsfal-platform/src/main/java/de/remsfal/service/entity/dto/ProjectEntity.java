@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
 

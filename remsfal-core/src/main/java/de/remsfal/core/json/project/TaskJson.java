@@ -47,6 +47,10 @@ public abstract class TaskJson implements TaskModel {
 
     @Nullable
     @Override
+    public abstract Type getType();
+
+    @Nullable
+    @Override
     public abstract Status getStatus();
 
     @UUID
@@ -88,6 +92,7 @@ public abstract class TaskJson implements TaskModel {
                 .id(model.getId())
                 .projectId(model.getProjectId())
                 .title(model.getTitle())
+                .type(model.getType())
                 .status(model.getStatus())
                 .ownerId(model.getOwnerId())
                 .description(model.getDescription())
