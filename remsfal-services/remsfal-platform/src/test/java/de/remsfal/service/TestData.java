@@ -392,7 +392,7 @@ public class TestData {
     public static final Float STORAGE_RENT = TestData.STORAGE_RENT_1;
     
     public static final ImmutableStorageJson.Builder storageBuilder() {
-        return storageBuilder();
+        return storageBuilder1();
     }
 
     // Test STORAGE 1

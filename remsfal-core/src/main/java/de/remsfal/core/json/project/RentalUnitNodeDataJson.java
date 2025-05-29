@@ -15,15 +15,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public interface RentalUnitNodeDataJson extends RentalUnitModel {
 
-    public enum UnitType {
-        PROPERTY,
-        SITE,
-        BUILDING,
-        APARTMENT,
-        COMMERCIAL,
-        GARAGE
-    }
-
     @Schema(description = "Type of the node (e.g., 'PROPERTY', 'BUILDING')", required = true, examples = "PROPERTY")
     UnitType getType();
 

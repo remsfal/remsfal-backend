@@ -102,8 +102,8 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
         insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1, TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1, TestData.COMMERCIAL_HEATING_SPACE_1);
 
-        insertGarage(TestData.STORAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_1, TestData.STORAGE_LOCATION_1, TestData.STORAGE_DESCRIPTION_1, TestData.STORAGE_USABLE_SPACE_1);
-        insertGarage(TestData.STORAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_2, TestData.STORAGE_LOCATION_2, TestData.STORAGE_DESCRIPTION_2, TestData.STORAGE_USABLE_SPACE_2);
+        insertStorage(TestData.STORAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_1, TestData.STORAGE_LOCATION_1, TestData.STORAGE_DESCRIPTION_1, TestData.STORAGE_USABLE_SPACE_1);
+        insertStorage(TestData.STORAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_2, TestData.STORAGE_LOCATION_2, TestData.STORAGE_DESCRIPTION_2, TestData.STORAGE_USABLE_SPACE_2);
 
 
         given()
@@ -211,9 +211,9 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
                 .executeUpdate());
     }
 
-    private void insertGarage(Object... params) {
+    private void insertStorage(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO GARAGE (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO STORAGE (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
