@@ -6,6 +6,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -191,10 +193,10 @@ class GarageResourceTest extends AbstractResourceTest {
                 garageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE_2))
-            .body("description", org.hamcrest.Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
-            .body("usableSpace", org.hamcrest.Matchers.equalTo(15.5f))
-            .body("location", org.hamcrest.Matchers.equalTo(TestData.STORAGE_LOCATION_2));
+            .body("title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
+            .body("description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
+            .body("usableSpace", Matchers.equalTo(15.5f))
+            .body("location", Matchers.equalTo(TestData.STORAGE_LOCATION_2));
     }
 
     @Test

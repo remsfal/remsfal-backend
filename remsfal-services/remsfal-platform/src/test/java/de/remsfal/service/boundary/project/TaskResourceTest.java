@@ -137,30 +137,30 @@ class TaskResourceTest extends AbstractResourceTest {
 
     void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL() {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
-                + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
+            + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
 
         final Response res = given()
-                .when()
-                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(json)
-                .post(TASK_PATH, TestData.PROJECT_ID)
-                .thenReturn();
+            .when()
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(TASK_PATH, TestData.PROJECT_ID)
+            .thenReturn();
 
         final String taskId = res.then()
-                .contentType(MediaType.APPLICATION_JSON)
-                .extract().path("id");
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
 
         given()
-                .when()
-                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .get(TASK_PATH, TestData.PROJECT_ID)
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("tasks.id", Matchers.hasItems(taskId))
-                .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
-                .and().body("tasks.status", Matchers.hasItems("PENDING"));
+            .when()
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(TASK_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("tasks.id", Matchers.hasItems(taskId))
+            .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
+            .and().body("tasks.status", Matchers.hasItems("PENDING"));
     }
 
     void getTask_FAILED_userIsNotMember() {
@@ -308,7 +308,7 @@ class TaskResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -346,7 +346,7 @@ class TaskResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_openTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -384,7 +384,7 @@ class TaskResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -423,7 +423,7 @@ class TaskResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")

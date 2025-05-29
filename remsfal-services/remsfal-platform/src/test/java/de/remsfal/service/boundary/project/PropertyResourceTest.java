@@ -91,21 +91,8 @@ class PropertyResourceTest extends AbstractResourceTest {
 
     @Test
     void getProperties_SUCCESS_propertiesCorrectlyReturned() {
-        // Insert test data
-        insertProperty(TestData.PROPERTY_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_1, TestData.PROPERTY_REG_ENTRY_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_PLOT_AREA_1);
-        insertProperty(TestData.PROPERTY_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_2, TestData.PROPERTY_REG_ENTRY_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_PLOT_AREA_2);
-
-        insertBuilding(TestData.BUILDING_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID_1, TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1, TestData.BUILDING_LIVING_SPACE_1, TestData.BUILDING_COMMERCIAL_SPACE_1, TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_1);
-        insertBuilding(TestData.BUILDING_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_ID_1, TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2, TestData.BUILDING_LIVING_SPACE_2, TestData.BUILDING_COMMERCIAL_SPACE_2, TestData.BUILDING_USABLE_SPACE_2, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_2);
-
-        insertApartment(TestData.APARTMENT_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_1, TestData.APARTMENT_LOCATION_1, TestData.APARTMENT_DESCRIPTION_1, TestData.APARTMENT_LIVING_SPACE_1, TestData.APARTMENT_USABLE_SPACE_1, TestData.APARTMENT_HEATING_SPACE_1);
-        insertApartment(TestData.APARTMENT_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_2, TestData.APARTMENT_LOCATION_2, TestData.APARTMENT_DESCRIPTION_2, TestData.APARTMENT_LIVING_SPACE_2, TestData.APARTMENT_USABLE_SPACE_2, TestData.APARTMENT_HEATING_SPACE_2);
-
-        insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1, TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1, TestData.COMMERCIAL_HEATING_SPACE_1);
-
-        insertStorage(TestData.STORAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_1, TestData.STORAGE_LOCATION_1, TestData.STORAGE_DESCRIPTION_1, TestData.STORAGE_USABLE_SPACE_1);
-        insertStorage(TestData.STORAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.STORAGE_TITLE_2, TestData.STORAGE_LOCATION_2, TestData.STORAGE_DESCRIPTION_2, TestData.STORAGE_USABLE_SPACE_2);
-
+        setupTestProperties();
+        setupTestBuildings();
 
         given()
             .when()
@@ -143,14 +130,18 @@ class PropertyResourceTest extends AbstractResourceTest {
             .and().body("properties[1].children[0].children[2].data.type", Matchers.equalTo("COMMERCIAL"))
             .and().body("properties[1].children[0].children[2].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
             .and().body("properties[1].children[0].children[2].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.STORAGE_ID_1))
-            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("STORAGE"))
-            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_1))
-            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.STORAGE_ID_2))
+            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.COMMERCIAL_ID_2))
+            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("COMMERCIAL"))
+            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_2))
+            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_2))
+            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.STORAGE_ID_1))
             .and().body("properties[1].children[0].children[4].data.type", Matchers.equalTo("STORAGE"))
-            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
-            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
+            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_1))
+            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_1))
+            .and().body("properties[1].children[0].children[5].key", Matchers.equalTo(TestData.STORAGE_ID_2))
+            .and().body("properties[1].children[0].children[5].data.type", Matchers.equalTo("STORAGE"))
+            .and().body("properties[1].children[0].children[5].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
+            .and().body("properties[1].children[0].children[5].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
             .log().body();
     }
 

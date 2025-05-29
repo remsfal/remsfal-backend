@@ -26,9 +26,9 @@ public class CommercialController {
 
     @Transactional
     public CommercialModel createCommercial(final String projectId, final String buildingId,
-                                            final CommercialModel commercial) {
+        final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
-                projectId, buildingId, commercial);
+            projectId, buildingId, commercial);
         CommercialEntity entity = CommercialEntity.fromModel(commercial);
         entity.generateId();
         entity.setProjectId(projectId);
@@ -40,17 +40,17 @@ public class CommercialController {
 
     public CommercialModel getCommercial(final String projectId, final String commercialId) {
         logger.infov("Retrieving a commercial (projectId={0}, commercialId={1})",
-                projectId, commercialId);
+            projectId, commercialId);
         return commercialRepository.findCommercialById(projectId, commercialId)
-                .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+            .orElseThrow(() -> new NotFoundException("Commercial not exist"));
     }
 
     @Transactional
     public CommercialModel updateCommercial(final String projectId, final String commercialId,
-                                            final CommercialModel commercial) {
+        final CommercialModel commercial) {
         logger.infov("Updating a commercial (projectId={0}, commercialId={1})", projectId, commercialId);
         CommercialEntity entity = commercialRepository.findCommercialById(projectId, commercialId)
-                .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+            .orElseThrow(() -> new NotFoundException("Commercial not exist"));
 
         if (commercial.getTitle() != null) {
             entity.setTitle(commercial.getTitle());
@@ -70,7 +70,7 @@ public class CommercialController {
     @Transactional
     public boolean deleteCommercial(final String projectId, final String commercialId) {
         logger.infov("Delete a commercial (projectId={0}, commercialId={1})",
-                projectId, commercialId);
+            projectId, commercialId);
         return commercialRepository.deleteCommercialById(projectId, commercialId) > 0;
     }
 

@@ -74,6 +74,48 @@ public abstract class AbstractResourceTest extends AbstractTest {
             TestData.ADDRESS_ID_5, TestData.SITE_DESCRIPTION, TestData.SITE_USABLE_SPACE);
     }
 
+    protected void setupTestBuildings() {
+        insertBuilding(TestData.BUILDING_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1,
+            TestData.BUILDING_LIVING_SPACE_1, TestData.BUILDING_COMMERCIAL_SPACE_1,
+            TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_6);
+        insertBuilding(TestData.BUILDING_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2,
+            TestData.BUILDING_LIVING_SPACE_2, TestData.BUILDING_COMMERCIAL_SPACE_2,
+            TestData.BUILDING_USABLE_SPACE_2, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_7);
+
+        insertApartment(TestData.APARTMENT_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID,
+            TestData.APARTMENT_TITLE_1, TestData.APARTMENT_LOCATION_1, TestData.APARTMENT_DESCRIPTION_1,
+            TestData.APARTMENT_LIVING_SPACE_1, TestData.APARTMENT_USABLE_SPACE_1, TestData.APARTMENT_HEATING_SPACE_1);
+        insertApartment(TestData.APARTMENT_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID,
+            TestData.APARTMENT_TITLE_2, TestData.APARTMENT_LOCATION_2, TestData.APARTMENT_DESCRIPTION_2,
+            TestData.APARTMENT_LIVING_SPACE_2, TestData.APARTMENT_USABLE_SPACE_2, TestData.APARTMENT_HEATING_SPACE_2);
+
+        insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID,
+            TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1,
+            TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1,
+            TestData.COMMERCIAL_HEATING_SPACE_1);
+        insertCommercial(TestData.COMMERCIAL_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID,
+            TestData.COMMERCIAL_TITLE_2, TestData.COMMERCIAL_LOCATION_2, TestData.COMMERCIAL_DESCRIPTION_2,
+            TestData.COMMERCIAL_COMMERCIAL_SPACE_2, TestData.COMMERCIAL_USABLE_SPACE_2,
+            TestData.COMMERCIAL_HEATING_SPACE_2);
+
+        insertStorage(TestData.STORAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID,
+            TestData.STORAGE_TITLE_1, TestData.STORAGE_LOCATION_1, TestData.STORAGE_DESCRIPTION_1,
+            TestData.STORAGE_USABLE_SPACE_1);
+        insertStorage(TestData.STORAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID,
+            TestData.STORAGE_TITLE_2, TestData.STORAGE_LOCATION_2, TestData.STORAGE_DESCRIPTION_2,
+            TestData.STORAGE_USABLE_SPACE_2);
+    }
+
+    protected void setupAllTestData() {
+        setupTestUsers();
+        setupTestProjects();
+        setupTestProperties();
+        setupTestSites();
+        setupTestBuildings();
+    }
+
     protected void insertAddress(Object... params) {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO ADDRESS (ID, STREET, CITY, PROVINCE, ZIP, COUNTRY) VALUES (?,?,?,?,?,?)")

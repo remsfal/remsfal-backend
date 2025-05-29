@@ -37,11 +37,11 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "201", description = "Apartment created successfully",
         headers = @Header(name = "Location", description = "URL of the new apartment"))
     Response createApartment(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the building", required = true)
-            @PathParam("buildingId") @NotNull @UUID String buildingId,
-            @Parameter(description = "Apartment information", required = true)
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the building", required = true)
+        @PathParam("buildingId") @NotNull @UUID String buildingId,
+        @Parameter(description = "Apartment information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment
     );
 
@@ -51,8 +51,8 @@ public interface ApartmentEndpoint {
     @Operation(summary = "Retrieve information of an apartment.")
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
     @APIResponse(
-            responseCode = "401",
-            description = "No user authentication provided via session cookie"
+        responseCode = "401",
+        description = "No user authentication provided via session cookie"
     )
     ApartmentJson getApartment(
         @Parameter(description = "ID of the project", required = true)
@@ -69,12 +69,12 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
     ApartmentJson updateApartment(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the apartment", required = true)
-            @PathParam("apartmentId") @NotNull @UUID String apartmentId,
-            @Parameter(description = "Apartment object with information", required = true)
-            @Valid @ConvertGroup(to = PatchValidation.class) ApartmentJson apartment
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the apartment", required = true)
+        @PathParam("apartmentId") @NotNull @UUID String apartmentId,
+        @Parameter(description = "Apartment object with information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) ApartmentJson apartment
     );
 
     @DELETE
@@ -83,11 +83,10 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "204", description = "The building was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteApartment(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the apartment", required = true)
-            @PathParam("apartmentId") @NotNull @UUID String apartmentId
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the apartment", required = true)
+        @PathParam("apartmentId") @NotNull @UUID String apartmentId
     );
-
 
 }
