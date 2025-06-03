@@ -1,9 +1,9 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.json.project.StorageJson;
-import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.service.entity.dao.GarageRepository;
-import de.remsfal.service.entity.dto.GarageEntity;
+import de.remsfal.service.entity.dto.StorageEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -20,10 +20,10 @@ public class GarageController {
     GarageRepository garageRepository;
 
     @Transactional
-    public GarageModel createGarage(final String projectId, final String buildingId, final GarageModel garage) {
+    public StorageModel createGarage(final String projectId, final String buildingId, final StorageModel garage) {
         logger.infov("Creating a garage (projectId={0}, buildingId={1}, garage={2})",
                 projectId, buildingId, garage);
-        GarageEntity entity = GarageEntity.fromModel(garage);
+        StorageEntity entity = StorageEntity.fromModel(garage);
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -32,7 +32,7 @@ public class GarageController {
         return getGarage(projectId, entity.getId());
     }
 
-    public GarageModel getGarage(final String projectId, final String garageId) {
+    public StorageModel getGarage(final String projectId, final String garageId) {
         logger.infov("Retrieving a garage (projectId={0}, garageId={1})",
                 projectId, garageId);
         return garageRepository.findByIds(projectId, garageId)
@@ -40,10 +40,10 @@ public class GarageController {
     }
 
     @Transactional
-    public GarageModel updateGarage(final String projectId, final String garageId, final StorageJson garage) {
+    public StorageModel updateGarage(final String projectId, final String garageId, final StorageJson garage) {
         logger.infov("Updating a garage (projectId={0}, garageId={1}, garage={2})",
                 projectId, garageId, garage);
-        final GarageEntity entity = garageRepository.findByIds(projectId, garageId)
+        final StorageEntity entity = garageRepository.findByIds(projectId, garageId)
                 .orElseThrow(() -> new NotFoundException("Garage does not exist"));
 
         entity.setTitle(garage.getTitle());

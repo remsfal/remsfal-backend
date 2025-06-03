@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.CommercialModel;
-import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
@@ -322,8 +322,8 @@ class BuildingControllerTest extends AbstractTest {
             .getId();
         assertNotNull(buildingId);
         
-        final GarageModel garage = TestData.storageBuilder().build();
-        final GarageModel result = buildingController
+        final StorageModel garage = TestData.storageBuilder().build();
+        final StorageModel result = buildingController
             .createGarage(TestData.PROJECT_ID, buildingId, garage);
         
         assertNotEquals(garage.getId(), result.getId());
@@ -338,7 +338,7 @@ class BuildingControllerTest extends AbstractTest {
             .getSingleResult();
         assertEquals(result.getId(), garageId);
 
-        final GarageModel getResult = buildingController
+        final StorageModel getResult = buildingController
             .getGarage(TestData.PROJECT_ID, buildingId, garageId);
         
         assertEquals(result, getResult);

@@ -22,8 +22,8 @@
             <column name="TITLE" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="DESCRIPTION" type="clob" />
             <column name="LOCATION" type="varchar(255)" />
+            <column name="DESCRIPTION" type="clob" />
             <column name="LIVING_SPACE" type="DECIMAL(10, 2)" />
             <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
             <column name="HEATING_SPACE" type="DECIMAL(10, 2)" />

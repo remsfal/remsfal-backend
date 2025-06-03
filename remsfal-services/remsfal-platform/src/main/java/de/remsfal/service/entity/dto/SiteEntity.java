@@ -26,6 +26,9 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     @JoinColumn(name = "ADDRESS_ID")
     private AddressEntity address;
 
+    @Column(name = "OUTDOOR_AREA", columnDefinition = "decimal")
+    private Float outdoorArea;
+
     public String getPropertyId() {
         return propertyId;
     }
@@ -39,8 +42,17 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
         return address;
     }
 
-    public void setAddress(AddressEntity address) {
+    public void setAddress(final AddressEntity address) {
         this.address = address;
+    }
+
+    @Override
+    public Float getOutdoorArea() {
+        return outdoorArea;
+    }
+
+    public void setOutdoorArea(final Float outdoorArea) {
+        this.outdoorArea = outdoorArea;
     }
 
     @Override
@@ -51,7 +63,8 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
         if (o instanceof SiteEntity e) {
             return super.equals(e)
                 && Objects.equals(propertyId, e.propertyId)
-                && Objects.equals(address, e.address);
+                && Objects.equals(address, e.address)
+                && Objects.equals(outdoorArea, e.outdoorArea);
         }
         return false;
     }

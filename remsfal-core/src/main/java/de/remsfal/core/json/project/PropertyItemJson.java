@@ -36,7 +36,7 @@ public abstract class PropertyItemJson {
         final ImmutablePropertyItemJson.Builder builder = ImmutablePropertyItemJson.builder()
             .id(model.getId())
             .title(model.getTitle())
-            .landRegisterEntry(model.getLandRegisterEntry())
+//            .landRegisterEntry(model.getLandRegisterEntry())
             .description(model.getDescription())
             .plotArea(model.getPlotArea());
         return builder.build();

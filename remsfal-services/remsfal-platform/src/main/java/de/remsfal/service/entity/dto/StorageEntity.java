@@ -6,7 +6,7 @@ import jakarta.persistence.Table;
 
 import java.util.Objects;
 
-import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 
 /**
@@ -14,13 +14,17 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  */
 @Entity
 @Table(name = "STORAGE")
-public class GarageEntity extends RentalUnitEntity implements GarageModel {
+public class StorageEntity extends RentalUnitEntity implements StorageModel {
 
     @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String buildingId;
 
-    @Column(name = "LOCATION")
-    private String location;
+    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    private Float usableSpace;
+
+    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    private Float heatingSpace;
+
 
     public String getBuildingId() {
         return buildingId;
@@ -31,12 +35,21 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
     }
 
     @Override
-    public String getLocation() {
-        return location;
+    public Float getUsableSpace() {
+        return usableSpace;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setUsableSpace(Float usableSpace) {
+        this.usableSpace = usableSpace;
+    }
+
+    @Override
+    public Float getHeatingSpace() {
+        return heatingSpace;
+    }
+
+    public void setHeatingSpace(Float heatingSpace) {
+        this.heatingSpace = heatingSpace;
     }
 
     @Override
@@ -44,19 +57,21 @@ public class GarageEntity extends RentalUnitEntity implements GarageModel {
         if (this == o) {
             return true;
         }
-        if (o instanceof GarageEntity e) {
+        if (o instanceof StorageEntity e) {
             return super.equals(e)
                 && Objects.equals(buildingId, e.buildingId)
-                && Objects.equals(location, e.location);
+                && Objects.equals(usableSpace, e.usableSpace)
+                && Objects.equals(heatingSpace, e.heatingSpace);
         }
         return false;
     }
 
-    public static GarageEntity fromModel(GarageModel garage) {
+    @Deprecated
+    public static StorageEntity fromModel(StorageModel garage) {
         if(garage == null) {
             return null;
         }
-        final GarageEntity entity = new GarageEntity();
+        final StorageEntity entity = new StorageEntity();
         entity.setId(garage.getId());
         entity.setTitle(garage.getTitle());
         entity.setLocation(garage.getLocation());

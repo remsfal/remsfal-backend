@@ -57,13 +57,10 @@ public abstract class MetaDataEntity {
             return true;
         }
         if (o instanceof MetaDataEntity e) {
-            return Objects.equals(createdAt, e.createdAt);
+            return Objects.equals(createdAt, e.createdAt)
+                && Objects.equals(modifiedAt, e.modifiedAt);
         }
         return false;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(createdAt);
-    }
 }

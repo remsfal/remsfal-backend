@@ -44,27 +44,11 @@ public abstract class BuildingJson implements BuildingModel {
 
     @Nullable
     @Override
-    public abstract String getDescription();
-
-    @Nullable
-    @Override
-    public abstract Float getLivingSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getCommercialSpace();
-
-    @Nullable
-    @Override
     public abstract Float getUsableSpace();
 
     @Nullable
     @Override
     public abstract Float getHeatingSpace();
-
-    @Nullable
-    @Override
-    public abstract Boolean isDifferentHeatingSpace();
 
     public static BuildingJson valueOf(final BuildingModel model) {
         if (model == null) {
@@ -81,10 +65,10 @@ public abstract class BuildingJson implements BuildingModel {
             livingSpace = 0.0F;
         }
 
-        Float commercialSpace = model.getCommercialSpace();
-        if (commercialSpace == null) {
-            commercialSpace = 0.0F;
-        }
+//        Float commercialSpace = model.getCommercialSpace();
+//        if (commercialSpace == null) {
+//            commercialSpace = 0.0F;
+//        }
 
         Float usableSpace = model.getUsableSpace();
         if (usableSpace == null) {
@@ -102,7 +86,7 @@ public abstract class BuildingJson implements BuildingModel {
                 .title(model.getTitle())
                 .description(description)
                 .livingSpace(livingSpace)
-                .commercialSpace(commercialSpace)
+//                .commercialSpace(commercialSpace)
                 .usableSpace(usableSpace)
                 .heatingSpace(heatingSpace)
                 .build();

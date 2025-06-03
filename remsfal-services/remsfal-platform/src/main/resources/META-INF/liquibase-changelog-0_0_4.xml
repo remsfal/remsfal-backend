@@ -71,8 +71,15 @@
             <column name="TITLE" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="LAND_REGISTER_ENTRY" type="varchar(255)" />
+            <column name="LOCATION" type="varchar(255)" />
             <column name="DESCRIPTION" type="clob" />
+            <column name="LAND_REGISTRY" type="varchar(255)" />
+            <column name="CADASTRAL_DISTRICT" type="varchar(255)" />
+            <column name="SHEET_NUMBER" type="varchar(255)" />
+            <column name="PLOT_NUMBER" type="varchar(255)" />
+            <column name="CADASTRAL_SECTION" type="varchar(255)" />
+            <column name="PLOT" type="varchar(255)" />
+            <column name="ECONOMY_TYPE" type="varchar(255)" />
             <column name="PLOT_AREA" type="int" />
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />

@@ -6,14 +6,14 @@ import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.CommercialEntity;
-import de.remsfal.service.entity.dto.GarageEntity;
+import de.remsfal.service.entity.dto.StorageEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
 import de.remsfal.core.model.project.CommercialModel;
-import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.GarageRepository;
 
@@ -125,10 +125,10 @@ public class BuildingController {
     }
 
     @Transactional
-    public GarageModel createGarage(final String projectId, final String buildingId, final GarageModel garage) {
+    public StorageModel createGarage(final String projectId, final String buildingId, final StorageModel garage) {
         logger.infov("Creating a garage (projectId={0}, buildingId={1}, garage={2})",
             projectId, buildingId, garage);
-        GarageEntity entity = GarageEntity.fromModel(garage);
+        StorageEntity entity = StorageEntity.fromModel(garage);
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -137,10 +137,10 @@ public class BuildingController {
         return getGarage(projectId, buildingId, entity.getId());
     }
 
-    public GarageModel getGarage(final String projectId, final String buildingId, final String garageId) {
+    public StorageModel getGarage(final String projectId, final String buildingId, final String garageId) {
         logger.infov("Retrieving a garage (projectId={0}, buildingId={1}, garageId={2})",
             projectId, buildingId, garageId);
-        GarageEntity entity = garageRepository.findByIdOptional(garageId)
+        StorageEntity entity = garageRepository.findByIdOptional(garageId)
             .orElseThrow(() -> new NotFoundException("Garage not exist"));
 
         if (!entity.getProjectId().equals(projectId)) {

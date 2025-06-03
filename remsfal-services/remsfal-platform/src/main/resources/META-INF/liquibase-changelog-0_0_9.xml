@@ -24,9 +24,10 @@
             </column>
             <column name="LOCATION" type="varchar(255)" />
             <column name="DESCRIPTION" type="clob" />
-            <column name="TENANCY_ID" type="char(36)" />
-            <column name="COMMERCIAL_SPACE" type="DECIMAL(10, 2)" />
-            <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
+            <column name="NET_FLOOR_AREA" type="DECIMAL(10, 2)" />
+            <column name="USABLE_FLOOR_AREA" type="DECIMAL(10, 2)" />
+            <column name="TECHNICAL_SERVICE_AREA" type="DECIMAL(10, 2)" />
+            <column name="TRAFFIC_AREA" type="DECIMAL(10, 2)" />
             <column name="HEATING_SPACE" type="DECIMAL(10, 2)" />
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />

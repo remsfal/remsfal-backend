@@ -24,7 +24,12 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
 
     @Override
     @Nullable
-    @Schema(description = "Description of the node", examples = "A multi-story office building")
+    @Schema(description = "Location of the rental unit", examples = "first floor left")
+    String getLocation();
+
+    @Override
+    @Nullable
+    @Schema(description = "Description of the rental unit", examples = "A multi-story office building")
     String getDescription();
 
     @Nullable
@@ -34,6 +39,6 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
     @Override
     @Nullable
     @Schema(description = "Usable space in square meters", examples = "350.5")
-    Float getUsableSpace();
+    Float getSpace();
 
 }

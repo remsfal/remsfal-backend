@@ -7,16 +7,13 @@ import jakarta.annotation.Nullable;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface ApartmentModel extends RentalUnitModel {
+public interface StorageModel extends RentalUnitModel {
 
     @Value.Default
     @Override
     default UnitType getType() {
-        return UnitType.APARTMENT;
+        return UnitType.STORAGE;
     }
-
-    @Nullable
-    Float getLivingSpace(); // Wohnfläche nach Wohnflächenverordnung - WoFlV
 
     @Nullable
     Float getUsableSpace(); // Nutzfläche nach Wohnflächenverordnung - WoFlV
@@ -28,11 +25,6 @@ public interface ApartmentModel extends RentalUnitModel {
     @Nullable
     @Override
     default Float getSpace() {
-        if(getLivingSpace() != null && getUsableSpace() != null) {
-            return getLivingSpace() + getUsableSpace();
-        } else if(getLivingSpace() != null) {
-            return getLivingSpace();
-        }
         return getUsableSpace();
     }
 

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.Title;
 
@@ -22,7 +22,7 @@ import de.remsfal.core.validation.Title;
 @Schema(description = "A storage inside a building but with living space according to WoFIV")
 @JsonDeserialize(as = ImmutableStorageJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class StorageJson implements GarageModel {
+public abstract class StorageJson implements StorageModel {
 
     @Null
     @Nullable
@@ -47,7 +47,7 @@ public abstract class StorageJson implements GarageModel {
     @Override
     public abstract Float getUsableSpace();
 
-    public static StorageJson valueOf(final GarageModel model) {
+    public static StorageJson valueOf(final StorageModel model) {
         if (model == null) {
             return null;
         }

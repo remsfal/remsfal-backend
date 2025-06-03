@@ -19,11 +19,11 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
     @Column(name = "TITLE", nullable = false)
     private String title;
 
+    @Column(name = "LOCATION")
+    private String location;
+
     @Column(name = "DESCRIPTION")
     private String description;
-
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
-    private Float usableSpace;
 
     public String getProjectId() {
         return projectId;
@@ -43,21 +43,21 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
     }
 
     @Override
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    @Override
     public String getDescription() {
         return description;
     }
 
     public void setDescription(final String description) {
         this.description = description;
-    }
-
-    @Override
-    public Float getUsableSpace() {
-        return usableSpace;
-    }
-
-    public void setUsableSpace(final Float usableSpace) {
-        this.usableSpace = usableSpace;
     }
 
     @Override
@@ -69,15 +69,15 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
             return super.equals(e)
                 && Objects.equals(projectId, e.projectId)
                 && Objects.equals(title, e.title)
-                && Objects.equals(description, e.description)
-                && Objects.equals(usableSpace, e.usableSpace);
+                && Objects.equals(location, e.location)
+                && Objects.equals(description, e.description);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), projectId, title, description, usableSpace);
+        return Objects.hash(super.hashCode(), projectId);
     }
 
 }

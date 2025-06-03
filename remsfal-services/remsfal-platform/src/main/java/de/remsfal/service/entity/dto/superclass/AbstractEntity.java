@@ -35,7 +35,8 @@ public abstract class AbstractEntity extends MetaDataEntity {
             return true;
         }
         if (o instanceof AbstractEntity e) {
-            return Objects.equals(id, e.id);
+            return super.equals(e)
+                && Objects.equals(id, e.id);
         }
         return false;
     }

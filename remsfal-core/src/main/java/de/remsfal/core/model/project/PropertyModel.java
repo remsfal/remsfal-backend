@@ -1,18 +1,53 @@
 package de.remsfal.core.model.project;
 
+import org.immutables.value.Value;
+
+import jakarta.annotation.Nullable;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface PropertyModel {
+public interface PropertyModel extends RentalUnitModel {
 
-    String getId();
+    @Value.Default
+    @Override
+    default UnitType getType() {
+        return UnitType.PROPERTY;
+    }
 
-    String getTitle();
+    @Nullable
+    String getLandRegistry(); // Grundbuchamt / Katasteramt
 
-    String getLandRegisterEntry();
+    @Nullable
+    String getCadastralDistrict(); // Gemarkung / Bezirk
 
-    String getDescription();
+    @Nullable
+    String getSheetNumber(); // Grundbuchblattnummer
 
-    Integer getPlotArea();
+    @Nullable
+    Integer getPlotNumber(); // Laufende Nummer des Grundstücks
+
+    @Nullable
+    String getCadastralSection(); // Flur
+
+    @Nullable
+    String getPlot(); // Flurstück
+
+    @Nullable
+    String getEconomyType(); // Wirtschaftsart
+
+    @Nullable
+    @Override
+    String getLocation(); // Lage des Grundstücks / Adresse
+
+    @Nullable
+    Integer getPlotArea(); // Größe
+
+    @Value.Derived
+    @Nullable
+    @Override
+    default Float getSpace() {
+        return getPlotArea().floatValue();
+    }
 
 }

@@ -37,26 +37,6 @@ public abstract class CommercialJson implements CommercialModel {
     @Override
     public abstract String getTitle();
 
-    @Nullable
-    @Override
-    public abstract String getLocation();
-
-    @Nullable
-    @Override
-    public abstract String getDescription();
-
-    @Nullable
-    @Override
-    public abstract Float getCommercialSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getUsableSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getHeatingSpace();
-
     /**
      * Converts a {@link CommercialModel} to a {@link CommercialJson}.
      *
@@ -69,8 +49,8 @@ public abstract class CommercialJson implements CommercialModel {
                 .title(model.getTitle())
                 .location(model.getLocation())
                 .description(model.getDescription())
-                .commercialSpace(model.getCommercialSpace())
-                .usableSpace(model.getUsableSpace())
+//                .commercialSpace(model.getCommercialSpace())
+  //              .usableSpace(model.getUsableSpace())
                 .heatingSpace(model.getHeatingSpace())
                 .build();
     }

@@ -19,11 +19,11 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
     @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String buildingId;
 
-    @Column(name = "LOCATION")
-    private String location;
-
     @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
     private Float livingSpace;
+
+    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    private Float usableSpace;
 
     @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
     private Float heatingSpace;
@@ -37,21 +37,21 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
     }
 
     @Override
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    @Override
     public Float getLivingSpace() {
         return livingSpace;
     }
 
     public void setLivingSpace(Float livingSpace) {
         this.livingSpace = livingSpace;
+    }
+
+    @Override
+    public Float getUsableSpace() {
+        return usableSpace;
+    }
+
+    public void setUsableSpace(Float usableSpace) {
+        this.usableSpace = usableSpace;
     }
 
     @Override
@@ -71,8 +71,8 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
         if (o instanceof ApartmentEntity e) {
             return super.equals(e)
                 && Objects.equals(buildingId, e.buildingId)
-                && Objects.equals(location, e.location)
                 && Objects.equals(livingSpace, e.livingSpace)
+                && Objects.equals(usableSpace, e.usableSpace)
                 && Objects.equals(heatingSpace, e.heatingSpace);
         }
         return false;

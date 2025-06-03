@@ -75,10 +75,14 @@ public abstract class AbstractResourceTest extends AbstractTest {
     }
 
     protected void setupTestBuildings() {
+        insertAddress(TestData.ADDRESS_ID_6, TestData.ADDRESS_STREET_6, TestData.ADDRESS_CITY_6,
+            TestData.ADDRESS_PROVINCE_6, TestData.ADDRESS_ZIP_6, TestData.ADDRESS_COUNTRY_6);
         insertBuilding(TestData.BUILDING_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID,
             TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1,
             TestData.BUILDING_LIVING_SPACE_1, TestData.BUILDING_COMMERCIAL_SPACE_1,
             TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_6);
+        insertAddress(TestData.ADDRESS_ID_7, TestData.ADDRESS_STREET_7, TestData.ADDRESS_CITY_7,
+            TestData.ADDRESS_PROVINCE_7, TestData.ADDRESS_ZIP_7, TestData.ADDRESS_COUNTRY_7);
         insertBuilding(TestData.BUILDING_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_ID,
             TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2,
             TestData.BUILDING_LIVING_SPACE_2, TestData.BUILDING_COMMERCIAL_SPACE_2,

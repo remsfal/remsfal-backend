@@ -25,7 +25,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
 
     @Override
     public TenancyListJson getTenancies() {
-        final List<TenancyModel> tenancies = tenancyController.getTenancies(principal);
+        final List<? extends TenancyModel> tenancies = tenancyController.getTenancies(principal);
         return TenancyListJson.valueOf(tenancies);
     }
 

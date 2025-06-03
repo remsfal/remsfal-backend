@@ -697,9 +697,14 @@ public class TestData {
     public static final String TENANCY_END_1 = "2025-01-30";
 
     // Test tenancy 2
-    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000001";
-    public static final String TENANCY_START_2 = "2010-05-03";
+    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000002";
+    public static final String TENANCY_START_2 = "2010-05-15";
     public static final String TENANCY_END_2 = "2030-04-23";
+
+    // Test tenancy 3
+    public static final String TENANCY_ID_3 = "cccccc43-b5c0-4951-9c22-000000000003";
+    public static final String TENANCY_START_3 = "2016-07-01";
+    public static final String TENANCY_END_3 = "2022-12-31";
 
     public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
         return ImmutableTenancyJson
