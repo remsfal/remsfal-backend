@@ -44,7 +44,7 @@ jobs:
 
       - name: Clone target frontend repo
         env:
-          TOKEN: ${{ secrets.PAT }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
@@ -63,7 +63,7 @@ jobs:
       - name: Push files to target repo via PR
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Automated OpenAPI Spec upload"
           title: "Sync OpenAPI Spec"
           body: "This PR contains updated OpenAPI Spec from the remsfal backend."
