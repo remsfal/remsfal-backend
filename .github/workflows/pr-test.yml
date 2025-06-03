@@ -1,6 +1,8 @@
 name: "sync-openapi"
 
 on:
+  push:
+    branches: [ OpenAPI-Sync ]
   workflow_dispatch:
 
 env:
