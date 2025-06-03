@@ -1,4 +1,4 @@
-name: "CD Build"
+name: "sync-openapi"
 
 on:
   workflow_dispatch:
