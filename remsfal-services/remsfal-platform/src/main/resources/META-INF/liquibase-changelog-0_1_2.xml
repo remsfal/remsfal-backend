@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: AI Assistant
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-contractor" author="efehan.cekic@student.htw-berlin.de">
+        <createTable tableName="CONTRACTOR">
+            <column name="ID" type="char(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="PROJECT_ID" type="char(36)">
+                <constraints nullable="false" />
+            </column>
+            <column name="COMPANY_NAME" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="PHONE" type="varchar(15)" remarks="According to E.164">
+                <constraints nullable="true" />
+            </column>
+            <column name="EMAIL" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="TRADE" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="ADDRESS_ID" type="char(36)">
+                <constraints nullable="true" />
+            </column>
+            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="FK_CONTRACTOR_PROJECT_ID"
+            baseTableName="CONTRACTOR" baseColumnNames="PROJECT_ID"
+            referencedTableName="PROJECT" referencedColumnNames="ID"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="FK_CONTRACTOR_ADDRESS_ID"
+            baseTableName="CONTRACTOR" baseColumnNames="ADDRESS_ID"
+            referencedTableName="ADDRESS" referencedColumnNames="ID"
+            onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <createIndex indexName="IDX_CONTRACTOR_PROJECT_FK" tableName="CONTRACTOR">
+            <column name="PROJECT_ID" type="char(36)" />
+        </createIndex>
+
+        <createIndex indexName="IDX_CONTRACTOR_COMPANY_NAME" tableName="CONTRACTOR">
+            <column name="COMPANY_NAME" type="varchar(255)" />
+        </createIndex>
+
+        <createTable tableName="CONTRACTOR_EMPLOYEE">
+            <column name="CONTRACTOR_ID" type="char(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="USER_ID" type="char(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="RESPONSIBILITY" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_CONTRACTOR_ID"
+            baseTableName="CONTRACTOR_EMPLOYEE" baseColumnNames="CONTRACTOR_ID"
+            referencedTableName="CONTRACTOR" referencedColumnNames="ID"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_USER_ID"
+            baseTableName="CONTRACTOR_EMPLOYEE" baseColumnNames="USER_ID"
+            referencedTableName="USER" referencedColumnNames="ID"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_CONTRACTOR_FK" tableName="CONTRACTOR_EMPLOYEE">
+            <column name="CONTRACTOR_ID" type="char(36)" />
+        </createIndex>
+
+        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_USER_FK" tableName="CONTRACTOR_EMPLOYEE">
+            <column name="USER_ID" type="char(36)" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
