@@ -2,8 +2,6 @@ name: "CD Build"
 
 on:
   workflow_dispatch:
-    
-  
 
 env:
   REGISTRY: ghcr.io
@@ -52,14 +50,14 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
 
-          git clone https://x-access-token:${TOKEN}@github.com/<user>/<frontend-repo>.git target-repo
-          cd target-repo
+          git clone https://x-access-token:${TOKEN}@github.com/remsfal/remsfal-frontend.git
+          cd remsfal-frontend
 
           git checkout -b sync-from-source || git checkout sync-from-source
 
-          cp -r ../export/* frontend/src/helper/openapi/
+          cp -r ../export/* frontend/src/helper/api/
 
-          git add frontend/src/helper/openapi/
+          git add frontend/src/helper/api/
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
           git push origin sync-from-source
 
