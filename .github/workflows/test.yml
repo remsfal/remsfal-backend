@@ -1,0 +1,71 @@
+name: "test-sync"
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  attestations: write
+  id-token: write
+  packages: write
+
+jobs:
+  jdk17-build-and-push-to-registry:
+    name: "JDK 17 Build and push image to registry"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven
+      - name: Build with Maven (uber-jar)
+        run: mvn --batch-mode --update-snapshots package
+      
+      - name: Copy OpenAPI Specs
+        run: |
+          mkdir export
+          cp remsfal-services/remsfal-chat/target/openapi/* export/
+          cp remsfal-services/remsfal-notification/target/openapi/* export/
+          cp remsfal-services/remsfal-platform/target/openapi/* export/
+
+      - name: Clone target frontend repo
+        env:
+          TOKEN: ${{ secrets.PAT }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+
+          git clone https://x-access-token:${TOKEN}@github.com/remsfal/remsfal-frontend.git
+          cd remsfal-frontend
+
+          git checkout -b sync-from-source || git checkout sync-from-source
+          mkdir -p frontend/src/helper/api/
+          cp -r ../export/* frontend/src/helper/api/
+
+          git add frontend/src/helper/api/
+          git commit -m "Update generated files from source repo" || echo "No changes to commit"
+          git push origin sync-from-source
+
+      - name: Push files to target repo via PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: "Automated OpenAPI Spec upload"
+          title: "Sync OpenAPI Spec"
+          body: "This PR contains updated OpenAPI Spec from the remsfal backend."
+          branch: sync-from-source
+          repository: Faust-toM/remsfal-frontend
