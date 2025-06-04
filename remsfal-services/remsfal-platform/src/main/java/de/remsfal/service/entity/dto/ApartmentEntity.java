@@ -78,19 +78,4 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
         return false;
     }
 
-    public static ApartmentEntity fromModel(ApartmentModel apartment) {
-        if(apartment == null) {
-            return null;
-        }
-        final ApartmentEntity entity = new ApartmentEntity();
-        entity.setId(apartment.getId());
-        entity.setTitle(apartment.getTitle());
-        entity.setLocation(apartment.getLocation());
-        entity.setDescription(apartment.getDescription());
-        entity.setLivingSpace(apartment.getLivingSpace());
-        entity.setUsableSpace(apartment.getUsableSpace());
-        entity.setHeatingSpace(apartment.getHeatingSpace());
-        return entity;
-    }
-
 }

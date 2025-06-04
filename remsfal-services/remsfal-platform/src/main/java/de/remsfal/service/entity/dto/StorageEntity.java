@@ -66,18 +66,4 @@ public class StorageEntity extends RentalUnitEntity implements StorageModel {
         return false;
     }
 
-    @Deprecated
-    public static StorageEntity fromModel(StorageModel garage) {
-        if(garage == null) {
-            return null;
-        }
-        final StorageEntity entity = new StorageEntity();
-        entity.setId(garage.getId());
-        entity.setTitle(garage.getTitle());
-        entity.setLocation(garage.getLocation());
-        entity.setDescription(garage.getDescription());
-        entity.setUsableSpace(garage.getUsableSpace());
-        return entity;
-    }
-
 }

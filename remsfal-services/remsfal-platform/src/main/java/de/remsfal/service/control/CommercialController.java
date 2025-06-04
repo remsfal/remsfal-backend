@@ -6,6 +6,7 @@ import de.remsfal.service.entity.dto.CommercialEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
@@ -21,15 +22,12 @@ public class CommercialController {
     @Inject
     CommercialRepository commercialRepository;
 
-    @Inject
-    TenancyController tenancyController;
-
     @Transactional
     public CommercialModel createCommercial(final String projectId, final String buildingId,
         final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
             projectId, buildingId, commercial);
-        CommercialEntity entity = CommercialEntity.fromModel(commercial);
+        CommercialEntity entity = updateCommercial(commercial, new CommercialEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -51,20 +49,36 @@ public class CommercialController {
         logger.infov("Updating a commercial (projectId={0}, commercialId={1})", projectId, commercialId);
         CommercialEntity entity = commercialRepository.findCommercialById(projectId, commercialId)
             .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+        return commercialRepository.merge(updateCommercial(commercial, entity));
+    }
 
-        if (commercial.getTitle() != null) {
-            entity.setTitle(commercial.getTitle());
+    @Transactional(TxType.MANDATORY)
+    private CommercialEntity updateCommercial(final CommercialModel model, final CommercialEntity entity) {
+        if (model.getTitle() != null) {
+            entity.setTitle(model.getTitle());
         }
-        if (commercial.getLocation() != null) {
-            entity.setLocation(commercial.getLocation());
+        if (model.getLocation() != null) {
+            entity.setLocation(model.getLocation());
         }
-        if (commercial.getCommercialSpace() != null) {
-            entity.setCommercialSpace(commercial.getCommercialSpace());
+        if (model.getDescription() != null) {
+            entity.setDescription(model.getDescription());
         }
-        if (commercial.getHeatingSpace() != null) {
-            entity.setHeatingSpace(commercial.getHeatingSpace());
+        if (model.getNetFloorArea() != null) {
+            entity.setNetFloorArea(model.getNetFloorArea());
         }
-        return commercialRepository.merge(entity);
+        if (model.getUsableFloorArea() != null) {
+            entity.setUsableFloorArea(model.getUsableFloorArea());
+        }
+        if (model.getTechnicalServicesArea() != null) {
+            entity.setTechnicalServicesArea(model.getTechnicalServicesArea());
+        }
+        if (model.getTrafficArea() != null) {
+            entity.setTrafficArea(model.getTrafficArea());
+        }
+        if (model.getHeatingSpace() != null) {
+            entity.setHeatingSpace(model.getHeatingSpace());
+        }
+        return entity;
     }
 
     @Transactional

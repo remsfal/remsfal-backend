@@ -104,20 +104,4 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         return false;
     }
 
-    @Deprecated
-    public static CommercialEntity fromModel(CommercialModel commercial) {
-        if(commercial == null) {
-            return null;
-        }
-        final CommercialEntity entity = new CommercialEntity();
-        entity.setId(commercial.getId());
-        entity.setTitle(commercial.getTitle());
-        entity.setLocation(commercial.getLocation());
-        entity.setDescription(commercial.getDescription());
-//        entity.setCommercialSpace(commercial.getCommercialSpace());
-  //      entity.setUsableSpace(commercial.getUsableSpace());
-        entity.setHeatingSpace(commercial.getHeatingSpace());
-        return entity;
-    }
-
 }

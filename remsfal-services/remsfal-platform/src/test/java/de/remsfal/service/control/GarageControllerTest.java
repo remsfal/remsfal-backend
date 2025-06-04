@@ -27,7 +27,7 @@ class GarageControllerTest extends AbstractTest {
     BuildingController buildingController;
 
     @Inject
-    GarageController garageController;
+    StorageController garageController;
 
     @BeforeEach
     void setupTestProjects() {

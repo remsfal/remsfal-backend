@@ -131,14 +131,4 @@ public class PropertyEntity extends RentalUnitEntity implements PropertyModel {
         return false;
     }
 
-    @Deprecated
-    public static PropertyEntity fromModel(PropertyModel property) {
-        final PropertyEntity entity = new PropertyEntity();
-        entity.setId(property.getId());
-        entity.setTitle(property.getTitle());
-        entity.setDescription(property.getDescription());
-        entity.setPlotArea(property.getPlotArea());
-        return entity;
-    }
-
 }

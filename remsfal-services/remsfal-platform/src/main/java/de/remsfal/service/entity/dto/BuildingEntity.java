@@ -133,22 +133,4 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
         return false;
     }
 
-    @Deprecated
-    public static BuildingEntity fromModel(BuildingModel building) {
-        if(building == null) {
-            return null;
-        }
-        final BuildingEntity entity = new BuildingEntity();
-        entity.setId(building.getId());
-        entity.setTitle(building.getTitle());
-        entity.setAddress(AddressEntity.fromModel(building.getAddress()));
-        entity.setDescription(building.getDescription());
-        entity.setLivingSpace(building.getLivingSpace());
-//        entity.setCommercialSpace(building.getCommercialSpace());
-        entity.setUsableSpace(building.getUsableSpace());
-        entity.setHeatingSpace(building.getHeatingSpace());
-  //      entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
-        return entity;
-    }
-
 }

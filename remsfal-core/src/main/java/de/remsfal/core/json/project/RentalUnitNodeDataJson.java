@@ -15,6 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public interface RentalUnitNodeDataJson extends RentalUnitModel {
 
+    @Override
     @Schema(description = "Type of the node (e.g., 'PROPERTY', 'BUILDING')", required = true, examples = "PROPERTY")
     UnitType getType();
 
@@ -40,5 +41,17 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
     @Nullable
     @Schema(description = "Usable space in square meters", examples = "350.5")
     Float getSpace();
+
+    public static RentalUnitNodeDataJson valueOf(final RentalUnitModel model) {
+        return ImmutableRentalUnitNodeDataJson.builder()
+            .id(model.getId())
+            .type(model.getType())
+            .title(model.getTitle())
+            .location(model.getLocation())
+            .description(model.getDescription())
+            .tenant("") // TODO: does that make sense?
+            .space(model.getSpace())
+            .build();
+    }
 
 }

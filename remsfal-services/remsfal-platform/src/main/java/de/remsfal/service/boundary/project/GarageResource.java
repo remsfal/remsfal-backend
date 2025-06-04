@@ -3,7 +3,7 @@ package de.remsfal.service.boundary.project;
 import de.remsfal.core.api.project.StorageEndpoint;
 import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.model.project.StorageModel;
-import de.remsfal.service.control.GarageController;
+import de.remsfal.service.control.StorageController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -15,7 +15,7 @@ import java.net.URI;
 public class GarageResource extends ProjectSubResource implements StorageEndpoint {
 
     @Inject
-    GarageController controller;
+    StorageController controller;
 
     @Override
     public Response createGarage(final String projectId, final String buildingId, final StorageJson garage) {
