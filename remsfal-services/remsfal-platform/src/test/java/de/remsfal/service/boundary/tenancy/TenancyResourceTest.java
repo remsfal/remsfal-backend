@@ -164,8 +164,6 @@ class TenancyResourceTest extends AbstractResourceTest {
             .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID))
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE))
             .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION))
-            .and().body("commercialSpace", Matchers.equalTo(TestData.COMMERCIAL_COMMERCIAL_SPACE))
-            .and().body("usableSpace", Matchers.equalTo(TestData.COMMERCIAL_USABLE_SPACE))
             .and().body("heatingSpace", Matchers.equalTo(TestData.COMMERCIAL_HEATING_SPACE))
             .and().body("location", Matchers.equalTo(TestData.COMMERCIAL_LOCATION));
     }
@@ -182,8 +180,6 @@ class TenancyResourceTest extends AbstractResourceTest {
             .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID))
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE))
             .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION))
-            .and().body("commercialSpace", Matchers.equalTo(TestData.COMMERCIAL_COMMERCIAL_SPACE))
-            .and().body("usableSpace", Matchers.equalTo(TestData.COMMERCIAL_USABLE_SPACE))
             .and().body("heatingSpace", Matchers.equalTo(TestData.COMMERCIAL_HEATING_SPACE))
             .and().body("location", Matchers.equalTo(TestData.COMMERCIAL_LOCATION));
     }

@@ -178,7 +178,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             .setParameter(3, TestData.PROPERTY_TITLE_1)
             .executeUpdate());
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE_2 + "\","
-            + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY_2 + "\","
+            + "\"landRegistry\":\"" + TestData.PROPERTY_LAND_REGISTRY_2 + "\","
             + "\"description\":\"" + TestData.PROPERTY_DESCRIPTION_2 + "\","
             + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA_2 + "\"}";
         given()
@@ -192,7 +192,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
 
@@ -205,7 +205,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
     }
@@ -213,7 +213,7 @@ class PropertyResourceTest extends AbstractResourceTest {
     @Test
     void getProperty_SUCCESS_samePropertyIsReturned() {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\","
-            + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY + "\","
+            + "\"landRegistry\":\"" + TestData.PROPERTY_LAND_REGISTRY_2 + "\","
             + "\"description\":\"" + TestData.PROPERTY_DESCRIPTION + "\","
             + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA + "\"}";
 
@@ -233,7 +233,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             .statusCode(Status.CREATED.getStatusCode())
             .and().body("id", Matchers.equalTo(propertyId))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA))
             .header("location", Matchers.startsWith("http://localhost:8081/api/v1/projects"))
@@ -249,7 +249,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(propertyId))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA));
     }

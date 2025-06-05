@@ -58,20 +58,32 @@ public abstract class AbstractResourceTest extends AbstractTest {
 
     protected void setupTestProperties() {
         insertProperty(TestData.PROPERTY_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_1,
-            TestData.PROPERTY_REG_ENTRY_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_PLOT_AREA_1);
+            TestData.PROPERTY_LOCATION_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_LAND_REGISTRY_1,
+            TestData.PROPERTY_CADASTRAL_DESTRICT_1, TestData.PROPERTY_SHEET_NUMBER_1,
+            TestData.PROPERTY_PLOT_NUMBER_1, TestData.PROPERTY_CADASTRAL_SECTION_1,
+            TestData.PROPERTY_PLOT_1, TestData.PROPERTY_ECONOMY_TYPE_1, TestData.PROPERTY_PLOT_AREA_1);
         insertProperty(TestData.PROPERTY_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_2,
-            TestData.PROPERTY_REG_ENTRY_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_PLOT_AREA_2);
+            TestData.PROPERTY_LOCATION_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_LAND_REGISTRY_2,
+            TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
+            TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
+            TestData.PROPERTY_PLOT_2, TestData.PROPERTY_ECONOMY_TYPE_2, TestData.PROPERTY_PLOT_AREA_2);
         insertProperty(UUID.randomUUID().toString(), TestData.PROJECT_ID_2, TestData.PROPERTY_TITLE_1,
-            TestData.PROPERTY_REG_ENTRY_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_PLOT_AREA_1);
+            TestData.PROPERTY_LOCATION_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_LAND_REGISTRY_2,
+            TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
+            TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
+            TestData.PROPERTY_PLOT_2, TestData.PROPERTY_ECONOMY_TYPE_2, TestData.PROPERTY_PLOT_AREA_2);
         insertProperty(UUID.randomUUID().toString(), TestData.PROJECT_ID_3, TestData.PROPERTY_TITLE_2,
-            TestData.PROPERTY_REG_ENTRY_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_PLOT_AREA_2);
+            TestData.PROPERTY_LOCATION_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_LAND_REGISTRY_2,
+            TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
+            TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
+            TestData.PROPERTY_PLOT_2, TestData.PROPERTY_ECONOMY_TYPE_2, TestData.PROPERTY_PLOT_AREA_2);
     }
 
     protected void setupTestSites() {
         insertAddress(TestData.ADDRESS_ID_5, TestData.ADDRESS_STREET_5, TestData.ADDRESS_CITY_5,
             TestData.ADDRESS_PROVINCE_5, TestData.ADDRESS_ZIP_5, TestData.ADDRESS_COUNTRY_5);
         insertSite(TestData.SITE_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_TITLE_1,
-            TestData.ADDRESS_ID_5, TestData.SITE_DESCRIPTION, TestData.SITE_USABLE_SPACE);
+            TestData.ADDRESS_ID_5, TestData.SITE_DESCRIPTION, TestData.SITE_OUTDOOR_AREA);
     }
 
     protected void setupTestBuildings() {
@@ -79,14 +91,24 @@ public abstract class AbstractResourceTest extends AbstractTest {
             TestData.ADDRESS_PROVINCE_6, TestData.ADDRESS_ZIP_6, TestData.ADDRESS_COUNTRY_6);
         insertBuilding(TestData.BUILDING_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID,
             TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1,
-            TestData.BUILDING_LIVING_SPACE_1, TestData.BUILDING_COMMERCIAL_SPACE_1,
-            TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_6);
+            null, null, null, null, null, null, TestData.ADDRESS_ID_6);
         insertAddress(TestData.ADDRESS_ID_7, TestData.ADDRESS_STREET_7, TestData.ADDRESS_CITY_7,
             TestData.ADDRESS_PROVINCE_7, TestData.ADDRESS_ZIP_7, TestData.ADDRESS_COUNTRY_7);
         insertBuilding(TestData.BUILDING_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_ID,
             TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2,
-            TestData.BUILDING_LIVING_SPACE_2, TestData.BUILDING_COMMERCIAL_SPACE_2,
-            TestData.BUILDING_USABLE_SPACE_2, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_7);
+            null, null, null, null, null, null, TestData.ADDRESS_ID_7);
+        insertAddress(TestData.ADDRESS_ID_8, TestData.ADDRESS_STREET_8, TestData.ADDRESS_CITY_8,
+            TestData.ADDRESS_PROVINCE_8, TestData.ADDRESS_ZIP_8, TestData.ADDRESS_COUNTRY_8);
+        insertBuilding(UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
+            TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1,
+            null, null, null, TestData.BUILDING_LIVING_SPACE_1,
+            TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_8);
+        insertAddress(TestData.ADDRESS_ID_9, TestData.ADDRESS_STREET_9, TestData.ADDRESS_CITY_9,
+            TestData.ADDRESS_PROVINCE_9, TestData.ADDRESS_ZIP_9, TestData.ADDRESS_COUNTRY_9);
+        insertBuilding(UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
+            TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2,
+            TestData.BUILDING_GROSS_FLOOR_AREA_2, TestData.BUILDING_NET_FLOOR_AREA_2,
+            TestData.BUILDING_CONSTRUCTION_FLOOR_AREA_2, null, null, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_9);
 
         insertApartment(TestData.APARTMENT_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID,
             TestData.APARTMENT_TITLE_1, TestData.APARTMENT_LOCATION_1, TestData.APARTMENT_DESCRIPTION_1,
@@ -97,12 +119,11 @@ public abstract class AbstractResourceTest extends AbstractTest {
 
         insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID,
             TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1,
-            TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1,
-            TestData.COMMERCIAL_HEATING_SPACE_1);
+            TestData.COMMERCIAL_NET_FLOOR_AREA_1, null, null, null, TestData.COMMERCIAL_HEATING_SPACE_1);
         insertCommercial(TestData.COMMERCIAL_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID,
             TestData.COMMERCIAL_TITLE_2, TestData.COMMERCIAL_LOCATION_2, TestData.COMMERCIAL_DESCRIPTION_2,
-            TestData.COMMERCIAL_COMMERCIAL_SPACE_2, TestData.COMMERCIAL_USABLE_SPACE_2,
-            TestData.COMMERCIAL_HEATING_SPACE_2);
+            null, TestData.COMMERCIAL_USABLE_FLOOR_AREA_2, TestData.COMMERCIAL_TECHNICAL_SERVICE_AREA_2,
+            TestData.COMMERCIAL_TRAFFIC_AREA_2, TestData.COMMERCIAL_HEATING_SPACE_2);
 
         insertStorage(TestData.STORAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID,
             TestData.STORAGE_TITLE_1, TestData.STORAGE_LOCATION_1, TestData.STORAGE_DESCRIPTION_1,
@@ -163,19 +184,28 @@ public abstract class AbstractResourceTest extends AbstractTest {
 
     protected void insertProperty(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LOCATION, DESCRIPTION, "
+                    + "LAND_REGISTRY, CADASTRAL_DISTRICT, SHEET_NUMBER, PLOT_NUMBER, CADASTRAL_SECTION, "
+                    + "PLOT, ECONOMY_TYPE, PLOT_AREA) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
                 .setParameter(4, params[3])
                 .setParameter(5, params[4])
                 .setParameter(6, params[5])
+                .setParameter(7, params[6])
+                .setParameter(8, params[7])
+                .setParameter(9, params[8])
+                .setParameter(10, params[9])
+                .setParameter(11, params[10])
+                .setParameter(12, params[11])
+                .setParameter(13, params[12])
                 .executeUpdate());
     }
 
     protected void insertSite(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO SITE (ID, PROJECT_ID, PROPERTY_ID, TITLE, ADDRESS_ID, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO SITE (ID, PROJECT_ID, PROPERTY_ID, TITLE, ADDRESS_ID, DESCRIPTION, OUTDOOR_AREA) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -188,7 +218,9 @@ public abstract class AbstractResourceTest extends AbstractTest {
 
     protected void insertBuilding(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO BUILDING (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, LIVING_SPACE, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO BUILDING (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, "
+                    + "GROSS_FLOOR_AREA, NET_FLOOR_AREA, CONSTRUCTION_FLOOR_AREA, LIVING_SPACE, USABLE_SPACE, "
+                    + "HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -199,6 +231,8 @@ public abstract class AbstractResourceTest extends AbstractTest {
                 .setParameter(8, params[7])
                 .setParameter(9, params[8])
                 .setParameter(10, params[9])
+                .setParameter(11, params[10])
+                .setParameter(12, params[11])
                 .executeUpdate());
     }
 
@@ -232,7 +266,9 @@ public abstract class AbstractResourceTest extends AbstractTest {
 
     protected void insertCommercial(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, "
+                    + "DESCRIPTION, NET_FLOOR_AREA, USABLE_FLOOR_AREA, TECHNICAL_SERVICE_AREA, TRAFFIC_AREA, "
+                    + "HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -242,6 +278,8 @@ public abstract class AbstractResourceTest extends AbstractTest {
                 .setParameter(7, params[6])
                 .setParameter(8, params[7])
                 .setParameter(9, params[8])
+                .setParameter(10, params[9])
+                .setParameter(11, params[10])
                 .executeUpdate());
     }
 

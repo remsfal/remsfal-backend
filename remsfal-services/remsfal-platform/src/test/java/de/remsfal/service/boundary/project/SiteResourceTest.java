@@ -126,7 +126,7 @@ class SiteResourceTest extends AbstractResourceTest {
             .and().body("address.countryCode", Matchers.equalTo("DE"))
             .and().body("address.country", Matchers.nullValue())
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION))
-            .and().body("usableSpace", Matchers.equalTo(TestData.SITE_USABLE_SPACE));
+            .and().body("outdoorArea", Matchers.equalTo(TestData.SITE_OUTDOOR_AREA));
     }
 
     @Test

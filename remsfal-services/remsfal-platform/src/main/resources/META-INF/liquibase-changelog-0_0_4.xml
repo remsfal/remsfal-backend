@@ -76,7 +76,7 @@
             <column name="LAND_REGISTRY" type="varchar(255)" />
             <column name="CADASTRAL_DISTRICT" type="varchar(255)" />
             <column name="SHEET_NUMBER" type="varchar(255)" />
-            <column name="PLOT_NUMBER" type="varchar(255)" />
+            <column name="PLOT_NUMBER" type="int" />
             <column name="CADASTRAL_SECTION" type="varchar(255)" />
             <column name="PLOT" type="varchar(255)" />
             <column name="ECONOMY_TYPE" type="varchar(255)" />

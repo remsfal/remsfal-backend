@@ -27,7 +27,6 @@ class GarageResourceTest extends AbstractResourceTest {
     private static final String BUILDING_JSON = "{ \"description\":\"" + TestData.BUILDING_DESCRIPTION + "\"," +
         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE + "\"," +
         " \"title\":\"" + TestData.BUILDING_TITLE + "\"," +
-        " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE + "\"," +
         " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE + "\"," +
         " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE + "\"," +
         " \"address\": {" +

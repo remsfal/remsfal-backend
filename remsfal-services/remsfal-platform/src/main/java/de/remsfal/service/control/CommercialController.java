@@ -6,7 +6,6 @@ import de.remsfal.service.entity.dto.CommercialEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
@@ -52,7 +51,6 @@ public class CommercialController {
         return commercialRepository.merge(updateCommercial(commercial, entity));
     }
 
-    @Transactional(TxType.MANDATORY)
     private CommercialEntity updateCommercial(final CommercialModel model, final CommercialEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());

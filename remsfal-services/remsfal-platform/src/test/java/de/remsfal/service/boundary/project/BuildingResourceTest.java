@@ -36,7 +36,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -69,7 +68,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -102,7 +100,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -127,7 +124,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -151,7 +147,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -173,7 +168,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -197,7 +191,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -218,7 +211,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -242,7 +234,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -266,7 +257,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -299,7 +289,6 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +

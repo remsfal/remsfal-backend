@@ -15,7 +15,6 @@ import de.remsfal.service.entity.dto.PropertyEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
@@ -84,7 +83,6 @@ public class PropertyController {
         return propertyRepository.merge(updateProperty(property, entity));
     }
 
-    @Transactional(TxType.MANDATORY)
     private PropertyEntity updateProperty(final PropertyModel model, final PropertyEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());

@@ -6,7 +6,6 @@ import de.remsfal.service.entity.dto.ApartmentEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
@@ -53,7 +52,6 @@ public class ApartmentController {
         return apartmentRepository.merge(updateApartment(apartment, entity));
     }
 
-    @Transactional(TxType.MANDATORY)
     private ApartmentEntity updateApartment(final ApartmentModel model, final ApartmentEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());

@@ -6,7 +6,6 @@ import de.remsfal.service.entity.dto.BuildingEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 
 import org.jboss.logging.Logger;
 
@@ -59,7 +58,6 @@ public class BuildingController {
         return buildingRepository.merge(updateBuilding(building, entity));
     }
 
-    @Transactional(TxType.MANDATORY)
     private BuildingEntity updateBuilding(final BuildingModel model, final BuildingEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());

@@ -6,7 +6,6 @@ import de.remsfal.service.entity.dto.StorageEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
@@ -48,7 +47,6 @@ public class StorageController {
         return garageRepository.merge(updateStorage(garage, entity));
     }
 
-    @Transactional(TxType.MANDATORY)
     private StorageEntity updateStorage(final StorageModel model, final StorageEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());

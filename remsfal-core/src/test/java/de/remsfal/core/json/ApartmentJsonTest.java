@@ -18,10 +18,10 @@ class ApartmentJsonTest {
                 77.36f, 0f, 77.36f);
 
         ApartmentJson apartmentJson = ApartmentJson.valueOf(apartmentModel);
-        String apartmentJsonString = "ApartmentJson{id=b9440c43-b5c0-4951-9c24-000000000001," +
-                " title=2 Zimmerwohnung 1.OG rechts, location=1. OG rechts, description=Frisch renoviert," +
-                " Fliesen im Flur, Parkett im Wohnzimmer, livingSpace=77.36, usableSpace=0.0," +
-                " heatingSpace=77.36}";
+        String apartmentJsonString = "ApartmentJson{type=APARTMENT, space=77.36, "
+            + "id=b9440c43-b5c0-4951-9c24-000000000001, title=2 Zimmerwohnung 1.OG rechts, "
+            + "location=1. OG rechts, description=Frisch renoviert, Fliesen im Flur, Parkett im Wohnzimmer, "
+            + "livingSpace=77.36, usableSpace=0.0, heatingSpace=77.36}";
 
         assertEquals(apartmentJsonString, apartmentJson.toString());
         assertNotNull(apartmentJson);

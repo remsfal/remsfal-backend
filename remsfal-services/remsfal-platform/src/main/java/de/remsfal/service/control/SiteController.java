@@ -6,7 +6,6 @@ import de.remsfal.service.entity.dto.SiteEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
@@ -54,7 +53,6 @@ public class SiteController {
         return repository.merge(updateSite(site, entity));
     }
 
-    @Transactional(TxType.MANDATORY)
     private SiteEntity updateSite(final SiteModel model, final SiteEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());

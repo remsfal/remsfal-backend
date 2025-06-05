@@ -410,8 +410,15 @@ public class TestData {
     // Default test property
     public static final String PROPERTY_ID = TestData.PROPERTY_ID_1;
     public static final String PROPERTY_TITLE = TestData.PROPERTY_TITLE_1;
-    public static final String PROPERTY_REG_ENTRY = TestData.PROPERTY_REG_ENTRY_1;
+    public static final String PROPERTY_LOCATION = TestData.PROPERTY_LOCATION_1;
     public static final String PROPERTY_DESCRIPTION = TestData.PROPERTY_DESCRIPTION_1;
+    public static final String PROPERTY_LAND_REGISTRY = TestData.PROPERTY_LAND_REGISTRY_1;
+    public static final String PROPERTY_CADASTRAL_DESTRICT = TestData.PROPERTY_CADASTRAL_DESTRICT_1;
+    public static final String PROPERTY_SHEET_NUMBER = TestData.PROPERTY_SHEET_NUMBER_1;
+    public static final Integer PROPERTY_PLOT_NUMBER = TestData.PROPERTY_PLOT_NUMBER_1;
+    public static final String PROPERTY_CADASTRAL_SECTION = TestData.PROPERTY_CADASTRAL_SECTION_1;
+    public static final String PROPERTY_PLOT = TestData.PROPERTY_PLOT_1;
+    public static final String PROPERTY_ECONOMY_TYPE = TestData.PROPERTY_ECONOMY_TYPE_1;
     public static final Integer PROPERTY_PLOT_AREA = TestData.PROPERTY_PLOT_AREA_1;
     
     public static final ImmutablePropertyJson.Builder propertyBuilder() {
@@ -421,32 +428,55 @@ public class TestData {
     // Test property 1
     public static final String PROPERTY_ID_1 = "b9440c43-b5c0-4951-9c27-000000000001";
     public static final String PROPERTY_TITLE_1 = "Kleinesiedlung";
-    public static final String PROPERTY_REG_ENTRY_1 = "Amtsgericht Schönestadt, Grundbuch von Kleinesiedlung, Blatt 4711";
+    public static final String PROPERTY_LOCATION_1 = ADDRESS_STREET_18
+        + ", " + ADDRESS_ZIP_18 + " " + ADDRESS_CITY_18;
     public static final String PROPERTY_DESCRIPTION_1 = "Example description of Kleinesiedlung";
+    public static final String PROPERTY_LAND_REGISTRY_1 = "Amtsgericht Schönestadt";
+    public static final String PROPERTY_CADASTRAL_DESTRICT_1 = "Grundbuch von Kleinesiedlung";
+    public static final String PROPERTY_SHEET_NUMBER_1 = "4711";
+    public static final Integer PROPERTY_PLOT_NUMBER_1 = 1;
+    public static final String PROPERTY_CADASTRAL_SECTION_1 = "48";
+    public static final String PROPERTY_PLOT_1 = "12";
+    public static final String PROPERTY_ECONOMY_TYPE_1 = "Gebäude- und Freifläche";
     public static final Integer PROPERTY_PLOT_AREA_1 = 1234;
-
-    // Test property 2
-    public static final String PROPERTY_ID_2 = "8b4f2703-94ca-490f-ae08-a787c716415f";
-    public static final String PROPERTY_TITLE_2 = "Test-Siedling Bremen";
-    public static final String PROPERTY_REG_ENTRY_2 = "Amtsgericht Bremen";
-    public static final String PROPERTY_DESCRIPTION_2 = "Example description of Test-Siedling";
-    public static final Integer PROPERTY_PLOT_AREA_2 = 4444;
 
     public static final ImmutablePropertyJson.Builder propertyBuilder1() {
         return ImmutablePropertyJson
             .builder()
             .id(PROPERTY_ID_1)
             .title(PROPERTY_TITLE_1)
-            .landRegisterEntry(PROPERTY_REG_ENTRY_1)
+            .location(PROPERTY_LOCATION_1)
             .description(PROPERTY_DESCRIPTION_1)
+            .landRegistry(PROPERTY_LAND_REGISTRY_1)
+            .cadastralDistrict(PROPERTY_CADASTRAL_DESTRICT_1)
+            .sheetNumber(PROPERTY_SHEET_NUMBER_1)
+            .plotNumber(PROPERTY_PLOT_NUMBER_1)
+            .cadastralSection(PROPERTY_CADASTRAL_SECTION_1)
+            .plot(PROPERTY_PLOT_1)
+            .economyType(PROPERTY_ECONOMY_TYPE_1)
             .plotArea(PROPERTY_PLOT_AREA_1);
     }
+
+    // Test property 2
+    public static final String PROPERTY_ID_2 = "8b4f2703-94ca-490f-ae08-a787c716415f";
+    public static final String PROPERTY_TITLE_2 = "Test-Siedling Bremen";
+    public static final String PROPERTY_LOCATION_2 = ADDRESS_STREET_19
+        + ", " + ADDRESS_ZIP_19 + " " + ADDRESS_CITY_19;
+    public static final String PROPERTY_DESCRIPTION_2 = "Example description of Test-Siedling";
+    public static final String PROPERTY_LAND_REGISTRY_2 = "Amtsgericht Bremen";
+    public static final String PROPERTY_CADASTRAL_DESTRICT_2 = "Grundbuch von Bremen";
+    public static final String PROPERTY_SHEET_NUMBER_2 = "4766";
+    public static final Integer PROPERTY_PLOT_NUMBER_2 = 99;
+    public static final String PROPERTY_CADASTRAL_SECTION_2 = "448";
+    public static final String PROPERTY_PLOT_2 = "132";
+    public static final String PROPERTY_ECONOMY_TYPE_2 = "Gebäude- und Freifläche";
+    public static final Integer PROPERTY_PLOT_AREA_2 = 4444;
 
     // Default test site
     public static final String SITE_ID = TestData.SITE_ID_1;
     public static final String SITE_TITLE = TestData.SITE_TITLE_1;
     public static final String SITE_DESCRIPTION = TestData.SITE_DESCRIPTION_1;
-    public static final Float SITE_USABLE_SPACE = TestData.SITE_USABLE_SPACE_1;
+    public static final Float SITE_OUTDOOR_AREA = TestData.SITE_OUTDOOR_AREA_1;
 
     public static final ImmutableSiteJson.Builder siteBuilder() {
         return siteBuilder1();
@@ -456,7 +486,7 @@ public class TestData {
     public static final String SITE_ID_1 = "b9440c43-b5c0-4951-9c26-000000000001";
     public static final String SITE_TITLE_1 = "PKW Stellplatz";
     public static final String SITE_DESCRIPTION_1 = "Stellplatz mit Carport";
-    public static final Float SITE_USABLE_SPACE_1 = 13.4f;
+    public static final Float SITE_OUTDOOR_AREA_1 = 13.4f;
     
     public static final ImmutableSiteJson.Builder siteBuilder1() {
         return ImmutableSiteJson
@@ -464,7 +494,7 @@ public class TestData {
             .id(SITE_ID_1)
             .title(SITE_TITLE_1)
             .description(SITE_DESCRIPTION_1)
-            .usableSpace(SITE_USABLE_SPACE_1);
+            .outdoorArea(SITE_OUTDOOR_AREA_1);
     }
 
     // Default test building
@@ -472,7 +502,6 @@ public class TestData {
     public static final String BUILDING_TITLE = TestData.BUILDING_TITLE_1;
     public static final String BUILDING_DESCRIPTION = TestData.BUILDING_DESCRIPTION_1;
     public static final Float BUILDING_LIVING_SPACE = TestData.BUILDING_LIVING_SPACE_1;
-    public static final Float BUILDING_COMMERCIAL_SPACE = TestData.BUILDING_COMMERCIAL_SPACE_1;
     public static final Float BUILDING_USABLE_SPACE = TestData.BUILDING_USABLE_SPACE_1;
     public static final Float BUILDING_HEATING_SPACE = TestData.BUILDING_HEATING_SPACE_1;
 
@@ -485,7 +514,6 @@ public class TestData {
     public static final String BUILDING_TITLE_1 = "Maximiliankorso (Fam. Rudolf)";
     public static final String BUILDING_DESCRIPTION_1 = "Flachbau mit zwei Stockwerken";
     public static final Float BUILDING_LIVING_SPACE_1 = 87.46f;
-    public static final Float BUILDING_COMMERCIAL_SPACE_1 = 103.22f;
     public static final Float BUILDING_USABLE_SPACE_1 = 53.9f;
     public static final Float BUILDING_HEATING_SPACE_1 = 103.22f;
 
@@ -496,32 +524,29 @@ public class TestData {
             .title(TestData.BUILDING_TITLE_1)
             .description(TestData.BUILDING_DESCRIPTION_1)
             .livingSpace(TestData.BUILDING_LIVING_SPACE_1)
-            .commercialSpace(TestData.BUILDING_COMMERCIAL_SPACE_1)
             .usableSpace(TestData.BUILDING_USABLE_SPACE_1)
-            .heatingSpace(TestData.BUILDING_HEATING_SPACE_1)
-            .differentHeatingSpace(true);
+            .heatingSpace(TestData.BUILDING_HEATING_SPACE_1);
     }
       
     // Test building 2
     public static final String BUILDING_ID_2 = "b9440c43-b5c0-4951-9c25-000000000002";
     public static final String BUILDING_TITLE_2 = "Bavariaplatz (Fam. Müller)";
     public static final String BUILDING_DESCRIPTION_2 = "Einfamilienhaus mit Garten";
-    public static final Float BUILDING_LIVING_SPACE_2 = 120.75f;
-    public static final Float BUILDING_COMMERCIAL_SPACE_2 = 0.0f;
-    public static final Float BUILDING_USABLE_SPACE_2 = 70.5f;
-    public static final Float BUILDING_HEATING_SPACE_2 = 120.75f;
+    public static final Float BUILDING_GROSS_FLOOR_AREA_2 = 430.5f;
+    public static final Float BUILDING_NET_FLOOR_AREA_2 = 400.0f;
+    public static final Float BUILDING_CONSTRUCTION_FLOOR_AREA_2 = 70.5f;
+    public static final Float BUILDING_HEATING_SPACE_2 = 420.75f;
 
     public static final ImmutableBuildingJson.Builder buildingBuilder2() {
         return ImmutableBuildingJson
-                .builder()
-                .id(TestData.BUILDING_ID_2)
-                .title(TestData.BUILDING_TITLE_2)
-                .description(TestData.BUILDING_DESCRIPTION_2)
-                .livingSpace(TestData.BUILDING_LIVING_SPACE_2)
-                .commercialSpace(TestData.BUILDING_COMMERCIAL_SPACE_2)
-                .usableSpace(TestData.BUILDING_USABLE_SPACE_2)
-                .heatingSpace(TestData.BUILDING_HEATING_SPACE_2)
-                .differentHeatingSpace(false);
+            .builder()
+            .id(TestData.BUILDING_ID_2)
+            .title(TestData.BUILDING_TITLE_2)
+            .description(TestData.BUILDING_DESCRIPTION_2)
+            .grossFloorArea(TestData.BUILDING_GROSS_FLOOR_AREA_2)
+            .netFloorArea(TestData.BUILDING_NET_FLOOR_AREA_2)
+            .constructionFloorArea(TestData.BUILDING_CONSTRUCTION_FLOOR_AREA_2)
+            .heatingSpace(TestData.BUILDING_HEATING_SPACE_2);
     }
 
     // Default test apartment
@@ -584,8 +609,7 @@ public class TestData {
     public static final String COMMERCIAL_TITLE = TestData.COMMERCIAL_TITLE_1;
     public static final String COMMERCIAL_LOCATION = TestData.COMMERCIAL_LOCATION_1;
     public static final String COMMERCIAL_DESCRIPTION = TestData.COMMERCIAL_DESCRIPTION_1;
-    public static final Float COMMERCIAL_COMMERCIAL_SPACE = TestData.COMMERCIAL_COMMERCIAL_SPACE_1;
-    public static final Float COMMERCIAL_USABLE_SPACE = TestData.COMMERCIAL_USABLE_SPACE_1;
+    public static final Float COMMERCIAL_NET_FLOOR_AREA = TestData.COMMERCIAL_NET_FLOOR_AREA_1;
     public static final Float COMMERCIAL_HEATING_SPACE = TestData.COMMERCIAL_HEATING_SPACE_1;
     
     public static final ImmutableCommercialJson.Builder commercialBuilder() {
@@ -597,8 +621,7 @@ public class TestData {
     public static final String COMMERCIAL_TITLE_1 = "Bäckerei Lempke";
     public static final String COMMERCIAL_LOCATION_1 = "EG links";
     public static final String COMMERCIAL_DESCRIPTION_1 = "Bäckerei mit Tischen vor dem Haus";
-    public static final Float COMMERCIAL_COMMERCIAL_SPACE_1 = 423.92f;
-    public static final Float COMMERCIAL_USABLE_SPACE_1 = 53.9f;
+    public static final Float COMMERCIAL_NET_FLOOR_AREA_1 = 423.92f;
     public static final Float COMMERCIAL_HEATING_SPACE_1 = 204.27f;
 
     public static final ImmutableCommercialJson.Builder commercialBuilder1() {
@@ -608,8 +631,7 @@ public class TestData {
         .title(COMMERCIAL_TITLE_1)
         .location(COMMERCIAL_LOCATION_1)
         .description(COMMERCIAL_DESCRIPTION_1)
-        .commercialSpace(COMMERCIAL_COMMERCIAL_SPACE_1)
-        .usableSpace(COMMERCIAL_USABLE_SPACE_1)
+        .netFloorArea(COMMERCIAL_NET_FLOOR_AREA_1)
         .heatingSpace(COMMERCIAL_HEATING_SPACE_1);
     }
 
@@ -618,8 +640,9 @@ public class TestData {
     public static final String COMMERCIAL_TITLE_2 = "Bäckerei Ekpmel";
     public static final String COMMERCIAL_LOCATION_2 = "EG rechts";
     public static final String COMMERCIAL_DESCRIPTION_2 = "Bäckerei mit Tischen hinter dem Haus";
-    public static final Float COMMERCIAL_COMMERCIAL_SPACE_2 = 450.92f;
-    public static final Float COMMERCIAL_USABLE_SPACE_2 = 100.9f;
+    public static final Float COMMERCIAL_USABLE_FLOOR_AREA_2 = 450.92f;
+    public static final Float COMMERCIAL_TECHNICAL_SERVICE_AREA_2 = 100.9f;
+    public static final Float COMMERCIAL_TRAFFIC_AREA_2 = 53.9f;
     public static final Float COMMERCIAL_HEATING_SPACE_2 = 134.27f;
 
     public static final ImmutableCommercialJson.Builder commercialBuilder2() {
@@ -629,8 +652,9 @@ public class TestData {
                 .title(COMMERCIAL_TITLE_2)
                 .location(COMMERCIAL_LOCATION_2)
                 .description(COMMERCIAL_DESCRIPTION_2)
-                .commercialSpace(COMMERCIAL_COMMERCIAL_SPACE_2)
-                .usableSpace(COMMERCIAL_USABLE_SPACE_2)
+                .usableFloorArea(COMMERCIAL_USABLE_FLOOR_AREA_2)
+                .technicalServicesArea(COMMERCIAL_TECHNICAL_SERVICE_AREA_2)
+                .trafficArea(COMMERCIAL_TRAFFIC_AREA_2)
                 .heatingSpace(COMMERCIAL_HEATING_SPACE_2);
     }
 

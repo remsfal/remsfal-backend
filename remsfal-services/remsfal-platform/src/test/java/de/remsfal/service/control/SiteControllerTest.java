@@ -95,7 +95,7 @@ class SiteControllerTest extends AbstractTest {
         assertEquals(site.getAddress().getProvince(), result.getAddress().getProvince());
         assertEquals(site.getAddress().getZip(), result.getAddress().getZip());
         assertEquals(site.getDescription(), result.getDescription());
-        assertEquals(site.getUsableSpace(), result.getUsableSpace());
+        assertEquals(site.getOutdoorArea(), result.getOutdoorArea());
         
         final SiteEntity entity = entityManager
             .createQuery("SELECT s FROM SiteEntity s where s.title = :title", SiteEntity.class)
@@ -118,7 +118,7 @@ class SiteControllerTest extends AbstractTest {
         assertEquals(site.getId(), result.getId());
         assertEquals(site.getTitle(), result.getTitle());
         assertEquals(site.getDescription(), result.getDescription());
-        assertEquals(site.getUsableSpace(), result.getUsableSpace());
+        assertEquals(site.getOutdoorArea(), result.getOutdoorArea());
     }
     
     @Test

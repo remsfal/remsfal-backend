@@ -54,8 +54,7 @@ class CommercialResourceTest extends AbstractResourceTest {
             .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID_1))
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
             .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
-            .and().body("commercialSpace", Matchers.equalTo(TestData.COMMERCIAL_COMMERCIAL_SPACE_1))
-            .and().body("usableSpace", Matchers.equalTo(TestData.COMMERCIAL_USABLE_SPACE_1))
+            .and().body("netFloorArea", Matchers.equalTo(TestData.COMMERCIAL_NET_FLOOR_AREA_1))
             .and().body("heatingSpace", Matchers.equalTo(TestData.COMMERCIAL_HEATING_SPACE_1))
             .and().body("location", Matchers.equalTo(TestData.COMMERCIAL_LOCATION_1));
     }
@@ -105,10 +104,9 @@ class CommercialResourceTest extends AbstractResourceTest {
             .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID))
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_2))
             .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
-            .and().body("commercialSpace", Matchers.equalTo(TestData.COMMERCIAL_COMMERCIAL_SPACE_1))
+            .and().body("netFloorArea", Matchers.equalTo(TestData.COMMERCIAL_NET_FLOOR_AREA_1))
             .and().body("heatingSpace", Matchers.equalTo(TestData.COMMERCIAL_HEATING_SPACE_1))
-            .and().body("location", Matchers.equalTo(TestData.COMMERCIAL_LOCATION_1))
-            .and().body("usableSpace", Matchers.equalTo(TestData.COMMERCIAL_USABLE_SPACE_1));
+            .and().body("location", Matchers.equalTo(TestData.COMMERCIAL_LOCATION_1));
 
         given()
             .when()
