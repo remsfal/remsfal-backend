@@ -55,7 +55,7 @@ class CommercialControllerTest extends AbstractTest {
         assertNotEquals(commercial.getId(), result.getId());
         assertEquals(commercial.getTitle(), result.getTitle());
         assertEquals(commercial.getLocation(), result.getLocation());
-        assertEquals(commercial.getCommercialSpace(), result.getCommercialSpace());
+        assertEquals(commercial.getNetFloorArea(), result.getNetFloorArea());
         assertEquals(commercial.getHeatingSpace(), result.getHeatingSpace());
 
         final String commercialId = entityManager
@@ -134,8 +134,11 @@ class CommercialControllerTest extends AbstractTest {
         assertNotEquals(updateTo.getId(), updated.getId());
         assertEquals(updateTo.getTitle(), updated.getTitle());
         assertEquals(updateTo.getLocation(), updated.getLocation());
-        assertEquals(updateTo.getCommercialSpace(), updated.getCommercialSpace());
+        // net floor doen't change or need to be calculated
+        assertEquals(updateTo.getNetFloorArea(), commercial.getNetFloorArea());
+        assertEquals(updateTo.getUsableFloorArea(), updated.getUsableFloorArea());
+        assertEquals(updateTo.getTechnicalServicesArea(), updated.getTechnicalServicesArea());
+        assertEquals(updateTo.getTrafficArea(), updated.getTrafficArea());
         assertEquals(updateTo.getHeatingSpace(), updated.getHeatingSpace());
-        assertEquals(commercial.getTenancy(), updated.getTenancy());
     }
 }

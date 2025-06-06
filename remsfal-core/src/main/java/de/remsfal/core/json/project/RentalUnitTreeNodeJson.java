@@ -3,6 +3,8 @@ package de.remsfal.core.json.project;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.model.project.RentalUnitModel;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
@@ -21,5 +23,12 @@ public abstract class RentalUnitTreeNodeJson {
 
     @Schema(description = "Children nodes")
     public abstract List<RentalUnitTreeNodeJson> getChildren();
+
+    public static RentalUnitTreeNodeJson valueOf(final RentalUnitModel model) {
+        return ImmutableRentalUnitTreeNodeJson.builder()
+            .key(model.getId())
+            .data(RentalUnitNodeDataJson.valueOf(model))
+            .build();
+    }
 
 }

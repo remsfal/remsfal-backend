@@ -21,6 +21,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Email;
 
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
