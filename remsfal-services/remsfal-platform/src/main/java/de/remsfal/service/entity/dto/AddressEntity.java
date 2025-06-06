@@ -89,21 +89,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     }
 
     public String toString() {
-        return String.format("street=%s, " +
-            "city=%s, province=%s, zip=%s, country=%s", street, city, province, zip, country);
-    }
-
-    public static AddressEntity fromModel(final AddressModel address) {
-        if(address == null) {
-            return null;
-        }
-        final AddressEntity entity = new AddressEntity();
-        entity.setStreet(address.getStreet());
-        entity.setCity(address.getCity());
-        entity.setProvince(address.getProvince());
-        entity.setZip(address.getZip());
-        entity.setCountry(address.getCountry());
-        return entity;
+        return String.format("%s, %s %s, %s %s", street, zip, city, country, province);
     }
 
 }

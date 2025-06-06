@@ -4,6 +4,7 @@ import org.immutables.value.Value;
 
 import de.remsfal.core.model.AddressModel;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.PositiveOrZero;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -19,6 +20,7 @@ public interface SiteModel extends RentalUnitModel {
     @Nullable
     AddressModel getAddress();
 
+    @PositiveOrZero
     @Nullable
     Float getOutdoorArea(); // Außenanlagenfläche (AF) nach DIN 277
 

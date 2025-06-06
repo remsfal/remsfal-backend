@@ -25,6 +25,7 @@ import de.remsfal.core.model.project.PropertyModel;
 public abstract class PropertyJson implements PropertyModel {
 
     @Null
+    @Nullable
     @Override
     public abstract String getId();
 
@@ -35,10 +36,18 @@ public abstract class PropertyJson implements PropertyModel {
     public abstract String getTitle();
 
     public static PropertyJson valueOf(final PropertyModel model) {
-        return ImmutablePropertyJson.builder()
+        return model == null ? null : ImmutablePropertyJson.builder()
                 .id(model.getId())
                 .title(model.getTitle())
+                .location(model.getLocation())
                 .description(model.getDescription())
+                .landRegistry(model.getLandRegistry())
+                .cadastralDistrict(model.getCadastralDistrict())
+                .sheetNumber(model.getSheetNumber())
+                .plotNumber(model.getPlotNumber())
+                .cadastralSection(model.getCadastralSection())
+                .plot(model.getPlot())
+                .economyType(model.getEconomyType())
                 .plotArea(model.getPlotArea())
                 .build();
     }

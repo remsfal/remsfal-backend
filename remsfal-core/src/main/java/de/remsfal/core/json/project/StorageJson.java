@@ -35,45 +35,14 @@ public abstract class StorageJson implements StorageModel {
     @Override
     public abstract String getTitle();
 
-    @Nullable
-    @Override
-    public abstract String getLocation();
-
-    @Nullable
-    @Override
-    public abstract String getDescription();
-
-    @Nullable
-    @Override
-    public abstract Float getUsableSpace();
-
     public static StorageJson valueOf(final StorageModel model) {
-        if (model == null) {
-            return null;
-        }
-
-        String description = model.getDescription();
-        if (description == null) {
-            description = "";
-        }
-
-        String location = model.getLocation();
-        if (location == null) {
-            location = "";
-        }
-
-        Float usableSpace = model.getUsableSpace();
-        if (usableSpace == null) {
-            usableSpace = 0.0F;
-        }
-
-        return ImmutableStorageJson.builder()
-                .id(model.getId())
-                .title(model.getTitle())
-                .location(location)
-                .description(description)
-                .usableSpace(usableSpace)
-                .build();
+        return model == null ? null : ImmutableStorageJson.builder()
+            .id(model.getId())
+            .title(model.getTitle())
+            .location(model.getLocation())
+            .description(model.getDescription())
+            .usableSpace(model.getUsableSpace())
+            .build();
     }
 
 }

@@ -37,35 +37,15 @@ public abstract class ApartmentJson implements ApartmentModel {
     @Override
     public abstract String getTitle();
 
-    @Nullable
-    @Override
-    public abstract String getLocation();
-
-    @Nullable
-    @Override
-    public abstract String getDescription();
-
-    @Nullable
-    @Override
-    public abstract Float getLivingSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getUsableSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getHeatingSpace();
-
-    public static ApartmentJson valueOf(ApartmentModel apartment) {
-        return apartment == null ? null : ImmutableApartmentJson.builder()
-                .id(apartment.getId())
-                .title(apartment.getTitle())
-                .description(apartment.getDescription())
-                .heatingSpace(apartment.getHeatingSpace())
-                .livingSpace(apartment.getLivingSpace())
-                .usableSpace(apartment.getUsableSpace())
-                .location(apartment.getLocation())
+    public static ApartmentJson valueOf(final ApartmentModel model) {
+        return model == null ? null : ImmutableApartmentJson.builder()
+                .id(model.getId())
+                .title(model.getTitle())
+                .description(model.getDescription())
+                .heatingSpace(model.getHeatingSpace())
+                .livingSpace(model.getLivingSpace())
+                .usableSpace(model.getUsableSpace())
+                .location(model.getLocation())
                 .build();
 
     }

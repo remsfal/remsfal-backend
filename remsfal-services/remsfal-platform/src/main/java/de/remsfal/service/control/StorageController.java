@@ -19,7 +19,7 @@ public class StorageController {
     GarageRepository garageRepository;
 
     @Transactional
-    public StorageModel createGarage(final String projectId, final String buildingId, final StorageModel garage) {
+    public StorageModel createStorage(final String projectId, final String buildingId, final StorageModel garage) {
         logger.infov("Creating a garage (projectId={0}, buildingId={1}, garage={2})",
                 projectId, buildingId, garage);
         StorageEntity entity = updateStorage(garage, new StorageEntity());
@@ -28,10 +28,10 @@ public class StorageController {
         entity.setBuildingId(buildingId);
         garageRepository.persistAndFlush(entity);
         garageRepository.getEntityManager().refresh(entity);
-        return getGarage(projectId, entity.getId());
+        return getStorage(projectId, entity.getId());
     }
 
-    public StorageModel getGarage(final String projectId, final String garageId) {
+    public StorageModel getStorage(final String projectId, final String garageId) {
         logger.infov("Retrieving a garage (projectId={0}, garageId={1})",
                 projectId, garageId);
         return garageRepository.findByIds(projectId, garageId)
@@ -39,7 +39,7 @@ public class StorageController {
     }
 
     @Transactional
-    public StorageModel updateGarage(final String projectId, final String garageId, final StorageModel garage) {
+    public StorageModel updateStorage(final String projectId, final String garageId, final StorageModel garage) {
         logger.infov("Updating a garage (projectId={0}, garageId={1}, garage={2})",
                 projectId, garageId, garage);
         final StorageEntity entity = garageRepository.findByIds(projectId, garageId)
@@ -67,7 +67,7 @@ public class StorageController {
     }
 
     @Transactional
-    public boolean deleteGarage(final String projectId, final String garageId) {
+    public boolean deleteStorage(final String projectId, final String garageId) {
         logger.infov("Deleting a garage (projectId={0}, garageId={1})",
                 projectId, garageId);
         return garageRepository.removeGarageByIds(projectId, garageId) > 0;

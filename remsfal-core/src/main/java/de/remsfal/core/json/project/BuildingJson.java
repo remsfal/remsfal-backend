@@ -42,54 +42,20 @@ public abstract class BuildingJson implements BuildingModel {
     @Override
     public abstract AddressModel getAddress();
 
-    @Nullable
-    @Override
-    public abstract Float getUsableSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getHeatingSpace();
-
     public static BuildingJson valueOf(final BuildingModel model) {
-        if (model == null) {
-            return null;
-        }
-
-        String description = model.getDescription();
-        if (description == null) {
-            description = "";
-        }
-
-        Float livingSpace = model.getLivingSpace();
-        if (livingSpace == null) {
-            livingSpace = 0.0F;
-        }
-
-//        Float commercialSpace = model.getCommercialSpace();
-//        if (commercialSpace == null) {
-//            commercialSpace = 0.0F;
-//        }
-
-        Float usableSpace = model.getUsableSpace();
-        if (usableSpace == null) {
-            usableSpace = 0.0F;
-        }
-
-        Float heatingSpace = model.getHeatingSpace();
-        if (heatingSpace == null) {
-            heatingSpace = 0.0F;
-        }
-
-        return ImmutableBuildingJson.builder()
-                .id(model.getId())
-                .address(model.getAddress())
-                .title(model.getTitle())
-                .description(description)
-                .livingSpace(livingSpace)
-//                .commercialSpace(commercialSpace)
-                .usableSpace(usableSpace)
-                .heatingSpace(heatingSpace)
-                .build();
+        return model == null ? null : ImmutableBuildingJson.builder()
+            .id(model.getId())
+            .address(model.getAddress())
+            .title(model.getTitle())
+            .location(model.getLocation())
+            .description(model.getDescription())
+            .grossFloorArea(model.getGrossFloorArea())
+            .netFloorArea(model.getNetFloorArea())
+            .constructionFloorArea(model.getConstructionFloorArea())
+            .livingSpace(model.getLivingSpace())
+            .usableSpace(model.getUsableSpace())
+            .heatingSpace(model.getHeatingSpace())
+            .build();
     }
 
 }

@@ -134,7 +134,8 @@ class CommercialControllerTest extends AbstractTest {
         assertNotEquals(updateTo.getId(), updated.getId());
         assertEquals(updateTo.getTitle(), updated.getTitle());
         assertEquals(updateTo.getLocation(), updated.getLocation());
-        assertEquals(updateTo.getNetFloorArea(), updated.getNetFloorArea());
+        // net floor doen't change or need to be calculated
+        assertEquals(updateTo.getNetFloorArea(), commercial.getNetFloorArea());
         assertEquals(updateTo.getUsableFloorArea(), updated.getUsableFloorArea());
         assertEquals(updateTo.getTechnicalServicesArea(), updated.getTechnicalServicesArea());
         assertEquals(updateTo.getTrafficArea(), updated.getTrafficArea());

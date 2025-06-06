@@ -75,9 +75,4 @@ public abstract class RentalUnitEntity extends AbstractEntity implements RentalU
         return false;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), projectId);
-    }
-
 }

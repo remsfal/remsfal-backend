@@ -49,7 +49,9 @@ public abstract class SiteJson implements SiteModel {
             .id(model.getId())
             .title(model.getTitle())
             .address(AddressJson.valueOf(model.getAddress()))
+            .location(model.getLocation())
             .description(model.getDescription())
+            .outdoorArea(model.getOutdoorArea())
             .build();
     }
 

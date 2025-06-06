@@ -44,13 +44,15 @@ public abstract class CommercialJson implements CommercialModel {
      * @return an immutable {@link CommercialJson} instance.
      */
     public static CommercialJson valueOf(final CommercialModel model) {
-        return ImmutableCommercialJson.builder()
+        return model == null ? null : ImmutableCommercialJson.builder()
                 .id(model.getId())
                 .title(model.getTitle())
                 .location(model.getLocation())
                 .description(model.getDescription())
-//                .commercialSpace(model.getCommercialSpace())
-  //              .usableSpace(model.getUsableSpace())
+                .netFloorArea(model.getNetFloorArea())
+                .usableFloorArea(model.getUsableFloorArea())
+                .technicalServicesArea(model.getTechnicalServicesArea())
+                .trafficArea(model.getTrafficArea())
                 .heatingSpace(model.getHeatingSpace())
                 .build();
     }

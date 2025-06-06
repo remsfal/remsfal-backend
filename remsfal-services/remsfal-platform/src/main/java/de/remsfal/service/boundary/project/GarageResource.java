@@ -20,7 +20,7 @@ public class GarageResource extends ProjectSubResource implements StorageEndpoin
     @Override
     public Response createGarage(final String projectId, final String buildingId, final StorageJson garage) {
         checkWritePermissions(projectId);
-        final StorageModel model = controller.createGarage(projectId, buildingId, garage);
+        final StorageModel model = controller.createStorage(projectId, buildingId, garage);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
@@ -31,21 +31,21 @@ public class GarageResource extends ProjectSubResource implements StorageEndpoin
     @Override
     public StorageJson getGarage(final String projectId, final String garageId) {
         checkReadPermissions(projectId);
-        final StorageModel model = controller.getGarage(projectId, garageId);
+        final StorageModel model = controller.getStorage(projectId, garageId);
         return StorageJson.valueOf(model);
     }
 
     @Override
     public StorageJson updateGarage(final String projectId, final String garageId, final StorageJson garage) {
         checkWritePermissions(projectId);
-        final StorageModel model = controller.updateGarage(projectId, garageId, garage);
+        final StorageModel model = controller.updateStorage(projectId, garageId, garage);
         return StorageJson.valueOf(model);
     }
 
     @Override
     public void deleteGarage(final String projectId, final String garageId) {
         checkWritePermissions(projectId);
-        controller.deleteGarage(projectId, garageId);
+        controller.deleteStorage(projectId, garageId);
     }
 
 }

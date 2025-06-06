@@ -3,6 +3,8 @@ package de.remsfal.core.model.project;
 import org.immutables.value.Value;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -24,6 +26,7 @@ public interface PropertyModel extends RentalUnitModel {
     @Nullable
     String getSheetNumber(); // Grundbuchblattnummer
 
+    @Positive
     @Nullable
     Integer getPlotNumber(); // Laufende Nummer des Grundstücks
 
@@ -40,6 +43,7 @@ public interface PropertyModel extends RentalUnitModel {
     @Override
     String getLocation(); // Lage des Grundstücks / Adresse
 
+    @PositiveOrZero
     @Nullable
     Integer getPlotArea(); // Größe
 

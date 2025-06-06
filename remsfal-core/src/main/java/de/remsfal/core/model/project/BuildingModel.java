@@ -4,6 +4,7 @@ import org.immutables.value.Value;
 
 import de.remsfal.core.model.AddressModel;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.PositiveOrZero;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -19,21 +20,27 @@ public interface BuildingModel extends RentalUnitModel {
     @Nullable
     AddressModel getAddress();
 
+    @PositiveOrZero
     @Nullable
     Float getGrossFloorArea(); // Brutto-Grundfläche (BGF) nach DIN 277
 
+    @PositiveOrZero
     @Nullable
     Float getNetFloorArea(); // Netto-Raumfläche (NRF) nach DIN 277
 
+    @PositiveOrZero
     @Nullable
     Float getConstructionFloorArea(); // Konstruktions-Grundfläche (KGF) nach DIN 277
 
+    @PositiveOrZero
     @Nullable
     Float getLivingSpace(); // Wohnfläche nach Wohnflächenverordnung - WoFlV
 
+    @PositiveOrZero
     @Nullable
     Float getUsableSpace(); // Nutzfläche nach Wohnflächenverordnung - WoFlV
 
+    @PositiveOrZero
     @Nullable
     Float getHeatingSpace();
 
