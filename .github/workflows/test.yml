@@ -60,3 +60,6 @@ jobs:
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
           git push origin sync-from-source
 
+          gh pr create --base main --head sync-from-source --title "Sync of OpenAPI Spec" --body "This PR carries the new OpenAPISpec from remsfal-backend."
+
+
