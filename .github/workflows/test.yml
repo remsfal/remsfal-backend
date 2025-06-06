@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven
       - name: Build with Maven (uber-jar)
-        run: mvn --batch-mode --update-snapshots package
+        run: mvn --batch-mode --update-snapshots package -DskipTests
       
       - name: Copy OpenAPI Specs
         run: |
@@ -44,7 +44,7 @@ jobs:
 
       - name: Clone target frontend repo
         env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ secrets.PAT }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
@@ -60,12 +60,3 @@ jobs:
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
           git push origin sync-from-source
 
-      - name: Push files to target repo via PR
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Automated OpenAPI Spec upload"
-          title: "Sync OpenAPI Spec"
-          body: "This PR contains updated OpenAPI Spec from the remsfal backend."
-          branch: sync-from-source
-          repository: Faust-toM/remsfal-frontend
