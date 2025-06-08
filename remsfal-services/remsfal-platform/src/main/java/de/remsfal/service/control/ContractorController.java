@@ -49,7 +49,11 @@ public class ContractorController {
                                                final Integer offset, final Integer limit) {
         logger.infov("Retrieving contractors for project (id = {0})", projectId);
         // Verify user has access to the project
-        projectController.getProject(user, projectId);
+        try {
+            projectController.getProject(user, projectId);
+        } catch (NotFoundException e) {
+            throw new ForbiddenException("User has no membership in this project");
+        }
         List<ContractorEntity> entities = contractorRepository.findByProjectId(projectId, offset, limit);
         return new java.util.ArrayList<>(entities);
     }
@@ -63,7 +67,11 @@ public class ContractorController {
      */
     public long countContractors(final UserModel user, final String projectId) {
         // Verify user has access to the project
-        projectController.getProject(user, projectId);
+        try {
+            projectController.getProject(user, projectId);
+        } catch (NotFoundException e) {
+            throw new ForbiddenException("User has no membership in this project");
+        }
         return contractorRepository.countByProjectId(projectId);
     }
 
@@ -78,7 +86,11 @@ public class ContractorController {
     public ContractorModel getContractor(final UserModel user, final String projectId, final String contractorId) {
         logger.infov("Retrieving contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         // Verify user has access to the project
-        projectController.getProject(user, projectId);
+        try {
+            projectController.getProject(user, projectId);
+        } catch (NotFoundException e) {
+            throw new ForbiddenException("User has no membership in this project");
+        }
         return contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
                 .orElseThrow(() -> new NotFoundException("Contractor not found"));
     }
@@ -136,7 +148,11 @@ public class ContractorController {
                                            final String contractorId, final ContractorModel contractor) {
         logger.infov("Updating contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         // Verify user has access to the project and can write
-        projectController.getProject(user, projectId);
+        try {
+            projectController.getProject(user, projectId);
+        } catch (NotFoundException e) {
+            throw new ForbiddenException("User has no membership in this project");
+        }
 
         if (!projectController.getProjectMemberRole(user, projectId).isPrivileged()) {
             throw new ForbiddenException("Inadequate user rights");
@@ -173,7 +189,11 @@ public class ContractorController {
     public boolean deleteContractor(final UserModel user, final String projectId, final String contractorId) {
         logger.infov("Deleting contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         // Verify user has access to the project and can write
-        projectController.getProject(user, projectId);
+        try {
+            projectController.getProject(user, projectId);
+        } catch (NotFoundException e) {
+            throw new ForbiddenException("User has no membership in this project");
+        }
 
         if (!projectController.getProjectMemberRole(user, projectId).isPrivileged()) {
             throw new ForbiddenException("Inadequate user rights");

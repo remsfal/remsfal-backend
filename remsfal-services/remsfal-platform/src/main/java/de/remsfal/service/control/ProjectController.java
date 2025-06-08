@@ -76,7 +76,7 @@ public class ProjectController {
 
         // Then check if the user is a member of the project
         return projectRepository.findProjectByUserId(user.getId(), projectId)
-            .orElseThrow(() -> new ForbiddenException("User has no membership in this project"));
+            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
     }
 
     @Transactional
