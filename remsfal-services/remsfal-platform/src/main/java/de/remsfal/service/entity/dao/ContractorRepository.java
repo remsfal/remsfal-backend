@@ -69,7 +69,7 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
      * @return the list of contractor employees
      */
     public List<ContractorEmployeeEntity> findEmployeesByContractorId(final String contractorId) {
-        return getEntityManager().createNamedQuery("ContractorEmployeeEntity.findByContractorId", 
+        return getEntityManager().createNamedQuery("ContractorEmployeeEntity.findByContractorId",
                 ContractorEmployeeEntity.class)
                 .setParameter(PARAM_CONTRACTOR_ID, contractorId)
                 .getResultList();
@@ -82,7 +82,8 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
      * @param contractorId the contractor ID
      * @return the optional contractor
      */
-    public Optional<ContractorEntity> findByProjectIdAndContractorId(final String projectId, final String contractorId) {
+    public Optional<ContractorEntity> findByProjectIdAndContractorId(
+            final String projectId, final String contractorId) {
         try {
             // Clear the entity manager cache to ensure we're not getting a cached entity
             getEntityManager().clear();

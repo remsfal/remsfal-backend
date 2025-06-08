@@ -45,7 +45,7 @@ public class ContractorController {
      * @param limit the limit
      * @return the list of contractors
      */
-    public List<ContractorModel> getContractors(final UserModel user, final String projectId, 
+    public List<ContractorModel> getContractors(final UserModel user, final String projectId,
                                                final Integer offset, final Integer limit) {
         logger.infov("Retrieving contractors for project (id = {0})", projectId);
         // Verify user has access to the project
@@ -104,7 +104,7 @@ public class ContractorController {
      * @return the created contractor
      */
     @Transactional
-    public ContractorModel createContractor(final UserModel user, final String projectId, 
+    public ContractorModel createContractor(final UserModel user, final String projectId,
                                            final ContractorModel contractor) {
         logger.infov("Creating contractor for project (id = {0})", projectId);
         // Verify user has access to the project and can write
@@ -144,7 +144,7 @@ public class ContractorController {
      * @return the updated contractor
      */
     @Transactional
-    public ContractorModel updateContractor(final UserModel user, final String projectId, 
+    public ContractorModel updateContractor(final UserModel user, final String projectId,
                                            final String contractorId, final ContractorModel contractor) {
         logger.infov("Updating contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         // Verify user has access to the project and can write
