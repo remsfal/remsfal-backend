@@ -18,14 +18,6 @@ public class ContractorEmployeeKey implements Serializable {
     @Column(name = "USER_ID", columnDefinition = "char", length = 36)
     private String userId;
 
-    public String getContractorId() {
-        return contractorId;
-    }
-
-    public void setContractorId(String contractorId) {
-        this.contractorId = contractorId;
-    }
-
     public String getUserId() {
         return userId;
     }
