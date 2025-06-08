@@ -6,7 +6,6 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
 import de.remsfal.service.entity.dao.ContractorRepository;
-import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;

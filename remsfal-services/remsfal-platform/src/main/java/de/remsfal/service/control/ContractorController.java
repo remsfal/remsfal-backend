@@ -28,13 +28,40 @@ public class ContractorController {
     ProjectController projectController;
 
     @Inject
-    UserController userController;
-
-    @Inject
     ProjectRepository projectRepository;
 
     @Inject
     ContractorRepository contractorRepository;
+
+    /**
+     * Verify that the user has access to the project.
+     *
+     * @param user the user
+     * @param projectId the project ID
+     * @throws ForbiddenException if the user has no membership in the project
+     */
+    private void verifyProjectAccess(final UserModel user, final String projectId) {
+        try {
+            projectController.getProject(user, projectId);
+        } catch (NotFoundException e) {
+            throw new ForbiddenException("User has no membership in this project");
+        }
+    }
+
+    /**
+     * Verify that the user has access to the project and has privileged rights.
+     *
+     * @param user the user
+     * @param projectId the project ID
+     * @throws ForbiddenException if the user has no membership in the project or inadequate rights
+     */
+    private void verifyProjectAccessWithPrivilegedRights(final UserModel user, final String projectId) {
+        verifyProjectAccess(user, projectId);
+
+        if (!projectController.getProjectMemberRole(user, projectId).isPrivileged()) {
+            throw new ForbiddenException("Inadequate user rights");
+        }
+    }
 
     /**
      * Get contractors for a project.
@@ -49,11 +76,7 @@ public class ContractorController {
                                                final Integer offset, final Integer limit) {
         logger.infov("Retrieving contractors for project (id = {0})", projectId);
         // Verify user has access to the project
-        try {
-            projectController.getProject(user, projectId);
-        } catch (NotFoundException e) {
-            throw new ForbiddenException("User has no membership in this project");
-        }
+        verifyProjectAccess(user, projectId);
         List<ContractorEntity> entities = contractorRepository.findByProjectId(projectId, offset, limit);
         return new java.util.ArrayList<>(entities);
     }
@@ -67,11 +90,7 @@ public class ContractorController {
      */
     public long countContractors(final UserModel user, final String projectId) {
         // Verify user has access to the project
-        try {
-            projectController.getProject(user, projectId);
-        } catch (NotFoundException e) {
-            throw new ForbiddenException("User has no membership in this project");
-        }
+        verifyProjectAccess(user, projectId);
         return contractorRepository.countByProjectId(projectId);
     }
 
@@ -86,11 +105,7 @@ public class ContractorController {
     public ContractorModel getContractor(final UserModel user, final String projectId, final String contractorId) {
         logger.infov("Retrieving contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         // Verify user has access to the project
-        try {
-            projectController.getProject(user, projectId);
-        } catch (NotFoundException e) {
-            throw new ForbiddenException("User has no membership in this project");
-        }
+        verifyProjectAccess(user, projectId);
         return contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
                 .orElseThrow(() -> new NotFoundException("Contractor not found"));
     }
@@ -108,19 +123,11 @@ public class ContractorController {
                                            final ContractorModel contractor) {
         logger.infov("Creating contractor for project (id = {0})", projectId);
         // Verify user has access to the project and can write
-        // First check if the project exists
-        ProjectEntity project = projectRepository.findById(projectId);
-        if (project == null) {
-            throw new NotFoundException("Project not found");
-        }
+        verifyProjectAccessWithPrivilegedRights(user, projectId);
 
-        // Then check if the user is a member of the project
+        // Get the project entity for the contractor
         ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
-                .orElseThrow(() -> new ForbiddenException("User has no membership in this project"));
-
-        if (!projectController.getProjectMemberRole(user, projectId).isPrivileged()) {
-            throw new ForbiddenException("Inadequate user rights");
-        }
+                .orElseThrow(() -> new NotFoundException("Project not found"));
 
         ContractorEntity entity = new ContractorEntity();
         entity.generateId();
@@ -148,15 +155,7 @@ public class ContractorController {
                                            final String contractorId, final ContractorModel contractor) {
         logger.infov("Updating contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         // Verify user has access to the project and can write
-        try {
-            projectController.getProject(user, projectId);
-        } catch (NotFoundException e) {
-            throw new ForbiddenException("User has no membership in this project");
-        }
-
-        if (!projectController.getProjectMemberRole(user, projectId).isPrivileged()) {
-            throw new ForbiddenException("Inadequate user rights");
-        }
+        verifyProjectAccessWithPrivilegedRights(user, projectId);
 
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
                 .orElseThrow(() -> new NotFoundException("Contractor not found"));
@@ -189,15 +188,7 @@ public class ContractorController {
     public boolean deleteContractor(final UserModel user, final String projectId, final String contractorId) {
         logger.infov("Deleting contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         // Verify user has access to the project and can write
-        try {
-            projectController.getProject(user, projectId);
-        } catch (NotFoundException e) {
-            throw new ForbiddenException("User has no membership in this project");
-        }
-
-        if (!projectController.getProjectMemberRole(user, projectId).isPrivileged()) {
-            throw new ForbiddenException("Inadequate user rights");
-        }
+        verifyProjectAccessWithPrivilegedRights(user, projectId);
 
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
                 .orElseThrow(() -> new NotFoundException("Contractor not found"));
