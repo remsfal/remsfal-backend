@@ -13,6 +13,8 @@ permissions:
   attestations: write
   id-token: write
   packages: write
+  pull-requests: write
+
 
 jobs:
   jdk17-build-and-push-to-registry:
@@ -46,13 +48,17 @@ jobs:
         env:
           TOKEN: ${{ secrets.PAT }}
         run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          BRANCH="feature/sync-OpenAPI-spec-${COMMIT_HASH}"
+          echo "BRANCH_NAME=$BRANCH" >> $GITHUB_ENV
+          
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
 
           git clone https://x-access-token:${TOKEN}@github.com/Faust-toM/remsfal-frontend.git
           cd remsfal-frontend
 
-          git checkout -b sync-from-source || git checkout sync-from-source
+          git checkout -b $BRANCH || git checkout $BRANCH
           mkdir -p frontend/src/helper/api/
           cp -r ../export/* frontend/src/helper/api/
 
@@ -60,6 +66,14 @@ jobs:
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
           git push origin sync-from-source
 
-          gh pr create --base main --head sync-from-source --title "Sync of OpenAPI Spec" --body "This PR carries the new OpenAPISpec from remsfal-backend."
+      - name: Create / Replace Pull Request
+        env:
+          TOKEN: ${{ secrets.PAT }}
+        run: |
+           gh pr create \
+             --base main \
+             --head "$BRANCH_NAME" \
+             --title "Sync of OpenAPI Spec" \
+             --body "This PR carries the new OpenAPISpec from remsfal-backend."
 
 
