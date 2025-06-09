@@ -49,8 +49,8 @@ jobs:
           TOKEN: ${{ secrets.PAT }}
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          BRANCH="feature/sync-OpenAPI-spec-${COMMIT_HASH}"
-          echo "BRANCH_NAME=$BRANCH" >> $GITHUB_ENV
+          BRANCH_NAME="feature/sync-OpenAPI-spec-${COMMIT_HASH}"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
@@ -58,13 +58,13 @@ jobs:
           git clone https://x-access-token:${TOKEN}@github.com/Faust-toM/remsfal-frontend.git
           cd remsfal-frontend
 
-          git checkout -b $BRANCH || git checkout $BRANCH
+          git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
           mkdir -p frontend/src/helper/api/
           cp -r ../export/* frontend/src/helper/api/
 
           git add frontend/src/helper/api/
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
-          git push origin sync-from-source
+          git push origin $BRANCH_NAME
 
       - name: Create / Replace Pull Request
         env:
