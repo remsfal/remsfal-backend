@@ -2,7 +2,6 @@ package de.remsfal.core.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import de.remsfal.core.model.AbstractContractorModel;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -18,7 +17,38 @@ import jakarta.validation.constraints.Size;
  * JSON representation of a contractor.
  */
 @JsonInclude(Include.NON_NULL)
-public class ContractorJson extends AbstractContractorModel {
+public class ContractorJson implements ContractorModel {
+
+    protected String id;
+    protected String projectId;
+    protected String companyName;
+    protected String phone;
+    protected String email;
+    protected String trade;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setTrade(String trade) {
+        this.trade = trade;
+    }
 
     @Null(groups = PostValidation.class)
     @NotNull(groups = PatchValidation.class)
