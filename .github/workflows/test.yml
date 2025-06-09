@@ -46,7 +46,7 @@ jobs:
 
       - name: Clone target frontend repo
         env:
-          TOKEN: ${{ secrets.PAT }}
+          GH_TOKEN: ${{ secrets.PAT }}
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
           BRANCH_NAME="feature/sync-OpenAPI-spec-${COMMIT_HASH}"
@@ -55,7 +55,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
 
-          git clone https://x-access-token:${TOKEN}@github.com/Faust-toM/remsfal-frontend.git
+          git clone https://x-access-token:${GH_TOKEN}@github.com/Faust-toM/remsfal-frontend.git
           cd remsfal-frontend
 
           git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
@@ -65,15 +65,11 @@ jobs:
           git add frontend/src/helper/api/
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
           git push origin $BRANCH_NAME
-
-      - name: Create / Replace Pull Request
-        env:
-          GH_TOKEN: ${{ secrets.PAT }}
-        run: |
-           gh pr create \
+          gh pr create \
              --base main \
              --head "$BRANCH_NAME" \
              --title "Sync of OpenAPI Spec" \
              --body "This PR carries the new OpenAPISpec from remsfal-backend."
+          
 
 
