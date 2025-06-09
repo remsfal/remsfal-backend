@@ -2,6 +2,7 @@ package de.remsfal.core.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import de.remsfal.core.model.AbstractContractorEmployeeModel;
 import de.remsfal.core.model.ContractorEmployeeModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.validation.PatchValidation;
@@ -17,18 +18,7 @@ import jakarta.validation.constraints.Size;
  * JSON representation of a contractor employee.
  */
 @JsonInclude(Include.NON_NULL)
-public class ContractorEmployeeJson implements ContractorEmployeeModel {
-
-    @Null
-    private String contractorId;
-
-    @NotNull(groups = PostValidation.class)
-    @Null(groups = PatchValidation.class)
-    @UUID
-    private String userId;
-
-    @Size(max = 255)
-    private String responsibility;
+public class ContractorEmployeeJson extends AbstractContractorEmployeeModel {
 
     @NotBlank(groups = PostValidation.class)
     @Email
@@ -39,31 +29,24 @@ public class ContractorEmployeeJson implements ContractorEmployeeModel {
 
     private Boolean active;
 
+    @Null
     @Override
     public String getContractorId() {
         return contractorId;
     }
 
-    public void setContractorId(String contractorId) {
-        this.contractorId = contractorId;
-    }
-
+    @NotNull(groups = PostValidation.class)
+    @Null(groups = PatchValidation.class)
+    @UUID
     @Override
     public String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
+    @Size(max = 255)
     @Override
     public String getResponsibility() {
         return responsibility;
-    }
-
-    public void setResponsibility(String responsibility) {
-        this.responsibility = responsibility;
     }
 
     public String getEmail() {

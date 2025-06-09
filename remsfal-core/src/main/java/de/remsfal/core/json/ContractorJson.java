@@ -2,6 +2,7 @@ package de.remsfal.core.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import de.remsfal.core.model.AbstractContractorModel;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -17,83 +18,47 @@ import jakarta.validation.constraints.Size;
  * JSON representation of a contractor.
  */
 @JsonInclude(Include.NON_NULL)
-public class ContractorJson implements ContractorModel {
+public class ContractorJson extends AbstractContractorModel {
 
     @Null(groups = PostValidation.class)
     @NotNull(groups = PatchValidation.class)
     @UUID
-    private String id;
-
-    @Null
-    private String projectId;
-
-    @NotBlank(groups = PostValidation.class)
-    @Size(max = 255)
-    private String companyName;
-
-    @Pattern(regexp = "^\\+?[0-9]{10,14}$", message = "Phone number must be in E.164 format")
-    @Size(max = 15)
-    private String phone;
-
-    @Email
-    @Size(max = 255)
-    private String email;
-
-    @Size(max = 255)
-    private String trade;
-
     @Override
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    @Null
     @Override
     public String getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
-    }
-
+    @NotBlank(groups = PostValidation.class)
+    @Size(max = 255)
     @Override
     public String getCompanyName() {
         return companyName;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
+    @Pattern(regexp = "^\\+?[0-9]{10,14}$", message = "Phone number must be in E.164 format")
+    @Size(max = 15)
     @Override
     public String getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
+    @Email
+    @Size(max = 255)
     @Override
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
+    @Size(max = 255)
     @Override
     public String getTrade() {
         return trade;
-    }
-
-    public void setTrade(String trade) {
-        this.trade = trade;
     }
 
     /**
