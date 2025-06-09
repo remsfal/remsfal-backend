@@ -64,7 +64,8 @@ jobs:
 
           git add frontend/src/helper/api/
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
-          git push origin $BRANCH_NAME
+          git push origin "$BRANCH_NAME"
+          
           gh pr create \
              --base main \
              --head "$BRANCH_NAME" \
