@@ -45,7 +45,6 @@ jobs:
 
       - name: Create PR for frontend repo
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT }}
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -57,22 +56,20 @@ jobs:
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
           cd remsfal-frontend
 
-          git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
           mkdir -p frontend/src/helper/api/
           cp -r ../export/* frontend/src/helper/api/
-
-          git add frontend/src/helper/api/
-          git commit -m "Update generated files from source repo" || echo "No changes to commit"
-          git push origin "$BRANCH_NAME"
-
-          git fetch origin main
-          if git log origin/main..origin/$BRANCH_NAME --oneline | grep .; then
+          
+          if git diff --quiet; then
+            echo "No Changes made to the data model"
+          else
+            git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
+            git add frontend/src/helper/api/
+            git commit -m "Update generated files from source repo" || echo "No changes to commit"
+            git push origin "$BRANCH_NAME"
+            git fetch origin main
             gh pr create \
              --base main \
              --head "$BRANCH_NAME" \
              --title "Sync of OpenAPI Spec" \
              --body "This PR carries the new OpenAPISpec from remsfal-backend."
-          else
-            echo "No commits between main and $BRANCH_NAME. No need to create a pull request."
           fi
-          
