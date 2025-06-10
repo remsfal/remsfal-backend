@@ -30,11 +30,11 @@ public class MailResource {
     @GET
     @Blocking
     public Response sendTestEmail(
-            @QueryParam("to") String to,
-            @QueryParam("subject") String subject,
-            @QueryParam("name") String name,
-            @QueryParam("token") String token,
-            @QueryParam("template") String template) {
+        @QueryParam("to") String to,
+        @QueryParam("subject") String subject,
+        @QueryParam("name") String name,
+        @QueryParam("token") String token,
+        @QueryParam("template") String template) {
         if (to == null || subject == null) {
             throw new IllegalArgumentException("Missing required parameters: 'to' and 'subject'");
         }
