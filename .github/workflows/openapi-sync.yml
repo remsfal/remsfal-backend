@@ -2,6 +2,7 @@ name: "sync-openapi-spec"
 
 on:
   push:
+    branches: ["main"]
 
 env:
   REGISTRY: ghcr.io
@@ -43,7 +44,7 @@ jobs:
           cp remsfal-services/remsfal-notification/target/openapi/* export/
           cp remsfal-services/remsfal-platform/target/openapi/* export/
 
-      - name: Create PR for frontend repo
+      - name: sync remsfal frontend repository
         env:
           GH_TOKEN: ${{ secrets.PAT }}
         run: |
@@ -60,11 +61,11 @@ jobs:
           cp -r ../export/* frontend/src/helper/api/
           
           if git diff --quiet; then
-            echo "No Changes made to the data model"
+            echo "No Changes made to the data model. No pull request will be created."
           else
             git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
             git add frontend/src/helper/api/
-            git commit -m "Update generated files from source repo" || echo "No changes to commit"
+            git commit -m "Update generated files from source repo"
             git push origin "$BRANCH_NAME"
             git fetch origin main
             gh pr create \
