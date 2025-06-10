@@ -45,16 +45,16 @@ jobs:
 
       - name: Create PR for frontend repo
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.PAT }}
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          BRANCH_NAME="feature/sync-OpenAPI-spec-${COMMIT_HASH}"
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          BRANCH_NAME="sync-OpenAPI-spec/${COMMIT_HASH}"
           
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
 
-          git clone https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
           cd remsfal-frontend
 
           git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
