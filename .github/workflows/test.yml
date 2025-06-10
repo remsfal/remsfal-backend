@@ -2,7 +2,6 @@ name: "sync-openapi-spec"
 
 on:
   push:
-  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -55,7 +54,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
 
-          git clone https://x-access-token:${GH_TOKEN}@github.com/Faust-toM/remsfal-frontend.git
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
           cd remsfal-frontend
 
           git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
