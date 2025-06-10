@@ -1,4 +1,4 @@
-name: "test-sync"
+name: "sync-openapi-spec"
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
           cp remsfal-services/remsfal-notification/target/openapi/* export/
           cp remsfal-services/remsfal-platform/target/openapi/* export/
 
-      - name: Clone target frontend repo
+      - name: Create PR for frontend repo
         env:
           GH_TOKEN: ${{ secrets.PAT }}
         run: |
@@ -65,12 +65,15 @@ jobs:
           git add frontend/src/helper/api/
           git commit -m "Update generated files from source repo" || echo "No changes to commit"
           git push origin "$BRANCH_NAME"
-          
-          gh pr create \
+
+          git fetch origin main
+          if git log origin/main..origin/$BRANCH_NAME --oneline | grep .; then
+            gh pr create \
              --base main \
              --head "$BRANCH_NAME" \
              --title "Sync of OpenAPI Spec" \
              --body "This PR carries the new OpenAPISpec from remsfal-backend."
+          else
+            echo "No commits between main and $BRANCH_NAME. No need to create a pull request."
+          fi
           
-
-
