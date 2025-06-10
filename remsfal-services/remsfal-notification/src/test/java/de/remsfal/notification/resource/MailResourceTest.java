@@ -4,6 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
+import static io.restassured.RestAssured.given;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsString;
@@ -33,5 +34,13 @@ public class MailResourceTest {
                 .get("/notification/test")
                 .then()
                 .statusCode(500); // because IllegalArgumentException will be thrown
+    }
+    @Test
+    public void testMissingRequiredParameters() {
+        given()
+                .when()
+                .get("/notification/test")  // without required query parameters
+                .then()
+                .statusCode(500);
     }
 }
