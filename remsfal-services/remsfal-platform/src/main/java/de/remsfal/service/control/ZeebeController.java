@@ -56,7 +56,7 @@ public class ZeebeController {
         } catch (IllegalArgumentException e) {
             logger.error("Bad request: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST)
-                .entity(String.format("Error: %s", e.getMessage()))
+                .entity("Invalid request")
                 .build();
         }
     }
