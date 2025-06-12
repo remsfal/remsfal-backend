@@ -27,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import de.remsfal.core.api.project.ApartmentEndpoint;
 import de.remsfal.core.api.project.BuildingEndpoint;
 import de.remsfal.core.api.project.CommercialEndpoint;
+import de.remsfal.core.api.project.ContractorEndpoint;
 import de.remsfal.core.api.project.GarageEndpoint;
 import de.remsfal.core.api.project.MemberEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
@@ -136,5 +137,8 @@ public interface ProjectEndpoint {
 
     @Path("/{projectId}/" + TaskEndpoint.SERVICE)
     TaskEndpoint getTaskResource();
+
+    @Path("/{projectId}/" + ContractorEndpoint.SERVICE)
+    ContractorEndpoint getContractorResource();
 
 }
