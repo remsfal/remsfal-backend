@@ -2,24 +2,17 @@ include:
   - remsfal-chat/docker-compose.yml
   - remsfal-platform/docker-compose.yml
 services:
-  grafana:
-    image: grafana/grafana-enterprise
-    container_name: grafana
-    restart: unless-stopped
+  otel-lgtm:
+    image: grafana/otel-lgtm
+    container_name: otel-lgtm
     ports:
       - '3000:3000'
-    networks:
-      - remsfal
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    ports:
-      - '9090:9090'
-    networks:
-      - remsfal
+      - '4317:4317'
+      - '4318:4318'
     volumes:
-      - "./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - otel_data:/data
+volumes:
+  otel_data:
 
 networks:
   remsfal:
