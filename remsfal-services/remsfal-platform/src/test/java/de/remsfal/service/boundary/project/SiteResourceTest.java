@@ -207,7 +207,7 @@ class SiteResourceTest extends AbstractResourceTest {
         + "\"mobilePhoneNumber\":\"+491773289245\","
         + "\"businessPhoneNumber\":\"+49302278349\","
         + "\"privatePhoneNumber\":\"+4933012345611\"}},"
-        + "\"usableSpace\":51.99}")
+        + "\"outdoorArea\":51.99}")
     void updateSite_SUCCESS_tenancyCorrectlyUpdated(final String json) {
         setupTestSites();
 
@@ -245,7 +245,7 @@ class SiteResourceTest extends AbstractResourceTest {
 //            .and().body("tenancy.tenant.mobilePhoneNumber", Matchers.equalTo("+491773289245"))
 //            .and().body("tenancy.tenant.businessPhoneNumber", Matchers.equalTo("+49302278349"))
 //            .and().body("tenancy.tenant.privatePhoneNumber", Matchers.equalTo("+4933012345611"))
-            .and().body("usableSpace", Matchers.equalTo(51.99f));
+            .and().body("outdoorArea", Matchers.equalTo(51.99f));
 
         given()
             .when()
@@ -271,7 +271,7 @@ class SiteResourceTest extends AbstractResourceTest {
 //            .and().body("tenancy.tenant.mobilePhoneNumber", Matchers.equalTo("+491773289245"))
 //            .and().body("tenancy.tenant.businessPhoneNumber", Matchers.equalTo("+49302278349"))
 //            .and().body("tenancy.tenant.privatePhoneNumber", Matchers.equalTo("+4933012345611"))
-            .and().body("usableSpace", Matchers.equalTo(51.99f));
+            .and().body("outdoorArea", Matchers.equalTo(51.99f));
     }
 
     @Test
@@ -290,11 +290,11 @@ class SiteResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{ \"usableSpace\":\"56.7\"}")
+            .body("{ \"outdoorArea\":\"56.7\"}")
             .patch("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
-            .and().body("usableSpace", Matchers.equalTo(56.7f));
+            .and().body("outdoorArea", Matchers.equalTo(56.7f));
 
         given()
             .when()

@@ -5,7 +5,6 @@ import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.service.entity.dto.AddressEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -109,7 +108,8 @@ class BuildingControllerTest extends AbstractTest {
             .createQuery("SELECT b FROM BuildingEntity b where b.title = :title", BuildingEntity.class)
             .setParameter("title", TestData.BUILDING_TITLE)
             .getSingleResult();
-        assertTrue(entity.equals(result));
+        assertEquals(entity.hashCode(), result.hashCode());
+        assertNotNull(entity.getAddress());
         assertEquals(entity, result);
     }
     

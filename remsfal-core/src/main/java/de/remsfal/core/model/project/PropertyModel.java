@@ -51,6 +51,9 @@ public interface PropertyModel extends RentalUnitModel {
     @Nullable
     @Override
     default Float getSpace() {
+        if(getPlotArea() == null) {
+            return null;
+        }
         return getPlotArea().floatValue();
     }
 

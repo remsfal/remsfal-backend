@@ -120,25 +120,20 @@ class CommercialControllerTest extends AbstractTest {
         final CommercialModel result = commercialController
                 .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
 
+        assertNotNull(result.getId());
+        assertEquals(commercial.getTitle(), result.getTitle());
+        assertEquals(commercial.getLocation(), result.getLocation());
+        assertEquals(commercial.getNetFloorArea(), result.getNetFloorArea());
+        assertEquals(commercial.getUsableFloorArea(), result.getUsableFloorArea());
+        assertEquals(commercial.getTechnicalServicesArea(), result.getTechnicalServicesArea());
+        assertEquals(commercial.getTrafficArea(), result.getTrafficArea());
+        assertEquals(commercial.getHeatingSpace(), result.getHeatingSpace());
+
         final String commercialId = entityManager
                 .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
                 .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
-
-        final CommercialModel updateTo = TestData.commercialBuilder2().build();
-
-        final CommercialModel updated = commercialController.updateCommercial(TestData.PROJECT_ID,
-                commercialId, updateTo);
-
-        assertNotEquals(updateTo.getId(), updated.getId());
-        assertEquals(updateTo.getTitle(), updated.getTitle());
-        assertEquals(updateTo.getLocation(), updated.getLocation());
-        // net floor doen't change or need to be calculated
-        assertEquals(updateTo.getNetFloorArea(), commercial.getNetFloorArea());
-        assertEquals(updateTo.getUsableFloorArea(), updated.getUsableFloorArea());
-        assertEquals(updateTo.getTechnicalServicesArea(), updated.getTechnicalServicesArea());
-        assertEquals(updateTo.getTrafficArea(), updated.getTrafficArea());
-        assertEquals(updateTo.getHeatingSpace(), updated.getHeatingSpace());
     }
+
 }

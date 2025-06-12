@@ -101,6 +101,7 @@ class SiteControllerTest extends AbstractTest {
             .createQuery("SELECT s FROM SiteEntity s where s.title = :title", SiteEntity.class)
             .setParameter("title", TestData.SITE_TITLE)
             .getSingleResult();
+        assertEquals(entity.hashCode(), result.hashCode());
         assertEquals(entity, result);
     }
     
