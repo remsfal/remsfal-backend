@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonDeserialize(as = ImmutableTaskListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TaskListJson {
+    // Validation is not required, because it is read-only.
 
     public abstract List<TaskItemJson> getTasks();
 

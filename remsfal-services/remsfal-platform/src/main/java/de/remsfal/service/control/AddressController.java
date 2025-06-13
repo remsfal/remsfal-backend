@@ -35,7 +35,7 @@ public class AddressController {
     }
 
     @Transactional(TxType.MANDATORY)
-    public AddressEntity updateAddress(AddressEntity entity, final AddressModel address) {
+    public AddressEntity updateAddress(final AddressModel address, AddressEntity entity) {
         if(entity == null) {
             entity = new AddressEntity();
             entity.generateId();

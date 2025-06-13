@@ -2,6 +2,7 @@ package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -37,23 +38,23 @@ public abstract class RentJson implements RentModel {
     @Override
     public abstract LocalDate getLastPaymentDate();
 
+    @PositiveOrZero
     @Nullable
     @Override
     public abstract Float getBasicRent();
 
+    @PositiveOrZero
     @Nullable
     @Override
     public abstract Float getOperatingCostsPrepayment();
 
+    @PositiveOrZero
     @Nullable
     @Override
     public abstract Float getHeatingCostsPrepayment();
 
     public static RentJson valueOf(final RentModel model) {
-        if(model == null) {
-            return null;
-        }
-        return ImmutableRentJson.builder()
+        return model == null ? null : ImmutableRentJson.builder()
             .billingCycle(model.getBillingCycle())
             .firstPaymentDate(model.getFirstPaymentDate())
             .lastPaymentDate(model.getLastPaymentDate())

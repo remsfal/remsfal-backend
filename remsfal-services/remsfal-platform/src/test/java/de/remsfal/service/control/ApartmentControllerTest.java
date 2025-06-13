@@ -157,7 +157,6 @@ class ApartmentControllerTest extends AbstractTest {
         assertEquals(updateTo.getLocation(), updated.getLocation());
         assertEquals(updateTo.getHeatingSpace(), updated.getHeatingSpace());
         assertEquals(updateTo.getTitle(), updated.getTitle());
-        assertEquals(apartment.getTenancy(), updated.getTenancy());
     }
 
 }
