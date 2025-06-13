@@ -9,8 +9,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.project.TenancyModel;
-
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -22,13 +20,5 @@ public abstract class TenancyListJson {
     // Validation is not required, because it is read-only for tenants.
 
     public abstract List<TenancyItemJson> getTenancies();
-
-    public static TenancyListJson valueOf(final List<? extends TenancyModel> tenancies) {
-        final ImmutableTenancyListJson.Builder builder = ImmutableTenancyListJson.builder();
-        for(TenancyModel tenancy : tenancies) {
-            builder.addTenancies(TenancyItemJson.valueOf(tenancy));
-        }
-        return builder.build();
-    }
 
 }

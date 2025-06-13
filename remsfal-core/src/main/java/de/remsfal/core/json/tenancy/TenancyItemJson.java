@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.model.project.RentalUnitModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.TenancyModel;
 
@@ -32,9 +33,13 @@ public abstract class TenancyItemJson {
 
     public abstract Boolean isActive();
 
-    public static TenancyItemJson valueOf(final TenancyModel model) {
+    public static TenancyItemJson valueOf(final TenancyModel tenancyModel, final RentalUnitModel unitModel) {
         return ImmutableTenancyItemJson.builder()
-            .id(model.getId())
+            .id(tenancyModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
+            .name(unitModel.getTitle())
+            .rentalType(unitModel.getType())
+            .rentalTitle(unitModel.getTitle())
+            .isActive(tenancyModel.isActive())
             .build();
     }
 

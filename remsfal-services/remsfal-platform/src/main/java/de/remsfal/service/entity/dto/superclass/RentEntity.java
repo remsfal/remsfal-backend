@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 
 import de.remsfal.core.model.project.RentModel;
 import jakarta.persistence.Column;
@@ -79,7 +80,9 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Override
     public Float getBasicRent() {
-        return basicRent.floatValue();
+        return Optional.ofNullable(basicRent)
+            .map(BigDecimal::floatValue)
+            .orElse(null);
     }
 
     public void setBasicRent(final Float basicRent) {
@@ -88,7 +91,9 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Override
     public Float getOperatingCostsPrepayment() {
-        return operatingCostsPrepayment.floatValue();
+        return Optional.ofNullable(operatingCostsPrepayment)
+            .map(BigDecimal::floatValue)
+            .orElse(null);
     }
 
     public void setOperatingCostsPrepayment(final Float operatingCostsPrepayment) {
@@ -97,7 +102,9 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Override
     public Float getHeatingCostsPrepayment() {
-        return heatingCostsPrepayment.floatValue();
+        return Optional.ofNullable(heatingCostsPrepayment)
+            .map(BigDecimal::floatValue)
+            .orElse(null);
     }
 
     public void setHeatingCostsPrepayment(final Float heatingCostsPrepayment) {

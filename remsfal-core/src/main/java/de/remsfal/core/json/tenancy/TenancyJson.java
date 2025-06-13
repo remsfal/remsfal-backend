@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.immutable.ImmutableStyle;
+import de.remsfal.core.model.project.RentalUnitModel;
 import de.remsfal.core.model.project.TenancyModel;
+import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 
@@ -52,11 +54,18 @@ public abstract class TenancyJson {
     @Nullable
     public abstract Float getHeatingCostsPrepayment();
 
-    public static TenancyJson valueOf(final TenancyModel model) {
+    public static TenancyJson valueOf(final TenancyModel tenancyModel, final RentModel rentModel,
+        final RentalUnitModel unitModel) {
         return ImmutableTenancyJson.builder()
-            .id(model.getId())
-            .startOfRental(model.getStartOfRental())
-            .endOfRental(model.getEndOfRental())
+            .id(tenancyModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
+            .rentalType(unitModel.getType())
+            .rentalTitle(unitModel.getTitle())
+            .startOfRental(tenancyModel.getStartOfRental())
+            .endOfRental(tenancyModel.getEndOfRental())
+            .billingCycle(rentModel.getBillingCycle())
+            .basicRent(rentModel.getBasicRent())
+            .operatingCostsPrepayment(rentModel.getOperatingCostsPrepayment())
+            .heatingCostsPrepayment(rentModel.getHeatingCostsPrepayment())
             .build();
     }
 

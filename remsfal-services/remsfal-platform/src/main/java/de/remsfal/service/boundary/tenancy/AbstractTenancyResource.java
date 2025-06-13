@@ -2,6 +2,7 @@ package de.remsfal.service.boundary.tenancy;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
 import de.remsfal.common.authentication.RemsfalPrincipal;
@@ -23,7 +24,12 @@ public class AbstractTenancyResource {
     protected TenancyController tenancyController;
 
     public boolean checkReadPermissions(final String tenancyId) {
-        return tenancyController.getTenancy(principal, tenancyId) != null;
+        if (tenancyController.getTenancy(principal, tenancyId) == null) {
+            throw new NotFoundException("Unable to find tenancy for tenant");
+        } else {
+            return true;
+        }
+
     }
 
 }

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class TenancyResourceTest extends AbstractResourceTest {
@@ -161,11 +160,8 @@ class TenancyResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID))
-            .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE))
-            .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION))
-            .and().body("heatingSpace", Matchers.equalTo(TestData.COMMERCIAL_HEATING_SPACE))
-            .and().body("location", Matchers.equalTo(TestData.COMMERCIAL_LOCATION));
+            .and().body("tenancies", Matchers.notNullValue())
+            .and().body("tenancies.size()", Matchers.is(0));
     }
 
     @Test
@@ -177,33 +173,42 @@ class TenancyResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID))
-            .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE))
-            .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION))
-            .and().body("heatingSpace", Matchers.equalTo(TestData.COMMERCIAL_HEATING_SPACE))
-            .and().body("location", Matchers.equalTo(TestData.COMMERCIAL_LOCATION));
+            .and().body("tenancies.size()", Matchers.is(3))
+            .and().body("tenancies[0].id", Matchers.equalTo(TestData.TENANCY_ID_2 + "/sites/" + TestData.SITE_ID_1))
+            .and().body("tenancies[0].name", Matchers.equalTo(TestData.SITE_TITLE_1))
+            .and().body("tenancies[0].rentalType", Matchers.equalTo("SITE"))
+            .and().body("tenancies[0].rentalTitle", Matchers.equalTo(TestData.SITE_TITLE_1))
+            .and().body("tenancies[0].isActive", Matchers.equalTo(Boolean.TRUE))
+            .and().body("tenancies[1].id", Matchers.equalTo(TestData.TENANCY_ID_2 + "/buildings/" + TestData.BUILDING_ID_2))
+            .and().body("tenancies[1].name", Matchers.equalTo(TestData.BUILDING_TITLE_2))
+            .and().body("tenancies[1].rentalType", Matchers.equalTo("BUILDING"))
+            .and().body("tenancies[1].rentalTitle", Matchers.equalTo(TestData.BUILDING_TITLE_2))
+            .and().body("tenancies[1].isActive", Matchers.equalTo(Boolean.TRUE))
+            .and().body("tenancies[2].id", Matchers.equalTo(TestData.TENANCY_ID_3 + "/properties/" + TestData.PROPERTY_ID_2))
+            .and().body("tenancies[2].name", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+            .and().body("tenancies[2].rentalType", Matchers.equalTo("PROPERTY"))
+            .and().body("tenancies[2].rentalTitle", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+            .and().body("tenancies[2].isActive", Matchers.equalTo(Boolean.FALSE));
     }
 
+    @Test
     void getTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}", TestData.TENANCY_ID_1)
+            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/sites/{rentalId}", TestData.TENANCY_ID_2, TestData.SITE_ID_1)
             .then()
-            .statusCode(Response.Status.CREATED.getStatusCode())
+            .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID)
-                .replace("{propertyId}", TestData.PROPERTY_ID)
-                .replace("{buildingId}", TestData.BUILDING_ID) + "/"))
-            .and().body("id", Matchers.notNullValue())
-            .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_2));
-
-        long entities = entityManager
-            .createQuery("SELECT count(commercial) FROM CommercialEntity commercial where commercial.title = :title",
-                long.class)
-            .setParameter("title", TestData.COMMERCIAL_TITLE_2)
-            .getSingleResult();
-        assertEquals(1, entities);
+            .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_2 + "/sites/" + TestData.SITE_ID_1))
+            .and().body("rentalType", Matchers.equalTo("SITE"))
+            .and().body("rentalTitle", Matchers.equalTo(TestData.SITE_TITLE_1))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_2))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_2))
+            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
+            .and().body("basicRent", Matchers.equalTo(40f))
+            .and().body("operatingCostsPrepayment", Matchers.nullValue())
+            .and().body("heatingCostsPrepayment", Matchers.nullValue());
     }
 
 }

@@ -13,7 +13,28 @@ public interface RentalUnitModel {
         BUILDING,
         APARTMENT,
         STORAGE,
-        COMMERCIAL
+        COMMERCIAL;
+
+        public static final String asResourcePath(final UnitType type) {
+            if(type.name().endsWith("Y")) {
+                return "properties";
+            }
+            return type.name().toLowerCase().concat("s");
+        }
+
+        public final String asResourcePath() {
+            if(this.name().endsWith("Y")) {
+                return "properties";
+            }
+            return this.name().toLowerCase().concat("s");
+        }
+
+        public static final UnitType fromResourcePath(final String rentalType) {
+            if(rentalType.equals("properties")) {
+                return UnitType.PROPERTY;
+            }
+            return UnitType.valueOf(rentalType.substring(0, rentalType.length() - 1).toUpperCase());
+        }
     }
 
     @Nullable

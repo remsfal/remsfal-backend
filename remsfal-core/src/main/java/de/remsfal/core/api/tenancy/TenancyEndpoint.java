@@ -31,14 +31,18 @@ public interface TenancyEndpoint {
     TenancyListJson getTenancies();
 
     @GET
-    @Path("/{tenancyId}")
+    @Path("/{tenancyId}/{rentalType:properties|sites|buildings|apartments|storages|commercials}/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId
+        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @Parameter(description = "Type of the rental", required = true)
+        @PathParam("rentalType") @NotNull String rentalType,
+        @Parameter(description = "ID of the rental", required = true)
+        @PathParam("rentalId") @NotNull @UUID String rentalId
     );
 
     @Path("/{tenancyId}/" + TaskEndpoint.SERVICE)
