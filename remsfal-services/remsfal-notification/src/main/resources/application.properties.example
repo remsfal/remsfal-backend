@@ -1,0 +1,8 @@
+# Mailer Configuration Example
+quarkus.mailer.from=you@example.com
+quarkus.mailer.host=smtp.example.com
+quarkus.mailer.port=587
+quarkus.mailer.username=your-username
+quarkus.mailer.password=your-password
+quarkus.mailer.start-tls=true
+quarkus.mailer.mock=false
