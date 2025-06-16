@@ -338,7 +338,6 @@ class ProjectResourceTest extends AbstractResourceTest {
 
     @Test
     void metricGenerated_afterGetProjectsList() {
-        setupTestUsers();
         given()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
@@ -352,7 +351,6 @@ class ProjectResourceTest extends AbstractResourceTest {
 
     @Test
     void metricGenerated_afterCreateProject() {
-        setupTestUsers();
         String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         given()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -369,7 +367,6 @@ class ProjectResourceTest extends AbstractResourceTest {
 
     @Test
     void metricGenerated_afterGetSingleProject() {
-        setupTestUsers();
         String projectId = given()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
@@ -391,7 +388,6 @@ class ProjectResourceTest extends AbstractResourceTest {
 
     @Test
     void metricGenerated_afterUpdateProject() {
-        setupTestUsers();
         String projectId = given()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
@@ -415,7 +411,6 @@ class ProjectResourceTest extends AbstractResourceTest {
 
     @Test
     void metricGenerated_afterDeleteProject() {
-        setupTestUsers();
         String projectId = given()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
