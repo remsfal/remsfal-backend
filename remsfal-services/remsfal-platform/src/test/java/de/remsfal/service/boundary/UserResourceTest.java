@@ -14,6 +14,7 @@ import de.remsfal.service.TestData;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsString;
 
 import java.time.Duration;
 import java.util.Date;
@@ -180,5 +181,63 @@ class UserResourceTest extends AbstractResourceTest {
                 .getSingleResult();
 
         assertEquals(0, entries);
+    }
+
+    @Test
+    void metricGenerated_afterGetUser() {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO USER (ID, EMAIL, AUTHENTICATED_AT, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
+                .setParameter(1, TestData.USER_ID)
+                .setParameter(2, TestData.USER_EMAIL)
+                .setParameter(3, new Date())
+                .setParameter(4, TestData.USER_FIRST_NAME)
+                .setParameter(5, TestData.USER_LAST_NAME)
+                .executeUpdate());
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
+                .when().get(BASE_PATH)
+                .then().statusCode(Status.OK.getStatusCode());
+        given()
+                .when().get("/q/metrics")
+                .then()
+                .statusCode(200)
+                .body(containsString("GetUserTimer"));
+    }
+    @Test
+    void metricGenerated_afterUpdateUser() {
+        setupTestUsers();
+        String update = "{ \"firstName\":\"john\","
+                + "\"mobilePhoneNumber\":\"+491773289245\","
+                + "\"businessPhoneNumber\":\"+49302278349\","
+                + "\"privatePhoneNumber\":\"+4933012345611\"}";
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
+                .contentType(ContentType.JSON)
+                .body(update)
+                .when().patch(BASE_PATH)
+                .then().statusCode(Status.OK.getStatusCode());
+
+        given()
+                .when().get("/q/metrics")
+                .then()
+                .statusCode(200)
+                .body(containsString("UpdateUserTimer"));
+    }
+    @Test
+    void metricGenerated_afterDeleteUser() {
+        setupTestUsers();
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
+                .when().delete(BASE_PATH)
+                .then()
+                .statusCode(Status.NO_CONTENT.getStatusCode());
+        given()
+                .when().get("/q/metrics")
+                .then()
+                .statusCode(200)
+                .body(containsString("DeleteUserTimer"));
     }
 }

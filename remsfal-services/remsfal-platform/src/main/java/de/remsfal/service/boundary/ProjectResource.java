@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ProjectEndpoint;
@@ -28,6 +29,7 @@ import de.remsfal.service.boundary.project.SiteResource;
 import de.remsfal.service.boundary.project.TaskResource;
 import de.remsfal.service.control.ProjectController;
 
+import org.eclipse.microprofile.metrics.annotation.Timed;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -73,12 +75,14 @@ public class ProjectResource implements ProjectEndpoint {
     Instance<TaskResource> taskResource;
 
     @Override
+    @Timed(name = "GetProjectsListTimer", unit = MetricUnits.MILLISECONDS)
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
         List<ProjectModel> projects = controller.getProjects(principal, offset, limit);
         return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal), principal);
     }
 
     @Override
+    @Timed(name = "CreateProjectTimer", unit = MetricUnits.MILLISECONDS)
     public Response createProject(final ProjectJson project) {
         final ProjectModel model = controller.createProject(principal, project);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
@@ -89,18 +93,21 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
+    @Timed(name = "GetSingleProjectTimer", unit = MetricUnits.MILLISECONDS)
     public ProjectJson getProject(final String projectId) {
         final ProjectModel model = controller.getProject(principal, projectId);
         return ProjectJson.valueOf(model);
     }
 
     @Override
+    @Timed(name = "UpdateProjectTimer", unit = MetricUnits.MILLISECONDS)
     public ProjectJson updateProject(final String projectId, final ProjectJson project) {
         final ProjectModel model = controller.updateProject(principal, projectId, project);
         return ProjectJson.valueOf(model);
     }
 
     @Override
+    @Timed(name = "deleteProjectTimer", unit = MetricUnits.MILLISECONDS)
     public void deleteProject(final String projectId) {
         controller.deleteProject(principal, projectId);
     }
