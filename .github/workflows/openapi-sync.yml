@@ -4,13 +4,15 @@ on:
   workflow_run:
     workflows: ["CD Build"]
     types: [completed]
+    branches: 
+      - "main"
 
 permissions:
   contents: read
 
-
 jobs:
   jdk17-build-and-sync-openapi:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: "jdk17-build-and-generate-openapi"
     runs-on: ubuntu-latest
     steps:
@@ -41,7 +43,7 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@v2
         with:
-          app-id: ${{ vars.REMSFAL_BOT_ID }}
+          app-id: ${{ secrets.REMSFAL_BOT_ID }}
           private-key: ${{ secrets.REMSFAL_BOT_KEY }} 
 
       - name: sync remsfal frontend repository
