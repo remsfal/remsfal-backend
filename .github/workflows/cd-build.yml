@@ -19,6 +19,8 @@ jobs:
     name: "Build and push image to registry"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
       - name: Verify JAR artifact exists

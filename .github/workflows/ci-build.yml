@@ -18,6 +18,8 @@ jobs:
     name: "JDK 17 Build"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
       - name: Archive test output
@@ -43,6 +45,8 @@ jobs:
     name: "JDK 21 Build"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
         with:
