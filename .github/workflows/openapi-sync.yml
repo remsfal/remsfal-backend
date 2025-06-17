@@ -37,17 +37,22 @@ jobs:
           cp remsfal-services/remsfal-notification/target/openapi/* export/
           cp remsfal-services/remsfal-platform/target/openapi/* export/
 
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.REMSFAL_BOT_ID }}
+          private-key: ${{ secrets.REMSFAL_BOT_KEY }} 
+
       - name: sync remsfal frontend repository
         env:
-          GH_TOKEN: ${{ secrets.FRONTEND_PAT }}
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
+          gh api REMSFAL_BOT
           COMMIT_HASH=$(git rev-parse --short HEAD)
           BRANCH_NAME="sync-OpenAPI-spec/${COMMIT_HASH}"
-          
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@users.noreply.github.com"
 
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
           cd remsfal-frontend
 
           mkdir -p frontend/src/helper/api/
