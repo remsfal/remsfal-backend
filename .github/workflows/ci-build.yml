@@ -17,7 +17,6 @@ jobs:
   jdk17-build:
     name: "JDK 17 Build"
     runs-on: ubuntu-latest
-    needs: check-branches
     steps:
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
@@ -43,7 +42,6 @@ jobs:
   jdk21-build:
     name: "JDK 21 Build"
     runs-on: ubuntu-latest
-    needs: check-branches
     steps:
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
