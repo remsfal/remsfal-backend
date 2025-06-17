@@ -30,6 +30,7 @@ runs:
         key: remsfal-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: remsfal-maven
     - name: Build with Maven (package)
+      shell: bash
       run: |
         MAVEN_CMD="mvn --batch-mode --update-snapshots package"
         if [ "${{ inputs.skip-tests }}" == "true" ]; then
