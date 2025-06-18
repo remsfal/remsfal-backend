@@ -44,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./remsfal-service/src/main/docker/Dockerfile
+          file: ./remsfal-services/remsfal-platform/src/main/docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
       - name: Generate artifact attestation
