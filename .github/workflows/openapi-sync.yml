@@ -1,0 +1,67 @@
+name: "sync-openapi-spec"
+
+on:
+  workflow_run:
+    workflows: ["CD Build"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  jdk17-build-and-sync-openapi:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: "jdk17-build-and-generate-openapi"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build REMSFAL
+        uses: ./.github/actions/build-remsfal
+        with:
+          skip-tests: 'true'
+          skip-checkstyle: 'true'
+
+      - name: Copy OpenAPI Specs
+        run: |
+          mkdir export
+          cp remsfal-services/remsfal-chat/target/openapi/* export/
+          cp remsfal-services/remsfal-notification/target/openapi/* export/
+          cp remsfal-services/remsfal-platform/target/openapi/* export/
+
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.REMSFAL_BOT_ID }}
+          private-key: ${{ secrets.REMSFAL_BOT_KEY }} 
+
+      - name: sync remsfal frontend repository
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          gh api REMSFAL_BOT
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          BRANCH_NAME="sync-OpenAPI-spec/${COMMIT_HASH}"
+
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
+          cd remsfal-frontend
+
+          mkdir -p frontend/src/helper/api/
+          cp -r ../export/* frontend/src/helper/api/
+          
+          if git diff --quiet; then
+            echo "No Changes made to the data model. No pull request will be created."
+          else
+            git checkout -b $BRANCH_NAME || git checkout $BRANCH_NAME
+            git add frontend/src/helper/api/
+            git commit -m "Update generated files from source repo"
+            git push origin "$BRANCH_NAME"
+            git fetch origin main
+            gh pr create \
+             --base main \
+             --head "$BRANCH_NAME" \
+             --title "Sync of OpenAPI Spec" \
+             --body "This PR carries the new OpenAPISpec from remsfal-backend."
+          fi
