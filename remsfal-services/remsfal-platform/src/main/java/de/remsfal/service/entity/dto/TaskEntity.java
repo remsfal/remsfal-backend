@@ -31,6 +31,9 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(name = "REPORTER_ID", columnDefinition = "char", length = 36)
+    private String reporterId;
+
     @Column(name = "OWNER_ID", columnDefinition = "char", length = 36)
     private String ownerId;
 
@@ -82,6 +85,15 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
 
     public void setStatus(final Status status) {
         this.status = status;
+    }
+
+    @Override
+    public String getReporterId() {
+        return reporterId;
+    }
+
+    public void setReporterId(final String reporterId) {
+        this.reporterId = reporterId;
     }
 
     @Override

@@ -12,6 +12,7 @@ import de.remsfal.core.api.tenancy.TaskEndpoint;
 import de.remsfal.core.json.tenancy.TaskJson;
 import de.remsfal.core.json.tenancy.TaskListJson;
 import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.TaskModel.Status;
 import de.remsfal.service.control.TaskController;
 
@@ -25,14 +26,16 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     TaskController taskController;
 
     @Override
-    public TaskListJson getTasks(final String tenancyId, final Status status) {
+    public TaskListJson getTasks(final String tenancyId, final String rentalType, final String rentalId, final Status status) {
         checkReadPermissions(tenancyId);
+        final UnitType type = UnitType.fromResourcePath(rentalType);
         return TaskListJson.valueOf(taskController.getTasks(tenancyId, Optional.ofNullable(status)));
     }
 
     @Override
-    public Response createTask(final String tenancyId, final TaskJson task) {
+    public Response createTask(final String tenancyId, final String rentalType, final String rentalId, final TaskJson task) {
         checkReadPermissions(tenancyId);
+        final UnitType type = UnitType.fromResourcePath(rentalType);
         final TaskModel model = null; // TODO
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
@@ -42,15 +45,17 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     }
 
     @Override
-    public TaskJson getTask(final String tenancyId, final String taskId) {
+    public TaskJson getTask(final String tenancyId, final String rentalType, final String rentalId, final String taskId) {
         checkReadPermissions(tenancyId);
+        final UnitType type = UnitType.fromResourcePath(rentalType);
         String projectId = tenancyId; // TODO
         return TaskJson.valueOf(taskController.getTask(projectId, taskId));
     }
 
     @Override
-    public TaskJson updateTask(final String tenancyId, final String taskId, final TaskJson task) {
+    public TaskJson updateTask(final String tenancyId, final String rentalType, final String rentalId, final String taskId, final TaskJson task) {
         checkReadPermissions(tenancyId);
+        final UnitType type = UnitType.fromResourcePath(rentalType);
         String projectId = tenancyId; // TODO
         return TaskJson.valueOf(taskController.updateTask(projectId, taskId, task));
     }

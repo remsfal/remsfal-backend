@@ -40,6 +40,10 @@ public interface TaskEndpoint {
     TaskListJson getTasks(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @Parameter(description = "Type of the rental", required = true)
+        @PathParam("rentalType") @NotNull String rentalType,
+        @Parameter(description = "ID of the rental", required = true)
+        @PathParam("rentalId") @NotNull @UUID String rentalId,
         @Parameter(description = "Filter to return only tasks with a specific status")
         @QueryParam("status") Status status);
 
@@ -52,6 +56,10 @@ public interface TaskEndpoint {
     Response createTask(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @Parameter(description = "Type of the rental", required = true)
+        @PathParam("rentalType") @NotNull String rentalType,
+        @Parameter(description = "ID of the rental", required = true)
+        @PathParam("rentalId") @NotNull @UUID String rentalId,
         @Parameter(description = "Task information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) TaskJson task);
 
@@ -64,6 +72,10 @@ public interface TaskEndpoint {
     TaskJson getTask(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @Parameter(description = "Type of the rental", required = true)
+        @PathParam("rentalType") @NotNull String rentalType,
+        @Parameter(description = "ID of the rental", required = true)
+        @PathParam("rentalId") @NotNull @UUID String rentalId,
         @Parameter(description = "ID of the task", required = true)
         @PathParam("taskId") @NotNull @UUID String taskId);
 
@@ -77,6 +89,10 @@ public interface TaskEndpoint {
     TaskJson updateTask(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @Parameter(description = "Type of the rental", required = true)
+        @PathParam("rentalType") @NotNull String rentalType,
+        @Parameter(description = "ID of the rental", required = true)
+        @PathParam("rentalId") @NotNull @UUID String rentalId,
         @Parameter(description = "ID of the task", required = true)
         @PathParam("taskId") @NotNull @UUID String taskId,
         @Parameter(description = "Task information", required = true)

@@ -192,7 +192,27 @@ class TenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getTenancy_SUCCESS_tenancyIsReturned() {
+    void getPropertyTenancy_SUCCESS_tenancyIsReturned() {
+        given()
+            .when()
+            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/properties/{rentalId}", TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_3 + "/properties/" + TestData.PROPERTY_ID_2))
+            .and().body("rentalType", Matchers.equalTo("PROPERTY"))
+            .and().body("rentalTitle", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_3))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_3))
+            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
+            .and().body("basicRent", Matchers.equalTo(100f))
+            .and().body("operatingCostsPrepayment", Matchers.nullValue())
+            .and().body("heatingCostsPrepayment", Matchers.nullValue());
+    }
+
+    @Test
+    void getSiteTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
@@ -209,6 +229,86 @@ class TenancyResourceTest extends AbstractResourceTest {
             .and().body("basicRent", Matchers.equalTo(40f))
             .and().body("operatingCostsPrepayment", Matchers.nullValue())
             .and().body("heatingCostsPrepayment", Matchers.nullValue());
+    }
+
+    @Test
+    void getBuildingTenancy_SUCCESS_tenancyIsReturned() {
+        given()
+            .when()
+            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/buildings/{rentalId}", TestData.TENANCY_ID_2, TestData.BUILDING_ID_2)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_2 + "/buildings/" + TestData.BUILDING_ID_2))
+            .and().body("rentalType", Matchers.equalTo("BUILDING"))
+            .and().body("rentalTitle", Matchers.equalTo(TestData.BUILDING_TITLE_2))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_2))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_2))
+            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
+            .and().body("basicRent", Matchers.equalTo(899f))
+            .and().body("operatingCostsPrepayment", Matchers.equalTo(150f))
+            .and().body("heatingCostsPrepayment", Matchers.equalTo(240f));
+    }
+
+    @Test
+    void getApartmentTenancy_SUCCESS_tenancyIsReturned() {
+        given()
+            .when()
+            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/apartments/{rentalId}", TestData.TENANCY_ID_1, TestData.APARTMENT_ID)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_1 + "/apartments/" + TestData.APARTMENT_ID))
+            .and().body("rentalType", Matchers.equalTo("APARTMENT"))
+            .and().body("rentalTitle", Matchers.equalTo(TestData.APARTMENT_TITLE))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1))
+            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
+            .and().body("basicRent", Matchers.equalTo(670f))
+            .and().body("operatingCostsPrepayment", Matchers.equalTo(75f))
+            .and().body("heatingCostsPrepayment", Matchers.equalTo(120f));
+    }
+
+    @Test
+    void getStorageTenancy_SUCCESS_tenancyIsReturned() {
+        given()
+            .when()
+            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/storages/{rentalId}", TestData.TENANCY_ID_1, TestData.STORAGE_ID)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_1 + "/storages/" + TestData.STORAGE_ID))
+            .and().body("rentalType", Matchers.equalTo("STORAGE"))
+            .and().body("rentalTitle", Matchers.equalTo(TestData.STORAGE_TITLE))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1))
+            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
+            .and().body("basicRent", Matchers.equalTo(30f))
+            .and().body("operatingCostsPrepayment", Matchers.nullValue())
+            .and().body("heatingCostsPrepayment", Matchers.nullValue());
+    }
+
+    @Test
+    void getCommercialTenancy_SUCCESS_tenancyIsReturned() {
+        given()
+            .when()
+            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/commercials/{rentalId}", TestData.TENANCY_ID_1, TestData.COMMERCIAL_ID)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_1 + "/commercials/" + TestData.COMMERCIAL_ID))
+            .and().body("rentalType", Matchers.equalTo("COMMERCIAL"))
+            .and().body("rentalTitle", Matchers.equalTo(TestData.COMMERCIAL_TITLE))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1))
+            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
+            .and().body("basicRent", Matchers.equalTo(1030f))
+            .and().body("operatingCostsPrepayment", Matchers.equalTo(230f))
+            .and().body("heatingCostsPrepayment", Matchers.equalTo(320f));
     }
 
 }
