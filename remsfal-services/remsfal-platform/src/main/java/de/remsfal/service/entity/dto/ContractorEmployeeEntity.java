@@ -2,6 +2,7 @@ package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.ContractorEmployeeModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -18,7 +19,7 @@ import jakarta.persistence.Table;
 @Table(name = "CONTRACTOR_EMPLOYEE")
 @NamedQuery(name = "ContractorEmployeeEntity.findByContractorId",
         query = "SELECT e FROM ContractorEmployeeEntity e WHERE e.contractor.id = :contractorId")
-public class ContractorEmployeeEntity extends AbstractMetaDataEntity implements ContractorEmployeeModel {
+public class ContractorEmployeeEntity extends MetaDataEntity implements ContractorEmployeeModel {
 
     @EmbeddedId
     private ContractorEmployeeKey id = new ContractorEmployeeKey();

@@ -12,6 +12,8 @@ import java.util.Objects;
 @Embeddable
 public class ContractorEmployeeKey implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     @Column(name = "CONTRACTOR_ID", columnDefinition = "char", length = 36)
     private String contractorId;
 

@@ -73,6 +73,7 @@
             <column name="STATUS" type="ENUM('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" defaultValue="PENDING">
                 <constraints nullable="false" />
             </column>
+            <column name="REPORTER_ID" type="char(36)" />
             <column name="OWNER_ID" type="char(36)" />
             <column name="DESCRIPTION" type="clob" />
             <column name="BLOCKED_BY" type="char(36)" />

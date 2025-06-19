@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.ContractorModel;
+import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
