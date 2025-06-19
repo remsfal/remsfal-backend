@@ -35,7 +35,9 @@ jobs:
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.REMSFAL_BOT_ID }}
-          private-key: ${{ secrets.REMSFAL_BOT_KEY }} 
+          private-key: ${{ secrets.REMSFAL_BOT_KEY }}
+          owner: remsfal
+          repositories: remsfal-backend,remsfal-frontend
 
       - name: sync remsfal frontend repository
         env:
