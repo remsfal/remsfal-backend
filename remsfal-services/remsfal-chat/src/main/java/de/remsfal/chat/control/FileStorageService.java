@@ -36,6 +36,7 @@ public class FileStorageService {
     private static final String DEFAULT_FILE_NAME = "unknown";
 
     private final Set<String> allowedTypes = Set.of(
+        "image/jpg",
         "image/jpeg",
         "image/png",
         "image/gif",
