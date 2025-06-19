@@ -1,7 +1,6 @@
 package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.ContractorEntity;
-import de.remsfal.service.entity.dto.ContractorEmployeeEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.NoResultException;
 
@@ -13,9 +12,6 @@ import java.util.Optional;
  */
 @ApplicationScoped
 public class ContractorRepository extends AbstractRepository<ContractorEntity> {
-
-    private static final String PARAM_PROJECT_ID = "projectId";
-    private static final String PARAM_CONTRACTOR_ID = "contractorId";
 
     /**
      * Delete a contractor by ID.
@@ -60,19 +56,6 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
                 .createNamedQuery("ContractorEntity.countByProjectId", Long.class)
                 .setParameter(PARAM_PROJECT_ID, projectId)
                 .getSingleResult();
-    }
-
-    /**
-     * Find contractor employees by contractor ID.
-     *
-     * @param contractorId the contractor ID
-     * @return the list of contractor employees
-     */
-    public List<ContractorEmployeeEntity> findEmployeesByContractorId(final String contractorId) {
-        return getEntityManager().createNamedQuery("ContractorEmployeeEntity.findByContractorId",
-                ContractorEmployeeEntity.class)
-                .setParameter(PARAM_CONTRACTOR_ID, contractorId)
-                .getResultList();
     }
 
     /**
