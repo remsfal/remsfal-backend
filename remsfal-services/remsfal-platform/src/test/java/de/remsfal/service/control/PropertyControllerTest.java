@@ -76,7 +76,7 @@ class PropertyControllerTest extends AbstractTest {
         
         assertNotEquals(property.getId(), result.getId());
         assertEquals(property.getTitle(), result.getTitle());
-        assertEquals(property.getLandRegisterEntry(), result.getLandRegisterEntry());
+        assertEquals(property.getLandRegistry(), result.getLandRegistry());
         assertEquals(property.getDescription(), result.getDescription());
         assertEquals(property.getPlotArea(), result.getPlotArea());
         
@@ -125,7 +125,7 @@ class PropertyControllerTest extends AbstractTest {
         // Act
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
             .title(TestData.PROPERTY_ID_2)
-            .landRegisterEntry(TestData.PROPERTY_REG_ENTRY_2)
+            .landRegistry(TestData.PROPERTY_LAND_REGISTRY_2)
             .description(TestData.PROPERTY_DESCRIPTION_2)
             .plotArea(TestData.PROPERTY_PLOT_AREA_2)
             .build();
@@ -146,7 +146,7 @@ class PropertyControllerTest extends AbstractTest {
         // act + Assert
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
             .title("new title")
-            .landRegisterEntry("new register entry")
+            .landRegistry("new register entry")
             .description("new description")
             .plotArea(999)
             .build();
@@ -159,13 +159,13 @@ class PropertyControllerTest extends AbstractTest {
         // Arrange
         final PropertyModel property1 = ImmutablePropertyJson.builder()
             .title("Property 1")
-            .landRegisterEntry("register entry 1")
+            .landRegistry("register entry 1")
             .description("description 1")
             .plotArea(111)
             .build();
         final PropertyModel property2 = ImmutablePropertyJson.builder()
             .title("Property 2")
-            .landRegisterEntry("register entry 2")
+            .landRegistry("register entry 2")
             .description("description 2")
             .plotArea(999)
             .build();
@@ -182,7 +182,7 @@ class PropertyControllerTest extends AbstractTest {
 
     private void assertProperty(PropertyModel expectedProperty, PropertyModel actualProperty) {
         assertEquals(expectedProperty.getTitle(), actualProperty.getTitle());
-        assertEquals(expectedProperty.getLandRegisterEntry(), actualProperty.getLandRegisterEntry());
+        assertEquals(expectedProperty.getLandRegistry(), actualProperty.getLandRegistry());
         assertEquals(expectedProperty.getDescription(), actualProperty.getDescription());
         assertEquals(expectedProperty.getPlotArea(), actualProperty.getPlotArea());
     }
@@ -190,11 +190,11 @@ class PropertyControllerTest extends AbstractTest {
     @Test
     void getProperty_SUCCESS_propertyRetrieved() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID)
             .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY)
+            .setParameter(4, TestData.PROPERTY_LAND_REGISTRY)
             .setParameter(5, TestData.PROPERTY_DESCRIPTION)
             .setParameter(6, 22)
             .executeUpdate());
@@ -203,7 +203,7 @@ class PropertyControllerTest extends AbstractTest {
         
         assertEquals(TestData.PROPERTY_ID, result.getId());
         assertEquals(TestData.PROPERTY_TITLE, result.getTitle());
-        assertEquals(TestData.PROPERTY_REG_ENTRY, result.getLandRegisterEntry());
+        assertEquals(TestData.PROPERTY_LAND_REGISTRY, result.getLandRegistry());
         assertEquals(TestData.PROPERTY_DESCRIPTION, result.getDescription());
         assertEquals(22, result.getPlotArea());
     }
@@ -211,11 +211,11 @@ class PropertyControllerTest extends AbstractTest {
     @Test
     void getProperty_FAILED_wrongProjectId() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID)
             .setParameter(2, TestData.PROJECT_ID_1)
             .setParameter(3, TestData.PROPERTY_TITLE)
-            .setParameter(4, TestData.PROPERTY_REG_ENTRY)
+            .setParameter(4, TestData.PROPERTY_LAND_REGISTRY)
             .setParameter(5, TestData.PROPERTY_DESCRIPTION)
             .setParameter(6, 22)
             .executeUpdate());

@@ -14,6 +14,8 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
 import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.service.entity.dto.embeddable.ProjectMembershipKey;
+import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -28,7 +30,7 @@ import de.remsfal.core.model.ProjectMemberModel;
 @NamedQuery(name = "ProjectMembershipEntity.removeByProjectIdAndUserId",
     query = "DELETE FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
 @Table(name = "PROJECT_MEMBERSHIP")
-public class ProjectMembershipEntity extends AbstractMetaDataEntity implements ProjectMemberModel {
+public class ProjectMembershipEntity extends MetaDataEntity implements ProjectMemberModel {
 
     @EmbeddedId
     private ProjectMembershipKey id = new ProjectMembershipKey();

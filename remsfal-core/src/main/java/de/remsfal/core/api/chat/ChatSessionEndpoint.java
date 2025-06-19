@@ -36,10 +36,10 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createChatSession(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId);
 
     @GET
     @Path("/{sessionId}")
@@ -51,11 +51,11 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getChatSession(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @DELETE
     @Path("/{sessionId}")
@@ -67,11 +67,11 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response deleteChatSession(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @POST
     @Path("/{sessionId}")
@@ -84,11 +84,11 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response joinChatSession(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @GET
     @Path("/{sessionId}/participants")
@@ -100,11 +100,11 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getParticipants(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @GET
     @Path("/{sessionId}/participants/{participantId}")
@@ -116,13 +116,13 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getParticipant(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The participant ID", required = true)
-            @PathParam("participantId") @NotNull @UUID String participantId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "The participant ID", required = true)
+        @PathParam("participantId") @NotNull @UUID String participantId);
 
     @PUT
     @Path("/{sessionId}/participants/{participantId}")
@@ -135,15 +135,14 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response changeParticipantRole(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The participant ID", required = true) @PathParam("participantId")
-            @NotNull @UUID String participantId,
-            @Parameter(description = "New role for the participant", required = true)
-            @Valid @NotNull String role);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "The participant ID", required = true)
+        @PathParam("participantId") @NotNull @UUID String participantId,
+        @Parameter(description = "New role for the participant", required = true) @Valid @NotNull String role);
 
     @DELETE
     @Path("/{sessionId}/participants/{participantId}")
@@ -155,13 +154,13 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response removeParticipant(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The participant ID to remove", required = true)
-            @PathParam("participantId") @NotNull @UUID String participantId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "The participant ID to remove", required = true)
+        @PathParam("participantId") @NotNull @UUID String participantId);
 
     @POST
     @Path("/{sessionId}/messages")
@@ -175,16 +174,17 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response sendMessage(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "Message content", required = true) @Valid @NotNull ChatMessageJson message);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "Message content", required = true)
+        @Valid @NotNull ChatMessageJson message);
 
     @GET
     @Path("/{sessionId}/messages/{messageId}")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM })
     @Operation(summary = "Get a chat message in a chat session")
     @APIResponse(responseCode = "200", description = "Chat message retrieved")
     @APIResponse(responseCode = "400", description = "Invalid input")
@@ -192,13 +192,13 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getChatMessage(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The chat message ID", required = true)
-            @PathParam("messageId") @NotNull @UUID String messageId) throws Exception;
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "The chat message ID", required = true)
+        @PathParam("messageId") @NotNull @UUID String messageId) throws Exception;
 
     @PUT
     @Path("/{sessionId}/messages/{messageId}")
@@ -212,15 +212,15 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response updateChatMessage(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The chat message ID", required = true)
-            @PathParam("messageId") @NotNull @UUID String messageId,
-            @Parameter(description = "Updated message content", required = true)
-            @Valid @NotNull ChatMessageJson message);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "The chat message ID", required = true)
+        @PathParam("messageId") @NotNull @UUID String messageId,
+        @Parameter(description = "Updated message content", required = true)
+        @Valid @NotNull ChatMessageJson message);
 
     @DELETE
     @Path("/{sessionId}/messages/{messageId}")
@@ -233,13 +233,13 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response deleteChatMessage(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "The chat message ID to delete", required = true) @PathParam("messageId")
-            @NotNull @UUID String messageId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "The chat message ID to delete", required = true)
+        @PathParam("messageId") @NotNull @UUID String messageId);
 
     @GET
     @Path("/{sessionId}/messages")
@@ -251,11 +251,11 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response getChatMessages(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId);
 
     @POST
     @Path("/{sessionId}/messages/upload")
@@ -269,11 +269,11 @@ public interface ChatSessionEndpoint {
     @APIResponse(responseCode = "500", description = "Internal server error")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response uploadFile(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the task", required = true)
-            @PathParam("taskId") @NotNull @UUID String taskId,
-            @PathParam("sessionId") @NotNull @UUID String sessionId,
-            @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input);
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the task", required = true)
+        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("sessionId") @NotNull @UUID String sessionId,
+        @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input);
 
 }

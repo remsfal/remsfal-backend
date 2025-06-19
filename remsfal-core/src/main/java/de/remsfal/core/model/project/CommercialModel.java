@@ -1,22 +1,46 @@
 package de.remsfal.core.model.project;
 
+import org.immutables.value.Value;
+
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.PositiveOrZero;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface CommercialModel extends RentalUnitModel {
 
-    String getId();
+    @Value.Default
+    @Override
+    default UnitType getType() {
+        return UnitType.COMMERCIAL;
+    }
 
-    String getTitle();
+    @PositiveOrZero
+    @Nullable
+    Float getNetFloorArea(); // Netto-Raumfläche (NRF) nach DIN 277
 
-    String getLocation();
+    @PositiveOrZero
+    @Nullable
+    Float getUsableFloorArea(); // Nutzungsfläche (NUF) nach DIN 277
 
-    String getDescription();
+    @PositiveOrZero
+    @Nullable
+    Float getTechnicalServicesArea(); // Technikfläche (TF) nach DIN 277
 
-    Float getCommercialSpace();
+    @PositiveOrZero
+    @Nullable
+    Float getTrafficArea(); // Verkehrsfläche (VF) nach DIN 277
 
-    Float getUsableSpace();
-
+    @PositiveOrZero
+    @Nullable
     Float getHeatingSpace();
+
+    @Value.Derived
+    @Nullable
+    @Override
+    default Float getSpace() {
+        return getNetFloorArea();
+    }
 
 }
