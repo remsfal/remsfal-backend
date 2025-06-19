@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.hamcrest.Matchers.containsString;
 
 import java.time.Duration;
 
@@ -334,5 +335,100 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .getSingleResult();
         assertEquals(0, enties);
     }
+
+    @Test
+    void metricGenerated_afterGetProjectsList() {
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .when().get(BASE_PATH)
+                .then().statusCode(Status.OK.getStatusCode());
+        given()
+                .when().get("/q/metrics")
+                .then().statusCode(200)
+                .body(containsString("GetProjectsListTimer"));
+    }
+
+    @Test
+    void metricGenerated_afterCreateProject() {
+        String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .contentType(ContentType.JSON)
+                .body(json)
+                .when().post(BASE_PATH)
+                .then().statusCode(Status.CREATED.getStatusCode());
+        given()
+                .when().get("/q/metrics")
+                .then().statusCode(200)
+                .body(containsString("CreateProjectTimer"));
+    }
+
+    @Test
+    void metricGenerated_afterGetSingleProject() {
+        String projectId = given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .contentType(ContentType.JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .when().post(BASE_PATH)
+                .then().statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .when().get(BASE_PATH + "/" + projectId)
+                .then().statusCode(Status.OK.getStatusCode());
+        given()
+                .when().get("/q/metrics")
+                .then().statusCode(200)
+                .body(containsString("GetSingleProjectTimer"));
+    }
+
+    @Test
+    void metricGenerated_afterUpdateProject() {
+        String projectId = given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .contentType(ContentType.JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .when().post(BASE_PATH)
+                .then().statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .contentType(ContentType.JSON)
+                .body("{ \"title\":\"updated\"}")
+                .when().patch(BASE_PATH + "/" + projectId)
+                .then().statusCode(Status.OK.getStatusCode());
+        given()
+                .when().get("/q/metrics")
+                .then().statusCode(200)
+                .body(containsString("UpdateProjectTimer"));
+    }
+
+    @Test
+    void metricGenerated_afterDeleteProject() {
+        String projectId = given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .contentType(ContentType.JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .when().post(BASE_PATH)
+                .then().statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+        given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .when().delete(BASE_PATH + "/" + projectId)
+                .then().statusCode(Status.NO_CONTENT.getStatusCode());
+        given()
+                .when().get("/q/metrics")
+                .then().statusCode(200)
+                .body(containsString("deleteProjectTimer"));
+    }
+
 
 }
