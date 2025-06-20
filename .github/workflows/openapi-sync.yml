@@ -43,7 +43,6 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          gh api REMSFAL_BOT
           COMMIT_HASH=$(git rev-parse --short HEAD)
           BRANCH_NAME="sync-OpenAPI-spec/${COMMIT_HASH}"
 
@@ -61,9 +60,9 @@ jobs:
             git commit -m "Update generated files from source repo"
             git push origin "$BRANCH_NAME"
             git fetch origin main
-            gh pr create \
-             --base main \
-             --head "$BRANCH_NAME" \
-             --title "Sync of OpenAPI Spec" \
-             --body "This PR carries the new OpenAPISpec from remsfal-backend."
+            gh api repos/:owner/remsfal-frontend/pulls \
+              -f base="main" \
+              -f head="$BRANCH_NAME" \
+              -f title="Sync of OpenAPI Spec" \
+              -f body="This PR carries the new OpenAPISpec from remsfal-backend."
           fi
