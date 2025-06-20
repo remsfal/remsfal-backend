@@ -49,8 +49,8 @@ jobs:
           git clone https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY%%/*}/remsfal-frontend.git
           cd remsfal-frontend
 
-          mkdir -p frontend/src/helper/api/
-          cp -r ../export/* frontend/src/helper/api/
+          mkdir -p src/helper/api/
+          cp -r ../export/* src/helper/api/
           
           if git diff --quiet; then
             echo "No Changes made to the data model. No pull request will be created."
