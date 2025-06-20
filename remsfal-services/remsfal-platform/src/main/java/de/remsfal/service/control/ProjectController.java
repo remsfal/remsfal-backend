@@ -68,15 +68,8 @@ public class ProjectController {
 
     public ProjectModel getProject(final UserModel user, final String projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
-        // First check if the project exists
-        ProjectEntity project = projectRepository.findById(projectId);
-        if (project == null) {
-            throw new NotFoundException("Project not found");
-        }
-
-        // Then check if the user is a member of the project
         return projectRepository.findProjectByUserId(user.getId(), projectId)
-            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
     }
 
     @Transactional

@@ -83,7 +83,6 @@ public class ContractorController {
                                            final ContractorModel contractor) {
         logger.infov("Creating contractor for project (id = {0})", projectId);
 
-        // Get the project entity for the contractor
         ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
                 .orElseThrow(() -> new NotFoundException("Project not found"));
 
