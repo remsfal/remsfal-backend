@@ -12,14 +12,16 @@ inputs:
 outputs:
   pr-number:
     description: 'Number of the first found pull request (empty if none found)'
+    value: ${{ steps.pick-pr.outputs.pr-number }}
   pr-branch:
     description: 'Branch name of the first found pull request (empty if none found)'
+    value: ${{ steps.pick-pr.outputs.pr-branch }}
 
 runs:
   using: composite
   steps:
     - name: List open PRs with branch-prefix
-      id: list_prs
+      id: list-prs
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}
@@ -32,10 +34,10 @@ runs:
           > prs_with_prefix.json
 
     - name: Check existence and pick first PR
-      id: pick_pr
+      id: pick-pr
       shell: bash
       run: |
-        COUNT=$(jq 'length' prs_with_prefix.json || echo 0)
+        COUNT=$(jq -r 'length // 0' prs_with_prefix.json)
         if [ "$COUNT" -eq 0 ]; then
           echo "No open PRs with prefix '${{ inputs.branch-prefix }}' found."
           echo "pr-number=''" >> $GITHUB_OUTPUT

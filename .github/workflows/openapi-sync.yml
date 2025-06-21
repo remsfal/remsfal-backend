@@ -110,10 +110,12 @@ jobs:
         run: |
           BRANCH_NAME="${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}"
           PR_TITLE="Sync of OpenAPI Spec created by #${{ steps.backend-merge.outputs.pr-number }}"
-          PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend."
+          PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend, \
+          which were created by the PR #${{ steps.backend-merge.outputs.pr-number }}: \
+          ${{ steps.backend-merge.outputs.pr-title }}"
+          
           git push origin "$BRANCH_NAME"
-          git fetch origin main
-          gh api repos/:owner/remsfal-frontend/pulls \
+          gh api repos/remsfal/remsfal-frontend/pulls \
             -f base="main" \
             -f head="$BRANCH_NAME" \
             -f title="$PR_TITLE" \
