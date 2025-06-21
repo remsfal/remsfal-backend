@@ -37,7 +37,12 @@ runs:
       id: pick-pr
       shell: bash
       run: |
-        COUNT=$(jq -r 'length // 0' prs_with_prefix.json)
+        if [ -f prs_with_prefix.json ]; then
+          COUNT=$(jq -r 'length // 0' prs_with_prefix.json)
+        else
+          COUNT=0
+        fi
+
         if [ "$COUNT" -eq 0 ]; then
           echo "No open PRs with prefix '${{ inputs.branch-prefix }}' found."
           echo "pr-number=''" >> $GITHUB_OUTPUT
