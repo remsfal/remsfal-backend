@@ -3,7 +3,7 @@ description: Find existing and select REMSFAL Frontend Branch
 
 inputs:
   token:
-    description: 'GitHub token, e.g. ${{ secrets.GITHUB_TOKEN }}'
+    description: 'GitHub token'
     required: true
   branch-prefix:
     description: 'Branch-Prefix, e.g. feature/'
