@@ -74,10 +74,9 @@ jobs:
       - name: Copy OpenAPI Specs
         run: |
           cd $GITHUB_WORKSPACE/remsfal-frontend
-          ls -a
           mkdir -p openapi
           cp -rf $GITHUB_WORKSPACE/target/openapi/* openapi/
-          if git diff --quiet; then
+          if git diff --quiet origin/main...HEAD; then
             echo "No Changes made to the data model."
             echo "SPEC_CHANGED=false" >> $GITHUB_ENV
           else
