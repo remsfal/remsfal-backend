@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "CONTRACTOR_EMPLOYEE")
 @NamedQuery(name = "ContractorEmployeeEntity.findByContractorId",
-        query = "SELECT e FROM ContractorEmployeeEntity e WHERE e.contractor.id = :contractorId")
+    query = "SELECT e FROM ContractorEmployeeEntity e WHERE e.contractor.id = :contractorId")
 public class ContractorEmployeeEntity extends AbstractMetaDataEntity implements ContractorEmployeeModel {
 
     @EmbeddedId
@@ -41,14 +41,6 @@ public class ContractorEmployeeEntity extends AbstractMetaDataEntity implements 
         return contractor != null ? contractor.getId() : null;
     }
 
-    public ContractorEntity getContractor() {
-        return contractor;
-    }
-
-    public void setContractor(ContractorEntity contractor) {
-        this.contractor = contractor;
-    }
-
     @Override
     public String getUserId() {
         return user != null ? user.getId() : null;
@@ -61,10 +53,6 @@ public class ContractorEmployeeEntity extends AbstractMetaDataEntity implements 
     @Override
     public String getResponsibility() {
         return responsibility;
-    }
-
-    public void setResponsibility(String responsibility) {
-        this.responsibility = responsibility;
     }
 
     @Override

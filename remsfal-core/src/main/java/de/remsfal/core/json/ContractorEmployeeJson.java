@@ -19,16 +19,21 @@ import jakarta.validation.constraints.Size;
 @JsonInclude(Include.NON_NULL)
 public class ContractorEmployeeJson implements ContractorEmployeeModel {
 
-    @Null
-    private String contractorId;
+    protected String contractorId;
+    protected String userId;
+    protected String responsibility;
 
-    @NotNull(groups = PostValidation.class)
-    @Null(groups = PatchValidation.class)
-    @UUID
-    private String userId;
+    public void setContractorId(String contractorId) {
+        this.contractorId = contractorId;
+    }
 
-    @Size(max = 255)
-    private String responsibility;
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setResponsibility(String responsibility) {
+        this.responsibility = responsibility;
+    }
 
     @NotBlank(groups = PostValidation.class)
     @Email
@@ -39,31 +44,24 @@ public class ContractorEmployeeJson implements ContractorEmployeeModel {
 
     private Boolean active;
 
+    @Null
     @Override
     public String getContractorId() {
         return contractorId;
     }
 
-    public void setContractorId(String contractorId) {
-        this.contractorId = contractorId;
-    }
-
+    @NotNull(groups = PostValidation.class)
+    @Null(groups = PatchValidation.class)
+    @UUID
     @Override
     public String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
+    @Size(max = 255)
     @Override
     public String getResponsibility() {
         return responsibility;
-    }
-
-    public void setResponsibility(String responsibility) {
-        this.responsibility = responsibility;
     }
 
     public String getEmail() {

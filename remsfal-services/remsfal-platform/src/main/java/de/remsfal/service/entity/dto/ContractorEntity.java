@@ -9,8 +9,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -19,9 +17,9 @@ import java.util.Set;
 @Entity
 @Table(name = "CONTRACTOR")
 @NamedQuery(name = "ContractorEntity.findByProjectId",
-        query = "SELECT c FROM ContractorEntity c WHERE c.project.id = :projectId")
+    query = "SELECT c FROM ContractorEntity c WHERE c.project.id = :projectId")
 @NamedQuery(name = "ContractorEntity.countByProjectId",
-        query = "SELECT count(c) FROM ContractorEntity c WHERE c.project.id = :projectId")
+    query = "SELECT count(c) FROM ContractorEntity c WHERE c.project.id = :projectId")
 public class ContractorEntity extends AbstractEntity implements ContractorModel {
 
     @ManyToOne
@@ -90,24 +88,5 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
 
     public void setTrade(String trade) {
         this.trade = trade;
-    }
-
-    public Set<ContractorEmployeeEntity> getEmployees() {
-        return employees;
-    }
-
-    public void setEmployees(Set<ContractorEmployeeEntity> employees) {
-        this.employees = employees;
-    }
-
-    public void addEmployee(UserEntity userEntity, String responsibility) {
-        if (employees == null) {
-            employees = new HashSet<>();
-        }
-        ContractorEmployeeEntity employee = new ContractorEmployeeEntity();
-        employee.setContractor(this);
-        employee.setUser(userEntity);
-        employee.setResponsibility(responsibility);
-        this.employees.add(employee);
     }
 }
