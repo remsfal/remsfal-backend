@@ -38,8 +38,8 @@ runs:
         COUNT=$(jq 'length' prs_with_prefix.json)
         if [ "$COUNT" -eq 0 ]; then
           echo "No open PRs with prefix '${{ inputs.branch-prefix }}' found."
-          echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
-          echo "pr_branch="${{ inputs.branch-prefix }}" >> $GITHUB_OUTPUT
+          echo "pr_number=''" >> $GITHUB_OUTPUT
+          echo "pr_branch=''" >> $GITHUB_OUTPUT
         fi
 
         PR_NUM=$(jq -r '.[0].number' prs_with_prefix.json)
