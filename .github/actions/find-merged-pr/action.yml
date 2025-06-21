@@ -3,7 +3,7 @@ description: 'Finds the pull request that merged the current commit to the targe
 
 inputs:
   token:
-    description: 'GitHub token, e.g. ${{ secrets.GITHUB_TOKEN }}'
+    description: 'GitHub token'
     required: true
 outputs:
   pr_number:
