@@ -1,6 +1,11 @@
 name: Build REMSFAL Frontend
 description: Setting up Node and building REMSFAL Frontend
 
+inputs:
+  working-directory:
+    description: 'NPM working-directory'
+    required: true
+
 runs:
   using: composite
   steps:
@@ -20,8 +25,10 @@ runs:
         restore-keys: remsfal-${{ env.cache-name }}
     - name: Install dependencies
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: npm ci
     - name: Generate Client
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         echo "TODO: run NPM"
