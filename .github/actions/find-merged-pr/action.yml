@@ -6,9 +6,9 @@ inputs:
     description: 'GitHub token'
     required: true
 outputs:
-  pr_number:
+  pr-number:
     description: 'Number of the found pull request (empty if none found)'
-  pr_title:
+  pr-title:
     description: 'Title of the found pull request (empty if none found)'
 
 runs:
@@ -29,5 +29,5 @@ runs:
         PR_TITLE=$(jq -r '.title' <<< "$PR_INFO" || echo '')
         echo "Found merged PR #$PR_NUM: $PR_TITLE"
         # Set outputs
-        echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
-        echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
+        echo "pr-number=$PR_NUM" >> $GITHUB_OUTPUT
+        echo "pr-title=$PR_TITLE" >> $GITHUB_OUTPUT
