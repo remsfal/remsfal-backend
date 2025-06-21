@@ -85,6 +85,8 @@ jobs:
       - name: Build Frontend Client
         if: ${{ env.SPEC_CHANGED == 'true' }}
         uses: ./.github/actions/build-frontend
+        with:
+          working-directory: ${{ github.workspace }}/remsfal-frontend
       - name: Commit Frontend Changes
         if: ${{ env.SPEC_CHANGED == 'true' }}
         run: |
