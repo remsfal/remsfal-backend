@@ -30,6 +30,14 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: kafka-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-broker:9092
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - kafka-broker
+    entrypoint: [ "sh", "-c", "sleep 20 && kafka-topics --bootstrap-server kafka-broker:9092 --create --if-not-exists --topic user-notification --partitions 3 --replication-factor 1" ]
+
+
   grafana:
     image: grafana/grafana-enterprise
     container_name: grafana
