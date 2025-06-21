@@ -89,19 +89,23 @@ jobs:
           working-directory: ${{ github.workspace }}/remsfal-frontend
       - name: Commit Frontend Changes
         if: ${{ env.SPEC_CHANGED == 'true' }}
+        working-directory: ${{ github.workspace }}/remsfal-frontend
         run: |
-          git add --all
-          git commit -m "Updated generated files from merged backend  \
+          COMMIT_MESSAGE="Updated generated files from merged backend  \
           PR #${{ steps.backend-merge.outputs.pr-number }}: ${{ steps.backend-merge.outputs.pr-title }}"
+          git add --all
+          git commit -m "$COMMIT_MESSAGE"
 
       - name: Push Commits to existing PR branch
         if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr-branch != '' }}
+        working-directory: ${{ github.workspace }}/remsfal-frontend
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           git push origin ${{ steps.frontend-selection.outputs.pr-branch }}
       - name: Push Commits and create new Pull Request
         if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr-branch == '' }}
+        working-directory: ${{ github.workspace }}/remsfal-frontend
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
