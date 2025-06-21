@@ -53,7 +53,7 @@ jobs:
           repository: remsfal/remsfal-frontend
           ref: ${{ steps.frontend-selection.outputs.pr_branch }}
           token: ${{ steps.generate-token.outputs.token }}
-          path: $GITHUB_WORKSPACE/remsfal-frontend
+          path: remsfal-frontend
       - name: Checkout Frontend at main branch
         if: steps.frontend-selection.outputs.pr_branch == ''
         uses: actions/checkout@v4
@@ -61,12 +61,12 @@ jobs:
           repository: remsfal/remsfal-frontend
           ref: main
           token: ${{ steps.generate-token.outputs.token }}
-          path: $GITHUB_WORKSPACE/remsfal-frontend
+          path: remsfal-frontend
           fetch-depth: 0
       - name: Create new PR branch
         if: steps.frontend-selection.outputs.pr_branch == ''
         run: |
-          cd $GITHUB_WORKSPACE/remsfal-frontend
+          cd remsfal-frontend
           git checkout -b ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr_number }}
           echo "Created branch '${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr_number }}'"
 
@@ -79,9 +79,7 @@ jobs:
           cd $GITHUB_WORKSPACE/remsfal-frontend
           ls -a
           mkdir -p openapi
-          cp remsfal-services/remsfal-chat/target/openapi/* export/
-          cp remsfal-services/remsfal-notification/target/openapi/* export/
-          cp remsfal-services/remsfal-platform/target/openapi/* export/
+          cp $GITHUB_WORKSPACE/target/openapi/* openapi/
           if git diff --quiet; then
             echo "No Changes made to the data model."
             echo "SPEC_CHANGED=false" >> $GITHUB_ENV
@@ -91,7 +89,12 @@ jobs:
       - name: Build Frontend Client
         if: ${{ env.SPEC_CHANGED == 'true' }}
         uses: ./.github/actions/build-frontend
-
+      - name: Commit Frontend Changes
+        if: ${{ env.SPEC_CHANGED == 'true' }}
+        run: |
+          git add --all
+          git commit -m "Updated generated files from merged backend  \
+          PR #${{ steps.backend-merge.outputs.pr_number }}: ${{ steps.backend-merge.outputs.pr_number }}"
 
       - name: sync remsfal frontend repository
         env:
