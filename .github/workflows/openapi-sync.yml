@@ -73,10 +73,6 @@ jobs:
 
       - name: Copy OpenAPI Specs
         run: |
-          cd $GITHUB_WORKSPACE
-          ls -a
-          cd $GITHUB_WORKSPACE/remsfal-backend
-          ls -a
           cd $GITHUB_WORKSPACE/remsfal-frontend
           ls -a
           mkdir -p openapi
