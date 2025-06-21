@@ -65,8 +65,9 @@ jobs:
           fetch-depth: 0
       - name: Create new PR branch
         if: steps.frontend-selection.outputs.pr-branch == ''
+        env:
+          NEW_BRANCH: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
         run: |
-          NEW_BRANCH="${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}"
           cd remsfal-frontend
           git checkout -b "$NEW_BRANCH"
           echo "Created branch '$NEW_BRANCH'"
@@ -113,15 +114,15 @@ jobs:
         working-directory: ${{ github.workspace }}/remsfal-frontend
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          BRANCH_NAME: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
         run: |
-          BRANCH_NAME="${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}"
           PR_TITLE="Sync of OpenAPI Spec created by #${{ steps.backend-merge.outputs.pr-number }}"
           PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend, \
           which were created by the PR #${{ steps.backend-merge.outputs.pr-number }}: \
           ${{ steps.backend-merge.outputs.pr-title }}"
 
-          gh auth login --with-token <<< "$GH_TOKEN"
           git push origin "$BRANCH_NAME"
+          echo "Branch $BRANCH_NAME is pushed"
           gh api repos/remsfal/remsfal-frontend/pulls \
             -f base="main" \
             -f head="$BRANCH_NAME" \
