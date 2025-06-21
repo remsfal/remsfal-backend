@@ -1,0 +1,33 @@
+name: 'Find Merged PR for Commit'
+description: 'Finds the pull request that merged the current commit to the target branch.'
+
+inputs:
+  token:
+    description: 'GitHub token, e.g. ${{ secrets.GITHUB_TOKEN }}'
+    required: true
+outputs:
+  pr_number:
+    description: 'Number of the found pull request (empty if none found)'
+  pr_title:
+    description: 'Title of the found pull request (empty if none found)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Find merged PR via GH-CLI
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        # Fetch the pull request associated with the current commit
+        PR_INFO=$(gh api \
+          repos/${{ github.repository }}/commits/${{ github.sha }}/pulls \
+          -H "Accept: application/vnd.github.groot-preview+json" \
+          --jq '.[0] | {number, title}')
+        # Extract number and title
+        PR_NUM=$(jq -r '.number' <<< "$PR_INFO" || echo '')
+        PR_TITLE=$(jq -r '.title' <<< "$PR_INFO" || echo '')
+        echo "Found merged PR #$PR_NUM: $PR_TITLE"
+        # Set outputs
+        echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
+        echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
