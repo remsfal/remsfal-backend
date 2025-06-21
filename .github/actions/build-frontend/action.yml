@@ -6,11 +6,13 @@ runs:
   steps:
     - name: Set up Node.js
       uses: actions/setup-node@v4
+      shell: bash
       with:
         node-version: 'lts/*'
     - name: Cache node modules
       id: cache-npm
       uses: actions/cache@v4
+      shell: bash
       env:
         cache-name: cache-node-modules
       with:
@@ -19,7 +21,9 @@ runs:
         key: remsfal-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: remsfal-${{ env.cache-name }}
     - name: Install dependencies
+      shell: bash
       run: npm ci
     - name: Generate Client
+      shell: bash
       run: |
         echo "TODO: run NPM"
