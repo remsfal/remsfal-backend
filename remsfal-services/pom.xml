@@ -42,6 +42,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-kafka-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>de.remsfal</groupId>
             <artifactId>remsfal-core</artifactId>
             <version>${project.version}</version>
