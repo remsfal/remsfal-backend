@@ -66,9 +66,10 @@ jobs:
       - name: Create new PR branch
         if: steps.frontend-selection.outputs.pr_branch == ''
         run: |
+          NEW_BRANCH="${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr_number }}"
           cd remsfal-frontend
-          git checkout -b ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr_number }}
-          echo "Created branch '${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr_number }}'"
+          git checkout -b "$NEW_BRANCH"
+          echo "Created branch '$NEW_BRANCH'"
 
       - name: Copy OpenAPI Specs
         run: |
@@ -79,7 +80,7 @@ jobs:
           cd $GITHUB_WORKSPACE/remsfal-frontend
           ls -a
           mkdir -p openapi
-          cp $GITHUB_WORKSPACE/target/openapi/* openapi/
+          cp -rf $GITHUB_WORKSPACE/target/openapi/* openapi/
           if git diff --quiet; then
             echo "No Changes made to the data model."
             echo "SPEC_CHANGED=false" >> $GITHUB_ENV
@@ -96,7 +97,17 @@ jobs:
           git commit -m "Updated generated files from merged backend  \
           PR #${{ steps.backend-merge.outputs.pr_number }}: ${{ steps.backend-merge.outputs.pr_number }}"
 
-      - name: sync remsfal frontend repository
+      - name: Push Commits to existing PR branch
+        if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr_branch != '' }}
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          git push origin ${{ steps.frontend-selection.outputs.pr_branch }}
+          git commit -m "Updated generated files from merged backend  \
+          PR #${{ steps.backend-merge.outputs.pr_number }}: ${{ steps.backend-merge.outputs.pr_number }}"
+
+      - name: Push Commits and create new Pull Request
+        if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr_branch == '' }}
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
