@@ -119,7 +119,8 @@ jobs:
           PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend, \
           which were created by the PR #${{ steps.backend-merge.outputs.pr-number }}: \
           ${{ steps.backend-merge.outputs.pr-title }}"
-          
+
+          gh auth login --with-token <<< "$GH_TOKEN"
           git push origin "$BRANCH_NAME"
           gh api repos/remsfal/remsfal-frontend/pulls \
             -f base="main" \
