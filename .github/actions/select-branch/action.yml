@@ -10,9 +10,9 @@ inputs:
     required: true
     default: 'remsfal-bot/'
 outputs:
-  pr_number:
+  pr-number:
     description: 'Number of the first found pull request (empty if none found)'
-  pr_branch:
+  pr-branch:
     description: 'Branch name of the first found pull request (empty if none found)'
 
 runs:
@@ -35,15 +35,16 @@ runs:
       id: pick_pr
       shell: bash
       run: |
-        COUNT=$(jq 'length' prs_with_prefix.json)
+        COUNT=$(jq 'length' prs_with_prefix.json || echo 0)
         if [ "$COUNT" -eq 0 ]; then
           echo "No open PRs with prefix '${{ inputs.branch-prefix }}' found."
-          echo "pr_number=''" >> $GITHUB_OUTPUT
-          echo "pr_branch=''" >> $GITHUB_OUTPUT
+          echo "pr-number=''" >> $GITHUB_OUTPUT
+          echo "pr-branch=''" >> $GITHUB_OUTPUT
+          exit 0
         fi
 
         PR_NUM=$(jq -r '.[0].number' prs_with_prefix.json)
         PR_BRANCH=$(jq -r '.[0].headRefName' prs_with_prefix.json)
         echo "Found first PR #$PR_NUM on branch '$PR_BRANCH'"
-        echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
-        echo "pr_branch=$PR_BRANCH" >> $GITHUB_OUTPUT
+        echo "pr-number=$PR_NUM" >> $GITHUB_OUTPUT
+        echo "pr-branch=$PR_BRANCH" >> $GITHUB_OUTPUT
