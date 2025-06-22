@@ -30,8 +30,15 @@ runs:
           --repo remsfal/remsfal-frontend \
           --state open \
           --json number,headRefName \
-          --jq ".[] | select(.headRefName | startswith(\"${{ inputs.branch-prefix }}\"))" \
+          --jq "[.[] | select(.headRefName | startswith(\"${{ inputs.branch-prefix }}\"))]" \
           > prs_with_prefix.json
+        
+        if [ -f prs_with_prefix.json ]; then
+          echo "Existing pull requests were found:"
+          cat prs_with_prefix.json
+        else
+          echo "No pull requests were found."
+        fi
 
     - name: Check existence and pick first PR
       id: pick-pr
