@@ -1,0 +1,43 @@
+name: Build REMSFAL
+description: Setting up Java and building REMSFAL
+
+inputs:
+  java-version:
+    required: true
+    type: string
+    default: '17'
+  skip-tests:
+    required: true
+    type: boolean
+    default: 'false'
+  skip-checkstyle:
+    required: true
+    type: boolean
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK ${{ inputs.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: 'temurin'
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: remsfal-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: remsfal-maven
+    - name: Build with Maven (package)
+      shell: bash
+      run: |
+        MAVEN_CMD="mvn --batch-mode --update-snapshots package"
+        if [ "${{ inputs.skip-tests }}" == "true" ]; then
+          MAVEN_CMD="$MAVEN_CMD -DskipTests"
+        fi
+        if [ "${{ inputs.skip-checkstyle }}" != "true" ]; then
+          MAVEN_CMD="$MAVEN_CMD checkstyle::check"
+        fi
+        echo "Running command: $MAVEN_CMD"
+        $MAVEN_CMD

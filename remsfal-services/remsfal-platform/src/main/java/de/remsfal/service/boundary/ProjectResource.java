@@ -22,6 +22,7 @@ import de.remsfal.core.model.ProjectModel;
 import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.BuildingResource;
 import de.remsfal.service.boundary.project.CommercialResource;
+import de.remsfal.service.boundary.project.ContractorResource;
 import de.remsfal.service.boundary.project.GarageResource;
 import de.remsfal.service.boundary.project.MemberResource;
 import de.remsfal.service.boundary.project.PropertyResource;
@@ -73,6 +74,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<TaskResource> taskResource;
+
+    @Inject
+    Instance<ContractorResource> contractorResource;
 
     @Override
     @Timed(name = "GetProjectsListTimer", unit = MetricUnits.MILLISECONDS)
@@ -150,6 +154,11 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public TaskResource getTaskResource() {
         return resourceContext.initResource(taskResource.get());
+    }
+
+    @Override
+    public ContractorResource getContractorResource() {
+        return resourceContext.initResource(contractorResource.get());
     }
 
 }

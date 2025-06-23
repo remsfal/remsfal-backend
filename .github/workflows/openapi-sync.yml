@@ -1,0 +1,130 @@
+name: "Synchronize OpenAPI Spec"
+
+on:
+  workflow_run:
+    workflows: ["CD Build"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  BRANCH_PREFIX: 'remsfal-bot/openapi-sync/'
+
+jobs:
+  build-and-sync-openapi:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: "Generate OpenAPI and Synchronize with the Frontend"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build REMSFAL
+        uses: ./.github/actions/build-remsfal
+        with:
+          skip-tests: 'true'
+          skip-checkstyle: 'true'
+
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.REMSFAL_BOT_ID }}
+          private-key: ${{ secrets.REMSFAL_BOT_KEY }}
+          owner: remsfal
+          repositories: remsfal-backend,remsfal-frontend
+      - name: Identify merged PR
+        id: backend-merge
+        uses: ./.github/actions/find-merged-pr
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+      - name: Select existing PR on target
+        id: frontend-selection
+        uses: ./.github/actions/select-branch
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          branch-prefix: ${{ env.BRANCH_PREFIX }}
+
+      - name: Checkout Frontend at existing PR branch
+        if: steps.frontend-selection.outputs.pr-branch != ''
+        uses: actions/checkout@v4
+        with:
+          repository: remsfal/remsfal-frontend
+          ref: ${{ steps.frontend-selection.outputs.pr-branch }}
+          token: ${{ steps.generate-token.outputs.token }}
+          path: remsfal-frontend
+      - name: Checkout Frontend at main branch
+        if: steps.frontend-selection.outputs.pr-branch == ''
+        uses: actions/checkout@v4
+        with:
+          repository: remsfal/remsfal-frontend
+          ref: main
+          token: ${{ steps.generate-token.outputs.token }}
+          path: remsfal-frontend
+          fetch-depth: 0
+      - name: Create new PR branch
+        if: steps.frontend-selection.outputs.pr-branch == ''
+        env:
+          NEW_BRANCH: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
+        run: |
+          cd remsfal-frontend
+          git checkout -b "$NEW_BRANCH"
+          echo "Created branch '$NEW_BRANCH'"
+
+      - name: Copy OpenAPI Specs
+        run: |
+          cd $GITHUB_WORKSPACE/remsfal-frontend
+          mkdir -p openapi
+          cp -rf $GITHUB_WORKSPACE/target/openapi/* openapi/
+          if ! git diff --quiet || [[ -n $(git ls-files --others --exclude-standard) ]]; then
+            echo "SPEC_CHANGED=true" >> $GITHUB_ENV
+          else
+            echo "No Changes made to the data model."
+            echo "SPEC_CHANGED=false" >> $GITHUB_ENV
+          fi
+      - name: Build Frontend Client
+        if: ${{ env.SPEC_CHANGED == 'true' }}
+        uses: ./.github/actions/build-frontend
+        with:
+          working-directory: ${{ github.workspace }}/remsfal-frontend
+      - name: Configure Git in Frontend Repo
+        working-directory: ${{ github.workspace }}/remsfal-frontend
+        run: |
+          git config user.name  "REMSFAL Bot"
+          git config user.email "github.bot@remsfal.de"
+      - name: Commit Frontend Changes
+        if: ${{ env.SPEC_CHANGED == 'true' }}
+        working-directory: ${{ github.workspace }}/remsfal-frontend
+        run: |
+          COMMIT_MESSAGE="Updated generated files from merged backend  \
+          PR #${{ steps.backend-merge.outputs.pr-number }}: ${{ steps.backend-merge.outputs.pr-title }}"
+          git add --all
+          git commit -m "$COMMIT_MESSAGE"
+
+      - name: Push Commits to existing PR branch
+        if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr-branch != '' }}
+        working-directory: ${{ github.workspace }}/remsfal-frontend
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          git push origin ${{ steps.frontend-selection.outputs.pr-branch }}
+      - name: Push Commits and create new Pull Request
+        if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr-branch == '' }}
+        working-directory: ${{ github.workspace }}/remsfal-frontend
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          BRANCH_NAME: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
+        run: |
+          PR_TITLE="Sync of OpenAPI Spec created by #${{ steps.backend-merge.outputs.pr-number }}"
+          PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend, \
+          which were created by the PR #${{ steps.backend-merge.outputs.pr-number }}: \
+          ${{ steps.backend-merge.outputs.pr-title }}"
+
+          git push origin "$BRANCH_NAME"
+          echo "Branch $BRANCH_NAME is pushed"
+          gh api repos/remsfal/remsfal-frontend/pulls \
+            -f base="main" \
+            -f head="$BRANCH_NAME" \
+            -f title="$PR_TITLE" \
+            -f body="$PR_BODY"

@@ -82,6 +82,28 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-specs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${maven.multiModuleProjectDirectory}/target/openapi</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${serviceDirectory}/remsfal-notification/target/openapi</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${serviceDirectory}/remsfal-chat/target/openapi</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${serviceDirectory}/remsfal-platform/target/openapi</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
