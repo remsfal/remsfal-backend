@@ -40,14 +40,11 @@ public class MailResource {
     @GET
     @Blocking
     public Response sendTestEmail(
-            @QueryParam("to") @NotNull @Email String to,
-            @QueryParam("name") String name,
-            @QueryParam("link") String link,
-            @QueryParam("template") String template
+        @QueryParam("to") @NotNull @Email String to,
+        @QueryParam("name") String name,
+        @QueryParam("link") String link,
+        @QueryParam("template") String template
     ) {
-        if (to == null) {
-            throw new WebApplicationException("Missing required parameter: 'to'", BAD_REQUEST);
-        }
 
         TemplateInstance instance;
         String subject;
