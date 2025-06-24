@@ -35,9 +35,9 @@ services:
     image: grafana/otel-lgtm
     container_name: otel-lgtm
     ports:
-      - '3000:3000'
-      - '4317:4317'
-      - '4318:4318'
+      - '3000:3000' # Grafana Frontend
+      - '4317:4317' # gRPC as the transport for OTLP
+      - '4318:4318' # HTTP as the transport for OTLP
     volumes:
       - otel_data:/data
 volumes:
