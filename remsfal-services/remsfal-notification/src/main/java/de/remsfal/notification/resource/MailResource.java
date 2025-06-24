@@ -8,11 +8,13 @@ import io.quarkus.qute.TemplateInstance;
 import io.smallrye.common.annotation.Blocking;
 
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -38,7 +40,7 @@ public class MailResource {
     @GET
     @Blocking
     public Response sendTestEmail(
-            @QueryParam("to") String to,
+            @QueryParam("to") @NotNull @Email String to,
             @QueryParam("name") String name,
             @QueryParam("link") String link,
             @QueryParam("template") String template
