@@ -6,7 +6,6 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.logging.Logger;
-import de.remsfal.core.model.UserModel;
 import de.remsfal.core.json.UserJson;
 
 @ApplicationScoped
@@ -19,8 +18,8 @@ public class NotificationController {
     @Channel("user-notification")
     Emitter<UserJson> notificationEmitter;
 
-    public void informUserAboutProjectMembership(final UserModel user) {
-        UserJson json = UserJson.valueOf((CustomerModel) user);
+    public void informUserAboutProjectMembership(final CustomerModel user) {
+        UserJson json = UserJson.valueOf(user);
         logger.infov("Sending user-notification for {0}", json.getEmail());
         notificationEmitter.send(json);
     }
