@@ -15,10 +15,9 @@ class MailResourceTest {
     void sendWelcomeTemplate_SUCCESS() {
         given()
                 .queryParam("to", "test@example.com")
-                .queryParam("subject", "Welcome")
                 .queryParam("name", "TestUser")
                 .queryParam("template", "welcome")
-                .queryParam("token", "abc123")
+                .queryParam("link", "https://remsfal.de/confirm?token=abc123")
                 .when()
                 .get(BASE_PATH)
                 .then()
@@ -29,10 +28,9 @@ class MailResourceTest {
     void sendNewMembershipTemplate_SUCCESS() {
         given()
                 .queryParam("to", "test@example.com")
-                .queryParam("subject", "Welcome")
                 .queryParam("name", "TestUser")
                 .queryParam("template", "new-membership")
-                .queryParam("token", "abc123")
+                .queryParam("link", "https://remsfal.de/join?token=abc123")
                 .when()
                 .get(BASE_PATH)
                 .then()
@@ -46,15 +44,19 @@ class MailResourceTest {
                 .when()
                 .get(BASE_PATH)
                 .then()
-                .statusCode(Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test
-    void missingRequiredParameters_FAILED() {
+    void unknownTemplate_FAILED() {
         given()
+                .queryParam("to", "test@example.com")
+                .queryParam("name", "TestUser")
+                .queryParam("template", "unknown")
+                .queryParam("link", "https://remsfal.de")
                 .when()
                 .get(BASE_PATH)
                 .then()
-                .statusCode(Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                .statusCode(422); // UNPROCESSABLE_ENTITY
     }
 }

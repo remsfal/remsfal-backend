@@ -12,12 +12,20 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 @Path("/notification/test")
 public class MailResource {
 
     @Inject
     Mailer mailer;
+
+    @ConfigProperty(name = "quarkus.mailer.from")
+    String from;
 
     @Inject
     @Location("welcome.html")
@@ -30,26 +38,37 @@ public class MailResource {
     @GET
     @Blocking
     public Response sendTestEmail(
-        @QueryParam("to") String to,
-        @QueryParam("subject") String subject,
-        @QueryParam("name") String name,
-        @QueryParam("token") String token,
-        @QueryParam("template") String template) {
-        if (to == null || subject == null) {
-            throw new IllegalArgumentException("Missing required parameters: 'to' and 'subject'");
+            @QueryParam("to") String to,
+            @QueryParam("name") String name,
+            @QueryParam("link") String link,
+            @QueryParam("template") String template
+    ) {
+        if (to == null) {
+            throw new WebApplicationException("Missing required parameter: 'to'", BAD_REQUEST);
         }
 
-        String link = token != null ? "https://remsfal.de/confirm?token=" + token : null;
-
         TemplateInstance instance;
-        if ("new-membership".equals(template)) {
-            instance = newMembership.data("name", name).data("link", link);
-        } else {
-            instance = welcome.data("name", name).data("link", link);
+        String subject;
+
+        switch (template) {
+            case "new-membership" -> {
+                instance = newMembership.data("name", name).data("link", link);
+                subject = "You’ve been added to a new project";
+            }
+            case "welcome" -> {
+                instance = welcome.data("name", name).data("link", link);
+                subject = "Welcome to Remsfal!";
+            }
+            default -> throw new WebApplicationException("Unknown template type: " + template, 422);
         }
 
         String html = instance.render();
-        mailer.send(Mail.withHtml(to, subject, html));
+
+        Mail mail = Mail.withHtml(to, subject, html);
+        mail.setFrom(from);
+
+        mailer.send(mail);
+
         return Response.accepted().build();
     }
 }
