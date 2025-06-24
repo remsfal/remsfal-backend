@@ -69,7 +69,7 @@ public class ProjectController {
     public ProjectModel getProject(final UserModel user, final String projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
         return projectRepository.findProjectByUserId(user.getId(), projectId)
-            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
     }
 
     @Transactional
