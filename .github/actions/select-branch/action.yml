@@ -52,8 +52,8 @@ runs:
 
         if [ "$COUNT" -eq 0 ]; then
           echo "No open PRs with prefix '${{ inputs.branch-prefix }}' found."
-          echo "pr-number=" >> $GITHUB_OUTPUT
-          echo "pr-branch=" >> $GITHUB_OUTPUT
+          echo -n "pr-number=" >> $GITHUB_OUTPUT
+          echo -n "pr-branch=" >> $GITHUB_OUTPUT
           exit 0
         fi
 
