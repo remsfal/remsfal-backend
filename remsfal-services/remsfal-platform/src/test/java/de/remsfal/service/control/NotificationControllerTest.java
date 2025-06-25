@@ -1,6 +1,6 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.AddressJson;
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
@@ -32,20 +32,20 @@ class NotificationControllerTest extends AbstractTest {
     void testNotificationIsSentToKafkaWithAllFieldsExceptAddress() {
         String topic = "user-notification";
 
-        UserJson user = new UserJson() {
-            @Override public String getId() { return TestData.USER_ID; }
-            @Override public String getEmail() { return TestData.USER_EMAIL; }
-            @Override public String getName() { return null; }
-            @Override public String getFirstName() { return TestData.USER_FIRST_NAME; }
-            @Override public String getLastName() { return TestData.USER_LAST_NAME; }
-            @Override public AddressJson getAddress() { return addressBuilder1().build(); }
-            @Override public String getMobilePhoneNumber() { return "+49123456789"; }
-            @Override public String getBusinessPhoneNumber() { return "+4987654321"; }
-            @Override public String getPrivatePhoneNumber() { return "+4901234567"; }
-            @Override public LocalDate getRegisteredDate() { return LocalDate.of(2020, 5, 20); }
-            @Override public LocalDateTime getLastLoginDate() { return LocalDateTime.of(2025, 6, 24, 15, 30); }
-            @Override public Boolean isActive() { return Boolean.TRUE; }
-        };
+
+        UserJson user = ImmutableUserJson.builder()
+                .id(TestData.USER_ID)
+                .email(TestData.USER_EMAIL)
+                .firstName(TestData.USER_FIRST_NAME)
+                .lastName(TestData.USER_LAST_NAME)
+                .address(addressBuilder1().build())
+                .mobilePhoneNumber("+49123456789")
+                .businessPhoneNumber("+4987654321")
+                .privatePhoneNumber("+4901234567")
+                .registeredDate(LocalDate.of(2020, 5, 20))
+                .lastLoginDate(LocalDateTime.of(2025, 6, 24, 15, 30))
+                .active(Boolean.TRUE)
+                .build();
 
         notificationController.informUserAboutProjectMembership(user);
 
