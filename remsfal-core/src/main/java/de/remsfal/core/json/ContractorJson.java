@@ -19,81 +19,76 @@ import jakarta.validation.constraints.Size;
 @JsonInclude(Include.NON_NULL)
 public class ContractorJson implements ContractorModel {
 
-    @Null(groups = PostValidation.class)
-    @NotNull(groups = PatchValidation.class)
-    @UUID
-    private String id;
-
-    @Null
-    private String projectId;
-
-    @NotBlank(groups = PostValidation.class)
-    @Size(max = 255)
-    private String companyName;
-
-    @Pattern(regexp = "^\\+?[0-9]{10,14}$", message = "Phone number must be in E.164 format")
-    @Size(max = 15)
-    private String phone;
-
-    @Email
-    @Size(max = 255)
-    private String email;
-
-    @Size(max = 255)
-    private String trade;
-
-    @Override
-    public String getId() {
-        return id;
-    }
+    protected String id;
+    protected String projectId;
+    protected String companyName;
+    protected String phone;
+    protected String email;
+    protected String trade;
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public String getProjectId() {
-        return projectId;
     }
 
     public void setProjectId(String projectId) {
         this.projectId = projectId;
     }
 
-    @Override
-    public String getCompanyName() {
-        return companyName;
-    }
-
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
-    }
-
-    @Override
-    public String getPhone() {
-        return phone;
     }
 
     public void setPhone(String phone) {
         this.phone = phone;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setTrade(String trade) {
+        this.trade = trade;
+    }
+
+    @Null(groups = PostValidation.class)
+    @NotNull(groups = PatchValidation.class)
+    @UUID
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Null
+    @Override
+    public String getProjectId() {
+        return projectId;
+    }
+
+    @NotBlank(groups = PostValidation.class)
+    @Size(max = 255)
+    @Override
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    @Pattern(regexp = "^\\+?[0-9]{10,14}$", message = "Phone number must be in E.164 format")
+    @Size(max = 15)
+    @Override
+    public String getPhone() {
+        return phone;
+    }
+
+    @Email
+    @Size(max = 255)
     @Override
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
+    @Size(max = 255)
     @Override
     public String getTrade() {
         return trade;
-    }
-
-    public void setTrade(String trade) {
-        this.trade = trade;
     }
 
     /**
