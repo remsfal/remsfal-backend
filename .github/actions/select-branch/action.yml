@@ -1,0 +1,64 @@
+name: Select REMSFAL Frontend Branch
+description: Find existing and select REMSFAL Frontend Branch
+
+inputs:
+  token:
+    description: 'GitHub token'
+    required: true
+  branch-prefix:
+    description: 'Branch-Prefix, e.g. feature/'
+    required: true
+    default: 'remsfal-bot/'
+outputs:
+  pr-number:
+    description: 'Number of the first found pull request (empty if none found)'
+    value: ${{ steps.pick-pr.outputs.pr-number }}
+  pr-branch:
+    description: 'Branch name of the first found pull request (empty if none found)'
+    value: ${{ steps.pick-pr.outputs.pr-branch }}
+
+runs:
+  using: composite
+  steps:
+    - name: List open PRs with branch-prefix
+      id: list-prs
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        gh pr list \
+          --repo remsfal/remsfal-frontend \
+          --state open \
+          --json number,headRefName \
+          --jq "[.[] | select(.headRefName | startswith(\"${{ inputs.branch-prefix }}\"))]" \
+          > prs_with_prefix.json
+        
+        if [ -f prs_with_prefix.json ]; then
+          echo "Existing pull requests were found:"
+          cat prs_with_prefix.json
+        else
+          echo "No pull requests were found."
+        fi
+
+    - name: Check existence and pick first PR
+      id: pick-pr
+      shell: bash
+      run: |
+        if [ -f prs_with_prefix.json ]; then
+          COUNT=$(jq -r 'length // 0' prs_with_prefix.json)
+        else
+          COUNT=0
+        fi
+
+        if [ "$COUNT" -eq 0 ]; then
+          echo "No open PRs with prefix '${{ inputs.branch-prefix }}' found."
+          echo "pr-number=" >> $GITHUB_OUTPUT
+          echo "pr-branch=" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        PR_NUM=$(jq -r '.[0].number' prs_with_prefix.json)
+        PR_BRANCH=$(jq -r '.[0].headRefName' prs_with_prefix.json)
+        echo "Found first PR #$PR_NUM on branch '$PR_BRANCH'"
+        echo "pr-number=$PR_NUM" >> $GITHUB_OUTPUT
+        echo "pr-branch=$PR_BRANCH" >> $GITHUB_OUTPUT
