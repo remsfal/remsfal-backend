@@ -31,26 +31,20 @@ services:
       - "8090:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: kafka-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-broker:29092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-broker:9092
 
-  grafana:
-    image: grafana/grafana-enterprise
-    container_name: grafana
-    restart: unless-stopped
+  otel-lgtm:
+    image: grafana/otel-lgtm
+    container_name: otel-lgtm
     ports:
-      - '3000:3000'
-    networks:
-      - remsfal
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    ports:
-      - '9090:9090'
-    networks:
-      - remsfal
+      - '3000:3000' # Grafana Frontend
+      - '4317:4317' # gRPC as the transport for OTLP
+      - '4318:4318' # HTTP as the transport for OTLP
     volumes:
-      - "./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - otel_data:/data
+
+volumes:
+  otel_data:
 
 networks:
   remsfal:
