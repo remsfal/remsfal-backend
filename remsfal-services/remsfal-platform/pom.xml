@@ -58,7 +58,7 @@
             <!-- JDK 24 support -->
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.17.5</version>
+            <version>1.17.6</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
@@ -66,6 +66,23 @@
             <version>1.6.0</version>
         </dependency>
 
+        <!-- Logging and monitoring dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-opentelemetry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-observability-devservices-lgtm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer-opentelemetry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
+        </dependency>
         <!-- TEST dependencies -->
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
