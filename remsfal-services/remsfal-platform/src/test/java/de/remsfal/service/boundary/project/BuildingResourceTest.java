@@ -9,12 +9,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @QuarkusTest
-class BuildingResourceTest extends AbstractProjectResourceTest {
+class BuildingResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/properties/{propertyId}/buildings";
 
@@ -35,7 +36,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -68,7 +68,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -101,7 +100,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -126,7 +124,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -150,7 +147,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -172,7 +168,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -196,7 +191,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -217,7 +211,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -241,7 +234,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -265,7 +257,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
@@ -298,7 +289,6 @@ class BuildingResourceTest extends AbstractProjectResourceTest {
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
                 " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE_1 + "\"," +
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +

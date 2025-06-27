@@ -1,7 +1,7 @@
 package de.remsfal.service.entity.dto;
 
-
 import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,23 +25,29 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     @JoinColumn(name = "ADDRESS_ID")
     private AddressEntity address;
 
+    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "decimal")
+    private Float grossFloorArea;
+
+    @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")
+    private Float netFloorArea;
+
+    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "decimal")
+    private Float constructionFloorArea;
+
     @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
     private Float livingSpace;
 
-    @Column(name = "COMMERCIAL_SPACE", columnDefinition = "decimal")
-    private Float commercialSpace;
+    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    private Float usableSpace;
 
     @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
     private Float heatingSpace;
-
-    @Column(name = "DIFFERENT_HEATING_SPACE", columnDefinition = "TINYINT")
-    private Boolean differentHeatingSpace;
 
     public String getPropertyId() {
         return propertyId;
     }
 
-    public void setPropertyId(final String propertyId) {
+    public void setPropertyId(String propertyId) {
         this.propertyId = propertyId;
     }
 
@@ -55,6 +61,33 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     }
 
     @Override
+    public Float getGrossFloorArea() {
+        return grossFloorArea;
+    }
+
+    public void setGrossFloorArea(Float grossFloorArea) {
+        this.grossFloorArea = grossFloorArea;
+    }
+
+    @Override
+    public Float getNetFloorArea() {
+        return netFloorArea;
+    }
+
+    public void setNetFloorArea(Float netFloorArea) {
+        this.netFloorArea = netFloorArea;
+    }
+
+    @Override
+    public Float getConstructionFloorArea() {
+        return constructionFloorArea;
+    }
+
+    public void setConstructionFloorArea(Float constructionFloorArea) {
+        this.constructionFloorArea = constructionFloorArea;
+    }
+
+    @Override
     public Float getLivingSpace() {
         return livingSpace;
     }
@@ -64,12 +97,12 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     }
 
     @Override
-    public Float getCommercialSpace() {
-        return commercialSpace;
+    public Float getUsableSpace() {
+        return usableSpace;
     }
 
-    public void setCommercialSpace(final Float commercialSpace) {
-        this.commercialSpace = commercialSpace;
+    public void setUsableSpace(Float usableSpace) {
+        this.usableSpace = usableSpace;
     }
 
     @Override
@@ -82,15 +115,6 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     }
 
     @Override
-    public Boolean isDifferentHeatingSpace() {
-        return differentHeatingSpace;
-    }
-
-    public void setDifferentHeatingSpace(final Boolean differentHeatingSpace) {
-        this.differentHeatingSpace = differentHeatingSpace;
-    }
-
-    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -99,29 +123,14 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
             return super.equals(e)
                 && Objects.equals(propertyId, e.propertyId)
                 && Objects.equals(address, e.address)
+                && Objects.equals(grossFloorArea, e.grossFloorArea)
+                && Objects.equals(netFloorArea, e.netFloorArea)
+                && Objects.equals(constructionFloorArea, e.constructionFloorArea)
                 && Objects.equals(livingSpace, e.livingSpace)
-                && Objects.equals(commercialSpace, e.commercialSpace)
-                && Objects.equals(heatingSpace, e.heatingSpace)
-                && Objects.equals(differentHeatingSpace, e.differentHeatingSpace);
+                && Objects.equals(usableSpace, e.usableSpace)
+                && Objects.equals(heatingSpace, e.heatingSpace);
         }
         return false;
-    }
-
-    public static BuildingEntity fromModel(BuildingModel building) {
-        if(building == null) {
-            return null;
-        }
-        final BuildingEntity entity = new BuildingEntity();
-        entity.setId(building.getId());
-        entity.setTitle(building.getTitle());
-        entity.setAddress(AddressEntity.fromModel(building.getAddress()));
-        entity.setDescription(building.getDescription());
-        entity.setLivingSpace(building.getLivingSpace());
-        entity.setCommercialSpace(building.getCommercialSpace());
-        entity.setUsableSpace(building.getUsableSpace());
-        entity.setHeatingSpace(building.getHeatingSpace());
-        entity.setDifferentHeatingSpace(building.isDifferentHeatingSpace());
-        return entity;
     }
 
 }

@@ -43,28 +43,15 @@ public abstract class SiteJson implements SiteModel {
     @Nullable
     @Override
     public abstract AddressJson getAddress();
-    
-    @Nullable
-    @Override
-    public abstract String getDescription();
-
-    @Valid
-    @Nullable
-    @Override
-    public abstract TenancyJson getTenancy();
-
-    @Nullable
-    @Override
-    public abstract Float getUsableSpace();
 
     public static SiteJson valueOf(final SiteModel model) {
         return ImmutableSiteJson.builder()
             .id(model.getId())
             .title(model.getTitle())
             .address(AddressJson.valueOf(model.getAddress()))
+            .location(model.getLocation())
             .description(model.getDescription())
-            .tenancy(TenancyJson.valueOf(model.getTenancy()))
-            .usableSpace(model.getUsableSpace())
+            .outdoorArea(model.getOutdoorArea())
             .build();
     }
 

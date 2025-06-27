@@ -1,13 +1,13 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.GarageJson;
-import de.remsfal.core.json.project.ImmutableGarageJson;
+import de.remsfal.core.json.project.StorageJson;
+import de.remsfal.core.json.project.ImmutableStorageJson;
 import de.remsfal.core.model.project.BuildingModel;
-import de.remsfal.core.model.project.GarageModel;
+import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
-import de.remsfal.service.entity.dto.GarageEntity;
+import de.remsfal.service.entity.dto.StorageEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @QuarkusTest
-class GarageControllerTest extends AbstractTest {
+class storageControllerTest extends AbstractTest {
 
     @Inject
     PropertyController propertyController;
@@ -27,7 +27,7 @@ class GarageControllerTest extends AbstractTest {
     BuildingController buildingController;
 
     @Inject
-    GarageController garageController;
+    StorageController storageController;
 
     @BeforeEach
     void setupTestProjects() {
@@ -56,100 +56,100 @@ class GarageControllerTest extends AbstractTest {
     }
 
     @Test
-    void createGarage_SUCCESS_idGenerated() {
+    void createStorage_SUCCESS_idGenerated() {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult =createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final StorageModel Storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final GarageModel garageResult = garageController.createGarage(TestData.PROJECT_ID, buildingResult.getId(), garage);
+        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
 
-        assertNotNull(garageResult.getId(), "Garage ID should not be null");
-        assertNotEquals(garage.getId(), garageResult.getId());
-        assertEquals(garage.getTitle(), garageResult.getTitle());
-        assertEquals(garage.getLocation(), garageResult.getLocation());
-        assertEquals(garage.getDescription(), garageResult.getDescription());
-        assertEquals(garage.getUsableSpace(), garageResult.getUsableSpace());
+        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
+        assertNotEquals(Storage.getId(), StorageResult.getId());
+        assertEquals(Storage.getTitle(), StorageResult.getTitle());
+        assertEquals(Storage.getLocation(), StorageResult.getLocation());
+        assertEquals(Storage.getDescription(), StorageResult.getDescription());
+        assertEquals(Storage.getUsableSpace(), StorageResult.getUsableSpace());
 
-        final GarageEntity entity = entityManager
-                .createQuery("SELECT g FROM GarageEntity g WHERE g.title = :title", GarageEntity.class)
-                .setParameter("title", TestData.GARAGE_TITLE)
+        final StorageEntity entity = entityManager
+                .createQuery("SELECT s FROM StorageEntity s WHERE s.title = :title", StorageEntity.class)
+                .setParameter("title", TestData.STORAGE_TITLE)
                 .getSingleResult();
-        assertEquals(garageResult.getId(), entity.getId());
-        assertEquals(garageResult.getTitle(), entity.getTitle());
+        assertEquals(StorageResult.getId(), entity.getId());
+        assertEquals(StorageResult.getTitle(), entity.getTitle());
     }
 
     @Test
-    void getGarage_SUCCESS_garageRetrieved() {
+    void getStorage_SUCCESS_StorageRetrieved() {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final StorageModel Storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final GarageModel garageResult = garageController.createGarage(TestData.PROJECT_ID, buildingResult.getId(), garage);
-        assertNotNull(garageResult.getId(), "Garage ID should not be null");
+        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
+        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
 
-        final GarageModel result = garageController.getGarage(TestData.PROJECT_ID, garageResult.getId());
+        final StorageModel result = storageController.getStorage(TestData.PROJECT_ID, StorageResult.getId());
 
-        assertEquals(garageResult.getId(), result.getId(), "Garage ID should match");
-        assertEquals(garageResult.getTitle(), result.getTitle(), "Garage title should match");
-        assertEquals(garageResult.getLocation(), result.getLocation(), "Garage location should match");
-        assertEquals(garageResult.getDescription(), result.getDescription(), "Garage description should match");
-        assertEquals(garageResult.getUsableSpace(), result.getUsableSpace(), "Garage usable space should match");
+        assertEquals(StorageResult.getId(), result.getId(), "Storage ID should match");
+        assertEquals(StorageResult.getTitle(), result.getTitle(), "Storage title should match");
+        assertEquals(StorageResult.getLocation(), result.getLocation(), "Storage location should match");
+        assertEquals(StorageResult.getDescription(), result.getDescription(), "Storage description should match");
+        assertEquals(StorageResult.getUsableSpace(), result.getUsableSpace(), "Storage usable space should match");
     }
 
     @Test
-    void updateGarage_SUCCESS() {
+    void updateStorage_SUCCESS() {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final StorageModel Storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final GarageModel garageResult = garageController.createGarage(TestData.PROJECT_ID, buildingResult.getId(), garage);
-        assertNotNull(garageResult.getId(), "Garage ID should not be null");
+        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
+        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
 
-        GarageModel garageModel = ImmutableGarageJson.builder()
-                .id(garageResult.getId())
-                .title("Updated Garage Title")
+        StorageModel StorageModel = ImmutableStorageJson.builder()
+                .id(StorageResult.getId())
+                .title("Updated Storage Title")
                 .location("Updated Location")
-                .description("Updated Garage Description")
+                .description("Updated Storage Description")
                 .usableSpace(350.0f)
                 .build();
 
-        GarageJson updatedGarageJson = GarageJson.valueOf(garageModel);
+        StorageJson updatedStorageJson = StorageJson.valueOf(StorageModel);
 
-        final GarageModel updatedGarage = garageController.updateGarage(
-                TestData.PROJECT_ID, garageResult.getId(), updatedGarageJson);
+        final StorageModel updatedStorage = storageController.updateStorage(
+                TestData.PROJECT_ID, StorageResult.getId(), updatedStorageJson);
 
-        assertEquals(garageResult.getId(), updatedGarage.getId(), "Garage ID should remain the same");
-        assertEquals(updatedGarageJson.getTitle(), updatedGarage.getTitle(), "Garage title should be updated");
-        assertEquals(updatedGarageJson.getLocation(), updatedGarage.getLocation(), "Garage location should be updated");
-        assertEquals(updatedGarageJson.getDescription(), updatedGarage.getDescription(), "Garage description should be updated");
-        assertEquals(updatedGarageJson.getUsableSpace(), updatedGarage.getUsableSpace(), "Garage usable space should be updated");
+        assertEquals(StorageResult.getId(), updatedStorage.getId(), "Storage ID should remain the same");
+        assertEquals(updatedStorageJson.getTitle(), updatedStorage.getTitle(), "Storage title should be updated");
+        assertEquals(updatedStorageJson.getLocation(), updatedStorage.getLocation(), "Storage location should be updated");
+        assertEquals(updatedStorageJson.getDescription(), updatedStorage.getDescription(), "Storage description should be updated");
+        assertEquals(updatedStorageJson.getUsableSpace(), updatedStorage.getUsableSpace(), "Storage usable space should be updated");
     }
 
     @Test
-    void deleteGarage_SUCCESS() {
+    void deleteStorage_SUCCESS() {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final GarageModel garage = TestData.garageBuilder()
+        final StorageModel Storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final GarageModel garageResult = garageController.createGarage(TestData.PROJECT_ID, buildingResult.getId(), garage);
-        assertNotNull(garageResult.getId(), "Garage ID should not be null");
+        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
+        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
 
-        garageController.deleteGarage(TestData.PROJECT_ID, garageResult.getId());
+        storageController.deleteStorage(TestData.PROJECT_ID, StorageResult.getId());
 
         assertThrows(NotFoundException.class,
-                () -> garageController.getGarage(TestData.PROJECT_ID, garageResult.getId()));
+                () -> storageController.getStorage(TestData.PROJECT_ID, StorageResult.getId()));
     }
 
 }

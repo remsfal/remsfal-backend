@@ -26,8 +26,7 @@ public abstract class CountryListJson {
         for(Locale country : countries) {
             builder.addCountries(CountryItemJson.valueOf(country));
         }
-        return builder
-            .build();
+        return builder.build();
     }
 
 }
