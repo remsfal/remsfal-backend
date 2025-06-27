@@ -19,7 +19,6 @@ import org.apache.kafka.common.serialization.Serdes;
 
 import java.time.LocalDate;
 
-import static de.remsfal.service.TestData.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
@@ -49,7 +48,6 @@ class NotificationControllerTest extends AbstractTest {
                 .email(TestData.USER_EMAIL_2)
                 .firstName(TestData.USER_FIRST_NAME_2)
                 .lastName(TestData.USER_LAST_NAME_2)
-                .address(addressBuilder1().build())
                 .mobilePhoneNumber(null)
                 .businessPhoneNumber(null)
                 .privatePhoneNumber(null)
@@ -74,7 +72,6 @@ class NotificationControllerTest extends AbstractTest {
         assertNull(payload.getName());
         assertEquals(TestData.USER_FIRST_NAME_2, payload.getFirstName());
         assertEquals(TestData.USER_LAST_NAME_2, payload.getLastName());
-        assertNotNull(payload.getAddress());
         assertNull(payload.getMobilePhoneNumber());
         assertNull(payload.getBusinessPhoneNumber());
         assertNull(payload.getPrivatePhoneNumber());
