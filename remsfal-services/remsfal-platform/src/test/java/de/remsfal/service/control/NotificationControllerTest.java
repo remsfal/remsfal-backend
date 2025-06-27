@@ -74,11 +74,11 @@ class NotificationControllerTest extends AbstractTest {
         assertNull(payload.getName());
         assertEquals(TestData.USER_FIRST_NAME_2, payload.getFirstName());
         assertEquals(TestData.USER_LAST_NAME_2, payload.getLastName());
-        assertEquals(null, payload.getAddress());
-        assertNull(null, payload.getMobilePhoneNumber());
-        assertNull(null, payload.getBusinessPhoneNumber());
-        assertNull(null, payload.getPrivatePhoneNumber());
-        assertEquals(LocalDate.of(2025, 6, 26), payload.getRegisteredDate());
-        assertEquals(null, payload.getLastLoginDate());
+        assertNotNull(payload.getAddress());
+        assertNull(payload.getMobilePhoneNumber());
+        assertNull(payload.getBusinessPhoneNumber());
+        assertNull(payload.getPrivatePhoneNumber());
+        assertEquals(LocalDate.now(), payload.getRegisteredDate());
+        assertNull(payload.getLastLoginDate());
     }
 }
