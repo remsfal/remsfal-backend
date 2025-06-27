@@ -31,6 +31,8 @@ public interface TaskModel {
 
     Status getStatus();
 
+    String getReporterId();
+
     String getOwnerId();
 
     String getDescription();

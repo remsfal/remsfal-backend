@@ -3,7 +3,6 @@ package de.remsfal.core.json;
 import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,11 +26,11 @@ public abstract class ProjectMemberListJson {
     public abstract List<ProjectMemberJson> getMembers();
 
     public static ProjectMemberListJson valueOfSet(Set<? extends ProjectMemberModel> models) {
-        List<ProjectMemberJson> members = new ArrayList<>();
+        final ImmutableProjectMemberListJson.Builder builder = ImmutableProjectMemberListJson.builder();
         for (ProjectMemberModel model : models) {
-            members.add(ProjectMemberJson.valueOf(model));
+            builder.addMembers(ProjectMemberJson.valueOf(model));
         }
-        return ImmutableProjectMemberListJson.builder().members(members).build();
+        return builder.build();
     }
 
 }

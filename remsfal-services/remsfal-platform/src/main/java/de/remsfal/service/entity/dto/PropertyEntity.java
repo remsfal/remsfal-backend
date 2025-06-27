@@ -7,62 +7,100 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 
 import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
 @Table(name = "PROPERTY")
-public class PropertyEntity extends AbstractEntity implements PropertyModel {
+public class PropertyEntity extends RentalUnitEntity implements PropertyModel {
 
-    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String projectId;
+    @Column(name = "LAND_REGISTRY")
+    private String landRegistry;
 
-    @Column(name = "TITLE")
-    private String title;
-    
-    @Column(name = "LAND_REGISTER_ENTRY")
-    private String landRegisterEntry;
+    @Column(name = "CADASTRAL_DISTRICT")
+    private String cadastralDistrict;
 
-    @Column(name = "DESCRIPTION")
-    private String description;
+    @Column(name = "SHEET_NUMBER")
+    private String sheetNumber;
+
+    @Column(name = "PLOT_NUMBER")
+    private Integer plotNumber;
+
+    @Column(name = "CADASTRAL_SECTION")
+    private String cadastralSection;
+
+    @Column(name = "PLOT")
+    private String plot;
+
+    @Column(name = "ECONOMY_TYPE")
+    private String economyType;
 
     @Column(name = "PLOT_AREA")
     private Integer plotArea;
 
-    public String getProjectId() {
-        return projectId;
+    @Override
+    public String getLandRegistry() {
+        return landRegistry;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setLandRegistry(String landRegistry) {
+        this.landRegistry = landRegistry;
     }
 
     @Override
-    public String getTitle() {
-        return title;
+    public String getCadastralDistrict() {
+        return cadastralDistrict;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public String getLandRegisterEntry() {
-        return landRegisterEntry;
-    }
-
-    public void setLandRegisterEntry(String landRegisterEntry) {
-        this.landRegisterEntry = landRegisterEntry;
+    public void setCadastralDistrict(String cadastralDistrict) {
+        this.cadastralDistrict = cadastralDistrict;
     }
 
     @Override
-    public String getDescription() {
-        return description;
+    public String getSheetNumber() {
+        return sheetNumber;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setSheetNumber(String sheetNumber) {
+        this.sheetNumber = sheetNumber;
+    }
+
+    @Override
+    public Integer getPlotNumber() {
+        return plotNumber;
+    }
+
+    public void setPlotNumber(Integer plotNumber) {
+        this.plotNumber = plotNumber;
+    }
+
+    @Override
+    public String getCadastralSection() {
+        return cadastralSection;
+    }
+
+    public void setCadastralSection(String cadastralSection) {
+        this.cadastralSection = cadastralSection;
+    }
+
+    @Override
+    public String getPlot() {
+        return plot;
+    }
+
+    public void setPlot(String plot) {
+        this.plot = plot;
+    }
+
+    @Override
+    public String getEconomyType() {
+        return economyType;
+    }
+
+    public void setEconomyType(String economyType) {
+        this.economyType = economyType;
     }
 
     @Override
@@ -81,23 +119,16 @@ public class PropertyEntity extends AbstractEntity implements PropertyModel {
         }
         if (o instanceof PropertyEntity e) {
             return super.equals(e)
-                && Objects.equals(projectId, e.projectId)
-                && Objects.equals(title, e.title)
-                && Objects.equals(landRegisterEntry, e.landRegisterEntry)
-                && Objects.equals(description, e.description)
+                && Objects.equals(landRegistry, e.landRegistry)
+                && Objects.equals(cadastralDistrict, e.cadastralDistrict)
+                && Objects.equals(sheetNumber, e.sheetNumber)
+                && Objects.equals(plotNumber, e.plotNumber)
+                && Objects.equals(cadastralSection, e.cadastralSection)
+                && Objects.equals(plot, e.plot)
+                && Objects.equals(economyType, e.economyType)
                 && Objects.equals(plotArea, e.plotArea);
         }
         return false;
-    }
-
-    public static PropertyEntity fromModel(PropertyModel property) {
-        final PropertyEntity entity = new PropertyEntity();
-        entity.setId(property.getId());
-        entity.setTitle(property.getTitle());
-        entity.setLandRegisterEntry(property.getLandRegisterEntry());
-        entity.setDescription(property.getDescription());
-        entity.setPlotArea(property.getPlotArea());
-        return entity;
     }
 
 }

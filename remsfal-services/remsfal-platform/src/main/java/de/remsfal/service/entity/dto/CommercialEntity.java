@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 
 import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -18,11 +19,17 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
     @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
     private String buildingId;
 
-    @Column(name = "LOCATION")
-    private String location;
+    @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")
+    private Float netFloorArea;
 
-    @Column(name = "COMMERCIAL_SPACE", columnDefinition = "decimal")
-    private Float commercialSpace;
+    @Column(name = "USABLE_FLOOR_AREA", columnDefinition = "decimal")
+    private Float usableFloorArea;
+
+    @Column(name = "TECHNICAL_SERVICE_AREA", columnDefinition = "decimal")
+    private Float technicalServicesArea;
+
+    @Column(name = "TRAFFIC_AREA", columnDefinition = "decimal")
+    private Float trafficArea;
 
     @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
     private Float heatingSpace;
@@ -36,21 +43,39 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
     }
 
     @Override
-    public String getLocation() {
-        return location;
+    public Float getNetFloorArea() {
+        return netFloorArea;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setNetFloorArea(Float netFloorArea) {
+        this.netFloorArea = netFloorArea;
     }
 
     @Override
-    public Float getCommercialSpace() {
-        return commercialSpace;
+    public Float getUsableFloorArea() {
+        return usableFloorArea;
     }
 
-    public void setCommercialSpace(Float commercialSpace) {
-        this.commercialSpace = commercialSpace;
+    public void setUsableFloorArea(Float usableFloorArea) {
+        this.usableFloorArea = usableFloorArea;
+    }
+
+    @Override
+    public Float getTechnicalServicesArea() {
+        return technicalServicesArea;
+    }
+
+    public void setTechnicalServicesArea(Float technicalServicesArea) {
+        this.technicalServicesArea = technicalServicesArea;
+    }
+
+    @Override
+    public Float getTrafficArea() {
+        return trafficArea;
+    }
+
+    public void setTrafficArea(Float trafficArea) {
+        this.trafficArea = trafficArea;
     }
 
     @Override
@@ -70,26 +95,13 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         if (o instanceof CommercialEntity e) {
             return super.equals(e)
                 && Objects.equals(buildingId, e.buildingId)
-                && Objects.equals(location, e.location)
-                && Objects.equals(commercialSpace, e.commercialSpace)
+                && Objects.equals(netFloorArea, e.netFloorArea)
+                && Objects.equals(usableFloorArea, e.usableFloorArea)
+                && Objects.equals(technicalServicesArea, e.technicalServicesArea)
+                && Objects.equals(trafficArea, e.trafficArea)
                 && Objects.equals(heatingSpace, e.heatingSpace);
         }
         return false;
-    }
-
-    public static CommercialEntity fromModel(CommercialModel commercial) {
-        if(commercial == null) {
-            return null;
-        }
-        final CommercialEntity entity = new CommercialEntity();
-        entity.setId(commercial.getId());
-        entity.setTitle(commercial.getTitle());
-        entity.setLocation(commercial.getLocation());
-        entity.setDescription(commercial.getDescription());
-        entity.setCommercialSpace(commercial.getCommercialSpace());
-        entity.setUsableSpace(commercial.getUsableSpace());
-        entity.setHeatingSpace(commercial.getHeatingSpace());
-        return entity;
     }
 
 }
