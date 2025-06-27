@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
 @Table(name = "CONTRACTOR_EMPLOYEE")
 @NamedQuery(name = "ContractorEmployeeEntity.findByContractorId",
     query = "SELECT e FROM ContractorEmployeeEntity e WHERE e.contractor.id = :contractorId")
-public class ContractorEmployeeEntity extends AbstractMetaDataEntity implements ContractorEmployeeModel {
+public class ContractorEmployeeEntity extends MetaDataEntity implements ContractorEmployeeModel {
 
     @EmbeddedId
     private ContractorEmployeeKey id = new ContractorEmployeeKey();

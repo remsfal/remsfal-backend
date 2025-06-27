@@ -29,7 +29,6 @@ import de.remsfal.core.api.project.BuildingEndpoint;
 import de.remsfal.core.api.project.CommercialEndpoint;
 import de.remsfal.core.api.project.StorageEndpoint;
 import de.remsfal.core.api.project.ContractorEndpoint;
-import de.remsfal.core.api.project.GarageEndpoint;
 import de.remsfal.core.api.project.MemberEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
 import de.remsfal.core.api.project.SiteEndpoint;
