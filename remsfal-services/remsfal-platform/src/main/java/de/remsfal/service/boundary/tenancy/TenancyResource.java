@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.tenancy;
 
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.container.ResourceContext;
@@ -32,9 +31,6 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
 
     @Context
     ResourceContext resourceContext;
-
-    @Inject
-    Instance<TaskResource> taskResource;
 
     @Inject
     PropertyController propertyController;
@@ -162,11 +158,6 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
         return TenancyJson.valueOf(tenancy, rent, commercialController.getCommercial(tenancy.getProjectId(), rentalId));
-    }
-
-    @Override
-    public TaskResource getTaskResource() {
-        return resourceContext.initResource(taskResource.get());
     }
 
 }

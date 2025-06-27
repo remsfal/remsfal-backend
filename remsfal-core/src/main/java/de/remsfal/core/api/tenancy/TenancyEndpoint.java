@@ -108,8 +108,4 @@ public interface TenancyEndpoint {
         @PathParam("rentalId") @NotNull @UUID String rentalId
     );
 
-    @Path("/{tenancyId}/{rentalType:properties|sites|buildings|apartments|storages|commercials}/{rentalId}"
-        + TaskEndpoint.SERVICE)
-    TaskEndpoint getTaskResource();
-
 }
