@@ -23,7 +23,7 @@
     </modules>
 
     <properties>
-        <quarkus.version>3.23.3</quarkus.version>
+        <quarkus.version>3.23.4</quarkus.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
     </properties>
@@ -41,6 +41,10 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka</artifactId>
+        </dependency>
         <dependency>
             <groupId>de.remsfal</groupId>
             <artifactId>remsfal-core</artifactId>
