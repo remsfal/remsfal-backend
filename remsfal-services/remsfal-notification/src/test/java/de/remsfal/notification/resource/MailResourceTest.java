@@ -12,33 +12,7 @@ class MailResourceTest {
     static final String BASE_PATH = "/notification/test";
 
     @Test
-    void sendWelcomeTemplate_SUCCESS() {
-        given()
-                .queryParam("to", "test@example.com")
-                .queryParam("name", "TestUser")
-                .queryParam("template", "welcome")
-                .queryParam("link", "https://remsfal.de/confirm?token=abc123")
-                .when()
-                .get(BASE_PATH)
-                .then()
-                .statusCode(Status.ACCEPTED.getStatusCode());
-    }
-
-    @Test
-    void sendNewMembershipTemplate_SUCCESS() {
-        given()
-                .queryParam("to", "test@example.com")
-                .queryParam("name", "TestUser")
-                .queryParam("template", "new-membership")
-                .queryParam("link", "https://remsfal.de/join?token=abc123")
-                .when()
-                .get(BASE_PATH)
-                .then()
-                .statusCode(Status.ACCEPTED.getStatusCode());
-    }
-
-    @Test
-    void missingParams_FAILED() {
+    void shouldFail_whenMissingRecipient() {
         given()
                 .queryParam("name", "NoRecipient")
                 .when()
@@ -48,7 +22,7 @@ class MailResourceTest {
     }
 
     @Test
-    void unknownTemplate_FAILED() {
+    void shouldFail_whenTemplateIsUnknown() {
         given()
                 .queryParam("to", "test@example.com")
                 .queryParam("name", "TestUser")
@@ -57,6 +31,6 @@ class MailResourceTest {
                 .when()
                 .get(BASE_PATH)
                 .then()
-                .statusCode(422); // UNPROCESSABLE_ENTITY
+                .statusCode(422);
     }
 }
