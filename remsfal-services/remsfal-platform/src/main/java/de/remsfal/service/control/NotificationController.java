@@ -15,7 +15,7 @@ public class NotificationController {
     Logger logger;
 
     @Inject
-    @Channel("user-notification")
+    @Channel("user-notification-producer")
     Emitter<UserJson> notificationEmitter;
 
     public void informUserAboutProjectMembership(final CustomerModel user) {
