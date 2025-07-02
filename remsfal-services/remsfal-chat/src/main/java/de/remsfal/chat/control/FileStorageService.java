@@ -36,6 +36,7 @@ public class FileStorageService {
     private static final String DEFAULT_FILE_NAME = "unknown";
 
     private final Set<String> allowedTypes = Set.of(
+        "image/jpg",
         "image/jpeg",
         "image/png",
         "image/gif",
@@ -45,8 +46,11 @@ public class FileStorageService {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/json");
 
-    @ConfigProperty(name = "%dev.quarkus.minio.url")
-    String endpoint;
+    @ConfigProperty(name = "%dev.quarkus.minio.host")
+    String host;
+
+    @ConfigProperty(name = "%dev.quarkus.minio.port")
+    String port;
 
     @Inject
     Logger logger;
@@ -248,7 +252,7 @@ public class FileStorageService {
     }
 
     private String constructFileUrl(String bucketName, String fileName) {
-        String fileUrl = endpoint.endsWith("/") ? endpoint : endpoint + "/";
+        String fileUrl = host + ":" + port + "/";
         fileUrl += bucketName + "/" + fileName;
         logger.infov("Constructed file URL: {0}", fileUrl);
         return fileUrl;

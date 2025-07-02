@@ -106,10 +106,6 @@ public class ChatMessageRepository {
                 throw new IllegalArgumentException("Content cannot be null or empty");
             }
             ChatMessageEntity message = findMessageById(sessionId, messageId);
-            if (!ContentType.TEXT.name().equals(message.getContentType())) {
-                throw new IllegalArgumentException("Cannot update non-text message " +
-                    "with updateTextChatMessage() method");
-            }
             if (newContent.equals(message.getContent())) {
                 throw new IllegalArgumentException("Content is the same as the current content");
             }
