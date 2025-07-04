@@ -48,8 +48,7 @@ class ZeebeControllerTest {
 
         // Assert
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-        String expectedError = "Error: Missing 'processId' in request body.";
-        assertEquals(expectedError, response.getEntity());
+        assertEquals("Invalid request", response.getEntity());
 
         // Verify that ZeebeClient was never interacted with
         verifyNoInteractions(zeebeClient);

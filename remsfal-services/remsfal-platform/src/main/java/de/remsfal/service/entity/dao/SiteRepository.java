@@ -16,14 +16,14 @@ public class SiteRepository extends AbstractRepository<SiteEntity> {
 
     public Optional<SiteEntity> findSiteById(final String projectId, final String siteId) {
         return find("id = :id and projectId = :projectId",
-                Parameters.with("id", siteId).and(PARAM_PROJECT_ID, projectId))
+                Parameters.with(PARAM_ID, siteId).and(PARAM_PROJECT_ID, projectId))
                 .singleResultOptional();
     }
 
 
     public long deleteSiteById(final String projectId, final String siteId) {
         return delete("id = :id and projectId = :projectId",
-            Parameters.with("id", siteId).and(PARAM_PROJECT_ID, projectId));
+            Parameters.with(PARAM_ID, siteId).and(PARAM_PROJECT_ID, projectId));
     }
 
 
