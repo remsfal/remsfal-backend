@@ -31,6 +31,9 @@ class MailConsumerResourceTest {
     @Inject
     Logger logger;
 
+    @Inject
+    MailConsumerResource mailConsumerResource;
+
     @ConfigProperty(name = "mp.messaging.incoming.user-notification-consumer.topic")
     String topic;
 
@@ -65,6 +68,8 @@ class MailConsumerResourceTest {
             companion.produce(UserJson.class)
                     .fromRecords(new ProducerRecord<>(topic, user));
         });
+
+        mailConsumerResource.consumeUserNotification(user);
 
         logger.infov("Successfully sent user ({}) to topic '{}' for consumer test.", userEmail, topic);
     }

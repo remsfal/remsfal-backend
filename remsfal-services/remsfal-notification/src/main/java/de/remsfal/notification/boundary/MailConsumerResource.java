@@ -24,7 +24,6 @@ public class MailConsumerResource implements AddressEndpoint {
     @Incoming("user-notification-consumer")
     public void consumeUserNotification(UserJson userJson) {
         logger.infov("Received user-notification for {0}", userJson.getEmail());
-        logger.debugf("Full user data: %s", userJson);
     }
 
     @Override
