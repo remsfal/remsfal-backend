@@ -108,7 +108,7 @@ public class UserController {
             entity.setLastName(user.getLastName());
         }
         if(user.getAddress() != null) {
-            entity.setAddress(addressController.updateAddress(entity.getAddress(), user.getAddress()));
+            entity.setAddress(addressController.updateAddress(user.getAddress(), entity.getAddress()));
         }
         if(user.getMobilePhoneNumber() != null) {
             entity.setMobilePhoneNumber(user.getMobilePhoneNumber());

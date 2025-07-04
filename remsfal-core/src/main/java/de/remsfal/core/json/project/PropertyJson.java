@@ -35,28 +35,19 @@ public abstract class PropertyJson implements PropertyModel {
     @Override
     public abstract String getTitle();
 
-    @Nullable
-    @Override
-    public abstract String getLandRegisterEntry();
-
-    @Nullable
-    @Override
-    public abstract String getDescription();
-
-    @Nullable
-    @Override
-    public abstract Integer getPlotArea();
-
-    @Null
-    @Nullable
-    public abstract Float getEffectiveSpace(); // living space + usable space + commercial space
-
     public static PropertyJson valueOf(final PropertyModel model) {
-        return ImmutablePropertyJson.builder()
+        return model == null ? null : ImmutablePropertyJson.builder()
                 .id(model.getId())
                 .title(model.getTitle())
-                .landRegisterEntry(model.getLandRegisterEntry())
+                .location(model.getLocation())
                 .description(model.getDescription())
+                .landRegistry(model.getLandRegistry())
+                .cadastralDistrict(model.getCadastralDistrict())
+                .sheetNumber(model.getSheetNumber())
+                .plotNumber(model.getPlotNumber())
+                .cadastralSection(model.getCadastralSection())
+                .plot(model.getPlot())
+                .economyType(model.getEconomyType())
                 .plotArea(model.getPlotArea())
                 .build();
     }
