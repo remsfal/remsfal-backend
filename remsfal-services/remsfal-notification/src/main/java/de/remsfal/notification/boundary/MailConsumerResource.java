@@ -16,7 +16,7 @@ import java.util.List;
  */
 
 @ApplicationScoped
-public class DummyResource implements AddressEndpoint {
+public class MailConsumerResource implements AddressEndpoint {
 
     @Inject
     Logger logger;
