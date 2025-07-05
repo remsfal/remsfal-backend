@@ -10,7 +10,7 @@ import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.jboss.logging.Logger;
@@ -60,7 +60,7 @@ public class UserController {
         entity.generateId();
         entity.setTokenId(googleId);
         entity.setEmail(email.toLowerCase());
-        entity.setAuthenticatedAt(new Date());
+        entity.setAuthenticatedAt(LocalDateTime.now());
         try {
             repository.persistAndFlush(entity);
             return entity;
