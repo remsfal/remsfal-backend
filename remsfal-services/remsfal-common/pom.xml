@@ -19,6 +19,12 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-kafka-client</artifactId>
+            <version>3.23.4</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- third party dependencies -->
         <dependency>
             <groupId>com.nimbusds</groupId>
