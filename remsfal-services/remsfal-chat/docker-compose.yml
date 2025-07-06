@@ -56,7 +56,7 @@ services:
       - KAFKA_NUM_PARTITIONS=1
 
   ocr:
-    image: remsfal-ocr
+    image: ghcr.io/remsfal/remsfal-ocr:sha-a1f0971
     container_name: remsfal-ocr
     environment:
       - KAFKA_BROKER=kafka:29092
