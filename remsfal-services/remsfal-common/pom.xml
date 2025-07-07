@@ -17,13 +17,11 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-jwt</artifactId>
+            <artifactId>quarkus-kafka-client</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-kafka-client</artifactId>
-            <version>3.24.2</version>
-            <scope>compile</scope>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
         </dependency>
         <!-- third party dependencies -->
         <dependency>
