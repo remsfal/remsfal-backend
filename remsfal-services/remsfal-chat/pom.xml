@@ -76,11 +76,6 @@
             <groupId>com.datastax.oss.quarkus</groupId>
             <artifactId>cassandra-quarkus-mapper-processor</artifactId>
         </dependency>
-        <!-- Kafka dependencies -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-messaging-kafka</artifactId>
-        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
