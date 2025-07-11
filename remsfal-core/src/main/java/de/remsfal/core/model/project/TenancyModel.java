@@ -12,12 +12,18 @@ public interface TenancyModel {
 
     String getId();
 
-    List<? extends RentModel> getRent();
-
-    CustomerModel getTenant();
+    List<? extends CustomerModel> getTenants();
 
     LocalDate getStartOfRental();
 
     LocalDate getEndOfRental();
+
+    public default Boolean isActive() {
+        if (this.getEndOfRental() == null) {
+            return true;
+        } else {
+            return this.getEndOfRental().isAfter(LocalDate.now());
+        }
+    }
 
 }

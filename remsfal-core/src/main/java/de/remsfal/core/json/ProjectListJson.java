@@ -4,25 +4,27 @@ import java.util.List;
 
 import de.remsfal.core.model.UserModel;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ProjectModel;
 
 /**
  * A list of projects
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A list of projects")
 @JsonDeserialize(as = ImmutableProjectListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectListJson {
 
     @Schema(description = "Index of the first element in projects list of total available entries, starting at 1",
-        required = true, example = "1")
+        required = true, examples = "1")
     public abstract Integer getFirst();
 
     @Schema(description = "Number of elements in projects list", minimum = "1", maximum = "100",
@@ -35,11 +37,9 @@ public abstract class ProjectListJson {
     public abstract List<ProjectItemJson> getProjects();
 
     public static ProjectListJson valueOf(final List<ProjectModel> projects,
-
         final int first, final long total, final UserModel user) {
 
         final ImmutableProjectListJson.Builder builder = ImmutableProjectListJson.builder();
-
         for (ProjectModel model : projects) {
             builder.addProjects(ProjectItemJson.valueOf(model, user));
         }

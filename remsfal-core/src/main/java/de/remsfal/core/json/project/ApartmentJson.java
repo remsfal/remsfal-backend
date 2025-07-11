@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.immutable.ImmutableStyle;
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.Title;
@@ -21,7 +21,7 @@ import de.remsfal.core.validation.Title;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "An apartment inside a building")
+@Schema(description = "An apartment inside a building according to WoFIV")
 @JsonDeserialize(as = ImmutableApartmentJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ApartmentJson implements ApartmentModel {
@@ -37,40 +37,15 @@ public abstract class ApartmentJson implements ApartmentModel {
     @Override
     public abstract String getTitle();
 
-    @Nullable
-    @Override
-    public abstract String getLocation();
-
-    @Nullable
-    @Override
-    public abstract String getDescription();
-
-    @Nullable
-    @Override
-    public abstract Float getLivingSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getUsableSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getHeatingSpace();
-
-    @Nullable
-    @Override
-    public abstract TenancyJson getTenancy();
-
-    public static ApartmentJson valueOf(ApartmentModel apartment) {
-        return apartment == null ? null : ImmutableApartmentJson.builder()
-                .id(apartment.getId())
-                .title(apartment.getTitle())
-                .description(apartment.getDescription())
-                .heatingSpace(apartment.getHeatingSpace())
-                .livingSpace(apartment.getLivingSpace())
-                .usableSpace(apartment.getUsableSpace())
-                .location(apartment.getLocation())
-                .tenancy(TenancyJson.valueOf(apartment.getTenancy()))
+    public static ApartmentJson valueOf(final ApartmentModel model) {
+        return model == null ? null : ImmutableApartmentJson.builder()
+                .id(model.getId())
+                .title(model.getTitle())
+                .description(model.getDescription())
+                .heatingSpace(model.getHeatingSpace())
+                .livingSpace(model.getLivingSpace())
+                .usableSpace(model.getUsableSpace())
+                .location(model.getLocation())
                 .build();
 
     }

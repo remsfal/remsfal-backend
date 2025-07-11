@@ -1,17 +1,18 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.model.CustomerModel;
-import de.remsfal.core.model.project.RentModel;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.TenancyModel;
-import de.remsfal.service.entity.dto.RentEntity;
+import de.remsfal.service.entity.dao.TenancyRepository;
 import de.remsfal.service.entity.dto.TenancyEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
+import jakarta.ws.rs.NotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -20,7 +21,22 @@ import java.util.List;
 public class TenancyController {
 
     @Inject
-    UserController userController;
+    Logger logger;
+
+    @Inject
+    TenancyRepository tenancyRepository;
+
+    public List<TenancyEntity> getTenancies(final UserModel tenant) {
+        logger.infov("Retrieving all tenancies (tenantId = {0})", tenant.getId());
+        return tenancyRepository.findTenanciesByTenant(tenant.getId());
+    }
+
+    public TenancyEntity getTenancy(final UserModel tenant, final String tenancyId) {
+        logger.infov("Retrieving a tenancy (tenantId = {0}, tenancyId = {1})",
+            tenant.getId(), tenancyId);
+        return tenancyRepository.findTenancyByTenant(tenant.getId(), tenancyId)
+            .orElseThrow(() -> new NotFoundException("Tenancy not exist"));
+    }
 
     @Transactional(TxType.MANDATORY)
     public TenancyEntity updateTenancy(final String projectId, TenancyEntity entity, final TenancyModel tenancy) {
@@ -29,12 +45,6 @@ public class TenancyController {
             entity.generateId();
             entity.setProjectId(projectId);
         }
-        if(tenancy.getRent() != null) {
-            updateRent(entity, tenancy.getRent());
-        }
-        if(tenancy.getTenant() != null) {
-            updateTenant(entity, tenancy.getTenant());
-        }
         if(tenancy.getStartOfRental() != null) {
             entity.setStartOfRental(tenancy.getStartOfRental());
         }
@@ -42,29 +52,6 @@ public class TenancyController {
             entity.setEndOfRental(tenancy.getEndOfRental());
         }
         return entity;
-    }
-
-    private void updateRent(TenancyEntity entity, final List<? extends RentModel> rent) {
-        final List<RentEntity> list = new ArrayList<>();
-        for (RentModel model : rent) {
-            final RentEntity r = new RentEntity();
-            r.generateId();
-            r.setBillingCycle(model.getBillingCycle());
-            r.setFirstPaymentDate(model.getFirstPaymentDate());
-            r.setLastPaymentDate(model.getLastPaymentDate());
-            r.setBasicRent(model.getBasicRent());
-            r.setOperatingCostsPrepayment(model.getOperatingCostsPrepayment());
-            r.setHeatingCostsPrepayment(model.getHeatingCostsPrepayment());
-            list.add(r);
-        }
-        entity.setRent(list);
-    }
-
-    private void updateTenant(TenancyEntity entity, final CustomerModel tenant) {
-        if(entity.getTenant() == null) {
-            entity.setTenant(userController.findOrCreateUser(tenant));
-        }
-        userController.updateUser(entity.getTenant().getId(), tenant);
     }
 
 }

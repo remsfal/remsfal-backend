@@ -7,6 +7,9 @@
 *.log
 *.DS_Store
 
+# environment files
+.env
+
 # IDE files
 *.ctxt
 .project

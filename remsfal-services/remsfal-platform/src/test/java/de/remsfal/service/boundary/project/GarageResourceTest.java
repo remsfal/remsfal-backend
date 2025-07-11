@@ -1,10 +1,13 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +16,7 @@ import java.time.Duration;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class GarageResourceTest extends AbstractProjectResourceTest {
+class GarageResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects";
 
@@ -24,7 +27,6 @@ class GarageResourceTest extends AbstractProjectResourceTest {
     private static final String BUILDING_JSON = "{ \"description\":\"" + TestData.BUILDING_DESCRIPTION + "\"," +
         " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE + "\"," +
         " \"title\":\"" + TestData.BUILDING_TITLE + "\"," +
-        " \"commercialSpace\":\"" + TestData.COMMERCIAL_COMMERCIAL_SPACE + "\"," +
         " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE + "\"," +
         " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE + "\"," +
         " \"address\": {" +
@@ -35,10 +37,10 @@ class GarageResourceTest extends AbstractProjectResourceTest {
         "     \"country\": \"" + TestData.ADDRESS_COUNTRY + "\"" +
         " } }";
 
-    private static final String GARAGE_JSON = "{ \"title\": \"" + TestData.GARAGE_TITLE + "\"," +
-        " \"description\": \"" + TestData.GARAGE_DESCRIPTION + "\"," +
+    private static final String GARAGE_JSON = "{ \"title\": \"" + TestData.STORAGE_TITLE + "\"," +
+        " \"description\": \"" + TestData.STORAGE_DESCRIPTION + "\"," +
         " \"usableSpace\": " + 12.8f + "," +
-        " \"location\": \"" + TestData.GARAGE_LOCATION + "\" }";
+        " \"location\": \"" + TestData.STORAGE_LOCATION + "\" }";
 
     @BeforeEach
     protected void setupTestUsers() {
@@ -120,7 +122,7 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 garageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.GARAGE_TITLE));
+            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
     }
 
     @Test
@@ -147,7 +149,7 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 garageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.GARAGE_TITLE));
+            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
     }
 
     @Test
@@ -166,10 +168,10 @@ class GarageResourceTest extends AbstractProjectResourceTest {
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
 
-        final String updatedGarageJson = "{ \"title\": \"" + TestData.GARAGE_TITLE_2 + "\"," +
-            " \"description\": \"" + TestData.GARAGE_DESCRIPTION_2 + "\"," +
+        final String updatedGarageJson = "{ \"title\": \"" + TestData.STORAGE_TITLE_2 + "\"," +
+            " \"description\": \"" + TestData.STORAGE_DESCRIPTION_2 + "\"," +
             " \"usableSpace\": " + 15.5f + "," +
-            " \"location\": \"" + TestData.GARAGE_LOCATION_2 + "\" }";
+            " \"location\": \"" + TestData.STORAGE_LOCATION_2 + "\" }";
 
         given()
             .when()
@@ -190,10 +192,10 @@ class GarageResourceTest extends AbstractProjectResourceTest {
                 garageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.GARAGE_TITLE_2))
-            .body("description", org.hamcrest.Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
-            .body("usableSpace", org.hamcrest.Matchers.equalTo(15.5f))
-            .body("location", org.hamcrest.Matchers.equalTo(TestData.GARAGE_LOCATION_2));
+            .body("title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
+            .body("description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
+            .body("usableSpace", Matchers.equalTo(15.5f))
+            .body("location", Matchers.equalTo(TestData.STORAGE_LOCATION_2));
     }
 
     @Test

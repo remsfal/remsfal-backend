@@ -4,15 +4,18 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import java.util.List;
 
 /**
  * @author: Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A list of chat messages")
 @JsonDeserialize(as = ImmutableChatMessageListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)

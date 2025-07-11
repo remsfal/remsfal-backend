@@ -2,10 +2,11 @@ package de.remsfal.core.json.project;
 
 import java.util.List;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.TaskModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -14,11 +15,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A list of tasks")
 @JsonDeserialize(as = ImmutableTaskListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TaskListJson {
+    // Validation is not required, because it is read-only.
 
     public abstract List<TaskItemJson> getTasks();
 

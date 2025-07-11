@@ -1,4 +1,4 @@
-package de.remsfal.service.entity.dto;
+package de.remsfal.service.entity.dto.superclass;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -13,7 +13,7 @@ import java.util.Objects;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @MappedSuperclass
-public abstract class AbstractMetaDataEntity {
+public abstract class MetaDataEntity {
 
     @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -46,14 +46,11 @@ public abstract class AbstractMetaDataEntity {
         if (this == o) {
             return true;
         }
-        if (o instanceof AbstractMetaDataEntity e) {
-            return Objects.equals(createdAt, e.createdAt);
+        if (o instanceof MetaDataEntity e) {
+            return Objects.equals(createdAt, e.createdAt)
+                && Objects.equals(modifiedAt, e.modifiedAt);
         }
         return false;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(createdAt);
-    }
 }

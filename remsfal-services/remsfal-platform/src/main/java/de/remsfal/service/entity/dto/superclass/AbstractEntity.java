@@ -1,4 +1,4 @@
-package de.remsfal.service.entity.dto;
+package de.remsfal.service.entity.dto.superclass;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
@@ -11,7 +11,7 @@ import java.util.UUID;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @MappedSuperclass
-public abstract class AbstractEntity extends AbstractMetaDataEntity {
+public abstract class AbstractEntity extends MetaDataEntity {
 
     @Id
     @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
@@ -35,7 +35,8 @@ public abstract class AbstractEntity extends AbstractMetaDataEntity {
             return true;
         }
         if (o instanceof AbstractEntity e) {
-            return Objects.equals(id, e.id);
+            return super.equals(e)
+                && Objects.equals(id, e.id);
         }
         return false;
     }

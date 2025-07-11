@@ -1,4 +1,4 @@
-package de.remsfal.service.entity.dto;
+package de.remsfal.service.entity.dto.embeddable;
 
 import java.io.Serializable;
 import java.util.Objects;

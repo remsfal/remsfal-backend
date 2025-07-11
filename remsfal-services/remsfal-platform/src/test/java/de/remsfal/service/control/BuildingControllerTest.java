@@ -18,8 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.project.BuildingModel;
-import de.remsfal.core.model.project.CommercialModel;
-import de.remsfal.core.model.project.GarageModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
@@ -100,15 +98,19 @@ class BuildingControllerTest extends AbstractTest {
         assertEquals(building.getAddress().getProvince(), result.getAddress().getProvince());
         assertEquals(building.getAddress().getZip(), result.getAddress().getZip());
         assertEquals(building.getDescription(), result.getDescription());
+        assertEquals(building.getGrossFloorArea(), result.getGrossFloorArea());
+        assertEquals(building.getNetFloorArea(), result.getNetFloorArea());
+        assertEquals(building.getConstructionFloorArea(), result.getConstructionFloorArea());
         assertEquals(building.getLivingSpace(), result.getLivingSpace());
-        assertEquals(building.getCommercialSpace(), result.getCommercialSpace());
         assertEquals(building.getUsableSpace(), result.getUsableSpace());
         
         final BuildingEntity entity = entityManager
             .createQuery("SELECT b FROM BuildingEntity b where b.title = :title", BuildingEntity.class)
             .setParameter("title", TestData.BUILDING_TITLE)
             .getSingleResult();
-        assertEquals(result, entity);
+        assertEquals(entity.hashCode(), result.hashCode());
+        assertNotNull(entity.getAddress());
+        assertEquals(entity, result);
     }
     
     @Test
@@ -125,8 +127,10 @@ class BuildingControllerTest extends AbstractTest {
         assertEquals(building.getId(), result.getId());
         assertEquals(building.getTitle(), result.getTitle());
         assertEquals(building.getDescription(), result.getDescription());
+        assertEquals(building.getGrossFloorArea(), result.getGrossFloorArea());
+        assertEquals(building.getNetFloorArea(), result.getNetFloorArea());
+        assertEquals(building.getConstructionFloorArea(), result.getConstructionFloorArea());
         assertEquals(building.getLivingSpace(), result.getLivingSpace());
-        assertEquals(building.getCommercialSpace(), result.getCommercialSpace());
         assertEquals(building.getUsableSpace(), result.getUsableSpace());
     }
     
@@ -169,7 +173,6 @@ class BuildingControllerTest extends AbstractTest {
                 .address(address)
                 .title(result.getTitle())
                 .description(result.getDescription())
-                .commercialSpace(result.getCommercialSpace())
                 .heatingSpace(result.getHeatingSpace())
                 .livingSpace(result.getLivingSpace())
                 .usableSpace(result.getUsableSpace())
@@ -185,7 +188,6 @@ class BuildingControllerTest extends AbstractTest {
         assertEquals(building.getTitle(), buildingModel.getTitle());
         assertEquals(building.getDescription(), buildingModel.getDescription());
         assertEquals(building.getLivingSpace(), buildingModel.getLivingSpace());
-        assertEquals(building.getCommercialSpace(), buildingModel.getCommercialSpace());
         assertEquals(building.getUsableSpace(), buildingModel.getUsableSpace());
         assertEquals(buildingModel.getAddress().getStreet(), "Lavochkina St.");
     }
@@ -213,7 +215,6 @@ class BuildingControllerTest extends AbstractTest {
                 .address(address)
                 .title(result.getTitle())
                 .description(result.getDescription())
-                .commercialSpace(result.getCommercialSpace())
                 .heatingSpace(result.getHeatingSpace())
                 .livingSpace(result.getLivingSpace())
                 .usableSpace(result.getUsableSpace())
@@ -265,83 +266,6 @@ class BuildingControllerTest extends AbstractTest {
                 .setParameter("title", TestData.BUILDING_TITLE)
                 .getSingleResult();
         assertEquals(1, entity);
-    }
-
-    @Test
-    void createCommercial_SUCCESS_getCommercial() {
-        final String propertyId = propertyController
-            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
-            .getId();
-        assertNotNull(propertyId);
-
-        final String buildingId = buildingController
-            .createBuilding(TestData.PROJECT_ID, propertyId,
-                TestData.buildingBuilder()
-                .id(null)
-                .address(TestData.addressBuilder().build())
-                .build())
-            .getId();
-        assertNotNull(buildingId);
-        
-        final CommercialModel commercial = TestData.commercialBuilder().build();
-        final CommercialModel result = buildingController
-            .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
-        
-        assertNotEquals(commercial.getId(), result.getId());
-        assertEquals(commercial.getTitle(), result.getTitle());
-        assertEquals(commercial.getLocation(), result.getLocation());
-        assertEquals(commercial.getDescription(), result.getDescription());
-        assertEquals(commercial.getCommercialSpace(), result.getCommercialSpace());
-        assertEquals(commercial.getUsableSpace(), result.getUsableSpace());
-        
-        final String commercialId = entityManager
-            .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
-            .setParameter("title", TestData.COMMERCIAL_TITLE)
-            .getSingleResult();
-        assertEquals(result.getId(), commercialId);
-
-        final CommercialModel getResult = buildingController
-            .getCommercial(TestData.PROJECT_ID, buildingId, commercialId);
-        
-        assertEquals(result, getResult);
-    }
-
-   @Test
-    void createGarage_SUCCESS_getGarage() {
-        final String propertyId = propertyController
-            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
-            .getId();
-        assertNotNull(propertyId);
-
-        final String buildingId = buildingController
-            .createBuilding(TestData.PROJECT_ID, propertyId,
-                TestData.buildingBuilder()
-                .id(null)
-                .address(TestData.addressBuilder().build())
-                .build())
-            .getId();
-        assertNotNull(buildingId);
-        
-        final GarageModel garage = TestData.garageBuilder().build();
-        final GarageModel result = buildingController
-            .createGarage(TestData.PROJECT_ID, buildingId, garage);
-        
-        assertNotEquals(garage.getId(), result.getId());
-        assertEquals(garage.getTitle(), result.getTitle());
-        assertEquals(garage.getLocation(), result.getLocation());
-        assertEquals(garage.getDescription(), result.getDescription());
-        assertEquals(garage.getUsableSpace(), result.getUsableSpace());
-        
-        final String garageId = entityManager
-            .createQuery("SELECT g.id FROM GarageEntity g where g.title = :title", String.class)
-            .setParameter("title", TestData.GARAGE_TITLE)
-            .getSingleResult();
-        assertEquals(result.getId(), garageId);
-
-        final GarageModel getResult = buildingController
-            .getGarage(TestData.PROJECT_ID, buildingId, garageId);
-        
-        assertEquals(result, getResult);
     }
 
 }

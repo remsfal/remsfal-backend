@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import de.remsfal.core.model.AddressModel;
+import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -77,7 +78,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
             return true;
         }
         if (o instanceof AddressEntity e) {
-            return super.equals(e)
+            return Objects.equals(id, e.id)
                 && Objects.equals(street, e.street)
                 && Objects.equals(city, e.city)
                 && Objects.equals(province, e.province)
@@ -88,21 +89,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     }
 
     public String toString() {
-        return String.format("street=%s, " +
-            "city=%s, province=%s, zip=%s, country=%s", street, city, province, zip, country);
-    }
-
-    public static AddressEntity fromModel(final AddressModel address) {
-        if(address == null) {
-            return null;
-        }
-        final AddressEntity entity = new AddressEntity();
-        entity.setStreet(address.getStreet());
-        entity.setCity(address.getCity());
-        entity.setProvince(address.getProvince());
-        entity.setZip(address.getZip());
-        entity.setCountry(address.getCountry());
-        return entity;
+        return String.format("%s, %s %s, %s %s", street, zip, city, country, province);
     }
 
 }

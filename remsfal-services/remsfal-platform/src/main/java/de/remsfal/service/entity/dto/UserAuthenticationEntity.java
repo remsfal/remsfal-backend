@@ -2,6 +2,7 @@ package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +26,7 @@ import jakarta.persistence.Table;
         "serAuth.refreshToken = null " +
         "where userAuth.user.id = :userId")
 @Table(name = "USERAUTHENTICATION")
-public class UserAuthenticationEntity extends AbstractMetaDataEntity implements UserAuthenticationModel {
+public class UserAuthenticationEntity extends MetaDataEntity implements UserAuthenticationModel {
 
     @Id
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)

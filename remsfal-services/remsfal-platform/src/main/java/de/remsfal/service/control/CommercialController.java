@@ -21,15 +21,12 @@ public class CommercialController {
     @Inject
     CommercialRepository commercialRepository;
 
-    @Inject
-    TenancyController tenancyController;
-
     @Transactional
     public CommercialModel createCommercial(final String projectId, final String buildingId,
-                                            final CommercialModel commercial) {
+        final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
-                projectId, buildingId, commercial);
-        CommercialEntity entity = CommercialEntity.fromModel(commercial);
+            projectId, buildingId, commercial);
+        CommercialEntity entity = updateCommercial(commercial, new CommercialEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -40,40 +37,52 @@ public class CommercialController {
 
     public CommercialModel getCommercial(final String projectId, final String commercialId) {
         logger.infov("Retrieving a commercial (projectId={0}, commercialId={1})",
-                projectId, commercialId);
+            projectId, commercialId);
         return commercialRepository.findCommercialById(projectId, commercialId)
-                .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+            .orElseThrow(() -> new NotFoundException("Commercial not exist"));
     }
 
     @Transactional
     public CommercialModel updateCommercial(final String projectId, final String commercialId,
-                                            final CommercialModel commercial) {
+        final CommercialModel commercial) {
         logger.infov("Updating a commercial (projectId={0}, commercialId={1})", projectId, commercialId);
         CommercialEntity entity = commercialRepository.findCommercialById(projectId, commercialId)
-                .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+            .orElseThrow(() -> new NotFoundException("Commercial not exist"));
+        return commercialRepository.merge(updateCommercial(commercial, entity));
+    }
 
-        if (commercial.getTitle() != null) {
-            entity.setTitle(commercial.getTitle());
+    private CommercialEntity updateCommercial(final CommercialModel model, final CommercialEntity entity) {
+        if (model.getTitle() != null) {
+            entity.setTitle(model.getTitle());
         }
-        if (commercial.getLocation() != null) {
-            entity.setLocation(commercial.getLocation());
+        if (model.getLocation() != null) {
+            entity.setLocation(model.getLocation());
         }
-        if (commercial.getCommercialSpace() != null) {
-            entity.setCommercialSpace(commercial.getCommercialSpace());
+        if (model.getDescription() != null) {
+            entity.setDescription(model.getDescription());
         }
-        if (commercial.getHeatingSpace() != null) {
-            entity.setHeatingSpace(commercial.getHeatingSpace());
+        if (model.getNetFloorArea() != null) {
+            entity.setNetFloorArea(model.getNetFloorArea());
         }
-        if (commercial.getTenancy() != null){
-            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), commercial.getTenancy()));
+        if (model.getUsableFloorArea() != null) {
+            entity.setUsableFloorArea(model.getUsableFloorArea());
         }
-        return commercialRepository.merge(entity);
+        if (model.getTechnicalServicesArea() != null) {
+            entity.setTechnicalServicesArea(model.getTechnicalServicesArea());
+        }
+        if (model.getTrafficArea() != null) {
+            entity.setTrafficArea(model.getTrafficArea());
+        }
+        if (model.getHeatingSpace() != null) {
+            entity.setHeatingSpace(model.getHeatingSpace());
+        }
+        return entity;
     }
 
     @Transactional
     public boolean deleteCommercial(final String projectId, final String commercialId) {
         logger.infov("Delete a commercial (projectId={0}, commercialId={1})",
-                projectId, commercialId);
+            projectId, commercialId);
         return commercialRepository.deleteCommercialById(projectId, commercialId) > 0;
     }
 

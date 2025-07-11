@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.immutable.ImmutableStyle;
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.project.TenancyModel;
 
@@ -33,14 +33,10 @@ public abstract class TenancyJson implements TenancyModel {
     @Override
     public abstract String getId();
 
-    @Nullable
-    @Override
-    public abstract List<RentJson> getRent();
-
     @Valid
     @Nullable
     @Override
-    public abstract UserJson getTenant();
+    public abstract List<UserJson> getTenants();
 
     @Nullable
     @Override
@@ -56,8 +52,7 @@ public abstract class TenancyJson implements TenancyModel {
         }
         return ImmutableTenancyJson.builder()
             .id(model.getId())
-            .rent(RentJson.valueOfList(model.getRent()))
-            .tenant(UserJson.valueOf(model.getTenant()))
+            .tenants(model.getTenants().stream().map(UserJson::valueOf).toList())
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
             .build();
