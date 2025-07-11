@@ -60,4 +60,5 @@ class NotificationConsumerTest {
 
         logger.infov("Successfully sent user ({}) to topic '{}' for consumer test.", userEmail, topic);
     }
+
 }
