@@ -84,11 +84,6 @@
         </dependency>
         <!-- TEST dependencies -->
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-test-kafka-companion</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
             <artifactId>quarkus-zeebe-test</artifactId>
             <version>1.6.0</version>
