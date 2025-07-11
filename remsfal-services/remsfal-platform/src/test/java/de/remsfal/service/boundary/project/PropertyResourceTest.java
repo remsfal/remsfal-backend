@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 
 @QuarkusTest
-class PropertyResourceTest extends AbstractProjectResourceTest {
+class PropertyResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects";
 
@@ -90,21 +91,8 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
 
     @Test
     void getProperties_SUCCESS_propertiesCorrectlyReturned() {
-        // Insert test data
-        insertProperty(TestData.PROPERTY_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_1, TestData.PROPERTY_REG_ENTRY_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_PLOT_AREA_1);
-        insertProperty(TestData.PROPERTY_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_TITLE_2, TestData.PROPERTY_REG_ENTRY_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_PLOT_AREA_2);
-
-        insertBuilding(TestData.BUILDING_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID_1, TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1, TestData.BUILDING_LIVING_SPACE_1, TestData.BUILDING_COMMERCIAL_SPACE_1, TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_1);
-        insertBuilding(TestData.BUILDING_ID_2, TestData.PROJECT_ID, TestData.PROPERTY_ID_1, TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2, TestData.BUILDING_LIVING_SPACE_2, TestData.BUILDING_COMMERCIAL_SPACE_2, TestData.BUILDING_USABLE_SPACE_2, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_2);
-
-        insertApartment(TestData.APARTMENT_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_1, TestData.APARTMENT_LOCATION_1, TestData.APARTMENT_DESCRIPTION_1, TestData.APARTMENT_LIVING_SPACE_1, TestData.APARTMENT_USABLE_SPACE_1, TestData.APARTMENT_HEATING_SPACE_1);
-        insertApartment(TestData.APARTMENT_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.APARTMENT_TITLE_2, TestData.APARTMENT_LOCATION_2, TestData.APARTMENT_DESCRIPTION_2, TestData.APARTMENT_LIVING_SPACE_2, TestData.APARTMENT_USABLE_SPACE_2, TestData.APARTMENT_HEATING_SPACE_2);
-
-        insertCommercial(TestData.COMMERCIAL_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.COMMERCIAL_TITLE_1, TestData.COMMERCIAL_LOCATION_1, TestData.COMMERCIAL_DESCRIPTION_1, TestData.COMMERCIAL_COMMERCIAL_SPACE_1, TestData.COMMERCIAL_USABLE_SPACE_1, TestData.COMMERCIAL_HEATING_SPACE_1);
-
-        insertGarage(TestData.GARAGE_ID_1, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_1, TestData.GARAGE_LOCATION_1, TestData.GARAGE_DESCRIPTION_1, TestData.GARAGE_USABLE_SPACE_1);
-        insertGarage(TestData.GARAGE_ID_2, TestData.PROJECT_ID, TestData.BUILDING_ID_1, TestData.GARAGE_TITLE_2, TestData.GARAGE_LOCATION_2, TestData.GARAGE_DESCRIPTION_2, TestData.GARAGE_USABLE_SPACE_2);
-
+        setupTestProperties();
+        setupTestBuildings();
 
         given()
             .when()
@@ -142,86 +130,19 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .and().body("properties[1].children[0].children[2].data.type", Matchers.equalTo("COMMERCIAL"))
             .and().body("properties[1].children[0].children[2].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
             .and().body("properties[1].children[0].children[2].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.GARAGE_ID_1))
-            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("GARAGE"))
-            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_1))
-            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_1))
-            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.GARAGE_ID_2))
-            .and().body("properties[1].children[0].children[4].data.type", Matchers.equalTo("GARAGE"))
-            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.GARAGE_TITLE_2))
-            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.GARAGE_DESCRIPTION_2))
+            .and().body("properties[1].children[0].children[3].key", Matchers.equalTo(TestData.COMMERCIAL_ID_2))
+            .and().body("properties[1].children[0].children[3].data.type", Matchers.equalTo("COMMERCIAL"))
+            .and().body("properties[1].children[0].children[3].data.title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_2))
+            .and().body("properties[1].children[0].children[3].data.description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_2))
+            .and().body("properties[1].children[0].children[4].key", Matchers.equalTo(TestData.STORAGE_ID_1))
+            .and().body("properties[1].children[0].children[4].data.type", Matchers.equalTo("STORAGE"))
+            .and().body("properties[1].children[0].children[4].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_1))
+            .and().body("properties[1].children[0].children[4].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_1))
+            .and().body("properties[1].children[0].children[5].key", Matchers.equalTo(TestData.STORAGE_ID_2))
+            .and().body("properties[1].children[0].children[5].data.type", Matchers.equalTo("STORAGE"))
+            .and().body("properties[1].children[0].children[5].data.title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
+            .and().body("properties[1].children[0].children[5].data.description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
             .log().body();
-    }
-
-    private void insertProperty(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTER_ENTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .executeUpdate());
-    }
-
-    private void insertBuilding(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO BUILDING (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, LIVING_SPACE, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .setParameter(10, params[9])
-                .executeUpdate());
-    }
-
-    private void insertApartment(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .executeUpdate());
-    }
-
-    private void insertCommercial(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, COMMERCIAL_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .setParameter(8, params[7])
-                .setParameter(9, params[8])
-                .executeUpdate());
-    }
-
-    private void insertGarage(Object... params) {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO GARAGE (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
-                .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
-                .setParameter(7, params[6])
-                .executeUpdate());
     }
 
     @Test
@@ -257,7 +178,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .setParameter(3, TestData.PROPERTY_TITLE_1)
             .executeUpdate());
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE_2 + "\","
-            + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY_2 + "\","
+            + "\"landRegistry\":\"" + TestData.PROPERTY_LAND_REGISTRY_2 + "\","
             + "\"description\":\"" + TestData.PROPERTY_DESCRIPTION_2 + "\","
             + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA_2 + "\"}";
         given()
@@ -271,7 +192,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
 
@@ -284,7 +205,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.PROPERTY_ID_1))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY_2))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION_2))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA_2));
     }
@@ -292,7 +213,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
     @Test
     void getProperty_SUCCESS_samePropertyIsReturned() {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\","
-            + "\"landRegisterEntry\":\"" + TestData.PROPERTY_REG_ENTRY + "\","
+            + "\"landRegistry\":\"" + TestData.PROPERTY_LAND_REGISTRY_2 + "\","
             + "\"description\":\"" + TestData.PROPERTY_DESCRIPTION + "\","
             + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA + "\"}";
 
@@ -312,7 +233,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .statusCode(Status.CREATED.getStatusCode())
             .and().body("id", Matchers.equalTo(propertyId))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA))
             .header("location", Matchers.startsWith("http://localhost:8081/api/v1/projects"))
@@ -328,7 +249,7 @@ class PropertyResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(propertyId))
             .and().body("title", Matchers.equalTo(TestData.PROPERTY_TITLE))
-            .and().body("landRegisterEntry", Matchers.equalTo(TestData.PROPERTY_REG_ENTRY))
+            .and().body("landRegistry", Matchers.equalTo(TestData.PROPERTY_LAND_REGISTRY_2))
             .and().body("description", Matchers.equalTo(TestData.PROPERTY_DESCRIPTION))
             .and().body("plotArea", Matchers.equalTo(TestData.PROPERTY_PLOT_AREA));
     }

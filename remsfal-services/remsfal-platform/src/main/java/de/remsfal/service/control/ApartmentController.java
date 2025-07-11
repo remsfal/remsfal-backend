@@ -21,15 +21,12 @@ public class ApartmentController {
     @Inject
     ApartmentRepository apartmentRepository;
 
-    @Inject
-    TenancyController tenancyController;
-
     @Transactional
     public ApartmentModel createApartment(final String projectId, final String buildingId,
                                           final ApartmentModel apartment) {
         logger.infov("Creating an apartment (projectId={0}, buildingId={1}, apartment={2})",
                 projectId, buildingId, apartment);
-        ApartmentEntity entity = ApartmentEntity.fromModel(apartment);
+        final ApartmentEntity entity = updateApartment(apartment, new ApartmentEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -52,28 +49,29 @@ public class ApartmentController {
                 projectId, apartmentId, apartment);
         final ApartmentEntity entity = apartmentRepository.findByIds(projectId, apartmentId)
                 .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
-        if (apartment.getDescription() != null) {
-            entity.setDescription(apartment.getDescription());
+        return apartmentRepository.merge(updateApartment(apartment, entity));
+    }
+
+    private ApartmentEntity updateApartment(final ApartmentModel model, final ApartmentEntity entity) {
+        if (model.getTitle() != null) {
+            entity.setTitle(model.getTitle());
         }
-        if (apartment.getLivingSpace() != null) {
-            entity.setLivingSpace(apartment.getLivingSpace());
+        if (model.getLocation() != null) {
+            entity.setLocation(model.getLocation());
         }
-        if (apartment.getHeatingSpace() != null) {
-            entity.setHeatingSpace(apartment.getHeatingSpace());
+        if (model.getDescription() != null) {
+            entity.setDescription(model.getDescription());
         }
-        if (apartment.getLocation() != null) {
-            entity.setLocation(apartment.getLocation());
+        if (model.getLivingSpace() != null) {
+            entity.setLivingSpace(model.getLivingSpace());
         }
-        if (apartment.getTitle() != null) {
-            entity.setTitle(apartment.getTitle());
+        if (model.getUsableSpace() != null) {
+            entity.setUsableSpace(model.getUsableSpace());
         }
-        if (apartment.getUsableSpace() != null) {
-            entity.setUsableSpace(apartment.getUsableSpace());
+        if (model.getHeatingSpace() != null) {
+            entity.setHeatingSpace(model.getHeatingSpace());
         }
-        if (apartment.getTenancy() != null) {
-            entity.setTenancy(tenancyController.updateTenancy(projectId, entity.getTenancy(), apartment.getTenancy()));
-        }
-        return apartmentRepository.merge(entity);
+        return entity;
     }
 
     @Transactional

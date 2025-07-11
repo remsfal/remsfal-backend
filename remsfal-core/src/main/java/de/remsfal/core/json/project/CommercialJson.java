@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.immutable.ImmutableStyle;
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.Title;
@@ -37,30 +37,6 @@ public abstract class CommercialJson implements CommercialModel {
     @Override
     public abstract String getTitle();
 
-    @Nullable
-    @Override
-    public abstract String getLocation();
-
-    @Nullable
-    @Override
-    public abstract String getDescription();
-
-    @Nullable
-    @Override
-    public abstract Float getCommercialSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getUsableSpace();
-
-    @Nullable
-    @Override
-    public abstract Float getHeatingSpace();
-
-    @Nullable
-    @Override
-    public abstract TenancyJson getTenancy();
-
     /**
      * Converts a {@link CommercialModel} to a {@link CommercialJson}.
      *
@@ -68,15 +44,16 @@ public abstract class CommercialJson implements CommercialModel {
      * @return an immutable {@link CommercialJson} instance.
      */
     public static CommercialJson valueOf(final CommercialModel model) {
-        return ImmutableCommercialJson.builder()
+        return model == null ? null : ImmutableCommercialJson.builder()
                 .id(model.getId())
                 .title(model.getTitle())
                 .location(model.getLocation())
                 .description(model.getDescription())
-                .commercialSpace(model.getCommercialSpace())
-                .usableSpace(model.getUsableSpace())
+                .netFloorArea(model.getNetFloorArea())
+                .usableFloorArea(model.getUsableFloorArea())
+                .technicalServicesArea(model.getTechnicalServicesArea())
+                .trafficArea(model.getTrafficArea())
                 .heatingSpace(model.getHeatingSpace())
-                .tenancy(TenancyJson.valueOf(model.getTenancy()))
                 .build();
     }
 

@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,7 +22,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 
 @QuarkusTest
-class TaskResourceTest extends AbstractProjectResourceTest {
+class TaskResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String TASK_PATH = BASE_PATH + "/tasks";
@@ -136,30 +137,30 @@ class TaskResourceTest extends AbstractProjectResourceTest {
 
     void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL() {
         final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
-                + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
+            + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
 
         final Response res = given()
-                .when()
-                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(json)
-                .post(TASK_PATH, TestData.PROJECT_ID)
-                .thenReturn();
+            .when()
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(TASK_PATH, TestData.PROJECT_ID)
+            .thenReturn();
 
         final String taskId = res.then()
-                .contentType(MediaType.APPLICATION_JSON)
-                .extract().path("id");
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
 
         given()
-                .when()
-                .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .get(TASK_PATH, TestData.PROJECT_ID)
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("tasks.id", Matchers.hasItems(taskId))
-                .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
-                .and().body("tasks.status", Matchers.hasItems("PENDING"));
+            .when()
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(TASK_PATH, TestData.PROJECT_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("tasks.id", Matchers.hasItems(taskId))
+            .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
+            .and().body("tasks.status", Matchers.hasItems("PENDING"));
     }
 
     void getTask_FAILED_userIsNotMember() {
@@ -307,7 +308,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -345,7 +346,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_openTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -383,7 +384,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
@@ -422,7 +423,7 @@ class TaskResourceTest extends AbstractProjectResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @CsvSource({ TASK_PATH + ",TASK"})
+    @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")

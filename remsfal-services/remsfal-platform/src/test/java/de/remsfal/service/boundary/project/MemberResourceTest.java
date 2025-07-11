@@ -1,6 +1,7 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.service.TestData;
+import de.remsfal.service.boundary.AbstractResourceTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
@@ -14,7 +15,7 @@ import java.time.Duration;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class MemberResourceTest extends AbstractProjectResourceTest {
+class MemberResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/members";
     static final String MEMBER_PATH = BASE_PATH + "/{memberId}";
@@ -112,7 +113,7 @@ class MemberResourceTest extends AbstractProjectResourceTest {
             .and().body("members.size()", Matchers.equalTo(1))
             .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1))
             .and().body("members.email", Matchers.hasItem(TestData.USER_EMAIL_1))
-            .and().body("members.isActive", Matchers.hasItem(true))
+            .and().body("members.active", Matchers.hasItem(true))
             .and().body("members.role", Matchers.hasItem("MANAGER"));
     }
 
@@ -130,7 +131,7 @@ class MemberResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.notNullValue())
             .and().body("email", Matchers.equalTo("newUser@example.org"))
-            .and().body("isActive", Matchers.is(false))
+            .and().body("active", Matchers.is(false))
             .and().body("role", Matchers.equalTo("STAFF"));
     }
 
@@ -148,7 +149,7 @@ class MemberResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.USER_ID_2))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2))
-            .and().body("isActive", Matchers.is(true))
+            .and().body("active", Matchers.is(true))
             .and().body("role", Matchers.equalTo("LESSOR"));
     }
 
@@ -166,7 +167,7 @@ class MemberResourceTest extends AbstractProjectResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.USER_ID_1))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_1))
-            .and().body("isActive", Matchers.is(true))
+            .and().body("active", Matchers.is(true))
             .and().body("role", Matchers.equalTo("PROPRIETOR"));
     }
 

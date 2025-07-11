@@ -1,31 +1,23 @@
 package de.remsfal.core.json.project;
 
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentalUnitModel;
-import de.remsfal.core.model.project.TenancyModel;
 import jakarta.annotation.Nullable;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "Encapsulated data of a project tree node")
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public interface RentalUnitNodeDataJson extends RentalUnitModel {
 
-    public enum UnitType {
-        PROPERTY,
-        SITE,
-        BUILDING,
-        APARTMENT,
-        COMMERCIAL,
-        GARAGE
-    }
-
+    @Override
     @Schema(description = "Type of the node (e.g., 'PROPERTY', 'BUILDING')", required = true, examples = "PROPERTY")
     UnitType getType();
 
@@ -35,13 +27,13 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
 
     @Override
     @Nullable
-    @Schema(description = "Description of the node", examples = "A multi-story office building")
-    String getDescription();
+    @Schema(description = "Location of the rental unit", examples = "first floor left")
+    String getLocation();
 
     @Override
     @Nullable
-    @JsonIgnore
-    TenancyModel getTenancy();
+    @Schema(description = "Description of the rental unit", examples = "A multi-story office building")
+    String getDescription();
 
     @Nullable
     @Schema(description = "Name of the tenant associated with this node", examples = "Doe, John")
@@ -50,6 +42,18 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
     @Override
     @Nullable
     @Schema(description = "Usable space in square meters", examples = "350.5")
-    Float getUsableSpace();
+    Float getSpace();
+
+    public static RentalUnitNodeDataJson valueOf(final RentalUnitModel model) {
+        return ImmutableRentalUnitNodeDataJson.builder()
+            .id(model.getId())
+            .type(model.getType())
+            .title(model.getTitle())
+            .location(model.getLocation())
+            .description(model.getDescription())
+            .tenant("") // TODO: does that make sense?
+            .space(model.getSpace())
+            .build();
+    }
 
 }

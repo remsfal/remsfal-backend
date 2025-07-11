@@ -3,13 +3,14 @@ package de.remsfal.core.json;
 import java.util.Locale;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.Zip;
@@ -17,8 +18,8 @@ import de.remsfal.core.validation.Zip;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
-@Value.Style(validationMethod = Value.Style.ValidationMethod.NONE)
+@Immutable
+@ImmutableStyle
 @Schema(description = "The address of a customer, a building or a site")
 @JsonDeserialize(as = ImmutableAddressJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)

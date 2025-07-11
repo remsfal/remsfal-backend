@@ -4,16 +4,19 @@ import java.util.List;
 import java.util.Locale;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A list of countries")
 @JsonDeserialize(as = ImmutableCountryListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
@@ -26,8 +29,7 @@ public abstract class CountryListJson {
         for(Locale country : countries) {
             builder.addCountries(CountryItemJson.valueOf(country));
         }
-        return builder
-            .build();
+        return builder.build();
     }
 
 }

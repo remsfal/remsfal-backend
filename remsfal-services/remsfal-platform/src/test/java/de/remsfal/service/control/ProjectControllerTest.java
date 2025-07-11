@@ -224,7 +224,7 @@ class ProjectControllerTest extends AbstractTest {
         final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .id(user2.getId())
             .email(user2.getEmail())
-            .isActive(true)
+            .active(true)
             .role(MemberRole.MANAGER)
             .build();
         projectController.addProjectMember(user1, project.getId(), member2);
@@ -259,7 +259,7 @@ class ProjectControllerTest extends AbstractTest {
 
         ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_2)
-            .isActive(false)
+            .active(false)
             .role(MemberRole.PROPRIETOR)
             .build();
         member2 = projectController.addProjectMember(user, project.getId(), member2);
@@ -267,7 +267,7 @@ class ProjectControllerTest extends AbstractTest {
         
         ProjectMemberModel member3 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_3)
-            .isActive(true)
+            .active(true)
             .role(MemberRole.MANAGER)
             .build();
         member3 = projectController.addProjectMember(user, project.getId(), member3);
@@ -275,7 +275,7 @@ class ProjectControllerTest extends AbstractTest {
         
         ProjectMemberModel member4 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_4)
-            .isActive(false)
+            .active(false)
             .role(MemberRole.LESSOR)
             .build();
         member4 = projectController.addProjectMember(user, project.getId(), member4);
@@ -301,7 +301,7 @@ class ProjectControllerTest extends AbstractTest {
 
         final ProjectMemberModel member2 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_2)
-            .isActive(false)
+            .active(false)
             .role(MemberRole.LESSOR)
             .build();
         projectController.addProjectMember(user, project.getId(), member2);

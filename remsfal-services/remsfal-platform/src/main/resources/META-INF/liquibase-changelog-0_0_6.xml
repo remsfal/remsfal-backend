@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-0.0.6-building" author="alexander.stanik@htw-berlin.de">
+        <createTable tableName="BUILDING">
+            <column name="ID" type="char(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="PROJECT_ID" type="char(36)">
+                <constraints nullable="false" />
+            </column>
+            <column name="PROPERTY_ID" type="char(36)">
+                <constraints nullable="false" />
+             </column>
+            <column name="TITLE" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="LOCATION" type="varchar(255)" />
+            <column name="DESCRIPTION" type="clob" />
+            <column name="ADDRESS_ID" type="char(36)" />
+            <column name="GROSS_FLOOR_AREA" type="DECIMAL(10, 2)" />
+            <column name="NET_FLOOR_AREA" type="DECIMAL(10, 2)" />
+            <column name="CONSTRUCTION_FLOOR_AREA" type="DECIMAL(10, 2)" />
+            <column name="LIVING_SPACE" type="DECIMAL(10, 2)" />
+            <column name="USABLE_SPACE" type="DECIMAL(10, 2)" />
+            <column name="HEATING_SPACE" type="DECIMAL(10, 2)" />
+            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="FK_BUILDING_PROJECT_ID"
+            baseTableName="BUILDING" baseColumnNames="PROJECT_ID"
+            referencedTableName="PROJECT" referencedColumnNames="ID"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="FK_BUILDING_PROPERTY_ID"
+            baseTableName="BUILDING" baseColumnNames="PROPERTY_ID"
+            referencedTableName="PROPERTY" referencedColumnNames="ID"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="IDX_PROJECT_FK" tableName="BUILDING">
+            <column name="PROJECT_ID" type="char(36)" />
+        </createIndex>
+
+        <createIndex indexName="IDX_PROPERTY_FK" tableName="BUILDING">
+            <column name="PROPERTY_ID" type="char(36)" />
+        </createIndex>
+
+        <createTable tableName="BUILDING_RENT">
+            <column name="TENANCY_ID" type="char(36)">
+                <constraints nullable="false" />
+            </column>
+            <column name="BUILDING_ID" type="char(36)">
+                <constraints nullable="false" />
+            </column>
+            <column name="FIRST_PAYMENT" type="date" />
+            <column name="LAST_PAYMENT" type="date" />
+            <column name="BILLING_CYCLE" type="ENUM('WEEKLY', 'MONTHLY', 'YEARLY')" defaultValue="MONTHLY">
+                <constraints nullable="false" />
+            </column>
+            <column name="BASIC_RENT" type="decimal(10, 2)" />
+            <column name="OPERATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
+            <column name="HEATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
+            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="FK_BUILDING_RENT_TENANCY_ID"
+            baseTableName="BUILDING_RENT" baseColumnNames="TENANCY_ID"
+            referencedTableName="TENANCY" referencedColumnNames="ID"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="FK_BUILDING_RENT_BUILDING_ID"
+            baseTableName="BUILDING_RENT" baseColumnNames="BUILDING_ID"
+            referencedTableName="BUILDING" referencedColumnNames="ID"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="IDX_TENANCY_FK" tableName="BUILDING_RENT">
+            <column name="TENANCY_ID" type="char(36)" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

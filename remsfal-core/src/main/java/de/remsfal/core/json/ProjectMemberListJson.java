@@ -1,14 +1,14 @@
 package de.remsfal.core.json;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ProjectMemberModel;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -17,7 +17,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A list of project members")
 @JsonDeserialize(as = ImmutableProjectMemberListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
@@ -27,11 +28,11 @@ public abstract class ProjectMemberListJson {
     public abstract List<ProjectMemberJson> getMembers();
 
     public static ProjectMemberListJson valueOfSet(Set<? extends ProjectMemberModel> models) {
-        List<ProjectMemberJson> members = new ArrayList<>();
+        final ImmutableProjectMemberListJson.Builder builder = ImmutableProjectMemberListJson.builder();
         for (ProjectMemberModel model : models) {
-            members.add(ProjectMemberJson.valueOf(model));
+            builder.addMembers(ProjectMemberJson.valueOf(model));
         }
-        return ImmutableProjectMemberListJson.builder().members(members).build();
+        return builder.build();
     }
 
 }

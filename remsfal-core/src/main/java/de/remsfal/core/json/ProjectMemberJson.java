@@ -8,12 +8,13 @@ import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -21,7 +22,8 @@ import de.remsfal.core.validation.PostValidation;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "Project member information in context of a project")
 @JsonDeserialize(as = ImmutableProjectMemberJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
@@ -59,7 +61,7 @@ public abstract class ProjectMemberJson implements ProjectMemberModel {
             .id(model.getId())
             .name(model.getName())
             .email(model.getEmail())
-            .isActive(model.isActive())
+            .active(model.isActive())
             .role(model.getRole())
             .build();
     }
