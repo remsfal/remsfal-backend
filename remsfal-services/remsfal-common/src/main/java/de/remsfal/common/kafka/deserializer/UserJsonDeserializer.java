@@ -1,4 +1,4 @@
-package deserializer;
+package de.remsfal.common.kafka.deserializer;
 
 import de.remsfal.core.json.UserJson;
 import io.quarkus.kafka.client.serialization.ObjectMapperDeserializer;
