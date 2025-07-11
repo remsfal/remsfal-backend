@@ -98,14 +98,23 @@ class BuildingResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body(TestData.buildingBuilder2().build())
+            .body(TestData.buildingBuilder2().id(null).build())
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
+            .body("id", Matchers.notNullValue())
+            .body("type", Matchers.equalTo("BUILDING"))
             .body("title", Matchers.equalTo(TestData.BUILDING_TITLE_2))
+            .body("location", Matchers.nullValue())
             .body("description", Matchers.equalTo(TestData.BUILDING_DESCRIPTION_2))
-            .body("usableSpace", Matchers.equalTo(15.5f))
-            .body("location", Matchers.equalTo(TestData.STORAGE_LOCATION_2));
+            .body("space", Matchers.equalTo(430.5f))
+            .body("grossFloorArea", Matchers.equalTo(430.5f))
+            .body("netFloorArea", Matchers.equalTo(400.0f))
+            .body("constructionFloorArea", Matchers.equalTo(70.5f))
+            .body("livingSpace", Matchers.nullValue())
+            .body("usableSpace", Matchers.nullValue())
+            .body("heatingSpace", Matchers.equalTo(420.75f))
+            .body("address", Matchers.nullValue());
     }
 
     @Test

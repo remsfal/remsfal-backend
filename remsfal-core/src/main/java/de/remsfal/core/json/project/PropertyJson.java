@@ -7,18 +7,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.PropertyModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A property")
 @JsonDeserialize(as = ImmutablePropertyJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)

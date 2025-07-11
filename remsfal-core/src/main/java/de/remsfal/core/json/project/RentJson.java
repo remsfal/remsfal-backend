@@ -9,18 +9,20 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A rent of a tenancy")
 @JsonDeserialize(as = ImmutableRentJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)

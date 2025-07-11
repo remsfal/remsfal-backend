@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.immutable.ImmutableStyle;
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.validation.PostValidation;
