@@ -23,7 +23,7 @@
     </modules>
 
     <properties>
-        <quarkus.version>3.23.4</quarkus.version>
+        <quarkus.version>3.24.2</quarkus.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
     </properties>
@@ -41,10 +41,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-messaging-kafka</artifactId>
-        </dependency>
         <dependency>
             <groupId>de.remsfal</groupId>
             <artifactId>remsfal-core</artifactId>
@@ -66,6 +62,14 @@
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-kafka-client</artifactId>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
@@ -86,6 +90,11 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-kafka-companion</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
