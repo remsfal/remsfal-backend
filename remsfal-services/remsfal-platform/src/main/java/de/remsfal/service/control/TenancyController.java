@@ -1,7 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.tenancy.TenancyItemJson;
-import de.remsfal.core.json.tenancy.TenancyJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.TenancyModel;
 import de.remsfal.service.entity.dao.TenancyRepository;
@@ -12,7 +10,6 @@ import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.logging.Logger;
