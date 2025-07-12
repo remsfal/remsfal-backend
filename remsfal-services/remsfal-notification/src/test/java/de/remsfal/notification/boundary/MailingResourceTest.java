@@ -9,7 +9,6 @@ import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import java.io.IOException;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -40,7 +39,7 @@ class MailingResourceTest {
     }
 
     @Test
-    void testTextMail() throws IOException {
+    void testTextMail() {
         // call a REST endpoint that sends email
         given()
                 .queryParam("to", "test@example.com")

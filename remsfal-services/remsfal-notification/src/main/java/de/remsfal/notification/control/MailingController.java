@@ -79,7 +79,7 @@ public class MailingController {
     }
 
     private void send(final Mail mail) {
-        mailer.send(mail);;
+        mailer.send(mail);
     }
 
 }
