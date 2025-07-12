@@ -18,7 +18,7 @@ QUARKUS_MAILER_PASSWORD=<your password>
 QUARKUS_MAILER_HOST=mail.htw-berlin.de
 QUARKUS_MAILER_PORT=465
 QUARKUS_MAILER_SSL=true
-QUARKUS_MAILER_MOCK=false
+_DEV_QUARKUS_MAILER_MOCK=false
 ```
 > **_NOTE:_**  Use your HTW account username (e.g. s0000001 or mustermann; but not your email alias FirstName.LastName).
 
