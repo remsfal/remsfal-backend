@@ -42,6 +42,7 @@ class StorageResourceTest extends AbstractResourceTest {
         " \"usableSpace\": " + 12.8f + "," +
         " \"location\": \"" + TestData.STORAGE_LOCATION + "\" }";
 
+    @Override
     @BeforeEach
     protected void setupTestUsers() {
         super.setupTestUsers();
@@ -122,7 +123,7 @@ class StorageResourceTest extends AbstractResourceTest {
                 storageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
+            .body("title", Matchers.equalTo(TestData.STORAGE_TITLE));
     }
 
     @Test
@@ -131,7 +132,7 @@ class StorageResourceTest extends AbstractResourceTest {
         final String propertyId = createProperty(projectId);
         final String buildingId = createBuilding(projectId, propertyId);
 
-        final String storageId = given()
+        given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
@@ -139,17 +140,10 @@ class StorageResourceTest extends AbstractResourceTest {
             .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
-            .extract().path("id");
-
-        given()
-            .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
-                storageId)
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
+            .body("title", Matchers.equalTo(TestData.STORAGE_TITLE))
+            .body("description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION))
+            .body("usableSpace", Matchers.equalTo(12.8f))
+            .body("location", Matchers.equalTo(TestData.STORAGE_LOCATION));
     }
 
     @Test
