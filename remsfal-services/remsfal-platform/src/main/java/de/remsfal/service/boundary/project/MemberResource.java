@@ -10,6 +10,9 @@ import jakarta.inject.Inject;
 
 import java.util.Set;
 
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
 @RequestScoped
 public class MemberResource extends ProjectSubResource implements MemberEndpoint {
 

@@ -12,6 +12,8 @@ import jakarta.ws.rs.core.Response;
 import java.net.URI;
 
 /**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ *
  * Resource for managing Commercial units via the API.
  */
 @RequestScoped
