@@ -2,8 +2,6 @@ package de.remsfal.service.entity.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,8 +14,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Email;
 
 import de.remsfal.core.model.CustomerModel;
@@ -42,8 +38,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     private String email;
 
     @Column(name = "AUTHENTICATED_AT")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date authenticatedAt;
+    private LocalDateTime authenticatedAt;
 
     @Column(name = "FIRST_NAME")
     private String firstName;
@@ -89,11 +84,11 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         this.email = email;
     }
 
-    public Date getAuthenticatedAt() {
+    public LocalDateTime getAuthenticatedAt() {
         return authenticatedAt;
     }
 
-    public void setAuthenticatedAt(final Date authenticatedAt) {
+    public void setAuthenticatedAt(final LocalDateTime authenticatedAt) {
         this.authenticatedAt = authenticatedAt;
     }
 
@@ -161,21 +156,12 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Override
     public LocalDate getRegisteredDate() {
-        return this.getCreatedAt()
-            .toInstant()
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
+        return this.getCreatedAt().toLocalDate();
     }
 
     @Override
     public LocalDateTime getLastLoginDate() {
-        if (authenticatedAt == null) {
-            return null;
-        }
-        return authenticatedAt
-            .toInstant()
-            .atZone(ZoneId.systemDefault())
-            .toLocalDateTime();
+        return authenticatedAt;
     }
 
     @Override

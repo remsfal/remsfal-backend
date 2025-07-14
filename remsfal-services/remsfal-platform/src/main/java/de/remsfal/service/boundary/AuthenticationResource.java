@@ -57,7 +57,6 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Override
     @Timed(name = "checksTimerLogin", unit = MetricUnits.MILLISECONDS)
-    @Counted(name = "countedLogin")
     public Response login(final String route) {
         final String redirectUri = getAbsoluteUri().toASCIIString().replace("/login", "/session");
         final URI redirectUrl = authenticator.getAuthorizationCodeURI(redirectUri, route);

@@ -28,9 +28,9 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "TENANT",
-            joinColumns = @JoinColumn(name = "TENANCY_ID"),
-            inverseJoinColumns = @JoinColumn(name = "USER_ID")
+        name = "TENANT",
+        joinColumns = @JoinColumn(name = "TENANCY_ID"),
+        inverseJoinColumns = @JoinColumn(name = "USER_ID")
     )
     private List<UserEntity> tenants;
 

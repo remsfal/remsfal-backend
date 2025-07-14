@@ -178,17 +178,17 @@ class TenancyResourceTest extends AbstractResourceTest {
             .and().body("tenancies[0].name", Matchers.equalTo(TestData.SITE_TITLE_1))
             .and().body("tenancies[0].rentalType", Matchers.equalTo("SITE"))
             .and().body("tenancies[0].rentalTitle", Matchers.equalTo(TestData.SITE_TITLE_1))
-            .and().body("tenancies[0].isActive", Matchers.equalTo(Boolean.TRUE))
+            .and().body("tenancies[0].active", Matchers.equalTo(Boolean.TRUE))
             .and().body("tenancies[1].id", Matchers.equalTo(TestData.TENANCY_ID_2 + "/buildings/" + TestData.BUILDING_ID_2))
             .and().body("tenancies[1].name", Matchers.equalTo(TestData.BUILDING_TITLE_2))
             .and().body("tenancies[1].rentalType", Matchers.equalTo("BUILDING"))
             .and().body("tenancies[1].rentalTitle", Matchers.equalTo(TestData.BUILDING_TITLE_2))
-            .and().body("tenancies[1].isActive", Matchers.equalTo(Boolean.TRUE))
+            .and().body("tenancies[1].active", Matchers.equalTo(Boolean.TRUE))
             .and().body("tenancies[2].id", Matchers.equalTo(TestData.TENANCY_ID_3 + "/properties/" + TestData.PROPERTY_ID_2))
             .and().body("tenancies[2].name", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
             .and().body("tenancies[2].rentalType", Matchers.equalTo("PROPERTY"))
             .and().body("tenancies[2].rentalTitle", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("tenancies[2].isActive", Matchers.equalTo(Boolean.FALSE));
+            .and().body("tenancies[2].active", Matchers.equalTo(Boolean.FALSE));
     }
 
     @Test

@@ -1,7 +1,5 @@
 package de.remsfal.core.model.project;
 
-import java.util.Date;
-
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -42,9 +40,5 @@ public interface TaskModel {
     String getRelatedTo();
 
     String getDuplicateOf();
-
-    Date getCreatedAt();
-
-    Date getModifiedAt();
 
 }

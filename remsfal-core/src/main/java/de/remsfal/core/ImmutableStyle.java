@@ -1,8 +1,10 @@
-package de.remsfal.core.immutable;
+package de.remsfal.core;
 
 import org.immutables.value.Value;
 
-/*
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ *
  * add boolean getters for detection,
  * remove generated builder from methods as they can't convert nested Objects to immutables
  * (add custom from methods to immutables definition instead, that do convert nested models)

@@ -5,6 +5,7 @@ import static io.restassured.RestAssured.given;
 import java.time.Duration;
 import java.util.UUID;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -97,22 +98,23 @@ class BuildingResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
-                " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
-                " \"title\":\"" + TestData.BUILDING_TITLE_1 + "\"," +
-                " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
-                " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
-                " \"address\": {" +
-                "     \"street\": \"" + TestData.ADDRESS_STREET_1 + "\"," +
-                "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
-                "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
-                "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
-                " } }")
+            .body(TestData.buildingBuilder2().id(null).build())
             .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
-            .extract().path("id");
+            .body("id", Matchers.notNullValue())
+            .body("type", Matchers.equalTo("BUILDING"))
+            .body("title", Matchers.equalTo(TestData.BUILDING_TITLE_2))
+            .body("location", Matchers.nullValue())
+            .body("description", Matchers.equalTo(TestData.BUILDING_DESCRIPTION_2))
+            .body("space", Matchers.equalTo(430.5f))
+            .body("grossFloorArea", Matchers.equalTo(430.5f))
+            .body("netFloorArea", Matchers.equalTo(400.0f))
+            .body("constructionFloorArea", Matchers.equalTo(70.5f))
+            .body("livingSpace", Matchers.nullValue())
+            .body("usableSpace", Matchers.nullValue())
+            .body("heatingSpace", Matchers.equalTo(420.75f))
+            .body("address", Matchers.nullValue());
     }
 
     @Test

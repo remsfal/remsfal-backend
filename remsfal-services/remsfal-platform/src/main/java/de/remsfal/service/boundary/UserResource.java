@@ -10,7 +10,6 @@ import de.remsfal.core.model.CustomerModel;
 import de.remsfal.service.control.UserController;
 
 import org.eclipse.microprofile.metrics.annotation.Timed;
-import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.MetricUnits;
 
 /**

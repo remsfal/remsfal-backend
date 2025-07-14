@@ -1,16 +1,18 @@
 package de.remsfal.core.json.project;
 
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentalUnitModel;
 import jakarta.annotation.Nullable;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "Encapsulated data of a project tree node")
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public interface RentalUnitNodeDataJson extends RentalUnitModel {

@@ -53,13 +53,12 @@
             <version>${google.version}</version>
         </dependency>
 
-        <!-- Bugfix dependencies -->
+        <!-- BUGFIX: Remove me -->
         <dependency>
-            <!-- JDK 24 support -->
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>1.17.6</version>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-multipart</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
             <artifactId>quarkus-zeebe</artifactId>
@@ -84,11 +83,6 @@
             <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
         </dependency>
         <!-- TEST dependencies -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-test-kafka-companion</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
             <artifactId>quarkus-zeebe-test</artifactId>

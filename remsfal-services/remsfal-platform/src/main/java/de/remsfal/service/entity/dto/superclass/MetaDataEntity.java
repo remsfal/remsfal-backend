@@ -4,13 +4,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -19,36 +16,29 @@ import java.util.Optional;
 public abstract class MetaDataEntity {
 
     @Column(name = "CREATED_AT", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @Version
     @Column(name = "MODIFIED_AT", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date modifiedAt;
+    private LocalDateTime modifiedAt;
 
     @PrePersist
     public void created() {
-        final Date now = new Date();
-        createdAt = now;
-        modifiedAt = now;
+        createdAt = LocalDateTime.now();
+        modifiedAt = createdAt;
     }
 
     @PreUpdate
     public void modified() {
-        modifiedAt = new Date();
+        modifiedAt = LocalDateTime.now();
     }
 
-    public Date getCreatedAt() {
-        return cloneDate(createdAt);
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public Date getModifiedAt() {
-        return cloneDate(modifiedAt);
-    }
-
-    private Date cloneDate(final Date date) {
-        return (Date) Optional.ofNullable(date).map(Date::clone).orElse(null);
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
     }
 
     @Override

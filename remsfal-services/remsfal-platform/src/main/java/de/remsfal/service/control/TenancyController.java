@@ -12,7 +12,6 @@ import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.logging.Logger;

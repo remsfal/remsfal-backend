@@ -4,17 +4,19 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentalUnitModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.TenancyModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Value.Immutable
+@Immutable
+@ImmutableStyle
 @Schema(description = "A tenancy item with basic information from a tenant's perspective")
 @JsonDeserialize(as = ImmutableTenancyItemJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
@@ -39,7 +41,7 @@ public abstract class TenancyItemJson {
             .name(unitModel.getTitle())
             .rentalType(unitModel.getType())
             .rentalTitle(unitModel.getTitle())
-            .isActive(tenancyModel.isActive())
+            .active(tenancyModel.isActive())
             .build();
     }
 
