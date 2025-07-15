@@ -11,16 +11,19 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
 @RequestScoped
-public class GarageResource extends ProjectSubResource implements StorageEndpoint {
+public class StorageResource extends ProjectSubResource implements StorageEndpoint {
 
     @Inject
     StorageController controller;
 
     @Override
-    public Response createGarage(final String projectId, final String buildingId, final StorageJson garage) {
+    public Response createStorage(final String projectId, final String buildingId, final StorageJson storage) {
         checkWritePermissions(projectId);
-        final StorageModel model = controller.createStorage(projectId, buildingId, garage);
+        final StorageModel model = controller.createStorage(projectId, buildingId, storage);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
@@ -29,23 +32,23 @@ public class GarageResource extends ProjectSubResource implements StorageEndpoin
     }
 
     @Override
-    public StorageJson getGarage(final String projectId, final String garageId) {
+    public StorageJson getStorage(final String projectId, final String storageId) {
         checkReadPermissions(projectId);
-        final StorageModel model = controller.getStorage(projectId, garageId);
+        final StorageModel model = controller.getStorage(projectId, storageId);
         return StorageJson.valueOf(model);
     }
 
     @Override
-    public StorageJson updateGarage(final String projectId, final String garageId, final StorageJson garage) {
+    public StorageJson updateStorage(final String projectId, final String storageId, final StorageJson storage) {
         checkWritePermissions(projectId);
-        final StorageModel model = controller.updateStorage(projectId, garageId, garage);
+        final StorageModel model = controller.updateStorage(projectId, storageId, storage);
         return StorageJson.valueOf(model);
     }
 
     @Override
-    public void deleteGarage(final String projectId, final String garageId) {
+    public void deleteStorage(final String projectId, final String storageId) {
         checkWritePermissions(projectId);
-        controller.deleteStorage(projectId, garageId);
+        controller.deleteStorage(projectId, storageId);
     }
 
 }

@@ -23,7 +23,7 @@ import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.BuildingResource;
 import de.remsfal.service.boundary.project.CommercialResource;
 import de.remsfal.service.boundary.project.ContractorResource;
-import de.remsfal.service.boundary.project.GarageResource;
+import de.remsfal.service.boundary.project.StorageResource;
 import de.remsfal.service.boundary.project.MemberResource;
 import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.boundary.project.SiteResource;
@@ -70,7 +70,7 @@ public class ProjectResource implements ProjectEndpoint {
     Instance<CommercialResource> commercialResource;
 
     @Inject
-    Instance<GarageResource> garageResource;
+    Instance<StorageResource> storageResource;
 
     @Inject
     Instance<TaskResource> taskResource;
@@ -147,8 +147,8 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public GarageResource getGarageResource() {
-        return resourceContext.initResource(garageResource.get());
+    public StorageResource getStorageResource() {
+        return resourceContext.initResource(storageResource.get());
     }
 
     @Override

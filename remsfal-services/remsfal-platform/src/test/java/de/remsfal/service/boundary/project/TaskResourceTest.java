@@ -27,6 +27,7 @@ class TaskResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String TASK_PATH = BASE_PATH + "/tasks";
 
+    @Override
     @BeforeEach
     protected void setupTestProjects() {
         super.setupTestUsers();

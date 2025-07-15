@@ -11,6 +11,9 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
 @RequestScoped
 public class ApartmentResource extends ProjectSubResource implements ApartmentEndpoint {
 

@@ -7,7 +7,7 @@ import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
-import de.remsfal.service.entity.dao.GarageRepository;
+import de.remsfal.service.entity.dao.StorageRepository;
 import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dao.SiteRepository;
 import de.remsfal.service.entity.dto.BuildingEntity;
@@ -45,7 +45,7 @@ public class PropertyController {
     CommercialRepository commercialRepository;
 
     @Inject
-    GarageRepository garageRepository;
+    StorageRepository storageRepository;
 
     @Transactional
     public PropertyModel createProperty(final String projectId, final PropertyModel property) {
@@ -174,8 +174,8 @@ public class PropertyController {
             .map(unit -> RentalUnitTreeNodeJson.valueOf(unit))
             .toList();
         
-        List<RentalUnitTreeNodeJson> garageTree = garageRepository
-            .findAllGarages(building.getProjectId(), building.getId())
+        List<RentalUnitTreeNodeJson> storageTree = storageRepository
+            .findAllStorages(building.getProjectId(), building.getId())
             .stream()
             .map(unit -> RentalUnitTreeNodeJson.valueOf(unit))
             .toList();
@@ -185,7 +185,7 @@ public class PropertyController {
             .data(data)
             .addAllChildren(apartmentTree)
             .addAllChildren(commercialTree)
-            .addAllChildren(garageTree)
+            .addAllChildren(storageTree)
             .build();
     }
 
