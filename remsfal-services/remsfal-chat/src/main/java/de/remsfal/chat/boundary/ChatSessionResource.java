@@ -429,7 +429,8 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                         .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
                     fileName = extractFileNameFromUrl(fileUrl);
-                    ocrEventProducer.sendOcrRequest(bucketName, fileName, sessionId, fileMetadataEntity.getMessageId().toString());
+                    ocrEventProducer.sendOcrRequest(bucketName, fileName, sessionId,
+                        fileMetadataEntity.getMessageId().toString());
                     String mergedJson = String.format(
                         "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
                             " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
