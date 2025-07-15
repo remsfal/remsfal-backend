@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>New Membership</title>
-</head>
-<body>
-<p>Hello {name},</p>
-<p>You have been added to a new project.</p>
-<p><a href="{link}">Go to your project</a></p>
-<p>Best regards,<br/>Your Remsfal Team</p>
-</body>
-</html>
-
+{#let showButton?=true}
+{#let buttonText?=new-membership_project}
+{#include base}
+  {#title}{new-membership_title}{/title}
+  {#introduction}{new-membership_introduction}{/introduction}
+{/include}

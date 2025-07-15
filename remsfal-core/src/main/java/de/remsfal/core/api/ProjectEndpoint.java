@@ -133,7 +133,7 @@ public interface ProjectEndpoint {
     CommercialEndpoint getCommercialResource();
 
     @Path("/{projectId}/" + StorageEndpoint.SERVICE)
-    StorageEndpoint getGarageResource();
+    StorageEndpoint getStorageResource();
 
     @Path("/{projectId}/" + TaskEndpoint.SERVICE)
     TaskEndpoint getTaskResource();

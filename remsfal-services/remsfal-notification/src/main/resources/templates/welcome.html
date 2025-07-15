@@ -1,15 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Welcome to the Remsfal Project</title>
-</head>
-<body>
-<p>Hi {name},</p>
-<p>Welcome to Remsfal! 🎉</p>
-{#if link}
-<p>Confirmation link: <a href="{link}">{link}</a></p>
-{/if}
-<p>Best regards,<br/>Your Remsfal Team</p>
-</body>
-</html>
-
+{#let showButton?=true}
+{#let buttonText?=welcome_confirmation}
+{#include base}
+  {#title}{welcome_title}{/title}
+  {#introduction}{welcome_introduction}{/introduction}
+{/include}

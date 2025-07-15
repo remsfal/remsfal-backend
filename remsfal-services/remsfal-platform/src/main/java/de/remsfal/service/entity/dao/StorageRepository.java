@@ -11,22 +11,22 @@ import java.util.Optional;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @ApplicationScoped
-public class GarageRepository extends AbstractRepository<StorageEntity> {
+public class StorageRepository extends AbstractRepository<StorageEntity> {
 
-    public List<StorageEntity> findAllGarages(final String projectId, final String buildingId) {
+    public List<StorageEntity> findAllStorages(final String projectId, final String buildingId) {
         return list("projectId = :projectId and buildingId = :buildingId",
             Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId));
     }
 
-    public Optional<StorageEntity> findByIds(final String projectId, final String garageId) {
+    public Optional<StorageEntity> findByIds(final String projectId, final String storageId) {
         return find("id = :id and projectId = :projectId",
-            Parameters.with(PARAM_ID, garageId).and(PARAM_PROJECT_ID, projectId))
+            Parameters.with(PARAM_ID, storageId).and(PARAM_PROJECT_ID, projectId))
                 .singleResultOptional();
     }
 
-    public long removeGarageByIds(final String projectId, final String garageId) {
+    public long removeStorageByIds(final String projectId, final String storageId) {
         return delete("id = :id and projectId = :projectId",
-            Parameters.with(PARAM_ID, garageId).and(PARAM_PROJECT_ID, projectId));
+            Parameters.with(PARAM_ID, storageId).and(PARAM_PROJECT_ID, projectId));
     }
 
 }

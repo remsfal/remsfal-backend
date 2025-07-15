@@ -25,7 +25,7 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     Instance<CommercialResource> commercialResource;
 
     @Inject
-    Instance<GarageResource> garageResource;
+    Instance<StorageResource> storageResource;
 
     @Override
     public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
@@ -70,8 +70,8 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     }
 
     @Override
-    public GarageResource getGarageResource() {
-        return resourceContext.initResource(garageResource.get());
+    public StorageResource getStorageResource() {
+        return resourceContext.initResource(storageResource.get());
     }
 
 }
