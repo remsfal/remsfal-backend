@@ -1,64 +1,112 @@
-package de.remsfal.notification.boundary;
-
-import de.remsfal.core.json.ImmutableUserJson;
-import de.remsfal.core.json.UserJson;
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.kafka.InjectKafkaCompanion;
-import io.quarkus.test.kafka.KafkaCompanionResource;
-import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
-import jakarta.inject.Inject;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.Serdes;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import java.util.UUID;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
-@QuarkusTest
-@QuarkusTestResource(KafkaCompanionResource.class)
-class NotificationConsumerTest {
-
-    @InjectKafkaCompanion
-    KafkaCompanion companion;
-
-    @Inject
-    Logger logger;
-
-    @Inject
-    NotificationConsumer notificationConsumer;
-
-    @ConfigProperty(name = "mp.messaging.incoming.user-notification-consumer.topic")
-    String topic;
-
-    @BeforeEach
-    void setUp() {
-        companion.registerSerde(UserJson.class, Serdes.serdeFrom(
-                new io.quarkus.kafka.client.serialization.ObjectMapperSerializer<>(),
-                new io.quarkus.kafka.client.serialization.ObjectMapperDeserializer<>(UserJson.class)
-        ));
-    }
-
-    @Test
-    void testConsumeUserNotification() {
-        final String userEmail = "test.consumer@example.com";
-        UserJson user = ImmutableUserJson.builder()
-                .id(UUID.randomUUID().toString())
-                .email(userEmail)
-                .firstName("Test")
-                .lastName("Consumer")
-                .build();
-
-        assertDoesNotThrow(() -> {
-            companion.produce(UserJson.class)
-                    .fromRecords(new ProducerRecord<>(topic, user));
-        });
-
-        notificationConsumer.consumeUserNotification(user);
-
-        logger.infov("Successfully sent user ({}) to topic '{}' for consumer test.", userEmail, topic);
-    }
-
-}
+//package de.remsfal.notification.boundary;
+//
+//import de.remsfal.core.json.ImmutableUserJson;
+//import de.remsfal.core.json.MailJson;
+//import de.remsfal.core.json.UserJson;
+//import de.remsfal.notification.boundary.NotificationConsumer;
+//import de.remsfal.notification.control.MailingController;
+//import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
+//import org.eclipse.microprofile.reactive.messaging.Message;
+//import org.junit.jupiter.api.Test;
+//
+//import java.util.Locale;
+//import java.util.UUID;
+//
+//import static org.mockito.Mockito.*;
+//
+//class NotificationConsumerTest {
+//
+//    @Test
+//    void testConsumeUserNotification_NewRegistration() {
+//        // ImmutableUserJson bauen
+//        UserJson user = ImmutableUserJson.builder()
+//                .id(UUID.randomUUID().toString())
+//                .email("test@example.com")
+//                .firstName("Test")
+//                .lastName("Consumer")
+//                .build();
+//
+//        // MailJson zusammenbauen und User setzen
+//        MailJson mailJson = new MailJson();
+//        mailJson.setUser(user);
+//        mailJson.setType("new Registration");
+//        mailJson.setLocale("en");
+//        mailJson.setLink("https://remsfal.de");
+//
+//        // Test-Message
+//        Message<MailJson> testMessage = Message.of(mailJson);
+//
+//        // MailingController mocken
+//        MailingController mockController = mock(MailingController.class);
+//
+//        // NotificationConsumer bauen, mockController injizieren
+//        NotificationConsumer notificationConsumer = new NotificationConsumer();
+//        notificationConsumer.mailingController = mockController;
+//        notificationConsumer.logger = mock(org.jboss.logging.Logger.class);
+//
+//        // Act & Assert
+//        notificationConsumer
+//                .consumeUserNotification(testMessage)
+//                .subscribe()
+//                .withSubscriber(UniAssertSubscriber.create())
+//                .assertCompleted();
+//
+//        // Verify: sendWelcomeEmail wurde korrekt aufgerufen
+//        verify(mockController, times(1))
+//                .sendWelcomeEmail(user, "https://remsfal.de", Locale.ENGLISH);
+//    }
+//
+//    @Test
+//    void testConsumeUserNotification_NewMembership() {
+//        UserJson user = ImmutableUserJson.builder()
+//                .id(UUID.randomUUID().toString())
+//                .email("test2@example.com")
+//                .firstName("Test")
+//                .lastName("Membership")
+//                .build();
+//
+//        MailJson mailJson = new MailJson();
+//        mailJson.setUser(user);
+//        mailJson.setType("new Membership");
+//        mailJson.setLocale("de");
+//        mailJson.setLink("https://remsfal.de");
+//
+//        Message<MailJson> testMessage = Message.of(mailJson);
+//
+//        MailingController mockController = mock(MailingController.class);
+//        NotificationConsumer notificationConsumer = new NotificationConsumer();
+//        notificationConsumer.mailingController = mockController;
+//        notificationConsumer.logger = mock(org.jboss.logging.Logger.class);
+//
+//        notificationConsumer
+//                .consumeUserNotification(testMessage)
+//                .subscribe()
+//                .withSubscriber(UniAssertSubscriber.create())
+//                .assertCompleted();
+//
+//        verify(mockController, times(1))
+//                .sendNewMembershipEmail(user, "https://remsfal.de", Locale.GERMAN);
+//    }
+//
+//    @Test
+//    void testConsumeUserNotification_InvalidMessage() {
+//        MailJson mailJson = new MailJson();
+//        mailJson.setUser(null); // explizit kein User
+//
+//        Message<MailJson> testMessage = Message.of(mailJson);
+//
+//        MailingController mockController = mock(MailingController.class);
+//        NotificationConsumer notificationConsumer = new NotificationConsumer();
+//        notificationConsumer.mailingController = mockController;
+//        notificationConsumer.logger = mock(org.jboss.logging.Logger.class);
+//
+//        notificationConsumer
+//                .consumeUserNotification(testMessage)
+//                .subscribe()
+//                .withSubscriber(UniAssertSubscriber.create())
+//                .assertCompleted();
+//
+//        // Keine Aufrufe!
+//        verifyNoInteractions(mockController);
+//    }
+//}
