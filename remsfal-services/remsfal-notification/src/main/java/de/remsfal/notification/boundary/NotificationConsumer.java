@@ -25,11 +25,6 @@ public class NotificationConsumer {
     public CompletionStage<Void> consumeUserNotification(Message<MailJson> msg) {
         MailJson mail = msg.getPayload();
 
-        if (mail == null || mail.getUser() == null) {
-            logger.warn("Received invalid mail notification: missing user.");
-            return msg.ack();
-        }
-
         String email = mail.getUser().getEmail();
         String type = mail.getType();
         String link = mail.getLink();

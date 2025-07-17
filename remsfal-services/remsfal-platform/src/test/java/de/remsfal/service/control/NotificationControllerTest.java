@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.MailJson;
 import de.remsfal.core.model.CustomerModel;
+import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.*;
 
+@QuarkusTest
 class NotificationControllerTest {
 
     private NotificationController notificationController;
