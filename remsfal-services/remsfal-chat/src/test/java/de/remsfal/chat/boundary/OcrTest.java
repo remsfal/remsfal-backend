@@ -27,8 +27,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -127,6 +128,40 @@ public class OcrTest {
                         verify(chatMessageController, atLeastOnce())
                                 .updateTextChatMessage(eq(sessionId), eq(messageId), eq("Das hier ist ein Text"))
                 );
+    }
+
+    @Test
+    void testNullInput_Exception() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionResource.extractFileNameFromUrl(null)
+        );
+        assertEquals("File URL cannot be null or empty", ex.getMessage());
+    }
+
+    @Test
+    void testBlankInput_Exception() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionResource.extractFileNameFromUrl(" ")
+        );
+        assertEquals("File URL cannot be null or empty", ex.getMessage());
+    }
+
+    @Test
+    void testNoSlashInUrl_Exception() {
+        String input = "filename.png";
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionResource.extractFileNameFromUrl(input)
+        );
+        assertEquals("Invalid file URL format: " + input, ex.getMessage());
+    }
+
+    @Test
+    void testEndsWithSlash_Exception() {
+        String input = "https://example.com/files/";
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionResource.extractFileNameFromUrl(input)
+        );
+        assertEquals("Invalid file URL format: " + input, ex.getMessage());
     }
 
     private MultipartFormDataInput createMultipartFormDataInput(String fileName, String contentType, byte[] content)
