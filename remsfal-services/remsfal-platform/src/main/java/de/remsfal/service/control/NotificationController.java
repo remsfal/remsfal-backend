@@ -20,10 +20,9 @@ public class NotificationController {
     Emitter<MailJson> notificationEmitter;
     //TODO: Link zum Projekt muss implementiert werden
 
-    public void informUserAboutProjectMembership(final CustomerModel user) {
+    private void sendUserNotification(CustomerModel user, String type) {
         String link = "remsfal.de";
         String locale = "de";
-        String type = "new Membership";
         UserJson json = UserJson.valueOf(user);
 
         logger.infov("Sending user-notification for {0}", json.getEmail());
@@ -37,21 +36,11 @@ public class NotificationController {
         notificationEmitter.send(mail);
     }
 
+    public void informUserAboutProjectMembership(final CustomerModel user) {
+        sendUserNotification(user, "new Membership");
+    }
 
     public void informUserAboutRegistration(final CustomerModel user) {
-        String link = "remsfal.de";
-        String locale = "de";
-        String type = "new Registration";
-        UserJson json = UserJson.valueOf(user);
-
-        logger.infov("Sending user-notification for {0}", json.getEmail());
-
-        MailJson mail = new MailJson();
-        mail.setUser(json);
-        mail.setLocale(locale);
-        mail.setType(type);
-        mail.setLink(link);
-
-        notificationEmitter.send(mail);
+        sendUserNotification(user, "new Registration");
     }
 }
