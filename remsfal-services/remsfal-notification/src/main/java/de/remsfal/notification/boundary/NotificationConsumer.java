@@ -7,10 +7,10 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
-import io.smallrye.mutiny.Uni;
 
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 @ApplicationScoped
 public class NotificationConsumer {
@@ -22,12 +22,12 @@ public class NotificationConsumer {
     MailingController mailingController;
 
     @Incoming("user-notification-consumer")
-    public Uni<Void> consumeUserNotification(Message<MailJson> msg) {
+    public CompletionStage<Void> consumeUserNotification(Message<MailJson> msg) {
         MailJson mail = msg.getPayload();
 
         if (mail == null || mail.getUser() == null) {
             logger.warn("Received invalid mail notification: missing user.");
-            return Uni.createFrom().completionStage(msg.ack());
+            return msg.ack();
         }
 
         String email = mail.getUser().getEmail();
@@ -38,20 +38,18 @@ public class NotificationConsumer {
         logger.infov("Received user-notification for user email: {0}", email);
         logger.infov("Type: {0}", type);
 
-        return Uni.createFrom().completionStage(
-                CompletableFuture.runAsync(() -> {
-                            switch (type) {
-                                case "new Membership":
-                                    mailingController.sendNewMembershipEmail(mail.getUser(), link, locale);
-                                    break;
-                                case "new Registration":
-                                    mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
-                                    break;
-                                default:
-                                    logger.warnv("Unknown notification type received: {0}", type);
-                            }
-                        })
-                        .thenCompose(x -> msg.ack())
-        );
+        return CompletableFuture.runAsync(() -> {
+                    switch (type) {
+                        case "new Membership":
+                            mailingController.sendNewMembershipEmail(mail.getUser(), link, locale);
+                            break;
+                        case "new Registration":
+                            mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
+                            break;
+                        default:
+                            logger.warnv("Unknown notification type received: {0}", type);
+                    }
+                })
+                .thenCompose(v -> msg.ack());
     }
 }
