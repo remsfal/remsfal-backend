@@ -51,13 +51,13 @@ public class UserResource implements UserEndpoint {
 
     private Set<UserRole> getUserRoles(final UserModel user) {
         final Set<UserRole> userRoles = new HashSet<>();
-        if (projectController.getProjects(user, 0, 1).size() > 0) {
+        if (!projectController.getProjects(user, 0, 1).isEmpty()) {
             userRoles.add(UserRole.MANAGER);
         }
-        if (contractorController.getOrganizations(user).size() > 0) {
+        if (!contractorController.getOrganizations(user).isEmpty()) {
             userRoles.add(UserRole.CONTRACTOR);
         }
-        if (tenancyController.getTenancies(user).size() > 0) {
+        if (!tenancyController.getTenancies(user).isEmpty()) {
             userRoles.add(UserRole.TENANT);
         }
         return userRoles;
