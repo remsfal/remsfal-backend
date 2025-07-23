@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.ContractorEntity;
+import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.NoResultException;
 
@@ -27,6 +28,11 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
             return true;
         }
         return false;
+    }
+
+    public List<ContractorEntity> findContractorsByEmployee(final String employeeId) {
+        return find("SELECT c FROM ContractorEntity c JOIN c.employees employee WHERE employee.user.id = :userId",
+            Parameters.with(PARAM_USER_ID, employeeId)).list();
     }
 
     /**

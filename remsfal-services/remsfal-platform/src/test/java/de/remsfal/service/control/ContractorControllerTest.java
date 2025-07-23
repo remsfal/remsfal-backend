@@ -5,6 +5,7 @@ import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractTest;
 import de.remsfal.service.TestData;
+import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -54,7 +55,7 @@ class ContractorControllerTest extends AbstractTest {
 
     @Test
     void getContractors_SUCCESS_emptyList() {
-        List<ContractorModel> contractors = contractorController.getContractors(user, projectId, 0, 10);
+        List<ContractorEntity> contractors = contractorController.getContractors(projectId, 0, 10);
         assertNotNull(contractors);
         assertTrue(contractors.isEmpty());
         
@@ -84,7 +85,7 @@ class ContractorControllerTest extends AbstractTest {
         assertEquals(projectId, contractor.getProjectId());
         
         // Verify the contractor is in the database
-        List<ContractorModel> contractors = contractorController.getContractors(user, projectId, 0, 10);
+        List<ContractorEntity> contractors = contractorController.getContractors(projectId, 0, 10);
         assertEquals(1, contractors.size());
         assertEquals(contractor.getId(), contractors.get(0).getId());
         
@@ -187,7 +188,7 @@ class ContractorControllerTest extends AbstractTest {
         assertThrows(NotFoundException.class, () -> 
             contractorController.getContractor(user, projectId, createdContractor.getId()));
         
-        List<ContractorModel> contractors = contractorController.getContractors(user, projectId, 0, 10);
+        List<ContractorEntity> contractors = contractorController.getContractors(projectId, 0, 10);
         assertTrue(contractors.isEmpty());
         
         long count = contractorController.countContractors(user, projectId);
