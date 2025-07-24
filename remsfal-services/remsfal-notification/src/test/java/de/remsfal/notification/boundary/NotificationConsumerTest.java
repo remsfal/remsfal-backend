@@ -1,7 +1,8 @@
 package de.remsfal.notification.boundary;
 
 import de.remsfal.core.json.ImmutableUserJson;
-import de.remsfal.core.json.MailJson;
+import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.notification.control.MailingController;
 import io.quarkus.test.junit.QuarkusTest;
@@ -26,13 +27,14 @@ class NotificationConsumerTest {
                 .lastName("Consumer")
                 .build();
 
-        MailJson mailJson = new MailJson();
-        mailJson.setUser(user);
-        mailJson.setType("new Registration");
-        mailJson.setLocale("en");
-        mailJson.setLink("https://remsfal.de");
+        EmailEventJson mailJson = ImmutableEmailEventJson.builder()
+                .user(user)
+                .locale("en")
+                .type(EmailEventJson.EmailEventType.USER_REGISTRATION)
+                .link("https://remsfal.de")
+                .build();
 
-        Message<MailJson> testMessage = Message.of(mailJson);
+        Message<EmailEventJson> testMessage = Message.of(mailJson);
 
         MailingController mockController = mock(MailingController.class);
 
@@ -57,13 +59,14 @@ class NotificationConsumerTest {
                 .lastName("Membership")
                 .build();
 
-        MailJson mailJson = new MailJson();
-        mailJson.setUser(user);
-        mailJson.setType("new Membership");
-        mailJson.setLocale("de");
-        mailJson.setLink("https://remsfal.de");
+        EmailEventJson mailJson = ImmutableEmailEventJson.builder()
+                .user(user)
+                .locale("de")
+                .type(EmailEventJson.EmailEventType.PROJECT_ADMISSION)
+                .link("https://remsfal.de")
+                .build();
 
-        Message<MailJson> testMessage = Message.of(mailJson);
+        Message<EmailEventJson> testMessage = Message.of(mailJson);
 
         MailingController mockController = mock(MailingController.class);
 

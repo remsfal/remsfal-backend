@@ -36,6 +36,7 @@ public class UserController {
     
     @Inject
     AddressController addressController;
+
     @Inject
     NotificationController notificationController;
 

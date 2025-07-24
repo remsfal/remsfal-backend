@@ -1,67 +1,56 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.MailJson;
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.service.TestData;
 import io.quarkus.test.junit.QuarkusTest;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
-import org.jboss.logging.Logger;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.inject.Inject;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-import static org.mockito.Mockito.*;
-
 @QuarkusTest
-class NotificationControllerTest {
+class NotificationControllerTest extends AbstractKafkaTest {
 
-    private NotificationController notificationController;
-    private Emitter<MailJson> emitterMock;
-    private Logger loggerMock;
-
-    @BeforeEach
-    void setUp() {
-        emitterMock = mock(Emitter.class);
-        loggerMock = mock(Logger.class);
-
-        notificationController = new NotificationController();
-        notificationController.notificationEmitter = emitterMock;
-        notificationController.logger = loggerMock;
-    }
+    @Inject
+    NotificationController notificationController;
 
     @Test
     void testInformUserAboutProjectMembership() {
-        CustomerModel user = mock(CustomerModel.class);
-        when(user.getEmail()).thenReturn("mitglied@example.com");
-        when(user.getId()).thenReturn("id-mitglied");
-        when(user.getFirstName()).thenReturn("Max");
-        when(user.getLastName()).thenReturn("Mustermann");
+        CustomerModel user =
+                ImmutableUserJson.builder()
+                        .id(TestData.USER_ID)
+                        .email(TestData.USER_EMAIL)
+                        .build();
 
-        notificationController.informUserAboutProjectMembership(user);
+        notificationController.informUserAboutProjectMembership(user, "fakeId");
 
-        verify(emitterMock, times(1)).send(argThat((MailJson mail) ->
-                mail.getUser().getEmail().equals("mitglied@example.com")
-                        && mail.getType().equals("new Membership")
-                        && mail.getLocale().equals("de")
-                        && mail.getLink().equals("remsfal.de")
-        ));
-        verify(loggerMock).infov("Sending user-notification for {0}", "mitglied@example.com");
+        given()
+            .topic("user-notification")
+        .then()
+            .json("user.id", Matchers.equalTo(TestData.USER_ID))
+            .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
+            .json("type", Matchers.equalTo("PROJECT_ADMISSION"))
+            .json("link", Matchers.equalTo("https://remsfal.de/projects/fakeId"));
     }
 
     @Test
     void testInformUserAboutRegistration() {
-        CustomerModel user = mock(CustomerModel.class);
-        when(user.getEmail()).thenReturn("registrierung@example.com");
-        when(user.getId()).thenReturn("id-registrierung");
-        when(user.getFirstName()).thenReturn("Erika");
-        when(user.getLastName()).thenReturn("Musterfrau");
+        CustomerModel user =
+            ImmutableUserJson.builder()
+                    .id(TestData.USER_ID)
+                    .email(TestData.USER_EMAIL)
+                    .build();
 
         notificationController.informUserAboutRegistration(user);
 
-        verify(emitterMock, times(1)).send(argThat((MailJson mail) ->
-                mail.getUser().getEmail().equals("registrierung@example.com")
-                        && mail.getType().equals("new Registration")
-                        && mail.getLocale().equals("de")
-                        && mail.getLink().equals("remsfal.de")
-        ));
-        verify(loggerMock).infov("Sending user-notification for {0}", "registrierung@example.com");
+        given()
+            .topic("user-notification")
+        .then()
+            .json("user.id", Matchers.equalTo(TestData.USER_ID))
+            .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
+            .json("type", Matchers.equalTo("USER_REGISTRATION"))
+            .json("link", Matchers.equalTo("https://remsfal.de"));
     }
+
+
 }
