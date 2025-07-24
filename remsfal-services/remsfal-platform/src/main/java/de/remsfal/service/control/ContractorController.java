@@ -29,20 +29,23 @@ public class ContractorController {
     @Inject
     ContractorRepository contractorRepository;
 
+    public List<ContractorEntity> getOrganizations(final UserModel employeeId) {
+        logger.infov("Retrieving all contractors of an employee (employeeId = {0})", employeeId);
+        return contractorRepository.findContractorsByEmployee(employeeId.getId());
+    }
+
     /**
      * Get contractors for a project.
      *
-     * @param user the user
      * @param projectId the project ID
      * @param offset the offset
      * @param limit the limit
      * @return the list of contractors
      */
-    public List<ContractorModel> getContractors(final UserModel user, final String projectId,
+    public List<ContractorEntity> getContractors(final String projectId,
                                                final Integer offset, final Integer limit) {
         logger.infov("Retrieving contractors for project (id = {0})", projectId);
-        List<ContractorEntity> entities = contractorRepository.findByProjectId(projectId, offset, limit);
-        return new java.util.ArrayList<>(entities);
+        return contractorRepository.findByProjectId(projectId, offset, limit);
     }
 
     /**
@@ -146,4 +149,5 @@ public class ContractorController {
                 .orElseThrow(() -> new NotFoundException("Contractor not found"));
         return contractorRepository.deleteById(entity.getId());
     }
+
 }

@@ -2,6 +2,7 @@ package de.remsfal.core.json;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import de.remsfal.core.validation.PostValidation;
 import jakarta.annotation.Nullable;
@@ -32,10 +33,20 @@ import de.remsfal.core.model.CustomerModel;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class UserJson implements CustomerModel {
 
+    public enum UserRole {
+        MANAGER,   // Verwalter
+        TENANT,    // Mieter
+        CONTRACTOR // Auftragnehmer
+    }
+
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract String getId();
+
+    @Null
+    @Nullable
+    public abstract Set<UserRole> getUserRoles();
 
     @Email
     @Nullable
@@ -89,7 +100,7 @@ public abstract class UserJson implements CustomerModel {
     @Override
     public abstract LocalDateTime getLastLoginDate();
 
-    public static UserJson valueOf(final CustomerModel model) {
+    public static ImmutableUserJson valueOf(final CustomerModel model) {
         return ImmutableUserJson.builder()
             .id(model.getId())
             .email(model.getEmail())
@@ -104,4 +115,10 @@ public abstract class UserJson implements CustomerModel {
             .lastLoginDate(model.getLastLoginDate())
             .build();
     }
+
+    public static UserJson valueOf(final CustomerModel model, final Set<UserRole> userRoles) {
+        return UserJson.valueOf(model)
+            .withUserRoles(userRoles);
+    }
+
 }

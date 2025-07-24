@@ -3,8 +3,11 @@ package de.remsfal.service.boundary.tenancy;
 import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.AbstractResourceTest;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -309,6 +312,22 @@ class TenancyResourceTest extends AbstractResourceTest {
             .and().body("basicRent", Matchers.equalTo(1030f))
             .and().body("operatingCostsPrepayment", Matchers.equalTo(230f))
             .and().body("heatingCostsPrepayment", Matchers.equalTo(320f));
+    }
+
+    @Test
+    void getUser_SUCCESS_userHasCorrectRole() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(100)))
+            .get("/api/v1/user")
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(TestData.USER_ID_3))
+                .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_3))
+                .and().body("userRoles.size()", Matchers.equalTo(1))
+                .and().body("userRoles[0]", Matchers.equalTo("TENANT"));
     }
 
 }
