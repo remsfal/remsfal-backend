@@ -43,12 +43,12 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
                 .withEnv("KAFKA_NUM_PARTITIONS", "1")
                 .withExposedPorts(39092, 9092);
 
-        ocrContainer = new GenericContainer<>("ghcr.io/remsfal/remsfal-ocr:sha-a1f0971")
+        ocrContainer = new GenericContainer<>("ghcr.io/remsfal/remsfal-ocr:latest")
                 .withNetwork(network)
                 .withEnv("KAFKA_BROKER", "kafka-broker:29092")
                 .withEnv("MINIO_ENDPOINT", "minio:9000")
                 .withEnv("PYTHONUNBUFFERED", "1")
-                .waitingFor(Wait.forLogMessage(".*Listening to topic .*\\n", 1))
+                .waitingFor(Wait.forLogMessage("\\bListening to topic\\b", 1))
                 .withStartupTimeout(Duration.ofMinutes(2));
 
         minioContainer = new GenericContainer<>("minio/minio:latest")
