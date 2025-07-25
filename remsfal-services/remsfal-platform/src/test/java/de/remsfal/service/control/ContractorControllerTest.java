@@ -3,10 +3,10 @@ package de.remsfal.service.control;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -18,7 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-class ContractorControllerTest extends AbstractTest {
+class ContractorControllerTest extends AbstractServiceTest {
 
     @Inject
     UserController userController;

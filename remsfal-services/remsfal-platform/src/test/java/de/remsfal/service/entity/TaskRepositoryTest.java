@@ -16,13 +16,13 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.project.TaskModel.Status;
 import de.remsfal.core.model.project.TaskModel.Type;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.TaskRepository;
 import de.remsfal.service.entity.dto.TaskEntity;
+import de.remsfal.test.TestData;
 
 @QuarkusTest
-class TaskRepositoryTest extends AbstractTest {
+class TaskRepositoryTest extends AbstractServiceTest {
 
     @Inject
     TaskRepository repository;

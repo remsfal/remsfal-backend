@@ -9,8 +9,9 @@ import org.junit.jupiter.api.Test;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.json.webtoken.JsonWebSignature;
-import de.remsfal.service.TestData;
+
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
+import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;

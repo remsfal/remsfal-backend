@@ -1,4 +1,4 @@
-package de.remsfal.service.control;
+package de.remsfal.test.kafka;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -6,7 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 
-import de.remsfal.service.AbstractTest;
+import de.remsfal.test.AbstractTest;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.kafka.InjectKafkaCompanion;
 import io.quarkus.test.kafka.KafkaCompanionResource;
@@ -19,7 +19,7 @@ import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 public abstract class AbstractKafkaTest extends AbstractTest {
 
     @InjectKafkaCompanion
-    KafkaCompanion companion;
+    protected KafkaCompanion companion;
 
     @BeforeEach
     void clearAllTopics() {

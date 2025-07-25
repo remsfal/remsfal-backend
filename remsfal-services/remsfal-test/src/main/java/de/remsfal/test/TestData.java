@@ -1,4 +1,4 @@
-package de.remsfal.service;
+package de.remsfal.test;
 
 import java.time.LocalDate;
 import de.remsfal.core.json.ImmutableAddressJson;

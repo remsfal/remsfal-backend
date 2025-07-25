@@ -1,12 +1,12 @@
 package de.remsfal.service.entity;
 
 import de.remsfal.core.model.project.CommercialModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.BuildingController;
 import de.remsfal.service.control.PropertyController;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dto.CommercialEntity;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.common.Assert.assertTrue;
 
 @QuarkusTest
-class CommercialRepositoryTest extends AbstractTest {
+class CommercialRepositoryTest extends AbstractServiceTest {
 
     @Inject
     CommercialRepository repository;

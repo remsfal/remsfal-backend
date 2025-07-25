@@ -5,11 +5,11 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.test.TestData;
 
 @QuarkusTest
-class TenancyControllerTest extends AbstractTest {
+class TenancyControllerTest extends AbstractServiceTest {
 
     @BeforeEach
     void setupTestProjects() {

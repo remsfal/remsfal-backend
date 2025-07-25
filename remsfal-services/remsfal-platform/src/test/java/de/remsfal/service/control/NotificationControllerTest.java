@@ -2,13 +2,17 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.CustomerModel;
-import de.remsfal.service.TestData;
+import de.remsfal.test.TestData;
+import de.remsfal.test.kafka.AbstractKafkaTest;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.kafka.KafkaCompanionResource;
 import jakarta.inject.Inject;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+@QuarkusTestResource(KafkaCompanionResource.class)
 class NotificationControllerTest extends AbstractKafkaTest {
 
     @Inject
@@ -51,6 +55,5 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .json("type", Matchers.equalTo("USER_REGISTRATION"))
             .json("link", Matchers.equalTo("https://remsfal.de"));
     }
-
 
 }

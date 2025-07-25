@@ -5,7 +5,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Cookie;
 import jakarta.inject.Inject;
-import de.remsfal.chat.AbstractTest;
+import de.remsfal.chat.AbstractServiceTest;
 import de.remsfal.chat.TestData;
 import de.remsfal.chat.boundary.authentication.SessionManager;
 import de.remsfal.common.authentication.JWTManager;
@@ -13,7 +13,7 @@ import de.remsfal.common.authentication.SessionInfo;
 
 import java.time.Duration;
 
-public abstract class AbstractResourceTest extends AbstractTest {
+public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     static {
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());

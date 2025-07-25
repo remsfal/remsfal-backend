@@ -23,12 +23,12 @@ import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.test.TestData;
 
 @QuarkusTest
-class ProjectControllerTest extends AbstractTest {
+class ProjectControllerTest extends AbstractServiceTest {
 
     @Inject
     ProjectRepository repository;
