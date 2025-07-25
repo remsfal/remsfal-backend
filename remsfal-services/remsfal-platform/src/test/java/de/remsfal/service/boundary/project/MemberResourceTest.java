@@ -1,7 +1,7 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.AbstractResourceTest;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
@@ -190,6 +190,22 @@ class MemberResourceTest extends AbstractResourceTest {
             .delete(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
+    }
+
+    @Test
+    void getUser_SUCCESS_userHasCorrectRole() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .get("/api/v1/user")
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(TestData.USER_ID))
+                .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
+                .and().body("userRoles.size()", Matchers.equalTo(1))
+                .and().body("userRoles[0]", Matchers.equalTo("MANAGER"));
     }
 
 }

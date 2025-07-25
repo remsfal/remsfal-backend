@@ -2,6 +2,7 @@ package de.remsfal.common.authentication;
 
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.test.AbstractTest;
 import io.quarkus.test.junit.QuarkusTest;
 
 import java.security.PrivateKey;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
-class KeyLoaderTest {
+class KeyLoaderTest extends AbstractTest {
 
     @Test
     void testLoadPrivateKey() throws Exception {

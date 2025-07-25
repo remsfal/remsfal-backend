@@ -5,6 +5,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.vertx.ext.mail.MailMessage;
 import jakarta.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
+
+import de.remsfal.test.AbstractTest;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-class MailingResourceTest {
+class MailingResourceTest extends AbstractTest {
 
     static final String BASE_PATH = "/notification/test";
 

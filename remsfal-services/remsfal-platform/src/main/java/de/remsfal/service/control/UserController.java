@@ -38,6 +38,9 @@ public class UserController {
     AddressController addressController;
 
     @Inject
+    NotificationController notificationController;
+
+    @Inject
     private Event<AuthenticationEvent> authenticatedUser;
 
     @Transactional
@@ -63,6 +66,8 @@ public class UserController {
         entity.setAuthenticatedAt(LocalDateTime.now());
         try {
             repository.persistAndFlush(entity);
+            logger.infov("entity: " + entity);
+            notificationController.informUserAboutRegistration(entity);
             return entity;
         } catch (PersistenceException e) {
             throw new AlreadyExistsException("Unable to create user", e);

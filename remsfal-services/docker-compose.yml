@@ -23,6 +23,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+    networks:
+      - remsfal
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -34,6 +36,8 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: kafka-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-broker:9092
+    networks:
+      - remsfal
 
   otel-lgtm:
     image: grafana/otel-lgtm
@@ -44,6 +48,8 @@ services:
       - '4318:4318' # HTTP as the transport for OTLP
     volumes:
       - otel_data:/data
+    networks:
+      - remsfal
 
 volumes:
   otel_data:

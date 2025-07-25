@@ -5,9 +5,9 @@ import de.remsfal.core.json.project.ImmutableStorageJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.core.model.project.PropertyModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.StorageEntity;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @QuarkusTest
-class StorageControllerTest extends AbstractTest {
+class StorageControllerTest extends AbstractServiceTest {
 
     @Inject
     PropertyController propertyController;
