@@ -26,7 +26,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
 
         given()
             .topic("user-notification")
-        .then()
+        .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("type", Matchers.equalTo("PROJECT_ADMISSION"))
@@ -45,7 +45,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
 
         given()
             .topic("user-notification")
-        .then()
+        .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("type", Matchers.equalTo("USER_REGISTRATION"))

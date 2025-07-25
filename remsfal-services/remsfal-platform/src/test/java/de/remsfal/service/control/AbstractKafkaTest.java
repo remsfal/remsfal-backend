@@ -48,7 +48,7 @@ public abstract class AbstractKafkaTest extends AbstractTest {
             return this;
         }
 
-        public KafkaMessageSpecification then() {
+        public KafkaMessageSpecification assertThat() {
             return new KafkaMessageSpecification(task.awaitCompletion().getFirstRecord());
         }
     }
