@@ -1,7 +1,7 @@
 package de.remsfal.service.boundary.tenancy;
 
-import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.AbstractResourceTest;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;

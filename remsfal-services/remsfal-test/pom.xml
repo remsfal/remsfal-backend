@@ -4,8 +4,8 @@
         xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>remsfal-common</artifactId>
-    <name>remsfal - Common Library (jar)</name>
+    <artifactId>remsfal-test</artifactId>
+    <name>remsfal - Test Library (jar)</name>
 
     <parent>
         <groupId>de.remsfal</groupId>
@@ -17,20 +17,23 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-jwt</artifactId>
+            <artifactId>quarkus-junit5</artifactId>
         </dependency>
-        <!-- third party dependencies -->
         <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5-mockito</artifactId>
         </dependency>
-
-        <!-- TEST dependencies -->
         <dependency>
-            <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-kafka-companion</artifactId>
         </dependency>
     </dependencies>
 

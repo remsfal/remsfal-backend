@@ -5,6 +5,7 @@ import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.notification.control.MailingController;
+import de.remsfal.test.AbstractTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletionStage;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-class NotificationConsumerTest {
+class NotificationConsumerTest extends AbstractTest {
 
     @Test
     void testConsumeUserNotification_NewRegistration() throws Exception {

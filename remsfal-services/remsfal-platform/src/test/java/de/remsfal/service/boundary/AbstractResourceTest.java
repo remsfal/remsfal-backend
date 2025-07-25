@@ -5,16 +5,16 @@ import java.util.Map;
 import java.util.UUID;
 
 import de.remsfal.common.authentication.SessionInfo;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.authentication.SessionManager;
+import de.remsfal.test.TestData;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Cookie;
 import jakarta.inject.Inject;
 
-public abstract class AbstractResourceTest extends AbstractTest {
+public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     static {
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());

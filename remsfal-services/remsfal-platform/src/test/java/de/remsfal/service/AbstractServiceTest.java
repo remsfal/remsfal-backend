@@ -1,6 +1,5 @@
-package de.remsfal.chat;
+package de.remsfal.service;
 
-import java.util.Collections;
 import java.util.function.Supplier;
 
 import jakarta.inject.Inject;
@@ -13,14 +12,11 @@ import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
 
-import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
 
-public abstract class AbstractTest {
+import de.remsfal.test.AbstractTest;
 
-    @Inject
-    protected Logger logger;
+public abstract class AbstractServiceTest extends AbstractTest {
 
     @Inject
     protected EntityManager entityManager;
@@ -29,24 +25,11 @@ public abstract class AbstractTest {
     protected UserTransaction userTransaction;
 
     @BeforeEach
-    void printTestMethod(final TestInfo testInfo) {
-        String method = testInfo.getDisplayName();
-        if (method.length() > 100) {
-            method = method.substring(0, 100);
-        }
-        final String line = String.join("", Collections.nCopies(104, "#"));
-        final String title = "# " +
-            method + String.join("", Collections.nCopies(100 - method.length(), " ")) +
-            " #";
-        logger.info(line);
-        logger.info(title);
-        logger.info(line);
-    }
-
-    @BeforeEach
     void cleanDB() {
         runInTransaction(() -> {
-            entityManager.createQuery("DELETE FROM ProjectMembershipEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM AddressEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM ProjectEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM TaskEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();
         });
     }
