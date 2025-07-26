@@ -26,14 +26,16 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     TaskController taskController;
 
     @Override
-    public TaskListJson getTasks(final String tenancyId, final String rentalType, final String rentalId, final Status status) {
+    public TaskListJson getTasks(final String tenancyId, final String rentalType,
+        final String rentalId, final Status status) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         return TaskListJson.valueOf(taskController.getTasks(tenancyId, Optional.ofNullable(status)));
     }
 
     @Override
-    public Response createTask(final String tenancyId, final String rentalType, final String rentalId, final TaskJson task) {
+    public Response createTask(final String tenancyId, final String rentalType,
+        final String rentalId, final TaskJson task) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         final TaskModel model = null; // TODO
@@ -45,7 +47,8 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     }
 
     @Override
-    public TaskJson getTask(final String tenancyId, final String rentalType, final String rentalId, final String taskId) {
+    public TaskJson getTask(final String tenancyId, final String rentalType,
+        final String rentalId, final String taskId) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         String projectId = tenancyId; // TODO
@@ -53,7 +56,8 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     }
 
     @Override
-    public TaskJson updateTask(final String tenancyId, final String rentalType, final String rentalId, final String taskId, final TaskJson task) {
+    public TaskJson updateTask(final String tenancyId, final String rentalType,
+        final String rentalId, final String taskId, final TaskJson task) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         String projectId = tenancyId; // TODO
