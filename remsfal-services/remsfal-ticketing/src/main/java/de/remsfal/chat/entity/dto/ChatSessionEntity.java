@@ -5,7 +5,7 @@ import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
-import de.remsfal.core.model.chat.ChatSessionModel;
+import de.remsfal.core.model.ticketing.ChatSessionModel;
 
 import java.time.Instant;
 import java.util.Map;

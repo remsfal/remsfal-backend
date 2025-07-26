@@ -19,7 +19,7 @@
         <module>remsfal-test</module>
         <module>remsfal-common</module>
         <module>remsfal-notification</module>
-        <module>remsfal-chat</module>
+        <module>remsfal-ticketing</module>
         <module>remsfal-platform</module>
     </modules>
 

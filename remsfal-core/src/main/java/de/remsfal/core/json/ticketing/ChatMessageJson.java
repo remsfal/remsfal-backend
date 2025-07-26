@@ -1,11 +1,11 @@
-package de.remsfal.core.json.chat;
+package de.remsfal.core.json.ticketing;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.chat.ChatMessageModel;
+import de.remsfal.core.model.ticketing.ChatMessageModel;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Null;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;

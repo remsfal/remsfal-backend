@@ -1,4 +1,4 @@
-package de.remsfal.core.model.chat;
+package de.remsfal.core.model.ticketing;
 
 import java.time.Instant;
 import java.util.Map;

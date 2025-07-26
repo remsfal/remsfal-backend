@@ -1,5 +1,7 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.tenancy.TenancyItemJson;
+import de.remsfal.core.json.tenancy.TenancyJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.TenancyModel;
 import de.remsfal.service.entity.dao.TenancyRepository;

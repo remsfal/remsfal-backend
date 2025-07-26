@@ -1,4 +1,4 @@
-package de.remsfal.core.json.chat;
+package de.remsfal.core.json.ticketing;
 
 import java.time.Instant;
 import java.util.Map;
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.chat.ChatSessionModel;
+import de.remsfal.core.model.ticketing.ChatSessionModel;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Null;
 

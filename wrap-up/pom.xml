@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-chat</artifactId>
+            <artifactId>remsfal-ticketing</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -74,7 +74,7 @@
                                     <directory>${serviceDirectory}/remsfal-notification/target/classes</directory>
                                 </resource>
                                 <resource>
-                                    <directory>${serviceDirectory}/remsfal-chat/target/classes</directory>
+                                    <directory>${serviceDirectory}/remsfal-ticketing/target/classes</directory>
                                 </resource>
                                 <resource>
                                     <directory>${serviceDirectory}/remsfal-platform/target/classes</directory>
@@ -96,7 +96,7 @@
                                     <directory>${serviceDirectory}/remsfal-notification/target/openapi</directory>
                                 </resource>
                                 <resource>
-                                    <directory>${serviceDirectory}/remsfal-chat/target/openapi</directory>
+                                    <directory>${serviceDirectory}/remsfal-ticketing/target/openapi</directory>
                                 </resource>
                                 <resource>
                                     <directory>${serviceDirectory}/remsfal-platform/target/openapi</directory>
@@ -129,7 +129,7 @@
                                     <includes>
                                         <include>remsfal-common/${dataFile}</include>
                                         <include>remsfal-notification/${dataFile}</include>
-                                        <include>remsfal-chat/${dataFile}</include>
+                                        <include>remsfal-ticketing/${dataFile}</include>
                                         <include>remsfal-platform/${dataFile}</include>
                                     </includes>
                                 </fileSet>

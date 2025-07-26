@@ -4,7 +4,7 @@ import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
-import de.remsfal.core.model.chat.ChatSessionModel;
+import de.remsfal.core.model.ticketing.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

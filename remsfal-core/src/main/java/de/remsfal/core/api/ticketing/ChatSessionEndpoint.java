@@ -1,6 +1,6 @@
-package de.remsfal.core.api.chat;
+package de.remsfal.core.api.ticketing;
 
-import de.remsfal.core.json.chat.ChatMessageJson;
+import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
