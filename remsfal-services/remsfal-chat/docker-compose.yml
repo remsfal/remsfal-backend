@@ -13,7 +13,7 @@ services:
       - ./data/minio:/data
       
   cassandra-seed:
-    image: cassandra:latest
+    image: cassandra:4
     container_name: cassandra-seed
     environment:
       - CASSANDRA_CLUSTER_NAME=remsfal-cassandra-cluster
@@ -26,7 +26,7 @@ services:
       - "7000:7000"
 
   cassandra-node1:
-    image: cassandra:latest
+    image: cassandra:4
     container_name: cassandra-node1
     environment:
       - CASSANDRA_CLUSTER_NAME=remsfal-cassandra-cluster
@@ -34,3 +34,14 @@ services:
     ports:
       - "9043:9042" # Alternative port mapping for node1
       - "7001:7000"
+
+  ocr:
+    image: ghcr.io/remsfal/remsfal-ocr:latest
+    container_name: remsfal-ocr
+    depends_on:
+      - kafka-broker
+      - minio
+    environment:
+      - KAFKA_BROKER=kafka-broker:29092
+      - MINIO_ENDPOINT=minio:9000
+      - PYTHONUNBUFFERED=1

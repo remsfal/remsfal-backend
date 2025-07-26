@@ -54,8 +54,11 @@ public class FileStorageServiceTest {
     @ConfigProperty(name = "%dev.quarkus.minio.access-key")
     String accessKey;
 
-    @ConfigProperty(name = "%dev.quarkus.minio.url")
-    String endpoint;
+    @ConfigProperty(name = "%dev.quarkus.minio.host")
+    String host;
+
+    @ConfigProperty(name = "%dev.quarkus.minio.port")
+    String port;
 
     @BeforeEach
     public void setup(){
