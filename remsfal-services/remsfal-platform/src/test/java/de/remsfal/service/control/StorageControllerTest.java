@@ -5,9 +5,9 @@ import de.remsfal.core.json.project.ImmutableStorageJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.core.model.project.PropertyModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.StorageEntity;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @QuarkusTest
-class storageControllerTest extends AbstractTest {
+class StorageControllerTest extends AbstractServiceTest {
 
     @Inject
     PropertyController propertyController;
@@ -60,25 +60,25 @@ class storageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult =createTestBuilding(property);
 
-        final StorageModel Storage = TestData.storageBuilder()
+        final StorageModel storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
+        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
 
-        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
-        assertNotEquals(Storage.getId(), StorageResult.getId());
-        assertEquals(Storage.getTitle(), StorageResult.getTitle());
-        assertEquals(Storage.getLocation(), StorageResult.getLocation());
-        assertEquals(Storage.getDescription(), StorageResult.getDescription());
-        assertEquals(Storage.getUsableSpace(), StorageResult.getUsableSpace());
+        assertNotNull(storageResult.getId(), "Storage ID should not be null");
+        assertNotEquals(storage.getId(), storageResult.getId());
+        assertEquals(storage.getTitle(), storageResult.getTitle());
+        assertEquals(storage.getLocation(), storageResult.getLocation());
+        assertEquals(storage.getDescription(), storageResult.getDescription());
+        assertEquals(storage.getUsableSpace(), storageResult.getUsableSpace());
 
         final StorageEntity entity = entityManager
                 .createQuery("SELECT s FROM StorageEntity s WHERE s.title = :title", StorageEntity.class)
                 .setParameter("title", TestData.STORAGE_TITLE)
                 .getSingleResult();
-        assertEquals(StorageResult.getId(), entity.getId());
-        assertEquals(StorageResult.getTitle(), entity.getTitle());
+        assertEquals(storageResult.getId(), entity.getId());
+        assertEquals(storageResult.getTitle(), entity.getTitle());
     }
 
     @Test
@@ -86,20 +86,20 @@ class storageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final StorageModel Storage = TestData.storageBuilder()
+        final StorageModel storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
-        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
+        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
+        assertNotNull(storageResult.getId(), "Storage ID should not be null");
 
-        final StorageModel result = storageController.getStorage(TestData.PROJECT_ID, StorageResult.getId());
+        final StorageModel result = storageController.getStorage(TestData.PROJECT_ID, storageResult.getId());
 
-        assertEquals(StorageResult.getId(), result.getId(), "Storage ID should match");
-        assertEquals(StorageResult.getTitle(), result.getTitle(), "Storage title should match");
-        assertEquals(StorageResult.getLocation(), result.getLocation(), "Storage location should match");
-        assertEquals(StorageResult.getDescription(), result.getDescription(), "Storage description should match");
-        assertEquals(StorageResult.getUsableSpace(), result.getUsableSpace(), "Storage usable space should match");
+        assertEquals(storageResult.getId(), result.getId(), "Storage ID should match");
+        assertEquals(storageResult.getTitle(), result.getTitle(), "Storage title should match");
+        assertEquals(storageResult.getLocation(), result.getLocation(), "Storage location should match");
+        assertEquals(storageResult.getDescription(), result.getDescription(), "Storage description should match");
+        assertEquals(storageResult.getUsableSpace(), result.getUsableSpace(), "Storage usable space should match");
     }
 
     @Test
@@ -107,15 +107,15 @@ class storageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final StorageModel Storage = TestData.storageBuilder()
+        final StorageModel storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
-        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
+        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
+        assertNotNull(storageResult.getId(), "Storage ID should not be null");
 
         StorageModel StorageModel = ImmutableStorageJson.builder()
-                .id(StorageResult.getId())
+                .id(storageResult.getId())
                 .title("Updated Storage Title")
                 .location("Updated Location")
                 .description("Updated Storage Description")
@@ -125,9 +125,9 @@ class storageControllerTest extends AbstractTest {
         StorageJson updatedStorageJson = StorageJson.valueOf(StorageModel);
 
         final StorageModel updatedStorage = storageController.updateStorage(
-                TestData.PROJECT_ID, StorageResult.getId(), updatedStorageJson);
+                TestData.PROJECT_ID, storageResult.getId(), updatedStorageJson);
 
-        assertEquals(StorageResult.getId(), updatedStorage.getId(), "Storage ID should remain the same");
+        assertEquals(storageResult.getId(), updatedStorage.getId(), "Storage ID should remain the same");
         assertEquals(updatedStorageJson.getTitle(), updatedStorage.getTitle(), "Storage title should be updated");
         assertEquals(updatedStorageJson.getLocation(), updatedStorage.getLocation(), "Storage location should be updated");
         assertEquals(updatedStorageJson.getDescription(), updatedStorage.getDescription(), "Storage description should be updated");
@@ -139,17 +139,17 @@ class storageControllerTest extends AbstractTest {
         final PropertyModel property = createTestProperty();
         final BuildingModel buildingResult = createTestBuilding(property);
 
-        final StorageModel Storage = TestData.storageBuilder()
+        final StorageModel storage = TestData.storageBuilder()
                 .id(null)
                 .build();
 
-        final StorageModel StorageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), Storage);
-        assertNotNull(StorageResult.getId(), "Storage ID should not be null");
+        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
+        assertNotNull(storageResult.getId(), "Storage ID should not be null");
 
-        storageController.deleteStorage(TestData.PROJECT_ID, StorageResult.getId());
+        storageController.deleteStorage(TestData.PROJECT_ID, storageResult.getId());
 
         assertThrows(NotFoundException.class,
-                () -> storageController.getStorage(TestData.PROJECT_ID, StorageResult.getId()));
+                () -> storageController.getStorage(TestData.PROJECT_ID, storageResult.getId()));
     }
 
 }

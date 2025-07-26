@@ -1,8 +1,8 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.remsfal</groupId>
     <artifactId>remsfal-backend</artifactId>
@@ -38,7 +38,7 @@
         <surefire-plugin.version>3.5.3</surefire-plugin.version>
         <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-        <jandex-plugin.version>3.2.7</jandex-plugin.version>
+        <jandex-plugin.version>3.4.0</jandex-plugin.version>
         <jacoco-plugin.version>0.8.13</jacoco-plugin.version>
         <sonar-plugin.version>5.1.0.4751</sonar-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
@@ -49,8 +49,11 @@
         <sonar.java.checkstyle.reportPaths>
             ${maven.multiModuleProjectDirectory}/target/checkstyle-result.xml
         </sonar.java.checkstyle.reportPaths>
+        <sonar.coverage.exclusions>
+            **/de/remsfal/test/**
+        </sonar.coverage.exclusions>
         <sonar.cpd.exclusions>
-                de.remsfal.service.entity.dto\**
+            **/de/remsfal/service/entity/dto/**
         </sonar.cpd.exclusions>
     </properties>
 

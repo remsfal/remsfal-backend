@@ -110,6 +110,6 @@ public interface BuildingEndpoint {
     CommercialEndpoint getCommercialResource();
 
     @Path("/{buildingId}/" + StorageEndpoint.SERVICE)
-    StorageEndpoint getGarageResource();
+    StorageEndpoint getStorageResource();
 
 }

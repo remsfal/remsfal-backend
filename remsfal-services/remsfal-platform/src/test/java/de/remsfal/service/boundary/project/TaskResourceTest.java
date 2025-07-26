@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.AbstractResourceTest;
+import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +27,7 @@ class TaskResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/projects/{projectId}";
     static final String TASK_PATH = BASE_PATH + "/tasks";
 
+    @Override
     @BeforeEach
     protected void setupTestProjects() {
         super.setupTestUsers();

@@ -1,7 +1,7 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.model.project.StorageModel;
-import de.remsfal.service.entity.dao.GarageRepository;
+import de.remsfal.service.entity.dao.StorageRepository;
 import de.remsfal.service.entity.dto.StorageEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -16,35 +16,35 @@ public class StorageController {
     Logger logger;
 
     @Inject
-    GarageRepository garageRepository;
+    StorageRepository storageRepository;
 
     @Transactional
-    public StorageModel createStorage(final String projectId, final String buildingId, final StorageModel garage) {
-        logger.infov("Creating a garage (projectId={0}, buildingId={1}, garage={2})",
-                projectId, buildingId, garage);
-        StorageEntity entity = updateStorage(garage, new StorageEntity());
+    public StorageModel createStorage(final String projectId, final String buildingId, final StorageModel storage) {
+        logger.infov("Creating a storage (projectId={0}, buildingId={1}, storage={2})",
+                projectId, buildingId, storage);
+        StorageEntity entity = updateStorage(storage, new StorageEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
-        garageRepository.persistAndFlush(entity);
-        garageRepository.getEntityManager().refresh(entity);
+        storageRepository.persistAndFlush(entity);
+        storageRepository.getEntityManager().refresh(entity);
         return getStorage(projectId, entity.getId());
     }
 
-    public StorageModel getStorage(final String projectId, final String garageId) {
-        logger.infov("Retrieving a garage (projectId={0}, garageId={1})",
-                projectId, garageId);
-        return garageRepository.findByIds(projectId, garageId)
-                .orElseThrow(() -> new NotFoundException("Garage does not exist"));
+    public StorageModel getStorage(final String projectId, final String storageId) {
+        logger.infov("Retrieving a storage (projectId={0}, storageId={1})",
+                projectId, storageId);
+        return storageRepository.findByIds(projectId, storageId)
+                .orElseThrow(() -> new NotFoundException("Storage does not exist"));
     }
 
     @Transactional
-    public StorageModel updateStorage(final String projectId, final String garageId, final StorageModel garage) {
-        logger.infov("Updating a garage (projectId={0}, garageId={1}, garage={2})",
-                projectId, garageId, garage);
-        final StorageEntity entity = garageRepository.findByIds(projectId, garageId)
-                .orElseThrow(() -> new NotFoundException("Garage does not exist"));
-        return garageRepository.merge(updateStorage(garage, entity));
+    public StorageModel updateStorage(final String projectId, final String storageId, final StorageModel storage) {
+        logger.infov("Updating a storage (projectId={0}, storageId={1}, storage={2})",
+                projectId, storageId, storage);
+        final StorageEntity entity = storageRepository.findByIds(projectId, storageId)
+                .orElseThrow(() -> new NotFoundException("Storage does not exist"));
+        return storageRepository.merge(updateStorage(storage, entity));
     }
 
     private StorageEntity updateStorage(final StorageModel model, final StorageEntity entity) {
@@ -67,10 +67,10 @@ public class StorageController {
     }
 
     @Transactional
-    public boolean deleteStorage(final String projectId, final String garageId) {
-        logger.infov("Deleting a garage (projectId={0}, garageId={1})",
-                projectId, garageId);
-        return garageRepository.removeGarageByIds(projectId, garageId) > 0;
+    public boolean deleteStorage(final String projectId, final String storageId) {
+        logger.infov("Deleting a storage (projectId={0}, storageId={1})",
+                projectId, storageId);
+        return storageRepository.removeStorageByIds(projectId, storageId) > 0;
     }
 
 }

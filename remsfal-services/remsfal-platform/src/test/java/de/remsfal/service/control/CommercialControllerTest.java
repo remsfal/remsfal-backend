@@ -1,8 +1,8 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.model.project.CommercialModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-class CommercialControllerTest extends AbstractTest {
+class CommercialControllerTest extends AbstractServiceTest {
 
     @Inject
     PropertyController propertyController;

@@ -26,7 +26,7 @@ public class ContractorResource extends ProjectSubResource implements Contractor
     @Override
     public ContractorListJson getContractors(String projectId, Integer offset, Integer limit) {
         checkReadPermissions(projectId);
-        List<ContractorModel> contractors = controller.getContractors(principal, projectId, offset, limit);
+        List<? extends ContractorModel> contractors = controller.getContractors(projectId, offset, limit);
         return ContractorListJson.valueOf(contractors, offset, controller.countContractors(principal, projectId));
     }
 

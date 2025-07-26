@@ -121,7 +121,7 @@ public class ProjectController {
 
         UserEntity userEntity = userController.findOrCreateUser(member);
         projectEntity.addMember(userEntity, member.getRole());
-        notificationController.informUserAboutProjectMembership(userEntity);
+        notificationController.informUserAboutProjectMembership(userEntity, projectId);
         projectRepository.mergeAndFlush(projectEntity);
         return projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));

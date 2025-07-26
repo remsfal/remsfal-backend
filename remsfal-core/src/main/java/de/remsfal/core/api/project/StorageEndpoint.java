@@ -29,76 +29,76 @@ import de.remsfal.core.validation.PostValidation;
  */
 public interface StorageEndpoint {
 
-    String SERVICE = "garages";
+    String SERVICE = "storages";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new garage.")
+    @Operation(summary = "Create a new storage.")
     @APIResponse(
         responseCode = "201",
-        description = "Garage created successfully",
-        headers = @Header(name = "Location", description = "URL of the new garage"))
-    Response createGarage(
+        description = "Storage created successfully",
+        headers = @Header(name = "Location", description = "URL of the new storage"))
+    Response createStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") String projectId,
         @Parameter(description = "ID of the building", required = true)
         @PathParam("buildingId") String buildingId,
-        @Parameter(description = "Garage information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) StorageJson garage
+        @Parameter(description = "Storage information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) StorageJson storage
     );
 
     @GET
-    @Path("/{garageId}")
+    @Path("/{storageId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of a garage.")
+    @Operation(summary = "Retrieve information of a storage.")
     @APIResponse(
         responseCode = "404",
-        description = "The garage does not exist")
-    StorageJson getGarage(
+        description = "The storage does not exist")
+    StorageJson getStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") String projectId,
-        @Parameter(description = "ID of the garage", required = true)
-        @PathParam("garageId") String garageId
+        @Parameter(description = "ID of the storage", required = true)
+        @PathParam("storageId") String storageId
     );
 
     @PATCH
-    @Path("/{garageId}")
+    @Path("/{storageId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a garage.")
+    @Operation(summary = "Update information of a storage.")
     @APIResponse(
         responseCode = "401",
         description = "No user authentication provided via session cookie"
     )
     @APIResponse(
         responseCode = "404",
-        description = "The garage does not exist"
+        description = "The storage does not exist"
     )
-    StorageJson updateGarage(
+    StorageJson updateStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the garage", required = true)
-        @PathParam("garageId") @NotNull @UUID String garageId,
-        @Parameter(description = "Garage information", required = true)
-        @Valid @ConvertGroup(to = PatchValidation.class) StorageJson garage
+        @Parameter(description = "ID of the storage", required = true)
+        @PathParam("storageId") @NotNull @UUID String storageId,
+        @Parameter(description = "Storage information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) StorageJson storage
     );
 
     @DELETE
-    @Path("/{garageId}")
-    @Operation(summary = "Delete an existing garage.")
+    @Path("/{storageId}")
+    @Operation(summary = "Delete an existing storage.")
     @APIResponse(
         responseCode = "204",
-        description = "The garage was deleted successfully"
+        description = "The storage was deleted successfully"
     )
     @APIResponse(
         responseCode = "401",
         description = "No user authentication provided via session cookie"
     )
-    void deleteGarage(
+    void deleteStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
-        @Parameter(description = "ID of the garage", required = true)
-        @PathParam("garageId") @NotNull @UUID String garageId
+        @Parameter(description = "ID of the storage", required = true)
+        @PathParam("storageId") @NotNull @UUID String storageId
     );
 
 }

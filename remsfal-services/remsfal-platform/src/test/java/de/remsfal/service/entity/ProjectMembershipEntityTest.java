@@ -9,14 +9,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-
-import static de.remsfal.service.TestData.PROJECT_ID_1;
-import static de.remsfal.service.TestData.PROJECT_ID_2;
-import static de.remsfal.service.TestData.USER_EMAIL;
-import static de.remsfal.service.TestData.USER_FIRST_NAME;
-import static de.remsfal.service.TestData.USER_ID_1;
-import static de.remsfal.service.TestData.USER_ID_2;
-import static de.remsfal.service.TestData.USER_LAST_NAME;
+import static de.remsfal.test.TestData.PROJECT_ID_1;
+import static de.remsfal.test.TestData.PROJECT_ID_2;
+import static de.remsfal.test.TestData.USER_EMAIL;
+import static de.remsfal.test.TestData.USER_FIRST_NAME;
+import static de.remsfal.test.TestData.USER_ID_1;
+import static de.remsfal.test.TestData.USER_ID_2;
+import static de.remsfal.test.TestData.USER_LAST_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 

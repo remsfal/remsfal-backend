@@ -4,7 +4,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
-import de.remsfal.chat.AbstractTest;
+import de.remsfal.chat.AbstractServiceTest;
 import de.remsfal.chat.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -24,7 +24,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class ChatSessionRepositoryTest extends AbstractTest {
+public class ChatSessionRepositoryTest extends AbstractServiceTest {
 
     @Inject
     ChatSessionRepository chatSessionRepository;

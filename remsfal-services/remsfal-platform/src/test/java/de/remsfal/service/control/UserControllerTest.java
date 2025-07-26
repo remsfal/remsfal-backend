@@ -18,13 +18,13 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
+import de.remsfal.test.TestData;
 
 @QuarkusTest
-class UserControllerTest extends AbstractTest {
+class UserControllerTest extends AbstractServiceTest {
 
     @Inject
     UserController controller;

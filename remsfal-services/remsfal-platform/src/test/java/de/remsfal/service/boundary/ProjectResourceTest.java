@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary;
 
-import de.remsfal.service.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -9,6 +8,9 @@ import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import de.remsfal.test.TestData;
+
 import static org.hamcrest.Matchers.containsString;
 
 import java.time.Duration;

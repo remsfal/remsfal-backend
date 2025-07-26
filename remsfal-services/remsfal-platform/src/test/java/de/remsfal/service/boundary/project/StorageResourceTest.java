@@ -1,7 +1,7 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.service.TestData;
 import de.remsfal.service.boundary.AbstractResourceTest;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
@@ -16,7 +16,7 @@ import java.time.Duration;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class GarageResourceTest extends AbstractResourceTest {
+class StorageResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects";
 
@@ -37,11 +37,12 @@ class GarageResourceTest extends AbstractResourceTest {
         "     \"country\": \"" + TestData.ADDRESS_COUNTRY + "\"" +
         " } }";
 
-    private static final String GARAGE_JSON = "{ \"title\": \"" + TestData.STORAGE_TITLE + "\"," +
+    private static final String STORAGE_JSON = "{ \"title\": \"" + TestData.STORAGE_TITLE + "\"," +
         " \"description\": \"" + TestData.STORAGE_DESCRIPTION + "\"," +
         " \"usableSpace\": " + 12.8f + "," +
         " \"location\": \"" + TestData.STORAGE_LOCATION + "\" }";
 
+    @Override
     @BeforeEach
     protected void setupTestUsers() {
         super.setupTestUsers();
@@ -84,7 +85,7 @@ class GarageResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getGarage_FAILED_garageDoesNotExist() {
+    void getStorage_FAILED_storageDoesNotExist() {
         final String projectId = createProject();
         final String propertyId = createProperty(projectId);
 
@@ -93,23 +94,23 @@ class GarageResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId +
-                "/buildings/building1/garages/nonExistingGarage")
+                "/buildings/building1/storages/nonExistingStorage")
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
     @Test
-    void getGarage_SUCCESS() {
+    void getStorage_SUCCESS() {
         final String projectId = createProject();
         final String propertyId = createProperty(projectId);
         final String buildingId = createBuilding(projectId, propertyId);
 
-        final String garageId = given()
+        final String storageId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body(GARAGE_JSON)
-            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages")
+            .body(STORAGE_JSON)
+            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -118,57 +119,50 @@ class GarageResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages/" +
-                garageId)
+            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
+                storageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
+            .body("title", Matchers.equalTo(TestData.STORAGE_TITLE));
     }
 
     @Test
-    void createGarage_SUCCESS() {
+    void createStorage_SUCCESS() {
         final String projectId = createProject();
         final String propertyId = createProperty(projectId);
         final String buildingId = createBuilding(projectId, propertyId);
-
-        final String garageId = given()
-            .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(GARAGE_JSON)
-            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages")
-            .then()
-            .statusCode(Response.Status.CREATED.getStatusCode())
-            .extract().path("id");
 
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages/" +
-                garageId)
+            .body(STORAGE_JSON)
+            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
             .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .body("title", org.hamcrest.Matchers.equalTo(TestData.STORAGE_TITLE));
+            .statusCode(Response.Status.CREATED.getStatusCode())
+            .body("title", Matchers.equalTo(TestData.STORAGE_TITLE))
+            .body("description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION))
+            .body("usableSpace", Matchers.equalTo(12.8f))
+            .body("location", Matchers.equalTo(TestData.STORAGE_LOCATION));
     }
 
     @Test
-    void updateGarage_SUCCESS() {
+    void updateStorage_SUCCESS() {
         final String projectId = createProject();
         final String propertyId = createProperty(projectId);
         final String buildingId = createBuilding(projectId, propertyId);
 
-        final String garageId = given()
+        final String storageId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body(GARAGE_JSON)
-            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages")
+            .body(STORAGE_JSON)
+            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
 
-        final String updatedGarageJson = "{ \"title\": \"" + TestData.STORAGE_TITLE_2 + "\"," +
+        final String updatedStorageJson = "{ \"title\": \"" + TestData.STORAGE_TITLE_2 + "\"," +
             " \"description\": \"" + TestData.STORAGE_DESCRIPTION_2 + "\"," +
             " \"usableSpace\": " + 15.5f + "," +
             " \"location\": \"" + TestData.STORAGE_LOCATION_2 + "\" }";
@@ -177,10 +171,10 @@ class GarageResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body(updatedGarageJson)
+            .body(updatedStorageJson)
             .patch(
-                BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages/" +
-                    garageId)
+                BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
+                    storageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode());
 
@@ -188,8 +182,8 @@ class GarageResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages/" +
-                garageId)
+            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
+                storageId)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
@@ -199,17 +193,17 @@ class GarageResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void deleteGarage_SUCCESS() {
+    void deleteStorage_SUCCESS() {
         final String projectId = createProject();
         final String propertyId = createProperty(projectId);
         final String buildingId = createBuilding(projectId, propertyId);
 
-        final String garageId = given()
+        final String storageId = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body(GARAGE_JSON)
-            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages")
+            .body(STORAGE_JSON)
+            .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -219,8 +213,8 @@ class GarageResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .delete(
-                BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages/" +
-                    garageId)
+                BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
+                    storageId)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
 
@@ -228,8 +222,8 @@ class GarageResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/garages/" +
-                garageId)
+            .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
+                storageId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }

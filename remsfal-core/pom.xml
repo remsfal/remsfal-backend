@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project
         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
         xmlns="http://maven.apache.org/POM/4.0.0"
@@ -15,8 +15,8 @@
     </parent>
 
     <properties>
-        <version.immutables>2.11.0</version.immutables>
-        <version.jackson>2.19.1</version.jackson>
+        <version.immutables>2.11.1</version.immutables>
+        <version.jackson>2.19.2</version.jackson>
         <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.validation>3.1.1</version.validation>
@@ -32,7 +32,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.13.3</version>
+                <version>5.13.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

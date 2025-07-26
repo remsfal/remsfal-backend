@@ -10,13 +10,13 @@ import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.test.TestData;
 
 @QuarkusTest
-class UserRepositoryTest extends AbstractTest {
+class UserRepositoryTest extends AbstractServiceTest {
 
     @Inject
     UserRepository repository;

@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import de.remsfal.chat.control.OcrEventProducer;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -56,6 +57,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     @Inject
     FileStorageService fileStorageService;
+
+    @Inject
+    OcrEventProducer ocrEventProducer;
 
     private final String bucketName = "remsfal-chat-files";
     private static final String NOT_FOUND_SESSION_MESSAGE = "Chat session not found";
@@ -424,6 +428,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                         .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
+                    fileName = extractFileNameFromUrl(fileUrl);
+                    ocrEventProducer.sendOcrRequest(bucketName, fileName, sessionId,
+                        fileMetadataEntity.getMessageId().toString());
                     String mergedJson = String.format(
                         "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
                             " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
@@ -518,4 +525,14 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
         }
     }
 
+    public String extractFileNameFromUrl(String fileUrl) {
+        if (fileUrl == null || fileUrl.isBlank()) {
+            throw new IllegalArgumentException("File URL cannot be null or empty");
+        }
+        int lastSlashIndex = fileUrl.lastIndexOf('/');
+        if (lastSlashIndex == -1 || lastSlashIndex == fileUrl.length() - 1) {
+            throw new IllegalArgumentException("Invalid file URL format: " + fileUrl);
+        }
+        return fileUrl.substring(lastSlashIndex + 1);
+    }
 }

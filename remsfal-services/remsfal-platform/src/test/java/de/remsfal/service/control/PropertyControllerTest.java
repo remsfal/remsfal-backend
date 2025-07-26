@@ -19,14 +19,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.project.PropertyModel;
-import de.remsfal.service.AbstractTest;
-import de.remsfal.service.TestData;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.PropertyEntity;
+import de.remsfal.test.TestData;
 
 import java.util.List;
 
 @QuarkusTest
-class PropertyControllerTest extends AbstractTest {
+class PropertyControllerTest extends AbstractServiceTest {
 
     @Inject
     PropertyController propertyController;
