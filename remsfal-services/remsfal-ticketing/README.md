@@ -1,6 +1,6 @@
-# REMSFAL Chat Microservice (Backend)
+# REMSFAL Ticketing Microservice (Backend)
 
-This microservice is responsible for all chat functionalities.
+This microservice is responsible for issues, defects, tasks, and chat functionalities.
 
 ## Running the application in dev mode
 
@@ -8,7 +8,7 @@ You can run this microservice in dev mode that enables live coding using:
 
 ```shell script
 mvn clean install
-mvn compile quarkus:dev -pl remsfal-services/remsfal-chat
+mvn compile quarkus:dev -pl remsfal-services/remsfal-ticketing
 ```
 
 > **_NOTE:_**  Quarkus ships with a Dev UI, which is available in dev mode only at http://localhost:8081/q/dev/.
