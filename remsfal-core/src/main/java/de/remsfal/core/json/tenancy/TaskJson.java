@@ -81,12 +81,10 @@ public abstract class TaskJson implements TaskModel {
 
     @Null
     @Nullable
-    @Override
     public abstract Date getCreatedAt();
 
     @Nullable
     @JsonIgnore
-    @Override
     public abstract Date getModifiedAt();
 
     public static TaskJson valueOf(final TaskModel model) {
@@ -97,7 +95,6 @@ public abstract class TaskJson implements TaskModel {
                 .type(model.getType())
                 .status(model.getStatus())
                 .description(model.getDescription())
-                .createdAt(model.getCreatedAt())
                 .build();
     }
 

@@ -1,4 +1,4 @@
-package de.remsfal.core.api.chat;
+package de.remsfal.core.api.ticketing;
 
 import jakarta.ws.rs.Path;
 

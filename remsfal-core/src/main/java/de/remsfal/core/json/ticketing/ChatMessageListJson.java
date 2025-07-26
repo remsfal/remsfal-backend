@@ -1,4 +1,4 @@
-package de.remsfal.core.json.chat;
+package de.remsfal.core.json.ticketing;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

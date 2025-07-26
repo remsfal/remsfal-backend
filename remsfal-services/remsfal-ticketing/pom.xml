@@ -4,8 +4,8 @@
         xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>remsfal-chat</artifactId>
-    <name>remsfal - Chat Service (uber-jar)</name>
+    <artifactId>remsfal-ticketing</artifactId>
+    <name>remsfal - Ticketing Service (uber-jar)</name>
 
     <parent>
         <groupId>de.remsfal</groupId>
