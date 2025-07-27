@@ -1,5 +1,5 @@
 include:
-  - remsfal-chat/docker-compose.yml
+  - remsfal-ticketing/docker-compose.yml
   - remsfal-platform/docker-compose.yml
 services:
   kafka-broker:
