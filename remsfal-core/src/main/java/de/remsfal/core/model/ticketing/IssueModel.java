@@ -1,9 +1,9 @@
-package de.remsfal.core.model.project;
+package de.remsfal.core.model.ticketing;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TaskModel {
+public interface IssueModel {
 
     String getId();
 
@@ -12,6 +12,7 @@ public interface TaskModel {
     String getTitle();
 
     public enum Type {
+        APPLICATION,
         TASK,
         DEFECT,
         MAINTENANCE

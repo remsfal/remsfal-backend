@@ -8,20 +8,20 @@ import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Optional;
 
+import de.remsfal.chat.control.TaskController;
 import de.remsfal.core.api.tenancy.TaskEndpoint;
 import de.remsfal.core.json.tenancy.TaskJson;
 import de.remsfal.core.json.tenancy.TaskListJson;
-import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
-import de.remsfal.core.model.project.TaskModel.Status;
-import de.remsfal.service.control.TaskController;
+import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
 public class TaskResource extends AbstractTenancyResource implements TaskEndpoint {
-
+//TODO: REMOVE ME
     @Inject
     TaskController taskController;
 
@@ -38,7 +38,7 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
         final String rentalId, final TaskJson task) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
-        final TaskModel model = null; // TODO
+        final IssueModel model = null; // TODO
         final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)

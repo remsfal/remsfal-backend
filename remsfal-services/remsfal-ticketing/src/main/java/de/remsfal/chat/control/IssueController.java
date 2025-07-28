@@ -1,4 +1,4 @@
-package de.remsfal.service.control;
+package de.remsfal.chat.control;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +11,9 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.project.TaskModel;
-import de.remsfal.core.model.project.TaskModel.Status;
-import de.remsfal.core.model.project.TaskModel.Type;
+import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.Type;
 import de.remsfal.service.entity.dao.TaskRepository;
 import de.remsfal.service.entity.dto.TaskEntity;
 
@@ -21,7 +21,7 @@ import de.remsfal.service.entity.dto.TaskEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class TaskController {
+public class IssueController {
 
     @Inject
     Logger logger;
@@ -30,7 +30,7 @@ public class TaskController {
     TaskRepository repository;
 
     @Transactional
-    public TaskModel createTask(final String projectId, final UserModel user, final TaskModel task) {
+    public IssueModel createTask(final String projectId, final UserModel user, final IssueModel task) {
         logger.infov("Creating a task (projectId={0}, creator={1})", projectId, user.getEmail());
         final TaskEntity entity = new TaskEntity();
         entity.generateId();
@@ -49,7 +49,7 @@ public class TaskController {
         return entity;
     }
 
-    public List<? extends TaskModel> getTasks(final String projectId, final Optional<Status> status) {
+    public List<? extends IssueModel> getTasks(final String projectId, final Optional<Status> status) {
         logger.infov("Retrieving tasks (projectId = {0})", projectId);
         if(status.isEmpty()) {
             return repository.findTaskByProjectId(Type.TASK, projectId);
@@ -58,7 +58,7 @@ public class TaskController {
         }
     }
 
-    public List<? extends TaskModel>
+    public List<? extends IssueModel>
     getTasks(final String projectId, final String ownerId, final Optional<Status> status) {
         logger.infov("Retrieving tasks (projectId = {0}, ownerId = {1})", projectId, ownerId);
         if(status.isEmpty()) {
@@ -73,19 +73,19 @@ public class TaskController {
             .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
     }
 
-    public TaskModel getTask(final String projectId, final String taskId) {
+    public IssueModel getTask(final String projectId, final String taskId) {
         logger.infov("Retrieving a task (projectId = {0}, taskId = {1})", projectId, taskId);
         return this.getTask(Type.TASK, projectId, taskId);
     }
 
     @Transactional
-    public TaskModel updateTask(final String projectId, final String taskId, final TaskModel task) {
+    public IssueModel updateTask(final String projectId, final String taskId, final IssueModel task) {
         logger.infov("Updating a task (projectId={0}, taskId={1})", projectId, taskId);
         final TaskEntity entity = this.getTask(Type.TASK, projectId, taskId);
         return updateTaskEntity(entity, task);
     }
 
-    private TaskModel updateTaskEntity(final TaskEntity entity, final TaskModel task) {
+    private IssueModel updateTaskEntity(final TaskEntity entity, final IssueModel task) {
         if(task.getTitle() != null) {
             entity.setTitle(task.getTitle());
         }
