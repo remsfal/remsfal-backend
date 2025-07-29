@@ -28,14 +28,14 @@ class NotificationConsumerTest extends AbstractTest {
                 .lastName("Consumer")
                 .build();
 
-        EmailEventJson mailJson = ImmutableEmailEventJson.builder()
+        ImmutableEmailEventJson mailJson = ImmutableEmailEventJson.builder()
                 .user(user)
                 .locale("en")
                 .type(EmailEventJson.EmailEventType.USER_REGISTRATION)
                 .link("https://remsfal.de")
                 .build();
 
-        Message<EmailEventJson> testMessage = Message.of(mailJson);
+        Message<ImmutableEmailEventJson> testMessage = Message.of(mailJson);
 
         MailingController mockController = mock(MailingController.class);
 
@@ -60,14 +60,14 @@ class NotificationConsumerTest extends AbstractTest {
                 .lastName("Membership")
                 .build();
 
-        EmailEventJson mailJson = ImmutableEmailEventJson.builder()
+        ImmutableEmailEventJson mailJson = ImmutableEmailEventJson.builder()
                 .user(user)
                 .locale("de")
                 .type(EmailEventJson.EmailEventType.PROJECT_ADMISSION)
                 .link("https://remsfal.de")
                 .build();
 
-        Message<EmailEventJson> testMessage = Message.of(mailJson);
+        Message<ImmutableEmailEventJson> testMessage = Message.of(mailJson);
 
         MailingController mockController = mock(MailingController.class);
 

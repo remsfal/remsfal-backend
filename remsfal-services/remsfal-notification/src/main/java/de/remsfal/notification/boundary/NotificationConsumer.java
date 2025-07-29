@@ -1,6 +1,7 @@
 package de.remsfal.notification.boundary;
 
 import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
 import de.remsfal.notification.control.MailingController;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -22,7 +23,7 @@ public class NotificationConsumer {
     MailingController mailingController;
 
     @Incoming("user-notification-consumer")
-    public CompletionStage<Void> consumeUserNotification(Message<EmailEventJson> msg) {
+    public CompletionStage<Void> consumeUserNotification(Message<ImmutableEmailEventJson> msg) {
         EmailEventJson mail = msg.getPayload();
 
         String email = mail.getUser().getEmail();
@@ -33,15 +34,21 @@ public class NotificationConsumer {
         logger.infov("Type: {0}", mail.getType());
 
         return CompletableFuture.runAsync(() -> {
-            switch (mail.getType()) {
-                case PROJECT_ADMISSION:
-                    mailingController.sendNewMembershipEmail(mail.getUser(), link, locale);
-                    break;
-                case USER_REGISTRATION:
-                    mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
-                    break;
+            try {
+                switch (mail.getType()) {
+                    case PROJECT_ADMISSION:
+                        mailingController.sendNewMembershipEmail(mail.getUser(), link, locale);
+                        break;
+                    case USER_REGISTRATION:
+                        mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported mail type: " + mail.getType());
+                }
+            } catch (Exception e) {
+                logger.error("Error while processing message, sending to DLQ", e);
+                throw new RuntimeException(e);
             }
-        })
-        .thenCompose(v -> msg.ack());
+        }).thenCompose(v -> msg.ack());
     }
 }
