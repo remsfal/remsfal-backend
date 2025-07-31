@@ -2,6 +2,8 @@ package de.remsfal.test.kafka;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.Set;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,12 +24,15 @@ public abstract class AbstractKafkaTest extends AbstractTest {
     protected KafkaCompanion companion;
 
     @BeforeEach
-    void clearAllTopics() {
-        String topic = "user-notification";
-        // delete topic
-        companion.topics().delete(topic);
-        // create topic with 2 partitions
-        companion.topics().create(topic, 2);
+    protected void clearAllTopics() {
+        Set<String> topics = Set.of("user-notification");
+        for(String topic : topics) {
+            logger.infov("Deleting and recreating topic {0}", topic);
+            // delete topic
+            companion.topics().delete(topic);
+            // create topic with 2 partitions
+            companion.topics().create(topic, 2);
+        }
     }
 
     public KafkaTopicSpecification given() {

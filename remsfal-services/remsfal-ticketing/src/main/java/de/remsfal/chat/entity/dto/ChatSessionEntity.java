@@ -1,11 +1,14 @@
 package de.remsfal.chat.entity.dto;
 
 import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+//import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+//import com.datastax.oss.driver.api.mapper.annotations.Entity;
+//import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 import de.remsfal.core.model.ticketing.ChatSessionModel;
+import jakarta.nosql.Column;
+import jakarta.nosql.Entity;
+import jakarta.nosql.Id;
 
 import java.time.Instant;
 import java.util.Map;
@@ -17,16 +20,23 @@ import java.util.UUID;
 @Entity
 public class ChatSessionEntity implements ChatSessionModel {
 
-    @PartitionKey
+    @Id
     private UUID projectId;
-    @ClusteringColumn
-    private UUID sessionId;
-    private UUID taskId;
-    private Map<UUID, String> participants;
-    private Instant createdAt;
-    private Instant modifiedAt;
 
-    // Getters and setters
+    @Id
+    private UUID sessionId;
+
+    @Id
+    private UUID taskId;
+
+    @Column
+    private Map<UUID, String> participants;
+
+    @Column
+    private Instant createdAt;
+
+    @Column
+    private Instant modifiedAt;
 
     @Override
     public UUID getProjectId() {

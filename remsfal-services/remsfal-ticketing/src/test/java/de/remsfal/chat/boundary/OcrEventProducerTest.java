@@ -1,60 +1,63 @@
 package de.remsfal.chat.boundary;
 
-import de.remsfal.chat.control.OcrEventProducer;
-import org.awaitility.Awaitility;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
-import org.jboss.logging.Logger;
+import java.util.Set;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
+import de.remsfal.chat.control.OcrEventProducer;
+import de.remsfal.chat.resource.OcrServiceResource;
+import de.remsfal.core.json.ticketing.FileUploadJson;
+import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
+import de.remsfal.test.TestData;
+import de.remsfal.test.kafka.AbstractKafkaTest;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
+import jakarta.inject.Inject;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+@QuarkusTest
+@QuarkusTestResource(OcrServiceResource.class)
+class OcrEventProducerTest extends AbstractKafkaTest {
 
-@ExtendWith(MockitoExtension.class)
-class OcrEventProducerTest {
-
-    @Mock
-    Emitter<String> emitter;
-
-    @Mock
-    Logger logger;
-
-    @InjectMocks
+    @Inject
     OcrEventProducer producer;
 
-    @Test
-    void testSendOcrRequest_sendFails_logsError() {
-        CompletableFuture<Void> failedFuture = new CompletableFuture<>();
-        Exception sendException = new RuntimeException("Send failure");
-        failedFuture.completeExceptionally(sendException);
+    @Override
+    @BeforeEach
+    protected void clearAllTopics() {
+        Config config = ConfigProvider.getConfig();
+        String bootstrapServers = config.getValue("quarkus.kafka.bootstrap-servers", String.class);
+        companion = new KafkaCompanion(bootstrapServers);
 
-        when(emitter.send(anyString())).thenReturn(failedFuture);
-
-        producer.sendOcrRequest("bucket", "file.png", "session123", "msg456");
-
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(2))
-                .untilAsserted(() ->
-                        verify(logger).error(eq("Send failed"), eq(sendException))
-                );
+        Set<String> topics = Set.of("ocr.documents.to_process");
+        for (String topic : topics) {
+            companion.topics().clearIfExists(topic);
+        }
     }
 
     @Test
-    void testSendOcrRequest_jsonSerializationThrowsException() {
-        OcrEventProducer brokenProducer = new OcrEventProducer() {
-            @Override
-            public void sendOcrRequest(String bucket, String fileName, String sessionId, String messageId) {
-                throw new RuntimeException("Serialization failed");
-            }
-        };
+    void testSendOcrRequest_sendFails_logsError() {
+        FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
+            .sessionId("123")
+            .messageId("323")
+            .senderId(TestData.USER_ID)
+            .bucket("bucket")
+            .fileName("file")
+            .build();
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> brokenProducer.sendOcrRequest("bucket", "file", "session", "msg"));
+        producer.sendOcrRequest(uploadedFile);
 
-        assertEquals("Serialization failed", ex.getMessage());
+        given()
+            .topic("ocr.documents.to_process")
+        .assertThat()
+            .json("sessionId", Matchers.equalTo("123"))
+            .json("messageId", Matchers.equalTo("323"))
+            .json("senderId", Matchers.equalTo(TestData.USER_ID))
+            .json("bucket", Matchers.equalTo("bucket"))
+            .json("fileName", Matchers.equalTo("file"));
     }
 }

@@ -1,16 +1,14 @@
 package de.remsfal.chat.control;
 
-import de.remsfal.chat.entity.dto.OcrRequest;
+import de.remsfal.core.json.ticketing.FileUploadJson;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.jboss.logging.Logger;
 
 import java.util.concurrent.CompletionStage;
-
 
 @ApplicationScoped
 public class OcrEventProducer {
@@ -20,16 +18,12 @@ public class OcrEventProducer {
 
     @Inject
     @Channel("ocr-request")
-    Emitter<String> emitter;
+    Emitter<FileUploadJson> emitter;
 
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    public void sendOcrRequest(String bucket, String fileName, String sessionId, String messageId) {
+    public void sendOcrRequest(final FileUploadJson uploadedFile) {
         try {
-            OcrRequest message = new OcrRequest(bucket, fileName, sessionId, messageId);
-            String json = mapper.writeValueAsString(message);
-            logger.info("Sending OCR request: " + json);
-            CompletionStage<Void> ack = emitter.send(json);
+            logger.infov("Sending OCR request: {0}", uploadedFile);
+            CompletionStage<Void> ack = emitter.send(uploadedFile);
             ack.whenComplete((res, ex) -> {
                 if (ex != null) {
                     logger.error("Send failed", ex);
