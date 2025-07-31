@@ -30,6 +30,8 @@ import de.remsfal.chat.entity.dto.ChatSessionEntity;
 import de.remsfal.core.api.ticketing.ChatSessionEndpoint;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.ChatSessionJson;
+import de.remsfal.core.json.ticketing.FileUploadJson;
+import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -428,9 +430,15 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                         .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
-                    fileName = extractFileNameFromUrl(fileUrl);
-                    ocrEventProducer.sendOcrRequest(bucketName, fileName, sessionId,
-                        fileMetadataEntity.getMessageId().toString());
+                    
+                    FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
+                        .sessionId(sessionId)
+                        .messageId(fileMetadataEntity.getMessageId().toString())
+                        .senderId(userId)
+                        .bucket(bucketName)
+                        .fileName(extractFileNameFromUrl(fileUrl))
+                        .build();
+                    ocrEventProducer.sendOcrRequest(uploadedFile);
                     String mergedJson = String.format(
                         "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
                             " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",

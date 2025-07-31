@@ -1,11 +1,11 @@
 package de.remsfal.chat.entity.dto;
 
 import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 import de.remsfal.core.model.ticketing.ChatMessageModel;
+import jakarta.nosql.Column;
+import jakarta.nosql.Entity;
+import jakarta.nosql.Id;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -13,20 +13,28 @@ import java.util.UUID;
 @Entity
 public class ChatMessageEntity implements ChatMessageModel {
 
-    @PartitionKey
+    @Id
     private UUID chatSessionId;
 
-    @ClusteringColumn
+    @Id
     private UUID messageId;
 
+    @Column
     private UUID senderId;
+
+    @Column
     private String contentType;
+
+    @Column
     private String content;
+
+    @Column
     private String url;
+
+    @Column
     private Instant createdAt;
 
-    // Getters and setters for all fields
-
+    @Override
     public UUID getChatSessionId() {
         return chatSessionId;
     }
@@ -35,6 +43,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.chatSessionId = chatSessionId;
     }
 
+    @Override
     public UUID getMessageId() {
         return messageId;
     }
@@ -43,6 +52,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.messageId = messageId;
     }
 
+    @Override
     public UUID getSenderId() {
         return senderId;
     }
@@ -51,6 +61,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.senderId = senderId;
     }
 
+    @Override
     public String getContentType() {
         return contentType;
     }
@@ -59,6 +70,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.contentType = contentType;
     }
 
+    @Override
     public String getContent() {
         return content;
     }
@@ -67,6 +79,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.content = content;
     }
 
+    @Override
     public String getUrl() {
         return url;
     }
@@ -75,6 +88,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.url = url;
     }
 
+    @Override
     public Instant getCreatedAt() {
         return createdAt;
     }

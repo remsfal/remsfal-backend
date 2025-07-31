@@ -9,6 +9,12 @@ import java.util.UUID;
  */
 public interface ChatSessionModel {
 
+    public enum Role {
+        MANAGER,
+        TENANT,
+        CONTRACTOR
+    }
+    
     UUID getProjectId();
 
     UUID getTaskId();
