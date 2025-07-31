@@ -49,6 +49,10 @@ public class NotificationConsumer {
                 logger.error("Error while processing message, sending to DLQ", e);
                 throw new RuntimeException(e);
             }
-        }).thenCompose(v -> msg.ack());
+        }).thenCompose(v -> msg.ack())
+                .thenRun(() -> {
+                    long end = System.currentTimeMillis();
+                    logger.infov("REGISTRATION_NOTIFICATION_END email={0} timestamp={1}", email, end);
+                });
     }
 }
