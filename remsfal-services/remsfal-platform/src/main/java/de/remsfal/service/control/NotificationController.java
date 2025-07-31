@@ -33,6 +33,8 @@ public class NotificationController {
     Emitter<EmailEventJson> notificationEmitter;
 
     public void informUserAboutRegistration(final CustomerModel user) {
+        long start = System.currentTimeMillis();
+        logger.infov("REGISTRATION_NOTIFICATION_START email={0} timestamp={1}", user.getEmail(), start);
         logger.infov("Sending information about user registration (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
             .user(UserJson.valueOf(user))
