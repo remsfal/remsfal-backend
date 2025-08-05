@@ -45,8 +45,8 @@ public interface AuthenticationEndpoint {
     @Operation(summary = "Start user session via oauth flow.")
     @APIResponse(responseCode = "302", description = "Redirect user to the frontend spa")
     Response session(@QueryParam("code") String code,
-         @DefaultValue("/") @QueryParam("state") String state,
-         @QueryParam("error") String error);
+        @DefaultValue("/") @QueryParam("state") String state,
+        @QueryParam("error") String error);
 
     @GET
     @Path("/logout")
