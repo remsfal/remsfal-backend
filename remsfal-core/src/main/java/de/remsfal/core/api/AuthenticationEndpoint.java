@@ -23,7 +23,7 @@ public interface AuthenticationEndpoint {
 
     static boolean isAuthenticationPath(final String path) {
         final String basePath = "/" + AuthenticationEndpoint.CONTEXT + "/"
-                + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE;
+            + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE;
         final String loginPath = basePath + "/login";
         final String sessionPath = basePath + "/session";
         final String logoutPath = basePath + "/logout";
@@ -45,8 +45,8 @@ public interface AuthenticationEndpoint {
     @Operation(summary = "Start user session via oauth flow.")
     @APIResponse(responseCode = "302", description = "Redirect user to the frontend spa")
     Response session(@QueryParam("code") String code,
-                     @DefaultValue("/") @QueryParam("state") String state,
-                     @QueryParam("error") String error);
+         @DefaultValue("/") @QueryParam("state") String state,
+         @QueryParam("error") String error);
 
     @GET
     @Path("/logout")
