@@ -3,6 +3,9 @@ package de.remsfal.common.authentication;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jwt.JWTClaimsSet;
 
 import io.smallrye.jwt.algorithm.SignatureAlgorithm;
@@ -34,6 +37,9 @@ public class JWTManager {
     @ConfigProperty(name = "de.remsfal.auth.jwt.public-key-location", defaultValue = "publicKey.pem")
     private String publicKeyLocation;
 
+    @ConfigProperty(name = "de.remsfal.auth.jwt.key-id", defaultValue = "remsfal-platform-key")
+    private String keyId;
+
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
@@ -57,7 +63,7 @@ public class JWTManager {
         long expirationTime = System.currentTimeMillis() / 1000 + sessionInfo.getExpireInSeconds();
 
         return Jwt.claims(sessionInfo.getClaims()).issuer(issuer).expiresAt(expirationTime).jws()
-            .algorithm(SignatureAlgorithm.RS256).header("typ", "JWT").sign(privateKey);
+                .algorithm(SignatureAlgorithm.RS256).header("typ", "JWT").header("kid", keyId).sign(privateKey);
     }
 
     public SessionInfo verifyJWT(String jwt) {
@@ -100,6 +106,15 @@ public class JWTManager {
         }
 
         return sessionInfo;
+    }
+
+    public RSAKey getPublicJwk() {
+        RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
+        return new RSAKey.Builder(rsaPublicKey)
+                .keyUse(KeyUse.SIGNATURE)
+                .algorithm(JWSAlgorithm.RS256)
+                .keyID(keyId)
+                .build();
     }
 
 }
