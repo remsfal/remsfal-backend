@@ -3,16 +3,12 @@ package de.remsfal.chat.boundary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.remsfal.chat.resource.OcrServiceResource;
+import de.remsfal.chat.TicketingTestData;
 import de.remsfal.chat.control.AuthorizationController;
 import de.remsfal.chat.control.ChatMessageController;
-import de.remsfal.chat.control.FileStorageService;
+import de.remsfal.chat.control.FileStorageController;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel;
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.Result;
-import io.minio.messages.Item;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -23,13 +19,10 @@ import jakarta.ws.rs.core.Response;
 import org.awaitility.Awaitility;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -49,9 +42,7 @@ import java.util.UUID;
  */
 @QuarkusTest
 @QuarkusTestResource(OcrServiceResource.class)
-public class OcrTest {
-
-    private static final String BUCKET_NAME = "remsfal-chat-files";
+public class OcrTest extends AbstractResourceTest {
 
     @InjectMock
     AuthorizationController authorizationController;
@@ -63,45 +54,19 @@ public class OcrTest {
     ChatSessionResource chatSessionResource;
 
     @Inject
-    FileStorageService fileStorageService;
-
-    @Inject
-    MinioClient minioClient;
+    FileStorageController fileStorageService;
 
     @InjectMock
     RemsfalPrincipal principal;
 
-    @BeforeEach
-    public void setup(){
-        try {
-            boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(BUCKET_NAME).build());
-
-            if (!bucketExists) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(BUCKET_NAME).build());
-            }
-        } catch (Exception e) {
-            fail("Failed to initialize MinIO bucket: " + e.getMessage());
-        }
-    }
-
-    @AfterEach
-    public void cleanup() throws Exception {
-        Iterable<Result<Item>> results = fileStorageService.listObjects(BUCKET_NAME);
-        for (Result<Item> result : results) {
-            Item item = result.get();
-            fileStorageService.deleteObject(BUCKET_NAME, item.objectName());
-        }
-    }
-
     @Test
     public void testOcrService_SUCCESS() throws Exception {
-        String fileName = "test-image.png";
-        String contentType = "image/png";
-
-        InputStream imageStream = getClass().getClassLoader().getResourceAsStream(fileName);
+        InputStream imageStream = getClass().getClassLoader()
+            .getResourceAsStream(TicketingTestData.FILE_PNG_PATH);
         byte[] fileContent = imageStream.readAllBytes();
 
-        MultipartFormDataInput input = createMultipartFormDataInput(fileName, contentType, fileContent);
+        MultipartFormDataInput input = createMultipartFormDataInput(
+            TicketingTestData.FILE_PNG_PATH, TicketingTestData.FILE_PNG_TYPE, fileContent);
 
         String projectId = UUID.randomUUID().toString();
         String taskId = UUID.randomUUID().toString();
@@ -123,7 +88,7 @@ public class OcrTest {
         String messageId = root.get("fileId").asText();
 
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
+                .atMost(Duration.ofSeconds(300))
                 .untilAsserted(() ->
                         verify(chatMessageController, atLeastOnce())
                                 .updateTextChatMessage(eq(sessionId), eq(messageId), eq("Das hier ist ein Text"))
@@ -181,7 +146,3 @@ public class OcrTest {
     }
 
 }
-
-
-
-

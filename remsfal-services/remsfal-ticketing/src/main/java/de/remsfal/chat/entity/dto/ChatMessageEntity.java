@@ -1,55 +1,51 @@
 package de.remsfal.chat.entity.dto;
 
-import com.datastax.oss.driver.api.core.cql.Row;
-
 import de.remsfal.core.model.ticketing.ChatMessageModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
-import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
-@Entity
-public class ChatMessageEntity implements ChatMessageModel {
+@Entity("chat_messages")
+public class ChatMessageEntity extends AbstractEntity implements ChatMessageModel {
 
     @Id
-    private UUID chatSessionId;
+    private ChatMessageKey key;
 
-    @Id
-    private UUID messageId;
-
-    @Column
+    @Column("sender_id")
     private UUID senderId;
 
-    @Column
+    @Column("content_type")
     private String contentType;
 
-    @Column
+    @Column("content")
     private String content;
 
-    @Column
+    @Column("url")
     private String url;
 
-    @Column
-    private Instant createdAt;
-
-    @Override
-    public UUID getChatSessionId() {
-        return chatSessionId;
+    public ChatMessageKey getKey() {
+        return key;
     }
 
-    public void setChatSessionId(UUID chatSessionId) {
-        this.chatSessionId = chatSessionId;
+    public void setKey(ChatMessageKey key) {
+        this.key = key;
+    }
+
+    @Override
+    public UUID getSessionId() {
+        return Optional.ofNullable(key)
+            .map(ChatMessageKey::getSessionId)
+            .orElse(null);
     }
 
     @Override
     public UUID getMessageId() {
-        return messageId;
-    }
-
-    public void setMessageId(UUID messageId) {
-        this.messageId = messageId;
+        return Optional.ofNullable(key)
+            .map(ChatMessageKey::getMessageId)
+            .orElse(null);
     }
 
     @Override
@@ -89,37 +85,10 @@ public class ChatMessageEntity implements ChatMessageModel {
     }
 
     @Override
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    /**
-     * Maps a Cassandra row to a `CassChatMessageEntity`.
-     *
-     * @param row The Cassandra row.
-     * @return The mapped entity.
-     */
-    public static ChatMessageEntity mapRow(Row row) {
-        ChatMessageEntity entity = new ChatMessageEntity();
-        entity.setChatSessionId(row.getUuid("chat_session_id"));
-        entity.setMessageId(row.getUuid("message_id"));
-        entity.setSenderId(row.getUuid("sender_id"));
-        entity.setContentType(row.getString("content_type"));
-        entity.setContent(row.getString("content"));
-        entity.setUrl(row.getString("url"));
-        entity.setCreatedAt(row.getInstant("created_at"));
-        return entity;
-    }
-
-    @Override
     public String toString() {
         return "CassChatMessageEntity{" +
-                "chatSessionId=" + chatSessionId +
-                ", messageId=" + messageId +
+                "chatSessionId=" + getSessionId() +
+                ", messageId=" + getMessageId() +
                 ", senderId=" + senderId +
                 ", contentType='" + contentType + '\'' +
                 ", content='" + content + '\'' +

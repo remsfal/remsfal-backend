@@ -11,7 +11,7 @@ public interface FileUploadModel {
 
     String getSenderId();
 
-    String getMediaType();
+    String getContentType();
 
     String getBucket();
 

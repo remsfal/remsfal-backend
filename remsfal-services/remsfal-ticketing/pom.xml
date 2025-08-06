@@ -43,6 +43,26 @@
                 <artifactId>java-driver-query-builder</artifactId>
                 <version>4.17.0</version>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.jnosql.databases</groupId>
+                <artifactId>jnosql-cassandra</artifactId>
+                <version>1.1.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jnosql.mapping</groupId>
+                <artifactId>jnosql-mapping-semistructured</artifactId>
+                <version>1.1.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jnosql.mapping</groupId>
+                <artifactId>jnosql-mapping-core</artifactId>
+                <version>1.1.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jnosql.lite</groupId>
+                <artifactId>mapping-lite-processor</artifactId>
+                <version>1.1.9</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -102,7 +122,7 @@
     </dependencies>
 
     <build>
-        <finalName>remsfal-chat</finalName>
+        <finalName>remsfal-ticketing</finalName>
         <plugins>
             <plugin>
                 <groupId>io.quarkus.platform</groupId>
@@ -122,17 +142,10 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                <proc>full</proc>
-                <compilerArgs>
-                    <arg>-parameters</arg>
-                </compilerArgs>
-                    <!-- annotationProcessorPaths>
-                        <path>
-                            <groupId>com.datastax.oss.quarkus</groupId>
-                            <artifactId>cassandra-quarkus-mapper-processor</artifactId>
-                            <version>1.2.0</version>
-                        </path>
-                    </!annotationProcessorPaths -->
+                    <proc>full</proc>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

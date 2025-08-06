@@ -25,5 +25,6 @@ public interface ChatSessionModel {
 
     Instant getCreatedAt();
 
-    Instant  getModifiedAt();
+    Instant getModifiedAt();
+
 }

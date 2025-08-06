@@ -34,7 +34,8 @@ public class ChatMessageController {
 
     public ChatMessageEntity getChatMessage(String sessionId, String messageId) {
         logger.infov("Getting chat message (messageId={0})", messageId);
-        return repository.findMessageById(sessionId, messageId);
+        return repository.findMessageById(sessionId, messageId)
+            .orElseThrow(() -> new RuntimeException("Message not found"));
     }
 
 }

@@ -90,6 +90,8 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
         logger.debugv("Container {0} is starting: {1}", RFOCR_IMAGE, ocrContainer);
 
         String kafkaBootstrapServers = "localhost:" + kafkaContainer.getMappedPort(kafkaPort);
+        logger.infov("Container {0} is listening on {1}", KAFKA_IMAGE, kafkaBootstrapServers);
+
         Map<String, String> props = new HashMap<>();
         props.put("mp.messaging.connector.smallrye-kafka.bootstrap.servers", kafkaBootstrapServers);
         props.put("kafka.bootstrap.servers", kafkaBootstrapServers);

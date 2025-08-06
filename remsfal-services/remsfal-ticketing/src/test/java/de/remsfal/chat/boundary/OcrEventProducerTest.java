@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.chat.control.OcrEventProducer;
+import de.remsfal.chat.entity.dao.FileStorage;
 import de.remsfal.chat.resource.OcrServiceResource;
 import de.remsfal.core.json.ticketing.FileUploadJson;
 import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
@@ -45,7 +46,7 @@ class OcrEventProducerTest extends AbstractKafkaTest {
             .sessionId("123")
             .messageId("323")
             .senderId(TestData.USER_ID)
-            .bucket("bucket")
+            .bucket(FileStorage.DEFAULT_BUCKET_NAME)
             .fileName("file")
             .build();
 
@@ -57,7 +58,7 @@ class OcrEventProducerTest extends AbstractKafkaTest {
             .json("sessionId", Matchers.equalTo("123"))
             .json("messageId", Matchers.equalTo("323"))
             .json("senderId", Matchers.equalTo(TestData.USER_ID))
-            .json("bucket", Matchers.equalTo("bucket"))
+            .json("bucket", Matchers.equalTo(FileStorage.DEFAULT_BUCKET_NAME))
             .json("fileName", Matchers.equalTo("file"));
     }
 }

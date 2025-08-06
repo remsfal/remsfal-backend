@@ -6,9 +6,9 @@ import de.remsfal.chat.resource.OcrServiceResource;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import de.remsfal.chat.control.ChatMessageController;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
-import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectSpy;
 import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 import jakarta.inject.Inject;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 @QuarkusTestResource(OcrServiceResource.class)
 public class OcrEventConsumerTest extends AbstractKafkaTest {
 
-    @InjectMock
+    @InjectSpy
     ChatMessageController chatMessageController;
 
     @Inject
@@ -44,10 +44,8 @@ public class OcrEventConsumerTest extends AbstractKafkaTest {
             companion.topics().clearIfExists(topic);
         }
 
-        companion.registerSerde(
-            ImmutableOcrResultJson.class,
-            new ObjectMapperSerde<>(ImmutableOcrResultJson.class)
-          );
+        companion.registerSerde(ImmutableOcrResultJson.class,
+            new ObjectMapperSerde<>(ImmutableOcrResultJson.class));
     }
 
     @Test
@@ -62,7 +60,7 @@ public class OcrEventConsumerTest extends AbstractKafkaTest {
             .awaitCompletion();
 
         verify(chatMessageController, times(1))
-                .updateTextChatMessage("123", "456", "Text");
+            .updateTextChatMessage("123", "456", "Text");
     }
 
 }

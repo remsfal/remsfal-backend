@@ -66,12 +66,12 @@ public class ChatSessionController {
         chatSessionRepository.changeParticipantRole(projectUUID, sessionUUID, taskUUID, userUUID, role.name());
     }
 
-    public String exportChatLogs(String projectId, String taskId, String sessionId) {
+    public String getChatLogs(String projectId, String taskId, String sessionId) {
         logger.infov("Exporting chat session (sessionId={0})", sessionId);
         UUID projectUUID = UUID.fromString(projectId);
         UUID taskUUID = UUID.fromString(taskId);
         UUID sessionUUID = UUID.fromString(sessionId);
-        return chatMessageRepository.exportChatLogsAsJsonString(projectUUID, sessionUUID, taskUUID);
+        return chatMessageRepository.getChatLogsAsJsonString(projectUUID, sessionUUID, taskUUID);
     }
 
     public void deleteChatSession(String projectId, String taskId, String sessionId) {

@@ -10,6 +10,7 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
+import de.remsfal.chat.entity.dto.ChatSessionKey;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -20,9 +21,9 @@ import java.util.Map;
 import java.util.Optional;
 
 @ApplicationScoped
-public class ChatSessionRepository {
+public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity, ChatSessionKey> {
 
-    @ConfigProperty(name = "%dev.quarkus.cassandra.keyspace")
+    @ConfigProperty(name = "quarkus.cassandra.keyspace")
     String keyspace;
 
     private static final String TABLE = "chat_sessions";
@@ -56,10 +57,12 @@ public class ChatSessionRepository {
         UUID taskId, Map<UUID, String> participants) {
         try {
             ChatSessionEntity session = new ChatSessionEntity();
+            ChatSessionKey key = new ChatSessionKey();
             UUID sessionId = UUID.randomUUID();
-            session.setProjectId(projectId);
-            session.setSessionId(sessionId);
-            session.setTaskId(taskId);
+            key.setProjectId(projectId);
+            key.setSessionId(sessionId);
+            key.setTaskId(taskId);
+            session.setKey(key);
             session.setParticipants(participants);
             session.setCreatedAt(Instant.now());
             session.setModifiedAt(Instant.now());
@@ -73,22 +76,28 @@ public class ChatSessionRepository {
     }
 
     public Optional<ChatSessionEntity> findSessionById(UUID projectId, UUID sessionId, UUID taskId) {
-        try {
-            Select selectQuery = QueryBuilder.selectFrom(keyspace, TABLE)
-                .all()
-                .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
-                .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
-                .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
-            ResultSet resultSet = cqlSession.execute(selectQuery.build());
-            Row row = resultSet.one();
-            if (row != null) {
-                return Optional.of(ChatSessionEntity.mapRow(row));
-            } else {
-                return Optional.empty();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(ERROR_SESSION_FETCH, e);
-        }
+        return template.select(ChatSessionEntity.class)
+            .where(PROJECT_ID_COLUMN).eq(projectId)
+            .and(TASK_ID_COLUMN).eq(taskId)
+            .and(SESSION_ID_COLUMN).eq(sessionId)
+            .singleResult();
+
+//        try {
+//            Select selectQuery = QueryBuilder.selectFrom(keyspace, TABLE)
+//                .all()
+//                .whereColumn(PROJECT_ID_COLUMN).isEqualTo(QueryBuilder.literal(projectId))
+//                .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(sessionId))
+//                .whereColumn(TASK_ID_COLUMN).isEqualTo(QueryBuilder.literal(taskId));
+//            ResultSet resultSet = cqlSession.execute(selectQuery.build());
+//            Row row = resultSet.one();
+//            if (row != null) {
+//                return Optional.of(ChatSessionEntity.mapRow(row));
+//            } else {
+//                return Optional.empty();
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException(ERROR_SESSION_FETCH, e);
+//        }
     }
 
     public String findStatusById(UUID projectId, UUID sessionId, UUID taskId) {
@@ -142,27 +151,32 @@ public class ChatSessionRepository {
     }
 
     public String findParticipantRole(UUID projectId, UUID sessionId, UUID taskId, UUID userId) {
-        try {
-            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, taskId);
-            ResultSet resultSet = cqlSession.execute(selectQuery.build());
-            Row row = resultSet.one();
-            if (row != null) {
-                Map<UUID, String> participants =
-                    row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
-                assert participants != null;
-                String role = participants.get(userId);
-                if (role != null) {
-                    return role;
-                } else {
-                    throw new RuntimeException("No participants found for the given userId");
-                }
-            } else {
-                throw new RuntimeException(NOT_FOUND_PARTICIPANTS);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("An error occurred while fetching the participant role", e);
-        }
+        Optional<ChatSessionEntity> entity = findSessionById(projectId, sessionId, taskId);
+        return entity
+            .map(ChatSessionEntity::getParticipants)
+            .map(map -> map.get(userId))
+            .orElse(null);
+//        try {
+//            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
+//                projectId, sessionId, taskId);
+//            ResultSet resultSet = cqlSession.execute(selectQuery.build());
+//            Row row = resultSet.one();
+//            if (row != null) {
+//                Map<UUID, String> participants =
+//                    row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
+//                assert participants != null;
+//                String role = participants.get(userId);
+//                if (role != null) {
+//                    return role;
+//                } else {
+//                    throw new RuntimeException("No participants found for the given userId");
+//                }
+//            } else {
+//                throw new RuntimeException(NOT_FOUND_PARTICIPANTS);
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException("An error occurred while fetching the participant role", e);
+//        }
     }
 
     public void addParticipant(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String role) {
