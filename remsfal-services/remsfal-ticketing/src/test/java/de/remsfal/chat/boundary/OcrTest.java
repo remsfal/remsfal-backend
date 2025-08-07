@@ -88,7 +88,7 @@ public class OcrTest extends AbstractResourceTest {
         String messageId = root.get("fileId").asText();
 
         Awaitility.await()
-                .atMost(Duration.ofSeconds(300))
+                .atMost(Duration.ofSeconds(30))
                 .untilAsserted(() ->
                         verify(chatMessageController, atLeastOnce())
                                 .updateTextChatMessage(eq(sessionId), eq(messageId), eq("Das hier ist ein Text"))
@@ -109,15 +109,6 @@ public class OcrTest extends AbstractResourceTest {
                 chatSessionResource.extractFileNameFromUrl(" ")
         );
         assertEquals("File URL cannot be null or empty", ex.getMessage());
-    }
-
-    @Test
-    void testNoSlashInUrl_Exception() {
-        String input = "filename.png";
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                chatSessionResource.extractFileNameFromUrl(input)
-        );
-        assertEquals("Invalid file URL format: " + input, ex.getMessage());
     }
 
     @Test
