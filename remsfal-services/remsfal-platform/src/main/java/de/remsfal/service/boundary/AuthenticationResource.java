@@ -3,6 +3,9 @@ package de.remsfal.service.boundary;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 
+import com.nimbusds.jose.jwk.JWKSet;
+
+import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.api.AuthenticationEndpoint;
 import de.remsfal.core.model.UserModel;
@@ -47,6 +50,9 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     SessionManager sessionManager;
 
     @Inject
+    JWTManager jwtManager;
+
+    @Inject
     UserController controller;
 
     @Inject
@@ -84,7 +90,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath(route).build();
         final NewCookie accessToken = sessionManager.generateAccessToken(
             sessionManager.sessionInfoBuilder(SessionManager.ACCESS_COOKIE_NAME).userId(user.getId())
-                .userEmail(user.getEmail()).build());
+                    .userEmail(user.getEmail()).build());
         final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
         return redirect(redirectUri).cookie(accessToken, refreshToken).build();
     }
@@ -96,7 +102,13 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath("/").build();
         sessionManager.logout(httpHeaders.getCookies());
         return redirect(redirectUri).cookie(sessionManager.removalCookie(SessionManager.ACCESS_COOKIE_NAME),
-            sessionManager.removalCookie(SessionManager.REFRESH_COOKIE_NAME)).build();
+                sessionManager.removalCookie(SessionManager.REFRESH_COOKIE_NAME)).build();
+    }
+
+    @Override
+    public Response jwks() {
+        JWKSet jwkSet = new JWKSet(jwtManager.getPublicJwk());
+        return Response.ok(jwkSet.toJSONObject()).build();
     }
 
     private Response.ResponseBuilder redirect(final URI redirectUrl) {

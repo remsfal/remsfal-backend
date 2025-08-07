@@ -13,7 +13,7 @@ import jakarta.ws.rs.core.Response.Status;
 class AuthenticationResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/authentication";
-    
+
     static final String REDIRECT_URI_URL = "http%3A%2F%2Flocalhost%3A8081%2Fapi%2Fv1%2Fauthentication%2Fsession";
 
     @Test
@@ -97,6 +97,17 @@ class AuthenticationResourceTest extends AbstractResourceTest {
                     .path("/")
                     .sameSite("Strict")
                     .maxAge(0));
+    }
+
+    @Test
+    void jwks_SUCCESS_returnsKeySet() {
+        given()
+            .when().get(BASE_PATH + "/jwks")
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("keys[0].kty", Matchers.equalTo("RSA"))
+            .body("keys[0].kid", Matchers.equalTo("remsfal-platform-key"))
+            .body("keys[0].alg", Matchers.equalTo("RS256"));
     }
 
 }

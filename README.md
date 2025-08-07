@@ -50,6 +50,9 @@ For ease of use its recommended to run mysql using the provided [docker-compose.
 docker compose up -d
 ```
 
+**Important:** The [`docker-compose.yml`](docker-compose.yml) file uses the `include:` directive, which is only supported in
+newer versions of Docker Compose. Please make sure your Docker Desktop or Docker Compose CLI is up to date.
+
 ### CI/CD
 
 This project utilizes Github Actions to check the code quality
