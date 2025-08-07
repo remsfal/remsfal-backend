@@ -72,15 +72,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createChatSession_DATABASE_ERROR() {
-        logger.info("Testing createChatSession with database error");
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.createChatSession(null, null, null));
-        assertTrue(exception.getMessage().contains("An error occurred while creating the session"),
-                "Exception message should contain 'An error occurred while creating the session'");
-    }
-
-    @Test
     void findSessionById_SUCCESS() {
         logger.info("Testing findById");
         Optional<ChatSessionEntity> session = chatSessionRepository

@@ -1,6 +1,5 @@
 package de.remsfal.chat.entity.dao;
 
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
@@ -33,11 +32,6 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
     String keyspace;
 
     private static final String TABLE = "chat_messages";
-    private static final String SESSION_ID_COLUMN = "session_id";
-    private static final String MESSAGE_ID_COLUMN = "message_id";
-
-    @Inject
-    CqlSession cqlSession;
 
     @Inject
     ChatSessionRepository chatSessionRepository;
@@ -52,25 +46,9 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
 
     public Optional<ChatMessageEntity> findMessageById(String sessionId, String messageId) {
         return template.select(ChatMessageEntity.class)
-            .where(SESSION_ID_COLUMN).eq(UUID.fromString(sessionId))
-            .and(MESSAGE_ID_COLUMN).eq(UUID.fromString(messageId))
+            .where(SESSION_ID).eq(UUID.fromString(sessionId))
+            .and(MESSAGE_ID).eq(UUID.fromString(messageId))
             .singleResult();
-
-//        try {
-//            logger.info("SessionId: " + sessionId + " messageId: " + messageId);
-//            Select selectQuery = QueryBuilder.selectFrom(keyspace, ChatMessageRepository.TABLE)
-//                .all()
-//                .whereColumn(CHAT_SESSION_ID_COLUMN)
-//                .isEqualTo(QueryBuilder.literal(UUID.fromString(sessionId)))
-//                .whereColumn(MESSAGE_ID_COLUMN)
-//                .isEqualTo(QueryBuilder.literal(UUID.fromString(messageId)));
-//
-//            ResultSet resultSet = cqlSession.execute(selectQuery.build());
-//            return resultSet.all().stream().map(ChatMessageEntity::mapRow).findFirst()
-//                .orElseThrow(() -> new RuntimeException("Message not found"));
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     public ChatMessageEntity sendMessage(String sessionId, String userId, String contentType, String content) {
@@ -185,7 +163,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         }
         Map<String, Object> messageJsonMap = new LinkedHashMap<>();
         messageJsonMap.put("DATETIME", message.getCreatedAt().toString());
-        messageJsonMap.put(MESSAGE_ID_COLUMN, message.getMessageId());
+        messageJsonMap.put(MESSAGE_ID, message.getMessageId());
         messageJsonMap.put("SENDER_ID", message.getSenderId());
         messageJsonMap.put("MEMBER_ROLE",
             chatSessionRepository.findParticipantRole(projectId, message.getSessionId(),
@@ -212,8 +190,8 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
     private void saveMessage(ChatMessageEntity message) {
         try {
             Insert insertQuery = QueryBuilder.insertInto(keyspace, ChatMessageRepository.TABLE)
-                .value(SESSION_ID_COLUMN, QueryBuilder.literal(message.getSessionId()))
-                .value(MESSAGE_ID_COLUMN, QueryBuilder.literal(message.getMessageId()))
+                .value(SESSION_ID, QueryBuilder.literal(message.getSessionId()))
+                .value(MESSAGE_ID, QueryBuilder.literal(message.getMessageId()))
                 .value("sender_id", QueryBuilder.literal(message.getSenderId()))
                 .value("content_type", QueryBuilder.literal(message.getContentType()))
                 .value("content", QueryBuilder.literal(message.getContent()))
@@ -230,9 +208,9 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         Update updateQuery = QueryBuilder.update(keyspace, ChatMessageRepository.TABLE)
             .setColumn("content", QueryBuilder.literal(message.getContent()))
             .setColumn("url", QueryBuilder.literal(message.getUrl()))
-            .whereColumn(SESSION_ID_COLUMN)
+            .whereColumn(SESSION_ID)
             .isEqualTo(QueryBuilder.literal(message.getSessionId()))
-            .whereColumn(MESSAGE_ID_COLUMN)
+            .whereColumn(MESSAGE_ID)
             .isEqualTo(QueryBuilder.literal(message.getMessageId()));
 
         cqlSession.execute(updateQuery.build());
@@ -240,21 +218,16 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
 
     private void deleteMessage(UUID chatSessionId, UUID messageId) {
         Delete deleteQuery = QueryBuilder.deleteFrom(keyspace, ChatMessageRepository.TABLE)
-            .whereColumn(SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId))
-            .whereColumn(MESSAGE_ID_COLUMN).isEqualTo(QueryBuilder.literal(messageId));
+            .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(chatSessionId))
+            .whereColumn(MESSAGE_ID).isEqualTo(QueryBuilder.literal(messageId));
 
         cqlSession.execute(deleteQuery.build());
     }
 
     private List<ChatMessageEntity> findMessagesByChatSession(UUID chatSessionId) {
         return template.select(ChatMessageEntity.class)
-            .where(SESSION_ID_COLUMN).eq(chatSessionId)
+            .where(SESSION_ID).eq(chatSessionId)
             .result();
-
-//        Select selectQuery = QueryBuilder.selectFrom(keyspace, ChatMessageRepository2.TABLE)
-//            .all()
-//            .whereColumn(CHAT_SESSION_ID_COLUMN).isEqualTo(QueryBuilder.literal(chatSessionId));
-//        ResultSet resultSet = cqlSession.execute(selectQuery.build());
-//        return resultSet.all().stream().map(ChatMessageEntity::mapRow).toList();
     }
+
 }

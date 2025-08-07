@@ -27,7 +27,7 @@ public class FileStorage {
 
     public static final long DEFAULT_OBJECT_SIZE = -1;
 
-    public static final long DEFAULT_PART_SIZE = 5 * 1024 * 1024;
+    public static final long DEFAULT_PART_SIZE = 5L * 1024L * 1024L;
 
     public static final String DEFAULT_BUCKET_NAME = "remsfal-ticketing";
 
