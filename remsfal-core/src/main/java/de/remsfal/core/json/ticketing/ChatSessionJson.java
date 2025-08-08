@@ -45,12 +45,10 @@ public abstract class ChatSessionJson implements ChatSessionModel {
 
     @Null
     @Nullable
-    @Override
     public abstract Instant getCreatedAt();
 
     @Null
     @Nullable
-    @Override
     public abstract Instant getModifiedAt();
 
     public static ChatSessionJson valueOf(final ChatSessionModel model) {
@@ -62,6 +60,5 @@ public abstract class ChatSessionJson implements ChatSessionModel {
                 .modifiedAt(model.getModifiedAt())
                 .build();
     }
-
 
 }

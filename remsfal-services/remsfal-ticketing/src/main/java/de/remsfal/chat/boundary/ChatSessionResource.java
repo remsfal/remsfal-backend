@@ -22,14 +22,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.remsfal.chat.control.ChatMessageController;
 import de.remsfal.chat.control.ChatSessionController;
-import de.remsfal.chat.control.FileStorageService;
+import de.remsfal.chat.control.FileStorageController;
 import de.remsfal.chat.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
+import de.remsfal.chat.entity.dao.FileStorage;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
 import de.remsfal.core.api.ticketing.ChatSessionEndpoint;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.ChatSessionJson;
+import de.remsfal.core.json.ticketing.FileUploadJson;
+import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -56,12 +59,11 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
     Logger logger;
 
     @Inject
-    FileStorageService fileStorageService;
+    FileStorageController fileStorageController;
 
     @Inject
     OcrEventProducer ocrEventProducer;
 
-    private final String bucketName = "remsfal-chat-files";
     private static final String NOT_FOUND_SESSION_MESSAGE = "Chat session not found";
 
     @Override
@@ -269,7 +271,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
             checkWritePermissions(projectId);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
-                .entity(chatSessionController.exportChatLogs(projectId, sessionId, taskId))
+                .entity(chatSessionController.getChatLogs(projectId, sessionId, taskId))
                 .build();
 
         } catch (NoSuchElementException e) {
@@ -299,7 +301,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
                 String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
 
                 // Download the file from the storage service
-                InputStream fileStream = fileStorageService.downloadFile(bucketName, fileName);
+                InputStream fileStream = fileStorageController.downloadFile(fileName);
                 // Stream the file content to the client as a binary response
                 return Response.ok((StreamingOutput) output -> {
                     byte[] buffer = new byte[8192];
@@ -424,19 +426,25 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
                             .build();
                     }
 
-                    String fileUrl = fileStorageService.uploadFile(bucketName, input);
+                    String fileUrl = fileStorageController.uploadFile(input);
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                         .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
-                    fileName = extractFileNameFromUrl(fileUrl);
-                    ocrEventProducer.sendOcrRequest(bucketName, fileName, sessionId,
-                        fileMetadataEntity.getMessageId().toString());
+                    
+                    FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
+                        .sessionId(sessionId)
+                        .messageId(fileMetadataEntity.getMessageId().toString())
+                        .senderId(userId)
+                        .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                        .fileName(extractFileNameFromUrl(fileUrl))
+                        .build();
+                    ocrEventProducer.sendOcrRequest(uploadedFile);
                     String mergedJson = String.format(
                         "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
                             " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
                         fileMetadataEntity.getMessageId(),
                         fileUrl,
-                        fileMetadataEntity.getChatSessionId(),
+                        fileMetadataEntity.getSessionId(),
                         fileMetadataEntity.getCreatedAt(),
                         fileMetadataEntity.getSenderId());
 
@@ -500,7 +508,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
         }
         // Normalize content type (remove charset if present)
         String normalizedContentType = contentType.split(";")[0].trim();
-        Set<String> allowedTypes = fileStorageService.getAllowedTypes();
+        Set<String> allowedTypes = fileStorageController.getAllowedTypes();
         return allowedTypes.contains(normalizedContentType);
     }
 
@@ -530,7 +538,10 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
             throw new IllegalArgumentException("File URL cannot be null or empty");
         }
         int lastSlashIndex = fileUrl.lastIndexOf('/');
-        if (lastSlashIndex == -1 || lastSlashIndex == fileUrl.length() - 1) {
+        if (lastSlashIndex == -1) {
+            return fileUrl;
+        }
+        if (lastSlashIndex == fileUrl.length() - 1) {
             throw new IllegalArgumentException("Invalid file URL format: " + fileUrl);
         }
         return fileUrl.substring(lastSlashIndex + 1);

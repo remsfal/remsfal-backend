@@ -31,7 +31,7 @@ public abstract class ChatMessageJson implements ChatMessageModel {
 
     @Nullable
     @Override
-    public abstract UUID getChatSessionId();
+    public abstract UUID getSessionId();
 
     @Nullable
     @Override
@@ -52,19 +52,22 @@ public abstract class ChatMessageJson implements ChatMessageModel {
 
     @Null
     @Nullable
-    @Override
     public abstract Instant getCreatedAt();
 
-    public static ChatMessageJson valueOf(final ChatMessageModel model)
-    {
+    @Null
+    @Nullable
+    public abstract Instant getModifiedAt();
+
+    public static ChatMessageJson valueOf(final ChatMessageModel model) {
         return ImmutableChatMessageJson.builder()
                 .messageId(model.getMessageId())
-                .chatSessionId(model.getChatSessionId())
+                .sessionId(model.getSessionId())
                 .senderId(model.getSenderId())
                 .contentType(model.getContentType())
                 .content(model.getContent())
                 .url(model.getUrl())
                 .createdAt(model.getCreatedAt())
+                .modifiedAt(model.getModifiedAt())
                 .build();
     }
 

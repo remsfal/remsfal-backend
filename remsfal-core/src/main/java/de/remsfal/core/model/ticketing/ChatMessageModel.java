@@ -8,7 +8,7 @@ import java.util.UUID;
  */
 public interface ChatMessageModel {
 
-    UUID getChatSessionId();
+    UUID getSessionId();
 
     UUID getMessageId();
 
@@ -21,4 +21,7 @@ public interface ChatMessageModel {
     String getUrl();
 
     Instant getCreatedAt();
+
+    Instant getModifiedAt();
+
 }
