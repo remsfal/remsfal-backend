@@ -14,7 +14,7 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class ChatSubResource {
+public class AbstractIssueResource {
 
     @Context
     protected UriInfo uri;

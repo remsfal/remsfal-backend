@@ -1,13 +1,13 @@
-package de.remsfal.core.json.project;
+package de.remsfal.core.json.ticketing;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.TaskModel;
-import de.remsfal.core.model.project.TaskModel.Status;
-import de.remsfal.core.model.project.TaskModel.Type;
+import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.Type;
 import jakarta.annotation.Nullable;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -17,10 +17,10 @@ import org.immutables.value.Value.Immutable;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A task item with basic information")
-@JsonDeserialize(as = ImmutableTaskItemJson.class)
+@Schema(description = "An issue item with basic information")
+@JsonDeserialize(as = ImmutableIssueItemJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TaskItemJson {
+public abstract class IssueItemJson {
     // Validation is not required, because it is read-only.
 
     public abstract String getId();
@@ -36,8 +36,8 @@ public abstract class TaskItemJson {
     @Nullable
     public abstract String getOwner();
 
-    public static TaskItemJson valueOf(final TaskModel model) {
-        return ImmutableTaskItemJson.builder()
+    public static IssueItemJson valueOf(final IssueModel model) {
+        return ImmutableIssueItemJson.builder()
             .id(model.getId())
             .name(model.getTitle())
             .title(model.getTitle())
