@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 
+import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.test.AbstractTest;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.kafka.InjectKafkaCompanion;
@@ -17,6 +18,9 @@ import io.smallrye.reactive.messaging.kafka.companion.ConsumerBuilder;
 import io.smallrye.reactive.messaging.kafka.companion.ConsumerTask;
 import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
 @QuarkusTestResource(KafkaCompanionResource.class)
 public abstract class AbstractKafkaTest extends AbstractTest {
 
@@ -25,13 +29,9 @@ public abstract class AbstractKafkaTest extends AbstractTest {
 
     @BeforeEach
     protected void clearAllTopics() {
-        Set<String> topics = Set.of("user-notification");
+        Set<String> topics = Set.of(EmailEventJson.TOPIC);
         for(String topic : topics) {
-            logger.infov("Deleting and recreating topic {0}", topic);
-            // delete topic
-            companion.topics().delete(topic);
-            // create topic with 2 partitions
-            companion.topics().create(topic, 2);
+            companion.topics().clearIfExists(topic);
         }
     }
 
