@@ -1,7 +1,6 @@
 package de.remsfal.notification.boundary;
 
 import de.remsfal.core.json.eventing.EmailEventJson;
-import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
 import de.remsfal.notification.control.MailingController;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,8 +22,8 @@ public class NotificationConsumer {
     MailingController mailingController;
 
     @Blocking
-    @Incoming("user-notification-consumer")
-    public CompletionStage<Void> consumeUserNotification(Message<ImmutableEmailEventJson> msg) {
+    @Incoming(EmailEventJson.TOPIC)
+    public CompletionStage<Void> consumeUserNotification(Message<EmailEventJson> msg) {
         EmailEventJson mail = msg.getPayload();
 
         String email = mail.getUser().getEmail();
@@ -45,4 +44,5 @@ public class NotificationConsumer {
         logger.infov("Email has been send");
         return msg.ack();
     }
+
 }

@@ -116,9 +116,9 @@ jobs:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
           BRANCH_NAME: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
         run: |
-          PR_TITLE="Sync of OpenAPI Spec created by #${{ steps.backend-merge.outputs.pr-number }}"
+          PR_TITLE="Sync of OpenAPI Spec created by #${{ steps.backend-merge.outputs.pr-title }}"
           PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend, \
-          which were created by the PR #${{ steps.backend-merge.outputs.pr-number }}: \
+          which were created by the PR remsfal/remsfal-backend#${{ steps.backend-merge.outputs.pr-number }}: \
           ${{ steps.backend-merge.outputs.pr-title }}"
 
           git push origin "$BRANCH_NAME"
@@ -127,4 +127,5 @@ jobs:
             -f base="main" \
             -f head="$BRANCH_NAME" \
             -f title="$PR_TITLE" \
-            -f body="$PR_BODY"
+            -f body="$PR_BODY" \
+            -f labels="openapi,javascript"

@@ -29,7 +29,7 @@ public class NotificationController {
     Logger logger;
 
     @Inject
-    @Channel("user-notification-producer")
+    @Channel(EmailEventJson.TOPIC)
     Emitter<EmailEventJson> notificationEmitter;
 
     public void informUserAboutRegistration(final CustomerModel user) {
