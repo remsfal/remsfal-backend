@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
@@ -29,7 +30,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         notificationController.informUserAboutProjectMembership(user, "fakeId");
 
         given()
-            .topic("user-notification")
+            .topic(EmailEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
@@ -48,7 +49,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         notificationController.informUserAboutRegistration(user);
 
         given()
-            .topic("user-notification")
+            .topic(EmailEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))

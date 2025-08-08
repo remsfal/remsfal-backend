@@ -1,23 +1,45 @@
 package de.remsfal.notification.boundary;
 
-import de.remsfal.core.json.ImmutableUserJson;
-import de.remsfal.core.json.eventing.EmailEventJson;
-import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
-import de.remsfal.core.json.UserJson;
-import de.remsfal.notification.control.MailingController;
-import de.remsfal.test.AbstractTest;
-import io.quarkus.test.junit.QuarkusTest;
-import org.eclipse.microprofile.reactive.messaging.Message;
-import org.jboss.logging.Logger;
-import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+
+import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 
-import static org.mockito.Mockito.*;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
+import de.remsfal.notification.control.MailingController;
+import de.remsfal.test.kafka.AbstractKafkaTest;
+import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.kafka.KafkaCompanionResource;
+import jakarta.inject.Inject;
 
 @QuarkusTest
-class NotificationConsumerTest extends AbstractTest {
+@QuarkusTestResource(KafkaCompanionResource.class)
+class NotificationConsumerTest extends AbstractKafkaTest {
+
+    @InjectSpy
+    MailingController mailingController;
+
+    @Inject
+    NotificationConsumer consumer;
+
+    @BeforeEach
+    void registerSerde() {
+        companion.registerSerde(ImmutableEmailEventJson.class,
+            new ObjectMapperSerde<>(ImmutableEmailEventJson.class));
+    }
 
     @Test
     void testConsumeUserNotification_NewRegistration() throws Exception {
@@ -28,27 +50,23 @@ class NotificationConsumerTest extends AbstractTest {
                 .lastName("Consumer")
                 .build();
 
-        ImmutableEmailEventJson mailJson = ImmutableEmailEventJson.builder()
+        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
                 .user(user)
                 .locale("en")
                 .type(EmailEventJson.EmailEventType.USER_REGISTRATION)
                 .link("https://remsfal.de")
                 .build();
 
-        Message<ImmutableEmailEventJson> testMessage = Message.of(mailJson);
+        companion.produce(ImmutableEmailEventJson.class)
+            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+            .awaitCompletion();
 
-        MailingController mockController = mock(MailingController.class);
-
-        NotificationConsumer notificationConsumer = new NotificationConsumer();
-        notificationConsumer.mailingController = mockController;
-        notificationConsumer.logger = mock(Logger.class);
-
-        CompletionStage<Void> result = notificationConsumer.consumeUserNotification(testMessage);
-
-        result.toCompletableFuture().get();
-
-        verify(mockController, times(1))
-                .sendWelcomeEmail(user, "https://remsfal.de", Locale.ENGLISH);
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+                verify(mailingController, atLeastOnce())
+                    .sendWelcomeEmail(user, "https://remsfal.de", Locale.ENGLISH)
+                );
     }
 
     @Test
@@ -60,26 +78,23 @@ class NotificationConsumerTest extends AbstractTest {
                 .lastName("Membership")
                 .build();
 
-        ImmutableEmailEventJson mailJson = ImmutableEmailEventJson.builder()
+        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
                 .user(user)
                 .locale("de")
                 .type(EmailEventJson.EmailEventType.PROJECT_ADMISSION)
                 .link("https://remsfal.de")
                 .build();
 
-        Message<ImmutableEmailEventJson> testMessage = Message.of(mailJson);
+        companion.produce(ImmutableEmailEventJson.class)
+            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+            .awaitCompletion();
 
-        MailingController mockController = mock(MailingController.class);
-
-        NotificationConsumer notificationConsumer = new NotificationConsumer();
-        notificationConsumer.mailingController = mockController;
-        notificationConsumer.logger = mock(Logger.class);
-
-        CompletionStage<Void> result = notificationConsumer.consumeUserNotification(testMessage);
-
-        result.toCompletableFuture().get();
-
-        verify(mockController, times(1))
-                .sendNewMembershipEmail(user, "https://remsfal.de", Locale.GERMAN);
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+                verify(mailingController, atLeastOnce())
+                    .sendNewMembershipEmail(user, "https://remsfal.de", Locale.GERMAN)
+                );
     }
+
 }
