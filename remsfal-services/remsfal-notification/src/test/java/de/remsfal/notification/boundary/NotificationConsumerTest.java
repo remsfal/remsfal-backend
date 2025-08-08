@@ -42,7 +42,7 @@ class NotificationConsumerTest extends AbstractKafkaTest {
     }
 
     @Test
-    void testConsumeUserNotification_NewRegistration() throws Exception {
+    void testConsumeUserNotification_NewRegistration() {
         UserJson user = ImmutableUserJson.builder()
                 .id(UUID.randomUUID().toString())
                 .email("test@example.com")
@@ -70,7 +70,7 @@ class NotificationConsumerTest extends AbstractKafkaTest {
     }
 
     @Test
-    void testConsumeUserNotification_NewMembership() throws Exception {
+    void testConsumeUserNotification_NewMembership() {
         UserJson user = ImmutableUserJson.builder()
                 .id(UUID.randomUUID().toString())
                 .email("test2@example.com")
