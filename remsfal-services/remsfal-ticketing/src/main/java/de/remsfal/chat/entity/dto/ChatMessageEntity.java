@@ -1,48 +1,54 @@
 package de.remsfal.chat.entity.dto;
 
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-
 import de.remsfal.core.model.ticketing.ChatMessageModel;
+import jakarta.nosql.Column;
+import jakarta.nosql.Entity;
+import jakarta.nosql.Id;
 
-import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
-@Entity
-public class ChatMessageEntity implements ChatMessageModel {
+@Entity("chat_messages")
+public class ChatMessageEntity extends AbstractEntity implements ChatMessageModel {
 
-    @PartitionKey
-    private UUID chatSessionId;
+    @Id
+    private ChatMessageKey key;
 
-    @ClusteringColumn
-    private UUID messageId;
-
+    @Column("sender_id")
     private UUID senderId;
+
+    @Column("content_type")
     private String contentType;
+
+    @Column("content")
     private String content;
+
+    @Column("url")
     private String url;
-    private Instant createdAt;
 
-    // Getters and setters for all fields
-
-    public UUID getChatSessionId() {
-        return chatSessionId;
+    public ChatMessageKey getKey() {
+        return key;
     }
 
-    public void setChatSessionId(UUID chatSessionId) {
-        this.chatSessionId = chatSessionId;
+    public void setKey(ChatMessageKey key) {
+        this.key = key;
     }
 
+    @Override
+    public UUID getSessionId() {
+        return Optional.ofNullable(key)
+            .map(ChatMessageKey::getSessionId)
+            .orElse(null);
+    }
+
+    @Override
     public UUID getMessageId() {
-        return messageId;
+        return Optional.ofNullable(key)
+            .map(ChatMessageKey::getMessageId)
+            .orElse(null);
     }
 
-    public void setMessageId(UUID messageId) {
-        this.messageId = messageId;
-    }
-
+    @Override
     public UUID getSenderId() {
         return senderId;
     }
@@ -51,6 +57,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.senderId = senderId;
     }
 
+    @Override
     public String getContentType() {
         return contentType;
     }
@@ -59,6 +66,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.contentType = contentType;
     }
 
+    @Override
     public String getContent() {
         return content;
     }
@@ -67,6 +75,7 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.content = content;
     }
 
+    @Override
     public String getUrl() {
         return url;
     }
@@ -75,37 +84,11 @@ public class ChatMessageEntity implements ChatMessageModel {
         this.url = url;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    /**
-     * Maps a Cassandra row to a `CassChatMessageEntity`.
-     *
-     * @param row The Cassandra row.
-     * @return The mapped entity.
-     */
-    public static ChatMessageEntity mapRow(Row row) {
-        ChatMessageEntity entity = new ChatMessageEntity();
-        entity.setChatSessionId(row.getUuid("chat_session_id"));
-        entity.setMessageId(row.getUuid("message_id"));
-        entity.setSenderId(row.getUuid("sender_id"));
-        entity.setContentType(row.getString("content_type"));
-        entity.setContent(row.getString("content"));
-        entity.setUrl(row.getString("url"));
-        entity.setCreatedAt(row.getInstant("created_at"));
-        return entity;
-    }
-
     @Override
     public String toString() {
         return "CassChatMessageEntity{" +
-                "chatSessionId=" + chatSessionId +
-                ", messageId=" + messageId +
+                "chatSessionId=" + getSessionId() +
+                ", messageId=" + getMessageId() +
                 ", senderId=" + senderId +
                 ", contentType='" + contentType + '\'' +
                 ", content='" + content + '\'' +

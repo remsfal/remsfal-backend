@@ -27,7 +27,6 @@ import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -35,13 +34,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.chat.TestData;
+import de.remsfal.chat.TicketingTestData;
 import de.remsfal.chat.control.ChatMessageController;
-import de.remsfal.chat.control.FileStorageService;
+import de.remsfal.chat.control.FileStorageController;
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
+import de.remsfal.chat.entity.dao.FileStorage;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
+import io.minio.ListObjectsArgs;
 import io.minio.Result;
 import io.minio.messages.Item;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -59,7 +60,7 @@ import jakarta.ws.rs.core.Response;
 class ChatSessionResourceTest extends AbstractResourceTest {
 
     @Inject
-    FileStorageService fileStorageService;
+    FileStorageController fileStorageService;
 
     @Inject
     ChatMessageController chatMessageController;
@@ -83,12 +84,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     static final String EXAMPLE_CHAT_SESSION_ID_2 = "30444d17-56a9-4275-a9a8-e4fb7305359a";
     static final UUID EXAMPLE_CHAT_SESSION_ID_1_UUID = UUID.fromString(EXAMPLE_CHAT_SESSION_ID_1);
     static final UUID EXAMPLE_CHAT_SESSION_ID_2_UUID = UUID.fromString(EXAMPLE_CHAT_SESSION_ID_2);
-    static final String EXAMPLE_FILE_NAME_PREFIX = "example";
-    static final String EXAMPLE_FILE_NAME_SUFFIX = "txt";
-    static final String EXAMPLE_FILE_NAME = EXAMPLE_FILE_NAME_PREFIX + "." + EXAMPLE_FILE_NAME_SUFFIX;
-    static final UUID PROJECT_ID_1_UUID = UUID.fromString(TestData.PROJECT_ID_1);
-    static final UUID USER_ID_3_UUID = UUID.fromString(TestData.USER_ID_3);
-    static final UUID USER_ID_4_UUID = UUID.fromString(TestData.USER_ID_4);
+    static final UUID PROJECT_ID_1_UUID = UUID.fromString(TicketingTestData.PROJECT_ID_1);
+    static final UUID USER_ID_3_UUID = UUID.fromString(TicketingTestData.USER_ID_3);
+    static final UUID USER_ID_4_UUID = UUID.fromString(TicketingTestData.USER_ID_4);
 
     static final String CHAT_MESSAGE_ID_1 = "b9854462-abb8-4213-8b15-be9290a19959";
     static final String CHAT_MESSAGE_ID_2 = "3f72a368-48bd-405e-976f-51a5c417a5c2";
@@ -97,31 +95,30 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     static final UUID CHAT_MESSAGE_ID_2_UUID = UUID.fromString(CHAT_MESSAGE_ID_2);
     static final UUID CHAT_MESSAGE_ID_3_UUID = UUID.fromString(CHAT_MESSAGE_ID_3);
     static final String CHAT_MESSAGE_JSON_PAYLOAD = "{"
-        + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
-        + "\"sender_id\": \"" + TestData.USER_ID + "\","
+        + "\"session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
+        + "\"sender_id\": \"" + TicketingTestData.USER_ID + "\","
         + "\"contentType\": \"" + ContentType.TEXT.name() + "\","
         + "\"content\": \"Test Message\""
         + "}";
     static final String CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT = "{"
-        + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
-        + "\"sender_id\": \"" + TestData.USER_ID + "\","
+        + "\"session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
+        + "\"sender_id\": \"" + TicketingTestData.USER_ID + "\","
         + "\"contentType\": \"" + ContentType.TEXT.name() + "\","
         + "\"content\": \"\""
         + "}";
     static final String CHAT_MESSAGE_JSON_PAYLOAD_NULL_CONTENT = "{"
-        + "\"chat_session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
-        + "\"sender_id\": \"" + TestData.USER_ID + "\","
+        + "\"session_id\": \"" + EXAMPLE_CHAT_SESSION_ID_1 + "\","
+        + "\"sender_id\": \"" + TicketingTestData.USER_ID + "\","
         + "\"contentType\": \"" + ContentType.TEXT.name() + "\","
         + "\"content\": null"
         + "}";
-
-    private final String bucketName = "remsfal-chat-files";
 
     @BeforeEach
     protected void setup() throws Exception {
         logger.info("Setting up test data");
         super.setupTestUsers();
         super.setupTestMemberships();
+        super.setupTestFiles();
         logger.info("Setting up chat sessions and messages");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
             "(project_id, task_id, session_id, created_at, participants) " +
@@ -134,9 +131,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
                 USER_ID_3_UUID, ParticipantRole.HANDLER.name()));
         logger.info("Session 1 " + EXAMPLE_CHAT_SESSION_ID_1 +
             " created. " +
-            "On project " + TestData.PROJECT_ID_1 + ": TASK_ID_1.");
-        logger.info("Session 1 participants: " + TestData.USER_ID_4 + " as " + ParticipantRole.INITIATOR.name() +
-            " and " + TestData.USER_ID_3 + " as " + ParticipantRole.HANDLER.name());
+            "On project " + TicketingTestData.PROJECT_ID_1 + ": TASK_ID_1.");
+        logger.info("Session 1 participants: " + TicketingTestData.USER_ID_4 + " as " + ParticipantRole.INITIATOR.name() +
+            " and " + TicketingTestData.USER_ID_3 + " as " + ParticipantRole.HANDLER.name());
         String insertChatSessionCql2 = "INSERT INTO remsfal.chat_sessions " +
             "(project_id, task_id, session_id, created_at, participants) " +
             "VALUES (?, ?, ?, ?, ?)";
@@ -148,11 +145,11 @@ class ChatSessionResourceTest extends AbstractResourceTest {
                 USER_ID_3_UUID, ParticipantRole.HANDLER.name()));
         logger.info("Session 2 " + EXAMPLE_CHAT_SESSION_ID_2 +
             " created. " +
-            "On project " + TestData.PROJECT_ID + ": TASK_ID_2.");
-        logger.info("Session 2 participants: " + TestData.USER_ID_4 + " as " + ParticipantRole.INITIATOR.name() +
-            " and " + TestData.USER_ID_3 + " as " + ParticipantRole.HANDLER.name());
+            "On project " + TicketingTestData.PROJECT_ID + ": TASK_ID_2.");
+        logger.info("Session 2 participants: " + TicketingTestData.USER_ID_4 + " as " + ParticipantRole.INITIATOR.name() +
+            " and " + TicketingTestData.USER_ID_3 + " as " + ParticipantRole.HANDLER.name());
         String insertChatMessageCql = "INSERT INTO remsfal.chat_messages " +
-            "(chat_session_id, message_id, sender_id, content_type, content, created_at) " +
+            "(session_id, message_id, sender_id, content_type, content, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql,
             EXAMPLE_CHAT_SESSION_ID_1_UUID, CHAT_MESSAGE_ID_1_UUID, USER_ID_3_UUID,
@@ -160,44 +157,27 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         logger.info("Message 1 " + CHAT_MESSAGE_ID_1 +
             " created. " +
-            "On session " + EXAMPLE_CHAT_SESSION_ID_1 + " by " + TestData.USER_ID_3);
+            "On session " + EXAMPLE_CHAT_SESSION_ID_1 + " by " + TicketingTestData.USER_ID_3);
 
         String insertChatMessageCql2 = "INSERT INTO remsfal.chat_messages " +
-            "(chat_session_id, message_id, sender_id, content_type, content, created_at) " +
+            "(session_id, message_id, sender_id, content_type, content, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql2,
             EXAMPLE_CHAT_SESSION_ID_2_UUID, CHAT_MESSAGE_ID_2_UUID, USER_ID_4_UUID,
             ChatMessageRepository.ContentType.TEXT.name(), "Hello World", Instant.now());
         logger.info("Message 2 " + CHAT_MESSAGE_ID_2 +
             " created. " +
-            "On session " + EXAMPLE_CHAT_SESSION_ID_2 + " by " + TestData.USER_ID_4);
+            "On session " + EXAMPLE_CHAT_SESSION_ID_2 + " by " + TicketingTestData.USER_ID_4);
         logger.info("Setting up example file for message 3");
-        Path tempDir = Files.createTempDirectory("test-");
-        Path tempFile = tempDir.resolve(EXAMPLE_FILE_NAME);
-        Files.writeString(tempFile, "Hello World");
-        String exampleFileName = tempFile.getFileName().toString();
-        MultipartFormDataInput exampleFile =
-            createMultipartFormDataInput(exampleFileName, Files.readAllBytes(tempFile));
-        String exampleFileUrl = fileStorageService.uploadFile(bucketName, exampleFile);
-        logger.info("File " + exampleFileName + " uploaded to " + exampleFileUrl);
         String insertChatMessageCql3 = "INSERT INTO remsfal.chat_messages " +
-            "(chat_session_id, message_id, sender_id, content_type, url, created_at) " +
+            "(session_id, message_id, sender_id, content_type, url, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql3,
             EXAMPLE_CHAT_SESSION_ID_1_UUID, CHAT_MESSAGE_ID_3_UUID, USER_ID_3_UUID,
-            ChatMessageRepository.ContentType.FILE.name(), exampleFileUrl, Instant.now());
+            ChatMessageRepository.ContentType.FILE.name(), TicketingTestData.FILE_PNG_PATH, Instant.now());
         logger.info("Message 3 " + CHAT_MESSAGE_ID_3 +
             " created. " +
-            "On session " + EXAMPLE_CHAT_SESSION_ID_1 + " by " + TestData.USER_ID_3);
-    }
-
-    @AfterEach
-    void cleanUpChatMessages() {
-        String deleteChatMessagesCql = "DELETE FROM remsfal.chat_messages WHERE chat_session_id = ?";
-        cqlSession.execute(deleteChatMessagesCql, EXAMPLE_CHAT_SESSION_ID_1_UUID);
-        cqlSession.execute(deleteChatMessagesCql, EXAMPLE_CHAT_SESSION_ID_2_UUID);
-        fileStorageService.deleteObject(bucketName, EXAMPLE_FILE_NAME);
-
+            "On session " + EXAMPLE_CHAT_SESSION_ID_1 + " by " + TicketingTestData.USER_ID_3);
     }
 
     // authentication test - same logic in all methods - no need for multiple tests
@@ -206,7 +186,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSession_UNAUTHENTICATED(String path) {
         given()
             .when()
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
     }
@@ -216,8 +196,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSession_UNPRIVILEGED(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -227,15 +207,15 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatSession_INVALID_INPUT(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(path, UUID.randomUUID().toString(), TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
@@ -251,8 +231,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(jsonBody)
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -264,8 +244,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         String nonExistingSessionId = UUID.randomUUID().toString();
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, nonExistingSessionId)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, nonExistingSessionId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -276,8 +256,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         String nonExistingParticipantId = UUID.randomUUID().toString();
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, nonExistingParticipantId)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, nonExistingParticipantId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -287,8 +267,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getParticipant_FAILURE_UNPRIVILEGED(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -303,8 +283,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(jsonBody)
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_3)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -319,8 +299,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(jsonBody)
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString(), TestData.USER_ID_4)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString(), TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
 
@@ -331,17 +311,17 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void joinChatSession_INVALID_INPUT(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -356,8 +336,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(largePayload)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
@@ -370,8 +350,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, emptySessionId)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, emptySessionId)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
@@ -381,17 +361,17 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getParticipants_INVALID_INPUT(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_2, UUID.randomUUID().toString())
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_2, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -399,12 +379,12 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}" })
     void removeParticipant_INVALID_INPUT(String path) {
-        String path_task1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+        String path_task1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .delete(path_task1_session1
                 .replace("{participantId}", UUID.randomUUID().toString()))
@@ -413,10 +393,10 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .delete(path_task1_session1
-                .replace("{participantId}", TestData.USER_ID_3))
+                .replace("{participantId}", TicketingTestData.USER_ID_3))
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
@@ -429,8 +409,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
 
@@ -438,8 +418,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(CHAT_MESSAGE_JSON_PAYLOAD_NULL_CONTENT)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
@@ -449,14 +429,14 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void createChatSession_OnTask_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1)
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
             .header("Location", Matchers.containsString(path.replace("{projectId}",
-                TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)))
+                TicketingTestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)))
             .and().body("sessionId", notNullValue());
     }
 
@@ -465,8 +445,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSession_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -479,8 +459,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatSession_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
@@ -490,16 +470,16 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void joinChatSession_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("[2].userId", equalTo(TestData.USER_ID_4))
+            .body("[2].userId", equalTo(TicketingTestData.USER_ID_4))
             .body("[2].userRole", equalTo("INITIATOR"))
-            .body("[1].userId", equalTo(TestData.USER_ID_3))
+            .body("[1].userId", equalTo(TicketingTestData.USER_ID_3))
             .body("[1].userRole", equalTo("HANDLER"))
-            .body("[0].userId", equalTo(TestData.USER_ID))
+            .body("[0].userId", equalTo(TicketingTestData.USER_ID))
             .body("[0].userRole", equalTo("OBSERVER"));
     }
 
@@ -508,12 +488,12 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getParticipants_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_2, EXAMPLE_CHAT_SESSION_ID_2)
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_2, EXAMPLE_CHAT_SESSION_ID_2)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("[1].userId", equalTo(TestData.USER_ID_4))
+            .body("[1].userId", equalTo(TicketingTestData.USER_ID_4))
             .body("[1].userRole", equalTo("INITIATOR"));
     }
 
@@ -522,12 +502,12 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getParticipant_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("[0].userId", equalTo(TestData.USER_ID_4))
+            .body("[0].userId", equalTo(TicketingTestData.USER_ID_4))
             .body("[0].userRole", equalTo("INITIATOR"));
 
     }
@@ -542,11 +522,11 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(jsonBody)
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_4)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .body("[0].userId", equalTo(TestData.USER_ID_4))
+            .body("[0].userId", equalTo(TicketingTestData.USER_ID_4))
             .body("[0].userRole", equalTo(newRole));
 
     }
@@ -556,9 +536,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void removeParticipant_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TestData.USER_ID_3)
+            .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
 
@@ -571,8 +551,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(CHAT_MESSAGE_JSON_PAYLOAD)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
@@ -584,17 +564,17 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatMessages_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .body("CHAT_SESSION_ID", equalTo(EXAMPLE_CHAT_SESSION_ID_1))
+            .body("SESSION_ID", equalTo(EXAMPLE_CHAT_SESSION_ID_1))
             .body("TASK_ID", equalTo(TASK_ID_1))
-            .body("PROJECT_ID", equalTo(TestData.PROJECT_ID_1))
+            .body("PROJECT_ID", equalTo(TicketingTestData.PROJECT_ID_1))
             .body("messages[1].DATETIME", notNullValue())
             .body("messages[1].message_id", notNullValue())
-            .body("messages[1].SENDER_ID", equalTo(TestData.USER_ID_3))
+            .body("messages[1].SENDER_ID", equalTo(TicketingTestData.USER_ID_3))
             .body("messages[1].MEMBER_ROLE", equalTo("HANDLER"))
             .body("messages[1].MESSAGE_TYPE", equalTo("TEXT"))
             .body("messages[1].MESSAGE_CONTENT", equalTo("Hello World"));
@@ -605,14 +585,14 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatMessage_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .body("messageId", equalTo(CHAT_MESSAGE_ID_1))
-            .body("chatSessionId", equalTo(EXAMPLE_CHAT_SESSION_ID_1))
-            .body("senderId", equalTo(TestData.USER_ID_3))
+            .body("sessionId", equalTo(EXAMPLE_CHAT_SESSION_ID_1))
+            .body("senderId", equalTo(TicketingTestData.USER_ID_3))
             .body("contentType", equalTo("TEXT"))
             .body("content", equalTo("Hello World"))
             .body("url", nullValue())
@@ -623,19 +603,19 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void getChatMessage_FILETYPE_SUCCESS(String path) {
         String resolvedPath = path
-            .replace("{projectId}", TestData.PROJECT_ID_1)
+            .replace("{projectId}", TicketingTestData.PROJECT_ID_1)
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
             .replace("{messageId}", CHAT_MESSAGE_ID_3);
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(resolvedPath)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", containsString("filename=\"" + EXAMPLE_FILE_NAME + "\""))
+            .header("Content-Disposition", containsString("filename=\"" + TicketingTestData.FILE_PNG_PATH + "\""))
             .body(not(emptyString()));
     }
 
@@ -644,15 +624,15 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatMessages_FAILURE(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -660,12 +640,12 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void getChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(path_project1_session1
                 .replace("{messageId}", UUID.randomUUID().toString()))
             .then()
@@ -673,7 +653,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .get(path_project1_session1
                 .replace("{messageId}", CHAT_MESSAGE_ID_1))
             .then()
@@ -689,14 +669,14 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJson)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .body("messageId", equalTo(CHAT_MESSAGE_ID_1))
-            .body("chatSessionId", equalTo(EXAMPLE_CHAT_SESSION_ID_1))
-            .body("senderId", equalTo(TestData.USER_ID_3))
+            .body("sessionId", equalTo(EXAMPLE_CHAT_SESSION_ID_1))
+            .body("senderId", equalTo(TicketingTestData.USER_ID_3))
             .body("contentType", equalTo("TEXT"))
             .body("content", equalTo("Updated Hello World"))
             .body("url", nullValue())
@@ -706,7 +686,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void updateChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         String updatedMessageJsonBlank = "{\"content\":\"\"}";
@@ -718,7 +698,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJsonBlank)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .put(put_request)
             .then()
             .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
@@ -728,7 +708,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJson)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .put(put_request)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
@@ -737,7 +717,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJson)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .put(path_project1_session1
                 .replace("{messageId}", UUID.randomUUID().toString()))
             .then()
@@ -749,8 +729,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatMessage_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
@@ -758,12 +738,12 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void deleteChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path.replace("{projectId}", TestData.PROJECT_ID_1)
+        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(path_project1_session1
                 .replace("{messageId}", UUID.randomUUID().toString()))
             .then()
@@ -771,7 +751,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .delete(path_project1_session1
                 .replace("{messageId}", CHAT_MESSAGE_ID_1))
             .then()
@@ -779,8 +759,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(path.replace("{projectId}", TestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(path.replace("{projectId}", TicketingTestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
                 .replace("{sessionId}", UUID.randomUUID().toString())
                 .replace("{messageId}", CHAT_MESSAGE_ID_1))
             .then()
@@ -799,9 +779,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             Map<String, String> response =
                 given()
                     .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
-                    .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                    .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
                     .when()
-                    .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+                    .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                     .then()
                     .statusCode(Response.Status.CREATED.getStatusCode())
                     .contentType(ContentType.JSON)
@@ -815,7 +795,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             ChatMessageEntity persistedMessage = chatMessageController.getChatMessage(sessionId, fileId);
 
             assertNotNull(persistedMessage, "Persisted message should not be null");
-            assertEquals(EXAMPLE_CHAT_SESSION_ID_1, persistedMessage.getChatSessionId().toString(),
+            assertEquals(EXAMPLE_CHAT_SESSION_ID_1, persistedMessage.getSessionId().toString(),
                 "Chat session ID should match");
             assertEquals(ChatMessageRepository.ContentType.FILE.name(), persistedMessage.getContentType(),
                 "Content type should match");
@@ -831,7 +811,10 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     private void verifyFileInBucket(String bucketName, String fileName) {
         boolean fileExists = false;
         try {
-            Iterable<Result<Item>> items = fileStorageService.listObjects(bucketName);
+            Iterable<Result<Item>> items = minioClient.listObjects(
+                ListObjectsArgs.builder()
+                    .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                    .build());
             for (Result<Item> item : items) {
                 if (item.get().objectName().contains(fileName)) {
                     fileExists = true;
@@ -849,9 +832,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void uploadFile_MissingFilePart_FAILURE(String path) {
         given()
             .multiPart("someField", "someValue") // This ensures a valid multipart request with a boundary
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .when()
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
             .body("message", equalTo("No file part found in the form data"));
@@ -865,9 +848,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         try {
             given()
                 .multiPart("file", tempFile.toFile(), "application/x-msdownload")
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .when()
-                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+                .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                 .then()
                 .statusCode(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode())
                 .body("message", containsString("Unsupported Media Type: application/x-msdownload"));
@@ -882,9 +865,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void uploadFile_EmptyInputStream_FAILURE(String path) {
         given()
             .multiPart("file", "", MediaType.TEXT_PLAIN) // Empty file content
-            .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
             .when()
-            .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+            .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
             .body("message", equalTo("Failed to read file stream: unknown"));
@@ -899,9 +882,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         try {
             given()
                 .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
-                .cookie(buildCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .when()
-                .post(path, TestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
+                .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
         } finally {
