@@ -1,13 +1,13 @@
 package de.remsfal.chat.control;
 
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
 
-@RequestScoped
+@ApplicationScoped
 public class ChatMessageController {
 
     @Inject
@@ -34,7 +34,8 @@ public class ChatMessageController {
 
     public ChatMessageEntity getChatMessage(String sessionId, String messageId) {
         logger.infov("Getting chat message (messageId={0})", messageId);
-        return repository.findMessageById(sessionId, messageId);
+        return repository.findMessageById(sessionId, messageId)
+            .orElseThrow(() -> new RuntimeException("Message not found"));
     }
 
 }

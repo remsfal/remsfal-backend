@@ -36,7 +36,8 @@ public class CassandraExecutor {
     @ConfigProperty(name = "quarkus.cassandra.local-datacenter")
     String cassandraLocalDatacenter;
 
-    private static final String KEYSPACE_NAME = "REMSFAL";
+    @ConfigProperty(name = "quarkus.cassandra.keyspace")
+    String cassandraKeyspace;
 
     public void onStartup(@Observes StartupEvent event) {
         try (
@@ -58,14 +59,14 @@ public class CassandraExecutor {
     }
 
     private void ensureKeyspaceExists(CqlSession session) {
-        logger.info("Ensuring keyspace '{}' exists.", KEYSPACE_NAME);
+        logger.info("Ensuring keyspace '{}' exists.", cassandraKeyspace);
         String createKeyspaceCQL = String.format(
                 "CREATE KEYSPACE IF NOT EXISTS %s " +
                         "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};",
-                KEYSPACE_NAME
+                        cassandraKeyspace
         );
         session.execute(createKeyspaceCQL);
-        logger.info("Keyspace '{}' ensured.", KEYSPACE_NAME);
+        logger.info("Keyspace '{}' ensured.", cassandraKeyspace);
     }
 
     private void processChangelogs(CqlSession session) {
