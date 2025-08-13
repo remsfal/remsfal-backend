@@ -1,6 +1,10 @@
 package de.remsfal.common.authentication;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.JWSAlgorithm;
 
 import de.remsfal.test.AbstractTest;
 import io.quarkus.test.junit.QuarkusTest;
@@ -11,11 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -193,6 +199,39 @@ class JWTManagerTest extends AbstractTest {
 
         // Act & Assert
         assertThrows(InvalidTokenException.class, () -> jwtManager.verifyTokenManually(jwt, mockPublicKey));
+    }
+
+    @Test
+    void testInitLoadsPublicKeyFromJwks() throws Exception {
+        RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) mockPublicKey)
+            .keyUse(KeyUse.SIGNATURE)
+            .algorithm(JWSAlgorithm.RS256)
+            .keyID("test")
+            .build();
+        JWKSet jwkSet = new JWKSet(rsaKey);
+
+        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class);
+             MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
+            jwkSetMock.when(() -> JWKSet.load((InputStream) Mockito.any())).thenReturn(jwkSet);
+            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString()))
+                .thenReturn(mockPrivateKey);
+
+            JWTManager manager = new JWTManager();
+            java.lang.reflect.Field field = JWTManager.class.getDeclaredField("jwksUrl");
+            field.setAccessible(true);
+            field.set(manager, "http://example.com/jwks");
+            manager.init();
+
+            String jwt = Jwt.claims()
+                .claim("sub", "12345")
+                .claim("email", "user@example.com")
+                .expiresAt(System.currentTimeMillis() / 1000 + 3600)
+                .jws().algorithm(SignatureAlgorithm.RS256)
+                .sign(mockPrivateKey);
+
+            SessionInfo info = manager.verifyJWT(jwt);
+            assertEquals("12345", info.getUserId());
+        }
     }
 
 }
