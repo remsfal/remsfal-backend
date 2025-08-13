@@ -42,7 +42,7 @@ public class JWTManager {
     @ConfigProperty(name = "de.remsfal.auth.jwt.public-key-location", defaultValue = "publicKey.pem")
     private String publicKeyLocation;
 
-    @ConfigProperty(name = "de.remsfal.auth.jwt.jwks-url", defaultValue = "http://localhost:8080/api/v1/auth/jwks")
+    @ConfigProperty(name = "de.remsfal.auth.jwt.jwks-url", defaultValue = "http://localhost:8080/api/v1/authentication/jwks")
     private String jwksUrl;
 
     @ConfigProperty(name = "de.remsfal.auth.jwt.key-id", defaultValue = "remsfal-platform-key")
