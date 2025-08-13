@@ -20,7 +20,6 @@ import jakarta.enterprise.inject.Default;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -72,8 +71,7 @@ public class JWTManager {
         }
     }
 
-    private PublicKey loadPublicKeyFromJwks(String url)
-            throws MalformedURLException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    private PublicKey loadPublicKeyFromJwks(String url) throws IOException {
         try {
             JWKSet jwkSet = JWKSet.load(new URL(url));
             if (jwkSet.getKeys().isEmpty()) {
