@@ -18,8 +18,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Default;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -32,6 +34,8 @@ import java.util.Date;
 @Default
 @ApplicationScoped
 public class JWTManager {
+
+    private static final Logger LOG = Logger.getLogger(JWTManager.class);
 
     @ConfigProperty(name = "de.remsfal.auth.jwt.issuer", defaultValue = "https://remsfal.online")
     private String issuer;
@@ -48,26 +52,65 @@ public class JWTManager {
     @ConfigProperty(name = "de.remsfal.auth.jwt.key-id", defaultValue = "remsfal-platform-key")
     private String keyId;
 
+    @ConfigProperty(name = "quarkus.http.port", defaultValue = "8080")
+    private int httpPort;
+
+    @ConfigProperty(name = "quarkus.http.host", defaultValue = "localhost")
+    private String httpHost;
+
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
     @PostConstruct
-    public void init() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        try {
-            privateKey = KeyLoader.loadPrivateKey(privateKeyLocation);
-        } catch (IllegalArgumentException e) {
-            // private key is optional for services that only verify tokens
-            privateKey = null;
+    public void init() throws IOException {
+        loadPrivateKeyIfPresent();
+
+        if (privateKey != null) {
+            // If this service issues tokens, always use local public key.
+            publicKey = loadLocalPublicKey();
+            return;
         }
 
         if (jwksUrl != null && !jwksUrl.isBlank()) {
-            publicKey = loadPublicKeyFromJwks(jwksUrl);
-        } else {
-            try {
-                publicKey = KeyLoader.loadPublicKey(publicKeyLocation);
-            } catch (IllegalArgumentException e) {
-                publicKey = null;
+            if (isSelfUrl(jwksUrl)) {
+                LOG.warn("JWKS URL points to this service; falling back to local public key.");
+                publicKey = loadLocalPublicKey();
+            } else {
+                publicKey = loadPublicKeyFromJwks(jwksUrl);
             }
+        } else {
+            publicKey = loadLocalPublicKey();
+        }
+    }
+
+    private void loadPrivateKeyIfPresent() {
+        try {
+            privateKey = KeyLoader.loadPrivateKey(privateKeyLocation);
+        } catch (IllegalArgumentException | IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            privateKey = null;
+        }
+    }
+
+    private PublicKey loadLocalPublicKey() {
+        try {
+            return KeyLoader.loadPublicKey(publicKeyLocation);
+        } catch (IllegalArgumentException | IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            LOG.error("Failed to load local public key", e);
+            return null;
+        }
+    }
+
+    private boolean isSelfUrl(String url) {
+        try {
+            URL parsed = new URL(url);
+            int port = parsed.getPort() == -1 ? parsed.getDefaultPort() : parsed.getPort();
+            String host = parsed.getHost();
+
+            return port == httpPort && ("localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host) ||
+                    "0.0.0.0".equals(host) || host.equalsIgnoreCase(httpHost)
+            );
+        } catch (MalformedURLException e) {
+            return false;
         }
     }
 
@@ -78,49 +121,27 @@ public class JWTManager {
                 throw new IllegalArgumentException("No keys found in JWKS");
             }
             JWK jwk = jwkSet.getKeys().get(0);
-            RSAKey rsaKey = jwk.toRSAKey();
-            return rsaKey.toPublicKey();
+            return jwk.toRSAKey().toPublicKey();
         } catch (ParseException | JOSEException e) {
             throw new IllegalArgumentException("Invalid JWKS", e);
         }
     }
 
-    public void setPrivateKey(PrivateKey privateKey) {
-        this.privateKey = privateKey;
-    }
-
-    public void setPublicKey(PublicKey publicKey) {
-        this.publicKey = publicKey;
-    }
-
-
-    public final String createJWT(SessionInfo sessionInfo) {
-
+    public String createJWT(SessionInfo sessionInfo) {
         long expirationTime = System.currentTimeMillis() / 1000 + sessionInfo.getExpireInSeconds();
 
-        return Jwt.claims(sessionInfo.getClaims()).issuer(issuer).expiresAt(expirationTime).jws()
-                .algorithm(SignatureAlgorithm.RS256).header("typ", "JWT").header("kid", keyId).sign(privateKey);
+        return Jwt.claims(sessionInfo.getClaims())
+                .issuer(issuer)
+                .expiresAt(expirationTime)
+                .jws()
+                .algorithm(SignatureAlgorithm.RS256)
+                .header("typ", "JWT")
+                .header("kid", keyId)
+                .sign(privateKey);
     }
 
     public SessionInfo verifyJWT(String jwt) {
         return verifyJWT(jwt, false);
-    }
-
-    public JWTClaimsSet verifyTokenManually(String jwt, PublicKey publicKey) {
-        try {
-            JWSObject jwsObject = JWSObject.parse(jwt);
-            RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
-
-            JWSVerifier verifier = new RSASSAVerifier(rsaPublicKey);
-
-            if (jwsObject.verify(verifier)) {
-                return JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
-            } else {
-                throw new InvalidTokenException();
-            }
-        } catch (Exception e) {
-            throw new InvalidTokenException(e);
-        }
     }
 
     public SessionInfo verifyJWT(String jwt, boolean isRefreshToken) {
@@ -144,6 +165,23 @@ public class JWTManager {
         return sessionInfo;
     }
 
+    public JWTClaimsSet verifyTokenManually(String jwt, PublicKey publicKey) {
+        try {
+            JWSObject jwsObject = JWSObject.parse(jwt);
+            RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
+
+            JWSVerifier verifier = new RSASSAVerifier(rsaPublicKey);
+
+            if (jwsObject.verify(verifier)) {
+                return JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
+            } else {
+                throw new InvalidTokenException();
+            }
+        } catch (Exception e) {
+            throw new InvalidTokenException(e);
+        }
+    }
+
     public RSAKey getPublicJwk() {
         RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
         return new RSAKey.Builder(rsaPublicKey)
@@ -151,6 +189,14 @@ public class JWTManager {
                 .algorithm(JWSAlgorithm.RS256)
                 .keyID(keyId)
                 .build();
+    }
+
+    public void setPrivateKey(PrivateKey privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    public void setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
     }
 
 }
