@@ -15,7 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -58,6 +59,19 @@ class JWTManagerTest extends AbstractTest {
         jwtManager.setPrivateKey(mockPrivateKey);
         jwtManager.setPublicKey(mockPublicKey);
 
+    }
+
+    /**
+     * Injects a value into a private field using reflection.
+     *
+     * @param target The object whose field should be set
+     * @param fieldName The name of the private field
+     * @param value The value to set (can be String, int, etc.)
+     */
+    private void setField(Object target, String fieldName, Object value) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 
     @Test
@@ -152,7 +166,6 @@ class JWTManagerTest extends AbstractTest {
 
     }
 
-
     @Test
     void testVerifyJWT_InvalidSignature() {
         // Arrange
@@ -188,7 +201,6 @@ class JWTManagerTest extends AbstractTest {
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
         PrivateKey wrongKey = keyPair.getPrivate();
 
-
         // Arrange
         String jwt = Jwt.claims()
             .claim("sub", "12345")
@@ -202,7 +214,7 @@ class JWTManagerTest extends AbstractTest {
     }
 
     @Test
-    void testInitLoadsPublicKeyFromJwks() throws Exception {
+    void testInit_LoadsPublicKeyFromJwks_WhenNoPrivateKeyAvailable() throws Exception {
         RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) mockPublicKey)
             .keyUse(KeyUse.SIGNATURE)
             .algorithm(JWSAlgorithm.RS256)
@@ -212,14 +224,16 @@ class JWTManagerTest extends AbstractTest {
 
         try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class);
              MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
-            jwkSetMock.when(() -> JWKSet.load((InputStream) Mockito.any())).thenReturn(jwkSet);
-            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString()))
-                .thenReturn(mockPrivateKey);
+
+            jwkSetMock.when(() -> JWKSet.load(Mockito.any(URL.class))).thenReturn(jwkSet);
+            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString())).thenThrow(new IllegalArgumentException());
+            keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString())).thenThrow(new IllegalArgumentException());
 
             JWTManager manager = new JWTManager();
-            java.lang.reflect.Field field = JWTManager.class.getDeclaredField("jwksUrl");
-            field.setAccessible(true);
-            field.set(manager, "http://example.com/jwks");
+            setField(manager, "jwksUrl", "http://external/jwks");
+            setField(manager, "privateKeyLocation", "private.pem");
+            setField(manager, "publicKeyLocation", "public.pem");
+
             manager.init();
 
             String jwt = Jwt.claims()
@@ -231,6 +245,49 @@ class JWTManagerTest extends AbstractTest {
 
             SessionInfo info = manager.verifyJWT(jwt);
             assertEquals("12345", info.getUserId());
+            jwkSetMock.verify(() -> JWKSet.load(Mockito.any(URL.class)));
+        }
+    }
+
+    @Test
+    void testInit_SkipsJwksLookup_IfUrlPointsToSelf() throws Exception {
+        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class);
+             MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
+
+            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString())).thenThrow(new IllegalArgumentException());
+            keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString())).thenReturn(mockPublicKey);
+
+            JWTManager manager = new JWTManager();
+            setField(manager, "jwksUrl", "http://localhost:8080/api/v1/authentication/jwks");
+            setField(manager, "httpPort", 8080);
+            setField(manager, "httpHost", "localhost");
+            setField(manager, "privateKeyLocation", "private.pem");
+            setField(manager, "publicKeyLocation", "public.pem");
+
+            manager.init();
+
+            jwkSetMock.verify(() -> JWKSet.load(Mockito.any(URL.class)), Mockito.never());
+            keyLoaderMock.verify(() -> KeyLoader.loadPublicKey(Mockito.anyString()));
+        }
+    }
+
+    @Test
+    void testInit_IgnoresJwksUrl_WhenPrivateKeyIsPresent() throws Exception {
+        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class);
+             MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
+
+            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString())).thenReturn(mockPrivateKey);
+            keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString())).thenReturn(mockPublicKey);
+
+            JWTManager manager = new JWTManager();
+            setField(manager, "jwksUrl", "http://example.com/jwks");
+            setField(manager, "privateKeyLocation", "private.pem");
+            setField(manager, "publicKeyLocation", "public.pem");
+
+            manager.init();
+
+            jwkSetMock.verify(() -> JWKSet.load(Mockito.any(URL.class)), Mockito.never());
+            keyLoaderMock.verify(() -> KeyLoader.loadPublicKey(Mockito.anyString()));
         }
     }
 
