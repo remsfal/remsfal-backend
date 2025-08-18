@@ -12,6 +12,7 @@ import de.remsfal.core.model.UserModel;
 @RequestScoped
 public class RemsfalPrincipal implements Principal, UserModel {
 
+    // TODO: Remove user model once JWT-based authorization is fully adopted
     private UserModel user;
     private SessionInfo sessionInfo;
 
