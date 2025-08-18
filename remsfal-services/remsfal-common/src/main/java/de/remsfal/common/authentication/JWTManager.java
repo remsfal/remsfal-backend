@@ -101,7 +101,7 @@ public class JWTManager {
         }
     }
 
-    private boolean isSelfUrl(String url) {
+    boolean isSelfUrl(String url) {
         try {
             URL parsed = new URL(url);
             int port = parsed.getPort() == -1 ? parsed.getDefaultPort() : parsed.getPort();
@@ -115,7 +115,7 @@ public class JWTManager {
         }
     }
 
-    private PublicKey loadPublicKeyFromJwks(String url) throws IOException {
+    PublicKey loadPublicKeyFromJwks(String url) throws IOException {
         try {
             JWKSet jwkSet = JWKSet.load(new URL(url));
             if (jwkSet.getKeys().isEmpty()) {

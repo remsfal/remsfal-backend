@@ -25,9 +25,7 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 class JWTManagerTest extends AbstractTest {
@@ -47,7 +45,6 @@ class JWTManagerTest extends AbstractTest {
         mockPublicKey = keyPair.getPublic();
         jwtManager = new JWTManager();
 
-
         try (MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
             keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString()))
                 .thenReturn(mockPrivateKey);
@@ -58,7 +55,6 @@ class JWTManagerTest extends AbstractTest {
         jwtManager = new JWTManager();
         jwtManager.setPrivateKey(mockPrivateKey);
         jwtManager.setPublicKey(mockPublicKey);
-
     }
 
     /**
@@ -148,8 +144,6 @@ class JWTManagerTest extends AbstractTest {
 
         // Act & Assert
         assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt, true));
-
-
     }
 
     @Test
@@ -163,7 +157,6 @@ class JWTManagerTest extends AbstractTest {
 
         // Act & Assert
         assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt));
-
     }
 
     @Test
@@ -289,6 +282,50 @@ class JWTManagerTest extends AbstractTest {
             jwkSetMock.verify(() -> JWKSet.load(Mockito.any(URL.class)), Mockito.never());
             keyLoaderMock.verify(() -> KeyLoader.loadPublicKey(Mockito.anyString()));
         }
+    }
+
+    @Test
+    void testGetPublicJwk_returnsExpectedKey() throws Exception {
+        jwtManager.setPublicKey(mockPublicKey);
+
+        Field keyIdField = JWTManager.class.getDeclaredField("keyId");
+        keyIdField.setAccessible(true);
+        keyIdField.set(jwtManager, "remsfal-platform-key");
+
+        RSAKey jwk = jwtManager.getPublicJwk();
+
+        assertNotNull(jwk);
+        assertEquals("remsfal-platform-key", jwk.getKeyID());
+    }
+
+    @Test
+    void testIsSelfUrl_returnsTrueForLocalhost() throws Exception {
+        setField(jwtManager, "httpPort", 8080);
+        setField(jwtManager, "httpHost", "localhost");
+        assertTrue(jwtManager.isSelfUrl("http://localhost:8080/jwks"));
+    }
+
+    @Test
+    void testIsSelfUrl_returnsFalseForOtherHost() throws Exception {
+        setField(jwtManager, "httpPort", 8080);
+        setField(jwtManager, "httpHost", "localhost");
+        assertFalse(jwtManager.isSelfUrl("http://example.com:8080/jwks"));
+    }
+
+    @Test
+    void testIsSelfUrl_malformedURL_returnsFalse() {
+        assertFalse(jwtManager.isSelfUrl("not-a-url"));
+    }
+
+    @Test
+    void testLoadPublicKeyFromJwks_throwsExceptionOnEmptyKeyList() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class)) {
+                jwkSetMock.when(() -> JWKSet.load(Mockito.any(URL.class)))
+                        .thenReturn(new JWKSet());
+                jwtManager.loadPublicKeyFromJwks("http://test-jwks");
+            }
+        });
     }
 
 }
