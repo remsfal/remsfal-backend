@@ -2,11 +2,14 @@ package de.remsfal.common.authentication;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.test.AbstractTest;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RemsfalPrincipalTest {
+@QuarkusTest
+class RemsfalPrincipalTest extends AbstractTest {
 
     @Test
     void testGetIdAndEmail_fromUserModelFallback() {
