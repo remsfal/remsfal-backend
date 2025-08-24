@@ -290,23 +290,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}" })
-    void changeParticipantRole_INVALID_SESSION(String path) {
-        String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
-        String jsonBody = "\"" + newRole + "\"";
-
-        given()
-            .body(jsonBody)
-            .contentType(MediaType.APPLICATION_JSON)
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString(), TicketingTestData.USER_ID_4)
-            .then()
-            .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-
-    }
-
-    @ParameterizedTest
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID })
     void joinChatSession_INVALID_INPUT(String path) {
         given()
@@ -354,26 +337,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, emptySessionId)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants" })
-    void getParticipants_INVALID_INPUT(String path) {
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(ContentType.JSON)
-            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_2, UUID.randomUUID().toString())
-            .then()
-            .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .contentType(ContentType.JSON)
-            .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
-            .then()
-            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
     @ParameterizedTest

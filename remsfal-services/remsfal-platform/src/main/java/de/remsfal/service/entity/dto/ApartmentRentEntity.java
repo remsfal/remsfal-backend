@@ -26,6 +26,11 @@ public class ApartmentRentEntity extends RentEntity {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(apartmentId, getTenancyId());
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;

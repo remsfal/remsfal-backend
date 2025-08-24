@@ -52,10 +52,8 @@ public interface ProjectEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all projects.")
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
+    @APIResponse(responseCode = "200", description = "A list of projects was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     ProjectListJson getProjects(
         @Parameter(description = "Offset of the first project to return")
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
@@ -82,6 +80,7 @@ public interface ProjectEndpoint {
     @Path("/{projectId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a project.")
+    @APIResponse(responseCode = "200", description = "The requested project was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson getProject(
@@ -94,6 +93,7 @@ public interface ProjectEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a project.")
+    @APIResponse(responseCode = "200", description = "The project was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson updateProject(
