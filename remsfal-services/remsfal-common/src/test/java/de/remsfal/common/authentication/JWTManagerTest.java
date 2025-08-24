@@ -319,13 +319,13 @@ class JWTManagerTest extends AbstractTest {
 
     @Test
     void testLoadPublicKeyFromJwks_throwsExceptionOnEmptyKeyList() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class)) {
-                jwkSetMock.when(() -> JWKSet.load(Mockito.any(URL.class)))
-                        .thenReturn(new JWKSet());
-                jwtManager.loadPublicKeyFromJwks("http://test-jwks");
-            }
-        });
+        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class)) {
+            jwkSetMock.when(() -> JWKSet.load(Mockito.any(URL.class)))
+                    .thenReturn(new JWKSet());
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> jwtManager.loadPublicKeyFromJwks("http://test-jwks"));
+        }
     }
 
 }

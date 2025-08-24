@@ -47,7 +47,7 @@ public class JWTManager {
     private String publicKeyLocation;
 
     @ConfigProperty(name = "de.remsfal.auth.jwt.jwks-url",
-            defaultValue = "http://localhost:8080/api/v1/authentication/jwks")
+        defaultValue = "http://localhost:8080/api/v1/authentication/jwks")
     private String jwksUrl;
 
     @ConfigProperty(name = "de.remsfal.auth.jwt.key-id", defaultValue = "remsfal-platform-key")
@@ -109,7 +109,7 @@ public class JWTManager {
 
             return port == httpPort && ("localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host) ||
                     "0.0.0.0".equals(host) || host.equalsIgnoreCase(httpHost)
-            );
+                );
         } catch (MalformedURLException e) {
             return false;
         }
