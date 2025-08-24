@@ -22,7 +22,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.jboss.logging.Logger;
 
@@ -96,7 +95,6 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     }
 
     @Timed(name = "checksTimerLogout", unit = MetricUnits.MILLISECONDS)
-    @Counted(name = "countedLogout")
     @Override
     public Response logout() {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath("/").build();
