@@ -31,6 +31,7 @@ public interface MemberEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of all project members.")
+    @APIResponse(responseCode = "200", description = "A list of all existing members was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectMemberListJson getProjectMembers(
@@ -41,7 +42,7 @@ public interface MemberEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Add a member to project.")
-    @APIResponse(responseCode = "200", description = "Member added successfully")
+    @APIResponse(responseCode = "200", description = "A new member was successfully added")
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     ProjectMemberJson addProjectMember(
@@ -56,6 +57,7 @@ public interface MemberEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update role of a project member.")
+    @APIResponse(responseCode = "200", description = "An existing member was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or the member does not exist")
     ProjectMemberJson updateProjectMember(
