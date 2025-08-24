@@ -37,6 +37,7 @@ import de.remsfal.core.model.ticketing.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
@@ -138,7 +139,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to join chat session", e);
-            throw new InternalServerErrorException();
+            throw new ForbiddenException();
         }
     }
 
@@ -157,7 +158,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get participants", e);
-            throw new InternalServerErrorException();
+            throw new ForbiddenException();
         }
     }
 
@@ -182,7 +183,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get participant", e);
-            throw new InternalServerErrorException();
+            throw new ForbiddenException();
         }
     }
 
@@ -209,7 +210,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to change participant role", e);
-            throw new InternalServerErrorException();
+            throw new ForbiddenException();
         }
     }
 
