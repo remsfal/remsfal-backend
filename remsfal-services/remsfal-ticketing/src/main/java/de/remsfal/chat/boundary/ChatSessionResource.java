@@ -138,7 +138,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to join chat session", e);
-            throw e;
+            throw new InternalServerErrorException();
         }
     }
 
@@ -157,7 +157,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get participants", e);
-            throw e;
+            throw new InternalServerErrorException();
         }
     }
 
@@ -182,7 +182,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get participant", e);
-            throw e;
+            throw new InternalServerErrorException();
         }
     }
 
@@ -209,7 +209,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to change participant role", e);
-            throw e;
+            throw new InternalServerErrorException();
         }
     }
 
@@ -465,7 +465,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
     // ---------------------Helper Methods---------------------
 
-    private String jsonifyParticipantsMap(Map<UUID, String> participants) {
+    private String jsonifyParticipantsMap(Map<UUID, String> participants) throws JsonProcessingException {
         List<Map<String, String>> participantList = new ArrayList<>();
         participants.forEach((id, role) -> {
             Map<String, String> participant = new HashMap<>();
@@ -474,13 +474,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             participantList.add(participant);
         });
         ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.writeValueAsString(participantList);
-        } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return "";
-        }
+        return mapper.writeValueAsString(participantList);
     }
 
     private String getFileName(Map<String, List<String>> headers) {
