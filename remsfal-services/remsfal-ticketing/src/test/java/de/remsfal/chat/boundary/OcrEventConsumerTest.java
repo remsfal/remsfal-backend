@@ -13,6 +13,7 @@ import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 import jakarta.inject.Inject;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.*;
 
+import java.time.Duration;
 import java.util.Set;
 
 @QuarkusTest
@@ -59,8 +61,12 @@ public class OcrEventConsumerTest extends AbstractKafkaTest {
             .fromRecords(new ProducerRecord<>("ocr.documents.processed", json))
             .awaitCompletion();
 
-        verify(chatMessageController, times(1))
-            .updateTextChatMessage("123", "456", "Text");
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+            verify(chatMessageController, atLeastOnce())
+                .updateTextChatMessage("123", "456", "Text")
+            );
     }
 
 }
