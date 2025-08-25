@@ -16,8 +16,11 @@ import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+
 import de.remsfal.core.json.project.SiteJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -32,11 +35,15 @@ public interface SiteEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new site.")
+    @Operation(summary = "Create a new site")
     @APIResponse(
         responseCode = "201",
-        description = "Site created successfully",
-        headers = @Header(name = "Location", description = "URL of the new site")
+        description = "A new site was successfully createded",
+        headers = @Header(name = "Location", description = "URL of the new site"),
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON,
+            schema    = @Schema(implementation = SiteJson.class)
+        )
     )
     Response createSite(
         @Parameter(description = "ID of the project", required = true)
@@ -50,11 +57,10 @@ public interface SiteEndpoint {
     @GET
     @Path("/{siteId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of a site.")
-    @APIResponse(
-        responseCode = "404",
-        description = "The site does not exist"
-    )
+    @Operation(summary = "Retrieve information of a site")
+    @APIResponse(responseCode = "200", description = "An existing site was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The site does not exist")
     SiteJson getSite(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
@@ -67,14 +73,9 @@ public interface SiteEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a site.")
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
-    @APIResponse(
-        responseCode = "404",
-        description = "The site does not exist"
-    )
+    @APIResponse(responseCode = "200", description = "An existing site was successfully updated")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The site does not exist")
     SiteJson updateSite(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
@@ -87,14 +88,8 @@ public interface SiteEndpoint {
     @DELETE
     @Path("/{siteId}")
     @Operation(summary = "Delete an existing site.")
-    @APIResponse(
-        responseCode = "204",
-        description = "The site was deleted successfully"
-    )
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
+    @APIResponse(responseCode = "204", description = "The site was deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteSite(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
