@@ -18,6 +18,8 @@ import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -33,11 +35,16 @@ public interface StorageEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new storage.")
+    @Operation(summary = "Create a new storage")
     @APIResponse(
         responseCode = "201",
-        description = "Storage created successfully",
-        headers = @Header(name = "Location", description = "URL of the new storage"))
+        description = "A new storage was successfully createded",
+        headers = @Header(name = "Location", description = "URL of the new storage"),
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON,
+            schema    = @Schema(implementation = StorageJson.class)
+        )
+    )
     Response createStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") String projectId,
@@ -51,9 +58,9 @@ public interface StorageEndpoint {
     @Path("/{storageId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a storage.")
-    @APIResponse(
-        responseCode = "404",
-        description = "The storage does not exist")
+    @APIResponse(responseCode = "200", description = "An existing storage was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The storage does not exist")
     StorageJson getStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") String projectId,
@@ -66,14 +73,9 @@ public interface StorageEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a storage.")
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
-    @APIResponse(
-        responseCode = "404",
-        description = "The storage does not exist"
-    )
+    @APIResponse(responseCode = "200", description = "An existing storage was successfully updated")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The storage does not exist")
     StorageJson updateStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
@@ -86,14 +88,8 @@ public interface StorageEndpoint {
     @DELETE
     @Path("/{storageId}")
     @Operation(summary = "Delete an existing storage.")
-    @APIResponse(
-        responseCode = "204",
-        description = "The storage was deleted successfully"
-    )
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
+    @APIResponse(responseCode = "204", description = "The storage was deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteStorage(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
