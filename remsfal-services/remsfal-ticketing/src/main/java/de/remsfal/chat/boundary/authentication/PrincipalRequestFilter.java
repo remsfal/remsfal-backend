@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -16,12 +14,10 @@ import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.chat.control.AuthorizationController;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.authentication.RemsfalSecurityContext;
 import de.remsfal.common.authentication.SessionInfo;
 import de.remsfal.common.authentication.UnauthorizedException;
-import de.remsfal.core.model.UserModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -35,9 +31,6 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
 
     @Inject
     SessionManager sessionManager;
-
-    @Inject
-    AuthorizationController controller;
 
     @Inject
     RemsfalPrincipal principal;
@@ -55,20 +48,15 @@ public class PrincipalRequestFilter implements ContainerRequestFilter {
 
             logger.info("method:" + requestContext.getMethod());
             logger.info("path:" + requestContext.getUriInfo().getPath());
-            final UserModel user = controller.getUser(sessionInfo.getUserId());
-            if (user == null) {
-                logger.errorv("User (id={0}) not found in database", sessionInfo.getUserId());
-                throw new UnauthorizedException();
-            }
 
-            // set DB principal
-            principal.setUserModel(user);
+            // set principal based on token information
+            principal.setSessionInfo(sessionInfo);
             // rebuild security context
             SecurityContext securityContext = requestContext.getSecurityContext();
             securityContext = RemsfalSecurityContext.extendSecurityContext(securityContext, principal);
             requestContext.setSecurityContext(securityContext);
-        } catch (NoResultException | NotFoundException e) {
-            logger.error("Authenticated user not found in database", e);
+        } catch (Exception e) {
+            logger.error("Failed to authenticate user", e);
             throw new UnauthorizedException();
         }
     }

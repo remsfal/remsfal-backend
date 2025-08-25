@@ -12,30 +12,42 @@ import de.remsfal.core.model.UserModel;
 @RequestScoped
 public class RemsfalPrincipal implements Principal, UserModel {
 
+    // TODO: Remove user model once JWT-based authorization is fully adopted
     private UserModel user;
+    private SessionInfo sessionInfo;
 
     public void setUserModel(final UserModel user) {
         this.user = user;
     }
 
+    public void setSessionInfo(final SessionInfo sessionInfo) {
+        this.sessionInfo = sessionInfo;
+    }
+
     @Override
     public String getId() {
-        return user.getId();
+        if (sessionInfo != null) {
+            return sessionInfo.getUserId();
+        }
+        return user != null ? user.getId() : null;
     }
 
     @Override
     public String getEmail() {
-        return user.getEmail();
+        if (sessionInfo != null) {
+            return sessionInfo.getUserEmail();
+        }
+        return user != null ? user.getEmail() : null;
     }
 
     @Override
     public String getName() {
-        return user.getName();
+        return user != null ? user.getName() : null;
     }
 
     @Override
     public Boolean isActive() {
-        return user.isActive();
+        return user != null ? user.isActive() : Boolean.TRUE;
     }
 
 }
