@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <version.immutables>2.11.2</version.immutables>
+        <version.immutables>2.11.3</version.immutables>
         <version.jackson>2.19.2</version.jackson>
         <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
