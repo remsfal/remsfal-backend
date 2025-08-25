@@ -16,6 +16,8 @@ import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -33,11 +35,15 @@ public interface BuildingEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new building.")
+    @Operation(summary = "Create a new building")
     @APIResponse(
         responseCode = "201",
-        description = "Building created successfully",
-        headers = @Header(name = "Location", description = "URL of the new building")
+        description = "A new building was successfully createded",
+        headers = @Header(name = "Location", description = "URL of the new building"),
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON,
+            schema    = @Schema(implementation = BuildingJson.class)
+        )
     )
     Response createBuilding(
         @Parameter(description = "ID of the project", required = true)
@@ -52,10 +58,9 @@ public interface BuildingEndpoint {
     @Path("/{buildingId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a building.")
-    @APIResponse(
-        responseCode = "404",
-        description = "The building does not exist"
-    )
+    @APIResponse(responseCode = "200", description = "An existing building was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The building does not exist")
     BuildingJson getBuilding(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
@@ -68,14 +73,9 @@ public interface BuildingEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a building.")
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
-    @APIResponse(
-        responseCode = "404",
-        description = "The building does not exist"
-    )
+    @APIResponse(responseCode = "200", description = "An existing building was successfully updated")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The building does not exist")
     BuildingJson updateBuilding(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
@@ -88,14 +88,9 @@ public interface BuildingEndpoint {
     @DELETE
     @Path("/{buildingId}")
     @Operation(summary = "Delete an existing building.")
-    @APIResponse(
-        responseCode = "204",
-        description = "The building was deleted successfully"
-    )
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
+    @APIResponse(responseCode = "204",description = "The building was deleted successfully" )
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The building does not exist")
     void deleteBuilding(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,

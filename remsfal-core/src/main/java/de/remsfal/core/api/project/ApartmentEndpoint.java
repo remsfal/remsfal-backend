@@ -18,6 +18,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -33,9 +35,16 @@ public interface ApartmentEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new apartment.")
-    @APIResponse(responseCode = "201", description = "Apartment created successfully",
-        headers = @Header(name = "Location", description = "URL of the new apartment"))
+    @Operation(summary = "Create a new apartment")
+    @APIResponse(
+        responseCode = "201",
+        description = "A new apartment was successfully createded",
+        headers = @Header(name = "Location", description = "URL of the new apartment"),
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON,
+            schema    = @Schema(implementation = ApartmentJson.class)
+        )
+    )
     Response createApartment(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
@@ -48,12 +57,10 @@ public interface ApartmentEndpoint {
     @GET
     @Path("/{apartmentId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of an apartment.")
+    @Operation(summary = "Retrieve information of an apartment")
+    @APIResponse(responseCode = "200", description = "An existing apartment was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
     ApartmentJson getApartment(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull @UUID String projectId,
@@ -66,6 +73,7 @@ public interface ApartmentEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information on an apartment")
+    @APIResponse(responseCode = "200", description = "An existing apartment was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
     ApartmentJson updateApartment(
