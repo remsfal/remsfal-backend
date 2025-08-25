@@ -41,30 +41,30 @@ public interface ContractorEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ContractorListJson getContractors(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "Offset of the first contractor to return")
-            @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
-            @Parameter(description = "Maximum number of contractors to return")
-            @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "Offset of the first contractor to return")
+        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
+        @Parameter(description = "Maximum number of contractors to return")
+        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
     );
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new contractor for a project.")
     @APIResponse(
-            responseCode = "201",
-            description = "Contractor created successfully",
-            headers = @Header(name = "Location", description = "URL of the new contractor")
+        responseCode = "201",
+        description = "Contractor created successfully",
+        headers = @Header(name = "Location", description = "URL of the new contractor")
     )
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     Response createContractor(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "Contractor information", required = true)
-            @Valid @ConvertGroup(to = PostValidation.class) ContractorJson contractor
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "Contractor information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) ContractorJson contractor
     );
 
     @GET
@@ -74,10 +74,10 @@ public interface ContractorEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or contractor does not exist")
     ContractorJson getContractor(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the contractor", required = true)
-            @PathParam("contractorId") @NotNull @UUID String contractorId
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the contractor", required = true)
+        @PathParam("contractorId") @NotNull @UUID String contractorId
     );
 
     @PATCH
@@ -88,12 +88,12 @@ public interface ContractorEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or contractor does not exist")
     ContractorJson updateContractor(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the contractor", required = true)
-            @PathParam("contractorId") @NotNull @UUID String contractorId,
-            @Parameter(description = "Contractor information", required = true)
-            @Valid @ConvertGroup(to = PatchValidation.class) ContractorJson contractor
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the contractor", required = true)
+        @PathParam("contractorId") @NotNull @UUID String contractorId,
+        @Parameter(description = "Contractor information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) ContractorJson contractor
     );
 
     @DELETE
@@ -103,9 +103,9 @@ public interface ContractorEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or contractor does not exist")
     void deleteContractor(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull @UUID String projectId,
-            @Parameter(description = "ID of the contractor", required = true)
-            @PathParam("contractorId") @NotNull @UUID String contractorId
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull @UUID String projectId,
+        @Parameter(description = "ID of the contractor", required = true)
+        @PathParam("contractorId") @NotNull @UUID String contractorId
     );
 }
