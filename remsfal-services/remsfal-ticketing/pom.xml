@@ -46,7 +46,7 @@
             <dependency>
                 <groupId>org.eclipse.jnosql.databases</groupId>
                 <artifactId>jnosql-cassandra</artifactId>
-                <version>1.1.9</version>
+                <version>1.1.10</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jnosql.mapping</groupId>
