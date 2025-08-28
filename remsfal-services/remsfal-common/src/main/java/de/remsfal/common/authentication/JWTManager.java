@@ -46,10 +46,6 @@ public class JWTManager {
     @ConfigProperty(name = "de.remsfal.auth.jwt.public-key-location", defaultValue = "publicKey.pem")
     private String publicKeyLocation;
 
-    @ConfigProperty(name = "de.remsfal.auth.jwt.jwks-url",
-        defaultValue = "http://localhost:8080/api/v1/authentication/jwks")
-    private String jwksUrl;
-
     @ConfigProperty(name = "de.remsfal.auth.jwt.key-id", defaultValue = "remsfal-platform-key")
     private String keyId;
 
@@ -64,24 +60,29 @@ public class JWTManager {
 
     @PostConstruct
     public void init() throws IOException {
-        loadPrivateKeyIfPresent();
+        // Try to load a private key. If present, this service is an issuer (platform):
+        try {
+            privateKey = KeyLoader.loadPrivateKey(privateKeyLocation);
+        } catch (Exception e) {
+            privateKey = null;
+        }
 
         if (privateKey != null) {
-            // If this service issues tokens, always use local public key.
-            publicKey = loadLocalPublicKey();
+            // Issuer mode: load local public key for signing/JWKS exposure
+            try {
+                publicKey = KeyLoader.loadPublicKey(publicKeyLocation);
+            } catch (Exception e) {
+                // If this ever happens, platform can’t expose JWKS or verify refresh tokens it minted
+                throw new IllegalStateException("Failed to load local public key in issuer mode", e);
+            }
             return;
         }
 
-        if (jwksUrl != null && !jwksUrl.isBlank()) {
-            if (isSelfUrl(jwksUrl)) {
-                LOG.warn("JWKS URL points to this service; falling back to local public key.");
-                publicKey = loadLocalPublicKey();
-            } else {
-                publicKey = loadPublicKeyFromJwks(jwksUrl);
-            }
-        } else {
-            publicKey = loadLocalPublicKey();
-        }
+        // Verifier-only mode:
+        // Quarkus MP-JWT will verify tokens via smallrye.jwt.verify.key.location
+        publicKey = null;
+        Logger.getLogger(JWTManager.class)
+                .info("Delegating token verification to SmallRye MP-JWT (no local JWKS/public key configured)");
     }
 
     private void loadPrivateKeyIfPresent() {
@@ -145,7 +146,12 @@ public class JWTManager {
         return verifyJWT(jwt, false);
     }
 
+    @Deprecated //Prefer MP-JWT
     public SessionInfo verifyJWT(String jwt, boolean isRefreshToken) {
+        if (publicKey == null) {
+            throw new IllegalStateException("Manual verification disabled; rely on SmallRye MP-JWT");
+        }
+
         JWTClaimsSet claimsSet = verifyTokenManually(jwt, publicKey);
 
         if (claimsSet == null) {
@@ -166,7 +172,12 @@ public class JWTManager {
         return sessionInfo;
     }
 
+    @Deprecated //Prefer MP-JWT
     public JWTClaimsSet verifyTokenManually(String jwt, PublicKey publicKey) {
+        if (publicKey == null) {
+            throw new IllegalStateException("Manual verification disabled; rely on SmallRye MP-JWT");
+        }
+
         try {
             JWSObject jwsObject = JWSObject.parse(jwt);
             RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
