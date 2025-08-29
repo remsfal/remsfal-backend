@@ -31,7 +31,7 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt-build</artifactId>
-        </dependency>s
+        </dependency>
         <!-- Hibernate ORM specific dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
