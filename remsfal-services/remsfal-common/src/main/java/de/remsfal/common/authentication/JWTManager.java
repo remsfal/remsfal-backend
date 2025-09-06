@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.HashMap;
+import java.util.Map;
 
 @Default
 @ApplicationScoped
@@ -53,25 +55,56 @@ public class JWTManager {
                 throw new IllegalStateException("Failed to load local public key in issuer mode", e);
             }
             LOG.debug("JWTManager initialized in issuer mode (local keys loaded)");
-            return;
+        } else {
+            // Verifier mode - SmallRye MP-JWT handles signature validation via configuration
+            publicKey = null;
+            LOG.info("JWTManager initialized in verifier mode; token verification is delegated to SmallRye MP-JWT");
         }
-
-        // Verifier mode - SmallRye MP-JWT handles signature validation via configuration
-        publicKey = null;
-        LOG.info("JWTManager initialized in verifier mode; token verification is delegated to SmallRye MP-JWT");
     }
 
-    /** Issue a signed JWT using SmallRye JWT Build (platform only) */
-    public String createJWT(SessionInfo sessionInfo) {
-        long expirationTime = System.currentTimeMillis() / 1000 + sessionInfo.getExpireInSeconds();
-        return Jwt.claims(sessionInfo.getClaims())
+    /** Issue an access token using SmallRye JWT Build (platform only) */
+    public String createAccessToken(String userId, String email, long ttlSeconds) {
+        ensureIssuerMode();
+        long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", userId);
+        claims.put("email", email);
+
+        return Jwt.claims(claims)
                 .issuer(issuer)
-                .expiresAt(expirationTime)
+                .expiresAt(exp)
                 .jws()
                 .algorithm(SignatureAlgorithm.RS256)
                 .header("typ", "JWT")
                 .header("kid", keyId)
                 .sign(privateKey);
+    }
+
+    /** Issue a refresh token using SmallRye JWT Build (platform only) */
+    public String createRefreshToken(String userId, String email, String refreshTokenId, long ttlSeconds) {
+        ensureIssuerMode();
+        long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", userId);
+        claims.put("email", email);
+        claims.put("refreshToken", refreshTokenId);
+
+        return Jwt.claims(claims)
+                .issuer(issuer)
+                .expiresAt(exp)
+                .jws()
+                .algorithm(SignatureAlgorithm.RS256)
+                .header("typ", "JWT")
+                .header("kid", keyId)
+                .sign(privateKey);
+    }
+
+    private void ensureIssuerMode() {
+        if (privateKey == null) {
+            throw new IllegalStateException("This service does not own a signing key (issuer mode required)");
+        }
     }
 
     /** JWKS exposure for consumers (platform only) */

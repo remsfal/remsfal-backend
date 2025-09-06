@@ -9,7 +9,6 @@ import de.remsfal.chat.AbstractTicketingTest;
 import de.remsfal.chat.TicketingTestData;
 import de.remsfal.chat.boundary.authentication.SessionManager;
 import de.remsfal.common.authentication.JWTManager;
-import de.remsfal.common.authentication.SessionInfo;
 
 import java.time.Duration;
 
@@ -92,7 +91,7 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
             .setParameter(3, "MANAGER")
             .executeUpdate());
         logger.info("User " + TicketingTestData.USER_ID + " is the manager of all projects.");
-        
+
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TicketingTestData.PROJECT_ID_1)

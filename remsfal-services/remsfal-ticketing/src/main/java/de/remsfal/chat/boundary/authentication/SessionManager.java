@@ -1,7 +1,6 @@
 package de.remsfal.chat.boundary.authentication;
 
 import de.remsfal.common.authentication.JWTManager;
-import de.remsfal.common.authentication.SessionInfo;
 import de.remsfal.common.authentication.TokenExpiredException;
 import de.remsfal.common.authentication.UnauthorizedException;
 import jakarta.enterprise.context.ApplicationScoped;

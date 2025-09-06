@@ -2,6 +2,7 @@ package de.remsfal.chat.boundary.authentication;
 
 import java.io.IOException;
 
+import de.remsfal.common.authentication.RemsfalPrincipal;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -14,9 +15,6 @@ import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.common.authentication.RemsfalSecurityContext;
-import de.remsfal.common.authentication.SessionInfo;
 import de.remsfal.common.authentication.UnauthorizedException;
 
 /**

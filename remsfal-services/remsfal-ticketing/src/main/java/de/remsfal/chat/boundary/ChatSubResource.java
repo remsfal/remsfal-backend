@@ -1,5 +1,6 @@
 package de.remsfal.chat.boundary;
 
+import de.remsfal.common.authentication.RemsfalPrincipal;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
@@ -8,7 +9,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.chat.control.AuthorizationController;
-import de.remsfal.common.authentication.RemsfalPrincipal;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

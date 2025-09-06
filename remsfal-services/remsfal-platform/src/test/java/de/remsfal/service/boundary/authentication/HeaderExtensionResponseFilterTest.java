@@ -1,7 +1,6 @@
 package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.core.api.AuthenticationEndpoint;
-import de.remsfal.common.authentication.TokenExpiredException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
@@ -17,16 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.contains;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class HeaderExtensionResponseFilterTest {
@@ -39,6 +29,7 @@ class HeaderExtensionResponseFilterTest {
     private ContainerResponseContext responseContext;
 
     private UriInfo uriInfo;
+    private MultivaluedMap<String, Object> headers;
 
     @BeforeEach
     void setUp() {
@@ -54,6 +45,9 @@ class HeaderExtensionResponseFilterTest {
 
         uriInfo = mock(UriInfo.class);
         when(requestContext.getUriInfo()).thenReturn(uriInfo);
+
+        headers = mock(MultivaluedMap.class);
+        when(responseContext.getHeaders()).thenReturn(headers);
     }
 
     @Test
@@ -68,78 +62,50 @@ class HeaderExtensionResponseFilterTest {
         filter.filter(requestContext, responseContext);
 
         // Verify Logging and Behavior
-        verify(logger).infov(anyString(),
+        verify(logger).infov(eq("Skipping HeaderExtensionResponseFilter for authentication path: {0}"),
             eq("/" + AuthenticationEndpoint.CONTEXT + "/"
                 + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE + "/login"));
         verifyNoInteractions(sessionManager);
+        verifyNoInteractions(headers);
     }
 
     @Test
-    void testNoTokensInRequest() {
-        when(uriInfo.getPath()).thenReturn(
-            "/test123"
-        );
+    void testNoCookiesNoAction () {
+        when(uriInfo.getPath()).thenReturn("/some/endpoint");
         when(requestContext.getCookies()).thenReturn(Collections.emptyMap());
-
-        filter.filter(requestContext, responseContext);
-
-        verify(sessionManager, never()).renewTokens(any());
-        verify(sessionManager, never()).decryptAccessTokenCookie(any());
-    }
-
-    @Test
-    void testRenewTokensWithRefreshTokenOnly() throws Exception {
-        when(uriInfo.getPath()).thenReturn(
-            "/test123"
-        );
-        Map<String, Cookie> cookies = new HashMap<>();
-        Cookie refreshToken = new Cookie.Builder("refreshToken").build();
-        cookies.put("refreshToken", refreshToken);
-
-        SessionManager.TokenRenewalResponse tokenResponse = mock(SessionManager.TokenRenewalResponse.class);
-        when(tokenResponse.getAccessToken()).thenReturn(new NewCookie.Builder("newAccessToken").build());
-        when(tokenResponse.getRefreshToken()).thenReturn(new NewCookie.Builder("newRefreshToken").build());
         when(sessionManager.findAccessTokenCookie(any())).thenReturn(null);
-        when(sessionManager.findRefreshTokenCookie(any())).thenReturn(refreshToken);
-        when(sessionManager.renewTokens(any())).thenReturn(tokenResponse);
-        when(tokenResponse.getRefreshToken()).thenReturn(new NewCookie.Builder("newRefreshToken").build());
-        when(sessionManager.findAccessTokenCookie(any())).thenReturn(null);
-        when(sessionManager.findRefreshTokenCookie(any())).thenReturn(refreshToken);
-        when(sessionManager.renewTokens(any())).thenReturn(tokenResponse);
-
-        MultivaluedMap<String, Object> headers = mock(MultivaluedMap.class);
         when(responseContext.getHeaders()).thenReturn(headers);
 
         filter.filter(requestContext, responseContext);
 
-        verify(headers).add("Set-Cookie", new NewCookie.Builder("newAccessToken").build());
-        verify(headers).add("Set-Cookie", new NewCookie.Builder("newRefreshToken").build());
+        verify(sessionManager).findAccessTokenCookie(Collections.emptyMap());
+        verify(sessionManager).renewTokens(Collections.emptyMap());
+        verify(logger).error(org.mockito.ArgumentMatchers.contains("Error renewing tokens"));
     }
 
     @Test
-    void testAccessTokenExpired() throws Exception {
-        when(uriInfo.getPath()).thenReturn(
-            "/test123"
-        );
+    void testRenewTokensWithRefreshTokenOnly() {
+        when(uriInfo.getPath()).thenReturn("/some/endpoint");
+
         Map<String, Cookie> cookies = new HashMap<>();
-        Cookie accessToken = new Cookie.Builder("accessToken").value("mockAccessToken").build();
-        cookies.put("accessToken", accessToken);
+        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("refresh.jwt").build();
+        cookies.put(SessionManager.REFRESH_COOKIE_NAME, refreshCookie);
+
+        when(requestContext.getCookies()).thenReturn(cookies);
+        when(sessionManager.findAccessTokenCookie(cookies)).thenReturn(null);
 
         SessionManager.TokenRenewalResponse tokenResponse = mock(SessionManager.TokenRenewalResponse.class);
-        when(tokenResponse.getAccessToken()).thenReturn(new NewCookie.Builder("newAccessToken").build());
-        when(tokenResponse.getRefreshToken()).thenReturn(new NewCookie.Builder("newRefreshToken").build());
-        when(sessionManager.findAccessTokenCookie(any())).thenReturn(accessToken);
-        doThrow(new TokenExpiredException("Token expired")).when(sessionManager).decryptAccessTokenCookie(accessToken);
-        when(sessionManager.renewTokens(any())).thenReturn(tokenResponse);
+        NewCookie newAccess = new NewCookie.Builder("newAccess").value("access.jwt").build();
+        NewCookie newRefresh = new NewCookie.Builder("newRefresh").value("refresh.jwt").build();
 
-        MultivaluedMap<String, Object> headers = mock(MultivaluedMap.class);
-        when(responseContext.getHeaders()).thenReturn(headers);
+        when(tokenResponse.getAccessToken()).thenReturn(newAccess);
+        when(tokenResponse.getRefreshToken()).thenReturn(newRefresh);
+        when(sessionManager.renewTokens(cookies)).thenReturn(tokenResponse);
 
         filter.filter(requestContext, responseContext);
 
-        verify(headers).add("Set-Cookie", new NewCookie.Builder("newAccessToken").build());
-        verify(headers).add("Set-Cookie", new NewCookie.Builder("newRefreshToken").build());
-        verify(logger).info(contains("Access token expired"));
+        verify(headers).add("Set-Cookie", newAccess);
+        verify(headers).add("Set-Cookie", newRefresh);
     }
 
     @Test
@@ -153,4 +119,5 @@ class HeaderExtensionResponseFilterTest {
 
         verify(logger).error(contains("Error in HeaderExtensionResponseFilter: Unexpected error"));
     }
+
 }

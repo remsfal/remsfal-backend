@@ -1,53 +1,71 @@
 package de.remsfal.common.authentication;
 
 import java.security.Principal;
-
 import jakarta.enterprise.context.RequestScoped;
-
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import de.remsfal.core.model.UserModel;
 
-/**
- * @author Alexander Stanik [stanik@htw-berlin.de]
- */
 @RequestScoped
 public class RemsfalPrincipal implements Principal, UserModel {
 
-    // TODO: Remove user model once JWT-based authorization is fully adopted
-    private UserModel user;
-    private SessionInfo sessionInfo;
+    // TODO: Once tokens always include `email`, `name`, and `active`, remove `fallbackUser`
 
-    public void setUserModel(final UserModel user) {
-        this.user = user;
+    @Inject
+    JsonWebToken jwt;
+
+    /** Optional safety net until all services always include full profile claims */
+    private UserModel fallbackUser;
+
+    public void setUserModel(UserModel user) {
+        this.fallbackUser = user;
     }
 
-    public void setSessionInfo(final SessionInfo sessionInfo) {
-        this.sessionInfo = sessionInfo;
-    }
-
+    /** User id from JWT `sub`; falls back to injected UserModel only if absent */
     @Override
     public String getId() {
-        if (sessionInfo != null) {
-            return sessionInfo.getUserId();
+        String sub = jwt != null ? jwt.getSubject() : null;
+        if (sub != null && !sub.isBlank()) {
+            return sub;
         }
-        return user != null ? user.getId() : null;
+        return fallbackUser != null ? fallbackUser.getId() : null;
     }
 
+    /** Email from JWT `email`; falls back to injected UserModel only if absent */
     @Override
     public String getEmail() {
-        if (sessionInfo != null) {
-            return sessionInfo.getUserEmail();
+        String email = jwt != null ? jwt.getClaim("email") : null;
+        if (email != null && !email.isBlank()) {
+            return email;
         }
-        return user != null ? user.getEmail() : null;
+        return fallbackUser != null ? fallbackUser.getEmail() : null;
     }
 
+    /** Display name from JWT `name`; falls back to injected UserModel only if absent */
     @Override
     public String getName() {
-        return user != null ? user.getName() : null;
+        String name = jwt != null ? jwt.getClaim("name") : null;
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+        return fallbackUser != null ? fallbackUser.getName() : null;
     }
 
+    /** Active flag from JWT `active`; defaults to true; falls back to injected UserModel if missing */
     @Override
     public Boolean isActive() {
-        return user != null ? user.isActive() : Boolean.TRUE;
+        Boolean active = jwt != null ? jwt.getClaim("active") : null;
+        if (active != null) {
+            return active;
+        }
+        if (fallbackUser != null && fallbackUser.isActive() != null) {
+            return fallbackUser.isActive();
+        }
+        return Boolean.TRUE;
+    }
+
+    public JsonWebToken getJwt() {
+        return jwt;
     }
 
 }

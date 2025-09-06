@@ -1,19 +1,20 @@
 package de.remsfal.service.boundary.authentication;
 
+import io.smallrye.jwt.auth.principal.JWTParser;
 import de.remsfal.common.authentication.JWTManager;
-import de.remsfal.common.authentication.SessionInfo;
-import de.remsfal.common.authentication.TokenExpiredException;
 import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
+import io.smallrye.jwt.auth.principal.ParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.NewCookie.SameSite;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.time.Duration;
 import java.util.Map;
@@ -40,15 +41,22 @@ public class SessionManager {
 
     private final UserRepository userRepository;
 
+    private final JWTParser jwtParser;
+
     public SessionManager(
-        @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/") String sessionCookiePath,
+        @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/")
+        String sessionCookiePath,
         @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT")
         SameSite sessionCookieSameSite,
         @ConfigProperty(name = "de.remsfal.auth.access-token.timeout", defaultValue = "PT5M")
         Duration accessTokenTimeout,
         @ConfigProperty(name = "de.remsfal.auth.refresh-token.timeout", defaultValue = "P7D")
-        Duration refreshTokenTimeout, JWTManager jwtManager, UserAuthenticationRepository userAuthRepository,
-        UserRepository userRepository) {
+        Duration refreshTokenTimeout,
+        JWTManager jwtManager,
+        UserAuthenticationRepository userAuthRepository,
+        UserRepository userRepository,
+        JWTParser jwtParser) {
+
         this.sessionCookiePath = sessionCookiePath;
         this.sessionCookieSameSite = sessionCookieSameSite;
         this.accessTokenTimeout = accessTokenTimeout;
@@ -56,17 +64,18 @@ public class SessionManager {
         this.jwtManager = jwtManager;
         this.userAuthRepository = userAuthRepository;
         this.userRepository = userRepository;
+        this.jwtParser = jwtParser;
     }
 
     /**
-     * Generates a new access token for the given session info.
+     * Generates a signed, short-lived access token and wraps it into the access cookie.
      *
-     * @param sessionInfo Session info to generate the access token for
+     * @param userId User ID to generate the access token for (subject claim)
+     * @param email  User email to generate the access token for (email claim)
      * @return NewCookie containing the access token
      */
-    public NewCookie generateAccessToken(SessionInfo sessionInfo) {
-        String jwt =
-            jwtManager.createJWT(SessionInfo.builder().from(sessionInfo).expireAfter(accessTokenTimeout).build());
+    public NewCookie generateAccessToken(String userId, String email) {
+        String jwt = jwtManager.createAccessToken(userId, email, accessTokenTimeout.getSeconds());
         return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false);
     }
 
@@ -77,33 +86,74 @@ public class SessionManager {
      * @return NewCookie containing the access token
      */
     public NewCookie generateAccessToken(UserAuthenticationModel userAuth) {
-        return generateAccessToken(SessionInfo.builder().from(userAuth).build());
+        return generateAccessToken(userAuth.getUser().getId(), userAuth.getUser().getEmail());
     }
 
     /**
-     * Generates a new refresh token for the given user ID and email. The refresh token is stored in the database.
-     * The refresh token is also stored in the JWT. The refresh token will be used to generate a new access token.
+     * Generates a signed, longer-lived refresh token and wraps it into the refresh cookie.
+     * A refresh token identifier is stored in the database and embedded as refresh token claim in the JWT.
+     * The refresh token will be used to generate a new access token by matching the stored identifier and the claim.
      *
-     * @param userId    User ID to generate the refresh token for
-     * @param userEmail User email to generate the refresh token for
+     * @param userId    User ID to generate the refresh token for (subject claim)
+     * @param userEmail User email to generate the refresh token for (email claim)
      * @return NewCookie containing the refresh token
      */
     @Transactional
     public NewCookie generateRefreshToken(String userId, String userEmail) {
-        String refreshToken = UUID.randomUUID().toString();
+        String refreshId = UUID.randomUUID().toString();
+
         if (isNewUserAuthenticationEntity(userId)) {
-            createNewUserAuthentication(userId, refreshToken);
+            createNewUserAuthentication(userId, refreshId);
         } else {
-            updateExistingRefreshToken(userId, refreshToken);
+            updateExistingRefreshToken(userId, refreshId);
         }
-        String jwt = createRefreshTokenJWT(userId, userEmail, refreshToken);
+
+        String jwt = jwtManager.createRefreshToken(userId, userEmail, refreshId, refreshTokenTimeout.getSeconds());
         return buildCookie(REFRESH_COOKIE_NAME, jwt, (int) refreshTokenTimeout.getSeconds(), true);
     }
 
+    /**
+     * Renews the access and refresh tokens for the given refresh token cookie.
+     *
+     * @param cookies Map of cookies containing the refresh token
+     * @return TokenRenewalResponse containing the new access and refresh tokens
+     */
+    @Transactional
+    public TokenRenewalResponse renewTokens(Map<String, Cookie> cookies) {
+        Cookie refreshCookie = cookies.get(REFRESH_COOKIE_NAME);
+
+        if (refreshCookie == null) {
+            throw new UnauthorizedException("No refresh token provided.");
+        }
+
+        JsonWebToken refreshJwt = parseRefreshToken(refreshCookie.getValue());
+        String userId = refreshJwt.getSubject();
+        String email = refreshJwt.getClaim("email");
+        String refreshId = refreshJwt.getClaim("refreshToken");
+
+        UserAuthenticationModel userAuth = requireValidRefreshToken(userId, refreshId);
+
+        NewCookie newAccess = generateAccessToken(userAuth);
+        NewCookie newRefresh = generateRefreshToken(userId, email);
+        return new TokenRenewalResponse(newAccess, newRefresh);
+    }
+
+    /** Parses and validates the given refresh token using SmallRye JWT */
+    private JsonWebToken parseRefreshToken(String token) {
+        try {
+            // Validates token signature, issuer and exp using platform’s MP-JWT configuration
+            return jwtParser.parse(token);
+        } catch (ParseException e) {
+            throw new UnauthorizedException("Invalid refresh token.", e);
+        }
+    }
+
+    /** Checks if there is an existing user authentication entity for the given user ID */
     private boolean isNewUserAuthenticationEntity(String userId) {
         return userAuthRepository.findByUserId(userId).isEmpty();
     }
 
+    /** Creates a new user authentication entity with the given user ID and refresh token */
     private void createNewUserAuthentication(String userId, String refreshToken) {
         UserAuthenticationEntity userAuthenticationEntity = new UserAuthenticationEntity();
         userRepository.findByIdOptional(userId).ifPresentOrElse(userAuthenticationEntity::setUser,
@@ -114,106 +164,28 @@ public class SessionManager {
         userAuthRepository.persist(userAuthenticationEntity);
     }
 
+    /** Updates the existing refresh token for the given user ID */
     private void updateExistingRefreshToken(String userId, String refreshToken) {
         userAuthRepository.updateRefreshToken(userId, refreshToken);
     }
 
-    private String createRefreshTokenJWT(String userId, String userEmail, String refreshToken) {
-        return jwtManager.createJWT(
-            SessionInfo.builder()
-                .userId(userId)
-                .userEmail(userEmail)
-                .claim("refreshToken", refreshToken)
-                .expireAfter(refreshTokenTimeout)
-                .build()
-        );
-    }
+    /** Validates the refresh token claim against the stored refresh token for the given user ID */
+    private UserAuthenticationModel requireValidRefreshToken(String userId, String refreshTokenClaim) {
+        Optional<UserAuthenticationEntity> userAuth = userAuthRepository.findByUserId(userId);
 
-    /**
-     * Renews the access and refresh tokens for the given refresh token cookie.
-     *
-     * @param cookies Map of cookies containing the refresh token
-     * @return TokenRenewalResponse containing the new access and refresh tokens
-     */
-    public TokenRenewalResponse renewTokens(Map<String, Cookie> cookies) {
-        Cookie refreshCookie = cookies.get(REFRESH_COOKIE_NAME);
-
-        if (refreshCookie == null) {
-            throw new UnauthorizedException("No refresh token provided.");
-        }
-
-        SessionInfo refreshToken = decryptRefreshTokenCookie(refreshCookie);
-        UserAuthenticationModel userAuth = checkValidRefreshToken(refreshToken);
-
-        return new TokenRenewalResponse(generateAccessToken(userAuth),
-            generateRefreshToken(refreshToken.getUserId(), refreshToken.getUserEmail()));
-
-    }
-
-    /**
-     * Decrypts the access token cookie and verifies the JWT.
-     *
-     * @param cookie Access token cookie to decrypt
-     * @return SessionInfo containing the claims of the access token
-     * @throws TokenExpiredException if the access token is expired
-     * @throws UnauthorizedException if the access token is invalid
-     */
-    public SessionInfo decryptAccessTokenCookie(Cookie cookie) throws TokenExpiredException, UnauthorizedException {
-        return jwtManager.verifyJWT(cookie.getValue());
-    }
-
-    /**
-     * Decrypts the access token cookie and verifies the JWT.
-     *
-     * @param cookies Access token cookie to decrypt
-     * @return SessionInfo containing the claims of the access token
-     * @throws TokenExpiredException if the access token is expired
-     * @throws UnauthorizedException if the access token is invalid
-     */
-    public SessionInfo checkValidUserSession(Map<String, Cookie> cookies) {
-        try {
-            Cookie cookie = findAccessTokenCookie(cookies);
-            if (cookie == null) {
-                throw new TokenExpiredException("No access token provided.");
-            }
-            return decryptAccessTokenCookie(cookie);
-        } catch (TokenExpiredException e) {
-            Cookie refreshCookie = findRefreshTokenCookie(cookies);
-            if (refreshCookie != null) {
-                SessionInfo sessionInfo = decryptRefreshTokenCookie(refreshCookie);
-                checkValidRefreshToken(sessionInfo);
-                return sessionInfo;
-            } else {
-                throw new UnauthorizedException("Invalid access token.");
-            }
-        }
-    }
-
-    /**
-     * Decrypts the refresh token cookie and verifies the JWT.
-     *
-     * @param cookie Refresh token cookie to decrypt
-     * @return SessionInfo containing the claims of the refresh token
-     * @throws UnauthorizedException if the refresh token is invalid
-     * @throws TokenExpiredException if the refresh token is expired
-     */
-    public SessionInfo decryptRefreshTokenCookie(Cookie cookie) throws UnauthorizedException, TokenExpiredException {
-        return jwtManager.verifyJWT(cookie.getValue(), true);
-    }
-
-    private UserAuthenticationModel checkValidRefreshToken(SessionInfo sessionInfo) {
-        Optional<UserAuthenticationEntity> userAuth = userAuthRepository.findByUserId(sessionInfo.getUserId());
         if (userAuth.isEmpty()) {
-            throw new UnauthorizedException("User not found: " + sessionInfo.getUserId());
+            throw new UnauthorizedException("User not found: " + userId);
         }
-        String refreshToken = userAuth.get().getRefreshToken();
-        if (refreshToken == null || !refreshToken.equals(sessionInfo.getClaims().getOrDefault("refreshToken", null))) {
 
-            throw new UnauthorizedException("Invalid refresh token.");
+        String saved = userAuth.get().getRefreshToken();
+        if (saved == null || !saved.equals(refreshTokenClaim)) {
+            throw new UnauthorizedException("Refresh token mismatch.");
         }
+
         return userAuth.get();
     }
 
+    /** Builds a new cookie with the given parameters */
     private NewCookie buildCookie(String name, String value, int maxAge, boolean httpOnly) {
         return new NewCookie.Builder(name).value(value).path(sessionCookiePath + getSameSiteWorkaround())
             .httpOnly(httpOnly).secure(true).maxAge(maxAge).build();
@@ -221,10 +193,11 @@ public class SessionManager {
 
     @Transactional
     public void logout(Map<String, Cookie> cookies) {
-        Cookie refreshCookie = findRefreshTokenCookie(cookies);
+        Cookie refreshCookie = cookies.get(REFRESH_COOKIE_NAME);
+
         if (refreshCookie != null) {
-            SessionInfo sessionInfo = decryptRefreshTokenCookie(refreshCookie);
-            userAuthRepository.deleteRefreshToken(sessionInfo.getUserId());
+            JsonWebToken refresh = parseRefreshToken(refreshCookie.getValue());
+            userAuthRepository.deleteRefreshToken(refresh.getSubject());
         }
     }
 
@@ -239,22 +212,6 @@ public class SessionManager {
         return new NewCookie.Builder(cookieName).value("").path(sessionCookiePath + getSameSiteWorkaround())
             // sameSite is currently not supported
             .sameSite(sessionCookieSameSite).maxAge(0).build();
-    }
-
-    /**
-     * Builder for session info with default expiration time.
-     *
-     * @param CookieName Name of the cookie, which should be used to determine the expiration time
-     * @return SessionInfo.Builder with default expiration time
-     */
-    public SessionInfo.Builder sessionInfoBuilder(String CookieName) {
-        if (CookieName.equals(ACCESS_COOKIE_NAME)) {
-            return SessionInfo.builder().expireAfter(accessTokenTimeout);
-        } else if (CookieName.equals(REFRESH_COOKIE_NAME)) {
-            return SessionInfo.builder().expireAfter(refreshTokenTimeout);
-        } else {
-            return SessionInfo.builder();
-        }
     }
 
     /**
@@ -282,7 +239,6 @@ public class SessionManager {
         }
         return null;
     }
-
 
     private String getSameSiteWorkaround() {
         // see: https://github.com/jakartaee/rest/issues/862

@@ -1,29 +1,20 @@
 package de.remsfal.common.authentication;
 
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jose.jwk.JWKSet;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.JWSAlgorithm;
-
 import de.remsfal.test.AbstractTest;
 import io.quarkus.test.junit.QuarkusTest;
-import io.smallrye.jwt.algorithm.SignatureAlgorithm;
-import io.smallrye.jwt.build.Jwt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
-import java.net.URL;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Date;
+
+import java.util.Base64;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,299 +23,75 @@ class JWTManagerTest extends AbstractTest {
 
     private JWTManager jwtManager;
 
-    private PrivateKey mockPrivateKey;
-    private PublicKey mockPublicKey;
-
     @BeforeEach
     void setUp() throws Exception {
+        jwtManager = new JWTManager();
 
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(2048);
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        mockPrivateKey = keyPair.getPrivate();
-        mockPublicKey = keyPair.getPublic();
-        jwtManager = new JWTManager();
 
-        try (MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
-            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString()))
-                .thenReturn(mockPrivateKey);
-            keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString()))
-                .thenReturn(mockPublicKey);
-        }
+        jwtManager.setPrivateKey(keyPair.getPrivate());
+        jwtManager.setPublicKey(keyPair.getPublic());
 
-        jwtManager = new JWTManager();
-        jwtManager.setPrivateKey(mockPrivateKey);
-        jwtManager.setPublicKey(mockPublicKey);
-    }
+        Field kidField = JWTManager.class.getDeclaredField("keyId");
+        kidField.setAccessible(true);
+        kidField.set(jwtManager, "unit-test-kid");
 
-    /**
-     * Injects a value into a private field using reflection.
-     *
-     * @param target The object whose field should be set
-     * @param fieldName The name of the private field
-     * @param value The value to set (can be String, int, etc.)
-     */
-    private void setField(Object target, String fieldName, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
+        Field issField = JWTManager.class.getDeclaredField("issuer");
+        issField.setAccessible(true);
+        issField.set(jwtManager, "REMSFAL");
     }
 
     @Test
-    void testCreateJWT() {
-        // Arrange
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
-            .subject("12345")
-            .claim("email", "user@example.de")
-            .expirationTime(new Date(System.currentTimeMillis() + 3600 * 1000))
-            .build();
+    void testCreateAccessToken_containsSubEmailIssuerAndExp() {
+        String token = jwtManager.createAccessToken("u1", "u1@example.com", 300);
+        assertNotNull(token);
+        assertEquals(3, token.split("\\.").length, "JWT must have 3 parts");
 
-        SessionInfo sessionInfo = new SessionInfo(claims);
-
-        // Act
-        String jwt = jwtManager.createJWT(sessionInfo);
-
-        // Assert
-        assertNotNull(jwt);
-        assertEquals(3, jwt.split("\\.").length, "JWT should have three parts");
+        Map<String, Object> payload = decodePayload(token);
+        assertEquals("u1", payload.get("sub"));
+        assertEquals("u1@example.com", payload.get("email"));
+        assertEquals("REMSFAL", payload.get("iss"));
+        assertTrue(((Number) payload.get("exp")).longValue() > (System.currentTimeMillis() / 1000));
+        assertNull(payload.get("refreshToken"), "access token must NOT contain refreshToken claim");
     }
 
     @Test
-    void testVerifyJWT_Success() {
-        // Arrange
-        String jwt = Jwt.claims()
-            .claim("sub", "12345")
-            .claim("email", "user@example.com")
-            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .sign(mockPrivateKey);
+    void testCreateRefreshToken_containsRefreshTokenClaim() {
+        String token = jwtManager.createRefreshToken("u2", "u2@example.com", "r-123", 604800);
+        Map<String, Object> payload = decodePayload(token);
 
-        // Act
-        SessionInfo sessionInfo = jwtManager.verifyJWT(jwt);
-
-        // Assert
-        assertNotNull(sessionInfo);
-        assertEquals("12345", sessionInfo.getClaims().get("sub"));
-        assertEquals("user@example.com", sessionInfo.getClaims().get("email"));
+        assertEquals("u2", payload.get("sub"));
+        assertEquals("u2@example.com", payload.get("email"));
+        assertEquals("r-123", payload.get("refreshToken"));
     }
 
     @Test
-    void testVerifyJWT_ExpiredToken() {
-        // Arrange
-        String jwt = Jwt.claims()
-            .claim("sub", "12345")
-            .expiresAt(System.currentTimeMillis() / 1000 - 10) // Token expired
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .sign(mockPrivateKey);
-
-        // Act & Assert
-        assertThrows(TokenExpiredException.class, () -> jwtManager.verifyJWT(jwt));
-    }
-
-    @Test
-    void testVerifyJqt_noClaims_fail() {
-        // Arrange
-        String jwt = Jwt.claims()
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .sign(mockPrivateKey);
-
-        // Act & Assert
-        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt));
-    }
-
-    @Test
-    void testVerifyJWT_missing_refreshtoken_fails() {
-        // Arrange
-        String jwt = Jwt.claims()
-            .claim("sub", "12345")
-            .claim("email", "1234")
-            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .sign(mockPrivateKey);
-
-        // Act & Assert
-        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt, true));
-    }
-
-    @Test
-    void testVerifyJWT_invalidSessionInfo_fails() {
-        // Arrange
-        String jwt = Jwt.claims()
-            .claim("sub", "12345")
-            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .sign(mockPrivateKey);
-
-        // Act & Assert
-        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt));
-    }
-
-    @Test
-    void testVerifyJWT_InvalidSignature() {
-        // Arrange
-        String jwt = "invalid.jwt.token";
-
-        // Act & Assert
-        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyJWT(jwt));
-    }
-
-    @Test
-    void test_verifyTokenManually() {
-        // Arrange
-        String jwt = Jwt.claims()
-            .claim("sub", "12345")
-            .claim("email", "12345")
-            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .sign(mockPrivateKey);
-
-        // Act
-        JWTClaimsSet claims = jwtManager.verifyTokenManually(jwt, mockPublicKey);
-
-        // Assert
-        assertNotNull(claims);
-        assertEquals("12345", claims.getSubject());
-        assertEquals("12345", claims.getClaim("email"));
-    }
-
-    @Test
-    void test_verifyTokenManually_InvalidSignature() throws NoSuchAlgorithmException {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        PrivateKey wrongKey = keyPair.getPrivate();
-
-        // Arrange
-        String jwt = Jwt.claims()
-            .claim("sub", "12345")
-            .claim("email", "12345")
-            .expiresAt(System.currentTimeMillis() / 1000 + 3600)
-            .jws().algorithm(SignatureAlgorithm.RS256)
-            .sign(wrongKey);
-
-        // Act & Assert
-        assertThrows(InvalidTokenException.class, () -> jwtManager.verifyTokenManually(jwt, mockPublicKey));
-    }
-
-    @Test
-    void testInit_LoadsPublicKeyFromJwks_WhenNoPrivateKeyAvailable() throws Exception {
-        RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) mockPublicKey)
-            .keyUse(KeyUse.SIGNATURE)
-            .algorithm(JWSAlgorithm.RS256)
-            .keyID("test")
-            .build();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-
-        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class);
-             MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
-
-            jwkSetMock.when(() -> JWKSet.load(Mockito.any(URL.class))).thenReturn(jwkSet);
-            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString())).thenThrow(new IllegalArgumentException());
-            keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString())).thenThrow(new IllegalArgumentException());
-
-            JWTManager manager = new JWTManager();
-            setField(manager, "jwksUrl", "http://external/jwks");
-            setField(manager, "privateKeyLocation", "private.pem");
-            setField(manager, "publicKeyLocation", "public.pem");
-
-            manager.init();
-
-            String jwt = Jwt.claims()
-                .claim("sub", "12345")
-                .claim("email", "user@example.com")
-                .expiresAt(System.currentTimeMillis() / 1000 + 3600)
-                .jws().algorithm(SignatureAlgorithm.RS256)
-                .sign(mockPrivateKey);
-
-            SessionInfo info = manager.verifyJWT(jwt);
-            assertEquals("12345", info.getUserId());
-            jwkSetMock.verify(() -> JWKSet.load(Mockito.any(URL.class)));
-        }
-    }
-
-    @Test
-    void testInit_SkipsJwksLookup_IfUrlPointsToSelf() throws Exception {
-        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class);
-             MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
-
-            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString())).thenThrow(new IllegalArgumentException());
-            keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString())).thenReturn(mockPublicKey);
-
-            JWTManager manager = new JWTManager();
-            setField(manager, "jwksUrl", "http://localhost:8080/api/v1/authentication/jwks");
-            setField(manager, "httpPort", 8080);
-            setField(manager, "httpHost", "localhost");
-            setField(manager, "privateKeyLocation", "private.pem");
-            setField(manager, "publicKeyLocation", "public.pem");
-
-            manager.init();
-
-            jwkSetMock.verify(() -> JWKSet.load(Mockito.any(URL.class)), Mockito.never());
-            keyLoaderMock.verify(() -> KeyLoader.loadPublicKey(Mockito.anyString()));
-        }
-    }
-
-    @Test
-    void testInit_IgnoresJwksUrl_WhenPrivateKeyIsPresent() throws Exception {
-        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class);
-             MockedStatic<KeyLoader> keyLoaderMock = Mockito.mockStatic(KeyLoader.class)) {
-
-            keyLoaderMock.when(() -> KeyLoader.loadPrivateKey(Mockito.anyString())).thenReturn(mockPrivateKey);
-            keyLoaderMock.when(() -> KeyLoader.loadPublicKey(Mockito.anyString())).thenReturn(mockPublicKey);
-
-            JWTManager manager = new JWTManager();
-            setField(manager, "jwksUrl", "http://example.com/jwks");
-            setField(manager, "privateKeyLocation", "private.pem");
-            setField(manager, "publicKeyLocation", "public.pem");
-
-            manager.init();
-
-            jwkSetMock.verify(() -> JWKSet.load(Mockito.any(URL.class)), Mockito.never());
-            keyLoaderMock.verify(() -> KeyLoader.loadPublicKey(Mockito.anyString()));
-        }
-    }
-
-    @Test
-    void testGetPublicJwk_returnsExpectedKey() throws Exception {
-        jwtManager.setPublicKey(mockPublicKey);
-
-        Field keyIdField = JWTManager.class.getDeclaredField("keyId");
-        keyIdField.setAccessible(true);
-        keyIdField.set(jwtManager, "remsfal-platform-key");
-
+    void testGetPublicJwk_exposesConfiguredKid() throws JOSEException {
         RSAKey jwk = jwtManager.getPublicJwk();
-
-        assertNotNull(jwk);
-        assertEquals("remsfal-platform-key", jwk.getKeyID());
+        assertEquals("unit-test-kid", jwk.getKeyID());
+        assertInstanceOf(RSAPublicKey.class, jwk.toPublicKey());
     }
 
     @Test
-    void testIsSelfUrl_returnsTrueForLocalhost() throws Exception {
-        setField(jwtManager, "httpPort", 8080);
-        setField(jwtManager, "httpHost", "localhost");
-        assertTrue(jwtManager.isSelfUrl("http://localhost:8080/jwks"));
+    void testIssuerGuard_throwsWhenNoPrivateKey() {
+        JWTManager verifierOnly = new JWTManager();
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> verifierOnly.createAccessToken("u1", "e@x", 60));
+
+        assertTrue(exception.getMessage().contains("issuer mode"), exception.getMessage());
     }
 
-    @Test
-    void testIsSelfUrl_returnsFalseForOtherHost() throws Exception {
-        setField(jwtManager, "httpPort", 8080);
-        setField(jwtManager, "httpHost", "localhost");
-        assertFalse(jwtManager.isSelfUrl("http://example.com:8080/jwks"));
-    }
+    private Map<String, Object> decodePayload(String jwt) {
+        try {
+            String payloadB64 = jwt.split("\\.")[1];
+            byte[] json = Base64.getUrlDecoder().decode(payloadB64);
+            ObjectMapper mapper = new ObjectMapper();
 
-    @Test
-    void testIsSelfUrl_malformedURL_returnsFalse() {
-        assertFalse(jwtManager.isSelfUrl("not-a-url"));
-    }
-
-    @Test
-    void testLoadPublicKeyFromJwks_throwsExceptionOnEmptyKeyList() {
-        try (MockedStatic<JWKSet> jwkSetMock = Mockito.mockStatic(JWKSet.class)) {
-            jwkSetMock.when(() -> JWKSet.load(Mockito.any(URL.class)))
-                    .thenReturn(new JWKSet());
-
-            assertThrows(IllegalArgumentException.class,
-                    () -> jwtManager.loadPublicKeyFromJwks("http://test-jwks"));
+            return mapper.readValue(json, Map.class);
+        } catch (Exception e) {
+            throw new AssertionError("Failed to decode JWT payload", e);
         }
     }
 
