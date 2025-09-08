@@ -16,7 +16,7 @@
 
     <properties>
         <quarkus-minio.version>3.8.4</quarkus-minio.version>
-        <quarkus-cassandra.version>3.4.8</quarkus-cassandra.version>
+        <quarkus-cassandra.version>3.4.10</quarkus-cassandra.version>
     </properties>
 
     <dependencyManagement>
