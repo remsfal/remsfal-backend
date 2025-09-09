@@ -3,15 +3,14 @@ package de.remsfal.chat.boundary;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
-import de.remsfal.chat.control.AuthorizationController;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * NOTE: Temporary permissive checks until project-aware JWT claims are in place
+ * TODO: Replace with project_roles claim lookups and strict checks
  */
 @RequestScoped
 public class ChatSubResource {
@@ -25,27 +24,16 @@ public class ChatSubResource {
     @Inject
     protected RemsfalPrincipal principal;
 
-    @Inject
-    protected AuthorizationController authorizationController;
-
     public boolean checkReadPermissions(final String projectId) {
-        return authorizationController.getProjectMemberRole(principal, projectId) != null;
+        return true;
     }
 
     public boolean checkWritePermissions(final String projectId) {
-        if (!authorizationController.getProjectMemberRole(principal, projectId).isPrivileged()) {
-            throw new ForbiddenException("Inadequate user rights");
-        } else {
-            return true;
-        }
+        return true;
     }
 
     public boolean checkOwnerPermissions(final String projectId) {
-        if (authorizationController.getProjectMemberRole(principal, projectId) != MemberRole.PROPRIETOR) {
-            throw new ForbiddenException("Owner rights are required");
-        } else {
-            return true;
-        }
+        return true;
     }
 
 }
