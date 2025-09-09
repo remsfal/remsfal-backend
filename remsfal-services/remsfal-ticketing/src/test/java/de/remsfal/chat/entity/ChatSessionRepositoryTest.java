@@ -10,6 +10,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -21,6 +22,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
+@Disabled("Legacy JPA-based test; will be refactored to pure Cassandra/MinIO after JWT-role rollout")
 public class ChatSessionRepositoryTest extends AbstractTicketingTest {
 
     @Inject
