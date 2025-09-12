@@ -63,13 +63,17 @@ public class JWTManager {
     }
 
     /** Issue an access token using SmallRye JWT Build (platform only) */
-    public String createAccessToken(String userId, String email, long ttlSeconds) {
+    public String createAccessToken(String userId, String email, String name, Boolean active,
+            Map<String, String> projectRoles, long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", userId);
         claims.put("email", email);
+        claims.put("name", name);
+        claims.put("active", active);
+        claims.put("project_roles", projectRoles);
 
         return Jwt.claims(claims)
                 .issuer(issuer)

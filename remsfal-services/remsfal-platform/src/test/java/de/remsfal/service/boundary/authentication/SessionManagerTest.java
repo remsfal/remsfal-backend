@@ -2,6 +2,10 @@ package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
+import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dto.ProjectEntity;
+import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
@@ -17,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.*;
 
@@ -33,6 +38,8 @@ class SessionManagerTest {
 
     UserRepository userRepository;
 
+    ProjectRepository projectRepository;
+
     JWTManager jwtManager;
 
     JWTParser jwtParser;
@@ -41,11 +48,39 @@ class SessionManagerTest {
     void setup() {
         userRepository = Mockito.mock(UserRepository.class);
         userAuthRepository = Mockito.mock(UserAuthenticationRepository.class);
+        projectRepository = Mockito.mock(ProjectRepository.class);
         jwtManager = Mockito.mock(JWTManager.class);
         jwtParser = Mockito.mock(JWTParser.class);
 
         sessionManager = new SessionManager("/", NewCookie.SameSite.STRICT, Duration.ofMinutes(5),
-            Duration.ofDays(7), jwtManager, userAuthRepository, userRepository, jwtParser);
+            Duration.ofDays(7), jwtManager, userAuthRepository, userRepository, projectRepository, jwtParser);
+    }
+
+    private List<ProjectMembershipEntity> createMemberships(String p1Role, String p2Role) {
+        return List.of(
+                mkMembership("p1", ProjectMemberModel.MemberRole.valueOf(p1Role)),
+                mkMembership("p2", ProjectMemberModel.MemberRole.valueOf(p2Role))
+        );
+    }
+
+    private ProjectMembershipEntity mkMembership(String projectId, ProjectMemberModel.MemberRole role) {
+        ProjectEntity project = new ProjectEntity();
+        setPrivate(project, "id", projectId);
+
+        ProjectMembershipEntity membershipEntity = new ProjectMembershipEntity();
+        membershipEntity.setProject(project);
+        membershipEntity.setRole(role);
+        return membershipEntity;
+    }
+
+    private static void setPrivate(Object target, String fieldName, Object value) {
+        try {
+            Field f = target.getClass().getSuperclass().getDeclaredField(fieldName);
+            f.setAccessible(true);
+            f.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set field '" + fieldName + "' on " + target.getClass(), e);
+        }
     }
 
     private JsonWebToken fakeRefreshJwt(String subject, String email, String refreshId) {
@@ -76,28 +111,35 @@ class SessionManagerTest {
         String refreshId = "r-123";
         String refreshTokenValue = "refresh.jwt.token";
 
-        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build();
-
         when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(userId, email, refreshId));
 
         UserEntity user = new UserEntity();
         user.setId(userId);
         user.setEmail(email);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setTokenId("active-token");
 
         UserAuthenticationEntity auth = new UserAuthenticationEntity();
         auth.setUser(user);
         auth.setRefreshToken(refreshId);
 
         when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(auth));
-        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(auth)).thenReturn(Optional.of(auth));
+        when(userRepository.findById(userId)).thenReturn(user);
+        when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
+                .thenReturn(createMemberships("MANAGER", "STAFF"));
 
-        when(jwtManager.createAccessToken(userId, email, 300L)).thenReturn("new-access");
+        when(jwtManager.createAccessToken(eq(userId), eq(email), eq("John Doe"), eq(true),
+                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
+                .thenReturn("new-access");
+
         when(jwtManager.createRefreshToken(eq(userId), eq(email), anyString(), eq(604800L)))
                 .thenReturn("new-refresh");
 
         // Act
         SessionManager.TokenRenewalResponse response =
-            sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME, refreshCookie));
+                sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME,
+                        new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));
 
         // Assert
         assertEquals("new-access", response.getAccessToken().getValue());
@@ -105,7 +147,10 @@ class SessionManagerTest {
 
         verify(jwtParser).parse(refreshTokenValue);
         verify(userAuthRepository, times(2)).findByUserId(userId);
-        verify(jwtManager).createAccessToken(userId, email, 300L);
+        verify(userRepository).findById(userId);
+        verify(projectRepository).findMembershipByUserId(eq(userId), anyInt(), anyInt());
+        verify(jwtManager).createAccessToken(eq(userId), eq(email), eq("John Doe"), eq(true),
+                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L));
         verify(jwtManager).createRefreshToken(eq(userId), eq(email), anyString(), eq(604800L));
     }
 
@@ -116,11 +161,26 @@ class SessionManagerTest {
 
     @Test
     void test_generateAccessToken_wrapsCookie() {
-        when(jwtManager.createAccessToken("u1", "u1@example.com", 300L)).
-                thenReturn("access.jwt");
+        String userId = "u1";
+        String email = "u1@example.com";
+
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+        user.setEmail(email);
+        user.setFirstName("Jane");
+        user.setLastName("Roe");
+        user.setTokenId("active");
+
+        when(userRepository.findById(userId)).thenReturn(user);
+        when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
+                .thenReturn(createMemberships("MANAGER", "STAFF"));
+
+        when(jwtManager.createAccessToken(eq(userId), eq(email), eq("Jane Roe"), eq(true),
+                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
+                .thenReturn("access.jwt");
 
         // Act
-        NewCookie cookie = sessionManager.generateAccessToken("u1", "u1@example.com");
+        NewCookie cookie = sessionManager.generateAccessToken(userId, email);
 
         // Assert
         assertEquals("access.jwt", cookie.getValue());
@@ -171,6 +231,13 @@ class SessionManagerTest {
                 SessionManager.ACCESS_COOKIE_NAME, cookieA)).getValue());
         assertEquals("cookieR", sessionManager.findRefreshTokenCookie(Map.of(
                 SessionManager.REFRESH_COOKIE_NAME, cookieR)).getValue());
+    }
+
+    @Test
+    void test_generateAccessToken_throws_whenUserMissing() {
+        when(userRepository.findById("missing")).thenReturn(null);
+        assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken("missing", "x@x"));
+        verify(jwtManager, never()).createAccessToken(anyString(), anyString(), anyString(), anyBoolean(), anyMap(), anyLong());
     }
 
 }

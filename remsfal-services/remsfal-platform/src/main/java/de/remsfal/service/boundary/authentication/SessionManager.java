@@ -1,5 +1,8 @@
 package de.remsfal.service.boundary.authentication;
 
+import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dto.ProjectMembershipEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
@@ -17,6 +20,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,6 +45,8 @@ public class SessionManager {
 
     private final UserRepository userRepository;
 
+    private final ProjectRepository projectRepository;
+
     private final JWTParser jwtParser;
 
     public SessionManager(
@@ -55,6 +61,7 @@ public class SessionManager {
         JWTManager jwtManager,
         UserAuthenticationRepository userAuthRepository,
         UserRepository userRepository,
+        ProjectRepository projectRepository,
         JWTParser jwtParser) {
 
         this.sessionCookiePath = sessionCookiePath;
@@ -64,6 +71,7 @@ public class SessionManager {
         this.jwtManager = jwtManager;
         this.userAuthRepository = userAuthRepository;
         this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
         this.jwtParser = jwtParser;
     }
 
@@ -75,7 +83,22 @@ public class SessionManager {
      * @return NewCookie containing the access token
      */
     public NewCookie generateAccessToken(String userId, String email) {
-        String jwt = jwtManager.createAccessToken(userId, email, accessTokenTimeout.getSeconds());
+        UserEntity user = userRepository.findById(userId);
+
+        if (user == null) {
+            throw new UnauthorizedException("User not found: " + userId);
+        }
+
+        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
+                Integer.MAX_VALUE);
+        Map<String, String> projectRoles = memberships.stream()
+            .collect(java.util.stream.Collectors.toMap(
+                m -> m.getProject().getId(),
+                m -> m.getRole().name()
+            ));
+
+        String jwt = jwtManager.createAccessToken(userId, email, user.getName(), user.isActive(), projectRoles,
+                accessTokenTimeout.getSeconds());
         return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false);
     }
 

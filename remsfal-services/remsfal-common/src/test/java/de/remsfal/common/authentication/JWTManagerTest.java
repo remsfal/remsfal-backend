@@ -44,16 +44,27 @@ class JWTManagerTest extends AbstractTest {
     }
 
     @Test
-    void testCreateAccessToken_containsSubEmailIssuerAndExp() {
-        String token = jwtManager.createAccessToken("u1", "u1@example.com", 300);
+    void testCreateAccessToken_containsStandardAndProjectClaims() {
+        Map<String, String> projectRoles = Map.of(
+                "proj-1", "MANAGER",
+                "proj-2", "PROPRIETOR"
+        );
+
+        String token = jwtManager.createAccessToken("u1", "u1@example.com", "User One",
+                true, projectRoles, 3600);
+
         assertNotNull(token);
         assertEquals(3, token.split("\\.").length, "JWT must have 3 parts");
 
         Map<String, Object> payload = decodePayload(token);
         assertEquals("u1", payload.get("sub"));
         assertEquals("u1@example.com", payload.get("email"));
+        assertEquals("User One", payload.get("name"));
+        assertEquals(Boolean.TRUE, payload.get("active"));
         assertEquals("REMSFAL", payload.get("iss"));
         assertTrue(((Number) payload.get("exp")).longValue() > (System.currentTimeMillis() / 1000));
+        assertEquals(projectRoles, payload.get("project_roles"));
+
         assertNull(payload.get("refreshToken"), "access token must NOT contain refreshToken claim");
     }
 
@@ -77,8 +88,9 @@ class JWTManagerTest extends AbstractTest {
     @Test
     void testIssuerGuard_throwsWhenNoPrivateKey() {
         JWTManager verifierOnly = new JWTManager();
+        Map<String, String> projectRoles = Map.of();
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> verifierOnly.createAccessToken("u1", "e@x", 60));
+                () -> verifierOnly.createAccessToken("u1", "e@x", "Name", true, projectRoles, 60));
 
         assertTrue(exception.getMessage().contains("issuer mode"), exception.getMessage());
     }
