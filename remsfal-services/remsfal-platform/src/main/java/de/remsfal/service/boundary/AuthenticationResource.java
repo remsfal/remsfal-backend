@@ -56,9 +56,9 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Inject
     Logger logger;
+
     @Inject
     HttpHeaders httpHeaders;
-
 
     @Override
     @Timed(name = "checksTimerLogin", unit = MetricUnits.MILLISECONDS)
@@ -88,8 +88,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     private Response createSession(final UserModel user, final String route) {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath(route).build();
         final NewCookie accessToken = sessionManager.generateAccessToken(
-            sessionManager.sessionInfoBuilder(SessionManager.ACCESS_COOKIE_NAME).userId(user.getId())
-                    .userEmail(user.getEmail()).build());
+                user.getId(), user.getEmail());
         final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
         return redirect(redirectUri).cookie(accessToken, refreshToken).build();
     }
@@ -139,4 +138,5 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         }
         return uri.getAbsolutePathBuilder();
     }
+
 }

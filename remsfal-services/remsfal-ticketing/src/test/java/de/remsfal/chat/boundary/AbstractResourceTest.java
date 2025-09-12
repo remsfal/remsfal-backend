@@ -7,9 +7,7 @@ import io.restassured.http.Cookie;
 import jakarta.inject.Inject;
 import de.remsfal.chat.AbstractTicketingTest;
 import de.remsfal.chat.TicketingTestData;
-import de.remsfal.chat.boundary.authentication.SessionManager;
 import de.remsfal.common.authentication.JWTManager;
-import de.remsfal.common.authentication.SessionInfo;
 
 import java.time.Duration;
 
@@ -21,6 +19,8 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
 
     @Inject
     JWTManager jwtManager;
+
+    private static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
 
     @Deprecated
     protected void setupTestUsers() {
@@ -92,7 +92,7 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
             .setParameter(3, "MANAGER")
             .executeUpdate());
         logger.info("User " + TicketingTestData.USER_ID + " is the manager of all projects.");
-        
+
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TicketingTestData.PROJECT_ID_1)
@@ -118,23 +118,8 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
     }
 
     protected Cookie buildCookie(final String userId, final String userEmail, final Duration ttl) {
-        // Baue Access Token
-        SessionInfo.Builder sessionInfoBuilder = SessionInfo.builder();
-
-        if (userId != null) {
-            sessionInfoBuilder.userId(userId);
-        }
-        if (userEmail != null) {
-            sessionInfoBuilder.userEmail(userEmail);
-        }
-        if (ttl != null) {
-            sessionInfoBuilder.expireAfter(ttl);
-        }
-
-        String jwt = jwtManager.createJWT(sessionInfoBuilder.build());
-        return new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME, jwt)
-            .setMaxAge(ttl.toSeconds())
-            .build();
+        String jwt = jwtManager.createAccessToken(userId, userEmail, ttl.getSeconds());
+        return new Cookie.Builder(ACCESS_COOKIE_NAME, jwt).setMaxAge(ttl.toSeconds()).build();
     }
 
 }

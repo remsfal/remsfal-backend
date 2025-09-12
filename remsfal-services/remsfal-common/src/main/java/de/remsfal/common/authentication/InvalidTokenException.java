@@ -8,6 +8,7 @@ import jakarta.ws.rs.NotAuthorizedException;
 public class InvalidTokenException extends NotAuthorizedException {
 
     private static final long serialVersionUID = 1L;
+    private static final String BEARER = "Bearer";
 
     /**
      * Construct a new "unauthorized" exception.
@@ -23,18 +24,16 @@ public class InvalidTokenException extends NotAuthorizedException {
      *                by the {@link #getMessage()} method).
      */
     public InvalidTokenException(String message) {
-        super(message, RemsfalSecurityContext.BEARER);
+        super(message, BEARER);
     }
 
     /**
      * Construct a new "unauthorized" exception.
      *
-     * @param message the detail message (which is saved for later retrieval
-     *                by the {@link #getMessage()} method).
      * @param cause   the underlying cause of the exception.
      */
     public InvalidTokenException(Throwable cause) {
-        super("Invalid token", cause, RemsfalSecurityContext.BEARER);
+        super("Invalid token", cause, BEARER);
     }
 
 }

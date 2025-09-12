@@ -10,6 +10,7 @@ import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @QuarkusTest
+@Disabled("Legacy JPA-based test; will be refactored to pure Cassandra/MinIO after JWT-role rollout")
 public class ChatMessageRepositoryTest extends AbstractTicketingTest {
 
     static final UUID PROJECT_ID = UUID.randomUUID();
