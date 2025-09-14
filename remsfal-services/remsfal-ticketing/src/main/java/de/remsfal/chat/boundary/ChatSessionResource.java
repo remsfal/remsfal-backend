@@ -13,7 +13,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.remsfal.chat.control.OcrEventProducer;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -197,7 +201,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
             validateRole(role);
             chatSessionController
                 .updateParticipantRole(projectId, taskId, sessionId, participantId,
-                    ParticipantRole.valueOf(role));
+                ParticipantRole.valueOf(role));
             String json = jsonifyParticipantsMap(Map.of(participantUUID, role));
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -240,7 +244,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 throw new NotAuthorizedException("No user authentication provided via session cookie");
             }
             Map<UUID, String> participants =
-                    chatSessionController.getParticipants(projectId, taskId, sessionId);
+                chatSessionController.getParticipants(projectId, taskId, sessionId);
             UUID userUUID = UUID.fromString(userId);
             boolean isParticipant = participants.containsKey(userUUID);
             boolean hasWritePermission = false;
@@ -456,7 +460,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                     ocrEventProducer.sendOcrRequest(uploadedFile);
                     String mergedJson = String.format(
                         "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
-                            " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
+                        " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
                         fileMetadataEntity.getMessageId(),
                         fileUrl,
                         fileMetadataEntity.getSessionId(),

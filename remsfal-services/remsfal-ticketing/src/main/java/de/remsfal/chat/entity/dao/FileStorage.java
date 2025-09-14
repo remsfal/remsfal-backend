@@ -45,14 +45,14 @@ public class FileStorage {
 
         boolean bucketExists = minioClient.bucketExists(
             BucketExistsArgs.builder()
-                .bucket(bucketName)
-                .build());
+            .bucket(bucketName)
+            .build());
         if (!bucketExists) {
             // Create bucket
             minioClient.makeBucket(
                 MakeBucketArgs.builder()
-                    .bucket(bucketName)
-                    .build());
+                .bucket(bucketName)
+                .build());
             logger.infov("Bucket '{0}' was created.", bucketName);
         } else {
             logger.infov("Bucket '{0}' already exists.", bucketName);
@@ -66,11 +66,11 @@ public class FileStorage {
             logger.infov("Uploading file {0} to bucket {1}", finalFileName, bucketName);
             minioClient.putObject(
                 PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(finalFileName)
-                    .stream(inputStream, DEFAULT_OBJECT_SIZE, DEFAULT_PART_SIZE)
-                    .contentType(contentType.toString())
-                    .build());
+                .bucket(bucketName)
+                .object(finalFileName)
+                .stream(inputStream, DEFAULT_OBJECT_SIZE, DEFAULT_PART_SIZE)
+                .contentType(contentType.toString())
+                .build());
             return finalFileName;
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while uploading file", e);
@@ -101,9 +101,9 @@ public class FileStorage {
             logger.infov("Deleting file {0} from bucket {1}", fileName, bucketName);
             minioClient.removeObject(
                 RemoveObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(fileName)
-                    .build());
+                .bucket(bucketName)
+                .object(fileName)
+                .build());
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while deleting file", e);
         }
@@ -114,9 +114,9 @@ public class FileStorage {
             logger.infov("Checking if object {0} exists in bucket {1}", fileName, bucketName);
             minioClient.statObject(
                 StatObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(fileName)
-                    .build());
+                .bucket(bucketName)
+                .object(fileName)
+                .build());
             logger.infov("Object {0} exists in bucket {1}", fileName, bucketName);
             return true;
         } catch (ErrorResponseException e) {
