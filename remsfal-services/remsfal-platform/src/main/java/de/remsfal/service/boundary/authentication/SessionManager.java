@@ -83,11 +83,12 @@ public class SessionManager {
      * @return NewCookie containing the access token
      */
     public NewCookie generateAccessToken(String userId, String email) {
-        UserEntity user = userRepository.findById(userId);
-
-        if (user == null) {
-            throw new UnauthorizedException("User not found: " + userId);
+        if (userId == null || email == null) {
+            throw new UnauthorizedException("User id and email are required");
         }
+
+        UserEntity user = userRepository.findByIdOptional(userId)
+            .orElseThrow(() -> new UnauthorizedException("User not found: " + userId));
 
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
                 Integer.MAX_VALUE);

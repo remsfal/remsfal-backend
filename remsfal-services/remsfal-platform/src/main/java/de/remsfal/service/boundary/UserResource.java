@@ -1,5 +1,6 @@
 package de.remsfal.service.boundary;
 
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
@@ -24,11 +25,12 @@ import org.eclipse.microprofile.metrics.MetricUnits;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
+@Authenticated
 public class UserResource implements UserEndpoint {
 
     @Inject
     RemsfalPrincipal principal;
-    
+
     @Inject
     UserController userController;
 

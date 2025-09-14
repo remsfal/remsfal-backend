@@ -283,7 +283,13 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
     }
 
     protected Cookie buildAccessTokenCookie(final String userId, final String userEmail, final Duration ttl) {
-        final String accessToken = sessionManager.generateAccessToken(userId, userEmail).getValue();
+        String accessToken;
+        try {
+            accessToken = sessionManager.generateAccessToken(userId, userEmail).getValue();
+        } catch (Exception e) {
+            accessToken = "invalid.jwt.token";
+        }
+
         Cookie.Builder cookieBuilder = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME, accessToken);
 
         if (ttl != null) {

@@ -125,7 +125,7 @@ class SessionManagerTest {
         auth.setRefreshToken(refreshId);
 
         when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(auth));
-        when(userRepository.findById(userId)).thenReturn(user);
+        when(userRepository.findByIdOptional(userId)).thenReturn(Optional.of(user));
         when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
@@ -147,7 +147,7 @@ class SessionManagerTest {
 
         verify(jwtParser).parse(refreshTokenValue);
         verify(userAuthRepository, times(2)).findByUserId(userId);
-        verify(userRepository).findById(userId);
+        verify(userRepository).findByIdOptional(userId);
         verify(projectRepository).findMembershipByUserId(eq(userId), anyInt(), anyInt());
         verify(jwtManager).createAccessToken(eq(userId), eq(email), eq("John Doe"), eq(true),
                 argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L));
@@ -171,7 +171,7 @@ class SessionManagerTest {
         user.setLastName("Roe");
         user.setTokenId("active");
 
-        when(userRepository.findById(userId)).thenReturn(user);
+        when(userRepository.findByIdOptional(userId)).thenReturn(Optional.of(user));
         when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
@@ -235,7 +235,7 @@ class SessionManagerTest {
 
     @Test
     void test_generateAccessToken_throws_whenUserMissing() {
-        when(userRepository.findById("missing")).thenReturn(null);
+        when(userRepository.findByIdOptional("missing")).thenReturn(Optional.empty());
         assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken("missing", "x@x"));
         verify(jwtManager, never()).createAccessToken(anyString(), anyString(), anyString(), anyBoolean(), anyMap(), anyLong());
     }
