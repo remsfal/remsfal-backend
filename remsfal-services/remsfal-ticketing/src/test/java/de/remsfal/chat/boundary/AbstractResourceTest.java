@@ -10,6 +10,7 @@ import de.remsfal.chat.TicketingTestData;
 import de.remsfal.common.authentication.JWTManager;
 
 import java.time.Duration;
+import java.util.Map;
 
 public abstract class AbstractResourceTest extends AbstractTicketingTest {
 
@@ -117,8 +118,9 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
 
     }
 
-    protected Cookie buildCookie(final String userId, final String userEmail, final Duration ttl) {
-        String jwt = jwtManager.createAccessToken(userId, userEmail, ttl.getSeconds());
+    protected Cookie buildCookie(final String userId, final String userEmail, final String userName,
+                                 final Boolean active, final Map<String, String> projectRoles, final Duration ttl) {
+        String jwt = jwtManager.createAccessToken(userId, userEmail, userName, active, projectRoles, ttl.getSeconds());
         return new Cookie.Builder(ACCESS_COOKIE_NAME, jwt).setMaxAge(ttl.toSeconds()).build();
     }
 
