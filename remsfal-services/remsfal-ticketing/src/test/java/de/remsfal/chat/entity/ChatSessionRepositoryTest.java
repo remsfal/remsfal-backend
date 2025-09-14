@@ -2,10 +2,12 @@ package de.remsfal.chat.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
 import de.remsfal.chat.AbstractTicketingTest;
 import de.remsfal.chat.TicketingTestData;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +22,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
+@QuarkusTestResource(CassandraTestResource.class)
 public class ChatSessionRepositoryTest extends AbstractTicketingTest {
 
     @Inject

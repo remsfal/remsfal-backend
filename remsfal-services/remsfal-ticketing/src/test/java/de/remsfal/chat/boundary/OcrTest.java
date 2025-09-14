@@ -1,5 +1,6 @@
 package de.remsfal.chat.boundary;
 
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.remsfal.chat.resource.OcrServiceResource;
@@ -15,6 +16,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,7 @@ import java.util.UUID;
  */
 @QuarkusTest
 @QuarkusTestResource(OcrServiceResource.class)
+@QuarkusTestResource(CassandraTestResource.class)
 public class OcrTest extends AbstractResourceTest {
 
     @InjectSpy
@@ -67,7 +70,11 @@ public class OcrTest extends AbstractResourceTest {
         String taskId = UUID.randomUUID().toString();
         String sessionId = UUID.randomUUID().toString();
 
-        when(principal.getId()).thenReturn(UUID.randomUUID().toString());
+        String userId = UUID.randomUUID().toString();
+        when(principal.getId()).thenReturn(userId);
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId, "MANAGER"));
+        when(principal.getJwt()).thenReturn(jwt);
 
         Response response = chatSessionResource.uploadFile(projectId, taskId, sessionId, input);
 
