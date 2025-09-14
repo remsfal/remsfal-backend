@@ -9,7 +9,6 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.chat.AbstractTicketingTest;
@@ -36,7 +35,6 @@ import org.jboss.logging.Logger;
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
 @QuarkusTest
-@Disabled("Legacy JPA-based test; will be refactored to pure Cassandra/MinIO after JWT-role rollout")
 public class FileStorageServiceTest extends AbstractTicketingTest {
 
     @Inject

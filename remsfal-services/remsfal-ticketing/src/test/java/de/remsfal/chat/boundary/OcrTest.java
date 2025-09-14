@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.Response;
 import org.awaitility.Awaitility;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,7 +40,6 @@ import java.util.UUID;
  */
 @QuarkusTest
 @QuarkusTestResource(OcrServiceResource.class)
-@Disabled("Legacy JPA-based test; will be refactored to pure Cassandra/MinIO after JWT-role rollout")
 public class OcrTest extends AbstractResourceTest {
 
     @InjectSpy

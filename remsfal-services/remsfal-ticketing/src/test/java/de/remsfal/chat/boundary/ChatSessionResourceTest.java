@@ -116,8 +116,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @BeforeEach
     protected void setup() throws Exception {
         logger.info("Setting up test data");
-        super.setupTestUsers();
-        super.setupTestMemberships();
         super.setupTestFiles();
         logger.info("Setting up chat sessions and messages");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
@@ -240,7 +238,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
     // unprivileged tests - same logic in all methods - no need for multiple tests
     @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}" })
+    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}/role" })
     void changeParticipantRole_UNPRIVILEGED(String path) {
         String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";
@@ -532,7 +530,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}" })
+    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}/role" })
     void changeParticipantRole_SUCCESS(String path) {
         String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";

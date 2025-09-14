@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.remsfal.chat.control.OcrEventProducer;
+import jakarta.ws.rs.*;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -36,10 +37,6 @@ import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
@@ -89,7 +86,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     @Override
     public Response getChatSession(final String projectId, final String taskId, final String sessionId) {
         try {
-            checkWritePermissions(projectId);
+            checkReadPermissions(projectId);
             Optional<ChatSessionEntity> session = chatSessionController
                 .getChatSession(projectId, taskId, sessionId);
             if (session.isPresent())
@@ -133,10 +130,10 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 .type(MediaType.APPLICATION_JSON)
                 .entity(json)
                 .build();
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException | IllegalArgumentException e) {
             throw new NotFoundException(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Failed to join chat session", e);
             throw new ForbiddenException();
@@ -238,8 +235,23 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     public Response sendMessage(final String projectId, final String taskId,
         final String sessionId, final ChatMessageJson message) {
         try {
-            checkWritePermissions(projectId);
-            String userId = principal.getId(); // Get user ID from session
+            String userId = principal.getId();
+            if (userId == null) {
+                throw new NotAuthorizedException("No user authentication provided via session cookie");
+            }
+            Map<UUID, String> participants =
+                    chatSessionController.getParticipants(projectId, taskId, sessionId);
+            UUID userUUID = UUID.fromString(userId);
+            boolean isParticipant = participants.containsKey(userUUID);
+            boolean hasWritePermission = false;
+            try {
+                checkWritePermissions(projectId);
+                hasWritePermission = true;
+            } catch (NotAuthorizedException | ForbiddenException ignored) {
+            }
+            if (!isParticipant && !hasWritePermission) {
+                throw new ForbiddenException("Inadequate user rights");
+            }
             if (message.getContent() == null || message.getContent().isBlank()) {
                 throw new BadRequestException("Message content cannot be null or empty");
             }
@@ -248,7 +260,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 throw new BadRequestException("Payload size exceeds limit");
             }
             ChatMessageEntity entity = chatMessageController.sendChatMessage(
-                sessionId, userId, message.getContentType(), message.getContent());
+                sessionId, principal.getId(), message.getContentType(), message.getContent());
             URI location = uri.getAbsolutePathBuilder()
                 .path(entity.getMessageId().toString()).build();
             return Response.created(location)
@@ -257,8 +269,10 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        } catch (BadRequestException e) {
-            throw new BadRequestException("Malformed JSON payload");
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException | BadRequestException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Failed to send message", e);
             throw e;
@@ -431,7 +445,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                         .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
-                    
+
                     FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
                         .sessionId(sessionId)
                         .messageId(fileMetadataEntity.getMessageId().toString())
@@ -524,7 +538,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
         if (!role.equals(ParticipantRole.OBSERVER.name())
             && !role.equals(ParticipantRole.HANDLER.name())
             && !role.equals(ParticipantRole.INITIATOR.name())) {
-            throw new BadRequestException("Role must be provided or Invalid role");
+            throw new ForbiddenException("Invalid role");
         }
     }
 

@@ -10,11 +10,8 @@ import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import de.remsfal.chat.entity.dto.ChatMessageKey;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
 
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Optional;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.Collections;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -22,8 +19,6 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @ApplicationScoped
 public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity, ChatMessageKey> {
@@ -136,7 +131,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         Optional<ChatSessionEntity> sessionOpt =
             chatSessionRepository.findSessionById(projectId, sessionId, taskId);
         if (sessionOpt.isEmpty()) {
-            throw new RuntimeException("Session not found");
+            throw new NoSuchElementException("Session not found");
         }
         ChatSessionEntity session = sessionOpt.get();
         List<ChatMessageEntity> messages = findMessagesByChatSession(sessionId);
