@@ -93,11 +93,10 @@ public class SessionManager {
 
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
             Integer.MAX_VALUE);
-        Map<String, String> projectRoles = memberships.stream()
-            .collect(Collectors.toMap(
-                m -> m.getProject().getId(),
-                m -> m.getRole().name()
-            ));
+        Map<String, String> projectRoles = memberships.stream().collect(Collectors.toMap(
+            m -> m.getProject().getId(),
+            m -> m.getRole().name()
+        ));
 
         String jwt = jwtManager.createAccessToken(userId, email, user.getName(), user.isActive(), projectRoles,
             accessTokenTimeout.getSeconds());
