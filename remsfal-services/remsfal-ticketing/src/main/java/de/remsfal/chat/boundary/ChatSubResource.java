@@ -2,6 +2,7 @@ package de.remsfal.chat.boundary;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.json.JsonObject;
@@ -18,6 +19,7 @@ import java.util.Map;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
+@Authenticated
 @RequestScoped
 public class ChatSubResource {
 

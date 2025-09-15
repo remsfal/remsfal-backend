@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.remsfal.chat.control.OcrEventProducer;
+import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -48,6 +49,7 @@ import jakarta.ws.rs.core.StreamingOutput;
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
+@Authenticated
 @RequestScoped
 public class ChatSessionResource extends ChatSubResource implements ChatSessionEndpoint {
 

@@ -12,6 +12,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.security.TestSecurity;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -43,6 +44,7 @@ import java.util.UUID;
 @QuarkusTest
 @QuarkusTestResource(OcrServiceResource.class)
 @QuarkusTestResource(CassandraTestResource.class)
+@TestSecurity(user = "test-user")
 public class OcrTest extends AbstractResourceTest {
 
     @InjectSpy
