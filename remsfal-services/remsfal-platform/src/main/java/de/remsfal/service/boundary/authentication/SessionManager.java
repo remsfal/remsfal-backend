@@ -91,15 +91,15 @@ public class SessionManager {
             .orElseThrow(() -> new UnauthorizedException("User not found: " + userId));
 
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
-                Integer.MAX_VALUE);
+            Integer.MAX_VALUE);
         Map<String, String> projectRoles = memberships.stream()
             .collect(java.util.stream.Collectors.toMap(
-                m -> m.getProject().getId(),
-                m -> m.getRole().name()
-            ));
+            m -> m.getProject().getId(),
+            m -> m.getRole().name()
+        ));
 
         String jwt = jwtManager.createAccessToken(userId, email, user.getName(), user.isActive(), projectRoles,
-                accessTokenTimeout.getSeconds());
+            accessTokenTimeout.getSeconds());
         return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false);
     }
 

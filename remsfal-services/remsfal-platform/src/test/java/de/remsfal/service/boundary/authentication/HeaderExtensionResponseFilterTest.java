@@ -62,9 +62,11 @@ class HeaderExtensionResponseFilterTest {
         filter.filter(requestContext, responseContext);
 
         // Verify Logging and Behavior
-        verify(logger).infov(eq("Skipping HeaderExtensionResponseFilter for authentication path: {0}"),
-            eq("/" + AuthenticationEndpoint.CONTEXT + "/"
-                + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE + "/login"));
+        verify(logger).infov(
+        "Skipping HeaderExtensionResponseFilter for authentication path: {0}",
+        "/" + AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION + "/"
+                + AuthenticationEndpoint.SERVICE + "/login"
+        );
         verifyNoInteractions(sessionManager);
         verifyNoInteractions(headers);
     }

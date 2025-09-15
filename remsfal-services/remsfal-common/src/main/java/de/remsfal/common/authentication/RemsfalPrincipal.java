@@ -24,7 +24,7 @@ public class RemsfalPrincipal implements Principal, UserModel {
 
     @Override
     public String getName() {
-         return jwt != null ? jwt.getClaim("name") : null;
+        return jwt != null ? jwt.getClaim("name") : null;
     }
 
     @Override

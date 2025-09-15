@@ -254,6 +254,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 checkWritePermissions(projectId);
                 hasWritePermission = true;
             } catch (NotAuthorizedException | ForbiddenException ignored) {
+                // User does not have write permissions
             }
             if (!isParticipant && !hasWritePermission) {
                 throw new ForbiddenException("Inadequate user rights");
