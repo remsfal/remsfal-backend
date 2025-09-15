@@ -46,8 +46,8 @@ class ChatSessionResourceAuthTest {
 
     @Test
     void testCreateChatSession() throws Exception {
-        String projectId = "11111111-11111";
-        String taskId = "22222222-22222";
+        String projectId = "11111111-1111-1111-1111-111111111111";
+        String taskId = "22222222-2222-2222-2222-222222222222";
         UUID sessionUUID = UUID.randomUUID();
 
         ChatSessionModel session = mock(ChatSessionModel.class);
