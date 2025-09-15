@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SessionManager {
@@ -93,10 +94,10 @@ public class SessionManager {
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
             Integer.MAX_VALUE);
         Map<String, String> projectRoles = memberships.stream()
-            .collect(java.util.stream.Collectors.toMap(
+            .collect(Collectors.toMap(
                 m -> m.getProject().getId(),
                 m -> m.getRole().name()
-        ));
+            ));
 
         String jwt = jwtManager.createAccessToken(userId, email, user.getName(), user.isActive(), projectRoles,
             accessTokenTimeout.getSeconds());
