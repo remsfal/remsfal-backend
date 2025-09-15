@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
-import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
@@ -26,7 +25,6 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 
-@QuarkusTest
 class ChatSessionResourceAuthTest {
 
     private static void setField(Object target, Class<?> cls, String name, Object value) throws Exception {
