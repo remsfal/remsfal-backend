@@ -91,7 +91,7 @@ public class ChatSubResource {
         }
 
         try {
-            return MemberRole.valueOf(String.valueOf(roleStr));
+            return MemberRole.valueOf(roleStr);
         } catch (IllegalArgumentException e) {
             return null;
         }
