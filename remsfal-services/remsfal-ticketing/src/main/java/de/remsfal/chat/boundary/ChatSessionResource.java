@@ -267,7 +267,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                 throw new BadRequestException("Payload size exceeds limit");
             }
             ChatMessageEntity entity = chatMessageController.sendChatMessage(
-                sessionId, principal.getId(), message.getContentType(), message.getContent());
+                sessionId, userId, message.getContentType(), message.getContent());
             URI location = uri.getAbsolutePathBuilder()
                 .path(entity.getMessageId().toString()).build();
             return Response.created(location)
