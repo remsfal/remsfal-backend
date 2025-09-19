@@ -22,7 +22,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.jboss.logging.Logger;
 
@@ -57,9 +56,9 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Inject
     Logger logger;
+
     @Inject
     HttpHeaders httpHeaders;
-
 
     @Override
     @Timed(name = "checksTimerLogin", unit = MetricUnits.MILLISECONDS)
@@ -89,14 +88,12 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     private Response createSession(final UserModel user, final String route) {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath(route).build();
         final NewCookie accessToken = sessionManager.generateAccessToken(
-            sessionManager.sessionInfoBuilder(SessionManager.ACCESS_COOKIE_NAME).userId(user.getId())
-                    .userEmail(user.getEmail()).build());
+            user.getId(), user.getEmail());
         final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
         return redirect(redirectUri).cookie(accessToken, refreshToken).build();
     }
 
     @Timed(name = "checksTimerLogout", unit = MetricUnits.MILLISECONDS)
-    @Counted(name = "countedLogout")
     @Override
     public Response logout() {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath("/").build();
@@ -141,4 +138,5 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         }
         return uri.getAbsolutePathBuilder();
     }
+
 }

@@ -2,13 +2,14 @@ package de.remsfal.chat.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.chat.entity.dao.ChatSessionRepository;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
 import de.remsfal.chat.AbstractTicketingTest;
 import de.remsfal.chat.TicketingTestData;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -21,6 +22,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
+@QuarkusTestResource(CassandraTestResource.class)
 public class ChatSessionRepositoryTest extends AbstractTicketingTest {
 
     @Inject
@@ -33,7 +35,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     static final UUID SESSION_ID = UUID.randomUUID();
 
     @BeforeEach
-    @Transactional
     void setUp() {
         logger.info("Setting up test data");
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
@@ -44,14 +45,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
             Map.of(UUID.fromString(TicketingTestData.USER_ID_1), ChatSessionRepository.ParticipantRole.INITIATOR.name(),
                 UUID.fromString(TicketingTestData.USER_ID_2), ChatSessionRepository.ParticipantRole.HANDLER.name()));
         logger.info("Test session created: " + SESSION_ID);
-        entityManager.createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) " +
-                        "VALUES (?,?,?,?,?)")
-                .setParameter(1, TicketingTestData.USER_ID_3)
-                .setParameter(2, TicketingTestData.USER_TOKEN_3)
-                .setParameter(3, TicketingTestData.USER_EMAIL_3)
-                .setParameter(4, TicketingTestData.USER_FIRST_NAME_3)
-                .setParameter(5, TicketingTestData.USER_LAST_NAME_3)
-                .executeUpdate();
         logger.info("Test data setup complete");
     }
 

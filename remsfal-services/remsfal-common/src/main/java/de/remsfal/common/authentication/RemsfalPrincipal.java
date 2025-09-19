@@ -1,41 +1,39 @@
 package de.remsfal.common.authentication;
 
 import java.security.Principal;
-
 import jakarta.enterprise.context.RequestScoped;
-
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import de.remsfal.core.model.UserModel;
 
-/**
- * @author Alexander Stanik [stanik@htw-berlin.de]
- */
 @RequestScoped
 public class RemsfalPrincipal implements Principal, UserModel {
 
-    private UserModel user;
-
-    public void setUserModel(final UserModel user) {
-        this.user = user;
-    }
+    @Inject
+    JsonWebToken jwt;
 
     @Override
     public String getId() {
-        return user.getId();
+        return jwt != null ? jwt.getSubject() : null;
     }
 
     @Override
     public String getEmail() {
-        return user.getEmail();
+        return jwt != null ? jwt.getClaim("email") : null;
     }
 
     @Override
     public String getName() {
-        return user.getName();
+        return jwt != null ? jwt.getClaim("name") : null;
     }
 
     @Override
     public Boolean isActive() {
-        return user.isActive();
+        return jwt != null ? jwt.getClaim("active") : null;
+    }
+
+    public JsonWebToken getJwt() {
+        return jwt;
     }
 
 }

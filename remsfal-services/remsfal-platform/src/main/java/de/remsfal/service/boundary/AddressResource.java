@@ -5,6 +5,7 @@ import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.CountryListJson;
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.service.control.AddressController;
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
+@Authenticated
 public class AddressResource implements AddressEndpoint {
 
     @Inject

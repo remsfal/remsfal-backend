@@ -21,6 +21,8 @@ import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -50,11 +52,9 @@ public interface ProjectEndpoint {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information for all projects.")
-    @APIResponse(
-        responseCode = "401",
-        description = "No user authentication provided via session cookie"
-    )
+    @Operation(summary = "Retrieve information for all projects")
+    @APIResponse(responseCode = "200", description = "A list of projects was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     ProjectListJson getProjects(
         @Parameter(description = "Offset of the first project to return")
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
@@ -64,11 +64,15 @@ public interface ProjectEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new project.")
+    @Operation(summary = "Create a new project")
     @APIResponse(
         responseCode = "201",
         description = "Project created successfully",
-        headers = @Header(name = "Location", description = "URL of the new project")
+        headers = @Header(name = "Location", description = "URL of the new project"),
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON,
+            schema    = @Schema(implementation = ProjectJson.class)
+        )
     )
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
@@ -80,7 +84,8 @@ public interface ProjectEndpoint {
     @GET
     @Path("/{projectId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of a project.")
+    @Operation(summary = "Retrieve information of a project")
+    @APIResponse(responseCode = "200", description = "The requested project was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson getProject(
@@ -92,7 +97,8 @@ public interface ProjectEndpoint {
     @Path("/{projectId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a project.")
+    @Operation(summary = "Update information of a project")
+    @APIResponse(responseCode = "200", description = "The project was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson updateProject(
@@ -104,7 +110,7 @@ public interface ProjectEndpoint {
 
     @DELETE
     @Path("/{projectId}")
-    @Operation(summary = "Delete an existing project.")
+    @Operation(summary = "Delete an existing project")
     @APIResponse(responseCode = "204", description = "The project was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteProject(

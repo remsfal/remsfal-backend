@@ -1,5 +1,6 @@
 package de.remsfal.service.boundary.project;
 
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
@@ -13,6 +14,7 @@ import de.remsfal.service.control.ProjectController;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
+@Authenticated
 @RequestScoped
 public class ProjectSubResource {
 

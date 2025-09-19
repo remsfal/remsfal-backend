@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.Map;
 import java.util.Optional;
@@ -97,8 +98,10 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             if (row != null) {
                 return row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
             } else {
-                throw new RuntimeException(NOT_FOUND_PARTICIPANTS);
+                throw new NoSuchElementException(NOT_FOUND_PARTICIPANTS);
             }
+        } catch (NoSuchElementException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(ERROR_SESSION_FETCH, e);
         }

@@ -13,6 +13,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.remsfal.chat.control.OcrEventProducer;
+import io.quarkus.security.Authenticated;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -36,9 +42,6 @@ import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
@@ -46,6 +49,7 @@ import jakarta.ws.rs.core.StreamingOutput;
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
+@Authenticated
 @RequestScoped
 public class ChatSessionResource extends AbstractIssueResource implements ChatSessionEndpoint {
 
@@ -88,7 +92,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
     @Override
     public Response getChatSession(final String projectId, final String taskId, final String sessionId) {
         try {
-            checkWritePermissions(projectId);
+            checkReadPermissions(projectId);
             Optional<ChatSessionEntity> session = chatSessionController
                 .getChatSession(projectId, taskId, sessionId);
             if (session.isPresent())
@@ -132,13 +136,13 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
                 .type(MediaType.APPLICATION_JSON)
                 .entity(json)
                 .build();
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException | IllegalArgumentException e) {
             throw new NotFoundException(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Failed to join chat session", e);
-            throw e;
+            throw new ForbiddenException();
         }
     }
 
@@ -157,7 +161,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get participants", e);
-            throw e;
+            throw new ForbiddenException();
         }
     }
 
@@ -182,7 +186,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to get participant", e);
-            throw e;
+            throw new ForbiddenException();
         }
     }
 
@@ -199,7 +203,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
             validateRole(role);
             chatSessionController
                 .updateParticipantRole(projectId, taskId, sessionId, participantId,
-                    ParticipantRole.valueOf(role));
+                ParticipantRole.valueOf(role));
             String json = jsonifyParticipantsMap(Map.of(participantUUID, role));
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -209,7 +213,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to change participant role", e);
-            throw e;
+            throw new ForbiddenException();
         }
     }
 
@@ -237,8 +241,24 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
     public Response sendMessage(final String projectId, final String taskId,
         final String sessionId, final ChatMessageJson message) {
         try {
-            checkWritePermissions(projectId);
-            String userId = principal.getId(); // Get user ID from session
+            String userId = principal.getId();
+            if (userId == null) {
+                throw new NotAuthorizedException("No user authentication provided via session cookie");
+            }
+            Map<UUID, String> participants =
+                chatSessionController.getParticipants(projectId, taskId, sessionId);
+            UUID userUUID = UUID.fromString(userId);
+            boolean isParticipant = participants.containsKey(userUUID);
+            boolean hasWritePermission = false;
+            try {
+                checkWritePermissions(projectId);
+                hasWritePermission = true;
+            } catch (NotAuthorizedException | ForbiddenException ignored) {
+                // User does not have write permissions
+            }
+            if (!isParticipant && !hasWritePermission) {
+                throw new ForbiddenException("Inadequate user rights");
+            }
             if (message.getContent() == null || message.getContent().isBlank()) {
                 throw new BadRequestException("Message content cannot be null or empty");
             }
@@ -256,8 +276,10 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
                 .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
-        } catch (BadRequestException e) {
-            throw new BadRequestException("Malformed JSON payload");
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException | BadRequestException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Failed to send message", e);
             throw e;
@@ -430,7 +452,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                         .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
-                    
+
                     FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
                         .sessionId(sessionId)
                         .messageId(fileMetadataEntity.getMessageId().toString())
@@ -441,7 +463,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
                     ocrEventProducer.sendOcrRequest(uploadedFile);
                     String mergedJson = String.format(
                         "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
-                            " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
+                        " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
                         fileMetadataEntity.getMessageId(),
                         fileUrl,
                         fileMetadataEntity.getSessionId(),
@@ -465,7 +487,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
 
     // ---------------------Helper Methods---------------------
 
-    private String jsonifyParticipantsMap(Map<UUID, String> participants) {
+    private String jsonifyParticipantsMap(Map<UUID, String> participants) throws JsonProcessingException {
         List<Map<String, String>> participantList = new ArrayList<>();
         participants.forEach((id, role) -> {
             Map<String, String> participant = new HashMap<>();
@@ -474,13 +496,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
             participantList.add(participant);
         });
         ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.writeValueAsString(participantList);
-        } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return "";
-        }
+        return mapper.writeValueAsString(participantList);
     }
 
     private String getFileName(Map<String, List<String>> headers) {
@@ -529,7 +545,7 @@ public class ChatSessionResource extends AbstractIssueResource implements ChatSe
         if (!role.equals(ParticipantRole.OBSERVER.name())
             && !role.equals(ParticipantRole.HANDLER.name())
             && !role.equals(ParticipantRole.INITIATOR.name())) {
-            throw new BadRequestException("Role must be provided or Invalid role");
+            throw new ForbiddenException("Invalid role");
         }
     }
 

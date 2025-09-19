@@ -3,6 +3,7 @@ package de.remsfal.service.boundary;
 import java.net.URI;
 import java.util.List;
 
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ResourceContext;
@@ -34,6 +35,7 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
+@Authenticated
 public class ProjectResource implements ProjectEndpoint {
 
     @Context

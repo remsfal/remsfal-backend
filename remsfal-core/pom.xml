@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <version.immutables>2.11.1</version.immutables>
+        <version.immutables>2.11.3</version.immutables>
         <version.jackson>2.19.2</version.jackson>
         <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
@@ -39,7 +39,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
-                <version>5.18.0</version>
+                <version>5.19.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

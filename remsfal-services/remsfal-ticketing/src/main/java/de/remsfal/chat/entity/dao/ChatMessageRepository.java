@@ -10,11 +10,14 @@ import de.remsfal.chat.entity.dto.ChatMessageEntity;
 import de.remsfal.chat.entity.dto.ChatMessageKey;
 import de.remsfal.chat.entity.dto.ChatSessionEntity;
 
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Map;
+import java.util.UUID;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -22,8 +25,6 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @ApplicationScoped
 public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity, ChatMessageKey> {
@@ -136,7 +137,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         Optional<ChatSessionEntity> sessionOpt =
             chatSessionRepository.findSessionById(projectId, sessionId, taskId);
         if (sessionOpt.isEmpty()) {
-            throw new RuntimeException("Session not found");
+            throw new NoSuchElementException("Session not found");
         }
         ChatSessionEntity session = sessionOpt.get();
         List<ChatMessageEntity> messages = findMessagesByChatSession(sessionId);
@@ -167,7 +168,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         messageJsonMap.put("SENDER_ID", message.getSenderId());
         messageJsonMap.put("MEMBER_ROLE",
             chatSessionRepository.findParticipantRole(projectId, message.getSessionId(),
-                taskId, message.getSenderId()));
+            taskId, message.getSenderId()));
         messageJsonMap.put("MESSAGE_TYPE", message.getContentType());
 
         if (message.getContentType().equals(ContentType.FILE.name())) {
