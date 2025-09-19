@@ -116,8 +116,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @BeforeEach
     protected void setup() throws Exception {
         logger.info("Setting up test data");
-        super.setupTestUsers();
-        super.setupTestMemberships();
         super.setupTestFiles();
         logger.info("Setting up chat sessions and messages");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
@@ -180,6 +178,18 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             "On session " + EXAMPLE_CHAT_SESSION_ID_1 + " by " + TicketingTestData.USER_ID_3);
     }
 
+    private Map<String, String> rolesManagerP1() {
+        return Map.of(TicketingTestData.PROJECT_ID_1, "MANAGER");
+    }
+
+    private Map<String, String> rolesNone() {
+        return Map.of();
+    }
+
+    private String nameOf(String first, String last) {
+        return first + " " + last;
+    }
+
     // authentication test - same logic in all methods - no need for multiple tests
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID })
@@ -196,7 +206,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSession_UNPRIVILEGED(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
@@ -207,14 +219,18 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatSession_INVALID_INPUT(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .delete(path, UUID.randomUUID().toString(), TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
@@ -222,7 +238,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
     // unprivileged tests - same logic in all methods - no need for multiple tests
     @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}" })
+    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}/role" })
     void changeParticipantRole_UNPRIVILEGED(String path) {
         String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";
@@ -231,7 +247,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(jsonBody)
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
@@ -244,7 +262,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         String nonExistingSessionId = UUID.randomUUID().toString();
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, nonExistingSessionId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
@@ -256,7 +276,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         String nonExistingParticipantId = UUID.randomUUID().toString();
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, nonExistingParticipantId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
@@ -267,7 +289,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getParticipant_FAILURE_UNPRIVILEGED(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
@@ -283,10 +307,12 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(jsonBody)
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
-            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
     @ParameterizedTest
@@ -294,15 +320,19 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void joinChatSession_INVALID_INPUT(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
-            .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
@@ -319,7 +349,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(largePayload)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
@@ -329,14 +361,16 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants" })
     void getParticipants_EMPTY_SESSION(String path) {
         // Create an empty session
-        String emptySessionId = "EMPTY_SESSION_ID";
+        String emptySessionId = UUID.randomUUID().toString();
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, emptySessionId)
             .then()
-            .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
     @ParameterizedTest
@@ -347,7 +381,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .delete(path_task1_session1
                 .replace("{participantId}", UUID.randomUUID().toString()))
@@ -356,7 +392,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .delete(path_task1_session1
                 .replace("{participantId}", TicketingTestData.USER_ID_3))
@@ -372,7 +410,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_4, TicketingTestData.USER_LAST_NAME_4), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
@@ -381,7 +421,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(CHAT_MESSAGE_JSON_PAYLOAD_NULL_CONTENT)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_4, TicketingTestData.USER_LAST_NAME_4), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
@@ -392,7 +434,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void createChatSession_OnTask_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1)
             .then()
@@ -408,7 +452,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSession_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -422,7 +468,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatSession_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
@@ -433,7 +481,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void joinChatSession_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
@@ -451,7 +501,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getParticipants_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_2, EXAMPLE_CHAT_SESSION_ID_2)
             .then()
@@ -465,7 +517,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getParticipant_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
@@ -476,7 +530,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}" })
+    @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}/role" })
     void changeParticipantRole_SUCCESS(String path) {
         String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
         String jsonBody = "\"" + newRole + "\"";
@@ -485,7 +539,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(jsonBody)
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                rolesManagerP1(), Duration.ofMinutes(10)))
             .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -499,7 +555,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void removeParticipant_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                rolesManagerP1(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
@@ -514,7 +572,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(CHAT_MESSAGE_JSON_PAYLOAD)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_4, TicketingTestData.USER_EMAIL_4,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_4, TicketingTestData.USER_LAST_NAME_4), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
@@ -527,7 +587,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatMessages_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -548,7 +610,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatMessage_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -573,7 +637,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(resolvedPath)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -587,14 +653,18 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatMessages_FAILURE(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, UUID.randomUUID().toString())
             .then()
-            .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .get(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
@@ -608,15 +678,19 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .get(path_project1_session1
                 .replace("{messageId}", UUID.randomUUID().toString()))
             .then()
-            .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .get(path_project1_session1
                 .replace("{messageId}", CHAT_MESSAGE_ID_1))
             .then()
@@ -632,7 +706,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJson)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .put(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -661,7 +737,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJsonBlank)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .put(put_request)
             .then()
             .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
@@ -671,7 +749,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJson)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .put(put_request)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
@@ -680,7 +760,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .body(updatedMessageJson)
             .contentType(ContentType.JSON)
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .put(path_project1_session1
                 .replace("{messageId}", UUID.randomUUID().toString()))
             .then()
@@ -692,7 +774,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatMessage_SUCCESS(String path) {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .delete(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1, CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
@@ -706,7 +790,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .delete(path_project1_session1
                 .replace("{messageId}", UUID.randomUUID().toString()))
             .then()
@@ -714,7 +800,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), Duration.ofMinutes(10)))
             .delete(path_project1_session1
                 .replace("{messageId}", CHAT_MESSAGE_ID_1))
             .then()
@@ -722,7 +810,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .delete(path.replace("{projectId}", TicketingTestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)
                 .replace("{sessionId}", UUID.randomUUID().toString())
                 .replace("{messageId}", CHAT_MESSAGE_ID_1))
@@ -742,7 +832,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             Map<String, String> response =
                 given()
                     .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
-                    .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+                    .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                            nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                            rolesManagerP1(), Duration.ofMinutes(10)))
                     .when()
                     .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                     .then()
@@ -795,7 +887,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void uploadFile_MissingFilePart_FAILURE(String path) {
         given()
             .multiPart("someField", "someValue") // This ensures a valid multipart request with a boundary
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .when()
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
@@ -811,7 +905,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         try {
             given()
                 .multiPart("file", tempFile.toFile(), "application/x-msdownload")
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                        rolesManagerP1(), Duration.ofMinutes(10)))
                 .when()
                 .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                 .then()
@@ -828,7 +924,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void uploadFile_EmptyInputStream_FAILURE(String path) {
         given()
             .multiPart("file", "", MediaType.TEXT_PLAIN) // Empty file content
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), Duration.ofMinutes(10)))
             .when()
             .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
             .then()
@@ -845,7 +943,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         try {
             given()
                 .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                        rolesManagerP1(), Duration.ofMinutes(10)))
                 .when()
                 .post(path, TicketingTestData.PROJECT_ID_1, TASK_ID_1, EXAMPLE_CHAT_SESSION_ID_1)
                 .then()
@@ -870,4 +970,5 @@ class ChatSessionResourceTest extends AbstractResourceTest {
 
         return input;
     }
+
 }

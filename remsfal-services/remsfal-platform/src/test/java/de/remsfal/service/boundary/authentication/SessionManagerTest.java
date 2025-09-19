@@ -1,32 +1,33 @@
 package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.common.authentication.JWTManager;
-import de.remsfal.common.authentication.SessionInfo;
-import de.remsfal.common.authentication.TokenExpiredException;
 import de.remsfal.common.authentication.UnauthorizedException;
+import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dto.ProjectEntity;
+import de.remsfal.service.entity.dto.ProjectMembershipEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
-import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.jwt.auth.principal.JWTParser;
+import io.smallrye.jwt.auth.principal.ParseException;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
+import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class SessionManagerTest {
@@ -37,345 +38,206 @@ class SessionManagerTest {
 
     UserRepository userRepository;
 
+    ProjectRepository projectRepository;
+
     JWTManager jwtManager;
+
+    JWTParser jwtParser;
 
     @BeforeEach
     void setup() {
         userRepository = Mockito.mock(UserRepository.class);
         userAuthRepository = Mockito.mock(UserAuthenticationRepository.class);
+        projectRepository = Mockito.mock(ProjectRepository.class);
         jwtManager = Mockito.mock(JWTManager.class);
+        jwtParser = Mockito.mock(JWTParser.class);
 
-        sessionManager = new SessionManager("/", NewCookie.SameSite.STRICT, Duration.ofMinutes(5), Duration.ofDays(7),
-            jwtManager, userAuthRepository, userRepository);
+        sessionManager = new SessionManager("/", NewCookie.SameSite.STRICT, Duration.ofMinutes(5),
+            Duration.ofDays(7), jwtManager, userAuthRepository, userRepository, projectRepository, jwtParser);
     }
 
-
-    @Test
-    void checkValidUserSession_withExpiredAccessToken_andValidRefreshToken_shouldPass() {
-        // Arrange
-        String userId = "testUser";
-        String email = "test@example.com";
-        String expiredAccessToken = "expiredAccessToken";
-        String validRefreshToken = "validRefreshToken";
-
-        Cookie accessTokenCookie =
-            new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value(expiredAccessToken).build();
-        Cookie refreshTokenCookie =
-            new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(validRefreshToken).build();
-
-        // Simuliere JWTManager Verhalten
-        when(jwtManager.verifyJWT(expiredAccessToken)).thenThrow(new TokenExpiredException("Expired"));
-        when(jwtManager.verifyJWT(validRefreshToken, true)).thenReturn(SessionInfo.builder()
-            .userId(userId)
-            .userEmail(email)
-            .expireAfter(Duration.ofMinutes(5))
-            .claim("refreshToken", validRefreshToken)
-            .build());
-        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
-        userAuthEntity.setRefreshToken(validRefreshToken);
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userId);
-        userEntity.setEmail(email);
-        userAuthEntity.setUser(userEntity);
-        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
-
-        // Act
-        SessionInfo sessionInfo = sessionManager.checkValidUserSession(Map.of(
-            SessionManager.ACCESS_COOKIE_NAME, accessTokenCookie,
-            SessionManager.REFRESH_COOKIE_NAME, refreshTokenCookie)
-        );
-
-        // Assert
-        assertNotNull(sessionInfo);
-        assertEquals(userId, sessionInfo.getUserId());
-    }
-
-    @Test
-    void checkValidUserSession_withInvalidRefreshToken_shouldThrowException() {
-        // Arrange
-        String expiredAccessToken = "expiredAccessToken";
-        String invalidRefreshToken = "invalidRefreshToken";
-
-        Cookie accessTokenCookie =
-            new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value(expiredAccessToken).build();
-        Cookie refreshTokenCookie =
-            new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(invalidRefreshToken).build();
-
-        when(jwtManager.verifyJWT(expiredAccessToken)).thenThrow(new TokenExpiredException("Expired"));
-        when(jwtManager.verifyJWT(invalidRefreshToken, true)).thenThrow(new UnauthorizedException("Invalid"));
-
-        // Act & Assert
-        assertThrows(UnauthorizedException.class, () ->
-            sessionManager.checkValidUserSession(Map.of(
-                SessionManager.ACCESS_COOKIE_NAME, accessTokenCookie,
-                SessionManager.REFRESH_COOKIE_NAME, refreshTokenCookie)
-            )
+    private List<ProjectMembershipEntity> createMemberships(String p1Role, String p2Role) {
+        return List.of(
+                mkMembership("p1", ProjectMemberModel.MemberRole.valueOf(p1Role)),
+                mkMembership("p2", ProjectMemberModel.MemberRole.valueOf(p2Role))
         );
     }
 
-    @Test
-    void test_renewTokens() {
-        // Arrange
-        String userId = "testUser";
-        String email = "email@email.de";
-        String refreshToken = "refresh_token";
-        String accessToken = "access_token";
+    private ProjectMembershipEntity mkMembership(String projectId, ProjectMemberModel.MemberRole role) {
+        ProjectEntity project = new ProjectEntity();
+        setPrivate(project, "id", projectId);
 
-        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
-        when(jwtManager.verifyJWT(refreshToken, true)).thenReturn(SessionInfo.builder()
-            .userId(userId)
-            .userEmail(email)
-            .expireAfter(Duration.ofMinutes(5))
-            .claim("refreshToken", refreshToken)
-            .build());
-        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
-        userAuthEntity.setRefreshToken(refreshToken);
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userId);
-        userEntity.setEmail(email);
-        userAuthEntity.setUser(userEntity);
-        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
-        when(jwtManager.createJWT(any())).thenReturn(accessToken).thenReturn(refreshToken);
+        ProjectMembershipEntity membershipEntity = new ProjectMembershipEntity();
+        membershipEntity.setProject(project);
+        membershipEntity.setRole(role);
+        return membershipEntity;
+    }
+
+    private static void setPrivate(Object target, String fieldName, Object value) {
+        try {
+            Field f = target.getClass().getSuperclass().getDeclaredField(fieldName);
+            f.setAccessible(true);
+            f.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set field '" + fieldName + "' on " + target.getClass(), e);
+        }
+    }
+
+    private JsonWebToken fakeRefreshJwt(String subject, String email, String refreshId) {
+        Map<String, Object> claims = new LinkedHashMap<>();
+        claims.put(Claims.sub.name(), subject);
+        claims.put("email", email);
+        claims.put("refreshToken", refreshId);
+
+        return new JsonWebToken() {
+            @Override public String getSubject() { return subject; }
+            @Override public String getName() { return subject; }
+            @Override public Set<String> getClaimNames() { return new LinkedHashSet<>(claims.keySet()); }
+            @Override public <T> T getClaim(String claim) { return (T) claims.get(claim); }
+            @Override public String getRawToken() { return null; }
+            @Override public Set<String> getAudience() { return Collections.emptySet(); }
+            @Override public String getIssuer() { return null; }
+            @Override public long getExpirationTime() { return 0L; }
+            @Override public long getIssuedAtTime() { return 0L; }
+            @Override public Set<String> getGroups() { return Collections.emptySet(); }
+            @Override public String getTokenID() { return null; }
+        };
+    }
+
+    @Test
+    void test_renewTokens_returnsNewCookies_whenRefreshCookieValid() throws ParseException {
+        String userId = "u1";
+        String email = "u1@example.com";
+        String refreshId = "r-123";
+        String refreshTokenValue = "refresh.jwt.token";
+
+        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(userId, email, refreshId));
+
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+        user.setEmail(email);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setTokenId("active-token");
+
+        UserAuthenticationEntity auth = new UserAuthenticationEntity();
+        auth.setUser(user);
+        auth.setRefreshToken(refreshId);
+
+        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(auth));
+        when(userRepository.findByIdOptional(userId)).thenReturn(Optional.of(user));
+        when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
+                .thenReturn(createMemberships("MANAGER", "STAFF"));
+
+        when(jwtManager.createAccessToken(eq(userId), eq(email), eq("John Doe"), eq(true),
+                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
+                .thenReturn("new-access");
+
+        when(jwtManager.createRefreshToken(eq(userId), eq(email), anyString(), eq(604800L)))
+                .thenReturn("new-refresh");
 
         // Act
         SessionManager.TokenRenewalResponse response =
-            sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME, refreshCookie));
+                sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME,
+                        new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));
 
         // Assert
-        assertEquals(accessToken, response.getAccessToken().getValue());
-        assertEquals(refreshToken, response.getRefreshToken().getValue());
+        assertEquals("new-access", response.getAccessToken().getValue());
+        assertEquals("new-refresh", response.getRefreshToken().getValue());
 
-
+        verify(jwtParser).parse(refreshTokenValue);
         verify(userAuthRepository, times(2)).findByUserId(userId);
-        verify(jwtManager, times(1)).verifyJWT(refreshToken, true);
-        verify(jwtManager, times(2)).createJWT(any());
-
+        verify(userRepository).findByIdOptional(userId);
+        verify(projectRepository).findMembershipByUserId(eq(userId), anyInt(), anyInt());
+        verify(jwtManager).createAccessToken(eq(userId), eq(email), eq("John Doe"), eq(true),
+                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L));
+        verify(jwtManager).createRefreshToken(eq(userId), eq(email), anyString(), eq(604800L));
     }
 
     @Test
-    void test_renewTokens_noRefreshToken_shouldThrowException() {
-        // Arrange
-        // Act & Assert
+    void test_renewTokens_throws_whenCookieMissing() {
         assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(Map.of()));
     }
 
     @Test
-    void test_renewTokens_invalidRefreshToken_shouldThrowException() {
-        // Arrange
-        String refreshToken = "refresh_token";
-        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
-        when(jwtManager.verifyJWT(refreshToken, true)).thenThrow(new UnauthorizedException("Invalid"));
+    void test_generateAccessToken_wrapsCookie() {
+        String userId = "u1";
+        String email = "u1@example.com";
 
-        // Act & Assert
-        assertThrows(UnauthorizedException.class,
-            () -> sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME, refreshCookie)));
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+        user.setEmail(email);
+        user.setFirstName("Jane");
+        user.setLastName("Roe");
+        user.setTokenId("active");
 
-        verify(jwtManager, times(1)).verifyJWT(refreshToken, true);
+        when(userRepository.findByIdOptional(userId)).thenReturn(Optional.of(user));
+        when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
+                .thenReturn(createMemberships("MANAGER", "STAFF"));
 
-    }
-
-    @Test
-    void test_decryptAccessTokenCookie() {
-        // Arrange
-        String accessToken = "abc";
-        when(jwtManager.verifyJWT(accessToken)).thenReturn(
-            SessionInfo.builder().userId("test").userEmail("1234@1234.de").build());
-        Cookie cookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value(accessToken).build();
+        when(jwtManager.createAccessToken(eq(userId), eq(email), eq("Jane Roe"), eq(true),
+                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
+                .thenReturn("access.jwt");
 
         // Act
-        SessionInfo sessionInfo = sessionManager.decryptAccessTokenCookie(cookie);
+        NewCookie cookie = sessionManager.generateAccessToken(userId, email);
 
         // Assert
-        assertNotNull(sessionInfo);
-        assertEquals("test", sessionInfo.getUserId());
-        assertEquals("1234@1234.de", sessionInfo.getUserEmail());
-
-        verify(jwtManager, times(1)).verifyJWT(accessToken);
-
+        assertEquals("access.jwt", cookie.getValue());
+        assertEquals(SessionManager.ACCESS_COOKIE_NAME, cookie.getName());
+        assertFalse(cookie.isHttpOnly());
     }
 
     @Test
-    void test_decryptRefreshTokenCookie() {
-        // Arrange
-        String refreshToken = "abc";
-        when(jwtManager.verifyJWT(refreshToken, true)).thenReturn(
-            SessionInfo.builder().userId("test").userEmail("1234@1234.de").build());
-        Cookie cookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
+    void test_generateRefreshToken_persistsIdAndWrapsCookie() {
+        when(userAuthRepository.findByUserId("u1")).thenReturn(Optional.empty());
+
+        UserEntity user = new UserEntity();
+        user.setId("u1");
+
+        when(userRepository.findByIdOptional("u1")).thenReturn(Optional.of(user));
+        when(jwtManager.createRefreshToken(eq("u1"), eq("u1@example.com"), anyString(), eq(604800L)))
+                .thenReturn("refresh.jwt");
 
         // Act
-        SessionInfo sessionInfo = sessionManager.decryptRefreshTokenCookie(cookie);
+        NewCookie cookie = sessionManager.generateRefreshToken("u1", "u1@example.com");
 
         // Assert
-        assertNotNull(sessionInfo);
-        assertEquals("test", sessionInfo.getUserId());
-        assertEquals("1234@1234.de", sessionInfo.getUserEmail());
+        assertEquals(SessionManager.REFRESH_COOKIE_NAME, cookie.getName());
+        assertEquals("refresh.jwt", cookie.getValue());
+        assertTrue(cookie.isHttpOnly());
 
-        verify(jwtManager, times(1)).verifyJWT(refreshToken, true);
-
+        verify(userAuthRepository).persist(any(UserAuthenticationEntity.class));
     }
 
     @Test
-    void test_refreshcookie_get_deleted_when_logout() {
-        // Arrange
-        String userId = "testUser";
-        String email = "1234@1234.de";
-        String refreshToken = "refresh_token";
+    void test_logout_deletesPersistedRefreshToken_whenCookiePresent() throws ParseException {
+        String refreshTokenValue = "refresh.jwt";
 
-        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
-        userAuthEntity.setRefreshToken(refreshToken);
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userId);
-        userEntity.setEmail(email);
-        userAuthEntity.setUser(userEntity);
-        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
-        when(jwtManager.verifyJWT(any(), eq(true))).thenReturn(SessionInfo.builder()
-            .userId(userId)
-            .userEmail(email)
-            .expireAfter(Duration.ofMinutes(5))
-            .claim("refreshToken", refreshToken)
-            .build());
+        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt("u1", "e@x", "r1"));
 
+        sessionManager.logout(Map.of(SessionManager.REFRESH_COOKIE_NAME,
+                new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));
 
-        // Act
-        sessionManager.logout(Map.of(SessionManager.ACCESS_COOKIE_NAME,
-            new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("abc").build(),
-            SessionManager.REFRESH_COOKIE_NAME,
-            new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("abc").build()));
-
-
-        // Assert
-        verify(userAuthRepository, times(1)).deleteRefreshToken(userId);
+        verify(userAuthRepository).deleteRefreshToken("u1");
     }
 
     @Test
-    void test_get_macthing_sessionInfoBuilder() {
-        // Arrange
+    void test_findTokenCookie_returnsCookie_whenPresent() {
+        Cookie cookieA = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("cookieA").build();
+        Cookie cookieR = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("cookieR").build();
 
-        // Act
-        SessionInfo.Builder builder_acess = sessionManager.sessionInfoBuilder(SessionManager.ACCESS_COOKIE_NAME);
-        SessionInfo.Builder builder_refresh = sessionManager.sessionInfoBuilder(SessionManager.REFRESH_COOKIE_NAME);
-
-        // Assert
-        assertNotNull(builder_acess);
-        assert builder_acess.build().getExpireInSeconds() <= 60 * 5;
-        assertNotNull(builder_refresh);
-        assert builder_refresh.build().getExpireInSeconds() > 60 * 60 * 24 * 6;
-
+        assertEquals("cookieA", sessionManager.findAccessTokenCookie(Map.of(
+                SessionManager.ACCESS_COOKIE_NAME, cookieA)).getValue());
+        assertEquals("cookieR", sessionManager.findRefreshTokenCookie(Map.of(
+                SessionManager.REFRESH_COOKIE_NAME, cookieR)).getValue());
     }
 
     @Test
-    void test_valid_usersession_when_accessToken_is_expired_and_refreshToken_is_valid() {
-        // Arrange
-        String userId = "testUser";
-        String email = "1234@1234.de";
-        SessionInfo sessionInfo = SessionInfo.builder()
-            .userId(userId)
-            .userEmail(email)
-            .expireAfter(Duration.ofMinutes(5))
-            .claim("refreshToken", "refresh_token")
-            .build();
-
-        NewCookie refreshToken =
-            new NewCookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("refresh_token").build();
-        NewCookie accessToken =
-            new NewCookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("expiredAccessToken").build();
-        when(jwtManager.verifyJWT("expiredAccessToken")).thenThrow(new TokenExpiredException("Expired"));
-        when(jwtManager.verifyJWT("refresh_token", true)).thenReturn(sessionInfo);
-
-        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
-        userAuthEntity.setRefreshToken("refresh_token");
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userId);
-        userEntity.setEmail(email);
-        userAuthEntity.setUser(userEntity);
-        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
-
-        // Act
-        SessionInfo result = sessionManager.checkValidUserSession(Map.of(
-            SessionManager.ACCESS_COOKIE_NAME, accessToken,
-            SessionManager.REFRESH_COOKIE_NAME, refreshToken)
-        );
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(userId, result.getUserId());
-        assertEquals(email, result.getUserEmail());
-    }
-
-    @Test
-    void test_renewTokens_with_no_refreshToken_should_throw_exception() {
-        // Arrange
-        // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(Map.of()));
-    }
-
-    @Test
-    void test_renewToken_returns_new_tokens() {
-        // Arrange
-        String userId = "testUser";
-        String email = "1234@1234.de";
-        String refreshToken = "refresh_token";
-
-        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
-        when(jwtManager.verifyJWT(refreshToken, true)).thenReturn(SessionInfo.builder()
-            .userId(userId)
-            .userEmail(email)
-            .expireAfter(Duration.ofMinutes(5))
-            .claim("refreshToken", refreshToken)
-            .build());
-        UserAuthenticationEntity userAuthEntity = new UserAuthenticationEntity();
-        userAuthEntity.setRefreshToken(refreshToken);
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userId);
-        userEntity.setEmail(email);
-        userAuthEntity.setUser(userEntity);
-        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(userAuthEntity));
-        when(jwtManager.createJWT(any())).thenReturn("new_access_token").thenReturn("new_refresh_token");
-
-        // Act
-        SessionManager.TokenRenewalResponse response =
-            sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME, refreshCookie));
-
-        // Assert
-        assertEquals("new_access_token", response.getAccessToken().getValue());
-        assertEquals("new_refresh_token", response.getRefreshToken().getValue());
-
-        verify(userAuthRepository, times(2)).findByUserId(userId);
-        verify(jwtManager, times(1)).verifyJWT(refreshToken, true);
-        verify(jwtManager, times(2)).createJWT(any());
-
-    }
-
-    @Test
-    void test_findAccessTokenCookie() {
-        // Arrange
-        String accessToken = "abc";
-
-        Cookie cookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value(accessToken).build();
-
-        // Act
-        Cookie result = sessionManager.findAccessTokenCookie(Map.of(SessionManager.ACCESS_COOKIE_NAME, cookie));
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(accessToken, result.getValue());
-
-    }
-
-    @Test
-    void test_findRefreshTokenCookie() {
-        // Arrange
-        String refreshToken = "abc";
-
-        Cookie cookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshToken).build();
-
-        // Act
-        Cookie result = sessionManager.findRefreshTokenCookie(Map.of(SessionManager.REFRESH_COOKIE_NAME, cookie));
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(refreshToken, result.getValue());
-
+    void test_generateAccessToken_throws_whenUserMissing() {
+        when(userRepository.findByIdOptional("missing")).thenReturn(Optional.empty());
+        assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken("missing", "x@x"));
+        verify(jwtManager, never()).createAccessToken(anyString(), anyString(), anyString(), anyBoolean(), anyMap(), anyLong());
     }
 
 }

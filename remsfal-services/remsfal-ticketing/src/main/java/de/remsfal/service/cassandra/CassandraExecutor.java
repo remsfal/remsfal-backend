@@ -26,9 +26,9 @@ public class CassandraExecutor {
     private static final Logger logger = LoggerFactory.getLogger(CassandraExecutor.class);
 
     private static final String CHANGELOGS_XML_PATH =
-            "src/main/resources/cassandra/changelogs/cassandra-changelogs.xml";
+        "src/main/resources/cassandra/changelogs/cassandra-changelogs.xml";
     private static final String CQL_SCRIPTS_DIRECTORY =
-            "src/main/resources/cassandra/changelogs/cql-scripts";
+        "src/main/resources/cassandra/changelogs/cql-scripts";
 
     @ConfigProperty(name = "quarkus.cassandra.contact-points")
     String cassandraContactPoints;
@@ -41,10 +41,10 @@ public class CassandraExecutor {
 
     public void onStartup(@Observes StartupEvent event) {
         try (
-                CqlSession session = CqlSession.builder()
-                        .addContactPoint(getContactPoint(cassandraContactPoints))
-                        .withLocalDatacenter(cassandraLocalDatacenter)
-                        .build()) {
+            CqlSession session = CqlSession.builder()
+                .addContactPoint(getContactPoint(cassandraContactPoints))
+                .withLocalDatacenter(cassandraLocalDatacenter)
+                .build()) {
 
             logger.info("Initializing Cassandra...");
             ensureKeyspaceExists(session);
@@ -61,9 +61,9 @@ public class CassandraExecutor {
     private void ensureKeyspaceExists(CqlSession session) {
         logger.info("Ensuring keyspace '{}' exists.", cassandraKeyspace);
         String createKeyspaceCQL = String.format(
-                "CREATE KEYSPACE IF NOT EXISTS %s " +
-                        "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};",
-                        cassandraKeyspace
+            "CREATE KEYSPACE IF NOT EXISTS %s " +
+            "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};",
+            cassandraKeyspace
         );
         session.execute(createKeyspaceCQL);
         logger.info("Keyspace '{}' ensured.", cassandraKeyspace);

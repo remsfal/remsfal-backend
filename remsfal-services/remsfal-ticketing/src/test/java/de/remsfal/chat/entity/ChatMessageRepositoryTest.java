@@ -2,11 +2,13 @@ package de.remsfal.chat.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.chat.AbstractTicketingTest;
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @QuarkusTest
+@QuarkusTestResource(CassandraTestResource.class)
 public class ChatMessageRepositoryTest extends AbstractTicketingTest {
 
     static final UUID PROJECT_ID = UUID.randomUUID();

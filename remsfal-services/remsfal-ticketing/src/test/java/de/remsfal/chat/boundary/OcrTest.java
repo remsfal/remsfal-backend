@@ -1,22 +1,23 @@
 package de.remsfal.chat.boundary;
 
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.remsfal.chat.resource.OcrServiceResource;
 import de.remsfal.chat.TicketingTestData;
-import de.remsfal.chat.control.AuthorizationController;
 import de.remsfal.chat.control.ChatMessageController;
 import de.remsfal.chat.control.FileStorageController;
 import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.core.model.ProjectMemberModel;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.security.TestSecurity;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.Test;
@@ -42,10 +43,9 @@ import java.util.UUID;
  */
 @QuarkusTest
 @QuarkusTestResource(OcrServiceResource.class)
+@QuarkusTestResource(CassandraTestResource.class)
+@TestSecurity(user = "test-user")
 public class OcrTest extends AbstractResourceTest {
-
-    @InjectMock
-    AuthorizationController authorizationController;
 
     @InjectSpy
     ChatMessageController chatMessageController;
@@ -72,12 +72,11 @@ public class OcrTest extends AbstractResourceTest {
         String taskId = UUID.randomUUID().toString();
         String sessionId = UUID.randomUUID().toString();
 
-        when(principal.getId()).thenReturn(UUID.randomUUID().toString());
-
-        var mockedRole = mock(ProjectMemberModel.MemberRole.class);
-        when(mockedRole.isPrivileged()).thenReturn(true);
-        when(authorizationController.getProjectMemberRole(any(), anyString()))
-                .thenReturn(mockedRole);
+        String userId = UUID.randomUUID().toString();
+        when(principal.getId()).thenReturn(userId);
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId, "MANAGER"));
+        when(principal.getJwt()).thenReturn(jwt);
 
         Response response = chatSessionResource.uploadFile(projectId, taskId, sessionId, input);
 

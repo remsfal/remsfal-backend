@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
-import de.remsfal.common.authentication.SessionInfo;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.authentication.SessionManager;
 import de.remsfal.test.TestData;
@@ -284,33 +283,29 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
     }
 
     protected Cookie buildAccessTokenCookie(final String userId, final String userEmail, final Duration ttl) {
-        // Baue Access Token
-        SessionInfo.Builder sessionInfoBuilder = sessionManager.sessionInfoBuilder(SessionManager.ACCESS_COOKIE_NAME);
+        String accessToken;
+        try {
+            accessToken = sessionManager.generateAccessToken(userId, userEmail).getValue();
+        } catch (Exception e) {
+            accessToken = "invalid.jwt.token";
+        }
 
-        if (userId != null) {
-            sessionInfoBuilder.userId(userId);
-        }
-        if (userEmail != null) {
-            sessionInfoBuilder.userEmail(userEmail);
-        }
+        Cookie.Builder cookieBuilder = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME, accessToken);
+
         if (ttl != null) {
-            sessionInfoBuilder.expireAfter(ttl);
+            cookieBuilder.setMaxAge(ttl.toSeconds());
         }
-
-        final String accessToken = sessionManager.generateAccessToken(sessionInfoBuilder.build()).getValue();
-
-        return new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME, accessToken)
-                .setMaxAge(ttl.toSeconds())
-                .build();
+        return cookieBuilder.build();
     }
 
     protected Cookie buildRefreshTokenCookie(final String userId,final String userEmail, final Duration ttl) {
-        // Baue Refresh Token
         final String refreshToken = sessionManager.generateRefreshToken(userId, userEmail).getValue();
+        Cookie.Builder cookieBuilder = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME, refreshToken);
 
-        return new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME, refreshToken)
-                .setMaxAge(ttl.toSeconds())
-                .build();
+        if (ttl != null) {
+            cookieBuilder.setMaxAge(ttl.toSeconds());
+        }
+        return cookieBuilder.build();
     }
 
     protected Map<String, ?> buildCookies (final String userId, final String userEmail, final Duration ttl) {
@@ -319,4 +314,5 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
                 SessionManager.REFRESH_COOKIE_NAME, buildRefreshTokenCookie(userId, userEmail, ttl).getValue()
         );
     }
+
 }

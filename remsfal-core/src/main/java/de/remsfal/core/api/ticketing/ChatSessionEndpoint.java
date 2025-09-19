@@ -125,7 +125,7 @@ public interface ChatSessionEndpoint {
         @PathParam("participantId") @NotNull @UUID String participantId);
 
     @PUT
-    @Path("/{sessionId}/participants/{participantId}")
+    @Path("/{sessionId}/participants/{participantId}/role")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Change participant role in chat session")

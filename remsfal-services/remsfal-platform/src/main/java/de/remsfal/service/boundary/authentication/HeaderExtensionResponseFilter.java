@@ -1,7 +1,6 @@
 package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.core.api.AuthenticationEndpoint;
-import de.remsfal.common.authentication.TokenExpiredException;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -11,7 +10,6 @@ import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
-
 
 @Provider
 @Priority(Priorities.HEADER_DECORATOR + 1)
@@ -31,22 +29,14 @@ public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
                 requestContext.getUriInfo().getPath());
             return;
         }
+
         try {
             Cookie accessToken = sessionManager.findAccessTokenCookie(requestContext.getCookies());
             if (accessToken == null) {
-                Cookie refreshToken = sessionManager.findRefreshTokenCookie(requestContext.getCookies());
-                if (refreshToken != null) {
-                    renewTokens(requestContext, responseContext);
-                }
+                // No access token present, try renewal via refresh cookie
+                renewTokens(requestContext, responseContext);
             }
-            if (accessToken != null) {
-                try {
-                    sessionManager.decryptAccessTokenCookie(accessToken);
-                } catch (TokenExpiredException e) {
-                    logger.info("Access token expired: " + e.getMessage());
-                    renewTokens(requestContext, responseContext);
-                }
-            }
+            // If access token present and valid, nothing to do, otherwise SmallRye will reject it downstream
         } catch (Exception e) {
             logger.error("Error in HeaderExtensionResponseFilter: " + e.getMessage());
         }
@@ -61,6 +51,5 @@ public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
             logger.error("Error renewing tokens: " + e.getMessage());
         }
     }
-
 
 }

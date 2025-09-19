@@ -7,6 +7,8 @@ import org.jboss.logging.Logger;
 import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
 
+import java.util.NoSuchElementException;
+
 @ApplicationScoped
 public class ChatMessageController {
 
@@ -35,7 +37,7 @@ public class ChatMessageController {
     public ChatMessageEntity getChatMessage(String sessionId, String messageId) {
         logger.infov("Getting chat message (messageId={0})", messageId);
         return repository.findMessageById(sessionId, messageId)
-            .orElseThrow(() -> new RuntimeException("Message not found"));
+            .orElseThrow(() -> new NoSuchElementException("Message not found"));
     }
 
 }
