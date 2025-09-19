@@ -71,11 +71,13 @@
             <artifactId>quarkus-resteasy-multipart</artifactId>
         </dependency>
 
+        <!-- TODO: Re-enable Zeebe when compatible version is available
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
             <artifactId>quarkus-zeebe</artifactId>
             <version>1.6.0</version>
         </dependency>
+        -->
 
         <!-- Logging and monitoring dependencies -->
         <dependency>
@@ -102,6 +104,7 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- TODO: Re-enable Zeebe when compatible version is available
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
             <artifactId>quarkus-zeebe-test</artifactId>
@@ -118,6 +121,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        -->
     </dependencies>
 
     <build>
