@@ -71,11 +71,15 @@
             <artifactId>quarkus-resteasy-multipart</artifactId>
         </dependency>
 
+        <!-- FIXME: Zeebe extension 1.6.0 is currently incompatible with Quarkus 3.26.3
+             Re-enable when compatible version becomes available -->
+        <!--
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
             <artifactId>quarkus-zeebe</artifactId>
             <version>1.6.0</version>
         </dependency>
+        -->
 
         <!-- Logging and monitoring dependencies -->
         <dependency>
@@ -102,6 +106,9 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- FIXME: Zeebe extension 1.6.0 is currently incompatible with Quarkus 3.26.3
+             Re-enable when compatible version becomes available -->
+        <!--
         <dependency>
             <groupId>io.quarkiverse.zeebe</groupId>
             <artifactId>quarkus-zeebe-test</artifactId>
@@ -118,6 +125,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        -->
     </dependencies>
 
     <build>
