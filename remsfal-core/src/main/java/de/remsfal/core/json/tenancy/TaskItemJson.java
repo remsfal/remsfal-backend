@@ -3,9 +3,11 @@ package de.remsfal.core.json.tenancy;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import de.remsfal.core.model.project.TaskModel;
-import de.remsfal.core.model.project.TaskModel.Status;
-import de.remsfal.core.model.project.TaskModel.Type;
+
+import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.Type;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
@@ -29,7 +31,7 @@ public abstract class TaskItemJson {
 
     public abstract Status getStatus();
 
-    public static TaskItemJson valueOf(final TaskModel model) {
+    public static TaskItemJson valueOf(final IssueModel model) {
         return ImmutableTaskItemJson.builder()
             .id(model.getId())
             .name(model.getTitle())

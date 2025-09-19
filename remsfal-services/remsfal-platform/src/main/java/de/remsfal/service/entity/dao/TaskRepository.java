@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import de.remsfal.core.model.project.TaskModel.Status;
-import de.remsfal.core.model.project.TaskModel.Type;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.Type;
 import de.remsfal.service.entity.dto.TaskEntity;
 import io.quarkus.panache.common.Parameters;
 

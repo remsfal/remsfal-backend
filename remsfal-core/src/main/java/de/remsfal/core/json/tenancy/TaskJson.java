@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
 
@@ -26,7 +26,7 @@ import de.remsfal.core.validation.PostValidation;
 @Schema(description = "A task from a tenant's perspective")
 @JsonDeserialize(as = ImmutableTaskJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TaskJson implements TaskModel {
+public abstract class TaskJson implements IssueModel {
 
     @Null
     @Nullable
@@ -87,7 +87,7 @@ public abstract class TaskJson implements TaskModel {
     @JsonIgnore
     public abstract Date getModifiedAt();
 
-    public static TaskJson valueOf(final TaskModel model) {
+    public static TaskJson valueOf(final IssueModel model) {
         // don't copy ignored fields
         return ImmutableTaskJson.builder()
                 .id(model.getId())

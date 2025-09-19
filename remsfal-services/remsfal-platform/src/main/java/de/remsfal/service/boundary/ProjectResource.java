@@ -28,10 +28,10 @@ import de.remsfal.service.boundary.project.StorageResource;
 import de.remsfal.service.boundary.project.MemberResource;
 import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.boundary.project.SiteResource;
-import de.remsfal.service.boundary.project.TaskResource;
 import de.remsfal.service.control.ProjectController;
 
 import org.eclipse.microprofile.metrics.annotation.Timed;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -73,9 +73,6 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<StorageResource> storageResource;
-
-    @Inject
-    Instance<TaskResource> taskResource;
 
     @Inject
     Instance<ContractorResource> contractorResource;
@@ -151,11 +148,6 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public StorageResource getStorageResource() {
         return resourceContext.initResource(storageResource.get());
-    }
-
-    @Override
-    public TaskResource getTaskResource() {
-        return resourceContext.initResource(taskResource.get());
     }
 
     @Override

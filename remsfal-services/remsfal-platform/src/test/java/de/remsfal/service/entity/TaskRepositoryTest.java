@@ -14,8 +14,8 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.model.project.TaskModel.Status;
-import de.remsfal.core.model.project.TaskModel.Type;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.Type;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.TaskRepository;
 import de.remsfal.service.entity.dto.TaskEntity;

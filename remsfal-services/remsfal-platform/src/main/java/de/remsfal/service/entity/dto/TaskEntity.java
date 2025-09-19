@@ -2,7 +2,7 @@ package de.remsfal.service.entity.dto;
 
 import java.util.Objects;
 
-import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "TASK")
-public class TaskEntity extends AbstractEntity implements TaskModel {
+public class TaskEntity extends AbstractEntity implements IssueModel {
 
     @Column(name = "TYPE", nullable = false)
     @Enumerated(EnumType.STRING)

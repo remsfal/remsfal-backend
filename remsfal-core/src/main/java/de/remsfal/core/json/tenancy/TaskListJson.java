@@ -2,14 +2,14 @@ package de.remsfal.core.json.tenancy;
 
 import java.util.List;
 
-import de.remsfal.core.model.project.TaskModel;
-
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import de.remsfal.core.model.ticketing.IssueModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -23,9 +23,9 @@ public abstract class TaskListJson {
 
     public abstract List<TaskItemJson> getTasks();
 
-    public static TaskListJson valueOf(final List<? extends TaskModel> tasks) {
+    public static TaskListJson valueOf(final List<? extends IssueModel> tasks) {
         final ImmutableTaskListJson.Builder builder = ImmutableTaskListJson.builder();
-        for(TaskModel model : tasks) {
+        for(IssueModel model : tasks) {
             builder.addTasks(TaskItemJson.valueOf(model));
         }
         return builder.build();
