@@ -27,7 +27,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
-          path: remsfal-service/target/surefire-reports/
+          path: |
+            remsfal-core/target/surefire-reports/
+            remsfal-services/*/target/surefire-reports/
           retention-days: 30
       - name: Save PR number to file for subsequently Sonar Analysis
         if: github.event_name == 'pull_request'
