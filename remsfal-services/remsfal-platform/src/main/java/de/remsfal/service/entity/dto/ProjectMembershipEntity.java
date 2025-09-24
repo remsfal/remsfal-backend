@@ -29,7 +29,7 @@ import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
     query = "SELECT count(m) FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
 @NamedQuery(name = "ProjectMembershipEntity.removeByProjectIdAndUserId",
     query = "DELETE FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
-@Table(name = "PROJECT_MEMBERSHIP")
+@Table(name = "project_memberships")
 public class ProjectMembershipEntity extends MetaDataEntity implements ProjectMemberModel {
 
     @EmbeddedId

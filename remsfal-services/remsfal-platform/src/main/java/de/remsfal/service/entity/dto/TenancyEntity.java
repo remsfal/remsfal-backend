@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "TENANCY")
+@Table(name = "tenancies")
 public class TenancyEntity extends AbstractEntity implements TenancyModel {
 
     @Column(name = "PROJECT_ID", nullable = false, updatable = false, columnDefinition = "uuid")
@@ -28,7 +28,7 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-        name = "TENANT",
+        name = "tenants",
         joinColumns = @JoinColumn(name = "TENANCY_ID", columnDefinition = "uuid"),
         inverseJoinColumns = @JoinColumn(name = "USER_ID", columnDefinition = "uuid")
     )

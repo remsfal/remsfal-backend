@@ -16,7 +16,7 @@ import java.util.Set;
  * Entity class for a contractor.
  */
 @Entity
-@Table(name = "CONTRACTOR")
+@Table(name = "contractors")
 @NamedQuery(name = "ContractorEntity.findByProjectId",
     query = "SELECT c FROM ContractorEntity c WHERE c.project.id = :projectId")
 @NamedQuery(name = "ContractorEntity.countByProjectId",

@@ -6,7 +6,7 @@
 
     <changeSet id="1-create-user-authentication" author="gflachs">
         <!-- Create USERAUTHENTICATION Table -->
-        <createTable tableName="USERAUTHENTICATION">
+        <createTable tableName="user_authentications">
             <column name="USER_ID" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -23,13 +23,13 @@
         <!-- Add Foreign Key Constraint -->
         <addForeignKeyConstraint
                 constraintName="FK_USERAUTHENTICATION_USER_ID"
-                baseTableName="USERAUTHENTICATION"
+                baseTableName="user_authentications"
                 baseColumnNames="USER_ID"
-                referencedTableName="USERS"
+                referencedTableName="users"
                 referencedColumnNames="ID"
                 onDelete="CASCADE"/>
 
-        <createIndex tableName="USERAUTHENTICATION" indexName="idx_user_authentication_user_id">
+        <createIndex tableName="user_authentications" indexName="idx_user_authentication_user_id">
             <column name="USER_ID"/>
         </createIndex>
     </changeSet>

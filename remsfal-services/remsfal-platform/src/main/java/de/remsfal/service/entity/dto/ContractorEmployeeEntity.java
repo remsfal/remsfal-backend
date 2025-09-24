@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
  * Entity class for a contractor employee.
  */
 @Entity
-@Table(name = "CONTRACTOR_EMPLOYEE")
+@Table(name = "contractor_employees")
 @NamedQuery(name = "ContractorEmployeeEntity.findByContractorId",
     query = "SELECT e FROM ContractorEmployeeEntity e WHERE e.contractor.id = :contractorId")
 public class ContractorEmployeeEntity extends MetaDataEntity implements ContractorEmployeeModel {

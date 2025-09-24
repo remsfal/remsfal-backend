@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "SITE_RENT")
+@Table(name = "site_rents")
 public class SiteRentEntity extends RentEntity {
 
     @Column(name = "SITE_ID", nullable = false, updatable = false, columnDefinition = "uuid")

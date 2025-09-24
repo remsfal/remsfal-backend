@@ -9,7 +9,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.7-apartment" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="APARTMENT">
+        <createTable tableName="apartments">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -36,24 +36,24 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_PROJECT_ID"
-            baseTableName="APARTMENT" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="apartments" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_BUILDING_ID"
-            baseTableName="APARTMENT" baseColumnNames="BUILDING_ID"
-            referencedTableName="BUILDING" referencedColumnNames="ID"
+            baseTableName="apartments" baseColumnNames="BUILDING_ID"
+            referencedTableName="buildings" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_APARTMENT_PROJECT_FK" tableName="APARTMENT">
+        <createIndex indexName="IDX_APARTMENT_PROJECT_FK" tableName="apartments">
             <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_APARTMENT_BUILDING_FK" tableName="APARTMENT">
+        <createIndex indexName="IDX_APARTMENT_BUILDING_FK" tableName="apartments">
             <column name="BUILDING_ID" type="uuid" />
         </createIndex>
 
-        <createTable tableName="APARTMENT_RENT">
+        <createTable tableName="apartment_rents">
             <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
@@ -77,16 +77,16 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_RENT_TENANCY_ID"
-            baseTableName="APARTMENT_RENT" baseColumnNames="TENANCY_ID"
-            referencedTableName="TENANCY" referencedColumnNames="ID"
+            baseTableName="apartment_rents" baseColumnNames="TENANCY_ID"
+            referencedTableName="tenancies" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_RENT_APARTMENT_ID"
-            baseTableName="APARTMENT_RENT" baseColumnNames="APARTMENT_ID"
-            referencedTableName="APARTMENT" referencedColumnNames="ID"
+            baseTableName="apartment_rents" baseColumnNames="APARTMENT_ID"
+            referencedTableName="apartments" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_APARTMENT_RENT_TENANCY_FK" tableName="APARTMENT_RENT">
+        <createIndex indexName="IDX_APARTMENT_RENT_TENANCY_FK" tableName="apartment_rents">
             <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>

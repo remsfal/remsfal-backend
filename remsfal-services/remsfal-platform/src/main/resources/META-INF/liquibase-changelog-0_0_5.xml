@@ -9,7 +9,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.5-site" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="SITE">
+        <createTable tableName="sites">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -35,24 +35,24 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_SITE_PROJECT_ID"
-            baseTableName="SITE" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="sites" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_SITE_PROPERTY_ID"
-            baseTableName="SITE" baseColumnNames="PROPERTY_ID"
-            referencedTableName="PROPERTY" referencedColumnNames="ID"
+            baseTableName="sites" baseColumnNames="PROPERTY_ID"
+            referencedTableName="properties" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_SITE_PROJECT_FK" tableName="SITE">
+        <createIndex indexName="IDX_SITE_PROJECT_FK" tableName="sites">
             <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_SITE_PROPERTY_FK" tableName="SITE">
+        <createIndex indexName="IDX_SITE_PROPERTY_FK" tableName="sites">
             <column name="PROPERTY_ID" type="uuid" />
         </createIndex>
 
-        <createTable tableName="SITE_RENT">
+        <createTable tableName="site_rents">
             <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
@@ -76,16 +76,16 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_SITE_RENT_TENANCY_ID"
-            baseTableName="SITE_RENT" baseColumnNames="TENANCY_ID"
-            referencedTableName="TENANCY" referencedColumnNames="ID"
+            baseTableName="site_rents" baseColumnNames="TENANCY_ID"
+            referencedTableName="tenancies" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_SITE_RENT_SITE_ID"
-            baseTableName="SITE_RENT" baseColumnNames="SITE_ID"
-            referencedTableName="SITE" referencedColumnNames="ID"
+            baseTableName="site_rents" baseColumnNames="SITE_ID"
+            referencedTableName="sites" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_SITE_RENT_TENANCY_FK" tableName="SITE_RENT">
+        <createIndex indexName="IDX_SITE_RENT_TENANCY_FK" tableName="site_rents">
             <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>

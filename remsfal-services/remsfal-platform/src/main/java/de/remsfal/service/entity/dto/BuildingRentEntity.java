@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "BUILDING_RENT")
+@Table(name = "building_rents")
 public class BuildingRentEntity extends RentEntity {
 
     @Id

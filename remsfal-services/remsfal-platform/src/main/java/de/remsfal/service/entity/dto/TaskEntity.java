@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "TASK")
+@Table(name = "tasks")
 public class TaskEntity extends AbstractEntity implements TaskModel {
 
     @Column(name = "TYPE", nullable = false)

@@ -16,7 +16,7 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "SITE")
+@Table(name = "sites")
 public class SiteEntity extends RentalUnitEntity implements SiteModel {
 
     @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")

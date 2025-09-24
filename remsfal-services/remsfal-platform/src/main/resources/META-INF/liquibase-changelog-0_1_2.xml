@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-contractor" author="efehan.cekic@student.htw-berlin.de">
-        <createTable tableName="CONTRACTOR">
+        <createTable tableName="contractors">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -32,19 +32,19 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_CONTRACTOR_PROJECT_ID"
-                                 baseTableName="CONTRACTOR" baseColumnNames="PROJECT_ID"
-                                 referencedTableName="PROJECT" referencedColumnNames="ID"
+                                 baseTableName="contractors" baseColumnNames="PROJECT_ID"
+                                 referencedTableName="projects" referencedColumnNames="ID"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_CONTRACTOR_PROJECT_FK" tableName="CONTRACTOR">
+        <createIndex indexName="IDX_CONTRACTOR_PROJECT_FK" tableName="contractors">
             <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_CONTRACTOR_COMPANY_NAME" tableName="CONTRACTOR">
+        <createIndex indexName="IDX_CONTRACTOR_COMPANY_NAME" tableName="contractors">
             <column name="COMPANY_NAME" type="varchar(255)" />
         </createIndex>
 
-        <createTable tableName="CONTRACTOR_EMPLOYEE">
+        <createTable tableName="contractor_employees">
             <column name="CONTRACTOR_ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -63,20 +63,20 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_CONTRACTOR_ID"
-                                 baseTableName="CONTRACTOR_EMPLOYEE" baseColumnNames="CONTRACTOR_ID"
-                                 referencedTableName="CONTRACTOR" referencedColumnNames="ID"
+                                 baseTableName="contractor_employees" baseColumnNames="CONTRACTOR_ID"
+                                 referencedTableName="contractors" referencedColumnNames="ID"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_USER_ID"
-                                 baseTableName="CONTRACTOR_EMPLOYEE" baseColumnNames="USER_ID"
-                                 referencedTableName="USERS" referencedColumnNames="ID"
+                                 baseTableName="contractor_employees" baseColumnNames="USER_ID"
+                                 referencedTableName="users" referencedColumnNames="ID"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_CONTRACTOR_FK" tableName="CONTRACTOR_EMPLOYEE">
+        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_CONTRACTOR_FK" tableName="contractor_employees">
             <column name="CONTRACTOR_ID" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_USER_FK" tableName="CONTRACTOR_EMPLOYEE">
+        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_USER_FK" tableName="contractor_employees">
             <column name="USER_ID" type="uuid" />
         </createIndex>
     </changeSet>

@@ -27,7 +27,7 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 @NamedQuery(name = "UserEntity.deleteById",
     query = "delete from UserEntity user where user.id = :id")
 @Entity
-@Table(name = "USERS")
+@Table(name = "users")
 public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Column(name = "TOKEN_ID", unique = true)

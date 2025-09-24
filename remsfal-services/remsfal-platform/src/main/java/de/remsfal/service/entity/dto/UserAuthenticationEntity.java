@@ -25,7 +25,7 @@ import jakarta.persistence.Table;
     query = "update UserAuthenticationEntity userAuth set u" +
         "serAuth.refreshToken = null " +
         "where userAuth.user.id = :userId")
-@Table(name = "USERAUTHENTICATION")
+@Table(name = "user_authentications")
 public class UserAuthenticationEntity extends MetaDataEntity implements UserAuthenticationModel {
 
     @Id

@@ -15,7 +15,7 @@ import java.util.Objects;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "BUILDING")
+@Table(name = "buildings")
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
     @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")

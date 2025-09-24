@@ -18,7 +18,7 @@
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.1-user" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="ADDRESS">
+        <createTable tableName="addresses">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -45,14 +45,14 @@
             </column>
         </createTable>
 
-        <createIndex indexName="IDX_ADDRESS_STREET_LOOKUP" tableName="ADDRESS">
+        <createIndex indexName="IDX_ADDRESS_STREET_LOOKUP" tableName="addresses">
             <column name="STREET" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ADDRESS_ZIP_LOOKUP" tableName="ADDRESS">
+        <createIndex indexName="IDX_ADDRESS_ZIP_LOOKUP" tableName="addresses">
             <column name="ZIP" type="varchar(255)" />
         </createIndex>
 
-        <createTable tableName="USERS">
+        <createTable tableName="users">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -77,19 +77,19 @@
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="USERS" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
-        <addUniqueConstraint tableName="USERS" columnNames="TOKEN_ID" constraintName="UNIQUE_TOKEN_ID" />
+        <addUniqueConstraint tableName="users" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
+        <addUniqueConstraint tableName="users" columnNames="TOKEN_ID" constraintName="UNIQUE_TOKEN_ID" />
 
-        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="USERS">
+        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="users">
             <column name="EMAIL" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="USERS">
+        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="users">
             <column name="TOKEN_ID" type="varchar(255)" />
         </createIndex>
 
         <addForeignKeyConstraint constraintName="FK_ADDRESS_ID"
-                                 baseTableName="USERS" baseColumnNames="ADDRESS_ID"
-                                 referencedTableName="ADDRESS" referencedColumnNames="ID"
+                                 baseTableName="users" baseColumnNames="ADDRESS_ID"
+                                 referencedTableName="addresses" referencedColumnNames="ID"
                                  onDelete="SET NULL" onUpdate="RESTRICT" />
     </changeSet>
 

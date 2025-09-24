@@ -13,7 +13,7 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "STORAGE")
+@Table(name = "storages")
 public class StorageEntity extends RentalUnitEntity implements StorageModel {
 
     @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")

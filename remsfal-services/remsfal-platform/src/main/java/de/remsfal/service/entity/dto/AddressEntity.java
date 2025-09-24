@@ -14,7 +14,7 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "ADDRESS")
+@Table(name = "addresses")
 public class AddressEntity extends AbstractEntity implements AddressModel {
 
     @Column(name = "STREET", nullable = false)

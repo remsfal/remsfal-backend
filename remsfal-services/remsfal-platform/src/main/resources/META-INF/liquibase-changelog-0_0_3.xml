@@ -9,7 +9,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.3-project" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="PROJECT">
+        <createTable tableName="projects">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -24,7 +24,7 @@
             </column>
         </createTable>
 
-        <createTable tableName="PROJECT_MEMBERSHIP">
+        <createTable tableName="project_memberships">
             <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
@@ -42,22 +42,22 @@
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="PROJECT_MEMBERSHIP" constraintName="PK_PROJECT_MEMBERSHIP"
+        <addPrimaryKey tableName="project_memberships" constraintName="PK_PROJECT_MEMBERSHIP"
                 columnNames="PROJECT_ID,USER_ID"/>
 
         <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_PROJECT_ID"
-            baseTableName="PROJECT_MEMBERSHIP" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="project_memberships" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_USER_ID"
-            baseTableName="PROJECT_MEMBERSHIP" baseColumnNames="USER_ID"
-            referencedTableName="USERS" referencedColumnNames="ID"
+            baseTableName="project_memberships" baseColumnNames="USER_ID"
+            referencedTableName="users" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.3-task" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="TASK">
+        <createTable tableName="tasks">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -91,11 +91,11 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_TASK_PROJECT_ID"
-            baseTableName="TASK" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="tasks" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TASK_PROJECT_FK" tableName="TASK">
+        <createIndex indexName="IDX_TASK_PROJECT_FK" tableName="tasks">
             <column name="TYPE" />
             <column name="PROJECT_ID" />
         </createIndex>
