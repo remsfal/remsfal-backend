@@ -40,16 +40,16 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "BLOCKED_BY")
+    @Column(name = "BLOCKED_BY", columnDefinition = "uuid")
     private String blockedBy;
 
-    @Column(name = "RELATED_TO")
+    @Column(name = "RELATED_TO", columnDefinition = "uuid")
     private String relatedTo;
 
-    @Column(name = "DUPLICATE_OF")
+    @Column(name = "DUPLICATE_OF", columnDefinition = "uuid")
     private String duplicateOf;
 
-    @Column(name = "CREATED_BY")
+    @Column(name = "CREATED_BY", columnDefinition = "uuid")
     private String createdBy;
 
     public Type getType() {

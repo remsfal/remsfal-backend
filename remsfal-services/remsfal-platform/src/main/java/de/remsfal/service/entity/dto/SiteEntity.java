@@ -23,7 +23,7 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     private String propertyId;
 
     @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID")
+    @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
     private AddressEntity address;
 
     @Column(name = "OUTDOOR_AREA", columnDefinition = "numeric(10,2)")

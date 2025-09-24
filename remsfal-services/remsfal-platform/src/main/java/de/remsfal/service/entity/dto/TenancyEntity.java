@@ -29,8 +29,8 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name = "TENANT",
-        joinColumns = @JoinColumn(name = "TENANCY_ID"),
-        inverseJoinColumns = @JoinColumn(name = "USER_ID")
+        joinColumns = @JoinColumn(name = "TENANCY_ID", columnDefinition = "uuid"),
+        inverseJoinColumns = @JoinColumn(name = "USER_ID", columnDefinition = "uuid")
     )
     private List<UserEntity> tenants;
 
@@ -41,32 +41,32 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     private LocalDate endOfRental;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "TENANCY_ID", nullable = false)
+    @JoinColumn(name = "TENANCY_ID", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<PropertyRentEntity> propertyRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "TENANCY_ID", nullable = false)
+    @JoinColumn(name = "TENANCY_ID", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<SiteRentEntity> siteRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "TENANCY_ID", nullable = false)
+    @JoinColumn(name = "TENANCY_ID", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<BuildingRentEntity> buildingRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "TENANCY_ID", nullable = false)
+    @JoinColumn(name = "TENANCY_ID", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<ApartmentRentEntity> apartmentRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "TENANCY_ID", nullable = false)
+    @JoinColumn(name = "TENANCY_ID", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<StorageRentEntity> storageRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "TENANCY_ID", nullable = false)
+    @JoinColumn(name = "TENANCY_ID", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<CommercialRentEntity> commercialRent;
 

@@ -47,7 +47,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     private String lastName;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "ADDRESS_ID", referencedColumnName = "id")
+    @JoinColumn(name = "ADDRESS_ID", referencedColumnName = "id", columnDefinition = "uuid")
     private AddressEntity address;
 
     @Column(name = "MOBILE_PHONE_NUMBER")
