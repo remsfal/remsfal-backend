@@ -19,13 +19,13 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
     @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String buildingId;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
+    @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
     public String getBuildingId() {

@@ -26,7 +26,7 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     @JoinColumn(name = "ADDRESS_ID")
     private AddressEntity address;
 
-    @Column(name = "OUTDOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "OUTDOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float outdoorArea;
 
     public String getPropertyId() {

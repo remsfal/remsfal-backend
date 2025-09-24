@@ -25,22 +25,22 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     @JoinColumn(name = "ADDRESS_ID")
     private AddressEntity address;
 
-    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float grossFloorArea;
 
-    @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "NET_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float netFloorArea;
 
-    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float constructionFloorArea;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
+    @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
     public String getPropertyId() {

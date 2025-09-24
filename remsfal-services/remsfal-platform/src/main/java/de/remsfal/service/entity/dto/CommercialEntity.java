@@ -19,19 +19,19 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
     @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String buildingId;
 
-    @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "NET_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float netFloorArea;
 
-    @Column(name = "USABLE_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "USABLE_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float usableFloorArea;
 
-    @Column(name = "TECHNICAL_SERVICE_AREA", columnDefinition = "decimal")
+    @Column(name = "TECHNICAL_SERVICE_AREA", columnDefinition = "numeric(10,2)")
     private Float technicalServicesArea;
 
-    @Column(name = "TRAFFIC_AREA", columnDefinition = "decimal")
+    @Column(name = "TRAFFIC_AREA", columnDefinition = "numeric(10,2)")
     private Float trafficArea;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
     public String getBuildingId() {
