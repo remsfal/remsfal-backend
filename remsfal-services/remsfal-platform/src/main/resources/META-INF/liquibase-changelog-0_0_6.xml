@@ -49,11 +49,11 @@
             referencedTableName="PROPERTY" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROJECT_FK" tableName="BUILDING">
+        <createIndex indexName="IDX_BUILDING_PROJECT_FK" tableName="BUILDING">
             <column name="PROJECT_ID" type="char(36)" />
         </createIndex>
 
-        <createIndex indexName="IDX_PROPERTY_FK" tableName="BUILDING">
+        <createIndex indexName="IDX_BUILDING_PROPERTY_FK" tableName="BUILDING">
             <column name="PROPERTY_ID" type="char(36)" />
         </createIndex>
 
@@ -66,8 +66,8 @@
             </column>
             <column name="FIRST_PAYMENT" type="date" />
             <column name="LAST_PAYMENT" type="date" />
-            <column name="BILLING_CYCLE" type="ENUM('WEEKLY', 'MONTHLY', 'YEARLY')" defaultValue="MONTHLY">
-                <constraints nullable="false" />
+            <column name="BILLING_CYCLE" type="varchar(20)" defaultValue="MONTHLY">
+                <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
             </column>
             <column name="BASIC_RENT" type="decimal(10, 2)" />
             <column name="OPERATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
@@ -90,7 +90,7 @@
             referencedTableName="BUILDING" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TENANCY_FK" tableName="BUILDING_RENT">
+        <createIndex indexName="IDX_BUILDING_RENT_TENANCY_FK" tableName="BUILDING_RENT">
             <column name="TENANCY_ID" type="char(36)" />
         </createIndex>
     </changeSet>

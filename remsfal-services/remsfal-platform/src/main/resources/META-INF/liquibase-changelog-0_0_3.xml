@@ -31,8 +31,8 @@
             <column name="USER_ID" type="char(36)">
                 <constraints nullable="false" />
             </column>
-            <column name="MEMBER_ROLE" type="ENUM('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')">
-                <constraints nullable="false" />
+            <column name="MEMBER_ROLE" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="MEMBER_ROLE IN ('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
@@ -61,8 +61,8 @@
             <column name="ID" type="char(36)">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="TYPE" type="ENUM('TASK', 'DEFECT', 'MAINTENANCE')">
-                <constraints nullable="false" />
+            <column name="TYPE" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="TYPE IN ('TASK', 'DEFECT', 'MAINTENANCE')" />
             </column>
             <column name="PROJECT_ID" type="char(36)">
                 <constraints nullable="false" />
@@ -70,8 +70,8 @@
             <column name="TITLE" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="STATUS" type="ENUM('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" defaultValue="PENDING">
-                <constraints nullable="false" />
+            <column name="STATUS" type="varchar(20)" defaultValue="PENDING">
+                <constraints nullable="false" checkConstraint="STATUS IN ('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" />
             </column>
             <column name="REPORTER_ID" type="char(36)" />
             <column name="OWNER_ID" type="char(36)" />
@@ -95,9 +95,9 @@
             referencedTableName="PROJECT" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROJECT_FK" tableName="TASK">
-            <column name="TYPE" type="ENUM('TASK', 'DEFECT', 'MAINTENANCE')" />
-            <column name="PROJECT_ID" type="char(36)" />
+        <createIndex indexName="IDX_TASK_PROJECT_FK" tableName="TASK">
+            <column name="TYPE" />
+            <column name="PROJECT_ID" />
         </createIndex>
     </changeSet>
 

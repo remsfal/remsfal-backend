@@ -45,10 +45,10 @@
             </column>
         </createTable>
 
-        <createIndex indexName="IDX_STREET_LOOKUP" tableName="ADDRESS">
+        <createIndex indexName="IDX_ADDRESS_STREET_LOOKUP" tableName="ADDRESS">
             <column name="STREET" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ZIP_LOOKUP" tableName="ADDRESS">
+        <createIndex indexName="IDX_ADDRESS_ZIP_LOOKUP" tableName="ADDRESS">
             <column name="ZIP" type="varchar(255)" />
         </createIndex>
 

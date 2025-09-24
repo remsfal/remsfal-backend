@@ -44,7 +44,7 @@ To develop or start this project locally, you need
 
 ## How to get started
 
-For ease of use its recommended to run mysql using the provided [docker-compose.yml](docker-compose.yml).
+For ease of use its recommended to run postgresql using the provided [docker-compose.yml](docker-compose.yml).
 
 ```sh
 docker compose up -d

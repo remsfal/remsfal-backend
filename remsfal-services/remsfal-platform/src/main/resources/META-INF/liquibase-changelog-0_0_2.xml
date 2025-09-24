@@ -44,10 +44,10 @@
             <column name="ZIP" header="plz" />
         </loadData>
 
-        <createIndex indexName="IDX_CITY_LOOKUP" tableName="ADDRESS_VALIDATION">
+        <createIndex indexName="IDX_ADDRESS_VALIDATION_CITY_LOOKUP" tableName="ADDRESS_VALIDATION">
             <column name="CITY" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ZIP_LOOKUP" tableName="ADDRESS_VALIDATION">
+        <createIndex indexName="IDX_ADDRESS_VALIDATION_ZIP_LOOKUP" tableName="ADDRESS_VALIDATION">
             <column name="ZIP" type="varchar(255)" />
         </createIndex>
     </changeSet>
