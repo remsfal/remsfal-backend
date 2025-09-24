@@ -10,10 +10,10 @@
 
     <changeSet id="remsfal-backend-0.0.4-tenancy" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="TENANCY">
-            <column name="ID" type="varchar(36)">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="varchar(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="START_OF_RENTAL" type="date" />
@@ -32,10 +32,10 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createTable tableName="TENANT">
-            <column name="TENANCY_ID" type="varchar(36)">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="USER_ID" type="varchar(36)">
+            <column name="USER_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
@@ -62,10 +62,10 @@
 
     <changeSet id="remsfal-backend-0.0.4-property" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="PROPERTY">
-            <column name="ID" type="varchar(36)">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="varchar(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="TITLE" type="varchar(255)">
@@ -95,14 +95,14 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_PROPERTY_PROJECT_FK" tableName="PROPERTY">
-            <column name="PROJECT_ID" type="varchar(36)" />
+            <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
         <createTable tableName="PROPERTY_RENT">
-            <column name="TENANCY_ID" type="varchar(36)">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="PROPERTY_ID" type="varchar(36)">
+            <column name="PROPERTY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
@@ -132,7 +132,7 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_PROPERTY_RENT_TENANCY_FK" tableName="PROPERTY_RENT">
-            <column name="TENANCY_ID" type="varchar(36)" />
+            <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

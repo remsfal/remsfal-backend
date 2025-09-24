@@ -5,10 +5,10 @@
 
     <changeSet id="remsfal-backend-contractor" author="efehan.cekic@student.htw-berlin.de">
         <createTable tableName="CONTRACTOR">
-            <column name="ID" type="varchar(36)">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="varchar(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="COMPANY_NAME" type="varchar(255)">
@@ -37,7 +37,7 @@
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_CONTRACTOR_PROJECT_FK" tableName="CONTRACTOR">
-            <column name="PROJECT_ID" type="varchar(36)" />
+            <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
         <createIndex indexName="IDX_CONTRACTOR_COMPANY_NAME" tableName="CONTRACTOR">
@@ -45,10 +45,10 @@
         </createIndex>
 
         <createTable tableName="CONTRACTOR_EMPLOYEE">
-            <column name="CONTRACTOR_ID" type="varchar(36)">
+            <column name="CONTRACTOR_ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="USER_ID" type="varchar(36)">
+            <column name="USER_ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="RESPONSIBILITY" type="varchar(255)">
@@ -73,11 +73,11 @@
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_CONTRACTOR_FK" tableName="CONTRACTOR_EMPLOYEE">
-            <column name="CONTRACTOR_ID" type="varchar(36)" />
+            <column name="CONTRACTOR_ID" type="uuid" />
         </createIndex>
 
         <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_USER_FK" tableName="CONTRACTOR_EMPLOYEE">
-            <column name="USER_ID" type="varchar(36)" />
+            <column name="USER_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

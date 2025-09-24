@@ -20,7 +20,7 @@ import jakarta.persistence.MappedSuperclass;
 public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Id
-    @Column(name = "TENANCY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "TENANCY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String tenancyId;
 
     @Id

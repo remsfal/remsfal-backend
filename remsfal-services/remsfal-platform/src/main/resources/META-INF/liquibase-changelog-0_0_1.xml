@@ -19,7 +19,7 @@
 
     <changeSet id="remsfal-backend-0.0.1-user" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="ADDRESS">
-            <column name="ID" type="varchar(36)">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="STREET" type="varchar(255)">
@@ -53,7 +53,7 @@
         </createIndex>
 
         <createTable tableName="USER">
-            <column name="ID" type="varchar(36)">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="TOKEN_ID" type="varchar(255)" />
@@ -65,7 +65,7 @@
             </column>
             <column name="FIRST_NAME" type="varchar(255)" />
             <column name="LAST_NAME" type="varchar(255)" />
-            <column name="ADDRESS_ID" type="varchar(36)" />
+            <column name="ADDRESS_ID" type="uuid" />
             <column name="MOBILE_PHONE_NUMBER" type="varchar(15)" remarks="According to E.164" />
             <column name="BUSINESS_PHONE_NUMBER" type="varchar(15)" remarks="According to E.164"/>
             <column name="PRIVATE_PHONE_NUMBER" type="varchar(15)" remarks="According to E.164"/>

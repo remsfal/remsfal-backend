@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 @Table(name = "COMMERCIAL_RENT")
 public class CommercialRentEntity extends RentEntity {
 
-    @Column(name = "COMMERCIAL_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "COMMERCIAL_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String commercialId;
 
     public String getCommercialId() {

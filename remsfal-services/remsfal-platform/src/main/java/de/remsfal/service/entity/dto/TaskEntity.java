@@ -21,7 +21,7 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable=false, length = 36)
+    @Column(name = "PROJECT_ID", nullable = false, updatable=false, columnDefinition = "uuid")
     private String projectId;
 
     @Column(name = "TITLE", nullable = false)
@@ -31,25 +31,25 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(name = "REPORTER_ID", columnDefinition = "char", length = 36)
+    @Column(name = "REPORTER_ID", columnDefinition = "uuid")
     private String reporterId;
 
-    @Column(name = "OWNER_ID", columnDefinition = "char", length = 36)
+    @Column(name = "OWNER_ID", columnDefinition = "uuid")
     private String ownerId;
 
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "BLOCKED_BY", columnDefinition = "char", length = 36)
+    @Column(name = "BLOCKED_BY")
     private String blockedBy;
 
-    @Column(name = "RELATED_TO", columnDefinition = "char", length = 36)
+    @Column(name = "RELATED_TO")
     private String relatedTo;
 
-    @Column(name = "DUPLICATE_OF", columnDefinition = "char", length = 36)
+    @Column(name = "DUPLICATE_OF")
     private String duplicateOf;
 
-    @Column(name = "CREATED_BY", columnDefinition = "char", length = 36)
+    @Column(name = "CREATED_BY")
     private String createdBy;
 
     public Type getType() {

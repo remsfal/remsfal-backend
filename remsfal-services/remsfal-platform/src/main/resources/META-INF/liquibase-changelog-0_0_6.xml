@@ -10,13 +10,13 @@
 
     <changeSet id="remsfal-backend-0.0.6-building" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="BUILDING">
-            <column name="ID" type="varchar(36)">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="varchar(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="PROPERTY_ID" type="varchar(36)">
+            <column name="PROPERTY_ID" type="uuid">
                 <constraints nullable="false" />
              </column>
             <column name="TITLE" type="varchar(255)">
@@ -24,7 +24,7 @@
             </column>
             <column name="LOCATION" type="varchar(255)" />
             <column name="DESCRIPTION" type="clob" />
-            <column name="ADDRESS_ID" type="varchar(36)" />
+            <column name="ADDRESS_ID" type="uuid" />
             <column name="GROSS_FLOOR_AREA" type="DECIMAL(10, 2)" />
             <column name="NET_FLOOR_AREA" type="DECIMAL(10, 2)" />
             <column name="CONSTRUCTION_FLOOR_AREA" type="DECIMAL(10, 2)" />
@@ -50,18 +50,18 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_BUILDING_PROJECT_FK" tableName="BUILDING">
-            <column name="PROJECT_ID" type="varchar(36)" />
+            <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
         <createIndex indexName="IDX_BUILDING_PROPERTY_FK" tableName="BUILDING">
-            <column name="PROPERTY_ID" type="varchar(36)" />
+            <column name="PROPERTY_ID" type="uuid" />
         </createIndex>
 
         <createTable tableName="BUILDING_RENT">
-            <column name="TENANCY_ID" type="varchar(36)">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="BUILDING_ID" type="varchar(36)">
+            <column name="BUILDING_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
@@ -91,7 +91,7 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_BUILDING_RENT_TENANCY_FK" tableName="BUILDING_RENT">
-            <column name="TENANCY_ID" type="varchar(36)" />
+            <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

@@ -24,7 +24,7 @@ import java.util.Set;
 public class ContractorEntity extends AbstractEntity implements ContractorModel {
 
     @ManyToOne
-    @JoinColumn(name = "PROJECT_ID", columnDefinition = "char")
+    @JoinColumn(name = "PROJECT_ID")
     private ProjectEntity project;
 
     @Column(name = "COMPANY_NAME", nullable = false)

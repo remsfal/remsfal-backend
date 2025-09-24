@@ -37,12 +37,12 @@ public class ProjectMembershipEntity extends MetaDataEntity implements ProjectMe
 
     @ManyToOne
     @MapsId("projectId")
-    @JoinColumn(name = "PROJECT_ID", columnDefinition = "char")
+    @JoinColumn(name = "PROJECT_ID")
     ProjectEntity project;
     
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "USER_ID", columnDefinition = "char")
+    @JoinColumn(name = "USER_ID")
     UserEntity user;
     
     @Column(name = "MEMBER_ROLE")

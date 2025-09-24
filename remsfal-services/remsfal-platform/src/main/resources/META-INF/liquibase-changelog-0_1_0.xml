@@ -7,7 +7,7 @@
     <changeSet id="1-create-user-authentication" author="gflachs">
         <!-- Create USERAUTHENTICATION Table -->
         <createTable tableName="USERAUTHENTICATION">
-            <column name="USER_ID" type="CHAR(36)">
+            <column name="USER_ID" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="REFRESH_TOKEN" type="VARCHAR(255)">

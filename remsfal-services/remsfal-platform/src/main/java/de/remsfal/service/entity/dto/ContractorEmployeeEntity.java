@@ -26,12 +26,12 @@ public class ContractorEmployeeEntity extends MetaDataEntity implements Contract
 
     @ManyToOne
     @MapsId("contractorId")
-    @JoinColumn(name = "CONTRACTOR_ID", columnDefinition = "char")
+    @JoinColumn(name = "CONTRACTOR_ID")
     private ContractorEntity contractor;
 
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "USER_ID", columnDefinition = "char")
+    @JoinColumn(name = "USER_ID")
     private UserEntity user;
 
     @Column(name = "RESPONSIBILITY")

@@ -10,13 +10,13 @@
 
     <changeSet id="remsfal-backend-0.1.0-storage" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="STORAGE">
-            <column name="ID" type="varchar(36)">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="varchar(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="BUILDING_ID" type="varchar(36)">
+            <column name="BUILDING_ID" type="uuid">
                 <constraints nullable="false" />
              </column>
             <column name="TITLE" type="varchar(255)">
@@ -45,18 +45,18 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_STORAGE_PROJECT_FK" tableName="STORAGE">
-            <column name="PROJECT_ID" type="varchar(36)" />
+            <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
         <createIndex indexName="IDX_STORAGE_BUILDING_FK" tableName="STORAGE">
-            <column name="BUILDING_ID" type="varchar(36)" />
+            <column name="BUILDING_ID" type="uuid" />
         </createIndex>
 
         <createTable tableName="STORAGE_RENT">
-            <column name="TENANCY_ID" type="varchar(36)">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="STORAGE_ID" type="varchar(36)">
+            <column name="STORAGE_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
@@ -86,7 +86,7 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_STORAGE_RENT_TENANCY_FK" tableName="STORAGE_RENT">
-            <column name="TENANCY_ID" type="varchar(36)" />
+            <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

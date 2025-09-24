@@ -16,7 +16,7 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 @Table(name = "COMMERCIAL")
 public class CommercialEntity extends RentalUnitEntity implements CommercialModel {
 
-    @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String buildingId;
 
     @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")

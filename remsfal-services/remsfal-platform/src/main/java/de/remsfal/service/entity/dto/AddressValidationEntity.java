@@ -34,7 +34,7 @@ public class AddressValidationEntity {
     @Column(name = "ZIP", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
+    @Column(name = "COUNTRY", nullable = false)
     private String country;
 
     public String getCity() {

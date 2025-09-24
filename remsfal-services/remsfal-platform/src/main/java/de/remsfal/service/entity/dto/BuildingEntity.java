@@ -18,7 +18,7 @@ import java.util.Objects;
 @Table(name = "BUILDING")
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
-    @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String propertyId;
 
     @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})

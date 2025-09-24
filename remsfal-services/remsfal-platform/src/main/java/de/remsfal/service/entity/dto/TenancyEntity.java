@@ -23,7 +23,7 @@ import jakarta.persistence.Table;
 @Table(name = "TENANCY")
 public class TenancyEntity extends AbstractEntity implements TenancyModel {
 
-    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "PROJECT_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String projectId;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
