@@ -43,11 +43,6 @@ class NotificationConsumerTest extends AbstractKafkaTest {
             new ObjectMapperSerde<>(ImmutableEmailEventJson.class));
     }
 
-    @BeforeEach
-    void registerSerde() {
-        // Method kept for backward compatibility but logic moved to clearAllTopics override
-    }
-
     @Test
     void testConsumeUserNotification_NewRegistration() {
         UserJson user = ImmutableUserJson.builder()

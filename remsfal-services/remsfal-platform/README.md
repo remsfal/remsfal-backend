@@ -55,39 +55,6 @@ de.remsfal.auth.oidc.client-secret=<YOUR-SECRET>
 de.remsfal.auth.session.secret=<YOUR-CUSTOM-SESSION-SECRET>
 ```
 
-#### Zeebe run 
-
-Zeebe is a workflow engine for orchestrating microservices using BPMN 2.0 processes. This project integrates Zeebe with Camunda 8 BPMN Diagrams.
-
-You can model your BPMN workflows in the Camunda Modeler. Please ensure that you are using the Camunda 8 BPMN Diagrams.
-
-Make sure the IDs and job types of the tasks are defined, as they will be used by the JobWorkers later. You can find the task IDs in the XML or set them in the Modeler. The task types must match the task types in the BPMN file. You can set them in the Modeler under Task definition → Task type.
-
-The Zeebe client automatically deploys the BPMN files to the Zeebe broker. It is configured in the application.properties file. Place your BPMN workflow files in the remsfal-service/src/main/resources/processes directory, and they will be automatically deployed to Zeebe.
-
-You can start the process using the controller (see the example in ZeebeController.java). The controller will start the process with the given variables.
-
-The Controller for starting the process is configured in ZeebeController.java. The controller will start the given process with the given variables. They will be passed to the process as JSON. For example, the ticket-process.bpmn file has the processID "ticket-process" and a variable "approve". The JSON should look like this: 
-
-{
-  "processId": "ticket-process",
-  "variables": {
-    "approve": true
-  }
-}
-
-The JobWorkers will automatically pick up the tasks and execute them.
-The JobWorkers are configured in ZeebeWorker.java. The worker will pick up the tasks with the given task type and execute them. They are annotated with @ZeebeWorker. The task type must match the task type in the BPMN file. When the worker picks up the task, it will execute the given function. After the function is executed, the worker will complete the task and pass the result back to the Zeebe broker. Then the next task will be picked up by the worker. 
-
-This setup provides a foundational integration of Zeebe into your project.
-
-To adapt this for your own workflow:
-
-Create a new BPMN file to reflect your process.
-Update your JobWorkers to handle the tasks specific to your workflow.
-
-
-
 #### JWT Token
 
 For the JWT token its highly recommended to replace the default private key and public key with your own.
