@@ -10,7 +10,7 @@
 
     <changeSet id="remsfal-backend-0.0.3-project" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="PROJECT">
-            <column name="ID" type="char(36)">
+            <column name="ID" type="varchar(36)">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="TITLE" type="varchar(255)">
@@ -25,10 +25,10 @@
         </createTable>
 
         <createTable tableName="PROJECT_MEMBERSHIP">
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="varchar(36)">
                 <constraints nullable="false" />
             </column>
-            <column name="USER_ID" type="char(36)">
+            <column name="USER_ID" type="varchar(36)">
                 <constraints nullable="false" />
             </column>
             <column name="MEMBER_ROLE" type="varchar(20)">
@@ -58,13 +58,13 @@
 
     <changeSet id="remsfal-backend-0.0.3-task" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="TASK">
-            <column name="ID" type="char(36)">
+            <column name="ID" type="varchar(36)">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="TYPE" type="varchar(20)">
                 <constraints nullable="false" checkConstraint="TYPE IN ('TASK', 'DEFECT', 'MAINTENANCE')" />
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="varchar(36)">
                 <constraints nullable="false" />
             </column>
             <column name="TITLE" type="varchar(255)">
@@ -73,13 +73,13 @@
             <column name="STATUS" type="varchar(20)" defaultValue="PENDING">
                 <constraints nullable="false" checkConstraint="STATUS IN ('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" />
             </column>
-            <column name="REPORTER_ID" type="char(36)" />
-            <column name="OWNER_ID" type="char(36)" />
+            <column name="REPORTER_ID" type="varchar(36)" />
+            <column name="OWNER_ID" type="varchar(36)" />
             <column name="DESCRIPTION" type="clob" />
-            <column name="BLOCKED_BY" type="char(36)" />
-            <column name="RELATED_TO" type="char(36)" />
-            <column name="DUPLICATE_OF" type="char(36)" />
-            <column name="CREATED_BY" type="char(36)">
+            <column name="BLOCKED_BY" type="varchar(36)" />
+            <column name="RELATED_TO" type="varchar(36)" />
+            <column name="DUPLICATE_OF" type="varchar(36)" />
+            <column name="CREATED_BY" type="varchar(36)">
                 <constraints nullable="false" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">

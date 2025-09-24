@@ -10,13 +10,13 @@
 
     <changeSet id="remsfal-backend-0.1.0-commercial" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="COMMERCIAL">
-            <column name="ID" type="char(36)">
+            <column name="ID" type="varchar(36)">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="varchar(36)">
                 <constraints nullable="false" />
             </column>
-            <column name="BUILDING_ID" type="char(36)">
+            <column name="BUILDING_ID" type="varchar(36)">
                 <constraints nullable="false" />
              </column>
             <column name="TITLE" type="varchar(255)">
@@ -48,18 +48,18 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_COMMERCIAL_PROJECT_FK" tableName="COMMERCIAL">
-            <column name="PROJECT_ID" type="char(36)" />
+            <column name="PROJECT_ID" type="varchar(36)" />
         </createIndex>
 
         <createIndex indexName="IDX_COMMERCIAL_BUILDING_FK" tableName="COMMERCIAL">
-            <column name="BUILDING_ID" type="char(36)" />
+            <column name="BUILDING_ID" type="varchar(36)" />
         </createIndex>
 
         <createTable tableName="COMMERCIAL_RENT">
-            <column name="TENANCY_ID" type="char(36)">
+            <column name="TENANCY_ID" type="varchar(36)">
                 <constraints nullable="false" />
             </column>
-            <column name="COMMERCIAL_ID" type="char(36)">
+            <column name="COMMERCIAL_ID" type="varchar(36)">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
@@ -89,7 +89,7 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_COMMERCIAL_RENT_TENANCY_FK" tableName="COMMERCIAL_RENT">
-            <column name="TENANCY_ID" type="char(36)" />
+            <column name="TENANCY_ID" type="varchar(36)" />
         </createIndex>
     </changeSet>
 
