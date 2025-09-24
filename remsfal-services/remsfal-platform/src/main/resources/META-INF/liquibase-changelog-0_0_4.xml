@@ -56,7 +56,7 @@
 
         <addForeignKeyConstraint constraintName="FK_TENANT_USER_ID"
             baseTableName="TENANT" baseColumnNames="USER_ID"
-            referencedTableName="USER" referencedColumnNames="ID"
+            referencedTableName="USERS" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 

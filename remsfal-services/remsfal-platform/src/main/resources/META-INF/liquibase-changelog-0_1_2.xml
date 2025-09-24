@@ -69,7 +69,7 @@
 
         <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_USER_ID"
                                  baseTableName="CONTRACTOR_EMPLOYEE" baseColumnNames="USER_ID"
-                                 referencedTableName="USER" referencedColumnNames="ID"
+                                 referencedTableName="USERS" referencedColumnNames="ID"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_CONTRACTOR_FK" tableName="CONTRACTOR_EMPLOYEE">

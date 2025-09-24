@@ -52,7 +52,7 @@
 
         <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_USER_ID"
             baseTableName="PROJECT_MEMBERSHIP" baseColumnNames="USER_ID"
-            referencedTableName="USER" referencedColumnNames="ID"
+            referencedTableName="USERS" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 

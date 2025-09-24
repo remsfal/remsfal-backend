@@ -52,7 +52,7 @@
             <column name="ZIP" type="varchar(255)" />
         </createIndex>
 
-        <createTable tableName="USER">
+        <createTable tableName="USERS">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -77,18 +77,18 @@
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="USER" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
-        <addUniqueConstraint tableName="USER" columnNames="TOKEN_ID" constraintName="UNIQUE_TOKEN_ID" />
+        <addUniqueConstraint tableName="USERS" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
+        <addUniqueConstraint tableName="USERS" columnNames="TOKEN_ID" constraintName="UNIQUE_TOKEN_ID" />
 
-        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="USER">
+        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="USERS">
             <column name="EMAIL" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="USER">
+        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="USERS">
             <column name="TOKEN_ID" type="varchar(255)" />
         </createIndex>
 
         <addForeignKeyConstraint constraintName="FK_ADDRESS_ID"
-                                 baseTableName="USER" baseColumnNames="ADDRESS_ID"
+                                 baseTableName="USERS" baseColumnNames="ADDRESS_ID"
                                  referencedTableName="ADDRESS" referencedColumnNames="ID"
                                  onDelete="SET NULL" onUpdate="RESTRICT" />
     </changeSet>
