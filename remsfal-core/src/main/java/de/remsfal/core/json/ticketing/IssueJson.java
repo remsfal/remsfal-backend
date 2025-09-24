@@ -1,4 +1,4 @@
-package de.remsfal.core.json.project;
+package de.remsfal.core.json.ticketing;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.UUID;
@@ -23,10 +23,10 @@ import de.remsfal.core.validation.UUID;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A task")
-@JsonDeserialize(as = ImmutableTaskJson.class)
+@Schema(description = "An issue")
+@JsonDeserialize(as = ImmutableIssueJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TaskJson implements TaskModel {
+public abstract class IssueJson implements IssueModel {
 
     @Null
     @Nullable
@@ -77,8 +77,8 @@ public abstract class TaskJson implements TaskModel {
     @Override
     public abstract String getDuplicateOf();
 
-    public static TaskJson valueOf(final TaskModel model) {
-        return ImmutableTaskJson.builder()
+    public static IssueJson valueOf(final IssueModel model) {
+        return ImmutableIssueJson.builder()
                 .id(model.getId())
                 .projectId(model.getProjectId())
                 .title(model.getTitle())
