@@ -14,19 +14,19 @@ import de.remsfal.core.json.project.ImmutableTenancyJson;
 
 public class TestData {
 
-    // Default test user
-    public static final UUID USER_ID = TestData.USER_ID_1;
-    public static final String USER_TOKEN = TestData.USER_TOKEN_1;
-    public static final String USER_EMAIL = TestData.USER_EMAIL_1;
-    public static final String USER_FIRST_NAME = TestData.USER_FIRST_NAME_1;
-    public static final String USER_LAST_NAME = TestData.USER_LAST_NAME_1;
-    
     // Test user 1
     public static final UUID USER_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000001");
     public static final String USER_TOKEN_1 = "tokenOfMaxMustermann";
     public static final String USER_EMAIL_1 = "max.mustermann@example.org";
     public static final String USER_FIRST_NAME_1 = "Max";
     public static final String USER_LAST_NAME_1 = "Mustermann";
+
+    // Default test user
+    public static final UUID USER_ID = TestData.USER_ID_1;
+    public static final String USER_TOKEN = TestData.USER_TOKEN_1;
+    public static final String USER_EMAIL = TestData.USER_EMAIL_1;
+    public static final String USER_FIRST_NAME = TestData.USER_FIRST_NAME_1;
+    public static final String USER_LAST_NAME = TestData.USER_LAST_NAME_1;
 
     // Test user 2
     public static final UUID USER_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000002");
@@ -49,6 +49,14 @@ public class TestData {
     public static final String USER_FIRST_NAME_4 = "Lassmiranda";
     public static final String USER_LAST_NAME_4 = "Dennsiewillja";
 
+    // Test address 1
+    public static final UUID ADDRESS_ID_1 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000001");
+    public static final String ADDRESS_STREET_1 = "Badstraße 12";
+    public static final String ADDRESS_CITY_1 = "Berlin";
+    public static final String ADDRESS_PROVINCE_1 = "Berlin";
+    public static final String ADDRESS_ZIP_1 = "13357";
+    public static final String ADDRESS_COUNTRY_1 = "DE";
+
     // Default test address
     public static final UUID ADDRESS_ID = TestData.ADDRESS_ID_1;
     public static final String ADDRESS_STREET = TestData.ADDRESS_STREET_1;
@@ -60,14 +68,6 @@ public class TestData {
     public static final ImmutableAddressJson.Builder addressBuilder() {
         return addressBuilder1();
     }
-
-    // Test address 1
-    public static final UUID ADDRESS_ID_1 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000001");
-    public static final String ADDRESS_STREET_1 = "Badstraße 12";
-    public static final String ADDRESS_CITY_1 = "Berlin";
-    public static final String ADDRESS_PROVINCE_1 = "Berlin";
-    public static final String ADDRESS_ZIP_1 = "13357";
-    public static final String ADDRESS_COUNTRY_1 = "DE";
 
     public static final ImmutableAddressJson.Builder addressBuilder1() {
         return ImmutableAddressJson.builder()
@@ -385,13 +385,13 @@ public class TestData {
     }
 
 
-    // Default test project
-    public static final UUID PROJECT_ID = TestData.PROJECT_ID_1;
-    public static final String PROJECT_TITLE = TestData.PROJECT_TITLE_1;
-    
     // Test project 1
     public static final UUID PROJECT_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000001");
     public static final String PROJECT_TITLE_1 = "Wohnpark am Nieder Neuendorfer See";
+
+    // Default test project
+    public static final UUID PROJECT_ID = TestData.PROJECT_ID_1;
+    public static final String PROJECT_TITLE = TestData.PROJECT_TITLE_1;
 
     // Test project 2
     public static final UUID PROJECT_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000002");
@@ -408,6 +408,21 @@ public class TestData {
     // Test project 5
     public static final UUID PROJECT_ID_5 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000005");
     public static final String PROJECT_TITLE_5 = "Eigentümergemeinschaft Bundesallee 88 / Berliner Straße 69";
+
+    // Test property 1
+    public static final UUID PROPERTY_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c27-000000000001");
+    public static final String PROPERTY_TITLE_1 = "Kleinesiedlung";
+    public static final String PROPERTY_LOCATION_1 = ADDRESS_STREET_18
+        + ", " + ADDRESS_ZIP_18 + " " + ADDRESS_CITY_18;
+    public static final String PROPERTY_DESCRIPTION_1 = "Example description of Kleinesiedlung";
+    public static final String PROPERTY_LAND_REGISTRY_1 = "Amtsgericht Schönestadt";
+    public static final String PROPERTY_CADASTRAL_DESTRICT_1 = "Grundbuch von Kleinesiedlung";
+    public static final String PROPERTY_SHEET_NUMBER_1 = "4711";
+    public static final Integer PROPERTY_PLOT_NUMBER_1 = 1;
+    public static final String PROPERTY_CADASTRAL_SECTION_1 = "48";
+    public static final String PROPERTY_PLOT_1 = "12";
+    public static final String PROPERTY_ECONOMY_TYPE_1 = "Gebäude- und Freifläche";
+    public static final Integer PROPERTY_PLOT_AREA_1 = 1234;
 
     // Default test property
     public static final UUID PROPERTY_ID = TestData.PROPERTY_ID_1;
@@ -426,21 +441,6 @@ public class TestData {
     public static final ImmutablePropertyJson.Builder propertyBuilder() {
         return propertyBuilder1();
     }
-    
-    // Test property 1
-    public static final UUID PROPERTY_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c27-000000000001");
-    public static final String PROPERTY_TITLE_1 = "Kleinesiedlung";
-    public static final String PROPERTY_LOCATION_1 = ADDRESS_STREET_18
-        + ", " + ADDRESS_ZIP_18 + " " + ADDRESS_CITY_18;
-    public static final String PROPERTY_DESCRIPTION_1 = "Example description of Kleinesiedlung";
-    public static final String PROPERTY_LAND_REGISTRY_1 = "Amtsgericht Schönestadt";
-    public static final String PROPERTY_CADASTRAL_DESTRICT_1 = "Grundbuch von Kleinesiedlung";
-    public static final String PROPERTY_SHEET_NUMBER_1 = "4711";
-    public static final Integer PROPERTY_PLOT_NUMBER_1 = 1;
-    public static final String PROPERTY_CADASTRAL_SECTION_1 = "48";
-    public static final String PROPERTY_PLOT_1 = "12";
-    public static final String PROPERTY_ECONOMY_TYPE_1 = "Gebäude- und Freifläche";
-    public static final Integer PROPERTY_PLOT_AREA_1 = 1234;
 
     public static final ImmutablePropertyJson.Builder propertyBuilder1() {
         return ImmutablePropertyJson
