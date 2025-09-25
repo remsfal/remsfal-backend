@@ -1,8 +1,20 @@
 package de.remsfal.chat;
 
+import java.util.UUID;
 import de.remsfal.test.TestData;
 
 public class TicketingTestData extends TestData {
+
+    // Explicitly expose inherited UUID constants to avoid null initialization issues
+    public static final UUID PROJECT_ID = TestData.PROJECT_ID;
+    public static final UUID PROJECT_ID_1 = TestData.PROJECT_ID_1;
+    public static final UUID PROJECT_ID_2 = TestData.PROJECT_ID_2;
+    
+    public static final UUID USER_ID = TestData.USER_ID;
+    public static final UUID USER_ID_1 = TestData.USER_ID_1;
+    public static final UUID USER_ID_2 = TestData.USER_ID_2;
+    public static final UUID USER_ID_3 = TestData.USER_ID_3;
+    public static final UUID USER_ID_4 = TestData.USER_ID_4;
 
     // Files
     public static final String FILE_PNG_PATH = "test-image.png";
