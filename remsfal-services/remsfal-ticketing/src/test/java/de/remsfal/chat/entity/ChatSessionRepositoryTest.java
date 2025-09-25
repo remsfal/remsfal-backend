@@ -41,9 +41,9 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 "(project_id, task_id, session_id, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertSessionCql,
-            UUID.fromString(TicketingTestData.PROJECT_ID), TASK_ID, SESSION_ID, Instant.now(),
-            Map.of(UUID.fromString(TicketingTestData.USER_ID_1), ChatSessionRepository.ParticipantRole.INITIATOR.name(),
-                UUID.fromString(TicketingTestData.USER_ID_2), ChatSessionRepository.ParticipantRole.HANDLER.name()));
+            TicketingTestData.PROJECT_ID, TASK_ID, SESSION_ID, Instant.now(),
+            Map.of(UUID.fromString(TicketingTestData.USER_ID_1.toString()), ChatSessionRepository.ParticipantRole.INITIATOR.name(),
+                UUID.fromString(TicketingTestData.USER_ID_2.toString()), ChatSessionRepository.ParticipantRole.HANDLER.name()));
         logger.info("Test session created: " + SESSION_ID);
         logger.info("Test data setup complete");
     }
@@ -52,11 +52,11 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void createChatSession_SUCCESS() {
         logger.info("Testing createChatSession with valid task type");
         ChatSessionEntity session = chatSessionRepository.createChatSession(
-            UUID.fromString(TicketingTestData.PROJECT_ID), TASK_ID,
-                Map.of(UUID.fromString(TicketingTestData.USER_ID_1), "INITIATOR",
-                    UUID.fromString(TicketingTestData.USER_ID_2), "HANDLER"));
+            TicketingTestData.PROJECT_ID, TASK_ID,
+                Map.of(UUID.fromString(TicketingTestData.USER_ID_1.toString()), "INITIATOR",
+                    UUID.fromString(TicketingTestData.USER_ID_2.toString()), "HANDLER"));
         assertNotNull(session, "Session should be created");
-        assertEquals(UUID.fromString(TicketingTestData.PROJECT_ID), session.getProjectId(), "Project ID should match");
+        assertEquals(TicketingTestData.PROJECT_ID.toString(), session.getProjectId(), "Project ID should match");
         assertEquals(TASK_ID, session.getTaskId(), "Task ID should match");
         assertEquals(2, session.getParticipants().size(),
                 "Participants should match the initial value");
@@ -68,7 +68,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void findSessionById_SUCCESS() {
         logger.info("Testing findById");
         Optional<ChatSessionEntity> session = chatSessionRepository
-                .findSessionById(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID);
+                .findSessionById(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID);
         logger.info("test");
         assertTrue(session.isPresent(), "Session should exist in the database");
         assertEquals(SESSION_ID, session.get().getSessionId(), "Session ID should match");
@@ -90,7 +90,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void findSessionParticipantsById_SUCCESS() {
         logger.info("Testing findParticipantsById");
         Map<UUID, String> participants = chatSessionRepository
-                .findParticipantsById(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID);
+                .findParticipantsById(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID);
         for (Map.Entry<UUID, String> entry : participants.entrySet()) {
             logger.info("Participant: " + entry.getKey() + " - " + entry.getValue());
         }
@@ -101,8 +101,8 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void findParticipantRole_SUCCESS() {
         logger.info("Testing findParticipantRole with valid data");
         String role = chatSessionRepository
-                .findParticipantRole(UUID.fromString(TicketingTestData.PROJECT_ID),
-                    SESSION_ID, TASK_ID, UUID.fromString(TicketingTestData.USER_ID_1));
+                .findParticipantRole(TicketingTestData.PROJECT_ID.toString(),
+                    SESSION_ID, TASK_ID, UUID.fromString(TicketingTestData.USER_ID_1.toString()));
         assertNotNull(role, "Role should not be null");
         assertEquals("INITIATOR", role, "Role should match the expected value");
     }
@@ -111,7 +111,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void findParticipantRole_NO_PARTICIPANTS() {
         logger.info("Testing findParticipantRole with no participants");
         assertNull(chatSessionRepository.findParticipantRole(
-            UUID.fromString(TicketingTestData.PROJECT_ID),
+            TicketingTestData.PROJECT_ID,
                 SESSION_ID,
                 TASK_ID,
                 UUID.randomUUID()
@@ -121,10 +121,10 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     @Test
     void addParticipant_SUCCESS() {
         logger.info("Testing addParticipant with valid data");
-        UUID userId = UUID.fromString(TicketingTestData.USER_ID_3);
-        chatSessionRepository.addParticipant(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID, userId , "OBSERVER");
+        UUID userId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
+        chatSessionRepository.addParticipant(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID, userId , "OBSERVER");
         Map<UUID, String> participants = chatSessionRepository
-            .findParticipantsById(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID);
+            .findParticipantsById(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID);
         assertEquals("OBSERVER", participants.get(userId), "Role should match the expected value");
     }
 
@@ -135,7 +135,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
-                UUID.fromString(TicketingTestData.USER_ID_2),
+                UUID.fromString(TicketingTestData.USER_ID_2.toString()),
                 "OBSERVER"
         );
 
@@ -155,9 +155,9 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     @Test
     void addParticipant_INVALID_ROLE() {
         logger.info("Testing addParticipant with invalid role");
-        UUID userId = UUID.fromString(TicketingTestData.USER_ID_3);
+        UUID userId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                chatSessionRepository.addParticipant(UUID.fromString(TicketingTestData.PROJECT_ID),
+                chatSessionRepository.addParticipant(TicketingTestData.PROJECT_ID.toString(),
                     SESSION_ID, TASK_ID, userId, "INVALID_ROLE"));
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
         logger.info("EXCEPTION EXPECTED: " + "Invalid role: INVALID_ROLE");
@@ -170,8 +170,8 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         logger.info("Testing addParticipant with participant already exists");
         Exception exception = assertThrows(RuntimeException.class, () ->
                 chatSessionRepository
-                .addParticipant(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID,
-                    UUID.fromString(TicketingTestData.USER_ID_1), "OBSERVER"));
+                .addParticipant(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID,
+                    UUID.fromString(TicketingTestData.USER_ID_1.toString()), "OBSERVER"));
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
         logger.info("EXCEPTION EXPECTED: " + "User already exists in the session");
         assertTrue(exception.getMessage().contains("User already exists in the session"),
@@ -181,10 +181,10 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     @Test
     void addParticipant_INITIATOR_ALREADY_EXISTS() {
         logger.info("Testing addParticipant with initiator already exists");
-        UUID userId = UUID.fromString(TicketingTestData.USER_ID_3);
+        UUID userId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
         Exception exception = assertThrows(RuntimeException.class, () ->
                 chatSessionRepository
-                .addParticipant(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID, userId, "INITIATOR"));
+                .addParticipant(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID, userId, "INITIATOR"));
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
         logger.info("EXCEPTION EXPECTED: " + "Initiator already exists in the session");
         assertTrue(exception.getMessage().contains("Initiator already exists in the session"),
@@ -194,9 +194,9 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     @Test
     void changeParticipantRole_SUCCESS() {
         logger.info("Testing changeParticipantRole with valid data");
-        chatSessionRepository.changeParticipantRole(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID, UUID.fromString(TicketingTestData.USER_ID_1), "HANDLER");
-        Map<UUID, String> participants = chatSessionRepository.findParticipantsById(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID);
-        assertEquals("HANDLER", participants.get(UUID.fromString(TicketingTestData.USER_ID_1)),
+        chatSessionRepository.changeParticipantRole(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID, UUID.fromString(TicketingTestData.USER_ID_1.toString()), "HANDLER");
+        Map<UUID, String> participants = chatSessionRepository.findParticipantsById(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID);
+        assertEquals("HANDLER", participants.get(UUID.fromString(TicketingTestData.USER_ID_1.toString())),
                 "Role should match the expected value");
     }
 
@@ -207,7 +207,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
-                UUID.fromString(TicketingTestData.USER_ID_1),
+                UUID.fromString(TicketingTestData.USER_ID_1.toString()),
                 "HANDLER"
         );
         RuntimeException exception = assertThrows(RuntimeException.class, executable);
@@ -221,9 +221,9 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     @Test
     void removeParticipant_SUCCESS() {
         logger.info("Testing removeParticipant with valid data");
-        chatSessionRepository.deleteMember(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID, UUID.fromString(TicketingTestData.USER_ID_1));
-        Map<UUID, String> participants = chatSessionRepository.findParticipantsById(UUID.fromString(TicketingTestData.PROJECT_ID), SESSION_ID, TASK_ID);
-        assertNull(participants.get(UUID.fromString(TicketingTestData.USER_ID_1)), "Participant should be removed");
+        chatSessionRepository.deleteMember(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID, UUID.fromString(TicketingTestData.USER_ID_1.toString()));
+        Map<UUID, String> participants = chatSessionRepository.findParticipantsById(TicketingTestData.PROJECT_ID.toString(), SESSION_ID, TASK_ID);
+        assertNull(participants.get(UUID.fromString(TicketingTestData.USER_ID_1.toString())), "Participant should be removed");
     }
 
     @Test
@@ -233,7 +233,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
-                UUID.fromString(TicketingTestData.USER_ID_1)
+                UUID.fromString(TicketingTestData.USER_ID_1.toString())
         );
         RuntimeException exception = assertThrows(RuntimeException.class, executable);
         logger.info("EXCEPTION ACTUAL: " + exception.getMessage());

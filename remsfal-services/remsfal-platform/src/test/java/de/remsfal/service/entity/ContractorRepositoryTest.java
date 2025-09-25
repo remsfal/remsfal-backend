@@ -39,7 +39,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         // Insert test users and projects
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO users (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
-                .setParameter(1, TestData.USER_ID)
+                .setParameter(1, TestData.USER_ID.toString())
                 .setParameter(2, TestData.USER_TOKEN)
                 .setParameter(3, TestData.USER_EMAIL)
                 .setParameter(4, TestData.USER_FIRST_NAME)
@@ -48,14 +48,14 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
+                .setParameter(1, TestData.PROJECT_ID.toString())
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.USER_ID)
+                .setParameter(1, TestData.PROJECT_ID.toString())
+                .setParameter(2, TestData.USER_ID.toString())
                 .setParameter(3, "MANAGER")
                 .executeUpdate());
 
@@ -63,7 +63,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO contractors (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_1)
-                .setParameter(2, TestData.PROJECT_ID)
+                .setParameter(2, TestData.PROJECT_ID.toString())
                 .setParameter(3, COMPANY_NAME_1)
                 .setParameter(4, PHONE_1)
                 .setParameter(5, EMAIL_1)
@@ -73,7 +73,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO contractors (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_2)
-                .setParameter(2, TestData.PROJECT_ID)
+                .setParameter(2, TestData.PROJECT_ID.toString())
                 .setParameter(3, COMPANY_NAME_2)
                 .setParameter(4, PHONE_2)
                 .setParameter(5, EMAIL_2)
@@ -83,7 +83,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
     @Test
     void findByProjectId_SUCCESS_contractorsFound() {
-        List<ContractorEntity> contractors = repository.findByProjectId(TestData.PROJECT_ID, 0, 10);
+        List<ContractorEntity> contractors = repository.findByProjectId(TestData.PROJECT_ID.toString(), 0, 10);
         assertNotNull(contractors);
         assertEquals(2, contractors.size());
 
@@ -110,13 +110,13 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
     @Test
     void countByProjectId_SUCCESS_correctCount() {
-        long count = repository.countByProjectId(TestData.PROJECT_ID);
+        long count = repository.countByProjectId(TestData.PROJECT_ID.toString());
         assertEquals(2, count);
     }
 
     @Test
     void findByProjectIdAndContractorId_SUCCESS_contractorFound() {
-        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, CONTRACTOR_ID_1);
+        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), CONTRACTOR_ID_1);
         assertTrue(optionalContractor.isPresent());
 
         ContractorEntity contractor = optionalContractor.get();
@@ -129,7 +129,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
     @Test
     void findByProjectIdAndContractorId_FAILED_contractorNotFound() {
-        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, UUID.randomUUID().toString());
+        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), UUID.randomUUID().toString());
         assertFalse(optionalContractor.isPresent());
     }
 
@@ -140,7 +140,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         contractor.generateId();
 
         // Get the project entity
-        ProjectEntity project = entityManager.find(ProjectEntity.class, TestData.PROJECT_ID);
+        ProjectEntity project = entityManager.find(ProjectEntity.class, TestData.PROJECT_ID.toString());
         contractor.setProject(project);
 
         contractor.setCompanyName("New Contractor");
@@ -154,7 +154,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         });
 
         // Verify the contractor was created
-        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, contractor.getId());
+        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), contractor.getId());
         assertTrue(optionalContractor.isPresent());
         assertEquals("New Contractor", optionalContractor.get().getCompanyName());
 
@@ -163,7 +163,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         assertTrue(deleted);
 
         // Verify the contractor was deleted
-        optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, contractor.getId());
+        optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), contractor.getId());
         assertFalse(optionalContractor.isPresent());
     }
 }

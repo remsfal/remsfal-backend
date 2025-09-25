@@ -28,27 +28,27 @@ class TenancyResourceTest extends AbstractResourceTest {
     }
 
     protected void setupTestTenancies() {
-        insertTenancy(TestData.TENANCY_ID_1, TestData.PROJECT_ID,
+        insertTenancy(TestData.TENANCY_ID_1.toString(), TestData.PROJECT_ID.toString(),
             TestData.TENANCY_START_1, TestData.TENANCY_END_1);
-        insertTenant(TestData.TENANCY_ID_1, TestData.USER_ID_3);
-        insertApartmentRent(TestData.TENANCY_ID_1, TestData.APARTMENT_ID,
+        insertTenant(TestData.TENANCY_ID_1.toString(), TestData.USER_ID_3.toString());
+        insertApartmentRent(TestData.TENANCY_ID_1.toString(), TestData.APARTMENT_ID.toString(),
             TestData.TENANCY_START_1, TestData.TENANCY_END_1, 670f, 75f, 120f);
-        insertStorageRent(TestData.TENANCY_ID_1, TestData.STORAGE_ID,
+        insertStorageRent(TestData.TENANCY_ID_1.toString(), TestData.STORAGE_ID.toString(),
             TestData.TENANCY_START_1, TestData.TENANCY_END_1, 30f, null, null);
-        insertCommercialRent(TestData.TENANCY_ID_1, TestData.COMMERCIAL_ID,
+        insertCommercialRent(TestData.TENANCY_ID_1.toString(), TestData.COMMERCIAL_ID.toString(),
             TestData.TENANCY_START_1, TestData.TENANCY_END_1, 1030f, 230f, 320f);
-        insertTenancy(TestData.TENANCY_ID_2, TestData.PROJECT_ID,
+        insertTenancy(TestData.TENANCY_ID_2.toString(), TestData.PROJECT_ID.toString(),
             TestData.TENANCY_START_2, TestData.TENANCY_END_2);
-        insertTenant(TestData.TENANCY_ID_2, TestData.USER_ID_4);
-        insertSiteRent(TestData.TENANCY_ID_2, TestData.SITE_ID_1,
+        insertTenant(TestData.TENANCY_ID_2.toString(), TestData.USER_ID_4.toString());
+        insertSiteRent(TestData.TENANCY_ID_2.toString(), TestData.SITE_ID_1.toString(),
             TestData.TENANCY_START_2, TestData.TENANCY_END_2, 40f, null, null);
-        insertBuildingRent(TestData.TENANCY_ID_2, TestData.BUILDING_ID_2,
+        insertBuildingRent(TestData.TENANCY_ID_2.toString(), TestData.BUILDING_ID_2.toString(),
             TestData.TENANCY_START_2, TestData.TENANCY_END_2, 899f, 150f, 240f);
-        insertTenancy(TestData.TENANCY_ID_3, TestData.PROJECT_ID,
+        insertTenancy(TestData.TENANCY_ID_3, TestData.PROJECT_ID.toString(),
             TestData.TENANCY_START_3, TestData.TENANCY_END_3);
-        insertTenant(TestData.TENANCY_ID_3, TestData.USER_ID_3);
-        insertTenant(TestData.TENANCY_ID_3, TestData.USER_ID_4);
-        insertPropertyRent(TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2,
+        insertTenant(TestData.TENANCY_ID_3, TestData.USER_ID_3.toString());
+        insertTenant(TestData.TENANCY_ID_3, TestData.USER_ID_4.toString());
+        insertPropertyRent(TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2.toString(),
             TestData.TENANCY_START_3, TestData.TENANCY_END_3, 100f, null, null);
     }
 
@@ -158,7 +158,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getTenancies_SUCCESS_noTenanciesAreReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -171,7 +171,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getTenancies_SUCCESS_tenanciesAreReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_4.toString(), TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -198,8 +198,8 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getPropertyTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/properties/{rentalId}", TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2)
+            .cookies(buildCookies(TestData.USER_ID_4.toString(), TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/properties/{rentalId}", TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
@@ -218,8 +218,8 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getSiteTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/sites/{rentalId}", TestData.TENANCY_ID_2, TestData.SITE_ID_1)
+            .cookies(buildCookies(TestData.USER_ID_4.toString(), TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/sites/{rentalId}", TestData.TENANCY_ID_2.toString(), TestData.SITE_ID_1.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
@@ -238,8 +238,8 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getBuildingTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/buildings/{rentalId}", TestData.TENANCY_ID_2, TestData.BUILDING_ID_2)
+            .cookies(buildCookies(TestData.USER_ID_4.toString(), TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/buildings/{rentalId}", TestData.TENANCY_ID_2.toString(), TestData.BUILDING_ID_2.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
@@ -258,8 +258,8 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getApartmentTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/apartments/{rentalId}", TestData.TENANCY_ID_1, TestData.APARTMENT_ID)
+            .cookies(buildCookies(TestData.USER_ID_3.toString(), TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/apartments/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.APARTMENT_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
@@ -278,8 +278,8 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getStorageTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/storages/{rentalId}", TestData.TENANCY_ID_1, TestData.STORAGE_ID)
+            .cookies(buildCookies(TestData.USER_ID_3.toString(), TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/storages/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.STORAGE_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
@@ -298,8 +298,8 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getCommercialTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/commercials/{rentalId}", TestData.TENANCY_ID_1, TestData.COMMERCIAL_ID)
+            .cookies(buildCookies(TestData.USER_ID_3.toString(), TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{tenancyId}/commercials/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.COMMERCIAL_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
@@ -318,13 +318,13 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getUser_SUCCESS_userHasCorrectRole() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(100)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_3.toString(), TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_3.toString(), TestData.USER_EMAIL_3, Duration.ofMinutes(100)))
             .get("/api/v1/user")
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-                .and().body("id", Matchers.equalTo(TestData.USER_ID_3))
+                .and().body("id", Matchers.equalTo(TestData.USER_ID_3.toString()))
                 .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_3))
                 .and().body("userRoles.size()", Matchers.equalTo(1))
                 .and().body("userRoles[0]", Matchers.equalTo("TENANT"));

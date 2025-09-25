@@ -35,9 +35,9 @@ class ProjectMembershipEntityTest {
         project1 = new ProjectEntity();
         user1 = new UserEntity();
         user2 = new UserEntity();
-        project1.setId(PROJECT_ID_1);
-        user1.setId(USER_ID_1);
-        user2.setId(USER_ID_2);
+        project1.setId(PROJECT_ID_1.toString());
+        user1.setId(USER_ID_1.toString());
+        user2.setId(USER_ID_2.toString());
 
         entity1 = new ProjectMembershipEntity();
         entity1.setProject(project1);
@@ -61,7 +61,7 @@ class ProjectMembershipEntityTest {
     @DisplayName("Tests two unequal objects (different project)")
     void testEqualsDifferentProjects () {
         ProjectEntity project2 = new ProjectEntity();
-        project2.setId(PROJECT_ID_2);
+        project2.setId(PROJECT_ID_2.toString());
         entity2.setProject(project2);
 
         assertNotEquals(entity1, entity2);

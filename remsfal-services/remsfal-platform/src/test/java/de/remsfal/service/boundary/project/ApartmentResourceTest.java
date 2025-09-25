@@ -34,7 +34,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
     void getApartment_FAILED_noAuthentication() {
         given()
             .when()
-            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
             .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
@@ -45,13 +45,13 @@ class ApartmentResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.APARTMENT_ID_1))
+            .and().body("id", Matchers.equalTo(TestData.APARTMENT_ID_1.toString()))
             .and().body("title", Matchers.equalTo(TestData.APARTMENT_TITLE_1))
             .and().body("description", Matchers.equalTo(TestData.APARTMENT_DESCRIPTION_1))
             .and().body("livingSpace", Matchers.equalTo(TestData.APARTMENT_LIVING_SPACE_1))
@@ -66,23 +66,23 @@ class ApartmentResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID)
-                .replace("{propertyId}", TestData.PROPERTY_ID)
-                .replace("{buildingId}", TestData.BUILDING_ID_2) + "/"))
+            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID.toString())
+                .replace("{propertyId}", TestData.PROPERTY_ID.toString())
+                .replace("{buildingId}", TestData.BUILDING_ID_2.toString()) + "/"))
             .and().body("id", Matchers.notNullValue())
             .and().body("title", Matchers.equalTo(TestData.APARTMENT_TITLE_2));
 
         long entities = entityManager
             .createQuery("SELECT count(apartment) FROM ApartmentEntity apartment where apartment.buildingId = :buildingId",
                 long.class)
-            .setParameter("buildingId", TestData.BUILDING_ID_2)
+            .setParameter("buildingId", TestData.BUILDING_ID_2.toString())
             .getSingleResult();
         assertEquals(1, entities);
     }
@@ -93,16 +93,16 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
@@ -115,15 +115,15 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .patch(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.APARTMENT_ID))
+            .and().body("id", Matchers.equalTo(TestData.APARTMENT_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.APARTMENT_TITLE_2))
             .and().body("description", Matchers.equalTo(TestData.APARTMENT_DESCRIPTION_1))
             .and().body("livingSpace", Matchers.equalTo(TestData.APARTMENT_LIVING_SPACE_1))
@@ -133,14 +133,14 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.APARTMENT_ID))
+            .and().body("id", Matchers.equalTo(TestData.APARTMENT_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.APARTMENT_TITLE_2));
 
     }

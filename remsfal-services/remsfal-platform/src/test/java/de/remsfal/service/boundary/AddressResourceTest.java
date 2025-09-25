@@ -36,8 +36,8 @@ class AddressResourceTest extends AbstractResourceTest {
     void getSupportedCountries_SUCCESS_germanyIsReturned() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(BASE_PATH + "/countries")
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -52,8 +52,8 @@ class AddressResourceTest extends AbstractResourceTest {
     void getPossibleCities_FAILED_noQueryParameterProvided() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(BASE_PATH)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
@@ -63,8 +63,8 @@ class AddressResourceTest extends AbstractResourceTest {
     void getPossibleCities_FAILED_zipToShort() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .queryParam("zip", "123")
             .get(BASE_PATH)
             .then()
@@ -75,8 +75,8 @@ class AddressResourceTest extends AbstractResourceTest {
     void getPossibleCities_SUCCESS_berlinIsReturned() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .queryParam("zip", "10318")
             .get(BASE_PATH)
             .then()

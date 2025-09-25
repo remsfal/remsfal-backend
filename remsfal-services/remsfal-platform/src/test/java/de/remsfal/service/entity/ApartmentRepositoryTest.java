@@ -38,15 +38,15 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     public void setupApartments() {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?, ?)")
-                .setParameter(1, convert(TestData.PROJECT_ID))
+                .setParameter(1, convert(TestData.PROJECT_ID.toString()))
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
         propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(TestData.PROJECT_ID.toString(), TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
         buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(TestData.PROJECT_ID.toString(), propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -55,8 +55,8 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
         assertNotNull(buildingId);
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO apartments (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
-                .setParameter(1, convert(TestData.APARTMENT_ID))
-                .setParameter(2, convert(TestData.PROJECT_ID))
+                .setParameter(1, convert(TestData.APARTMENT_ID.toString()))
+                .setParameter(2, convert(TestData.PROJECT_ID.toString()))
                 .setParameter(3, convert(buildingId))
                 .setParameter(4, TestData.APARTMENT_TITLE)
                 .executeUpdate());
@@ -64,7 +64,7 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
 
     @Test
     void testFindByIds_and_hashcode() {
-        final Optional<ApartmentEntity> found = repository.findByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID);
+        final Optional<ApartmentEntity> found = repository.findByIds(TestData.PROJECT_ID.toString(), TestData.APARTMENT_ID.toString());
         final ApartmentModel apartment = TestData.apartmentBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
@@ -75,7 +75,7 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     @Test
     void testRemoveApartmentByIds() {
         final long removeApartmentByIds = runInTransaction(() ->
-                repository.removeApartmentByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID));
+                repository.removeApartmentByIds(TestData.PROJECT_ID.toString(), TestData.APARTMENT_ID.toString()));
         assertEquals(1, removeApartmentByIds);
     }
 }

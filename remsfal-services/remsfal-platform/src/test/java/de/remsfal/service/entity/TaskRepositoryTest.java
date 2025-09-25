@@ -31,7 +31,7 @@ class TaskRepositoryTest extends AbstractServiceTest {
     protected void setupTestTasks() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO users (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
-            .setParameter(1, TestData.USER_ID)
+            .setParameter(1, TestData.USER_ID.toString())
             .setParameter(2, TestData.USER_TOKEN)
             .setParameter(3, TestData.USER_EMAIL)
             .setParameter(4, TestData.USER_FIRST_NAME)
@@ -39,41 +39,41 @@ class TaskRepositoryTest extends AbstractServiceTest {
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
-            .setParameter(1, TestData.PROJECT_ID)
+            .setParameter(1, TestData.PROJECT_ID.toString())
             .setParameter(2, TestData.PROJECT_TITLE)
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-            .setParameter(1, TestData.PROJECT_ID)
-            .setParameter(2, TestData.USER_ID)
+            .setParameter(1, TestData.PROJECT_ID.toString())
+            .setParameter(2, TestData.USER_ID.toString())
             .setParameter(3, "MANAGER")
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID().toString())
             .setParameter(2, "TASK")
-            .setParameter(3, TestData.PROJECT_ID)
+            .setParameter(3, TestData.PROJECT_ID.toString())
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "OPEN")
-            .setParameter(6, TestData.USER_ID)
-            .setParameter(7, TestData.USER_ID)
+            .setParameter(6, TestData.USER_ID.toString())
+            .setParameter(7, TestData.USER_ID.toString())
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID().toString())
             .setParameter(2, "DEFECT")
-            .setParameter(3, TestData.PROJECT_ID)
+            .setParameter(3, TestData.PROJECT_ID.toString())
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "PENDING")
-            .setParameter(6, TestData.USER_ID)
-            .setParameter(7, TestData.USER_ID)
+            .setParameter(6, TestData.USER_ID.toString())
+            .setParameter(7, TestData.USER_ID.toString())
             .executeUpdate());
 
     }
 
     @Test
     void hashCode_SUCCESS_taskEntity() {
-        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID);
+        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID.toString());
         assertNotNull(entities);
         assertEquals(1, entities.size());
         assertTrue(entities.get(0).hashCode() != 0);
@@ -81,11 +81,11 @@ class TaskRepositoryTest extends AbstractServiceTest {
     
     @Test
     void equals_SUCCESS_taskEntity() {
-        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID);
+        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID.toString());
         assertNotNull(entities);
         assertEquals(1, entities.size());
         
-        final List<TaskEntity> copy = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID, Status.PENDING);
+        final List<TaskEntity> copy = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID.toString(), Status.PENDING);
         assertNotNull(entities);
         assertEquals(copy.get(0), entities.get(0));
     }

@@ -23,7 +23,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
     void testInformUserAboutProjectMembership() {
         CustomerModel user =
                 ImmutableUserJson.builder()
-                        .id(TestData.USER_ID)
+                        .id(TestData.USER_ID.toString())
                         .email(TestData.USER_EMAIL)
                         .build();
 
@@ -32,7 +32,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         given()
             .topic(EmailEventJson.TOPIC)
         .assertThat()
-            .json("user.id", Matchers.equalTo(TestData.USER_ID))
+            .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("type", Matchers.equalTo("PROJECT_ADMISSION"))
             .json("link", Matchers.equalTo("https://remsfal.de/projects/fakeId"));
@@ -42,7 +42,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
     void testInformUserAboutRegistration() {
         CustomerModel user =
             ImmutableUserJson.builder()
-                    .id(TestData.USER_ID)
+                    .id(TestData.USER_ID.toString())
                     .email(TestData.USER_EMAIL)
                     .build();
 
@@ -51,7 +51,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         given()
             .topic(EmailEventJson.TOPIC)
         .assertThat()
-            .json("user.id", Matchers.equalTo(TestData.USER_ID))
+            .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("type", Matchers.equalTo("USER_REGISTRATION"))
             .json("link", Matchers.equalTo("https://remsfal.de"));

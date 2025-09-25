@@ -38,15 +38,15 @@ class CommercialRepositoryTest extends AbstractServiceTest {
     public void setupCommercials() {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?, ?)")
-                .setParameter(1, TestData.PROJECT_ID)
+                .setParameter(1, TestData.PROJECT_ID.toString())
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
         propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(TestData.PROJECT_ID.toString(), TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
         buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(TestData.PROJECT_ID.toString(), propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -55,8 +55,8 @@ class CommercialRepositoryTest extends AbstractServiceTest {
         assertNotNull(buildingId);
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
-                .setParameter(1, TestData.COMMERCIAL_ID)
-                .setParameter(2, TestData.PROJECT_ID)
+                .setParameter(1, TestData.COMMERCIAL_ID.toString())
+                .setParameter(2, TestData.PROJECT_ID.toString())
                 .setParameter(3, buildingId)
                 .setParameter(4, TestData.COMMERCIAL_TITLE)
                 .executeUpdate());
@@ -64,7 +64,7 @@ class CommercialRepositoryTest extends AbstractServiceTest {
 
     @Test
     void testCommercialById() {
-        final Optional<CommercialEntity> found = repository.findCommercialById(TestData.PROJECT_ID, TestData.COMMERCIAL_ID);
+        final Optional<CommercialEntity> found = repository.findCommercialById(TestData.PROJECT_ID.toString(), TestData.COMMERCIAL_ID.toString());
         final CommercialModel commercial = TestData.commercialBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
@@ -75,7 +75,7 @@ class CommercialRepositoryTest extends AbstractServiceTest {
     @Test
     void testDeleteCommercialById() {
         final long deleteCommercialById = runInTransaction(() ->
-                repository.deleteCommercialById(TestData.PROJECT_ID, TestData.COMMERCIAL_ID));
+                repository.deleteCommercialById(TestData.PROJECT_ID.toString(), TestData.COMMERCIAL_ID.toString()));
         assertEquals(1, deleteCommercialById);
     }
 }
