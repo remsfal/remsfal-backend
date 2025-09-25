@@ -38,7 +38,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
     protected void setupTestData() {
         // Insert test users and projects
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO users (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
                 .setParameter(1, TestData.USER_ID)
                 .setParameter(2, TestData.USER_TOKEN)
                 .setParameter(3, TestData.USER_EMAIL)
@@ -47,13 +47,13 @@ class ContractorRepositoryTest extends AbstractServiceTest {
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+                .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.USER_ID)
                 .setParameter(3, "MANAGER")
@@ -61,7 +61,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
         // Insert test contractors
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO CONTRACTOR (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO contractors (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_1)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_1)
@@ -71,7 +71,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO CONTRACTOR (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO contractors (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_2)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_2)

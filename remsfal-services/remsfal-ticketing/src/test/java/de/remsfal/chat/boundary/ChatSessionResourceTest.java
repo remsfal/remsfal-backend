@@ -84,9 +84,6 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     static final String EXAMPLE_CHAT_SESSION_ID_2 = "30444d17-56a9-4275-a9a8-e4fb7305359a";
     static final UUID EXAMPLE_CHAT_SESSION_ID_1_UUID = UUID.fromString(EXAMPLE_CHAT_SESSION_ID_1);
     static final UUID EXAMPLE_CHAT_SESSION_ID_2_UUID = UUID.fromString(EXAMPLE_CHAT_SESSION_ID_2);
-    static final UUID PROJECT_ID_1_UUID = UUID.fromString(TicketingTestData.PROJECT_ID_1);
-    static final UUID USER_ID_3_UUID = UUID.fromString(TicketingTestData.USER_ID_3);
-    static final UUID USER_ID_4_UUID = UUID.fromString(TicketingTestData.USER_ID_4);
 
     static final String CHAT_MESSAGE_ID_1 = "b9854462-abb8-4213-8b15-be9290a19959";
     static final String CHAT_MESSAGE_ID_2 = "3f72a368-48bd-405e-976f-51a5c417a5c2";
@@ -122,11 +119,11 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             "(project_id, task_id, session_id, created_at, participants) " +
             "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatSessionCql,
-            PROJECT_ID_1_UUID, TASK_ID_1_UUID, EXAMPLE_CHAT_SESSION_ID_1_UUID,
+            TicketingTestData.PROJECT_ID_1, TASK_ID_1_UUID, EXAMPLE_CHAT_SESSION_ID_1_UUID,
             Instant.now(),
             Map.of(
-                USER_ID_4_UUID, ParticipantRole.INITIATOR.name(),
-                USER_ID_3_UUID, ParticipantRole.HANDLER.name()));
+                TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
+                TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
         logger.info("Session 1 " + EXAMPLE_CHAT_SESSION_ID_1 +
             " created. " +
             "On project " + TicketingTestData.PROJECT_ID_1 + ": TASK_ID_1.");
@@ -136,11 +133,11 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             "(project_id, task_id, session_id, created_at, participants) " +
             "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatSessionCql2,
-            PROJECT_ID_1_UUID, TASK_ID_2_UUID, EXAMPLE_CHAT_SESSION_ID_2_UUID,
+            TicketingTestData.PROJECT_ID_1, TASK_ID_2_UUID, EXAMPLE_CHAT_SESSION_ID_2_UUID,
             Instant.now(),
             Map.of(
-                USER_ID_4_UUID, ParticipantRole.INITIATOR.name(),
-                USER_ID_3_UUID, ParticipantRole.HANDLER.name()));
+                TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
+                TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
         logger.info("Session 2 " + EXAMPLE_CHAT_SESSION_ID_2 +
             " created. " +
             "On project " + TicketingTestData.PROJECT_ID + ": TASK_ID_2.");
@@ -150,7 +147,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             "(session_id, message_id, sender_id, content_type, content, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql,
-            EXAMPLE_CHAT_SESSION_ID_1_UUID, CHAT_MESSAGE_ID_1_UUID, USER_ID_3_UUID,
+            EXAMPLE_CHAT_SESSION_ID_1_UUID, CHAT_MESSAGE_ID_1_UUID, TicketingTestData.USER_ID_3,
             ChatMessageRepository.ContentType.TEXT.name(), "Hello World", Instant.now());
 
         logger.info("Message 1 " + CHAT_MESSAGE_ID_1 +
@@ -161,7 +158,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             "(session_id, message_id, sender_id, content_type, content, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql2,
-            EXAMPLE_CHAT_SESSION_ID_2_UUID, CHAT_MESSAGE_ID_2_UUID, USER_ID_4_UUID,
+            EXAMPLE_CHAT_SESSION_ID_2_UUID, CHAT_MESSAGE_ID_2_UUID, TicketingTestData.USER_ID_4,
             ChatMessageRepository.ContentType.TEXT.name(), "Hello World", Instant.now());
         logger.info("Message 2 " + CHAT_MESSAGE_ID_2 +
             " created. " +
@@ -171,7 +168,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             "(session_id, message_id, sender_id, content_type, url, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql3,
-            EXAMPLE_CHAT_SESSION_ID_1_UUID, CHAT_MESSAGE_ID_3_UUID, USER_ID_3_UUID,
+            EXAMPLE_CHAT_SESSION_ID_1_UUID, CHAT_MESSAGE_ID_3_UUID, TicketingTestData.USER_ID_3,
             ChatMessageRepository.ContentType.FILE.name(), TicketingTestData.FILE_PNG_PATH, Instant.now());
         logger.info("Message 3 " + CHAT_MESSAGE_ID_3 +
             " created. " +
@@ -179,7 +176,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     private Map<String, String> rolesManagerP1() {
-        return Map.of(TicketingTestData.PROJECT_ID_1, "MANAGER");
+        return Map.of(TicketingTestData.PROJECT_ID_1.toString(), "MANAGER");
     }
 
     private Map<String, String> rolesNone() {
@@ -376,9 +373,9 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/participants/{participantId}" })
     void removeParticipant_INVALID_INPUT(String path) {
-        String path_task1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
-            .replace("{taskId}", TASK_ID_1)
-            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
+        String path_task1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1.toString())
+            .replace("{taskId}", TASK_ID_1.toString())
+            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1.toString());
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
@@ -397,7 +394,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
                     rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .delete(path_task1_session1
-                .replace("{participantId}", TicketingTestData.USER_ID_3))
+                .replace("{participantId}", TicketingTestData.USER_ID_3.toString()))
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
@@ -443,7 +440,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .statusCode(Response.Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
             .header("Location", Matchers.containsString(path.replace("{projectId}",
-                TicketingTestData.PROJECT_ID_1).replace("{taskId}", TASK_ID_1)))
+                TicketingTestData.PROJECT_ID_1.toString()).replace("{taskId}", TASK_ID_1.toString())))
             .and().body("sessionId", notNullValue());
     }
 
@@ -630,7 +627,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void getChatMessage_FILETYPE_SUCCESS(String path) {
         String resolvedPath = path
-            .replace("{projectId}", TicketingTestData.PROJECT_ID_1)
+            .replace("{projectId}", TicketingTestData.PROJECT_ID_1.toString())
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1)
             .replace("{messageId}", CHAT_MESSAGE_ID_3);
@@ -673,7 +670,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void getChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
+        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1.toString())
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()
@@ -725,7 +722,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void updateChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
+        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1.toString())
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         String updatedMessageJsonBlank = "{\"content\":\"\"}";
@@ -785,7 +782,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @ValueSource(strings = { CHAT_SESSION_TASK_PATH_WITH_SESSION_ID + "/messages/{messageId}" })
     void deleteChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1)
+        String path_project1_session1 = path.replace("{projectId}", TicketingTestData.PROJECT_ID_1.toString())
             .replace("{taskId}", TASK_ID_1)
             .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1);
         given()

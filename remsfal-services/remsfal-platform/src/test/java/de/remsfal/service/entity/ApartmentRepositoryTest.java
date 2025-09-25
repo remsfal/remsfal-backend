@@ -37,8 +37,8 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     @BeforeEach
     public void setupApartments() {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?, ?)")
-                .setParameter(1, TestData.PROJECT_ID)
+                .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?, ?)")
+                .setParameter(1, convert(TestData.PROJECT_ID))
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
         propertyId = propertyController
@@ -54,10 +54,10 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
                 .getId();
         assertNotNull(buildingId);
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
-                .setParameter(1, TestData.APARTMENT_ID)
-                .setParameter(2, TestData.PROJECT_ID)
-                .setParameter(3, buildingId)
+                .createNativeQuery("INSERT INTO apartments (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
+                .setParameter(1, convert(TestData.APARTMENT_ID))
+                .setParameter(2, convert(TestData.PROJECT_ID))
+                .setParameter(3, convert(buildingId))
                 .setParameter(4, TestData.APARTMENT_TITLE)
                 .executeUpdate());
     }

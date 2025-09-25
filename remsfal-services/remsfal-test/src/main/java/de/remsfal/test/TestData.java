@@ -1,6 +1,8 @@
 package de.remsfal.test;
 
 import java.time.LocalDate;
+import java.util.UUID;
+
 import de.remsfal.core.json.ImmutableAddressJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
@@ -13,42 +15,42 @@ import de.remsfal.core.json.project.ImmutableTenancyJson;
 public class TestData {
 
     // Default test user
-    public static final String USER_ID = TestData.USER_ID_1;
+    public static final UUID USER_ID = TestData.USER_ID_1;
     public static final String USER_TOKEN = TestData.USER_TOKEN_1;
     public static final String USER_EMAIL = TestData.USER_EMAIL_1;
     public static final String USER_FIRST_NAME = TestData.USER_FIRST_NAME_1;
     public static final String USER_LAST_NAME = TestData.USER_LAST_NAME_1;
     
     // Test user 1
-    public static final String USER_ID_1 = "b9440c43-b5c0-4951-9c29-000000000001";
+    public static final UUID USER_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000001");
     public static final String USER_TOKEN_1 = "tokenOfMaxMustermann";
     public static final String USER_EMAIL_1 = "max.mustermann@example.org";
     public static final String USER_FIRST_NAME_1 = "Max";
     public static final String USER_LAST_NAME_1 = "Mustermann";
 
     // Test user 2
-    public static final String USER_ID_2 = "b9440c43-b5c0-4951-9c29-000000000002";
+    public static final UUID USER_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000002");
     public static final String USER_TOKEN_2 = "tokenOfLieschenMueller";
     public static final String USER_EMAIL_2 = "lieschen.mueller@example.org";
     public static final String USER_FIRST_NAME_2 = "Lieschen";
     public static final String USER_LAST_NAME_2 = "Müller";
 
     // Test user 3
-    public static final String USER_ID_3 = "b9440c43-b5c0-4951-9c29-000000000003";
+    public static final UUID USER_ID_3 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000003");
     public static final String USER_TOKEN_3 = "tokenOfOttoNormalverbraucher";
     public static final String USER_EMAIL_3 = "otto.normalverbraucher@example.org";
     public static final String USER_FIRST_NAME_3 = "Otto";
     public static final String USER_LAST_NAME_3 = "Normalverbraucher";
 
     // Test user 4
-    public static final String USER_ID_4 = "b9440c43-b5c0-4951-9c29-000000000004";
+    public static final UUID USER_ID_4 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000004");
     public static final String USER_TOKEN_4 = "tokenOfLassmirandaDennsiewillja";
     public static final String USER_EMAIL_4 = "l.m.r.d-d.s.w.j@simsons.org";
     public static final String USER_FIRST_NAME_4 = "Lassmiranda";
     public static final String USER_LAST_NAME_4 = "Dennsiewillja";
 
     // Default test address
-    public static final String ADDRESS_ID = TestData.ADDRESS_ID_1;
+    public static final UUID ADDRESS_ID = TestData.ADDRESS_ID_1;
     public static final String ADDRESS_STREET = TestData.ADDRESS_STREET_1;
     public static final String ADDRESS_CITY = TestData.ADDRESS_CITY_1;
     public static final String ADDRESS_PROVINCE = TestData.ADDRESS_PROVINCE_1;
@@ -60,7 +62,7 @@ public class TestData {
     }
 
     // Test address 1
-    public static final String ADDRESS_ID_1 = "00550c43-b5c0-4951-9c29-000000000001";
+    public static final UUID ADDRESS_ID_1 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000001");
     public static final String ADDRESS_STREET_1 = "Badstraße 12";
     public static final String ADDRESS_CITY_1 = "Berlin";
     public static final String ADDRESS_PROVINCE_1 = "Berlin";
@@ -77,7 +79,7 @@ public class TestData {
     }
 
     // Test address 2
-    public static final String ADDRESS_ID_2 = "00550c43-b5c0-4951-9c29-000000000002";
+    public static final UUID ADDRESS_ID_2 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000002");
     public static final String ADDRESS_STREET_2 = "Turmstraße 34";
     public static final String ADDRESS_CITY_2 = "Berlin";
     public static final String ADDRESS_PROVINCE_2 = "Berlin";
@@ -94,7 +96,7 @@ public class TestData {
     }
 
     // Test address 3
-    public static final String ADDRESS_ID_3 = "00550c43-b5c0-4951-9c29-000000000003";
+    public static final UUID ADDRESS_ID_3 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000003");
     public static final String ADDRESS_STREET_3 = "Chausseestraße 101";
     public static final String ADDRESS_CITY_3 = "Berlin";
     public static final String ADDRESS_PROVINCE_3 = "Berlin";
@@ -111,7 +113,7 @@ public class TestData {
     }
 
     // Test address 4
-    public static final String ADDRESS_ID_4 = "00550c43-b5c0-4951-9c29-000000000004";
+    public static final UUID ADDRESS_ID_4 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000004");
     public static final String ADDRESS_STREET_4 = "Elisenstraße 7";
     public static final String ADDRESS_CITY_4 = "München";
     public static final String ADDRESS_PROVINCE_4 = "Bayern";
@@ -128,7 +130,7 @@ public class TestData {
     }
 
     // Test address 5
-    public static final String ADDRESS_ID_5 = "00550c43-b5c0-4951-9c29-000000000005";
+    public static final UUID ADDRESS_ID_5 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000005");
     public static final String ADDRESS_STREET_5 = "Poststraße 3";
     public static final String ADDRESS_CITY_5 = "Leipzig";
     public static final String ADDRESS_PROVINCE_5 = "Sachsen";
@@ -145,7 +147,7 @@ public class TestData {
     }
 
     // Test address 6
-    public static final String ADDRESS_ID_6 = "00550c43-b5c0-4951-9c29-000000000006";
+    public static final UUID ADDRESS_ID_6 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000006");
     public static final String ADDRESS_STREET_6 = "Seestraße 48";
     public static final String ADDRESS_CITY_6 = "Berlin";
     public static final String ADDRESS_PROVINCE_6 = "Berlin";
@@ -162,7 +164,7 @@ public class TestData {
     }
 
     // Test address 7
-    public static final String ADDRESS_ID_7 = "00550c43-b5c0-4951-9c29-000000000007";
+    public static final UUID ADDRESS_ID_7 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000007");
     public static final String ADDRESS_STREET_7 = "Hafenstraße 23";
     public static final String ADDRESS_CITY_7 = "Hamburg";
     public static final String ADDRESS_PROVINCE_7 = "Hamburg";
@@ -179,7 +181,7 @@ public class TestData {
     }
 
     // Test address 8
-    public static final String ADDRESS_ID_8 = "00550c43-b5c0-4951-9c29-000000000008";
+    public static final UUID ADDRESS_ID_8 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000008");
     public static final String ADDRESS_STREET_8 = "Neue Straße 9";
     public static final String ADDRESS_CITY_8 = "Ulm";
     public static final String ADDRESS_PROVINCE_8 = "Baden-Württemberg";
@@ -196,7 +198,7 @@ public class TestData {
     }
 
     // Test address 9
-    public static final String ADDRESS_ID_9 = "00550c43-b5c0-4951-9c29-000000000009";
+    public static final UUID ADDRESS_ID_9 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000009");
     public static final String ADDRESS_STREET_9 = "Münchner Straße 22";
     public static final String ADDRESS_CITY_9 = "Frankfurt am Main";
     public static final String ADDRESS_PROVINCE_9 = "Hessen";
@@ -213,7 +215,7 @@ public class TestData {
     }
 
     // Test address 10
-    public static final String ADDRESS_ID_10 = "00550c43-b5c0-4951-9c29-000000000010";
+    public static final UUID ADDRESS_ID_10 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000010");
     public static final String ADDRESS_STREET_10 = "Berliner Straße 81";
     public static final String ADDRESS_CITY_10 = "Hamburg";
     public static final String ADDRESS_PROVINCE_10 = "Hamburg";
@@ -230,7 +232,7 @@ public class TestData {
     }
 
     // Test address 11
-    public static final String ADDRESS_ID_11 = "00550c43-b5c0-4951-9c29-000000000011";
+    public static final UUID ADDRESS_ID_11 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000011");
     public static final String ADDRESS_STREET_11 = "Theaterstraße 4";
     public static final String ADDRESS_CITY_11 = "Aachen";
     public static final String ADDRESS_PROVINCE_11 = "Nordrhein-Westfalen";
@@ -247,7 +249,7 @@ public class TestData {
     }
 
     // Test address 12
-    public static final String ADDRESS_ID_12 = "00550c43-b5c0-4951-9c29-000000000012";
+    public static final UUID ADDRESS_ID_12 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000012");
     public static final String ADDRESS_STREET_12 = "Opernplatz 1";
     public static final String ADDRESS_CITY_12 = "Frankfurt am Main";
     public static final String ADDRESS_PROVINCE_12 = "Hessen";
@@ -264,7 +266,7 @@ public class TestData {
     }
 
     // Test address 13
-    public static final String ADDRESS_ID_13 = "00550c43-b5c0-4951-9c29-000000000013";
+    public static final UUID ADDRESS_ID_13 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000013");
     public static final String ADDRESS_STREET_13 = "Goethestraße 45";
     public static final String ADDRESS_CITY_13 = "Frankfurt am Main";
     public static final String ADDRESS_PROVINCE_13 = "Hessen";
@@ -281,7 +283,7 @@ public class TestData {
     }
 
     // Test address 14
-    public static final String ADDRESS_ID_14 = "00550c43-b5c0-4951-9c29-000000000014";
+    public static final UUID ADDRESS_ID_14 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000014");
     public static final String ADDRESS_STREET_14 = "Lessingstraße 12";
     public static final String ADDRESS_CITY_14 = "Dresden";
     public static final String ADDRESS_PROVINCE_14 = "Sachsen";
@@ -298,7 +300,7 @@ public class TestData {
     }
 
     // Test address 15
-    public static final String ADDRESS_ID_15 = "00550c43-b5c0-4951-9c29-000000000015";
+    public static final UUID ADDRESS_ID_15 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000015");
     public static final String ADDRESS_STREET_15 = "Schillerstraße 9";
     public static final String ADDRESS_CITY_15 = "Mannheim";
     public static final String ADDRESS_PROVINCE_15 = "Baden-Württemberg";
@@ -315,7 +317,7 @@ public class TestData {
     }
 
     // Test address 16
-    public static final String ADDRESS_ID_16 = "00550c43-b5c0-4951-9c29-000000000016";
+    public static final UUID ADDRESS_ID_16 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000016");
     public static final String ADDRESS_STREET_16 = "Goethestraße 2";
     public static final String ADDRESS_CITY_16 = "München";
     public static final String ADDRESS_PROVINCE_16 = "Bayern";
@@ -332,7 +334,7 @@ public class TestData {
     }
 
     // Test address 17
-    public static final String ADDRESS_ID_17 = "00550c43-b5c0-4951-9c29-000000000017";
+    public static final UUID ADDRESS_ID_17 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000017");
     public static final String ADDRESS_STREET_17 = "Schlossallee 1";
     public static final String ADDRESS_CITY_17 = "Berlin";
     public static final String ADDRESS_PROVINCE_17 = "Berlin";
@@ -349,7 +351,7 @@ public class TestData {
     }
 
     // Test address 18
-    public static final String ADDRESS_ID_18 = "00550c43-b5c0-4951-9c29-000000000018";
+    public static final UUID ADDRESS_ID_18 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000018");
     public static final String ADDRESS_STREET_18 = "Parkstraße 6";
     public static final String ADDRESS_CITY_18 = "Potsdam";
     public static final String ADDRESS_PROVINCE_18 = "Brandenburg";
@@ -366,7 +368,7 @@ public class TestData {
     }
 
     // Test address 19 (Bonus: Museumstraße)
-    public static final String ADDRESS_ID_19 = "00550c43-b5c0-4951-9c29-000000000019";
+    public static final UUID ADDRESS_ID_19 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000019");
     public static final String ADDRESS_STREET_19 = "Museumstraße 5";
     public static final String ADDRESS_CITY_19 = "Bonn";
     public static final String ADDRESS_PROVINCE_19 = "Nordrhein-Westfalen";
@@ -384,31 +386,31 @@ public class TestData {
 
 
     // Default test project
-    public static final String PROJECT_ID = TestData.PROJECT_ID_1;
+    public static final UUID PROJECT_ID = TestData.PROJECT_ID_1;
     public static final String PROJECT_TITLE = TestData.PROJECT_TITLE_1;
     
     // Test project 1
-    public static final String PROJECT_ID_1 = "b9440c43-b5c0-4951-9c28-000000000001";
+    public static final UUID PROJECT_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000001");
     public static final String PROJECT_TITLE_1 = "Wohnpark am Nieder Neuendorfer See";
 
     // Test project 2
-    public static final String PROJECT_ID_2 = "b9440c43-b5c0-4951-9c28-000000000002";
+    public static final UUID PROJECT_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000002");
     public static final String PROJECT_TITLE_2 = "Mehrfamilienhaus in Friedrichshain";
 
     // Test project 3
-    public static final String PROJECT_ID_3 = "b9440c43-b5c0-4951-9c28-000000000003";
+    public static final UUID PROJECT_ID_3 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000003");
     public static final String PROJECT_TITLE_3 = "Häuser der Familie Müller";
 
     // Test project 4
-    public static final String PROJECT_ID_4 = "b9440c43-b5c0-4951-9c28-000000000004";
+    public static final UUID PROJECT_ID_4 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000004");
     public static final String PROJECT_TITLE_4 = "Schall und Rauch GmbH & Co. KG";
 
     // Test project 5
-    public static final String PROJECT_ID_5 = "b9440c43-b5c0-4951-9c28-000000000005";
+    public static final UUID PROJECT_ID_5 = UUID.fromString("b9440c43-b5c0-4951-9c28-000000000005");
     public static final String PROJECT_TITLE_5 = "Eigentümergemeinschaft Bundesallee 88 / Berliner Straße 69";
 
     // Default test property
-    public static final String PROPERTY_ID = TestData.PROPERTY_ID_1;
+    public static final UUID PROPERTY_ID = TestData.PROPERTY_ID_1;
     public static final String PROPERTY_TITLE = TestData.PROPERTY_TITLE_1;
     public static final String PROPERTY_LOCATION = TestData.PROPERTY_LOCATION_1;
     public static final String PROPERTY_DESCRIPTION = TestData.PROPERTY_DESCRIPTION_1;
@@ -426,7 +428,7 @@ public class TestData {
     }
     
     // Test property 1
-    public static final String PROPERTY_ID_1 = "b9440c43-b5c0-4951-9c27-000000000001";
+    public static final UUID PROPERTY_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c27-000000000001");
     public static final String PROPERTY_TITLE_1 = "Kleinesiedlung";
     public static final String PROPERTY_LOCATION_1 = ADDRESS_STREET_18
         + ", " + ADDRESS_ZIP_18 + " " + ADDRESS_CITY_18;
@@ -443,7 +445,6 @@ public class TestData {
     public static final ImmutablePropertyJson.Builder propertyBuilder1() {
         return ImmutablePropertyJson
             .builder()
-            .id(PROPERTY_ID_1)
             .title(PROPERTY_TITLE_1)
             .location(PROPERTY_LOCATION_1)
             .description(PROPERTY_DESCRIPTION_1)
@@ -458,7 +459,7 @@ public class TestData {
     }
 
     // Test property 2
-    public static final String PROPERTY_ID_2 = "8b4f2703-94ca-490f-ae08-a787c716415f";
+    public static final UUID PROPERTY_ID_2 = UUID.fromString("8b4f2703-94ca-490f-ae08-a787c716415f");
     public static final String PROPERTY_TITLE_2 = "Test-Siedling Bremen";
     public static final String PROPERTY_LOCATION_2 = ADDRESS_STREET_19
         + ", " + ADDRESS_ZIP_19 + " " + ADDRESS_CITY_19;
@@ -473,7 +474,7 @@ public class TestData {
     public static final Integer PROPERTY_PLOT_AREA_2 = 4444;
 
     // Default test site
-    public static final String SITE_ID = TestData.SITE_ID_1;
+    public static final UUID SITE_ID = TestData.SITE_ID_1;
     public static final String SITE_TITLE = TestData.SITE_TITLE_1;
     public static final String SITE_DESCRIPTION = TestData.SITE_DESCRIPTION_1;
     public static final Float SITE_OUTDOOR_AREA = TestData.SITE_OUTDOOR_AREA_1;
@@ -483,7 +484,7 @@ public class TestData {
     }
 
     // Test site 1
-    public static final String SITE_ID_1 = "b9440c43-b5c0-4951-9c26-000000000001";
+    public static final UUID SITE_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c26-000000000001");
     public static final String SITE_TITLE_1 = "PKW Stellplatz";
     public static final String SITE_DESCRIPTION_1 = "Stellplatz mit Carport";
     public static final Float SITE_OUTDOOR_AREA_1 = 13.4f;
@@ -491,14 +492,13 @@ public class TestData {
     public static final ImmutableSiteJson.Builder siteBuilder1() {
         return ImmutableSiteJson
             .builder()
-            .id(SITE_ID_1)
             .title(SITE_TITLE_1)
             .description(SITE_DESCRIPTION_1)
             .outdoorArea(SITE_OUTDOOR_AREA_1);
     }
 
     // Default test building
-    public static final String BUILDING_ID = TestData.BUILDING_ID_1;
+    public static final UUID BUILDING_ID = TestData.BUILDING_ID_1;
     public static final String BUILDING_TITLE = TestData.BUILDING_TITLE_1;
     public static final String BUILDING_DESCRIPTION = TestData.BUILDING_DESCRIPTION_1;
     public static final Float BUILDING_LIVING_SPACE = TestData.BUILDING_LIVING_SPACE_1;
@@ -510,7 +510,7 @@ public class TestData {
     }
 
     // Test building 1
-    public static final String BUILDING_ID_1 = "b9440c43-b5c0-4951-9c25-000000000001";
+    public static final UUID BUILDING_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c25-000000000001");
     public static final String BUILDING_TITLE_1 = "Maximiliankorso (Fam. Rudolf)";
     public static final String BUILDING_DESCRIPTION_1 = "Flachbau mit zwei Stockwerken";
     public static final Float BUILDING_LIVING_SPACE_1 = 87.46f;
@@ -520,16 +520,15 @@ public class TestData {
     public static final ImmutableBuildingJson.Builder buildingBuilder1() {
         return ImmutableBuildingJson
             .builder()
-            .id(TestData.BUILDING_ID_1)
-            .title(TestData.BUILDING_TITLE_1)
-            .description(TestData.BUILDING_DESCRIPTION_1)
-            .livingSpace(TestData.BUILDING_LIVING_SPACE_1)
-            .usableSpace(TestData.BUILDING_USABLE_SPACE_1)
-            .heatingSpace(TestData.BUILDING_HEATING_SPACE_1);
+            .title(BUILDING_TITLE_1)
+            .description(BUILDING_DESCRIPTION_1)
+            .livingSpace(BUILDING_LIVING_SPACE_1)
+            .usableSpace(BUILDING_USABLE_SPACE_1)
+            .heatingSpace(BUILDING_HEATING_SPACE_1);
     }
       
     // Test building 2
-    public static final String BUILDING_ID_2 = "b9440c43-b5c0-4951-9c25-000000000002";
+    public static final UUID BUILDING_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c25-000000000002");
     public static final String BUILDING_TITLE_2 = "Bavariaplatz (Fam. Müller)";
     public static final String BUILDING_DESCRIPTION_2 = "Einfamilienhaus mit Garten";
     public static final Float BUILDING_GROSS_FLOOR_AREA_2 = 430.5f;
@@ -540,17 +539,16 @@ public class TestData {
     public static final ImmutableBuildingJson.Builder buildingBuilder2() {
         return ImmutableBuildingJson
             .builder()
-            .id(TestData.BUILDING_ID_2)
-            .title(TestData.BUILDING_TITLE_2)
-            .description(TestData.BUILDING_DESCRIPTION_2)
-            .grossFloorArea(TestData.BUILDING_GROSS_FLOOR_AREA_2)
-            .netFloorArea(TestData.BUILDING_NET_FLOOR_AREA_2)
-            .constructionFloorArea(TestData.BUILDING_CONSTRUCTION_FLOOR_AREA_2)
-            .heatingSpace(TestData.BUILDING_HEATING_SPACE_2);
+            .title(BUILDING_TITLE_2)
+            .description(BUILDING_DESCRIPTION_2)
+            .grossFloorArea(BUILDING_GROSS_FLOOR_AREA_2)
+            .netFloorArea(BUILDING_NET_FLOOR_AREA_2)
+            .constructionFloorArea(BUILDING_CONSTRUCTION_FLOOR_AREA_2)
+            .heatingSpace(BUILDING_HEATING_SPACE_2);
     }
 
     // Default test apartment
-    public static final String APARTMENT_ID = TestData.APARTMENT_ID_1;
+    public static final UUID APARTMENT_ID = TestData.APARTMENT_ID_1;
     public static final String APARTMENT_TITLE = TestData.APARTMENT_TITLE_1;
     public static final String APARTMENT_LOCATION = TestData.APARTMENT_LOCATION_1;
     public static final String APARTMENT_DESCRIPTION = TestData.APARTMENT_DESCRIPTION_1;
@@ -563,7 +561,7 @@ public class TestData {
     }
     
     // Test apartment 1
-    public static final String APARTMENT_ID_1 = "b9440c43-b5c0-4951-9c24-000000000001";
+    public static final UUID APARTMENT_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c24-000000000001");
     public static final String APARTMENT_TITLE_1 = "2 Zimmerwohnung 1.OG rechts";
     public static final String APARTMENT_LOCATION_1 = "1. OG rechts";
     public static final String APARTMENT_DESCRIPTION_1 = "Frisch renoviert, Fliesen im Flur, Parkett im Wohnzimmer";
@@ -574,7 +572,6 @@ public class TestData {
     public static final ImmutableApartmentJson.Builder apartmentBuilder1() {
         return ImmutableApartmentJson
         .builder()
-        .id(APARTMENT_ID_1)
         .title(APARTMENT_TITLE_1)
         .location(APARTMENT_LOCATION_1)
         .description(APARTMENT_DESCRIPTION_1)
@@ -584,7 +581,7 @@ public class TestData {
     }
 
     // Test apartment 2
-    public static final String APARTMENT_ID_2 = "b9440c43-b5c0-4951-9c24-000000000002";
+    public static final UUID APARTMENT_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c24-000000000002");
     public static final String APARTMENT_TITLE_2 = "3 Zimmerwohnung 1.OG links";
     public static final String APARTMENT_LOCATION_2 = "1. OG links";
     public static final String APARTMENT_DESCRIPTION_2 = "2015 renoviert, Fliesen im Flur, Laminat im Wohnzimmer";
@@ -595,7 +592,6 @@ public class TestData {
     public static final ImmutableApartmentJson.Builder apartmentBuilder2() {
         return ImmutableApartmentJson
         .builder()
-        .id(APARTMENT_ID_2)
         .title(APARTMENT_TITLE_2)
         .location(APARTMENT_LOCATION_2)
         .description(APARTMENT_DESCRIPTION_2)
@@ -605,7 +601,7 @@ public class TestData {
     }
 
     // Default test commercial
-    public static final String COMMERCIAL_ID = TestData.COMMERCIAL_ID_1;
+    public static final UUID COMMERCIAL_ID = TestData.COMMERCIAL_ID_1;
     public static final String COMMERCIAL_TITLE = TestData.COMMERCIAL_TITLE_1;
     public static final String COMMERCIAL_LOCATION = TestData.COMMERCIAL_LOCATION_1;
     public static final String COMMERCIAL_DESCRIPTION = TestData.COMMERCIAL_DESCRIPTION_1;
@@ -617,7 +613,7 @@ public class TestData {
     }
 
     // Test commercial 1
-    public static final String COMMERCIAL_ID_1 = "b9440c43-b5c0-4951-9c23-000000000001";
+    public static final UUID COMMERCIAL_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c23-000000000001");
     public static final String COMMERCIAL_TITLE_1 = "Bäckerei Lempke";
     public static final String COMMERCIAL_LOCATION_1 = "EG links";
     public static final String COMMERCIAL_DESCRIPTION_1 = "Bäckerei mit Tischen vor dem Haus";
@@ -627,7 +623,6 @@ public class TestData {
     public static final ImmutableCommercialJson.Builder commercialBuilder1() {
         return ImmutableCommercialJson
         .builder()
-        .id(COMMERCIAL_ID_1)
         .title(COMMERCIAL_TITLE_1)
         .location(COMMERCIAL_LOCATION_1)
         .description(COMMERCIAL_DESCRIPTION_1)
@@ -635,8 +630,8 @@ public class TestData {
         .heatingSpace(COMMERCIAL_HEATING_SPACE_1);
     }
 
-    // Test commercial 1
-    public static final String COMMERCIAL_ID_2 = "b9440c43-b5c0-4951-9c23-000000000002";
+    // Test commercial 2
+    public static final UUID COMMERCIAL_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c23-000000000002");
     public static final String COMMERCIAL_TITLE_2 = "Bäckerei Ekpmel";
     public static final String COMMERCIAL_LOCATION_2 = "EG rechts";
     public static final String COMMERCIAL_DESCRIPTION_2 = "Bäckerei mit Tischen hinter dem Haus";
@@ -648,7 +643,6 @@ public class TestData {
     public static final ImmutableCommercialJson.Builder commercialBuilder2() {
         return ImmutableCommercialJson
                 .builder()
-                .id(COMMERCIAL_ID_2)
                 .title(COMMERCIAL_TITLE_2)
                 .location(COMMERCIAL_LOCATION_2)
                 .description(COMMERCIAL_DESCRIPTION_2)
@@ -658,8 +652,8 @@ public class TestData {
                 .heatingSpace(COMMERCIAL_HEATING_SPACE_2);
     }
 
-    // Default test STORAGE
-    public static final String STORAGE_ID = TestData.STORAGE_ID_1;
+    // Default test storage
+    public static final UUID STORAGE_ID = TestData.STORAGE_ID_1;
     public static final String STORAGE_TITLE = TestData.STORAGE_TITLE_1;
     public static final String STORAGE_LOCATION = TestData.STORAGE_LOCATION_1;
     public static final String STORAGE_DESCRIPTION = TestData.STORAGE_DESCRIPTION_1;
@@ -670,8 +664,8 @@ public class TestData {
         return storageBuilder1();
     }
 
-    // Test STORAGE 1
-    public static final String STORAGE_ID_1 = "b9440c43-b5c0-4951-9c22-000000000001";
+    // Test storage 1
+    public static final UUID STORAGE_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c22-000000000001");
     public static final String STORAGE_TITLE_1 = "Tiefgarage 1";
     public static final String STORAGE_LOCATION_1 = "1";
     public static final String STORAGE_DESCRIPTION_1 = "Tiefgarage 1 links";
@@ -681,15 +675,14 @@ public class TestData {
     public static final ImmutableStorageJson.Builder storageBuilder1() {
         return ImmutableStorageJson
         .builder()
-        .id(STORAGE_ID_1)
         .title(STORAGE_TITLE_1)
         .location(STORAGE_LOCATION_1)
         .description(STORAGE_DESCRIPTION_1)
         .usableSpace(STORAGE_USABLE_SPACE_1);
     }
 
-    // Test STORAGE 2
-    public static final String STORAGE_ID_2 = "b9440c43-b5c0-4951-9c22-000000000002";
+    // Test storage 2
+    public static final UUID STORAGE_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c22-000000000002");
     public static final String STORAGE_TITLE_2 = "Tiefgarage 2";
     public static final String STORAGE_LOCATION_2 = "2";
     public static final String STORAGE_DESCRIPTION_2 = "Tiefgarage 2 rechts";
@@ -699,7 +692,6 @@ public class TestData {
     public static final ImmutableStorageJson.Builder storageBuilder2() {
         return ImmutableStorageJson
         .builder()
-        .id(STORAGE_ID_2)
         .title(STORAGE_TITLE_2)
         .location(STORAGE_LOCATION_2)
         .description(STORAGE_DESCRIPTION_2)
@@ -707,7 +699,7 @@ public class TestData {
     }
 
     // Default test tenancy
-    public static final String TENANCY_ID = TestData.TENANCY_ID_1;
+    public static final UUID TENANCY_ID = TestData.TENANCY_ID_1;
     public static final String TENANCY_START = TestData.TENANCY_START_1;
     public static final String TENANCY_END = TestData.TENANCY_END_1;
 
@@ -716,24 +708,23 @@ public class TestData {
     }
 
     // Test tenancy 1
-    public static final String TENANCY_ID_1 = "aaaaac43-b5c0-4951-9c22-000000000001";
+    public static final UUID TENANCY_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
     public static final String TENANCY_START_1 = "2007-12-01";
     public static final String TENANCY_END_1 = "2025-01-30";
 
     // Test tenancy 2
-    public static final String TENANCY_ID_2 = "bbbbbc43-b5c0-4951-9c22-000000000002";
+    public static final UUID TENANCY_ID_2 = UUID.fromString("bbbbbc43-b5c0-4951-9c22-000000000002");
     public static final String TENANCY_START_2 = "2010-05-15";
     public static final String TENANCY_END_2 = "2030-04-23";
 
     // Test tenancy 3
-    public static final String TENANCY_ID_3 = "cccccc43-b5c0-4951-9c22-000000000003";
+    public static final UUID TENANCY_ID_3 = UUID.fromString("cccccc43-b5c0-4951-9c22-000000000003");
     public static final String TENANCY_START_3 = "2016-07-01";
     public static final String TENANCY_END_3 = "2022-12-31";
 
     public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
         return ImmutableTenancyJson
                 .builder()
-                .id(TENANCY_ID_1)
                 .startOfRental(LocalDate.parse(TENANCY_START_1))
                 .endOfRental(LocalDate.parse(TENANCY_END_1));
     }
@@ -741,7 +732,6 @@ public class TestData {
     public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
         return ImmutableTenancyJson
                 .builder()
-                .id(TENANCY_ID_2)
                 .startOfRental(LocalDate.parse(TENANCY_START_2))
                 .endOfRental(LocalDate.parse(TENANCY_END_2));
     }
@@ -781,8 +771,6 @@ public class TestData {
         + "Vielen Dank im Voraus.\\n"
         + "\\n"
         + "Mit freundlichen Grüßen";
-
-
 
 
 }

@@ -9,6 +9,7 @@ import io.smallrye.jwt.build.Jwt;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.UUID;
 
 public abstract class AbstractResourceTest extends AbstractTicketingTest {
 
@@ -18,7 +19,7 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
 
     private static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
 
-    protected Cookie buildCookie(final String userId, final String userEmail, final String userName,
+    protected Cookie buildCookie(final UUID userId, final String userEmail, final String userName,
                                  final Boolean active, final Map<String, String> projectRoles, final Duration ttl) {
         long exp = (System.currentTimeMillis() / 1000) + ttl.getSeconds();
 
