@@ -58,7 +58,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 Map.of(UUID.fromString(TicketingTestData.USER_ID_1.toString()), "INITIATOR",
                     UUID.fromString(TicketingTestData.USER_ID_2.toString()), "HANDLER"));
         assertNotNull(session, "Session should be created");
-        assertEquals(TicketingTestData.PROJECT_ID.toString(), session.getProjectId(), "Project ID should match");
+        assertEquals(TicketingTestData.PROJECT_ID, session.getProjectId(), "Project ID should match");
         assertEquals(TASK_ID, session.getTaskId(), "Task ID should match");
         assertEquals(2, session.getParticipants().size(),
                 "Participants should match the initial value");
