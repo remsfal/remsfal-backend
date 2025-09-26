@@ -37,8 +37,8 @@ class CommercialRepositoryTest extends AbstractServiceTest {
     @BeforeEach
     public void setupCommercials() {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?, ?)")
-                .setParameter(1, TestData.PROJECT_ID.toString())
+                .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?, ?)")
+                .setParameter(1, convert(TestData.PROJECT_ID))
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
         propertyId = propertyController
@@ -54,10 +54,10 @@ class CommercialRepositoryTest extends AbstractServiceTest {
                 .getId();
         assertNotNull(buildingId);
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
-                .setParameter(1, TestData.COMMERCIAL_ID.toString())
-                .setParameter(2, TestData.PROJECT_ID.toString())
-                .setParameter(3, buildingId)
+                .createNativeQuery("INSERT INTO commercials (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
+                .setParameter(1, convert(TestData.COMMERCIAL_ID))
+                .setParameter(2, convert(TestData.PROJECT_ID))
+                .setParameter(3, convert(buildingId))
                 .setParameter(4, TestData.COMMERCIAL_TITLE)
                 .executeUpdate());
     }

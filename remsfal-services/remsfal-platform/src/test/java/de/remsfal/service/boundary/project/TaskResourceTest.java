@@ -193,7 +193,7 @@ class TaskResourceTest extends AbstractResourceTest {
     void createTask_FAILED_userIsNotPrivileged() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
-            .setParameter(1, TestData.PROJECT_ID.toString())
+            .setParameter(1, convert(TestData.PROJECT_ID))
             .setParameter(2, TestData.USER_ID_2.toString())
             .setParameter(3, "STAFF")
             .executeUpdate());
@@ -313,9 +313,9 @@ class TaskResourceTest extends AbstractResourceTest {
     void getTasks_SUCCESS_myTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "OPEN")
             .setParameter(6, TestData.USER_ID_1.toString())
@@ -323,9 +323,9 @@ class TaskResourceTest extends AbstractResourceTest {
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
             .setParameter(6, TestData.USER_ID_2.toString())
@@ -351,9 +351,9 @@ class TaskResourceTest extends AbstractResourceTest {
     void getTasks_SUCCESS_openTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "CLOSED")
             .setParameter(6, TestData.USER_ID_1.toString())
@@ -361,9 +361,9 @@ class TaskResourceTest extends AbstractResourceTest {
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
             .setParameter(6, TestData.USER_ID_2.toString())
@@ -389,9 +389,9 @@ class TaskResourceTest extends AbstractResourceTest {
     void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "OPEN")
             .setParameter(6, TestData.USER_ID_1.toString())
@@ -399,9 +399,9 @@ class TaskResourceTest extends AbstractResourceTest {
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
             .setParameter(6, TestData.USER_ID_2.toString())
@@ -428,9 +428,9 @@ class TaskResourceTest extends AbstractResourceTest {
     void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "CLOSED")
             .setParameter(6, TestData.USER_ID_1.toString())
@@ -438,9 +438,9 @@ class TaskResourceTest extends AbstractResourceTest {
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .setParameter(1, convert(UUID.randomUUID()))
             .setParameter(2, type)
-            .setParameter(3, TestData.PROJECT_ID.toString())
+            .setParameter(3, convert(TestData.PROJECT_ID))
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
             .setParameter(6, TestData.USER_ID_2.toString())

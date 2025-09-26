@@ -150,7 +150,7 @@ class PropertyResourceTest extends AbstractResourceTest {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID_1.toString())
-            .setParameter(2, TestData.PROJECT_ID.toString())
+            .setParameter(2, convert(TestData.PROJECT_ID))
             .setParameter(3, TestData.PROPERTY_TITLE_1)
             .executeUpdate());
 
@@ -174,7 +174,7 @@ class PropertyResourceTest extends AbstractResourceTest {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID_1.toString())
-            .setParameter(2, TestData.PROJECT_ID.toString())
+            .setParameter(2, convert(TestData.PROJECT_ID))
             .setParameter(3, TestData.PROPERTY_TITLE_1)
             .executeUpdate());
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE_2 + "\","

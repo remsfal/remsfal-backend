@@ -66,12 +66,12 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
             TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
             TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
             TestData.PROPERTY_PLOT_2, TestData.PROPERTY_ECONOMY_TYPE_2, TestData.PROPERTY_PLOT_AREA_2);
-        insertProperty(UUID.randomUUID().toString(), TestData.PROJECT_ID_2, TestData.PROPERTY_TITLE_1,
+        insertProperty(convert(UUID.randomUUID()), TestData.PROJECT_ID_2, TestData.PROPERTY_TITLE_1,
             TestData.PROPERTY_LOCATION_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_LAND_REGISTRY_2,
             TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
             TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
             TestData.PROPERTY_PLOT_2, TestData.PROPERTY_ECONOMY_TYPE_2, TestData.PROPERTY_PLOT_AREA_2);
-        insertProperty(UUID.randomUUID().toString(), TestData.PROJECT_ID_3, TestData.PROPERTY_TITLE_2,
+        insertProperty(convert(UUID.randomUUID()), TestData.PROJECT_ID_3, TestData.PROPERTY_TITLE_2,
             TestData.PROPERTY_LOCATION_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_LAND_REGISTRY_2,
             TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
             TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
@@ -98,13 +98,13 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
             null, null, null, null, null, null, TestData.ADDRESS_ID_7);
         insertAddress(TestData.ADDRESS_ID_8.toString(), TestData.ADDRESS_STREET_8, TestData.ADDRESS_CITY_8,
             TestData.ADDRESS_PROVINCE_8, TestData.ADDRESS_ZIP_8, TestData.ADDRESS_COUNTRY_8);
-        insertBuilding(UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
+        insertBuilding(convert(UUID.randomUUID()), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
             TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1,
             null, null, null, TestData.BUILDING_LIVING_SPACE_1,
             TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_8);
         insertAddress(TestData.ADDRESS_ID_9.toString(), TestData.ADDRESS_STREET_9, TestData.ADDRESS_CITY_9,
             TestData.ADDRESS_PROVINCE_9, TestData.ADDRESS_ZIP_9, TestData.ADDRESS_COUNTRY_9);
-        insertBuilding(UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
+        insertBuilding(convert(UUID.randomUUID()), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
             TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2,
             TestData.BUILDING_GROSS_FLOOR_AREA_2, TestData.BUILDING_NET_FLOOR_AREA_2,
             TestData.BUILDING_CONSTRUCTION_FLOOR_AREA_2, null, null, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_9);

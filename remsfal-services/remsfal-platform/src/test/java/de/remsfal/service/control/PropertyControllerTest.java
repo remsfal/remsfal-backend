@@ -191,8 +191,8 @@ class PropertyControllerTest extends AbstractServiceTest {
     void getProperty_SUCCESS_propertyRetrieved() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID.toString())
-            .setParameter(2, TestData.PROJECT_ID.toString())
+            .setParameter(1, convert(TestData.PROPERTY_ID))
+            .setParameter(2, convert(TestData.PROJECT_ID))
             .setParameter(3, TestData.PROPERTY_TITLE)
             .setParameter(4, TestData.PROPERTY_LAND_REGISTRY)
             .setParameter(5, TestData.PROPERTY_DESCRIPTION)
@@ -212,7 +212,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     void getProperty_FAILED_wrongProjectId() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID.toString())
+            .setParameter(1, convert(TestData.PROPERTY_ID))
             .setParameter(2, TestData.PROJECT_ID_1.toString())
             .setParameter(3, TestData.PROPERTY_TITLE)
             .setParameter(4, TestData.PROPERTY_LAND_REGISTRY)

@@ -245,7 +245,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .patch(BASE_PATH + "/" + UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .patch(BASE_PATH + "/" + convert(UUID.randomUUID()), TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
