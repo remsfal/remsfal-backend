@@ -12,11 +12,11 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "BUILDING_RENT")
+@Table(name = "building_rents")
 public class BuildingRentEntity extends RentEntity {
 
     @Id
-    @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String buildingId;
 
     public String getBuildingId() {

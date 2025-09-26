@@ -9,11 +9,11 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.4-tenancy" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="TENANCY">
-            <column name="ID" type="char(36)">
+        <createTable tableName="tenancies">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="START_OF_RENTAL" type="date" />
@@ -27,15 +27,15 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_TENANCY_PROJECT_ID"
-            baseTableName="TENANCY" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="tenancies" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createTable tableName="TENANT">
-            <column name="TENANCY_ID" type="char(36)">
+        <createTable tableName="tenants">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="USER_ID" type="char(36)">
+            <column name="USER_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
@@ -46,26 +46,26 @@
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="TENANT" constraintName="PK_TENANT"
+        <addPrimaryKey tableName="tenants" constraintName="PK_TENANT"
                 columnNames="TENANCY_ID,USER_ID"/>
 
         <addForeignKeyConstraint constraintName="FK_TENANT_TENANCY_ID"
-            baseTableName="TENANT" baseColumnNames="TENANCY_ID"
-            referencedTableName="TENANCY" referencedColumnNames="ID"
+            baseTableName="tenants" baseColumnNames="TENANCY_ID"
+            referencedTableName="tenancies" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_TENANT_USER_ID"
-            baseTableName="TENANT" baseColumnNames="USER_ID"
-            referencedTableName="USER" referencedColumnNames="ID"
+            baseTableName="tenants" baseColumnNames="USER_ID"
+            referencedTableName="users" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.4-property" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="PROPERTY">
-            <column name="ID" type="char(36)">
+        <createTable tableName="properties">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="TITLE" type="varchar(255)">
@@ -90,25 +90,25 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_PROPERTY_PROJECT_ID"
-            baseTableName="PROPERTY" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="properties" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROJECT_FK" tableName="PROPERTY">
-            <column name="PROJECT_ID" type="char(36)" />
+        <createIndex indexName="IDX_PROPERTY_PROJECT_FK" tableName="properties">
+            <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
-        <createTable tableName="PROPERTY_RENT">
-            <column name="TENANCY_ID" type="char(36)">
+        <createTable tableName="property_rents">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="PROPERTY_ID" type="char(36)">
+            <column name="PROPERTY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
             <column name="LAST_PAYMENT" type="date" />
-            <column name="BILLING_CYCLE" type="ENUM('WEEKLY', 'MONTHLY', 'YEARLY')" defaultValue="MONTHLY">
-                <constraints nullable="false" />
+            <column name="BILLING_CYCLE" type="varchar(20)" defaultValue="MONTHLY">
+                <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
             </column>
             <column name="BASIC_RENT" type="decimal(10, 2)" />
             <column name="OPERATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
@@ -122,17 +122,17 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_PROPERTY_RENT_TENANCY_ID"
-            baseTableName="PROPERTY_RENT" baseColumnNames="TENANCY_ID"
-            referencedTableName="TENANCY" referencedColumnNames="ID"
+            baseTableName="property_rents" baseColumnNames="TENANCY_ID"
+            referencedTableName="tenancies" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_PROPERTY_RENT_PROPERTY_ID"
-            baseTableName="PROPERTY_RENT" baseColumnNames="PROPERTY_ID"
-            referencedTableName="PROPERTY" referencedColumnNames="ID"
+            baseTableName="property_rents" baseColumnNames="PROPERTY_ID"
+            referencedTableName="properties" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TENANCY_FK" tableName="PROPERTY_RENT">
-            <column name="TENANCY_ID" type="char(36)" />
+        <createIndex indexName="IDX_PROPERTY_RENT_TENANCY_FK" tableName="property_rents">
+            <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

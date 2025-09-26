@@ -20,7 +20,7 @@ import jakarta.persistence.MappedSuperclass;
 public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Id
-    @Column(name = "TENANCY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "TENANCY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String tenancyId;
 
     @Id
@@ -34,13 +34,13 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
     @Enumerated(EnumType.STRING)
     private BillingCycle billingCycle;
 
-    @Column(name = "BASIC_RENT", columnDefinition = "decimal", precision=6, scale=2)
+    @Column(name = "BASIC_RENT", columnDefinition = "numeric(6,2)", precision=6, scale=2)
     private BigDecimal basicRent;
 
-    @Column(name = "OPERATING_COSTS_PREPAYMENT", columnDefinition = "decimal", precision=6, scale=2)
+    @Column(name = "OPERATING_COSTS_PREPAYMENT", columnDefinition = "numeric(6,2)", precision=6, scale=2)
     private BigDecimal operatingCostsPrepayment;
 
-    @Column(name = "HEATING_COSTS_PREPAYMENT", columnDefinition = "decimal",  precision=6, scale=2)
+    @Column(name = "HEATING_COSTS_PREPAYMENT", columnDefinition = "numeric(6,2)",  precision=6, scale=2)
     private BigDecimal heatingCostsPrepayment;
 
     public String getTenancyId() {

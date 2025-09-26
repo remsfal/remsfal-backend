@@ -16,7 +16,7 @@ import java.util.Set;
  * Entity class for a contractor.
  */
 @Entity
-@Table(name = "CONTRACTOR")
+@Table(name = "contractors")
 @NamedQuery(name = "ContractorEntity.findByProjectId",
     query = "SELECT c FROM ContractorEntity c WHERE c.project.id = :projectId")
 @NamedQuery(name = "ContractorEntity.countByProjectId",
@@ -24,7 +24,7 @@ import java.util.Set;
 public class ContractorEntity extends AbstractEntity implements ContractorModel {
 
     @ManyToOne
-    @JoinColumn(name = "PROJECT_ID", columnDefinition = "char")
+    @JoinColumn(name = "PROJECT_ID", columnDefinition = "uuid")
     private ProjectEntity project;
 
     @Column(name = "COMPANY_NAME", nullable = false)

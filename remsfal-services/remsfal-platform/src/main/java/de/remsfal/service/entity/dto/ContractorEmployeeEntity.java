@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
  * Entity class for a contractor employee.
  */
 @Entity
-@Table(name = "CONTRACTOR_EMPLOYEE")
+@Table(name = "contractor_employees")
 @NamedQuery(name = "ContractorEmployeeEntity.findByContractorId",
     query = "SELECT e FROM ContractorEmployeeEntity e WHERE e.contractor.id = :contractorId")
 public class ContractorEmployeeEntity extends MetaDataEntity implements ContractorEmployeeModel {
@@ -26,12 +26,12 @@ public class ContractorEmployeeEntity extends MetaDataEntity implements Contract
 
     @ManyToOne
     @MapsId("contractorId")
-    @JoinColumn(name = "CONTRACTOR_ID", columnDefinition = "char")
+    @JoinColumn(name = "CONTRACTOR_ID", columnDefinition = "uuid")
     private ContractorEntity contractor;
 
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "USER_ID", columnDefinition = "char")
+    @JoinColumn(name = "USER_ID", columnDefinition = "uuid")
     private UserEntity user;
 
     @Column(name = "RESPONSIBILITY")

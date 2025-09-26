@@ -42,15 +42,15 @@ class SiteResourceTest extends AbstractResourceTest {
     void createSite_SUCCESS_propertyIsCreated(final String json) {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
-            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID)
-                .replace("{propertyId}", TestData.PROPERTY_ID) + "/"))
+            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID.toString())
+                .replace("{propertyId}", TestData.PROPERTY_ID.toString()) + "/"))
             .and().body("id", Matchers.notNullValue())
             .and().body("title", Matchers.equalTo(TestData.SITE_TITLE));
 
@@ -65,10 +65,10 @@ class SiteResourceTest extends AbstractResourceTest {
     void createSite_FAILED_noTitle() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode())
             .body("parameterViolations.path", Matchers.hasItem("createSite.site.title"));
@@ -78,15 +78,15 @@ class SiteResourceTest extends AbstractResourceTest {
     void createSite_SUCCESS_noAddress() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\"" + TestData.SITE_TITLE + "\"}")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
-            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID)
-                .replace("{propertyId}", TestData.PROPERTY_ID) + "/"))
+            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID.toString())
+                .replace("{propertyId}", TestData.PROPERTY_ID.toString()) + "/"))
             .and().body("id", Matchers.notNullValue())
             .and().body("title", Matchers.equalTo(TestData.SITE_TITLE));
     }
@@ -97,10 +97,10 @@ class SiteResourceTest extends AbstractResourceTest {
             + "\"id\":\"" + TestData.SITE_ID + "\"}";
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode())
             .body("parameterViolations.path", Matchers.hasItem("createSite.site.id"));
@@ -112,12 +112,12 @@ class SiteResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(TestData.SITE_ID))
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.SITE_TITLE))
             .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET_5))
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY_5))
@@ -135,15 +135,15 @@ class SiteResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(BASE_PATH + "/{siteId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
     }
@@ -159,14 +159,14 @@ class SiteResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .patch(BASE_PATH + "/{siteId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(TestData.SITE_ID))
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.BUILDING_TITLE))
             .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET_6))
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY_6))
@@ -178,12 +178,12 @@ class SiteResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(TestData.SITE_ID))
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.BUILDING_TITLE))
             .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET_6))
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY_6))
@@ -213,14 +213,14 @@ class SiteResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .patch(BASE_PATH + "/{siteId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(TestData.SITE_ID))
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.SITE_TITLE))
             .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET_5))
             .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY_5))
@@ -249,12 +249,12 @@ class SiteResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.SITE_ID)
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/{siteId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(TestData.SITE_ID))
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID.toString()))
             // TODO
 //            .and().body("tenancy.id", Matchers.notNullValue())
 //            .and().body("tenancy.startOfRental", Matchers.equalTo(TestData.TENANCY_START))
@@ -280,26 +280,26 @@ class SiteResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID.toString(), TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
-            .and().body("id", Matchers.equalTo(TestData.SITE_ID));
+            .and().body("id", Matchers.equalTo(TestData.SITE_ID.toString()));
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"outdoorArea\":\"56.7\"}")
-            .patch("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
+            .patch("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID.toString(), TestData.SITE_ID)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .and().body("outdoorArea", Matchers.equalTo(56.7f));
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID, TestData.SITE_ID)
+            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete("/api/v1/projects/{projectId}/sites/{siteId}", TestData.PROJECT_ID.toString(), TestData.SITE_ID)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
     }

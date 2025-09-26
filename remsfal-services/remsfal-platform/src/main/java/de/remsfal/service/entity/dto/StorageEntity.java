@@ -13,16 +13,16 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "STORAGE")
+@Table(name = "storages")
 public class StorageEntity extends RentalUnitEntity implements StorageModel {
 
-    @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String buildingId;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
 

@@ -27,7 +27,7 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 @NamedQuery(name = "UserEntity.deleteById",
     query = "delete from UserEntity user where user.id = :id")
 @Entity
-@Table(name = "USER")
+@Table(name = "users")
 public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @Column(name = "TOKEN_ID", unique = true)
@@ -47,7 +47,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     private String lastName;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "ADDRESS_ID", referencedColumnName = "id")
+    @JoinColumn(name = "ADDRESS_ID", referencedColumnName = "id", columnDefinition = "uuid")
     private AddressEntity address;
 
     @Column(name = "MOBILE_PHONE_NUMBER")
