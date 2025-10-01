@@ -9,11 +9,11 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.2-address-validation" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="ADDRESS_VALIDATION">
+        <createTable tableName="address_validations">
             <column name="ID" type="int" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="COUNTRY" type="char(2)">
+            <column name="COUNTRY" type="varchar(2)">
                 <constraints nullable="false" />
             </column>
             <column name="PROVINCE" type="varchar(255)">
@@ -33,9 +33,9 @@
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="ADDRESS_VALIDATION" columnNames="COUNTRY,PROVINCE,CITY,ZIP" constraintName="UNIQUE_CITY_PER_ZIP" />
+        <addUniqueConstraint tableName="address_validations" columnNames="COUNTRY,PROVINCE,CITY,ZIP" constraintName="UNIQUE_CITY_PER_ZIP" />
 
-        <loadData tableName="ADDRESS_VALIDATION" file="META-INF/germany_city2zip.csv" separator=";" encoding="UTF-8">
+        <loadData tableName="address_validations" file="META-INF/germany_city2zip.csv" separator=";" encoding="UTF-8">
             <column header="osm_id" type="SKIP" />
             <column header="landkreis" type="SKIP" />
             <column name="COUNTRY" header="land" />
@@ -44,10 +44,10 @@
             <column name="ZIP" header="plz" />
         </loadData>
 
-        <createIndex indexName="IDX_CITY_LOOKUP" tableName="ADDRESS_VALIDATION">
+        <createIndex indexName="IDX_ADDRESS_VALIDATION_CITY_LOOKUP" tableName="address_validations">
             <column name="CITY" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ZIP_LOOKUP" tableName="ADDRESS_VALIDATION">
+        <createIndex indexName="IDX_ADDRESS_VALIDATION_ZIP_LOOKUP" tableName="address_validations">
             <column name="ZIP" type="varchar(255)" />
         </createIndex>
     </changeSet>

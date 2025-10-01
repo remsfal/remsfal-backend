@@ -29,7 +29,7 @@ import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
     query = "SELECT count(m) FROM ProjectMembershipEntity m WHERE m.user.id = :userId")
 @NamedQuery(name = "ProjectMembershipEntity.removeByProjectIdAndUserId",
     query = "DELETE FROM ProjectMembershipEntity m WHERE m.project.id = :projectId AND m.user.id = :userId")
-@Table(name = "PROJECT_MEMBERSHIP")
+@Table(name = "project_memberships")
 public class ProjectMembershipEntity extends MetaDataEntity implements ProjectMemberModel {
 
     @EmbeddedId
@@ -37,12 +37,12 @@ public class ProjectMembershipEntity extends MetaDataEntity implements ProjectMe
 
     @ManyToOne
     @MapsId("projectId")
-    @JoinColumn(name = "PROJECT_ID", columnDefinition = "char")
+    @JoinColumn(name = "PROJECT_ID", columnDefinition = "uuid")
     ProjectEntity project;
     
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "USER_ID", columnDefinition = "char")
+    @JoinColumn(name = "USER_ID", columnDefinition = "uuid")
     UserEntity user;
     
     @Column(name = "MEMBER_ROLE")

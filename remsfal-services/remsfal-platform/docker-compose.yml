@@ -1,12 +1,13 @@
 services:
-  mysql:
-    image: mysql:lts
-    container_name: mysql
+  postgres:
+    image: postgres:16
+    container_name: postgres
     environment:
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_DATABASE=REMSFAL
+      - POSTGRES_DB=REMSFAL
+      - POSTGRES_USER=remsfal
+      - POSTGRES_PASSWORD=remsfal
     ports:
-      - "3306:3306"
+      - "5432:5432"
 
   zeebe:
     image: camunda/zeebe:latest

@@ -11,10 +11,10 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "COMMERCIAL_RENT")
+@Table(name = "commercial_rents")
 public class CommercialRentEntity extends RentEntity {
 
-    @Column(name = "COMMERCIAL_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "COMMERCIAL_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String commercialId;
 
     public String getCommercialId() {

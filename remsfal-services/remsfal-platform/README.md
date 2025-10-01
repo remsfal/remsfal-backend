@@ -29,16 +29,18 @@ directly as JVM argument.
 Adjust the configuration for your database, don't use the provided ones in production!
 
 ```properties
-quarkus.datasource.username=root
-quarkus.datasource.jdbc.url=jdbc:mysql://localhost:3306/REMSFAL
+quarkus.datasource.username=remsfal
+quarkus.datasource.password=remsfal
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL
 quarkus.datasource.devservices.enabled=false
 ```
 
-Or use JVM agruments
+Or use JVM arguments
 
 ```sh
-java -Dquarkus.datasource.username=root \
-     -Dquarkus.datasource.jdbc.url=jdbc:mysql://localhost:3306/REMSFAL \
+java -Dquarkus.datasource.username=remsfal \
+     -Dquarkus.datasource.password=remsfal \
+     -Dquarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL \
      -Dquarkus.datasource.devservices.enabled=false \
      -jar remsfal-service/target/remsfal-service-runner.jar
 ```

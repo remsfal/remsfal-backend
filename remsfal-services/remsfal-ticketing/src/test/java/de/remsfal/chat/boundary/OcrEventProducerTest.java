@@ -45,7 +45,7 @@ class OcrEventProducerTest extends AbstractKafkaTest {
         FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
             .sessionId("123")
             .messageId("323")
-            .senderId(TestData.USER_ID)
+            .senderId(TestData.USER_ID.toString())
             .bucket(FileStorage.DEFAULT_BUCKET_NAME)
             .fileName("file")
             .build();
@@ -57,7 +57,7 @@ class OcrEventProducerTest extends AbstractKafkaTest {
         .assertThat()
             .json("sessionId", Matchers.equalTo("123"))
             .json("messageId", Matchers.equalTo("323"))
-            .json("senderId", Matchers.equalTo(TestData.USER_ID))
+            .json("senderId", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("bucket", Matchers.equalTo(FileStorage.DEFAULT_BUCKET_NAME))
             .json("fileName", Matchers.equalTo("file"));
     }

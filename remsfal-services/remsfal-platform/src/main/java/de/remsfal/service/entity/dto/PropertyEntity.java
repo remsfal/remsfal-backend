@@ -13,7 +13,7 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "PROPERTY")
+@Table(name = "properties")
 public class PropertyEntity extends RentalUnitEntity implements PropertyModel {
 
     @Column(name = "LAND_REGISTRY")

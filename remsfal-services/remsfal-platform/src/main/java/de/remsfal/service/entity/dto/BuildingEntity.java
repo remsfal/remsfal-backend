@@ -15,32 +15,32 @@ import java.util.Objects;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "BUILDING")
+@Table(name = "buildings")
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
-    @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String propertyId;
 
     @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID")
+    @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
     private AddressEntity address;
 
-    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float grossFloorArea;
 
-    @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "NET_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float netFloorArea;
 
-    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float constructionFloorArea;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
+    @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
     public String getPropertyId() {

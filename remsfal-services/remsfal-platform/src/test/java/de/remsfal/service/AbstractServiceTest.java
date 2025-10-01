@@ -1,6 +1,8 @@
 package de.remsfal.service;
 
+import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -33,7 +35,19 @@ public abstract class AbstractServiceTest extends AbstractTest {
             entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();
         });
     }
-    
+
+    // Pattern to detect UUID String values so we can convert them to java.util.UUID for DB insertion
+    private static final Pattern UUID_PATTERN = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+
+    protected Object convert(final Object value) {
+        if (value instanceof String s && s.length() == 36 && UUID_PATTERN.matcher(s).matches()) {
+            try {
+                return UUID.fromString(s);
+            } catch (IllegalArgumentException ignored) { /* fall through and return original */ }
+        }
+        return value;
+    }
+
     /**
      * Wrap a call in a database transaction.
      *

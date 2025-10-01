@@ -25,12 +25,12 @@ class ContractorEmployeeKeyTest {
         // Initialize key1
         key1 = new ContractorEmployeeKey();
         key1.setContractorId(CONTRACTOR_ID_1);
-        key1.setUserId(USER_ID_1);
+        key1.setUserId(USER_ID_1.toString());
 
         // Initialize key2 with same values as key1
         key2 = new ContractorEmployeeKey();
         key2.setContractorId(CONTRACTOR_ID_1);
-        key2.setUserId(USER_ID_1);
+        key2.setUserId(USER_ID_1.toString());
     }
 
     @Test
@@ -38,15 +38,15 @@ class ContractorEmployeeKeyTest {
     void testGettersAndSetters() {
         // Test getters
         assertEquals(CONTRACTOR_ID_1, key1.getContractorId());
-        assertEquals(USER_ID_1, key1.getUserId());
+        assertEquals(USER_ID_1.toString(), key1.getUserId());
 
         // Test setters by changing values
         key1.setContractorId(CONTRACTOR_ID_2);
-        key1.setUserId(USER_ID_2);
+        key1.setUserId(USER_ID_2.toString());
 
         // Verify changes
         assertEquals(CONTRACTOR_ID_2, key1.getContractorId());
-        assertEquals(USER_ID_2, key1.getUserId());
+        assertEquals(USER_ID_2.toString(), key1.getUserId());
     }
 
     @Test
@@ -67,7 +67,7 @@ class ContractorEmployeeKeyTest {
     @Test
     @DisplayName("Test equals with different userId")
     void testEqualsDifferentUserId() {
-        key2.setUserId(USER_ID_2);
+        key2.setUserId(USER_ID_2.toString());
         assertNotEquals(key1, key2);
         assertNotEquals(key1.hashCode(), key2.hashCode());
     }

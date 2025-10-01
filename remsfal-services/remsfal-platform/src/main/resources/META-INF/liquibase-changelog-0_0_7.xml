@@ -9,14 +9,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.7-apartment" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="APARTMENT">
-            <column name="ID" type="char(36)">
+        <createTable tableName="apartments">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="BUILDING_ID" type="char(36)">
+            <column name="BUILDING_ID" type="uuid">
                 <constraints nullable="false" />
              </column>
             <column name="TITLE" type="varchar(255)">
@@ -36,34 +36,34 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_PROJECT_ID"
-            baseTableName="APARTMENT" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="apartments" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_BUILDING_ID"
-            baseTableName="APARTMENT" baseColumnNames="BUILDING_ID"
-            referencedTableName="BUILDING" referencedColumnNames="ID"
+            baseTableName="apartments" baseColumnNames="BUILDING_ID"
+            referencedTableName="buildings" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROJECT_FK" tableName="APARTMENT">
-            <column name="PROJECT_ID" type="char(36)" />
+        <createIndex indexName="IDX_APARTMENT_PROJECT_FK" tableName="apartments">
+            <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_BUILDING_FK" tableName="APARTMENT">
-            <column name="BUILDING_ID" type="char(36)" />
+        <createIndex indexName="IDX_APARTMENT_BUILDING_FK" tableName="apartments">
+            <column name="BUILDING_ID" type="uuid" />
         </createIndex>
 
-        <createTable tableName="APARTMENT_RENT">
-            <column name="TENANCY_ID" type="char(36)">
+        <createTable tableName="apartment_rents">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="APARTMENT_ID" type="char(36)">
+            <column name="APARTMENT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
             <column name="LAST_PAYMENT" type="date" />
-            <column name="BILLING_CYCLE" type="ENUM('WEEKLY', 'MONTHLY', 'YEARLY')" defaultValue="MONTHLY">
-                <constraints nullable="false" />
+            <column name="BILLING_CYCLE" type="varchar(20)" defaultValue="MONTHLY">
+                <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
             </column>
             <column name="BASIC_RENT" type="decimal(10, 2)" />
             <column name="OPERATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
@@ -77,17 +77,17 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_RENT_TENANCY_ID"
-            baseTableName="APARTMENT_RENT" baseColumnNames="TENANCY_ID"
-            referencedTableName="TENANCY" referencedColumnNames="ID"
+            baseTableName="apartment_rents" baseColumnNames="TENANCY_ID"
+            referencedTableName="tenancies" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_APARTMENT_RENT_APARTMENT_ID"
-            baseTableName="APARTMENT_RENT" baseColumnNames="APARTMENT_ID"
-            referencedTableName="APARTMENT" referencedColumnNames="ID"
+            baseTableName="apartment_rents" baseColumnNames="APARTMENT_ID"
+            referencedTableName="apartments" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TENANCY_FK" tableName="APARTMENT_RENT">
-            <column name="TENANCY_ID" type="char(36)" />
+        <createIndex indexName="IDX_APARTMENT_RENT_TENANCY_FK" tableName="apartment_rents">
+            <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

@@ -16,17 +16,17 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "SITE")
+@Table(name = "sites")
 public class SiteEntity extends RentalUnitEntity implements SiteModel {
 
-    @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
+    @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
     private String propertyId;
 
     @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID")
+    @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
     private AddressEntity address;
 
-    @Column(name = "OUTDOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "OUTDOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float outdoorArea;
 
     public String getPropertyId() {

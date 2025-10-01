@@ -27,7 +27,7 @@ class CommercialControllerTest extends AbstractServiceTest {
     void setupTestProjects() {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
-                .setParameter(1, TestData.PROJECT_ID_1)
+                .setParameter(1, TestData.PROJECT_ID_1.toString())
                 .setParameter(2, TestData.PROJECT_TITLE_1)
                 .executeUpdate());
     }
@@ -35,12 +35,12 @@ class CommercialControllerTest extends AbstractServiceTest {
     @Test
     void createCommercial_SUCCESS_getCommercial() {
         final String propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(TestData.PROJECT_ID.toString(), TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final String buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(TestData.PROJECT_ID.toString(), propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -50,7 +50,7 @@ class CommercialControllerTest extends AbstractServiceTest {
 
         final CommercialModel commercial = TestData.commercialBuilder().build();
         final CommercialModel result = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
+                .createCommercial(TestData.PROJECT_ID.toString(), buildingId, commercial);
 
         assertNotEquals(commercial.getId(), result.getId());
         assertEquals(commercial.getTitle(), result.getTitle());
@@ -65,7 +65,7 @@ class CommercialControllerTest extends AbstractServiceTest {
         assertEquals(result.getId(), commercialId);
 
         final CommercialModel getResult = commercialController
-                .getCommercial(TestData.PROJECT_ID, commercialId);
+                .getCommercial(TestData.PROJECT_ID.toString(), commercialId);
 
         assertEquals(result, getResult);
     }
@@ -73,12 +73,12 @@ class CommercialControllerTest extends AbstractServiceTest {
     @Test
     void createCommercial_SUCCESS_deleteCommercial() {
         final String propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(TestData.PROJECT_ID.toString(), TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final String buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(TestData.PROJECT_ID.toString(), propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -88,7 +88,7 @@ class CommercialControllerTest extends AbstractServiceTest {
 
         final CommercialModel commercial = TestData.commercialBuilder().build();
         final CommercialModel result = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
+                .createCommercial(TestData.PROJECT_ID.toString(), buildingId, commercial);
 
         final String commercialId = entityManager
                 .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
@@ -96,19 +96,19 @@ class CommercialControllerTest extends AbstractServiceTest {
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
 
-        commercialController.deleteCommercial(TestData.PROJECT_ID, commercialId);
-        assertThrows(NotFoundException.class, () -> commercialController.getCommercial(TestData.PROJECT_ID, commercialId));
+        commercialController.deleteCommercial(TestData.PROJECT_ID.toString(), commercialId);
+        assertThrows(NotFoundException.class, () -> commercialController.getCommercial(TestData.PROJECT_ID.toString(), commercialId));
     }
 
     @Test
     void createCommercial_SUCCESS_updateCommercial() {
         final String propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(TestData.PROJECT_ID.toString(), TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final String buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(TestData.PROJECT_ID.toString(), propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -118,7 +118,7 @@ class CommercialControllerTest extends AbstractServiceTest {
 
         final CommercialModel commercial = TestData.commercialBuilder().build();
         final CommercialModel result = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
+                .createCommercial(TestData.PROJECT_ID.toString(), buildingId, commercial);
 
         assertNotNull(result.getId());
         assertEquals(commercial.getTitle(), result.getTitle());
