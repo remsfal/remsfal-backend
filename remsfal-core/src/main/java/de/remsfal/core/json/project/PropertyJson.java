@@ -37,6 +37,46 @@ public abstract class PropertyJson implements PropertyModel {
     @Override
     public abstract String getTitle();
 
+    @Nullable
+    @Override
+    public abstract String getLocation();
+
+    @Nullable
+    @Override
+    public abstract String getDescription();
+
+    @Nullable
+    @Override
+    public abstract String getLandRegistry();
+
+    @Nullable
+    @Override
+    public abstract String getCadastralDistrict();
+
+    @Nullable
+    @Override
+    public abstract String getSheetNumber();
+
+    @Nullable
+    @Override
+    public abstract Integer getPlotNumber();
+
+    @Nullable
+    @Override
+    public abstract String getCadastralSection();
+
+    @Nullable
+    @Override
+    public abstract String getPlot();
+
+    @Nullable
+    @Override
+    public abstract String getEconomyType();
+
+    @Nullable
+    @Override
+    public abstract Integer getPlotArea();
+
     public static PropertyJson valueOf(final PropertyModel model) {
         return model == null ? null : ImmutablePropertyJson.builder()
                 .id(model.getId())
