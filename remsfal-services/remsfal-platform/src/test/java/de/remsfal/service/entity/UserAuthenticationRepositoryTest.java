@@ -66,7 +66,7 @@ class UserAuthenticationRepositoryTest {
         when(query.setParameter("userId", "123")).thenReturn(query);
         when(query.getResultStream()).thenReturn(Stream.of(expectedEntity));
 
-        Optional<UserAuthenticationEntity> result = repository.findByUserAuthentication(userModel);
+        Optional<UserAuthenticationEntity> result = repository.findByUserId(userModel.getId());
 
         assertTrue(result.isPresent());
         assertEquals(expectedEntity, result.get());

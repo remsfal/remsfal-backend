@@ -6,17 +6,17 @@ import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @ApplicationScoped
 public class UserAuthenticationRepository extends AbstractRepository<UserAuthenticationEntity> {
 
     public Optional<UserAuthenticationEntity> findByUserId(final String userId) {
-        return getEntityManager().createNamedQuery("UserAuthenticationEntity.findByUserId",
-            UserAuthenticationEntity.class).setParameter(PARAM_USER_ID, userId).getResultStream().findFirst();
-    }
-
-    public Optional<UserAuthenticationEntity> findByUserAuthentication(final UserModel user) {
-        return findByUserId(user.getId());
+        return getEntityManager()
+            .createNamedQuery("UserAuthenticationEntity.findByUserId", UserAuthenticationEntity.class)
+            .setParameter(PARAM_USER_ID, UUID.fromString(userId))
+            .getResultStream()
+            .findFirst();
     }
 
     public void updateRefreshToken(final String userId, final String refreshToken) {

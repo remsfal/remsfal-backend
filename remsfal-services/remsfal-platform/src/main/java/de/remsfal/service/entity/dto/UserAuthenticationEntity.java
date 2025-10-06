@@ -1,7 +1,6 @@
 package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.UserAuthenticationModel;
-import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -37,17 +36,17 @@ public class UserAuthenticationEntity extends MetaDataEntity implements UserAuth
     private String refreshToken;
 
     @Override
-    public UserModel getUser() {
+    public UserEntity getUser() {
         return user != null ? user : null;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
     @Override
     public String getRefreshToken() {
         return refreshToken;
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
     }
 
     public void setRefreshToken(String refreshToken) {

@@ -54,7 +54,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void getUser_SUCCESS_retrieveUser() {
-        final String userId = convert(UUID.randomUUID());
+        final String userId = UUID.randomUUID().toString();
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO USER (ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?)")
             .setParameter(1, userId)
