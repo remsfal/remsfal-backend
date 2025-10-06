@@ -19,18 +19,18 @@ import jakarta.validation.constraints.Size;
 @JsonInclude(Include.NON_NULL)
 public class ContractorJson implements ContractorModel {
 
-    protected String id;
-    protected String projectId;
+    protected java.util.UUID id;
+    protected java.util.UUID projectId;
     protected String companyName;
     protected String phone;
     protected String email;
     protected String trade;
 
-    public void setId(String id) {
+    public void setId(java.util.UUID id) {
         this.id = id;
     }
 
-    public void setProjectId(String projectId) {
+    public void setProjectId(java.util.UUID projectId) {
         this.projectId = projectId;
     }
 
@@ -54,13 +54,13 @@ public class ContractorJson implements ContractorModel {
     @NotNull(groups = PatchValidation.class)
     @UUID
     @Override
-    public String getId() {
+    public java.util.UUID getId() {
         return id;
     }
 
     @Null
     @Override
-    public String getProjectId() {
+    public java.util.UUID getProjectId() {
         return projectId;
     }
 

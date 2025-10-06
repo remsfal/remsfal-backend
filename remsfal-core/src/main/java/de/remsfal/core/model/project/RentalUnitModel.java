@@ -1,6 +1,7 @@
 package de.remsfal.core.model.project;
 
 import jakarta.annotation.Nullable;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -40,7 +41,7 @@ public interface RentalUnitModel {
     }
 
     @Nullable
-    String getId();
+    UUID getId();
 
     UnitType getType();
 

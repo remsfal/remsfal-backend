@@ -1,13 +1,15 @@
 package de.remsfal.core.model.project;
 
+import java.util.UUID;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface TaskModel {
 
-    String getId();
+    UUID getId();
 
-    String getProjectId();
+    UUID getProjectId();
 
     String getTitle();
 
@@ -29,16 +31,16 @@ public interface TaskModel {
 
     Status getStatus();
 
-    String getReporterId();
+    UUID getReporterId();
 
-    String getOwnerId();
+    UUID getOwnerId();
 
     String getDescription();
 
-    String getBlockedBy();
+    UUID getBlockedBy();
 
-    String getRelatedTo();
+    UUID getRelatedTo();
 
-    String getDuplicateOf();
+    UUID getDuplicateOf();
 
 }

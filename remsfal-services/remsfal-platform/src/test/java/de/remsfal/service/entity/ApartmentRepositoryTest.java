@@ -57,7 +57,7 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
                 .createNativeQuery("INSERT INTO apartments (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
                 .setParameter(1, convert(TestData.APARTMENT_ID.toString()))
                 .setParameter(2, convert(TestData.PROJECT_ID.toString()))
-                .setParameter(3, convert(buildingId))
+                .setParameter(3, buildingId)
                 .setParameter(4, TestData.APARTMENT_TITLE)
                 .executeUpdate());
     }

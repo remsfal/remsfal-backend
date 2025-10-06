@@ -4,13 +4,14 @@ import de.remsfal.core.model.CustomerModel;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface TenancyModel {
 
-    String getId();
+    UUID getId();
 
     List<? extends CustomerModel> getTenants();
 
