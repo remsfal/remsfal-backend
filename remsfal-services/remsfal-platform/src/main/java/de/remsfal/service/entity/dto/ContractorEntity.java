@@ -11,6 +11,7 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Entity class for a contractor.
@@ -43,7 +44,7 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     private Set<ContractorEmployeeEntity> employees;
 
     @Override
-    public String getProjectId() {
+    public UUID getProjectId() {
         return project != null ? project.getId() : null;
     }
 

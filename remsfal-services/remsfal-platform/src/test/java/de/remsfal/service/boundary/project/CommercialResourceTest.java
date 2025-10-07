@@ -45,7 +45,7 @@ class CommercialResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
@@ -65,7 +65,7 @@ class CommercialResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
@@ -81,7 +81,7 @@ class CommercialResourceTest extends AbstractResourceTest {
         long entities = entityManager
             .createQuery("SELECT count(commercial) FROM CommercialEntity commercial where commercial.buildingId = :buildingId",
                 long.class)
-            .setParameter("buildingId", TestData.BUILDING_ID_2.toString())
+            .setParameter("buildingId", TestData.BUILDING_ID_2)
             .getSingleResult();
         assertEquals(1, entities);
     }
@@ -93,7 +93,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
@@ -110,7 +110,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
@@ -127,7 +127,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
@@ -135,7 +135,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()

@@ -45,7 +45,7 @@ class PropertyResourceTest extends AbstractResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -69,7 +69,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             + "\"id\":\"anyId\"}";
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -81,7 +81,7 @@ class PropertyResourceTest extends AbstractResourceTest {
     void createProperty_FAILED_noTitle() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -96,7 +96,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -149,21 +149,21 @@ class PropertyResourceTest extends AbstractResourceTest {
     void deleteProperty_SUCCESS_propertyIsdeleted() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_1.toString())
-            .setParameter(2, convert(TestData.PROJECT_ID))
+            .setParameter(1, TestData.PROPERTY_ID_1)
+            .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE_1)
             .executeUpdate());
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
@@ -173,8 +173,8 @@ class PropertyResourceTest extends AbstractResourceTest {
     void updateProperty_SUCCESS_propertyCorrectlyUpdated() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
-            .setParameter(1, TestData.PROPERTY_ID_1.toString())
-            .setParameter(2, convert(TestData.PROJECT_ID))
+            .setParameter(1, TestData.PROPERTY_ID_1)
+            .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE_1)
             .executeUpdate());
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE_2 + "\","
@@ -183,7 +183,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA_2 + "\"}";
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
@@ -198,7 +198,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -219,7 +219,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         final Response res = given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -242,7 +242,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(propertyUrl)
             .then()
             .statusCode(Status.OK.getStatusCode())

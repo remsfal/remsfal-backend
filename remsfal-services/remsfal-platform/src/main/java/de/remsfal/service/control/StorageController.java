@@ -3,6 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.service.entity.dao.StorageRepository;
 import de.remsfal.service.entity.dto.StorageEntity;
+
+import java.util.UUID;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -19,7 +22,7 @@ public class StorageController {
     StorageRepository storageRepository;
 
     @Transactional
-    public StorageModel createStorage(final String projectId, final String buildingId, final StorageModel storage) {
+    public StorageModel createStorage(final UUID projectId, final UUID buildingId, final StorageModel storage) {
         logger.infov("Creating a storage (projectId={0}, buildingId={1}, storage={2})",
                 projectId, buildingId, storage);
         StorageEntity entity = updateStorage(storage, new StorageEntity());
@@ -31,7 +34,7 @@ public class StorageController {
         return getStorage(projectId, entity.getId());
     }
 
-    public StorageModel getStorage(final String projectId, final String storageId) {
+    public StorageModel getStorage(final UUID projectId, final UUID storageId) {
         logger.infov("Retrieving a storage (projectId={0}, storageId={1})",
                 projectId, storageId);
         return storageRepository.findByIds(projectId, storageId)
@@ -39,7 +42,7 @@ public class StorageController {
     }
 
     @Transactional
-    public StorageModel updateStorage(final String projectId, final String storageId, final StorageModel storage) {
+    public StorageModel updateStorage(final UUID projectId, final UUID storageId, final StorageModel storage) {
         logger.infov("Updating a storage (projectId={0}, storageId={1}, storage={2})",
                 projectId, storageId, storage);
         final StorageEntity entity = storageRepository.findByIds(projectId, storageId)
@@ -67,7 +70,7 @@ public class StorageController {
     }
 
     @Transactional
-    public boolean deleteStorage(final String projectId, final String storageId) {
+    public boolean deleteStorage(final UUID projectId, final UUID storageId) {
         logger.infov("Deleting a storage (projectId={0}, storageId={1})",
                 projectId, storageId);
         return storageRepository.removeStorageByIds(projectId, storageId) > 0;

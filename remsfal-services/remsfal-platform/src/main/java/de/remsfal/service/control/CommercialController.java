@@ -3,6 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dto.CommercialEntity;
+
+import java.util.UUID;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -22,7 +25,7 @@ public class CommercialController {
     CommercialRepository commercialRepository;
 
     @Transactional
-    public CommercialModel createCommercial(final String projectId, final String buildingId,
+    public CommercialModel createCommercial(final UUID projectId, final UUID buildingId,
         final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
             projectId, buildingId, commercial);
@@ -35,7 +38,7 @@ public class CommercialController {
         return getCommercial(projectId, entity.getId());
     }
 
-    public CommercialModel getCommercial(final String projectId, final String commercialId) {
+    public CommercialModel getCommercial(final UUID projectId, final UUID commercialId) {
         logger.infov("Retrieving a commercial (projectId={0}, commercialId={1})",
             projectId, commercialId);
         return commercialRepository.findCommercialById(projectId, commercialId)
@@ -43,7 +46,7 @@ public class CommercialController {
     }
 
     @Transactional
-    public CommercialModel updateCommercial(final String projectId, final String commercialId,
+    public CommercialModel updateCommercial(final UUID projectId, final UUID commercialId,
         final CommercialModel commercial) {
         logger.infov("Updating a commercial (projectId={0}, commercialId={1})", projectId, commercialId);
         CommercialEntity entity = commercialRepository.findCommercialById(projectId, commercialId)
@@ -80,7 +83,7 @@ public class CommercialController {
     }
 
     @Transactional
-    public boolean deleteCommercial(final String projectId, final String commercialId) {
+    public boolean deleteCommercial(final UUID projectId, final UUID commercialId) {
         logger.infov("Delete a commercial (projectId={0}, commercialId={1})",
             projectId, commercialId);
         return commercialRepository.deleteCommercialById(projectId, commercialId) > 0;

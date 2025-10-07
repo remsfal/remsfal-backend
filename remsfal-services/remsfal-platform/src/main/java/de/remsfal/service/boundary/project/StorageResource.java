@@ -25,7 +25,7 @@ public class StorageResource extends ProjectSubResource implements StorageEndpoi
     public Response createStorage(final UUID projectId, final UUID buildingId, final StorageJson storage) {
         checkWritePermissions(projectId);
         final StorageModel model = controller.createStorage(projectId, buildingId, storage);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(StorageJson.valueOf(model))

@@ -26,7 +26,7 @@ public class SiteResource extends ProjectSubResource implements SiteEndpoint {
     public Response createSite(final UUID projectId, final UUID propertyId, final SiteJson site) {
         checkWritePermissions(projectId);
         final SiteModel model = controller.createSite(projectId, propertyId, site);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(SiteJson.valueOf(model))

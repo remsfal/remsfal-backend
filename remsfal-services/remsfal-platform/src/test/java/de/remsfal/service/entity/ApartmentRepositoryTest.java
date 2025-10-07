@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,23 +31,23 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     @Inject
     PropertyController propertyController;
 
-    String propertyId;
+    UUID propertyId;
 
-    String buildingId;
+    UUID buildingId;
 
     @BeforeEach
     public void setupApartments() {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?, ?)")
-                .setParameter(1, convert(TestData.PROJECT_ID.toString()))
+                .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
         propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID.toString(), TestData.propertyBuilder().build())
+                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
         buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID.toString(), propertyId,
+                .createBuilding(TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -55,8 +56,8 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
         assertNotNull(buildingId);
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO apartments (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
-                .setParameter(1, convert(TestData.APARTMENT_ID.toString()))
-                .setParameter(2, convert(TestData.PROJECT_ID.toString()))
+                .setParameter(1, TestData.APARTMENT_ID)
+                .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, buildingId)
                 .setParameter(4, TestData.APARTMENT_TITLE)
                 .executeUpdate());
@@ -64,7 +65,7 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
 
     @Test
     void testFindByIds_and_hashcode() {
-        final Optional<ApartmentEntity> found = repository.findByIds(TestData.PROJECT_ID.toString(), TestData.APARTMENT_ID.toString());
+        final Optional<ApartmentEntity> found = repository.findByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID);
         final ApartmentModel apartment = TestData.apartmentBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
@@ -75,7 +76,7 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     @Test
     void testRemoveApartmentByIds() {
         final long removeApartmentByIds = runInTransaction(() ->
-                repository.removeApartmentByIds(TestData.PROJECT_ID.toString(), TestData.APARTMENT_ID.toString()));
+                repository.removeApartmentByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID));
         assertEquals(1, removeApartmentByIds);
     }
 }

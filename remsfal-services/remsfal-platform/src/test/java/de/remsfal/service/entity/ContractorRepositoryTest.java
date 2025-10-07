@@ -23,8 +23,8 @@ class ContractorRepositoryTest extends AbstractServiceTest {
     ContractorRepository repository;
 
     // Test data for contractors
-    private static final String CONTRACTOR_ID_1 = "c9440c43-b5c0-4951-9c29-000000000001";
-    private static final String CONTRACTOR_ID_2 = "c9440c43-b5c0-4951-9c29-000000000002";
+    private static final UUID CONTRACTOR_ID_1 = UUID.fromString("c9440c43-b5c0-4951-9c29-000000000001");
+    private static final UUID CONTRACTOR_ID_2 = UUID.fromString("c9440c43-b5c0-4951-9c29-000000000002");
     private static final String COMPANY_NAME_1 = "Test Contractor 1";
     private static final String COMPANY_NAME_2 = "Test Contractor 2";
     private static final String PHONE_1 = "+491234567890";
@@ -62,7 +62,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         // Insert test contractors
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO contractors (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
-                .setParameter(1, convert(CONTRACTOR_ID_1))
+                .setParameter(1, CONTRACTOR_ID_1)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_1)
                 .setParameter(4, PHONE_1)
@@ -72,7 +72,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO contractors (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
-                .setParameter(1, convert(CONTRACTOR_ID_2))
+                .setParameter(1, CONTRACTOR_ID_2)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_2)
                 .setParameter(4, PHONE_2)
@@ -83,7 +83,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
     @Test
     void findByProjectId_SUCCESS_contractorsFound() {
-        List<ContractorEntity> contractors = repository.findByProjectId(TestData.PROJECT_ID.toString(), 0, 10);
+        List<ContractorEntity> contractors = repository.findByProjectId(TestData.PROJECT_ID, 0, 10);
         assertNotNull(contractors);
         assertEquals(2, contractors.size());
 
@@ -110,13 +110,13 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
     @Test
     void countByProjectId_SUCCESS_correctCount() {
-        long count = repository.countByProjectId(TestData.PROJECT_ID.toString());
+        long count = repository.countByProjectId(TestData.PROJECT_ID);
         assertEquals(2, count);
     }
 
     @Test
     void findByProjectIdAndContractorId_SUCCESS_contractorFound() {
-        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), CONTRACTOR_ID_1);
+        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, CONTRACTOR_ID_1);
         assertTrue(optionalContractor.isPresent());
 
         ContractorEntity contractor = optionalContractor.get();
@@ -129,7 +129,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
     @Test
     void findByProjectIdAndContractorId_FAILED_contractorNotFound() {
-        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), UUID.randomUUID().toString());
+        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, UUID.randomUUID());
         assertFalse(optionalContractor.isPresent());
     }
 
@@ -154,7 +154,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         });
 
         // Verify the contractor was created
-        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), contractor.getId());
+        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, contractor.getId());
         assertTrue(optionalContractor.isPresent());
         assertEquals("New Contractor", optionalContractor.get().getCompanyName());
 
@@ -163,7 +163,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         assertTrue(deleted);
 
         // Verify the contractor was deleted
-        optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID.toString(), contractor.getId());
+        optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, contractor.getId());
         assertFalse(optionalContractor.isPresent());
     }
 }

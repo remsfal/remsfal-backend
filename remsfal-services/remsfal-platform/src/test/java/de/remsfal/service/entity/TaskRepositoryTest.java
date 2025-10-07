@@ -50,7 +50,7 @@ class TaskRepositoryTest extends AbstractServiceTest {
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, convert(UUID.randomUUID()))
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, "TASK")
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
@@ -60,7 +60,7 @@ class TaskRepositoryTest extends AbstractServiceTest {
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, convert(UUID.randomUUID()))
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, "DEFECT")
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
@@ -73,7 +73,7 @@ class TaskRepositoryTest extends AbstractServiceTest {
 
     @Test
     void hashCode_SUCCESS_taskEntity() {
-        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID.toString());
+        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID);
         assertNotNull(entities);
         assertEquals(1, entities.size());
         assertTrue(entities.get(0).hashCode() != 0);
@@ -81,11 +81,11 @@ class TaskRepositoryTest extends AbstractServiceTest {
     
     @Test
     void equals_SUCCESS_taskEntity() {
-        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID.toString());
+        final List<TaskEntity> entities = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID);
         assertNotNull(entities);
         assertEquals(1, entities.size());
         
-        final List<TaskEntity> copy = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID.toString(), Status.PENDING);
+        final List<TaskEntity> copy = repository.findTaskByProjectId(Type.DEFECT, TestData.PROJECT_ID, Status.PENDING);
         assertNotNull(entities);
         assertEquals(copy.get(0), entities.get(0));
     }

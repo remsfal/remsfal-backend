@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -19,7 +20,7 @@ import java.util.Objects;
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
     @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
-    private String propertyId;
+    private UUID propertyId;
 
     @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
@@ -43,11 +44,11 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
-    public String getPropertyId() {
+    public UUID getPropertyId() {
         return propertyId;
     }
 
-    public void setPropertyId(String propertyId) {
+    public void setPropertyId(final UUID propertyId) {
         this.propertyId = propertyId;
     }
 

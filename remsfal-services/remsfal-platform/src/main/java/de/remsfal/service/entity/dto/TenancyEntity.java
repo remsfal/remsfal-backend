@@ -3,6 +3,7 @@ package de.remsfal.service.entity.dto;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.TenancyModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
@@ -24,7 +25,7 @@ import jakarta.persistence.Table;
 public class TenancyEntity extends AbstractEntity implements TenancyModel {
 
     @Column(name = "PROJECT_ID", nullable = false, updatable = false, columnDefinition = "uuid")
-    private String projectId;
+    private UUID projectId;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -70,11 +71,11 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     @OrderBy("firstPaymentDate")
     private List<CommercialRentEntity> commercialRent;
 
-    public String getProjectId() {
+    public UUID getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(final String projectId) {
+    public void setProjectId(final UUID projectId) {
         this.projectId = projectId;
     }
 

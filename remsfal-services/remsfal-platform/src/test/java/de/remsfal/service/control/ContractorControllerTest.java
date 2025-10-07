@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +41,7 @@ class ContractorControllerTest extends AbstractServiceTest {
     private static final String TRADE_2 = "Electrical";
 
     private UserModel user;
-    private String projectId;
+    private UUID projectId;
 
     @BeforeEach
     void setupTestData() {
@@ -121,7 +122,7 @@ class ContractorControllerTest extends AbstractServiceTest {
     void getContractor_FAILED_contractorNotFound() {
         // Try to get a non-existent contractor
         assertThrows(NotFoundException.class, () -> 
-            contractorController.getContractor(user, projectId, "non-existent-id"));
+            contractorController.getContractor(user, projectId, UUID.randomUUID()));
     }
 
     @Test
@@ -166,7 +167,7 @@ class ContractorControllerTest extends AbstractServiceTest {
         updateJson.setCompanyName(COMPANY_NAME_2);
         
         assertThrows(NotFoundException.class, () -> 
-            contractorController.updateContractor(user, projectId, "non-existent-id", updateJson));
+            contractorController.updateContractor(user, projectId, UUID.randomUUID(), updateJson));
     }
 
     @Test
@@ -200,6 +201,6 @@ class ContractorControllerTest extends AbstractServiceTest {
         // In a real scenario, authorization would be checked at the boundary layer
         // Try to delete a non-existent contractor
         assertThrows(NotFoundException.class, () -> 
-            contractorController.deleteContractor(user, projectId, "non-existent-id"));
+            contractorController.deleteContractor(user, projectId, UUID.randomUUID()));
     }
 }

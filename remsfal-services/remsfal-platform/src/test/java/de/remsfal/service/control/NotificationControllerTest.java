@@ -5,6 +5,9 @@ import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
+
+import java.util.UUID;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kafka.KafkaCompanionResource;
@@ -23,11 +26,11 @@ class NotificationControllerTest extends AbstractKafkaTest {
     void testInformUserAboutProjectMembership() {
         CustomerModel user =
                 ImmutableUserJson.builder()
-                        .id(TestData.USER_ID.toString())
+                        .id(TestData.USER_ID)
                         .email(TestData.USER_EMAIL)
                         .build();
 
-        notificationController.informUserAboutProjectMembership(user, "fakeId");
+        notificationController.informUserAboutProjectMembership(user, UUID.randomUUID());
 
         given()
             .topic(EmailEventJson.TOPIC)
@@ -42,7 +45,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
     void testInformUserAboutRegistration() {
         CustomerModel user =
             ImmutableUserJson.builder()
-                    .id(TestData.USER_ID.toString())
+                    .id(TestData.USER_ID)
                     .email(TestData.USER_EMAIL)
                     .build();
 

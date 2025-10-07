@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
@@ -22,7 +23,7 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     private Type type;
 
     @Column(name = "PROJECT_ID", nullable = false, updatable=false, columnDefinition = "uuid")
-    private String projectId;
+    private UUID projectId;
 
     @Column(name = "TITLE", nullable = false)
     private String title;
@@ -32,25 +33,25 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     private Status status;
 
     @Column(name = "REPORTER_ID", columnDefinition = "uuid")
-    private String reporterId;
+    private UUID reporterId;
 
     @Column(name = "OWNER_ID", columnDefinition = "uuid")
-    private String ownerId;
+    private UUID ownerId;
 
     @Column(name = "DESCRIPTION")
     private String description;
 
     @Column(name = "BLOCKED_BY", columnDefinition = "uuid")
-    private String blockedBy;
+    private UUID blockedBy;
 
     @Column(name = "RELATED_TO", columnDefinition = "uuid")
-    private String relatedTo;
+    private UUID relatedTo;
 
     @Column(name = "DUPLICATE_OF", columnDefinition = "uuid")
-    private String duplicateOf;
+    private UUID duplicateOf;
 
     @Column(name = "CREATED_BY", columnDefinition = "uuid")
-    private String createdBy;
+    private UUID createdBy;
 
     public Type getType() {
         return type;
@@ -61,11 +62,11 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     }
 
     @Override
-    public String getProjectId() {
+    public UUID getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(final String projectId) {
+    public void setProjectId(final UUID projectId) {
         this.projectId = projectId;
     }
 
@@ -88,20 +89,20 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     }
 
     @Override
-    public String getReporterId() {
+    public UUID getReporterId() {
         return reporterId;
     }
 
-    public void setReporterId(final String reporterId) {
+    public void setReporterId(final UUID reporterId) {
         this.reporterId = reporterId;
     }
 
     @Override
-    public String getOwnerId() {
+    public UUID getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(final String ownerId) {
+    public void setOwnerId(final UUID ownerId) {
         this.ownerId = ownerId;
     }
 
@@ -115,37 +116,37 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     }
 
     @Override
-    public String getBlockedBy() {
+    public UUID getBlockedBy() {
         return blockedBy;
     }
 
-    public void setBlockedBy(final String blockedBy) {
+    public void setBlockedBy(final UUID blockedBy) {
         this.blockedBy = blockedBy;
     }
 
     @Override
-    public String getRelatedTo() {
+    public UUID getRelatedTo() {
         return relatedTo;
     }
 
-    public void setRelatedTo(final String relatedTo) {
+    public void setRelatedTo(final UUID relatedTo) {
         this.relatedTo = relatedTo;
     }
 
     @Override
-    public String getDuplicateOf() {
+    public UUID getDuplicateOf() {
         return duplicateOf;
     }
 
-    public void setDuplicateOf(final String duplicateOf) {
+    public void setDuplicateOf(final UUID duplicateOf) {
         this.duplicateOf = duplicateOf;
     }
 
-    public String getCreatedBy() {
+    public UUID getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(final String createdBy) {
+    public void setCreatedBy(final UUID createdBy) {
         this.createdBy = createdBy;
     }
 

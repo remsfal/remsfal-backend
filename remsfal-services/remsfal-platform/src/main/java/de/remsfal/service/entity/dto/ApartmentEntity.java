@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
@@ -17,7 +18,7 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel {
 
     @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
-    private String buildingId;
+    private UUID buildingId;
 
     @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
@@ -28,11 +29,11 @@ public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel 
     @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
-    public String getBuildingId() {
+    public UUID getBuildingId() {
         return buildingId;
     }
 
-    public void setBuildingId(String buildingId) {
+    public void setBuildingId(UUID buildingId) {
         this.buildingId = buildingId;
     }
 

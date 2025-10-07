@@ -33,7 +33,7 @@ class UserControllerTest extends AbstractServiceTest {
     void createUser_SUCCESS_simpleUserCreated() {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user);
-        assertEquals(36, user.getId().length());
+        assertEquals(36, user.getId().toString().length());
         assertEquals(TestData.USER_EMAIL, user.getEmail());
 
         final String userId = entityManager
@@ -54,7 +54,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void getUser_SUCCESS_retrieveUser() {
-        final String userId = UUID.randomUUID().toString();
+        final UUID userId = UUID.randomUUID();
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO USER (ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?)")
             .setParameter(1, userId)
@@ -75,7 +75,7 @@ class UserControllerTest extends AbstractServiceTest {
     void getUser_FAILED_userNotExist() {
         assertThrows(
             NotFoundException.class,
-            () -> controller.getUser("any-strange-id"));
+            () -> controller.getUser(UUID.randomUUID()));
     }
 
     @Test

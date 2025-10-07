@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.persistence.Column;
@@ -15,13 +16,13 @@ import jakarta.persistence.Table;
 public class StorageRentEntity extends RentEntity {
 
     @Column(name = "STORAGE_ID", nullable = false, updatable = false, columnDefinition = "uuid")
-    private String storageId;
+    private UUID storageId;
 
-    public String getStorageId() {
+    public UUID getStorageId() {
         return storageId;
     }
 
-    public void setStorageId(final String storageId) {
+    public void setStorageId(final UUID storageId) {
         this.storageId = storageId;
     }
 

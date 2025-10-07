@@ -80,7 +80,7 @@ public class TaskController {
     }
 
     @Transactional
-    public TaskModel updateTask(final String projectId, final String taskId, final TaskModel task) {
+    public TaskModel updateTask(final UUID projectId, final UUID taskId, final TaskModel task) {
         logger.infov("Updating a task (projectId={0}, taskId={1})", projectId, taskId);
         final TaskEntity entity = this.getTask(Type.TASK, projectId, taskId);
         return updateTaskEntity(entity, task);
@@ -112,7 +112,7 @@ public class TaskController {
     }
 
     @Transactional
-    public boolean deleteTask(final String projectId, final String taskId) {
+    public boolean deleteTask(final UUID projectId, final UUID taskId) {
         logger.infov("Deleting a task (projectId={0}, taskId={1})", projectId, taskId);
         return repository.deleteTaskById(Type.TASK, projectId, taskId) > 0;
     }

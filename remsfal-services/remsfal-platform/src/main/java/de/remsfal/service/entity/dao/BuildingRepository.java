@@ -6,6 +6,7 @@ import de.remsfal.service.entity.dto.BuildingEntity;
 import io.quarkus.panache.common.Parameters;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -13,7 +14,7 @@ import java.util.List;
 @ApplicationScoped
 public class BuildingRepository extends AbstractRepository<BuildingEntity> {
 
-    public List<BuildingEntity> findAllBuildings(final String projectId, final String propertyId) {
+    public List<BuildingEntity> findAllBuildings(final UUID projectId, final UUID propertyId) {
         return list("projectId = :projectId and propertyId = :propertyId",
             Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_PROPERTY_ID, propertyId));
     }

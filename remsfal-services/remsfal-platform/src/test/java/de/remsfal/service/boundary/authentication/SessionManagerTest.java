@@ -7,6 +7,7 @@ import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.test.TestData;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
@@ -106,15 +107,14 @@ class SessionManagerTest {
 
     @Test
     void test_renewTokens_returnsNewCookies_whenRefreshCookieValid() throws ParseException {
-        String userId = "u1";
         String email = "u1@example.com";
         String refreshId = "r-123";
         String refreshTokenValue = "refresh.jwt.token";
 
-        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(userId, email, refreshId));
+        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID.toString(), email, refreshId));
 
         UserEntity user = new UserEntity();
-        user.setId(userId);
+        user.setId(TestData.USER_ID);
         user.setEmail(email);
         user.setFirstName("John");
         user.setLastName("Doe");
@@ -124,16 +124,16 @@ class SessionManagerTest {
         auth.setUser(user);
         auth.setRefreshToken(refreshId);
 
-        when(userAuthRepository.findByUserId(userId)).thenReturn(Optional.of(auth));
-        when(userRepository.findByIdOptional(userId)).thenReturn(Optional.of(user));
-        when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
+        when(userAuthRepository.findByUserId(TestData.USER_ID)).thenReturn(Optional.of(auth));
+        when(userRepository.findByIdOptional(TestData.USER_ID)).thenReturn(Optional.of(user));
+        when(projectRepository.findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt()))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
-        when(jwtManager.createAccessToken(eq(userId), eq(email), eq("John Doe"), eq(true),
+        when(jwtManager.createAccessToken(eq(TestData.USER_ID), eq(email), eq("John Doe"), eq(true),
                 argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
                 .thenReturn("new-access");
 
-        when(jwtManager.createRefreshToken(eq(userId), eq(email), anyString(), eq(604800L)))
+        when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L)))
                 .thenReturn("new-refresh");
 
         // Act
@@ -146,12 +146,12 @@ class SessionManagerTest {
         assertEquals("new-refresh", response.getRefreshToken().getValue());
 
         verify(jwtParser).parse(refreshTokenValue);
-        verify(userAuthRepository, times(2)).findByUserId(userId);
-        verify(userRepository).findByIdOptional(userId);
-        verify(projectRepository).findMembershipByUserId(eq(userId), anyInt(), anyInt());
-        verify(jwtManager).createAccessToken(eq(userId), eq(email), eq("John Doe"), eq(true),
+        verify(userAuthRepository, times(2)).findByUserId(TestData.USER_ID);
+        verify(userRepository).findByIdOptional(TestData.USER_ID);
+        verify(projectRepository).findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt());
+        verify(jwtManager).createAccessToken(eq(TestData.USER_ID), eq(email), eq("John Doe"), eq(true),
                 argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L));
-        verify(jwtManager).createRefreshToken(eq(userId), eq(email), anyString(), eq(604800L));
+        verify(jwtManager).createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L));
     }
 
     @Test
@@ -161,26 +161,23 @@ class SessionManagerTest {
 
     @Test
     void test_generateAccessToken_wrapsCookie() {
-        String userId = "u1";
-        String email = "u1@example.com";
-
         UserEntity user = new UserEntity();
-        user.setId(userId);
-        user.setEmail(email);
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
         user.setFirstName("Jane");
         user.setLastName("Roe");
         user.setTokenId("active");
 
-        when(userRepository.findByIdOptional(userId)).thenReturn(Optional.of(user));
-        when(projectRepository.findMembershipByUserId(eq(userId), anyInt(), anyInt()))
+        when(userRepository.findByIdOptional(TestData.USER_ID)).thenReturn(Optional.of(user));
+        when(projectRepository.findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt()))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
-        when(jwtManager.createAccessToken(eq(userId), eq(email), eq("Jane Roe"), eq(true),
+        when(jwtManager.createAccessToken(eq(TestData.USER_ID), eq(TestData.USER_EMAIL), eq("Jane Roe"), eq(true),
                 argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
                 .thenReturn("access.jwt");
 
         // Act
-        NewCookie cookie = sessionManager.generateAccessToken(userId, email);
+        NewCookie cookie = sessionManager.generateAccessToken(TestData.USER_ID, TestData.USER_EMAIL);
 
         // Assert
         assertEquals("access.jwt", cookie.getValue());
@@ -190,17 +187,17 @@ class SessionManagerTest {
 
     @Test
     void test_generateRefreshToken_persistsIdAndWrapsCookie() {
-        when(userAuthRepository.findByUserId("u1")).thenReturn(Optional.empty());
+        when(userAuthRepository.findByUserId(TestData.USER_ID)).thenReturn(Optional.empty());
 
         UserEntity user = new UserEntity();
-        user.setId("u1");
+        user.setId(TestData.USER_ID);
 
-        when(userRepository.findByIdOptional("u1")).thenReturn(Optional.of(user));
-        when(jwtManager.createRefreshToken(eq("u1"), eq("u1@example.com"), anyString(), eq(604800L)))
+        when(userRepository.findByIdOptional(TestData.USER_ID)).thenReturn(Optional.of(user));
+        when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq("u1@example.com"), anyString(), eq(604800L)))
                 .thenReturn("refresh.jwt");
 
         // Act
-        NewCookie cookie = sessionManager.generateRefreshToken("u1", "u1@example.com");
+        NewCookie cookie = sessionManager.generateRefreshToken(TestData.USER_ID, "u1@example.com");
 
         // Assert
         assertEquals(SessionManager.REFRESH_COOKIE_NAME, cookie.getName());
@@ -214,12 +211,12 @@ class SessionManagerTest {
     void test_logout_deletesPersistedRefreshToken_whenCookiePresent() throws ParseException {
         String refreshTokenValue = "refresh.jwt";
 
-        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt("u1", "e@x", "r1"));
+        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID.toString(), "e@x", "r1"));
 
         sessionManager.logout(Map.of(SessionManager.REFRESH_COOKIE_NAME,
                 new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));
 
-        verify(userAuthRepository).deleteRefreshToken("u1");
+        verify(userAuthRepository).deleteRefreshToken(TestData.USER_ID);
     }
 
     @Test
@@ -235,9 +232,9 @@ class SessionManagerTest {
 
     @Test
     void test_generateAccessToken_throws_whenUserMissing() {
-        when(userRepository.findByIdOptional("missing")).thenReturn(Optional.empty());
-        assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken("missing", "x@x"));
-        verify(jwtManager, never()).createAccessToken(anyString(), anyString(), anyString(), anyBoolean(), anyMap(), anyLong());
+        when(userRepository.findByIdOptional(TestData.USER_ID_4)).thenReturn(Optional.empty());
+        assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken(TestData.USER_ID_4, "x@x"));
+        verify(jwtManager, never()).createAccessToken(any(UUID.class), anyString(), anyString(), anyBoolean(), anyMap(), anyLong());
     }
 
 }

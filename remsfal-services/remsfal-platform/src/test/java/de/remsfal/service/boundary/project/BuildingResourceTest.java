@@ -3,7 +3,6 @@ package de.remsfal.service.boundary.project;
 import static io.restassured.RestAssured.given;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +31,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void getBuilding_FAILED_buildingDoesNotExist() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -53,7 +52,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + TestData.BUILDING_ID_1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -64,7 +63,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void getBuilding_SUCCESS() {
         final String user1building1 = given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -85,7 +84,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -96,7 +95,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void createBuilding_SUCCESS() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(TestData.buildingBuilder2().id(null).build())
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
@@ -121,7 +120,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void createBuilding_FAILED_wrongPropertyId() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -144,7 +143,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void updateBuilding_SUCCESS() {
         final String user1building1 = given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -165,7 +164,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -173,7 +172,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
-                "     \"street\": \"" + "Lavochkina Street" + "\"," +
+                "     \"street\": \"Lavochkina Street\"," +
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
@@ -188,7 +187,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void updateBuilding_FAILED_noAuthentication() {
         final String user1building1 = given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -216,7 +215,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
-                "     \"street\": \"" + "Lavochkina Street" + "\"," +
+                "     \"street\": \"Lavochkina Street\"," +
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
@@ -231,7 +230,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void updateBuilding_FAILED_notExist() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -239,13 +238,13 @@ class BuildingResourceTest extends AbstractResourceTest {
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
-                "     \"street\": \"" + "Lavochkina Street" + "\"," +
+                "     \"street\": \"Lavochkina Street\"," +
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .patch(BASE_PATH + "/" + convert(UUID.randomUUID()), TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .patch(BASE_PATH + "/" + java.util.UUID.randomUUID(), TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -254,7 +253,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void deleteBuilding_SUCCESS() {
         final String user1building1 = given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -275,7 +274,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .delete(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -286,7 +285,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void createAndGetBuilding_SUCCESS_shortcut() {
         final String user1building1 = given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -307,7 +306,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .get("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID.toString())
             .then()
@@ -315,7 +314,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"usableSpace\":\"56.7\"}")
             .patch("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID.toString())
@@ -324,7 +323,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1.toString(), TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .delete("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID.toString())
             .then()

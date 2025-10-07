@@ -39,7 +39,7 @@ public class TaskResource extends ProjectSubResource implements TaskEndpoint {
     public Response createTask(final UUID projectId, final TaskJson task) {
         checkWritePermissions(projectId);
         final TaskModel model = taskController.createTask(projectId, principal, task);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(TaskJson.valueOf(model))

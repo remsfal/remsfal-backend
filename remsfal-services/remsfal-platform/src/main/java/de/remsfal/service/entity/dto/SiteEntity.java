@@ -8,6 +8,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
@@ -20,7 +21,7 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 public class SiteEntity extends RentalUnitEntity implements SiteModel {
 
     @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
-    private String propertyId;
+    private UUID propertyId;
 
     @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
@@ -29,11 +30,11 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     @Column(name = "OUTDOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float outdoorArea;
 
-    public String getPropertyId() {
+    public UUID getPropertyId() {
         return propertyId;
     }
 
-    public void setPropertyId(String propertyId) {
+    public void setPropertyId(final UUID propertyId) {
         this.propertyId = propertyId;
     }
 

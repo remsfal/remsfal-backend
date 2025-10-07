@@ -3,6 +3,9 @@ package de.remsfal.service.entity.dto;
 import de.remsfal.core.model.ContractorEmployeeModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
+
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -38,12 +41,12 @@ public class ContractorEmployeeEntity extends MetaDataEntity implements Contract
     private String responsibility;
 
     @Override
-    public String getContractorId() {
+    public UUID getContractorId() {
         return contractor != null ? contractor.getId() : null;
     }
 
     @Override
-    public String getUserId() {
+    public UUID getUserId() {
         return user != null ? user.getId() : null;
     }
 

@@ -40,7 +40,7 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         final TaskModel model = null; // TODO
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(TaskJson.valueOf(model))
@@ -52,7 +52,7 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
         final UUID rentalId, final UUID taskId) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
-        String projectId = tenancyId; // TODO
+        UUID projectId = tenancyId; // TODO
         return TaskJson.valueOf(taskController.getTask(projectId, taskId));
     }
 
@@ -61,7 +61,7 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
         final UUID rentalId, final UUID taskId, final TaskJson task) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
-        String projectId = tenancyId; // TODO
+        UUID projectId = tenancyId; // TODO
         return TaskJson.valueOf(taskController.updateTask(projectId, taskId, task));
     }
 

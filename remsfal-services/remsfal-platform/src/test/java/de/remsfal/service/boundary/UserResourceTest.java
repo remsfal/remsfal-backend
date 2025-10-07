@@ -49,7 +49,7 @@ class UserResourceTest extends AbstractResourceTest {
 
     @Test
     void getUser_FAILED_expiredAccessToken() {
-        final Cookie accessToken = buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(-10)); // Abgelaufen
+        final Cookie accessToken = buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(-10)); // Abgelaufen
 
         given()
                 .when()
@@ -73,7 +73,7 @@ class UserResourceTest extends AbstractResourceTest {
 
     @Test
     void getUser_FAILED_noUserEmail() {
-        final Cookie accessToken = buildAccessTokenCookie(TestData.USER_ID.toString(),null, Duration.ofMinutes(10));
+        final Cookie accessToken = buildAccessTokenCookie(TestData.USER_ID, null, Duration.ofMinutes(10));
 
         given()
                 .when()
@@ -85,7 +85,7 @@ class UserResourceTest extends AbstractResourceTest {
 
     @Test
     void getUser_FAILED_userNotExists() {
-        final Cookie accessToken = buildAccessTokenCookie("non-existing-user", TestData.USER_EMAIL, Duration.ofMinutes(10));
+        final Cookie accessToken = buildAccessTokenCookie(java.util.UUID.randomUUID(), TestData.USER_EMAIL, Duration.ofMinutes(10));
 
         given()
                 .when()
@@ -99,7 +99,7 @@ class UserResourceTest extends AbstractResourceTest {
     void getUser_SUCCESS_userIsReturned() {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO USER (ID, EMAIL, AUTHENTICATED_AT, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
-                .setParameter(1, convert(TestData.USER_ID))
+                .setParameter(1, TestData.USER_ID)
                 .setParameter(2, TestData.USER_EMAIL)
                 .setParameter(3, new Date())
                 .setParameter(4, TestData.USER_FIRST_NAME)
@@ -108,8 +108,8 @@ class UserResourceTest extends AbstractResourceTest {
 
         given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofDays(7)))
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
                 .get(BASE_PATH)
                 .then()
                 .statusCode(Status.OK.getStatusCode())
@@ -124,15 +124,15 @@ class UserResourceTest extends AbstractResourceTest {
     void updateUser_SUCCESS_userInfoChanged() {
         setupTestUsers();
 
-        final String update = "{ \"firstName\":\"john\","
-                + "\"mobilePhoneNumber\":\"+491773289245\","
-                + "\"businessPhoneNumber\":\"+49302278349\","
-                + "\"privatePhoneNumber\":\"+4933012345611\"}";
+        final String update = "{ \"firstName\":\"john\"," +
+                "\"mobilePhoneNumber\":\"+491773289245\"," +
+                "\"businessPhoneNumber\":\"+49302278349\"," +
+                "\"privatePhoneNumber\":\"+4933012345611\"}";
 
         given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofDays(7)))
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
                 .contentType(ContentType.JSON)
                 .body(update)
                 .patch(BASE_PATH)
@@ -153,8 +153,8 @@ class UserResourceTest extends AbstractResourceTest {
 
         given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofDays(7)))
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
                 .contentType(ContentType.JSON)
                 .body(invalidPatch)
                 .patch(BASE_PATH)
@@ -168,8 +168,8 @@ class UserResourceTest extends AbstractResourceTest {
 
         given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofDays(7)))
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
                 .delete(BASE_PATH)
                 .then()
                 .statusCode(Status.NO_CONTENT.getStatusCode());
@@ -186,15 +186,15 @@ class UserResourceTest extends AbstractResourceTest {
     void metricGenerated_afterGetUser() {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO USER (ID, EMAIL, AUTHENTICATED_AT, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
-                .setParameter(1, convert(TestData.USER_ID))
+                .setParameter(1, TestData.USER_ID)
                 .setParameter(2, TestData.USER_EMAIL)
                 .setParameter(3, new Date())
                 .setParameter(4, TestData.USER_FIRST_NAME)
                 .setParameter(5, TestData.USER_LAST_NAME)
                 .executeUpdate());
         given()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofDays(7)))
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
                 .when().get(BASE_PATH)
                 .then().statusCode(Status.OK.getStatusCode());
         given()
@@ -206,13 +206,13 @@ class UserResourceTest extends AbstractResourceTest {
     @Test
     void metricGenerated_afterUpdateUser() {
         setupTestUsers();
-        String update = "{ \"firstName\":\"john\","
-                + "\"mobilePhoneNumber\":\"+491773289245\","
-                + "\"businessPhoneNumber\":\"+49302278349\","
-                + "\"privatePhoneNumber\":\"+4933012345611\"}";
+        String update = "{ \"firstName\":\"john\"," +
+                "\"mobilePhoneNumber\":\"+491773289245\"," +
+                "\"businessPhoneNumber\":\"+49302278349\"," +
+                "\"privatePhoneNumber\":\"+4933012345611\"}";
         given()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofDays(7)))
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
                 .contentType(ContentType.JSON)
                 .body(update)
                 .when().patch(BASE_PATH)
@@ -228,8 +228,8 @@ class UserResourceTest extends AbstractResourceTest {
     void metricGenerated_afterDeleteUser() {
         setupTestUsers();
         given()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID.toString(), TestData.USER_EMAIL, Duration.ofDays(7)))
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
                 .when().delete(BASE_PATH)
                 .then()
                 .statusCode(Status.NO_CONTENT.getStatusCode());

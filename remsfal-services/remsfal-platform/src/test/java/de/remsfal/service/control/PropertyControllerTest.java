@@ -24,6 +24,7 @@ import de.remsfal.service.entity.dto.PropertyEntity;
 import de.remsfal.test.TestData;
 
 import java.util.List;
+import java.util.UUID;
 
 @QuarkusTest
 class PropertyControllerTest extends AbstractServiceTest {
@@ -35,27 +36,27 @@ class PropertyControllerTest extends AbstractServiceTest {
     void setupTestProjects() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
-            .setParameter(1, TestData.PROJECT_ID_1.toString())
+            .setParameter(1, TestData.PROJECT_ID_1)
             .setParameter(2, TestData.PROJECT_TITLE_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
-            .setParameter(1, TestData.PROJECT_ID_2.toString())
+            .setParameter(1, TestData.PROJECT_ID_2)
             .setParameter(2, TestData.PROJECT_TITLE_2)
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
-            .setParameter(1, TestData.PROJECT_ID_3.toString())
+            .setParameter(1, TestData.PROJECT_ID_3)
             .setParameter(2, TestData.PROJECT_TITLE_3)
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
-            .setParameter(1, TestData.PROJECT_ID_4.toString())
+            .setParameter(1, TestData.PROJECT_ID_4)
             .setParameter(2, TestData.PROJECT_TITLE_4)
             .executeUpdate());
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
-            .setParameter(1, TestData.PROJECT_ID_5.toString())
+            .setParameter(1, TestData.PROJECT_ID_5)
             .setParameter(2, TestData.PROJECT_TITLE_5)
             .executeUpdate());
     }
@@ -72,7 +73,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     void createProperty_SUCCESS_idGenerated() {
         final PropertyModel property = TestData.propertyBuilder().build();
         
-        final PropertyModel result = propertyController.createProperty(TestData.PROJECT_ID.toString(), property);
+        final PropertyModel result = propertyController.createProperty(TestData.PROJECT_ID, property);
         
         assertNotEquals(property.getId(), result.getId());
         assertEquals(property.getTitle(), result.getTitle());
@@ -91,16 +92,16 @@ class PropertyControllerTest extends AbstractServiceTest {
     void deleteProperty_SUCCESS_correctlyDeleted() {
         // Arrange
         final PropertyModel property = TestData.propertyBuilder().build();
-        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID.toString(), property);
-        String propertyId = createdProperty.getId();
+        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
+        final UUID propertyId = createdProperty.getId();
         // Act
-        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID.toString(), propertyId);
+        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, propertyId);
         // Assert
         assertTrue(deleted);
         assertThrows(NoResultException.class, () -> findPropertyById(propertyId));
     }
 
-    private PropertyEntity findPropertyById(String propertyId) {
+    private PropertyEntity findPropertyById(final UUID propertyId) {
         return entityManager
             .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
             .setParameter("id", propertyId)
@@ -110,9 +111,9 @@ class PropertyControllerTest extends AbstractServiceTest {
     @Test
     void deleteProperty_FAILED_notDeleted() {
         // Arrange
-        String notExistingPropertyId = "bfbada15-d3d5-4925-a438-260821532b54";
+        UUID notExistingPropertyId = UUID.fromString("bfbada15-d3d5-4925-a438-260821532b54");
         // Act
-        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID.toString(), notExistingPropertyId);
+        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, notExistingPropertyId);
         // Assert
         assertFalse(deleted);
     }
@@ -121,7 +122,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     void updateProperty_SUCCESS_correctlyUpdated() {
         // Arrange
         final PropertyModel property = TestData.propertyBuilder().build();
-        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID.toString(), property);
+        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
         // Act
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
             .title(TestData.PROPERTY_ID_2.toString())
@@ -129,7 +130,7 @@ class PropertyControllerTest extends AbstractServiceTest {
             .description(TestData.PROPERTY_DESCRIPTION_2)
             .plotArea(TestData.PROPERTY_PLOT_AREA_2)
             .build();
-        PropertyModel updatedProperty = propertyController.updateProperty(TestData.PROJECT_ID.toString(), createdProperty.getId(), newPropertyValues);
+        PropertyModel updatedProperty = propertyController.updateProperty(TestData.PROJECT_ID, createdProperty.getId(), newPropertyValues);
         // Assert
         PropertyModel updatedPropertyFromDb = entityManager
             .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
@@ -142,7 +143,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     @Test
     void updateProperty_FAILED_propertyNotFound() {
         // Arrange
-        String notExistingPropertyId = "bfbada15-d3d5-4925-a438-260821532b54";
+        UUID notExistingPropertyId = UUID.fromString("bfbada15-d3d5-4925-a438-260821532b54");
         // act + Assert
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
             .title("new title")
@@ -151,7 +152,7 @@ class PropertyControllerTest extends AbstractServiceTest {
             .plotArea(999)
             .build();
         assertThrows(NotFoundException.class,
-            () -> propertyController.updateProperty(TestData.PROJECT_ID.toString(), notExistingPropertyId, newPropertyValues));
+            () -> propertyController.updateProperty(TestData.PROJECT_ID, notExistingPropertyId, newPropertyValues));
     }
 
     @Test
@@ -170,10 +171,10 @@ class PropertyControllerTest extends AbstractServiceTest {
             .plotArea(999)
             .build();
 
-        final PropertyModel createdProperty1 = propertyController.createProperty(TestData.PROJECT_ID.toString(), property1);
-        final PropertyModel createdProperty2 = propertyController.createProperty(TestData.PROJECT_ID.toString(), property2);
+        final PropertyModel createdProperty1 = propertyController.createProperty(TestData.PROJECT_ID, property1);
+        final PropertyModel createdProperty2 = propertyController.createProperty(TestData.PROJECT_ID, property2);
         // Act
-        List<RentalUnitTreeNodeJson> properties = propertyController.getPropertyTree(TestData.PROJECT_ID.toString());
+        List<RentalUnitTreeNodeJson> properties = propertyController.getPropertyTree(TestData.PROJECT_ID);
         // Assert
         assertEquals(2, properties.size());
         assertProperty(property1, createdProperty1);
@@ -191,15 +192,15 @@ class PropertyControllerTest extends AbstractServiceTest {
     void getProperty_SUCCESS_propertyRetrieved() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, convert(TestData.PROPERTY_ID))
-            .setParameter(2, convert(TestData.PROJECT_ID))
+            .setParameter(1, TestData.PROPERTY_ID)
+            .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE)
             .setParameter(4, TestData.PROPERTY_LAND_REGISTRY)
             .setParameter(5, TestData.PROPERTY_DESCRIPTION)
             .setParameter(6, 22)
             .executeUpdate());
         
-        final PropertyModel result = propertyController.getProperty(TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID.toString());
+        final PropertyModel result = propertyController.getProperty(TestData.PROJECT_ID, TestData.PROPERTY_ID);
         
         assertEquals(TestData.PROPERTY_ID.toString(), result.getId());
         assertEquals(TestData.PROPERTY_TITLE, result.getTitle());
@@ -212,7 +213,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     void getProperty_FAILED_wrongProjectId() {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
-            .setParameter(1, convert(TestData.PROPERTY_ID))
+            .setParameter(1, TestData.PROPERTY_ID)
             .setParameter(2, TestData.PROJECT_ID_1.toString())
             .setParameter(3, TestData.PROPERTY_TITLE)
             .setParameter(4, TestData.PROPERTY_LAND_REGISTRY)
@@ -221,7 +222,7 @@ class PropertyControllerTest extends AbstractServiceTest {
             .executeUpdate());
         
         assertThrows(NotFoundException.class,
-            () -> propertyController.getProperty(TestData.PROJECT_ID_2.toString(), TestData.PROPERTY_ID.toString()));
+            () -> propertyController.getProperty(TestData.PROJECT_ID_2, TestData.PROPERTY_ID));
     }
 
 }

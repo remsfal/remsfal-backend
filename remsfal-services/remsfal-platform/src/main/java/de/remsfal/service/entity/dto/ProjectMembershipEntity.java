@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -50,7 +51,7 @@ public class ProjectMembershipEntity extends MetaDataEntity implements ProjectMe
     private MemberRole role;
 
     @Override
-    public String getId() {
+    public UUID getId() {
         return user.getId();
     }
 
