@@ -1,6 +1,8 @@
 package de.remsfal.common.authentication;
 
 import java.security.Principal;
+import java.util.UUID;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -13,8 +15,8 @@ public class RemsfalPrincipal implements Principal, UserModel {
     JsonWebToken jwt;
 
     @Override
-    public String getId() {
-        return jwt != null ? jwt.getSubject() : null;
+    public UUID getId() {
+        return jwt != null && jwt.getSubject() != null ? UUID.fromString(jwt.getSubject()) : null;
     }
 
     @Override

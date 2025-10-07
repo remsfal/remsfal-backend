@@ -1,5 +1,7 @@
 package de.remsfal.service.entity.dao;
 
+import java.util.UUID;
+
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
@@ -7,7 +9,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 abstract class AbstractRepository<Entity extends MetaDataEntity>
-    implements PanacheRepositoryBase<Entity, String> {
+    implements PanacheRepositoryBase<Entity, UUID> {
 
     protected static final String PARAM_ID = "id";
     protected static final String PARAM_USER_ID = "userId";

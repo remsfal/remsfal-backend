@@ -4,7 +4,6 @@ import de.remsfal.core.json.ProjectMemberJson;
 import de.remsfal.core.json.ProjectMemberListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
@@ -17,6 +16,9 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -36,7 +38,7 @@ public interface MemberEndpoint {
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectMemberListJson getProjectMembers(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId
+        @PathParam("projectId") @NotNull UUID projectId
     );
 
     @POST
@@ -47,7 +49,7 @@ public interface MemberEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     ProjectMemberJson addProjectMember(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Project member information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) ProjectMemberJson member
     );
@@ -62,9 +64,9 @@ public interface MemberEndpoint {
     @APIResponse(responseCode = "404", description = "The project or the member does not exist")
     ProjectMemberJson updateProjectMember(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the member", required = true)
-        @PathParam("memberId") @NotNull @UUID String memberId,
+        @PathParam("memberId") @NotNull UUID memberId,
         @Parameter(description = "Member role to change", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) ProjectMemberJson member
     );
@@ -77,9 +79,9 @@ public interface MemberEndpoint {
     @APIResponse(responseCode = "404", description = "The project or the member does not exist")
     void deleteProjectMember(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the member", required = true)
-        @PathParam("memberId") @NotNull @UUID String memberId
+        @PathParam("memberId") @NotNull UUID memberId
     );
 
 }

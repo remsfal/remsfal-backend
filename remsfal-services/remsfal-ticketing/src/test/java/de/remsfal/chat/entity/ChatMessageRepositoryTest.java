@@ -8,6 +8,7 @@ import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.chat.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
+import de.remsfal.test.TestData;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -98,14 +99,13 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
     @Test
     void sendCassChatMessage_SUCCESS() {
         String sessionId = SESSION_ID.toString();
-        String userId = USER_ID_1.toString();
         String contentType = ContentType.TEXT.name();
         String content = "Test message content";
         ChatMessageEntity result = chatMessageRepository
-                .sendMessage(sessionId, userId, contentType, content);
+                .sendMessage(sessionId, TestData.USER_ID_1, contentType, content);
         assertNotNull(result, "Chat message should be sent");
         assertEquals(UUID.fromString(sessionId), result.getSessionId(), "Session ID should match");
-        assertEquals(UUID.fromString(userId), result.getSenderId(), "Sender ID should match");
+        assertEquals(TestData.USER_ID_1, result.getSenderId(), "Sender ID should match");
         assertEquals(contentType, result.getContentType(), "Content type should match");
         assertEquals(content, result.getContent(), "Message content should match");
     }

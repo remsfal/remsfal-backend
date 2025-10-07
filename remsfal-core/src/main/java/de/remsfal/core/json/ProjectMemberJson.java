@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -32,7 +34,7 @@ public abstract class ProjectMemberJson implements ProjectMemberModel {
     @Null
     @Nullable
     @Override
-    public abstract String getId();
+    public abstract UUID getId();
 
     @Null
     @Nullable

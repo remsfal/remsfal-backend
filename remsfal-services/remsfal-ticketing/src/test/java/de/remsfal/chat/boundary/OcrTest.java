@@ -72,8 +72,7 @@ public class OcrTest extends AbstractResourceTest {
         String taskId = UUID.randomUUID().toString();
         String sessionId = UUID.randomUUID().toString();
 
-        String userId = UUID.randomUUID().toString();
-        when(principal.getId()).thenReturn(userId);
+        when(principal.getId()).thenReturn(UUID.randomUUID());
         JsonWebToken jwt = mock(JsonWebToken.class);
         when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId, "MANAGER"));
         when(principal.getJwt()).thenReturn(jwt);

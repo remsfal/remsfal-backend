@@ -1,6 +1,7 @@
 package de.remsfal.chat.boundary;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -42,10 +43,12 @@ class OcrEventProducerTest extends AbstractKafkaTest {
 
     @Test
     void testSendOcrRequest_sendFails_logsError() {
+        final UUID sessionId = UUID.randomUUID();
+        final UUID messageId = UUID.randomUUID();
         FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
-            .sessionId("123")
-            .messageId("323")
-            .senderId(TestData.USER_ID.toString())
+            .sessionId(sessionId)
+            .messageId(messageId)
+            .senderId(TestData.USER_ID)
             .bucket(FileStorage.DEFAULT_BUCKET_NAME)
             .fileName("file")
             .build();
@@ -55,8 +58,8 @@ class OcrEventProducerTest extends AbstractKafkaTest {
         given()
             .topic("ocr.documents.to_process")
         .assertThat()
-            .json("sessionId", Matchers.equalTo("123"))
-            .json("messageId", Matchers.equalTo("323"))
+            .json("sessionId", Matchers.equalTo(sessionId.toString()))
+            .json("messageId", Matchers.equalTo(messageId.toString()))
             .json("senderId", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("bucket", Matchers.equalTo(FileStorage.DEFAULT_BUCKET_NAME))
             .json("fileName", Matchers.equalTo("file"));

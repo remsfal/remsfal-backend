@@ -9,6 +9,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -20,21 +21,21 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
     ProjectController controller;
 
     @Override
-    public ProjectMemberListJson getProjectMembers(final String projectId) {
+    public ProjectMemberListJson getProjectMembers(final UUID projectId) {
         checkReadPermissions(projectId);
         final Set<? extends ProjectMemberModel> model = controller.getProjectMembers(principal, projectId);
         return ProjectMemberListJson.valueOfSet(model);
     }
 
     @Override
-    public ProjectMemberJson addProjectMember(final String projectId, final ProjectMemberJson member) {
+    public ProjectMemberJson addProjectMember(final UUID projectId, final ProjectMemberJson member) {
         checkWritePermissions(projectId);
         final ProjectMemberModel model =  controller.addProjectMember(principal, projectId, member);
         return ProjectMemberJson.valueOf(model);
     }
 
     @Override
-    public ProjectMemberJson updateProjectMember(final String projectId, final String memberId,
+    public ProjectMemberJson updateProjectMember(final UUID projectId, final UUID memberId,
             final ProjectMemberJson member) {
         checkWritePermissions(projectId);
         final ProjectMemberModel model = controller.changeProjectMemberRole(projectId,
@@ -43,7 +44,7 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
     }
 
     @Override
-    public void deleteProjectMember(final String projectId, final String memberId) {
+    public void deleteProjectMember(final UUID projectId, final UUID memberId) {
         checkOwnerPermissions(projectId);
         controller.removeProjectMember(projectId, memberId);
     }

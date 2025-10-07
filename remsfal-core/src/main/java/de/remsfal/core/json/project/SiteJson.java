@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -31,7 +33,7 @@ public abstract class SiteJson implements SiteModel {
     @Null
     @Nullable
     @Override
-    public abstract String getId();
+    public abstract UUID getId();
 
     @Title
     @NotBlank(groups = PostValidation.class)

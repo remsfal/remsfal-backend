@@ -9,6 +9,9 @@ import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -23,7 +26,7 @@ import org.immutables.value.Value.Immutable;
 public abstract class ProjectItemJson {
 
     @NotNull
-    public abstract String getId();
+    public abstract UUID getId();
 
     @NotNull
     public abstract String getName();

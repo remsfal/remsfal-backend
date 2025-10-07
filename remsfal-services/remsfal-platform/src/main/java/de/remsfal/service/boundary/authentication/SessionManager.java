@@ -83,7 +83,7 @@ public class SessionManager {
      * @param email  User email to generate the access token for (email claim)
      * @return NewCookie containing the access token
      */
-    public NewCookie generateAccessToken(String userId, String email) {
+    public NewCookie generateAccessToken(final UUID userId, final String email) {
         if (userId == null || email == null) {
             throw new UnauthorizedException("User id and email are required");
         }
@@ -94,7 +94,7 @@ public class SessionManager {
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
             Integer.MAX_VALUE);
         Map<String, String> projectRoles = memberships.stream().collect(Collectors.toMap(
-            m -> m.getProject().getId(),
+            m -> m.getProject().getId().toString(),
             m -> m.getRole().name()
         ));
 
@@ -109,7 +109,7 @@ public class SessionManager {
      * @param userAuth User authentication entity to generate the access token for
      * @return NewCookie containing the access token
      */
-    public NewCookie generateAccessToken(UserAuthenticationModel userAuth) {
+    public NewCookie generateAccessToken(final UserAuthenticationModel userAuth) {
         return generateAccessToken(userAuth.getUser().getId(), userAuth.getUser().getEmail());
     }
 
@@ -123,7 +123,7 @@ public class SessionManager {
      * @return NewCookie containing the refresh token
      */
     @Transactional
-    public NewCookie generateRefreshToken(String userId, String userEmail) {
+    public NewCookie generateRefreshToken(final UUID userId, final String userEmail) {
         String refreshId = UUID.randomUUID().toString();
 
         if (isNewUserAuthenticationEntity(userId)) {
@@ -151,7 +151,7 @@ public class SessionManager {
         }
 
         JsonWebToken refreshJwt = parseRefreshToken(refreshCookie.getValue());
-        String userId = refreshJwt.getSubject();
+        UUID userId = UUID.fromString(refreshJwt.getSubject());
         String email = refreshJwt.getClaim("email");
         String refreshId = refreshJwt.getClaim("refreshToken");
 
@@ -173,12 +173,12 @@ public class SessionManager {
     }
 
     /** Checks if there is an existing user authentication entity for the given user ID */
-    private boolean isNewUserAuthenticationEntity(String userId) {
+    private boolean isNewUserAuthenticationEntity(final UUID userId) {
         return userAuthRepository.findByUserId(userId).isEmpty();
     }
 
     /** Creates a new user authentication entity with the given user ID and refresh token */
-    private void createNewUserAuthentication(String userId, String refreshToken) {
+    private void createNewUserAuthentication(final UUID userId, final String refreshToken) {
         UserAuthenticationEntity userAuthenticationEntity = new UserAuthenticationEntity();
         userRepository.findByIdOptional(userId).ifPresentOrElse(userAuthenticationEntity::setUser,
             () -> {
@@ -189,12 +189,12 @@ public class SessionManager {
     }
 
     /** Updates the existing refresh token for the given user ID */
-    private void updateExistingRefreshToken(String userId, String refreshToken) {
+    private void updateExistingRefreshToken(final UUID userId, final String refreshToken) {
         userAuthRepository.updateRefreshToken(userId, refreshToken);
     }
 
     /** Validates the refresh token claim against the stored refresh token for the given user ID */
-    private UserAuthenticationModel requireValidRefreshToken(String userId, String refreshTokenClaim) {
+    private UserAuthenticationModel requireValidRefreshToken(final UUID userId, final String refreshTokenClaim) {
         Optional<UserAuthenticationEntity> userAuth = userAuthRepository.findByUserId(userId);
 
         if (userAuth.isEmpty()) {
@@ -210,18 +210,19 @@ public class SessionManager {
     }
 
     /** Builds a new cookie with the given parameters */
-    private NewCookie buildCookie(String name, String value, int maxAge, boolean httpOnly) {
+    private NewCookie buildCookie(final String name, final String value, int maxAge, boolean httpOnly) {
         return new NewCookie.Builder(name).value(value).path(sessionCookiePath + getSameSiteWorkaround())
             .httpOnly(httpOnly).secure(true).maxAge(maxAge).build();
     }
 
     @Transactional
-    public void logout(Map<String, Cookie> cookies) {
+    public void logout(final Map<String, Cookie> cookies) {
         Cookie refreshCookie = cookies.get(REFRESH_COOKIE_NAME);
 
         if (refreshCookie != null) {
             JsonWebToken refresh = parseRefreshToken(refreshCookie.getValue());
-            userAuthRepository.deleteRefreshToken(refresh.getSubject());
+            UUID userId = UUID.fromString(refresh.getSubject());
+            userAuthRepository.deleteRefreshToken(userId);
         }
     }
 

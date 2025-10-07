@@ -2,7 +2,6 @@ package de.remsfal.core.api.project;
 
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
@@ -17,6 +16,8 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
@@ -48,9 +49,9 @@ public interface CommercialEndpoint {
     )
     Response createCommercial(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the building", required = true)
-        @PathParam("buildingId") @NotNull @UUID String buildingId,
+        @PathParam("buildingId") @NotNull UUID buildingId,
         @Parameter(description = "Commercial unit information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) CommercialJson commercial);
 
@@ -63,9 +64,9 @@ public interface CommercialEndpoint {
     @APIResponse(responseCode = "404", description = "The commercial does not exist")
     CommercialJson getCommercial(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the commercial unit", required = true)
-        @PathParam("commercialId") @NotNull @UUID String commercialId);
+        @PathParam("commercialId") @NotNull UUID commercialId);
 
     @PATCH
     @Path("/{commercialId}")
@@ -77,9 +78,9 @@ public interface CommercialEndpoint {
     @APIResponse(responseCode = "404", description = "The commercial does not exist")
     CommercialJson updateCommercial(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the commercial unit", required = true)
-        @PathParam("commercialId") @NotNull @UUID String commercialId,
+        @PathParam("commercialId") @NotNull UUID commercialId,
         @Parameter(description = "Commercial unit object with information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) CommercialJson commercial);
 
@@ -90,8 +91,8 @@ public interface CommercialEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteCommercial(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the commercial unit", required = true)
-        @PathParam("commercialId") @NotNull @UUID String commercialId);
+        @PathParam("commercialId") @NotNull UUID commercialId);
 
 }

@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -16,7 +18,6 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -31,12 +32,12 @@ public abstract class TaskJson implements TaskModel {
     @Null
     @Nullable
     @Override
-    public abstract String getId();
+    public abstract UUID getId();
 
     @Null
     @Nullable
     @Override
-    public abstract String getProjectId();
+    public abstract UUID getProjectId();
 
     @NullOrNotBlank
     @NotBlank(groups = PostValidation.class)
@@ -53,29 +54,25 @@ public abstract class TaskJson implements TaskModel {
     @Override
     public abstract Status getStatus();
 
-    @UUID
     @Nullable
     @Override
-    public abstract String getOwnerId();
+    public abstract UUID getOwnerId();
 
     @Nullable
     @Override
     public abstract String getDescription();
 
-    @UUID
     @Nullable
     @Override
-    public abstract String getBlockedBy();
+    public abstract UUID getBlockedBy();
 
-    @UUID
     @Nullable
     @Override
-    public abstract String getRelatedTo();
+    public abstract UUID getRelatedTo();
 
-    @UUID
     @Nullable
     @Override
-    public abstract String getDuplicateOf();
+    public abstract UUID getDuplicateOf();
 
     public static TaskJson valueOf(final TaskModel model) {
         return ImmutableTaskJson.builder()

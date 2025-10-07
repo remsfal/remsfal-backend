@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 import de.remsfal.test.AbstractTest;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,18 +47,18 @@ class JWTManagerTest extends AbstractTest {
     @Test
     void testCreateAccessToken_containsStandardAndProjectClaims() {
         Map<String, String> projectRoles = Map.of(
-                "proj-1", "MANAGER",
-                "proj-2", "PROPRIETOR"
+                TestData.PROJECT_ID_1.toString(), "MANAGER",
+                TestData.PROJECT_ID_2.toString(), "PROPRIETOR"
         );
 
-        String token = jwtManager.createAccessToken("u1", "u1@example.com", "User One",
+        String token = jwtManager.createAccessToken(TestData.USER_ID_1, "u1@example.com", "User One",
                 true, projectRoles, 3600);
 
         assertNotNull(token);
         assertEquals(3, token.split("\\.").length, "JWT must have 3 parts");
 
         Map<String, Object> payload = decodePayload(token);
-        assertEquals("u1", payload.get("sub"));
+        assertEquals(TestData.USER_ID_1.toString(), payload.get("sub"));
         assertEquals("u1@example.com", payload.get("email"));
         assertEquals("User One", payload.get("name"));
         assertEquals(Boolean.TRUE, payload.get("active"));
@@ -70,10 +71,10 @@ class JWTManagerTest extends AbstractTest {
 
     @Test
     void testCreateRefreshToken_containsRefreshTokenClaim() {
-        String token = jwtManager.createRefreshToken("u2", "u2@example.com", "r-123", 604800);
+        String token = jwtManager.createRefreshToken(TestData.USER_ID_2, "u2@example.com", "r-123", 604800);
         Map<String, Object> payload = decodePayload(token);
 
-        assertEquals("u2", payload.get("sub"));
+        assertEquals(TestData.USER_ID_2.toString(), payload.get("sub"));
         assertEquals("u2@example.com", payload.get("email"));
         assertEquals("r-123", payload.get("refreshToken"));
     }
@@ -90,7 +91,7 @@ class JWTManagerTest extends AbstractTest {
         JWTManager verifierOnly = new JWTManager();
         Map<String, String> projectRoles = Map.of();
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> verifierOnly.createAccessToken("u1", "e@x", "Name", true, projectRoles, 60));
+                () -> verifierOnly.createAccessToken(TestData.USER_ID_1, "e@x", "Name", true, projectRoles, 60));
 
         assertTrue(exception.getMessage().contains("issuer mode"), exception.getMessage());
     }

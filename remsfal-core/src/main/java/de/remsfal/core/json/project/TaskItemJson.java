@@ -9,6 +9,9 @@ import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.core.model.project.TaskModel.Status;
 import de.remsfal.core.model.project.TaskModel.Type;
 import jakarta.annotation.Nullable;
+
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -23,7 +26,7 @@ import org.immutables.value.Value.Immutable;
 public abstract class TaskItemJson {
     // Validation is not required, because it is read-only.
 
-    public abstract String getId();
+    public abstract UUID getId();
 
     public abstract String getName();
 
@@ -34,7 +37,7 @@ public abstract class TaskItemJson {
     public abstract Status getStatus();
 
     @Nullable
-    public abstract String getOwner();
+    public abstract UUID getOwner();
 
     public static TaskItemJson valueOf(final TaskModel model) {
         return ImmutableTaskItemJson.builder()

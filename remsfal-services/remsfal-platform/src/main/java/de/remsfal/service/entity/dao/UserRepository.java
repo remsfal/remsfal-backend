@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import de.remsfal.service.entity.dto.UserEntity;
 
@@ -22,7 +23,7 @@ public class UserRepository extends AbstractRepository<UserEntity> {
         return find("email", email).singleResultOptional();
     }
 
-    public boolean remove(final String userId) {
+    public boolean remove(final UUID userId) {
         return getEntityManager().createNamedQuery("UserEntity.deleteById")
             .setParameter("id", userId)
             .executeUpdate() > 0;

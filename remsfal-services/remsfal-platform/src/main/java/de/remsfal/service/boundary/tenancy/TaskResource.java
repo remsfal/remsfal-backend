@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.UUID;
 
 import de.remsfal.core.api.tenancy.TaskEndpoint;
 import de.remsfal.core.json.tenancy.TaskJson;
@@ -26,16 +27,16 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     TaskController taskController;
 
     @Override
-    public TaskListJson getTasks(final String tenancyId, final String rentalType,
-        final String rentalId, final Status status) {
+    public TaskListJson getTasks(final UUID tenancyId, final String rentalType,
+        final UUID rentalId, final Status status) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         return TaskListJson.valueOf(taskController.getTasks(tenancyId, Optional.ofNullable(status)));
     }
 
     @Override
-    public Response createTask(final String tenancyId, final String rentalType,
-        final String rentalId, final TaskJson task) {
+    public Response createTask(final UUID tenancyId, final String rentalType,
+        final UUID rentalId, final TaskJson task) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         final TaskModel model = null; // TODO
@@ -47,8 +48,8 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     }
 
     @Override
-    public TaskJson getTask(final String tenancyId, final String rentalType,
-        final String rentalId, final String taskId) {
+    public TaskJson getTask(final UUID tenancyId, final String rentalType,
+        final UUID rentalId, final UUID taskId) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         String projectId = tenancyId; // TODO
@@ -56,8 +57,8 @@ public class TaskResource extends AbstractTenancyResource implements TaskEndpoin
     }
 
     @Override
-    public TaskJson updateTask(final String tenancyId, final String rentalType,
-        final String rentalId, final String taskId, final TaskJson task) {
+    public TaskJson updateTask(final UUID tenancyId, final String rentalType,
+        final UUID rentalId, final UUID taskId, final TaskJson task) {
         checkReadPermissions(tenancyId);
         final UnitType type = UnitType.fromResourcePath(rentalType);
         String projectId = tenancyId; // TODO

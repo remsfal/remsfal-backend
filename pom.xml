@@ -108,9 +108,9 @@
                                 ${project.build.directory}/site/jacoco
                             </quarkus.jacoco.report-location>
                         </systemPropertyVariables>
-                        <includes>
+                        <!-- includes>
                             <include>**/boundary/**</include>
-                        </includes>
+                        </includes -->
                     </configuration>
                 </plugin>
                 <plugin>

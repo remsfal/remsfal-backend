@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -13,7 +14,7 @@ import java.util.Optional;
 @ApplicationScoped
 public class PropertyRepository extends AbstractRepository<PropertyEntity> {
 
-    public List<PropertyEntity> findPropertiesByProjectId(final String projectId) {
+    public List<PropertyEntity> findPropertiesByProjectId(final UUID projectId) {
         return list("projectId = :projectId",
             Parameters.with(PARAM_PROJECT_ID, projectId));
     }

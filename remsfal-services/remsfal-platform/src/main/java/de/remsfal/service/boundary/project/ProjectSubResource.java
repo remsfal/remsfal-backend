@@ -7,6 +7,9 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
+
+import java.util.UUID;
+
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.service.control.ProjectController;
@@ -30,11 +33,11 @@ public class ProjectSubResource {
     @Inject
     protected ProjectController projectController;
 
-    public boolean checkReadPermissions(final String projectId) {
+    public boolean checkReadPermissions(final UUID projectId) {
         return projectController.getProjectMemberRole(principal, projectId) != null;
     }
 
-    public boolean checkWritePermissions(final String projectId) {
+    public boolean checkWritePermissions(final UUID projectId) {
         if (!projectController.getProjectMemberRole(principal, projectId).isPrivileged()) {
             throw new ForbiddenException("Inadequate user rights");
         } else {
@@ -42,7 +45,7 @@ public class ProjectSubResource {
         }
     }
 
-    public boolean checkOwnerPermissions(final String projectId) {
+    public boolean checkOwnerPermissions(final UUID projectId) {
         if (projectController.getProjectMemberRole(principal, projectId) != MemberRole.PROPRIETOR) {
             throw new ForbiddenException("Owner rights are required");
         } else {

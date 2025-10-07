@@ -19,6 +19,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -126,7 +127,7 @@ public class PropertyController {
         return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
-    public List<RentalUnitTreeNodeJson> getPropertyTree(final String projectId) {
+    public List<RentalUnitTreeNodeJson> getPropertyTree(final UUID projectId) {
         logger.infov("Retrieving properties (projectId = {0})", projectId);
 
         // Fetch properties for the project

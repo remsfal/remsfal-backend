@@ -52,7 +52,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
             .singleResult();
     }
 
-    public ChatMessageEntity sendMessage(String sessionId, String userId, String contentType, String content) {
+    public ChatMessageEntity sendMessage(String sessionId, UUID userId, String contentType, String content) {
         try {
             if (!ContentType.TEXT.name().equals(contentType) && !ContentType.FILE.name().equals(contentType)) {
                 throw new IllegalArgumentException("Invalid content type: " + contentType);
@@ -72,7 +72,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
             key.setSessionId(UUID.fromString(sessionId));
             key.setMessageId(UUID.randomUUID());
             message.setKey(key);
-            message.setSenderId(UUID.fromString(userId));
+            message.setSenderId(userId);
             message.setContentType(contentType);
             if (ContentType.FILE.name().equals(contentType)) {
                 message.setUrl(content);

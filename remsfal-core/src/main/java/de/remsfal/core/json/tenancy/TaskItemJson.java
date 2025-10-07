@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.core.model.project.TaskModel.Status;
 import de.remsfal.core.model.project.TaskModel.Type;
+
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
@@ -19,7 +22,7 @@ import org.immutables.value.Value;
 public abstract class TaskItemJson {
     // Validation is not required, because it is read-only for tenants.
 
-    public abstract String getId();
+    public abstract UUID getId();
 
     public abstract String getName();
 

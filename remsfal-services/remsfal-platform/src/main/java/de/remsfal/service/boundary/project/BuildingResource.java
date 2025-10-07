@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RequestScoped
 public class BuildingResource extends ProjectSubResource implements BuildingEndpoint {
@@ -28,10 +29,10 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     Instance<StorageResource> storageResource;
 
     @Override
-    public Response createBuilding(String projectId, String propertyId, BuildingJson building) {
+    public Response createBuilding(final UUID projectId, final UUID propertyId, final BuildingJson building) {
         checkWritePermissions(projectId);
         final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(BuildingJson.valueOf(model))
@@ -39,7 +40,7 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     }
 
     @Override
-    public BuildingJson getBuilding(String projectId, String buildingId) {
+    public BuildingJson getBuilding(final UUID projectId, final UUID buildingId) {
         checkReadPermissions(projectId);
         final BuildingModel model = controller.getBuilding(projectId, buildingId);
 
@@ -47,14 +48,14 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
     }
 
     @Override
-    public BuildingJson updateBuilding(String projectId, String buildingId, BuildingJson building) {
+    public BuildingJson updateBuilding(final UUID projectId, final UUID buildingId, final BuildingJson building) {
         checkWritePermissions(projectId);
         final BuildingModel model = controller.updateBuilding(projectId, buildingId, building);
         return BuildingJson.valueOf(model);
     }
 
     @Override
-    public void deleteBuilding(String projectId, String buildingId) {
+    public void deleteBuilding(final UUID projectId, final UUID buildingId) {
         checkWritePermissions(projectId);
         controller.deleteBuilding(projectId, buildingId);
     }

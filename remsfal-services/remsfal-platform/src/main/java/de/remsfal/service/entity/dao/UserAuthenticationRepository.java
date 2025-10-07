@@ -11,17 +11,20 @@ import java.util.UUID;
 @ApplicationScoped
 public class UserAuthenticationRepository extends AbstractRepository<UserAuthenticationEntity> {
 
-    public Optional<UserAuthenticationEntity> findByUserId(final String userId) {
+    public Optional<UserAuthenticationEntity> findByUserId(final UUID userId) {
         return getEntityManager()
             .createNamedQuery("UserAuthenticationEntity.findByUserId", UserAuthenticationEntity.class)
-            .setParameter(PARAM_USER_ID, UUID.fromString(userId))
+            .setParameter(PARAM_USER_ID, userId)
             .getResultStream()
             .findFirst();
     }
 
-    public void updateRefreshToken(final String userId, final String refreshToken) {
-        getEntityManager().createNamedQuery("UserAuthenticationEntity.updateRefreshToken")
-            .setParameter("refreshToken", refreshToken).setParameter(PARAM_USER_ID, userId).executeUpdate();
+    public void updateRefreshToken(final UUID userId, final String refreshToken) {
+        getEntityManager()
+            .createNamedQuery("UserAuthenticationEntity.updateRefreshToken")
+            .setParameter("refreshToken", refreshToken)
+            .setParameter(PARAM_USER_ID, userId)
+            .executeUpdate();
     }
 
     public void updateRefreshToken(final UserAuthenticationModel userAuthentication) {
@@ -32,16 +35,9 @@ public class UserAuthenticationRepository extends AbstractRepository<UserAuthent
         updateRefreshToken(user.getId(), refreshToken);
     }
 
-    public void deleteRefreshToken(final String userId) {
+    public void deleteRefreshToken(final UUID userId) {
         getEntityManager().createNamedQuery("UserAuthenticationEntity.deleteRefreshToken")
             .setParameter(PARAM_USER_ID, userId).executeUpdate();
     }
 
-    public void deleteRefreshToken(final UserAuthenticationModel userAuthentication) {
-        deleteRefreshToken(userAuthentication.getUser().getId());
-    }
-
-    public void deleteRefreshToken(final UserModel user) {
-        deleteRefreshToken(user.getId());
-    }
 }

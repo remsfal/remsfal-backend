@@ -19,6 +19,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -39,7 +41,6 @@ import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 
 /**
  * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -91,7 +92,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson getProject(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId
+        @PathParam("projectId") @NotNull UUID projectId
     );
 
     @PATCH
@@ -104,7 +105,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson updateProject(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Project information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) ProjectJson project
     );
@@ -116,7 +117,7 @@ public interface ProjectEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteProject(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId
+        @PathParam("projectId") @NotNull UUID projectId
     );
 
 

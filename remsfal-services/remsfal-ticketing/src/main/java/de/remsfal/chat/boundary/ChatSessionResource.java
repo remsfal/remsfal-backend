@@ -74,10 +74,9 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     public Response createChatSession(final String projectId, final String taskId) {
         try {
             checkWritePermissions(projectId);
-            String userId = principal.getId(); // Get user ID from session
 
             ChatSessionModel session = chatSessionController
-                .createChatSession(projectId, taskId, userId);
+                .createChatSession(projectId, taskId, principal.getId());
             URI location = uri.getAbsolutePathBuilder().path(session.getSessionId().toString()).build();
             return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
@@ -126,9 +125,8 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     public Response joinChatSession(final String projectId, final String taskId, final String sessionId) {
         try {
             checkWritePermissions(projectId);
-            String userId = principal.getId(); // Get user ID from session
             chatSessionController.addParticipant(projectId, taskId,
-                sessionId, userId, ParticipantRole.OBSERVER);
+                sessionId, principal.getId(), ParticipantRole.OBSERVER);
             Map<UUID, String> participants =
                 chatSessionController.getParticipants(projectId, taskId, sessionId);
             String json = jsonifyParticipantsMap(participants);
@@ -241,14 +239,13 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     public Response sendMessage(final String projectId, final String taskId,
         final String sessionId, final ChatMessageJson message) {
         try {
-            String userId = principal.getId();
+            UUID userId = principal.getId();
             if (userId == null) {
                 throw new NotAuthorizedException("No user authentication provided via session cookie");
             }
             Map<UUID, String> participants =
                 chatSessionController.getParticipants(projectId, taskId, sessionId);
-            UUID userUUID = UUID.fromString(userId);
-            boolean isParticipant = participants.containsKey(userUUID);
+            boolean isParticipant = participants.containsKey(userId);
             boolean hasWritePermission = false;
             try {
                 checkWritePermissions(projectId);
@@ -407,7 +404,6 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     public Response uploadFile(final String projectId, final String taskId,
         final String sessionId, final MultipartFormDataInput input) {
         try {
-            String userId = principal.getId();
             checkWritePermissions(projectId);
             Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
             List<InputPart> fileParts = formDataMap.get("file");
@@ -451,12 +447,12 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
                     String fileUrl = fileStorageController.uploadFile(input);
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
-                        .sendChatMessage(sessionId, userId, ContentType.FILE.name(), fileUrl);
+                        .sendChatMessage(sessionId, principal.getId(), ContentType.FILE.name(), fileUrl);
 
                     FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
-                        .sessionId(sessionId)
-                        .messageId(fileMetadataEntity.getMessageId().toString())
-                        .senderId(userId)
+                        .sessionId(UUID.fromString(sessionId))
+                        .messageId(fileMetadataEntity.getMessageId())
+                        .senderId(principal.getId())
                         .bucket(FileStorage.DEFAULT_BUCKET_NAME)
                         .fileName(extractFileNameFromUrl(fileUrl))
                         .build();

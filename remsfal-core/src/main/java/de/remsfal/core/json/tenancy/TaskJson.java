@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
 import java.util.Date;
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
@@ -31,12 +32,12 @@ public abstract class TaskJson implements TaskModel {
     @Null
     @Nullable
     @Override
-    public abstract String getId();
+    public abstract UUID getId();
 
     @Nullable
     @JsonIgnore
     @Override
-    public abstract String getProjectId();
+    public abstract UUID getProjectId();
 
     @NullOrNotBlank
     @NotBlank(groups = PostValidation.class)
@@ -56,7 +57,7 @@ public abstract class TaskJson implements TaskModel {
     @Nullable
     @JsonIgnore
     @Override
-    public abstract String getOwnerId();
+    public abstract UUID getOwnerId();
 
     @NullOrNotBlank
     @NotBlank(groups = PostValidation.class)
@@ -67,17 +68,17 @@ public abstract class TaskJson implements TaskModel {
     @Nullable
     @JsonIgnore
     @Override
-    public abstract String getBlockedBy();
+    public abstract UUID getBlockedBy();
 
     @Nullable
     @JsonIgnore
     @Override
-    public abstract String getRelatedTo();
+    public abstract UUID getRelatedTo();
 
     @Nullable
     @JsonIgnore
     @Override
-    public abstract String getDuplicateOf();
+    public abstract UUID getDuplicateOf();
 
     @Null
     @Nullable

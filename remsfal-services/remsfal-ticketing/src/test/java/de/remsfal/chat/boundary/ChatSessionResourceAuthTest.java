@@ -24,6 +24,7 @@ import de.remsfal.chat.control.ChatSessionController;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
+import de.remsfal.test.TestData;
 
 class ChatSessionResourceAuthTest {
 
@@ -37,7 +38,7 @@ class ChatSessionResourceAuthTest {
         RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
         JsonWebToken jwt = mock(JsonWebToken.class);
         when(principal.getJwt()).thenReturn(jwt);
-        when(principal.getId()).thenReturn("user1");
+        when(principal.getId()).thenReturn(TestData.USER_ID);
         when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId, role));
         return principal;
     }
@@ -56,7 +57,7 @@ class ChatSessionResourceAuthTest {
         when(session.getModifiedAt()).thenReturn(Instant.now());
 
         ChatSessionController controller = mock(ChatSessionController.class);
-        when(controller.createChatSession(projectId, taskId, "user1")).thenReturn(session);
+        when(controller.createChatSession(projectId, taskId, TestData.USER_ID)).thenReturn(session);
 
         ChatSessionResource resource = new ChatSessionResource();
         setField(resource, ChatSubResource.class, "principal", principalWithRole(projectId, MemberRole.PROPRIETOR.name()));

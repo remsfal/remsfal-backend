@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -23,11 +24,11 @@ public class CommercialResource extends ProjectSubResource implements Commercial
     CommercialController controller;
 
     @Override
-    public Response createCommercial(final String projectId, final String buildingId,
+    public Response createCommercial(final UUID projectId, final UUID buildingId,
                                      final CommercialJson commercial) {
         checkWritePermissions(projectId);
         final CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(CommercialJson.valueOf(model))
@@ -35,20 +36,20 @@ public class CommercialResource extends ProjectSubResource implements Commercial
     }
 
     @Override
-    public CommercialJson getCommercial(final String projectId, final String commercialId) {
+    public CommercialJson getCommercial(final UUID projectId, final UUID commercialId) {
         checkReadPermissions(projectId);
         return CommercialJson.valueOf(controller.getCommercial(projectId, commercialId));
     }
 
     @Override
-    public CommercialJson updateCommercial(final String projectId, final String commercialId,
+    public CommercialJson updateCommercial(final UUID projectId, final UUID commercialId,
                                            final CommercialJson commercial) {
         checkWritePermissions(projectId);
         return CommercialJson.valueOf(controller.updateCommercial(projectId, commercialId, commercial));
     }
 
     @Override
-    public void deleteCommercial(final String projectId, final String commercialId) {
+    public void deleteCommercial(final UUID projectId, final UUID commercialId) {
         checkWritePermissions(projectId);
         controller.deleteCommercial(projectId, commercialId);
     }
