@@ -424,6 +424,22 @@ public class TestData {
     public static final String PROPERTY_ECONOMY_TYPE_1 = "Gebäude- und Freifläche";
     public static final Integer PROPERTY_PLOT_AREA_1 = 1234;
 
+    public static final ImmutablePropertyJson.Builder propertyBuilder1() {
+        return ImmutablePropertyJson
+            .builder()
+            .title(PROPERTY_TITLE_1)
+            .location(PROPERTY_LOCATION_1)
+            .description(PROPERTY_DESCRIPTION_1)
+            .landRegistry(PROPERTY_LAND_REGISTRY_1)
+            .cadastralDistrict(PROPERTY_CADASTRAL_DESTRICT_1)
+            .sheetNumber(PROPERTY_SHEET_NUMBER_1)
+            .plotNumber(PROPERTY_PLOT_NUMBER_1)
+            .cadastralSection(PROPERTY_CADASTRAL_SECTION_1)
+            .plot(PROPERTY_PLOT_1)
+            .economyType(PROPERTY_ECONOMY_TYPE_1)
+            .plotArea(PROPERTY_PLOT_AREA_1);
+    }
+
     // Default test property
     public static final UUID PROPERTY_ID = TestData.PROPERTY_ID_1;
     public static final String PROPERTY_TITLE = TestData.PROPERTY_TITLE_1;
@@ -442,22 +458,6 @@ public class TestData {
         return propertyBuilder1();
     }
 
-    public static final ImmutablePropertyJson.Builder propertyBuilder1() {
-        return ImmutablePropertyJson
-            .builder()
-            .title(PROPERTY_TITLE_1)
-            .location(PROPERTY_LOCATION_1)
-            .description(PROPERTY_DESCRIPTION_1)
-            .landRegistry(PROPERTY_LAND_REGISTRY_1)
-            .cadastralDistrict(PROPERTY_CADASTRAL_DESTRICT_1)
-            .sheetNumber(PROPERTY_SHEET_NUMBER_1)
-            .plotNumber(PROPERTY_PLOT_NUMBER_1)
-            .cadastralSection(PROPERTY_CADASTRAL_SECTION_1)
-            .plot(PROPERTY_PLOT_1)
-            .economyType(PROPERTY_ECONOMY_TYPE_1)
-            .plotArea(PROPERTY_PLOT_AREA_1);
-    }
-
     // Test property 2
     public static final UUID PROPERTY_ID_2 = UUID.fromString("8b4f2703-94ca-490f-ae08-a787c716415f");
     public static final String PROPERTY_TITLE_2 = "Test-Siedling Bremen";
@@ -473,16 +473,6 @@ public class TestData {
     public static final String PROPERTY_ECONOMY_TYPE_2 = "Gebäude- und Freifläche";
     public static final Integer PROPERTY_PLOT_AREA_2 = 4444;
 
-    // Default test site
-    public static final UUID SITE_ID = TestData.SITE_ID_1;
-    public static final String SITE_TITLE = TestData.SITE_TITLE_1;
-    public static final String SITE_DESCRIPTION = TestData.SITE_DESCRIPTION_1;
-    public static final Float SITE_OUTDOOR_AREA = TestData.SITE_OUTDOOR_AREA_1;
-
-    public static final ImmutableSiteJson.Builder siteBuilder() {
-        return siteBuilder1();
-    }
-
     // Test site 1
     public static final UUID SITE_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c26-000000000001");
     public static final String SITE_TITLE_1 = "PKW Stellplatz";
@@ -497,16 +487,14 @@ public class TestData {
             .outdoorArea(SITE_OUTDOOR_AREA_1);
     }
 
-    // Default test building
-    public static final UUID BUILDING_ID = TestData.BUILDING_ID_1;
-    public static final String BUILDING_TITLE = TestData.BUILDING_TITLE_1;
-    public static final String BUILDING_DESCRIPTION = TestData.BUILDING_DESCRIPTION_1;
-    public static final Float BUILDING_LIVING_SPACE = TestData.BUILDING_LIVING_SPACE_1;
-    public static final Float BUILDING_USABLE_SPACE = TestData.BUILDING_USABLE_SPACE_1;
-    public static final Float BUILDING_HEATING_SPACE = TestData.BUILDING_HEATING_SPACE_1;
+    // Default test site
+    public static final UUID SITE_ID = TestData.SITE_ID_1;
+    public static final String SITE_TITLE = TestData.SITE_TITLE_1;
+    public static final String SITE_DESCRIPTION = TestData.SITE_DESCRIPTION_1;
+    public static final Float SITE_OUTDOOR_AREA = TestData.SITE_OUTDOOR_AREA_1;
 
-    public static final ImmutableBuildingJson.Builder buildingBuilder() {
-        return buildingBuilder1();
+    public static final ImmutableSiteJson.Builder siteBuilder() {
+        return siteBuilder1();
     }
 
     // Test building 1
@@ -527,6 +515,18 @@ public class TestData {
             .heatingSpace(BUILDING_HEATING_SPACE_1);
     }
       
+    // Default test building
+    public static final UUID BUILDING_ID = TestData.BUILDING_ID_1;
+    public static final String BUILDING_TITLE = TestData.BUILDING_TITLE_1;
+    public static final String BUILDING_DESCRIPTION = TestData.BUILDING_DESCRIPTION_1;
+    public static final Float BUILDING_LIVING_SPACE = TestData.BUILDING_LIVING_SPACE_1;
+    public static final Float BUILDING_USABLE_SPACE = TestData.BUILDING_USABLE_SPACE_1;
+    public static final Float BUILDING_HEATING_SPACE = TestData.BUILDING_HEATING_SPACE_1;
+
+    public static final ImmutableBuildingJson.Builder buildingBuilder() {
+        return buildingBuilder1();
+    }
+
     // Test building 2
     public static final UUID BUILDING_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c25-000000000002");
     public static final String BUILDING_TITLE_2 = "Bavariaplatz (Fam. Müller)";
@@ -547,19 +547,6 @@ public class TestData {
             .heatingSpace(BUILDING_HEATING_SPACE_2);
     }
 
-    // Default test apartment
-    public static final UUID APARTMENT_ID = TestData.APARTMENT_ID_1;
-    public static final String APARTMENT_TITLE = TestData.APARTMENT_TITLE_1;
-    public static final String APARTMENT_LOCATION = TestData.APARTMENT_LOCATION_1;
-    public static final String APARTMENT_DESCRIPTION = TestData.APARTMENT_DESCRIPTION_1;
-    public static final Float APARTMENT_LIVING_SPACE = TestData.APARTMENT_LIVING_SPACE_1;
-    public static final Float APARTMENT_USABLE_SPACE = TestData.APARTMENT_USABLE_SPACE_1;
-    public static final Float APARTMENT_HEATING_SPACE = TestData.APARTMENT_HEATING_SPACE_1;
-
-    public static final ImmutableApartmentJson.Builder apartmentBuilder() {
-        return apartmentBuilder1();
-    }
-    
     // Test apartment 1
     public static final UUID APARTMENT_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c24-000000000001");
     public static final String APARTMENT_TITLE_1 = "2 Zimmerwohnung 1.OG rechts";
@@ -580,6 +567,19 @@ public class TestData {
         .heatingSpace(APARTMENT_HEATING_SPACE_1);
     }
 
+    // Default test apartment
+    public static final UUID APARTMENT_ID = TestData.APARTMENT_ID_1;
+    public static final String APARTMENT_TITLE = TestData.APARTMENT_TITLE_1;
+    public static final String APARTMENT_LOCATION = TestData.APARTMENT_LOCATION_1;
+    public static final String APARTMENT_DESCRIPTION = TestData.APARTMENT_DESCRIPTION_1;
+    public static final Float APARTMENT_LIVING_SPACE = TestData.APARTMENT_LIVING_SPACE_1;
+    public static final Float APARTMENT_USABLE_SPACE = TestData.APARTMENT_USABLE_SPACE_1;
+    public static final Float APARTMENT_HEATING_SPACE = TestData.APARTMENT_HEATING_SPACE_1;
+
+    public static final ImmutableApartmentJson.Builder apartmentBuilder() {
+        return apartmentBuilder1();
+    }
+    
     // Test apartment 2
     public static final UUID APARTMENT_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c24-000000000002");
     public static final String APARTMENT_TITLE_2 = "3 Zimmerwohnung 1.OG links";
@@ -600,18 +600,6 @@ public class TestData {
         .heatingSpace(APARTMENT_HEATING_SPACE_2);
     }
 
-    // Default test commercial
-    public static final UUID COMMERCIAL_ID = TestData.COMMERCIAL_ID_1;
-    public static final String COMMERCIAL_TITLE = TestData.COMMERCIAL_TITLE_1;
-    public static final String COMMERCIAL_LOCATION = TestData.COMMERCIAL_LOCATION_1;
-    public static final String COMMERCIAL_DESCRIPTION = TestData.COMMERCIAL_DESCRIPTION_1;
-    public static final Float COMMERCIAL_NET_FLOOR_AREA = TestData.COMMERCIAL_NET_FLOOR_AREA_1;
-    public static final Float COMMERCIAL_HEATING_SPACE = TestData.COMMERCIAL_HEATING_SPACE_1;
-    
-    public static final ImmutableCommercialJson.Builder commercialBuilder() {
-        return commercialBuilder1();
-    }
-
     // Test commercial 1
     public static final UUID COMMERCIAL_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c23-000000000001");
     public static final String COMMERCIAL_TITLE_1 = "Bäckerei Lempke";
@@ -628,6 +616,18 @@ public class TestData {
         .description(COMMERCIAL_DESCRIPTION_1)
         .netFloorArea(COMMERCIAL_NET_FLOOR_AREA_1)
         .heatingSpace(COMMERCIAL_HEATING_SPACE_1);
+    }
+
+    // Default test commercial
+    public static final UUID COMMERCIAL_ID = TestData.COMMERCIAL_ID_1;
+    public static final String COMMERCIAL_TITLE = TestData.COMMERCIAL_TITLE_1;
+    public static final String COMMERCIAL_LOCATION = TestData.COMMERCIAL_LOCATION_1;
+    public static final String COMMERCIAL_DESCRIPTION = TestData.COMMERCIAL_DESCRIPTION_1;
+    public static final Float COMMERCIAL_NET_FLOOR_AREA = TestData.COMMERCIAL_NET_FLOOR_AREA_1;
+    public static final Float COMMERCIAL_HEATING_SPACE = TestData.COMMERCIAL_HEATING_SPACE_1;
+    
+    public static final ImmutableCommercialJson.Builder commercialBuilder() {
+        return commercialBuilder1();
     }
 
     // Test commercial 2
@@ -652,18 +652,6 @@ public class TestData {
                 .heatingSpace(COMMERCIAL_HEATING_SPACE_2);
     }
 
-    // Default test storage
-    public static final UUID STORAGE_ID = TestData.STORAGE_ID_1;
-    public static final String STORAGE_TITLE = TestData.STORAGE_TITLE_1;
-    public static final String STORAGE_LOCATION = TestData.STORAGE_LOCATION_1;
-    public static final String STORAGE_DESCRIPTION = TestData.STORAGE_DESCRIPTION_1;
-    public static final Float STORAGE_USABLE_SPACE = TestData.STORAGE_USABLE_SPACE_1;
-    public static final Float STORAGE_RENT = TestData.STORAGE_RENT_1;
-    
-    public static final ImmutableStorageJson.Builder storageBuilder() {
-        return storageBuilder1();
-    }
-
     // Test storage 1
     public static final UUID STORAGE_ID_1 = UUID.fromString("b9440c43-b5c0-4951-9c22-000000000001");
     public static final String STORAGE_TITLE_1 = "Tiefgarage 1";
@@ -679,6 +667,18 @@ public class TestData {
         .location(STORAGE_LOCATION_1)
         .description(STORAGE_DESCRIPTION_1)
         .usableSpace(STORAGE_USABLE_SPACE_1);
+    }
+
+    // Default test storage
+    public static final UUID STORAGE_ID = TestData.STORAGE_ID_1;
+    public static final String STORAGE_TITLE = TestData.STORAGE_TITLE_1;
+    public static final String STORAGE_LOCATION = TestData.STORAGE_LOCATION_1;
+    public static final String STORAGE_DESCRIPTION = TestData.STORAGE_DESCRIPTION_1;
+    public static final Float STORAGE_USABLE_SPACE = TestData.STORAGE_USABLE_SPACE_1;
+    public static final Float STORAGE_RENT = TestData.STORAGE_RENT_1;
+    
+    public static final ImmutableStorageJson.Builder storageBuilder() {
+        return storageBuilder1();
     }
 
     // Test storage 2
@@ -698,6 +698,11 @@ public class TestData {
         .usableSpace(STORAGE_USABLE_SPACE_2);
     }
 
+    // Test tenancy 1
+    public static final UUID TENANCY_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
+    public static final String TENANCY_START_1 = "2007-12-01";
+    public static final String TENANCY_END_1 = "2025-01-30";
+
     // Default test tenancy
     public static final UUID TENANCY_ID = TestData.TENANCY_ID_1;
     public static final String TENANCY_START = TestData.TENANCY_START_1;
@@ -706,11 +711,6 @@ public class TestData {
     public static final ImmutableTenancyJson.Builder tenancyBuilder() {
         return tenancyBuilder1();
     }
-
-    // Test tenancy 1
-    public static final UUID TENANCY_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
-    public static final String TENANCY_START_1 = "2007-12-01";
-    public static final String TENANCY_END_1 = "2025-01-30";
 
     // Test tenancy 2
     public static final UUID TENANCY_ID_2 = UUID.fromString("bbbbbc43-b5c0-4951-9c22-000000000002");
@@ -736,10 +736,6 @@ public class TestData {
                 .endOfRental(LocalDate.parse(TENANCY_END_2));
     }
 
-    // Default test task
-    public static final String TASK_TITLE = TestData.TASK_TITLE_1;
-    public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
-    
     // Test task 1
     public static final String TASK_TITLE_1 = "Heizung funktioniert nicht";
     public static final String TASK_DESCRIPTION_1 = "Sehr geehrte Damen und Herren,\\n"
@@ -772,5 +768,8 @@ public class TestData {
         + "\\n"
         + "Mit freundlichen Grüßen";
 
+    // Default test task
+    public static final String TASK_TITLE = TestData.TASK_TITLE_1;
+    public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
 
 }

@@ -2,6 +2,7 @@ package de.remsfal.service.entity.dto.embeddable;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -15,24 +16,24 @@ public class ProjectMembershipKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Column(name = "PROJECT_ID", nullable = false, columnDefinition = "uuid")
-    public String projectId;
+    public UUID projectId;
     
     @Column(name = "USER_ID", nullable = false, columnDefinition = "uuid")
-    public String userId;
+    public UUID userId;
 
-    public String getProjectId() {
+    public UUID getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(String projectId) {
+    public void setProjectId(final UUID projectId) {
         this.projectId = projectId;
     }
 
-    public String getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(final UUID userId) {
         this.userId = userId;
     }
     

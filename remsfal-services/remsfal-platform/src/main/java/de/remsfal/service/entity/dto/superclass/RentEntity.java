@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.RentModel;
 import jakarta.persistence.Column;
@@ -21,7 +22,7 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Id
     @Column(name = "TENANCY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
-    private String tenancyId;
+    private UUID tenancyId;
 
     @Id
     @Column(name = "FIRST_PAYMENT", columnDefinition = "date", nullable = false)
@@ -43,11 +44,11 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
     @Column(name = "HEATING_COSTS_PREPAYMENT", columnDefinition = "numeric(6,2)",  precision=6, scale=2)
     private BigDecimal heatingCostsPrepayment;
 
-    public String getTenancyId() {
+    public UUID getTenancyId() {
         return tenancyId;
     }
 
-    public void setTenancyId(final String tenancyId) {
+    public void setTenancyId(final UUID tenancyId) {
         this.tenancyId = tenancyId;
     }
 
