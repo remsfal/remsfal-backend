@@ -24,7 +24,7 @@ public class StorageController {
     @Transactional
     public StorageModel createStorage(final UUID projectId, final UUID buildingId, final StorageModel storage) {
         logger.infov("Creating a storage (projectId={0}, buildingId={1}, storage={2})",
-                projectId, buildingId, storage);
+            projectId, buildingId, storage);
         StorageEntity entity = updateStorage(storage, new StorageEntity());
         entity.generateId();
         entity.setProjectId(projectId);
@@ -36,17 +36,17 @@ public class StorageController {
 
     public StorageModel getStorage(final UUID projectId, final UUID storageId) {
         logger.infov("Retrieving a storage (projectId={0}, storageId={1})",
-                projectId, storageId);
+            projectId, storageId);
         return storageRepository.findByIds(projectId, storageId)
-                .orElseThrow(() -> new NotFoundException("Storage does not exist"));
+            .orElseThrow(() -> new NotFoundException("Storage does not exist"));
     }
 
     @Transactional
     public StorageModel updateStorage(final UUID projectId, final UUID storageId, final StorageModel storage) {
         logger.infov("Updating a storage (projectId={0}, storageId={1}, storage={2})",
-                projectId, storageId, storage);
+            projectId, storageId, storage);
         final StorageEntity entity = storageRepository.findByIds(projectId, storageId)
-                .orElseThrow(() -> new NotFoundException("Storage does not exist"));
+            .orElseThrow(() -> new NotFoundException("Storage does not exist"));
         return storageRepository.merge(updateStorage(storage, entity));
     }
 
@@ -72,7 +72,7 @@ public class StorageController {
     @Transactional
     public boolean deleteStorage(final UUID projectId, final UUID storageId) {
         logger.infov("Deleting a storage (projectId={0}, storageId={1})",
-                projectId, storageId);
+            projectId, storageId);
         return storageRepository.removeStorageByIds(projectId, storageId) > 0;
     }
 

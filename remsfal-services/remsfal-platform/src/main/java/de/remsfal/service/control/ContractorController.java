@@ -44,7 +44,7 @@ public class ContractorController {
      * @return the list of contractors
      */
     public List<ContractorEntity> getContractors(final UUID projectId,
-                                               final Integer offset, final Integer limit) {
+        final Integer offset, final Integer limit) {
         logger.infov("Retrieving contractors for project (id = {0})", projectId);
         return contractorRepository.findByProjectId(projectId, offset, limit);
     }
@@ -71,7 +71,7 @@ public class ContractorController {
     public ContractorModel getContractor(final UserModel user, final UUID projectId, final UUID contractorId) {
         logger.infov("Retrieving contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         return contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
-                .orElseThrow(() -> new NotFoundException("Contractor not found"));
+            .orElseThrow(() -> new NotFoundException("Contractor not found"));
     }
 
     /**
@@ -84,11 +84,11 @@ public class ContractorController {
      */
     @Transactional
     public ContractorModel createContractor(final UserModel user, final UUID projectId,
-                                           final ContractorModel contractor) {
+        final ContractorModel contractor) {
         logger.infov("Creating contractor for project (id = {0})", projectId);
 
         ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
-                .orElseThrow(() -> new NotFoundException("Project not found"));
+            .orElseThrow(() -> new NotFoundException("Project not found"));
 
         ContractorEntity entity = new ContractorEntity();
         entity.generateId();
@@ -113,11 +113,11 @@ public class ContractorController {
      */
     @Transactional
     public ContractorModel updateContractor(final UserModel user, final UUID projectId,
-                                           final UUID contractorId, final ContractorModel contractor) {
+        final UUID contractorId, final ContractorModel contractor) {
         logger.infov("Updating contractor (id = {0}) for project (id = {1})", contractorId, projectId);
 
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
-                .orElseThrow(() -> new NotFoundException("Contractor not found"));
+            .orElseThrow(() -> new NotFoundException("Contractor not found"));
 
         if (contractor.getCompanyName() != null) {
             entity.setCompanyName(contractor.getCompanyName());
@@ -147,7 +147,7 @@ public class ContractorController {
     public boolean deleteContractor(final UserModel user, final UUID projectId, final UUID contractorId) {
         logger.infov("Deleting contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
-                .orElseThrow(() -> new NotFoundException("Contractor not found"));
+            .orElseThrow(() -> new NotFoundException("Contractor not found"));
         return contractorRepository.deleteById(entity.getId());
     }
 

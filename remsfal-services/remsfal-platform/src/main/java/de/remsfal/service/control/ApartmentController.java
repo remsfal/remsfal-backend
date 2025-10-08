@@ -26,9 +26,9 @@ public class ApartmentController {
 
     @Transactional
     public ApartmentModel createApartment(final UUID projectId, final UUID buildingId,
-                                          final ApartmentModel apartment) {
+        final ApartmentModel apartment) {
         logger.infov("Creating an apartment (projectId={0}, buildingId={1}, apartment={2})",
-                projectId, buildingId, apartment);
+            projectId, buildingId, apartment);
         final ApartmentEntity entity = updateApartment(apartment, new ApartmentEntity());
         entity.generateId();
         entity.setProjectId(projectId);
@@ -40,18 +40,18 @@ public class ApartmentController {
 
     public ApartmentModel getApartment(final UUID projectId, final UUID apartmentId) {
         logger.infov("Retrieving an apartment (projectId={0}, apartmentId={1})",
-                projectId, apartmentId);
+            projectId, apartmentId);
         return apartmentRepository.findByIds(projectId, apartmentId)
-                .orElseThrow(() -> new NotFoundException("Apartment not exist"));
+            .orElseThrow(() -> new NotFoundException("Apartment not exist"));
     }
 
     @Transactional
     public ApartmentModel updateApartment(final UUID projectId, final UUID apartmentId,
         final ApartmentModel apartment) {
         logger.infov("Update an apartment (projectId={0}, apartmentId={1}, apartment={2})",
-                projectId, apartmentId, apartment);
+            projectId, apartmentId, apartment);
         final ApartmentEntity entity = apartmentRepository.findByIds(projectId, apartmentId)
-                .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
+            .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
         return apartmentRepository.merge(updateApartment(apartment, entity));
     }
 

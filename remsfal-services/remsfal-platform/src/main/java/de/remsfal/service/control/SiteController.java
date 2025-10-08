@@ -47,8 +47,7 @@ public class SiteController {
     }
 
     @Transactional
-    public SiteModel updateSite(final UUID projectId,
-                                final UUID siteId, final SiteModel site) {
+    public SiteModel updateSite(final UUID projectId, final UUID siteId, final SiteModel site) {
         logger.infov("Updating a site (projectId={0}, siteId={1}, site={2})",
             projectId, siteId, site);
         final SiteEntity entity = repository.findSiteById(projectId, siteId)

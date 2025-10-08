@@ -25,7 +25,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class GoogleAuthenticator {
 
     @ConfigProperty(name = "de.remsfal.auth.oidc.auth-server-url",
-            defaultValue = GoogleOAuthConstants.AUTHORIZATION_SERVER_URL)
+        defaultValue = GoogleOAuthConstants.AUTHORIZATION_SERVER_URL)
     private String authServerURL;
 
     @ConfigProperty(name = "de.remsfal.auth.oidc.response-type", defaultValue = "code")

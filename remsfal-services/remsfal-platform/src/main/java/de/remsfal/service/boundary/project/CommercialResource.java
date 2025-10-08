@@ -13,9 +13,9 @@ import java.net.URI;
 import java.util.UUID;
 
 /**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
- *
  * Resource for managing Commercial units via the API.
+ *
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
 public class CommercialResource extends ProjectSubResource implements CommercialEndpoint {
@@ -25,14 +25,14 @@ public class CommercialResource extends ProjectSubResource implements Commercial
 
     @Override
     public Response createCommercial(final UUID projectId, final UUID buildingId,
-                                     final CommercialJson commercial) {
+        final CommercialJson commercial) {
         checkWritePermissions(projectId);
         final CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(CommercialJson.valueOf(model))
-                .build();
+            .type(MediaType.APPLICATION_JSON)
+            .entity(CommercialJson.valueOf(model))
+            .build();
     }
 
     @Override
@@ -43,7 +43,7 @@ public class CommercialResource extends ProjectSubResource implements Commercial
 
     @Override
     public CommercialJson updateCommercial(final UUID projectId, final UUID commercialId,
-                                           final CommercialJson commercial) {
+        final CommercialJson commercial) {
         checkWritePermissions(projectId);
         return CommercialJson.valueOf(controller.updateCommercial(projectId, commercialId, commercial));
     }

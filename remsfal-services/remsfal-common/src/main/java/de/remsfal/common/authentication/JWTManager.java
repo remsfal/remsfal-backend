@@ -83,7 +83,8 @@ public class JWTManager {
     }
 
     /** Issue a refresh token using SmallRye JWT Build (platform only) */
-    public String createRefreshToken(final UUID userId, final String email, final String refreshTokenId, final long ttlSeconds) {
+    public String createRefreshToken(final UUID userId, final String email,
+        final String refreshTokenId, final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 

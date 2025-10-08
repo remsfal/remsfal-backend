@@ -17,9 +17,9 @@ import jakarta.persistence.NoResultException;
 public class ProjectRepository extends AbstractRepository<ProjectEntity> {
 
     public List<ProjectMembershipEntity> findMembershipByUserId(final UUID userId,
-                                                                final int offset, final int limit) {
+        final int offset, final int limit) {
         return getEntityManager().createNamedQuery("ProjectMembershipEntity.findByUserId",
-                        ProjectMembershipEntity.class)
+            ProjectMembershipEntity.class)
             .setParameter(PARAM_USER_ID, userId)
             .setFirstResult(offset)
             .setMaxResults(limit)
@@ -32,16 +32,16 @@ public class ProjectRepository extends AbstractRepository<ProjectEntity> {
             .setParameter(PARAM_USER_ID, userId)
             .getSingleResult();
     }
-    
+
     public Optional<ProjectMembershipEntity> findMembershipByUserIdAndProjectId(final UUID userId,
-                                                                                final UUID projectId) {
+        final UUID projectId) {
         try {
             return Optional.of(getEntityManager()
-                    .createNamedQuery("ProjectMembershipEntity.findByProjectIdAndUserId",
-                                      ProjectMembershipEntity.class)
-                    .setParameter(PARAM_PROJECT_ID, projectId)
-                    .setParameter(PARAM_USER_ID, userId)
-                    .getSingleResult());
+                .createNamedQuery("ProjectMembershipEntity.findByProjectIdAndUserId",
+                    ProjectMembershipEntity.class)
+                .setParameter(PARAM_PROJECT_ID, projectId)
+                .setParameter(PARAM_USER_ID, userId)
+                .getSingleResult());
         } catch (NoResultException e) {
             return Optional.empty();
         }

@@ -54,7 +54,8 @@ public class ContractorResource extends ProjectSubResource implements Contractor
     }
 
     @Override
-    public ContractorJson updateContractor(final UUID projectId, final UUID contractorId, final ContractorJson contractor) {
+    public ContractorJson updateContractor(final UUID projectId, final UUID contractorId,
+        final ContractorJson contractor) {
         checkWritePermissions(projectId);
         ContractorModel model = controller.updateContractor(principal, projectId, contractorId, contractor);
         return ContractorJson.valueOf(model);

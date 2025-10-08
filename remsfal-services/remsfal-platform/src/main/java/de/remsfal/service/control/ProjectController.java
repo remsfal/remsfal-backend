@@ -114,7 +114,7 @@ public class ProjectController {
 
     @Transactional
     public ProjectMemberModel addProjectMember(final UserModel user, final UUID projectId,
-            final ProjectMemberModel member) {
+        final ProjectMemberModel member) {
         logger.infov("Adding a project membership (user={0}, project={1}, memberEmail={2}, memberRole={3})",
             user.getId(), projectId, member.getEmail(), member.getRole());
         final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
@@ -129,8 +129,8 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectMemberModel changeProjectMemberRole(final UUID projectId,
-            final UUID memberId, final MemberRole memberRole) {
+    public ProjectMemberModel changeProjectMemberRole(final UUID projectId, final UUID memberId,
+        final MemberRole memberRole) {
         logger.infov("Updating a project membership (projectId={0}, memberId={1}, memberRole={2})",
             projectId, memberId, memberRole);
         final ProjectMembershipEntity entity = projectRepository.findMembershipByUserIdAndProjectId(memberId, projectId)

@@ -1,5 +1,7 @@
 package de.remsfal.service.entity.dto;
 
+import java.util.Objects;
+
 import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 import jakarta.persistence.CascadeType;
@@ -14,15 +16,12 @@ import jakarta.persistence.Table;
 
 @Entity
 @NamedQuery(name = "UserAuthenticationEntity.findByUserId",
-    query = "select userAuth from UserAuthenticationEntity " +
-        "userAuth where userAuth.user.id = :userId")
+    query = "select userAuth from UserAuthenticationEntity userAuth where userAuth.user.id = :userId")
 @NamedQuery(name = "UserAuthenticationEntity.updateRefreshToken",
-    query = "update UserAuthenticationEntity " +
-        "userAuth set userAuth.refreshToken = :refreshToken " +
+    query = "update UserAuthenticationEntity userAuth set userAuth.refreshToken = :refreshToken " +
         "where userAuth.user.id = :userId")
 @NamedQuery(name = "UserAuthenticationEntity.deleteRefreshToken",
-    query = "update UserAuthenticationEntity userAuth set u" +
-        "serAuth.refreshToken = null " +
+    query = "update UserAuthenticationEntity userAuth set userAuth.refreshToken = null " +
         "where userAuth.user.id = :userId")
 @Table(name = "user_authentications")
 public class UserAuthenticationEntity extends MetaDataEntity implements UserAuthenticationModel {
@@ -52,6 +51,14 @@ public class UserAuthenticationEntity extends MetaDataEntity implements UserAuth
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
+    @Override
+    public int hashCode() {
+        if (user != null) {
+            return Objects.hash(user.getId());
+        } else {
+            return Objects.hash((Object) null);
+        }
+    }
+
 }
-
-
