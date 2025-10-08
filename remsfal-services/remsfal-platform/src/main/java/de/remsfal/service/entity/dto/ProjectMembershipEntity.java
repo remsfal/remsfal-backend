@@ -38,15 +38,15 @@ public class ProjectMembershipEntity extends MetaDataEntity implements ProjectMe
 
     @ManyToOne
     @MapsId("projectId")
-    @JoinColumn(name = "PROJECT_ID", columnDefinition = "uuid")
+    @JoinColumn(name = "project_id", columnDefinition = "uuid")
     ProjectEntity project;
     
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "USER_ID", columnDefinition = "uuid")
+    @JoinColumn(name = "user_id", columnDefinition = "uuid")
     UserEntity user;
     
-    @Column(name = "MEMBER_ROLE")
+    @Column(name = "member_role")
     @Enumerated(EnumType.STRING)
     private MemberRole role;
 

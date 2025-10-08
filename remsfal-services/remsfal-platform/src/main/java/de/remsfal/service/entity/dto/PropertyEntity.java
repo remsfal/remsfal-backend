@@ -16,28 +16,28 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 @Table(name = "properties")
 public class PropertyEntity extends RentalUnitEntity implements PropertyModel {
 
-    @Column(name = "LAND_REGISTRY")
+    @Column(name = "land_registry")
     private String landRegistry;
 
-    @Column(name = "CADASTRAL_DISTRICT")
+    @Column(name = "cadastral_district")
     private String cadastralDistrict;
 
-    @Column(name = "SHEET_NUMBER")
+    @Column(name = "sheet_number")
     private String sheetNumber;
 
-    @Column(name = "PLOT_NUMBER")
+    @Column(name = "plot_number")
     private Integer plotNumber;
 
-    @Column(name = "CADASTRAL_SECTION")
+    @Column(name = "cadastral_section")
     private String cadastralSection;
 
-    @Column(name = "PLOT")
+    @Column(name = "plot")
     private String plot;
 
-    @Column(name = "ECONOMY_TYPE")
+    @Column(name = "economy_type")
     private String economyType;
 
-    @Column(name = "PLOT_AREA")
+    @Column(name = "plot_area")
     private Integer plotArea;
 
     @Override

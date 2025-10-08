@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-0.1.3-rename-columns-to-snake-case" author="copilot">
+        <!-- Rename all PostgreSQL column names from UPPERCASE to lowercase snake_case -->
+        
+        <!-- addresses table -->
+        <renameColumn tableName="addresses" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="addresses" oldColumnName="STREET" newColumnName="street" columnDataType="varchar(255)"/>
+        <renameColumn tableName="addresses" oldColumnName="CITY" newColumnName="city" columnDataType="varchar(255)"/>
+        <renameColumn tableName="addresses" oldColumnName="ZIP" newColumnName="zip" columnDataType="varchar(10)"/>
+        <renameColumn tableName="addresses" oldColumnName="PROVINCE" newColumnName="province" columnDataType="varchar(255)"/>
+        <renameColumn tableName="addresses" oldColumnName="COUNTRY" newColumnName="country" columnDataType="varchar(2)"/>
+        <renameColumn tableName="addresses" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="addresses" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- address_validations table -->
+        <renameColumn tableName="address_validations" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="address_validations" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="address_validations" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- users table -->
+        <renameColumn tableName="users" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="users" oldColumnName="TOKEN_ID" newColumnName="token_id" columnDataType="varchar(255)"/>
+        <renameColumn tableName="users" oldColumnName="EMAIL" newColumnName="email" columnDataType="varchar(255)"/>
+        <renameColumn tableName="users" oldColumnName="AUTHENTICATED_AT" newColumnName="authenticated_at" columnDataType="timestamp"/>
+        <renameColumn tableName="users" oldColumnName="FIRST_NAME" newColumnName="first_name" columnDataType="varchar(255)"/>
+        <renameColumn tableName="users" oldColumnName="LAST_NAME" newColumnName="last_name" columnDataType="varchar(255)"/>
+        <renameColumn tableName="users" oldColumnName="ADDRESS_ID" newColumnName="address_id" columnDataType="uuid"/>
+        <renameColumn tableName="users" oldColumnName="MOBILE_PHONE_NUMBER" newColumnName="mobile_phone_number" columnDataType="varchar(15)"/>
+        <renameColumn tableName="users" oldColumnName="BUSINESS_PHONE_NUMBER" newColumnName="business_phone_number" columnDataType="varchar(15)"/>
+        <renameColumn tableName="users" oldColumnName="PRIVATE_PHONE_NUMBER" newColumnName="private_phone_number" columnDataType="varchar(15)"/>
+        <renameColumn tableName="users" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="users" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- user_authentications table -->
+        <renameColumn tableName="user_authentications" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="user_authentications" oldColumnName="OWNER_ID" newColumnName="owner_id" columnDataType="uuid"/>
+        <renameColumn tableName="user_authentications" oldColumnName="REFRESH_TOKEN" newColumnName="refresh_token" columnDataType="varchar(255)"/>
+        <renameColumn tableName="user_authentications" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="user_authentications" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- projects table -->
+        <renameColumn tableName="projects" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="projects" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="projects" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="projects" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- project_memberships table -->
+        <renameColumn tableName="project_memberships" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="project_memberships" oldColumnName="USER_ID" newColumnName="user_id" columnDataType="uuid"/>
+        <renameColumn tableName="project_memberships" oldColumnName="MEMBER_ROLE" newColumnName="member_role" columnDataType="varchar(255)"/>
+        <renameColumn tableName="project_memberships" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="project_memberships" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- properties table -->
+        <renameColumn tableName="properties" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="properties" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="properties" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="LOCATION" newColumnName="location" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="DESCRIPTION" newColumnName="description" columnDataType="text"/>
+        <renameColumn tableName="properties" oldColumnName="LAND_REGISTRY" newColumnName="land_registry" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="CADASTRAL_DISTRICT" newColumnName="cadastral_district" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="SHEET_NUMBER" newColumnName="sheet_number" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="PLOT_NUMBER" newColumnName="plot_number" columnDataType="integer"/>
+        <renameColumn tableName="properties" oldColumnName="CADASTRAL_SECTION" newColumnName="cadastral_section" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="PLOT" newColumnName="plot" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="ECONOMY_TYPE" newColumnName="economy_type" columnDataType="varchar(255)"/>
+        <renameColumn tableName="properties" oldColumnName="PLOT_AREA" newColumnName="plot_area" columnDataType="integer"/>
+        <renameColumn tableName="properties" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="properties" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- property_rents table -->
+        <renameColumn tableName="property_rents" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="property_rents" oldColumnName="PROPERTY_ID" newColumnName="property_id" columnDataType="uuid"/>
+        <renameColumn tableName="property_rents" oldColumnName="TENANCY_ID" newColumnName="tenancy_id" columnDataType="uuid"/>
+        <renameColumn tableName="property_rents" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="property_rents" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- sites table -->
+        <renameColumn tableName="sites" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="sites" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="sites" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="sites" oldColumnName="LOCATION" newColumnName="location" columnDataType="varchar(255)"/>
+        <renameColumn tableName="sites" oldColumnName="DESCRIPTION" newColumnName="description" columnDataType="text"/>
+        <renameColumn tableName="sites" oldColumnName="USABLE_SPACE" newColumnName="usable_space" columnDataType="integer"/>
+        <renameColumn tableName="sites" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="sites" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- site_rents table -->
+        <renameColumn tableName="site_rents" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="site_rents" oldColumnName="SITE_ID" newColumnName="site_id" columnDataType="uuid"/>
+        <renameColumn tableName="site_rents" oldColumnName="TENANCY_ID" newColumnName="tenancy_id" columnDataType="uuid"/>
+        <renameColumn tableName="site_rents" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="site_rents" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- buildings table -->
+        <renameColumn tableName="buildings" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="buildings" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="buildings" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="buildings" oldColumnName="LOCATION" newColumnName="location" columnDataType="varchar(255)"/>
+        <renameColumn tableName="buildings" oldColumnName="DESCRIPTION" newColumnName="description" columnDataType="text"/>
+        <renameColumn tableName="buildings" oldColumnName="USABLE_FLOOR_AREA" newColumnName="usable_floor_area" columnDataType="integer"/>
+        <renameColumn tableName="buildings" oldColumnName="HEATING_SPACE" newColumnName="heating_space" columnDataType="integer"/>
+        <renameColumn tableName="buildings" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="buildings" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- building_rents table -->
+        <renameColumn tableName="building_rents" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="building_rents" oldColumnName="BUILDING_ID" newColumnName="building_id" columnDataType="uuid"/>
+        <renameColumn tableName="building_rents" oldColumnName="TENANCY_ID" newColumnName="tenancy_id" columnDataType="uuid"/>
+        <renameColumn tableName="building_rents" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="building_rents" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- apartments table -->
+        <renameColumn tableName="apartments" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="apartments" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="apartments" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="apartments" oldColumnName="LOCATION" newColumnName="location" columnDataType="varchar(255)"/>
+        <renameColumn tableName="apartments" oldColumnName="DESCRIPTION" newColumnName="description" columnDataType="text"/>
+        <renameColumn tableName="apartments" oldColumnName="LIVING_SPACE" newColumnName="living_space" columnDataType="integer"/>
+        <renameColumn tableName="apartments" oldColumnName="USABLE_FLOOR_AREA" newColumnName="usable_floor_area" columnDataType="integer"/>
+        <renameColumn tableName="apartments" oldColumnName="HEATING_SPACE" newColumnName="heating_space" columnDataType="integer"/>
+        <renameColumn tableName="apartments" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="apartments" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- apartment_rents table -->
+        <renameColumn tableName="apartment_rents" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="apartment_rents" oldColumnName="APARTMENT_ID" newColumnName="apartment_id" columnDataType="uuid"/>
+        <renameColumn tableName="apartment_rents" oldColumnName="TENANCY_ID" newColumnName="tenancy_id" columnDataType="uuid"/>
+        <renameColumn tableName="apartment_rents" oldColumnName="BASIC_RENT" newColumnName="basic_rent" columnDataType="decimal"/>
+        <renameColumn tableName="apartment_rents" oldColumnName="OPERATING_COSTS_PREPAYMENT" newColumnName="operating_costs_prepayment" columnDataType="decimal"/>
+        <renameColumn tableName="apartment_rents" oldColumnName="HEATING_COSTS_PREPAYMENT" newColumnName="heating_costs_prepayment" columnDataType="decimal"/>
+        <renameColumn tableName="apartment_rents" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="apartment_rents" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- commercials table -->
+        <renameColumn tableName="commercials" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="commercials" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="commercials" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="commercials" oldColumnName="LOCATION" newColumnName="location" columnDataType="varchar(255)"/>
+        <renameColumn tableName="commercials" oldColumnName="DESCRIPTION" newColumnName="description" columnDataType="text"/>
+        <renameColumn tableName="commercials" oldColumnName="USABLE_FLOOR_AREA" newColumnName="usable_floor_area" columnDataType="integer"/>
+        <renameColumn tableName="commercials" oldColumnName="HEATING_SPACE" newColumnName="heating_space" columnDataType="integer"/>
+        <renameColumn tableName="commercials" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="commercials" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- commercial_rents table -->
+        <renameColumn tableName="commercial_rents" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="commercial_rents" oldColumnName="COMMERCIAL_ID" newColumnName="commercial_id" columnDataType="uuid"/>
+        <renameColumn tableName="commercial_rents" oldColumnName="TENANCY_ID" newColumnName="tenancy_id" columnDataType="uuid"/>
+        <renameColumn tableName="commercial_rents" oldColumnName="BASIC_RENT" newColumnName="basic_rent" columnDataType="decimal"/>
+        <renameColumn tableName="commercial_rents" oldColumnName="OPERATING_COSTS_PREPAYMENT" newColumnName="operating_costs_prepayment" columnDataType="decimal"/>
+        <renameColumn tableName="commercial_rents" oldColumnName="HEATING_COSTS_PREPAYMENT" newColumnName="heating_costs_prepayment" columnDataType="decimal"/>
+        <renameColumn tableName="commercial_rents" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="commercial_rents" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- storages table -->
+        <renameColumn tableName="storages" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="storages" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="storages" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="storages" oldColumnName="LOCATION" newColumnName="location" columnDataType="varchar(255)"/>
+        <renameColumn tableName="storages" oldColumnName="DESCRIPTION" newColumnName="description" columnDataType="text"/>
+        <renameColumn tableName="storages" oldColumnName="USABLE_FLOOR_AREA" newColumnName="usable_floor_area" columnDataType="integer"/>
+        <renameColumn tableName="storages" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="storages" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- storage_rents table -->
+        <renameColumn tableName="storage_rents" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="storage_rents" oldColumnName="STORAGE_ID" newColumnName="storage_id" columnDataType="uuid"/>
+        <renameColumn tableName="storage_rents" oldColumnName="TENANCY_ID" newColumnName="tenancy_id" columnDataType="uuid"/>
+        <renameColumn tableName="storage_rents" oldColumnName="BASIC_RENT" newColumnName="basic_rent" columnDataType="decimal"/>
+        <renameColumn tableName="storage_rents" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="storage_rents" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- tenancies table -->
+        <renameColumn tableName="tenancies" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="tenancies" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="tenancies" oldColumnName="START_OF_RENTAL" newColumnName="start_of_rental" columnDataType="date"/>
+        <renameColumn tableName="tenancies" oldColumnName="END_OF_RENTAL" newColumnName="end_of_rental" columnDataType="date"/>
+        <renameColumn tableName="tenancies" oldColumnName="BILLING_CYCLE" newColumnName="billing_cycle" columnDataType="varchar(255)"/>
+        <renameColumn tableName="tenancies" oldColumnName="FIRST_PAYMENT" newColumnName="first_payment" columnDataType="date"/>
+        <renameColumn tableName="tenancies" oldColumnName="LAST_PAYMENT" newColumnName="last_payment" columnDataType="date"/>
+        <renameColumn tableName="tenancies" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="tenancies" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- tasks table -->
+        <renameColumn tableName="tasks" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="tasks" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="tasks" oldColumnName="TITLE" newColumnName="title" columnDataType="varchar(255)"/>
+        <renameColumn tableName="tasks" oldColumnName="DESCRIPTION" newColumnName="description" columnDataType="text"/>
+        <renameColumn tableName="tasks" oldColumnName="STATUS" newColumnName="status" columnDataType="varchar(255)"/>
+        <renameColumn tableName="tasks" oldColumnName="TYPE" newColumnName="type" columnDataType="varchar(255)"/>
+        <renameColumn tableName="tasks" oldColumnName="REPORTER_ID" newColumnName="reporter_id" columnDataType="uuid"/>
+        <renameColumn tableName="tasks" oldColumnName="CREATED_BY" newColumnName="created_by" columnDataType="uuid"/>
+        <renameColumn tableName="tasks" oldColumnName="BLOCKED_BY" newColumnName="blocked_by" columnDataType="uuid"/>
+        <renameColumn tableName="tasks" oldColumnName="DUPLICATE_OF" newColumnName="duplicate_of" columnDataType="uuid"/>
+        <renameColumn tableName="tasks" oldColumnName="RELATED_TO" newColumnName="related_to" columnDataType="uuid"/>
+        <renameColumn tableName="tasks" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="tasks" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- contractors table -->
+        <renameColumn tableName="contractors" oldColumnName="ID" newColumnName="id" columnDataType="uuid"/>
+        <renameColumn tableName="contractors" oldColumnName="PROJECT_ID" newColumnName="project_id" columnDataType="uuid"/>
+        <renameColumn tableName="contractors" oldColumnName="COMPANY_NAME" newColumnName="company_name" columnDataType="varchar(255)"/>
+        <renameColumn tableName="contractors" oldColumnName="PHONE" newColumnName="phone" columnDataType="varchar(15)"/>
+        <renameColumn tableName="contractors" oldColumnName="EMAIL" newColumnName="email" columnDataType="varchar(255)"/>
+        <renameColumn tableName="contractors" oldColumnName="TRADE" newColumnName="trade" columnDataType="varchar(255)"/>
+        <renameColumn tableName="contractors" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="contractors" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+        <!-- contractor_employees table -->
+        <renameColumn tableName="contractor_employees" oldColumnName="CONTRACTOR_ID" newColumnName="contractor_id" columnDataType="uuid"/>
+        <renameColumn tableName="contractor_employees" oldColumnName="USER_ID" newColumnName="user_id" columnDataType="uuid"/>
+        <renameColumn tableName="contractor_employees" oldColumnName="RESPONSIBILITY" newColumnName="responsibility" columnDataType="varchar(255)"/>
+        <renameColumn tableName="contractor_employees" oldColumnName="CREATED_AT" newColumnName="created_at" columnDataType="timestamp"/>
+        <renameColumn tableName="contractor_employees" oldColumnName="MODIFIED_AT" newColumnName="modified_at" columnDataType="timestamp"/>
+
+    </changeSet>
+
+</databaseChangeLog>

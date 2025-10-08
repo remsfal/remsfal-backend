@@ -18,39 +18,39 @@ import jakarta.persistence.Table;
 @Table(name = "tasks")
 public class TaskEntity extends AbstractEntity implements TaskModel {
 
-    @Column(name = "TYPE", nullable = false)
+    @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    @Column(name = "PROJECT_ID", nullable = false, updatable=false, columnDefinition = "uuid")
+    @Column(name = "project_id", nullable = false, updatable=false, columnDefinition = "uuid")
     private UUID projectId;
 
-    @Column(name = "TITLE", nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "STATUS")
+    @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(name = "REPORTER_ID", columnDefinition = "uuid")
+    @Column(name = "reporter_id", columnDefinition = "uuid")
     private UUID reporterId;
 
-    @Column(name = "OWNER_ID", columnDefinition = "uuid")
+    @Column(name = "owner_id", columnDefinition = "uuid")
     private UUID ownerId;
 
-    @Column(name = "DESCRIPTION")
+    @Column(name = "description")
     private String description;
 
-    @Column(name = "BLOCKED_BY", columnDefinition = "uuid")
+    @Column(name = "blocked_by", columnDefinition = "uuid")
     private UUID blockedBy;
 
-    @Column(name = "RELATED_TO", columnDefinition = "uuid")
+    @Column(name = "related_to", columnDefinition = "uuid")
     private UUID relatedTo;
 
-    @Column(name = "DUPLICATE_OF", columnDefinition = "uuid")
+    @Column(name = "duplicate_of", columnDefinition = "uuid")
     private UUID duplicateOf;
 
-    @Column(name = "CREATED_BY", columnDefinition = "uuid")
+    @Column(name = "created_by", columnDefinition = "uuid")
     private UUID createdBy;
 
     public Type getType() {

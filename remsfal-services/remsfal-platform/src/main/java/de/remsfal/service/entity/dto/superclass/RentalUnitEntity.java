@@ -14,16 +14,16 @@ import jakarta.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class RentalUnitEntity extends AbstractEntity implements RentalUnitModel {
 
-    @Column(name = "PROJECT_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "project_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID projectId;
 
-    @Column(name = "TITLE", nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "LOCATION")
+    @Column(name = "location")
     private String location;
 
-    @Column(name = "DESCRIPTION")
+    @Column(name = "description")
     private String description;
 
     public UUID getProjectId() {

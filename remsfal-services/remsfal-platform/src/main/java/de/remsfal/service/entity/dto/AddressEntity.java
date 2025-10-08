@@ -17,19 +17,19 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 @Table(name = "addresses")
 public class AddressEntity extends AbstractEntity implements AddressModel {
 
-    @Column(name = "STREET", nullable = false)
+    @Column(name = "street", nullable = false)
     private String street;
 
-    @Column(name = "CITY", nullable = false)
+    @Column(name = "city", nullable = false)
     private String city;
 
-    @Column(name = "PROVINCE", nullable = false)
+    @Column(name = "province", nullable = false)
     private String province;
 
-    @Column(name = "ZIP", nullable = false)
+    @Column(name = "zip", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", nullable = false)
+    @Column(name = "country", nullable = false)
     private String country;
 
     public String getStreet() {

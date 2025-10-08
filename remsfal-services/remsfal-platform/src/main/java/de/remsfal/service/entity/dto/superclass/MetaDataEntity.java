@@ -15,11 +15,11 @@ import java.util.Objects;
 @MappedSuperclass
 public abstract class MetaDataEntity {
 
-    @Column(name = "CREATED_AT", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Version
-    @Column(name = "MODIFIED_AT", nullable = false)
+    @Column(name = "modified_at", nullable = false)
     private LocalDateTime modifiedAt;
 
     @PrePersist
