@@ -98,7 +98,7 @@ class UserResourceTest extends AbstractResourceTest {
     @Test
     void getUser_SUCCESS_userIsReturned() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO users (ID, EMAIL, AUTHENTICATED_AT, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO users (id, email, authenticated_at, first_name, last_name) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID)
             .setParameter(2, TestData.USER_EMAIL)
             .setParameter(3, new Date())
@@ -185,7 +185,7 @@ class UserResourceTest extends AbstractResourceTest {
     @Test
     void metricGenerated_afterGetUser() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO users (ID, EMAIL, AUTHENTICATED_AT, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO users (id, email, authenticated_at, first_name, last_name) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID)
             .setParameter(2, TestData.USER_EMAIL)
             .setParameter(3, new Date())

@@ -32,7 +32,7 @@ class ApartmentControllerTest extends AbstractServiceTest {
     @BeforeEach
     void setupTestProjects() {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
                 .setParameter(1, TestData.PROJECT_ID_1)
                 .setParameter(2, TestData.PROJECT_TITLE_1)
                 .executeUpdate());
