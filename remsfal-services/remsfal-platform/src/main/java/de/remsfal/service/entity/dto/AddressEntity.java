@@ -14,7 +14,7 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "ADDRESS")
+@Table(name = "addresses")
 public class AddressEntity extends AbstractEntity implements AddressModel {
 
     @Column(name = "STREET", nullable = false)
@@ -29,7 +29,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     @Column(name = "ZIP", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
+    @Column(name = "COUNTRY", nullable = false)
     private String country;
 
     public String getStreet() {

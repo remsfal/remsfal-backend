@@ -7,11 +7,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.UUID;
+
 class ApartmentJsonTest {
 
     @Test
     void testValueOf() {
-        ApartmentModel apartmentModel = new ApartmentModelEntity("b9440c43-b5c0-4951-9c24-000000000001",
+        ApartmentModel apartmentModel = new ApartmentModelEntity(UUID.randomUUID(),
                 "2 Zimmerwohnung 1.OG rechts",
                 "1. OG rechts",
                 "Frisch renoviert, Fliesen im Flur, Parkett im Wohnzimmer",
@@ -30,7 +32,7 @@ class ApartmentJsonTest {
     }
 
     static class ApartmentModelEntity implements ApartmentModel {
-        private final String id;
+        private final UUID id;
         private final String title;
         private final String location;
         private final String description;
@@ -38,7 +40,7 @@ class ApartmentJsonTest {
         private final Float usableSpace;
         private final Float heatingSpace;
 
-        public ApartmentModelEntity(String id, String title, String location, String description,
+        public ApartmentModelEntity(UUID id, String title, String location, String description,
                                     Float livingSpace, Float usableSpace, Float heatingSpace) {
             this.id = id;
             this.title = title;
@@ -50,7 +52,7 @@ class ApartmentJsonTest {
         }
 
         @Override
-        public String getId() {
+        public UUID getId() {
             return id;
         }
 

@@ -21,7 +21,7 @@ import de.remsfal.core.model.UserModel;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "PROJECT")
+@Table(name = "projects")
 public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     @Column(name = "TITLE")

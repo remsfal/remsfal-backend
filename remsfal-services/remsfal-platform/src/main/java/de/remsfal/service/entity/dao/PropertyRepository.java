@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -13,22 +14,22 @@ import java.util.Optional;
 @ApplicationScoped
 public class PropertyRepository extends AbstractRepository<PropertyEntity> {
 
-    public List<PropertyEntity> findPropertiesByProjectId(final String projectId) {
+    public List<PropertyEntity> findPropertiesByProjectId(final UUID projectId) {
         return list("projectId = :projectId",
             Parameters.with(PARAM_PROJECT_ID, projectId));
     }
 
-    public Optional<PropertyEntity> findPropertyById(final String projectId, final String propertyId) {
+    public Optional<PropertyEntity> findPropertyById(final UUID projectId, final UUID propertyId) {
         return find("id = :id and projectId = :projectId",
                 Parameters.with("id", propertyId).and(PARAM_PROJECT_ID, projectId))
                 .singleResultOptional();
     }
 
-    public long countPropertiesByProjectId(final String projectId) {
+    public long countPropertiesByProjectId(final UUID projectId) {
         return count(PARAM_PROJECT_ID, projectId);
     }
 
-    public long deletePropertyById(final String projectId, final String propertyId) {
+    public long deletePropertyById(final UUID projectId, final UUID propertyId) {
         return delete("id = :id and projectId = :projectId",
                 Parameters.with("id", propertyId).and(PARAM_PROJECT_ID, projectId));
     }

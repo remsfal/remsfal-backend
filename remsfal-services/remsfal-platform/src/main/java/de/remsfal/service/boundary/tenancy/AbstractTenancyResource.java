@@ -5,6 +5,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
+
+import java.util.UUID;
+
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.service.control.TenancyController;
 
@@ -23,7 +26,7 @@ public class AbstractTenancyResource {
     @Inject
     protected TenancyController tenancyController;
 
-    public boolean checkReadPermissions(final String tenancyId) {
+    public boolean checkReadPermissions(final UUID tenancyId) {
         if (tenancyController.getTenancy(principal, tenancyId) == null) {
             throw new NotFoundException("Unable to find tenancy for tenant");
         } else {

@@ -3,6 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.entity.dao.SiteRepository;
 import de.remsfal.service.entity.dto.SiteEntity;
+
+import java.util.UUID;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -25,7 +28,7 @@ public class SiteController {
     AddressController addressController;
 
     @Transactional
-    public SiteModel createSite(final String projectId, final String propertyId, final SiteModel site) {
+    public SiteModel createSite(final UUID projectId, final UUID propertyId, final SiteModel site) {
         logger.infov("Creating a site (projectId={0}, propertyId={1}, site={2})", projectId, propertyId, site);
         final SiteEntity entity = updateSite(site, new SiteEntity());
         entity.generateId();
@@ -36,7 +39,7 @@ public class SiteController {
         return getSite(projectId, entity.getId());
     }
 
-    public SiteModel getSite(final String projectId, final String siteId) {
+    public SiteModel getSite(final UUID projectId, final UUID siteId) {
         logger.infov("Retrieving a site (projectId={0}, siteId={1})",
             projectId, siteId);
         return repository.findSiteById(projectId, siteId)
@@ -44,8 +47,7 @@ public class SiteController {
     }
 
     @Transactional
-    public SiteModel updateSite(final String projectId,
-                                final String siteId, final SiteModel site) {
+    public SiteModel updateSite(final UUID projectId, final UUID siteId, final SiteModel site) {
         logger.infov("Updating a site (projectId={0}, siteId={1}, site={2})",
             projectId, siteId, site);
         final SiteEntity entity = repository.findSiteById(projectId, siteId)
@@ -73,7 +75,7 @@ public class SiteController {
     }
 
     @Transactional
-    public boolean deleteSite(final String projectId, final String siteId) {
+    public boolean deleteSite(final UUID projectId, final UUID siteId) {
         logger.infov("Deleting a site (projectId={0}, siteId={1})", projectId, siteId);
         return repository.deleteSiteById(projectId, siteId) > 0;
     }

@@ -7,13 +7,14 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.tenancy.TenancyJson;
 import de.remsfal.core.json.tenancy.TenancyListJson;
-import de.remsfal.core.validation.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -38,9 +39,9 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getPropertyTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId
+        @PathParam("rentalId") @NotNull UUID rentalId
     );
 
     @GET
@@ -51,9 +52,9 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getSiteTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId
+        @PathParam("rentalId") @NotNull UUID rentalId
     );
 
     @GET
@@ -64,9 +65,9 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getBuildingTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId
+        @PathParam("rentalId") @NotNull UUID rentalId
     );
 
     @GET
@@ -77,9 +78,9 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getApartmentTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId
+        @PathParam("rentalId") @NotNull UUID rentalId
     );
 
     @GET
@@ -90,9 +91,9 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getStorageTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId
+        @PathParam("rentalId") @NotNull UUID rentalId
     );
 
     @GET
@@ -103,9 +104,9 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getCommercialTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId
+        @PathParam("rentalId") @NotNull UUID rentalId
     );
 
     @Path("/{tenancyId}/{rentalType:properties|sites|buildings|apartments|storages|commercials}/{rentalId}"

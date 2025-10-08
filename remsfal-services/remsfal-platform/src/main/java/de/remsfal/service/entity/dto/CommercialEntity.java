@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
@@ -13,32 +14,32 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "COMMERCIAL")
+@Table(name = "commercials")
 public class CommercialEntity extends RentalUnitEntity implements CommercialModel {
 
-    @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String buildingId;
+    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID buildingId;
 
-    @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "NET_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float netFloorArea;
 
-    @Column(name = "USABLE_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "USABLE_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float usableFloorArea;
 
-    @Column(name = "TECHNICAL_SERVICE_AREA", columnDefinition = "decimal")
+    @Column(name = "TECHNICAL_SERVICE_AREA", columnDefinition = "numeric(10,2)")
     private Float technicalServicesArea;
 
-    @Column(name = "TRAFFIC_AREA", columnDefinition = "decimal")
+    @Column(name = "TRAFFIC_AREA", columnDefinition = "numeric(10,2)")
     private Float trafficArea;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
-    public String getBuildingId() {
+    public UUID getBuildingId() {
         return buildingId;
     }
 
-    public void setBuildingId(String buildingId) {
+    public void setBuildingId(final UUID buildingId) {
         this.buildingId = buildingId;
     }
 
@@ -47,7 +48,7 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         return netFloorArea;
     }
 
-    public void setNetFloorArea(Float netFloorArea) {
+    public void setNetFloorArea(final Float netFloorArea) {
         this.netFloorArea = netFloorArea;
     }
 
@@ -56,7 +57,7 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         return usableFloorArea;
     }
 
-    public void setUsableFloorArea(Float usableFloorArea) {
+    public void setUsableFloorArea(final Float usableFloorArea) {
         this.usableFloorArea = usableFloorArea;
     }
 
@@ -65,7 +66,7 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         return technicalServicesArea;
     }
 
-    public void setTechnicalServicesArea(Float technicalServicesArea) {
+    public void setTechnicalServicesArea(final Float technicalServicesArea) {
         this.technicalServicesArea = technicalServicesArea;
     }
 
@@ -74,7 +75,7 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         return trafficArea;
     }
 
-    public void setTrafficArea(Float trafficArea) {
+    public void setTrafficArea(final Float trafficArea) {
         this.trafficArea = trafficArea;
     }
 
@@ -83,7 +84,7 @@ public class CommercialEntity extends RentalUnitEntity implements CommercialMode
         return heatingSpace;
     }
 
-    public void setHeatingSpace(Float heatingSpace) {
+    public void setHeatingSpace(final Float heatingSpace) {
         this.heatingSpace = heatingSpace;
     }
 

@@ -1,5 +1,7 @@
 package de.remsfal.core.model;
 
+import java.util.UUID;
+
 /**
  * Model interface for a contractor employee.
  */
@@ -10,14 +12,14 @@ public interface ContractorEmployeeModel {
      *
      * @return the contractor ID
      */
-    String getContractorId();
+    UUID getContractorId();
 
     /**
      * Get the user ID of the contractor employee.
      *
      * @return the user ID
      */
-    String getUserId();
+    UUID getUserId();
 
     /**
      * Get the responsibility of the contractor employee.

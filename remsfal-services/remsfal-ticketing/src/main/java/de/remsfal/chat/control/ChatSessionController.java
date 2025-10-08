@@ -26,23 +26,22 @@ public class ChatSessionController {
     ChatMessageRepository chatMessageRepository;
 
     @Transactional
-    public ChatSessionModel createChatSession(String projectId, String taskId, String userId) {
+    public ChatSessionModel createChatSession(String projectId, String taskId, UUID userId) {
         logger.infov("Creating chat session (projectId={0}, taskId={1})", projectId, taskId);
-        Map<UUID, String> participants = Map.of(UUID.fromString(userId), ParticipantRole.INITIATOR.name());
+        Map<UUID, String> participants = Map.of(userId, ParticipantRole.INITIATOR.name());
         UUID projectUUID = UUID.fromString(projectId);
         UUID taskUUID = UUID.fromString(taskId);
         return chatSessionRepository.createChatSession(projectUUID, taskUUID, participants);
     }
 
     public void addParticipant(String projectId, String taskId,
-        String sessionId, String userId, ParticipantRole role) {
+        String sessionId, UUID userId, ParticipantRole role) {
         logger.infov("Adding participant to chat session" +
             " (sessionId={0}, participantId={1})", sessionId, userId);
         UUID sessionUUID = UUID.fromString(sessionId);
-        UUID userUUID = UUID.fromString(userId);
         UUID projectUUID = UUID.fromString(projectId);
         UUID taskUUID = UUID.fromString(taskId);
-        chatSessionRepository.addParticipant(projectUUID, sessionUUID, taskUUID, userUUID, role.name());
+        chatSessionRepository.addParticipant(projectUUID, sessionUUID, taskUUID, userId, role.name());
     }
 
     public void removeParticipant(String projectId, String taskId, String sessionId, String userId) {

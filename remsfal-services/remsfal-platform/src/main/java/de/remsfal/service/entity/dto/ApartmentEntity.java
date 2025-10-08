@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
@@ -13,26 +14,26 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "APARTMENT")
+@Table(name = "apartments")
 public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel {
 
-    @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String buildingId;
+    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID buildingId;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
+    @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
-    public String getBuildingId() {
+    public UUID getBuildingId() {
         return buildingId;
     }
 
-    public void setBuildingId(String buildingId) {
+    public void setBuildingId(UUID buildingId) {
         this.buildingId = buildingId;
     }
 

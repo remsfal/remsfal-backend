@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.TaskModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
@@ -14,15 +15,15 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "TASK")
+@Table(name = "tasks")
 public class TaskEntity extends AbstractEntity implements TaskModel {
 
     @Column(name = "TYPE", nullable = false)
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable=false, length = 36)
-    private String projectId;
+    @Column(name = "PROJECT_ID", nullable = false, updatable=false, columnDefinition = "uuid")
+    private UUID projectId;
 
     @Column(name = "TITLE", nullable = false)
     private String title;
@@ -31,26 +32,26 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(name = "REPORTER_ID", columnDefinition = "char", length = 36)
-    private String reporterId;
+    @Column(name = "REPORTER_ID", columnDefinition = "uuid")
+    private UUID reporterId;
 
-    @Column(name = "OWNER_ID", columnDefinition = "char", length = 36)
-    private String ownerId;
+    @Column(name = "OWNER_ID", columnDefinition = "uuid")
+    private UUID ownerId;
 
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "BLOCKED_BY", columnDefinition = "char", length = 36)
-    private String blockedBy;
+    @Column(name = "BLOCKED_BY", columnDefinition = "uuid")
+    private UUID blockedBy;
 
-    @Column(name = "RELATED_TO", columnDefinition = "char", length = 36)
-    private String relatedTo;
+    @Column(name = "RELATED_TO", columnDefinition = "uuid")
+    private UUID relatedTo;
 
-    @Column(name = "DUPLICATE_OF", columnDefinition = "char", length = 36)
-    private String duplicateOf;
+    @Column(name = "DUPLICATE_OF", columnDefinition = "uuid")
+    private UUID duplicateOf;
 
-    @Column(name = "CREATED_BY", columnDefinition = "char", length = 36)
-    private String createdBy;
+    @Column(name = "CREATED_BY", columnDefinition = "uuid")
+    private UUID createdBy;
 
     public Type getType() {
         return type;
@@ -61,11 +62,11 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     }
 
     @Override
-    public String getProjectId() {
+    public UUID getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(final String projectId) {
+    public void setProjectId(final UUID projectId) {
         this.projectId = projectId;
     }
 
@@ -88,20 +89,20 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     }
 
     @Override
-    public String getReporterId() {
+    public UUID getReporterId() {
         return reporterId;
     }
 
-    public void setReporterId(final String reporterId) {
+    public void setReporterId(final UUID reporterId) {
         this.reporterId = reporterId;
     }
 
     @Override
-    public String getOwnerId() {
+    public UUID getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(final String ownerId) {
+    public void setOwnerId(final UUID ownerId) {
         this.ownerId = ownerId;
     }
 
@@ -115,37 +116,37 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     }
 
     @Override
-    public String getBlockedBy() {
+    public UUID getBlockedBy() {
         return blockedBy;
     }
 
-    public void setBlockedBy(final String blockedBy) {
+    public void setBlockedBy(final UUID blockedBy) {
         this.blockedBy = blockedBy;
     }
 
     @Override
-    public String getRelatedTo() {
+    public UUID getRelatedTo() {
         return relatedTo;
     }
 
-    public void setRelatedTo(final String relatedTo) {
+    public void setRelatedTo(final UUID relatedTo) {
         this.relatedTo = relatedTo;
     }
 
     @Override
-    public String getDuplicateOf() {
+    public UUID getDuplicateOf() {
         return duplicateOf;
     }
 
-    public void setDuplicateOf(final String duplicateOf) {
+    public void setDuplicateOf(final UUID duplicateOf) {
         this.duplicateOf = duplicateOf;
     }
 
-    public String getCreatedBy() {
+    public UUID getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(final String createdBy) {
+    public void setCreatedBy(final UUID createdBy) {
         this.createdBy = createdBy;
     }
 

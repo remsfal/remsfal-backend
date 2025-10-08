@@ -1,11 +1,13 @@
 package de.remsfal.core.model;
 
+import java.util.UUID;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface UserModel {
 
-    String getId();
+    UUID getId();
 
     String getEmail();
 

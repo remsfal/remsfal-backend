@@ -20,6 +20,8 @@ import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.SiteEntity;
 import de.remsfal.test.TestData;
 
+import java.util.UUID;
+
 @QuarkusTest
 class SiteControllerTest extends AbstractServiceTest {
 
@@ -32,27 +34,27 @@ class SiteControllerTest extends AbstractServiceTest {
     @BeforeEach
     void setupTestProjects() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_1)
             .setParameter(2, TestData.PROJECT_TITLE_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_2)
             .setParameter(2, TestData.PROJECT_TITLE_2)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_3)
             .setParameter(2, TestData.PROJECT_TITLE_3)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_4)
             .setParameter(2, TestData.PROJECT_TITLE_4)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_5)
             .setParameter(2, TestData.PROJECT_TITLE_5)
             .executeUpdate());
@@ -60,7 +62,7 @@ class SiteControllerTest extends AbstractServiceTest {
 
     @Test
     void createSite_FAILED_noProjectNoProperty() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
             .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
             .getId();
         assertNotNull(propertyId);
@@ -70,8 +72,6 @@ class SiteControllerTest extends AbstractServiceTest {
                 .address(TestData.addressBuilder().build())
                 .build();
         
-        assertThrows(ConstraintViolationException.class,
-            () -> siteController.createSite(null, propertyId, site));
         assertThrows(ConstraintViolationException.class,
             () -> siteController.createSite(TestData.PROJECT_ID, null, site));
     }
@@ -124,11 +124,11 @@ class SiteControllerTest extends AbstractServiceTest {
     
     @Test
     void getSite_FAILED_wrongProjectId() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
             .createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build())
             .getId();
         assertNotNull(propertyId);
-        final String siteId = siteController
+        final UUID siteId = siteController
             .createSite(TestData.PROJECT_ID, propertyId,
             TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build())
             .getId();

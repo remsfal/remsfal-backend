@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -30,7 +31,7 @@ public class TaskController {
     TaskRepository repository;
 
     @Transactional
-    public TaskModel createTask(final String projectId, final UserModel user, final TaskModel task) {
+    public TaskModel createTask(final UUID projectId, final UserModel user, final TaskModel task) {
         logger.infov("Creating a task (projectId={0}, creator={1})", projectId, user.getEmail());
         final TaskEntity entity = new TaskEntity();
         entity.generateId();
@@ -49,7 +50,7 @@ public class TaskController {
         return entity;
     }
 
-    public List<? extends TaskModel> getTasks(final String projectId, final Optional<Status> status) {
+    public List<? extends TaskModel> getTasks(final UUID projectId, final Optional<Status> status) {
         logger.infov("Retrieving tasks (projectId = {0})", projectId);
         if(status.isEmpty()) {
             return repository.findTaskByProjectId(Type.TASK, projectId);
@@ -59,7 +60,7 @@ public class TaskController {
     }
 
     public List<? extends TaskModel>
-    getTasks(final String projectId, final String ownerId, final Optional<Status> status) {
+    getTasks(final UUID projectId, final UUID ownerId, final Optional<Status> status) {
         logger.infov("Retrieving tasks (projectId = {0}, ownerId = {1})", projectId, ownerId);
         if(status.isEmpty()) {
             return repository.findTaskByOwnerId(Type.TASK, projectId, ownerId);
@@ -68,18 +69,18 @@ public class TaskController {
         }
     }
 
-    protected TaskEntity getTask(final Type type, final String projectId, final String taskId) {
+    protected TaskEntity getTask(final Type type, final UUID projectId, final UUID taskId) {
         return repository.findTaskById(type, projectId, taskId)
             .orElseThrow(() -> new NotFoundException("Task not exist or user has no membership"));
     }
 
-    public TaskModel getTask(final String projectId, final String taskId) {
+    public TaskModel getTask(final UUID projectId, final UUID taskId) {
         logger.infov("Retrieving a task (projectId = {0}, taskId = {1})", projectId, taskId);
         return this.getTask(Type.TASK, projectId, taskId);
     }
 
     @Transactional
-    public TaskModel updateTask(final String projectId, final String taskId, final TaskModel task) {
+    public TaskModel updateTask(final UUID projectId, final UUID taskId, final TaskModel task) {
         logger.infov("Updating a task (projectId={0}, taskId={1})", projectId, taskId);
         final TaskEntity entity = this.getTask(Type.TASK, projectId, taskId);
         return updateTaskEntity(entity, task);
@@ -111,7 +112,7 @@ public class TaskController {
     }
 
     @Transactional
-    public boolean deleteTask(final String projectId, final String taskId) {
+    public boolean deleteTask(final UUID projectId, final UUID taskId) {
         logger.infov("Deleting a task (projectId={0}, taskId={1})", projectId, taskId);
         return repository.deleteTaskById(Type.TASK, projectId, taskId) > 0;
     }

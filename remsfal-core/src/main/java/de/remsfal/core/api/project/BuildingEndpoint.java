@@ -14,6 +14,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -24,7 +26,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 
 /**
  * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -47,9 +48,9 @@ public interface BuildingEndpoint {
     )
     Response createBuilding(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the property", required = true)
-        @PathParam("propertyId") @NotNull @UUID String propertyId,
+        @PathParam("propertyId") @NotNull UUID propertyId,
         @Parameter(description = "Building information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) BuildingJson building
     );
@@ -63,9 +64,9 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "404", description = "The building does not exist")
     BuildingJson getBuilding(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the building", required = true)
-        @PathParam("buildingId") @NotNull @UUID String buildingId
+        @PathParam("buildingId") @NotNull UUID buildingId
     );
 
     @PATCH
@@ -78,9 +79,9 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "404", description = "The building does not exist")
     BuildingJson updateBuilding(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the building", required = true)
-        @PathParam("buildingId") @NotNull @UUID String buildingId,
+        @PathParam("buildingId") @NotNull UUID buildingId,
         @Parameter(description = "Building information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) BuildingJson building
     );
@@ -93,9 +94,9 @@ public interface BuildingEndpoint {
     @APIResponse(responseCode = "404", description = "The building does not exist")
     void deleteBuilding(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the building", required = true)
-        @PathParam("buildingId") @NotNull @UUID String buildingId
+        @PathParam("buildingId") @NotNull UUID buildingId
     );
 
     @Path("/{buildingId}/" + ApartmentEndpoint.SERVICE)

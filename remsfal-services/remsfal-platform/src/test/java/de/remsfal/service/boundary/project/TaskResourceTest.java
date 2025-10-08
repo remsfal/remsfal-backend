@@ -37,7 +37,7 @@ class TaskResourceTest extends AbstractResourceTest {
     void getTasks_FAILED_noAuthentication() {
         given()
             .when()
-            .get(TASK_PATH, TestData.PROJECT_ID)
+            .get(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
@@ -49,11 +49,11 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
-            .header("location", Matchers.containsString(TASK_PATH.replace("{projectId}", TestData.PROJECT_ID)))
+            .header("location", Matchers.containsString(TASK_PATH.replace("{projectId}", TestData.PROJECT_ID.toString())))
             .and().body("id", Matchers.notNullValue())
             .and().body("title", Matchers.equalTo(TestData.TASK_TITLE));
 
@@ -70,20 +70,20 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     void createTask_FAILED_idIsProvided() {
-        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
-            + "\"id\":\"anyId\"}";
+        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\"," +
+            "\"id\":\"anyId\"}";
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body(json)
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
@@ -94,21 +94,21 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
     void getTask_SUCCESS_sameTaskIsReturned() {
-        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
-            + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
+        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\"," +
+            "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
 
         final Response res = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .thenReturn();
 
         final String taskId = res.then()
@@ -137,15 +137,15 @@ class TaskResourceTest extends AbstractResourceTest {
     }
 
     void getTask_SUCCESS_sameTaskIsReturned_USERID_isNULL() {
-        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\","
-            + "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
+        final String json = "{ \"title\":\"" + TestData.TASK_TITLE + "\"," +
+            "\"description\":\"" + TestData.TASK_DESCRIPTION + "\"}";
 
         final Response res = given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .thenReturn();
 
         final String taskId = res.then()
@@ -155,7 +155,7 @@ class TaskResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(TASK_PATH, TestData.PROJECT_ID)
+            .get(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -170,7 +170,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -178,21 +178,21 @@ class TaskResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.OK.getStatusCode());
 
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     void createTask_FAILED_userIsNotPrivileged() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.USER_ID_2)
             .setParameter(3, "STAFF")
@@ -203,7 +203,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -214,7 +214,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -224,7 +224,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.TASK_DESCRIPTION + "\"}")
-            .patch(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .patch(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -235,7 +235,7 @@ class TaskResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .and().body("description", Matchers.equalTo(TestData.TASK_DESCRIPTION.replace("\\n", "\n")));
@@ -247,7 +247,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -257,7 +257,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.TASK_DESCRIPTION + "\"}")
-            .patch(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .patch(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -268,7 +268,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -276,14 +276,14 @@ class TaskResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .delete(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .get(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
     }
@@ -294,7 +294,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -303,7 +303,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .delete(TASK_PATH + "/{taskId}", TestData.PROJECT_ID, taskId)
+            .delete(TASK_PATH + "/{taskId}", TestData.PROJECT_ID.toString(), taskId)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -312,8 +312,8 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
@@ -322,8 +322,8 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
@@ -335,23 +335,23 @@ class TaskResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .queryParam("owner", TestData.USER_ID_1)
-            .get(path, TestData.PROJECT_ID)
+            .queryParam("owner", TestData.USER_ID_1.toString())
+            .get(path, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("tasks.size()", Matchers.is(1))
             .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
             .and().body("tasks.status", Matchers.hasItems("OPEN"))
-            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1));
+            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1.toString()));
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_openTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
@@ -360,8 +360,8 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
@@ -374,22 +374,22 @@ class TaskResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .queryParam("status", "OPEN")
-            .get(path, TestData.PROJECT_ID)
+            .get(path, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("tasks.size()", Matchers.is(1))
             .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_2))
             .and().body("tasks.status", Matchers.hasItems("OPEN"))
-            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_2));
+            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_2.toString()));
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
@@ -398,8 +398,8 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
@@ -412,23 +412,23 @@ class TaskResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .queryParam("status", "OPEN")
-            .queryParam("owner", TestData.USER_ID_1)
-            .get(path, TestData.PROJECT_ID)
+            .queryParam("owner", TestData.USER_ID_1.toString())
+            .get(path, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("tasks.size()", Matchers.is(1))
             .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1))
             .and().body("tasks.status", Matchers.hasItems("OPEN"))
-            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1));
+            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1.toString()));
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
@@ -437,8 +437,8 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
-            .setParameter(1, UUID.randomUUID().toString())
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
@@ -450,14 +450,14 @@ class TaskResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .get(path, TestData.PROJECT_ID)
+            .get(path, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("tasks.size()", Matchers.is(2))
             .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1, TestData.TASK_TITLE_2))
             .and().body("tasks.status", Matchers.hasItems("CLOSED", "OPEN"))
-            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1, TestData.USER_ID_2));
+            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1.toString(), TestData.USER_ID_2.toString()));
     }
 
     void getTasks_FAILED_userIsNotMember() {
@@ -466,7 +466,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.TASK_TITLE + "\"}")
-            .post(TASK_PATH, TestData.PROJECT_ID)
+            .post(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -474,7 +474,7 @@ class TaskResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-            .get(TASK_PATH, TestData.PROJECT_ID)
+            .get(TASK_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }

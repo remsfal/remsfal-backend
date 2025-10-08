@@ -9,8 +9,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.3-project" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="PROJECT">
-            <column name="ID" type="char(36)">
+        <createTable tableName="projects">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="TITLE" type="varchar(255)">
@@ -24,15 +24,15 @@
             </column>
         </createTable>
 
-        <createTable tableName="PROJECT_MEMBERSHIP">
-            <column name="PROJECT_ID" type="char(36)">
+        <createTable tableName="project_memberships">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="USER_ID" type="char(36)">
+            <column name="USER_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="MEMBER_ROLE" type="ENUM('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')">
-                <constraints nullable="false" />
+            <column name="MEMBER_ROLE" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="MEMBER_ROLE IN ('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
@@ -42,44 +42,44 @@
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="PROJECT_MEMBERSHIP" constraintName="PK_PROJECT_MEMBERSHIP"
+        <addPrimaryKey tableName="project_memberships" constraintName="PK_PROJECT_MEMBERSHIP"
                 columnNames="PROJECT_ID,USER_ID"/>
 
         <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_PROJECT_ID"
-            baseTableName="PROJECT_MEMBERSHIP" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="project_memberships" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_USER_ID"
-            baseTableName="PROJECT_MEMBERSHIP" baseColumnNames="USER_ID"
-            referencedTableName="USER" referencedColumnNames="ID"
+            baseTableName="project_memberships" baseColumnNames="USER_ID"
+            referencedTableName="users" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.3-task" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="TASK">
-            <column name="ID" type="char(36)">
+        <createTable tableName="tasks">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="TYPE" type="ENUM('TASK', 'DEFECT', 'MAINTENANCE')">
-                <constraints nullable="false" />
+            <column name="TYPE" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="TYPE IN ('TASK', 'DEFECT', 'MAINTENANCE')" />
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="TITLE" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="STATUS" type="ENUM('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" defaultValue="PENDING">
-                <constraints nullable="false" />
+            <column name="STATUS" type="varchar(20)" defaultValue="PENDING">
+                <constraints nullable="false" checkConstraint="STATUS IN ('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" />
             </column>
-            <column name="REPORTER_ID" type="char(36)" />
-            <column name="OWNER_ID" type="char(36)" />
+            <column name="REPORTER_ID" type="uuid" />
+            <column name="OWNER_ID" type="uuid" />
             <column name="DESCRIPTION" type="clob" />
-            <column name="BLOCKED_BY" type="char(36)" />
-            <column name="RELATED_TO" type="char(36)" />
-            <column name="DUPLICATE_OF" type="char(36)" />
-            <column name="CREATED_BY" type="char(36)">
+            <column name="BLOCKED_BY" type="uuid" />
+            <column name="RELATED_TO" type="uuid" />
+            <column name="DUPLICATE_OF" type="uuid" />
+            <column name="CREATED_BY" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
@@ -91,13 +91,13 @@
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_TASK_PROJECT_ID"
-            baseTableName="TASK" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+            baseTableName="tasks" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROJECT_FK" tableName="TASK">
-            <column name="TYPE" type="ENUM('TASK', 'DEFECT', 'MAINTENANCE')" />
-            <column name="PROJECT_ID" type="char(36)" />
+        <createIndex indexName="IDX_TASK_PROJECT_FK" tableName="tasks">
+            <column name="TYPE" />
+            <column name="PROJECT_ID" />
         </createIndex>
     </changeSet>
 

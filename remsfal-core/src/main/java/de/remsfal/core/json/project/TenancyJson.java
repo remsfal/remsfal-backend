@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Null;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -31,7 +32,7 @@ public abstract class TenancyJson implements TenancyModel {
     @Null
     @Nullable
     @Override
-    public abstract String getId();
+    public abstract UUID getId();
 
     @Valid
     @Nullable

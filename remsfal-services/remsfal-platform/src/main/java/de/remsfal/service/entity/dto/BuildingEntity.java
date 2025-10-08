@@ -10,44 +10,45 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "BUILDING")
+@Table(name = "buildings")
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
-    @Column(name = "PROPERTY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String propertyId;
+    @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID propertyId;
 
     @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID")
+    @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
     private AddressEntity address;
 
-    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float grossFloorArea;
 
-    @Column(name = "NET_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "NET_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float netFloorArea;
 
-    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "decimal")
+    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "numeric(10,2)")
     private Float constructionFloorArea;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "decimal")
+    @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
-    public String getPropertyId() {
+    public UUID getPropertyId() {
         return propertyId;
     }
 
-    public void setPropertyId(String propertyId) {
+    public void setPropertyId(final UUID propertyId) {
         this.propertyId = propertyId;
     }
 

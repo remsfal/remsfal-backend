@@ -20,6 +20,7 @@ import de.remsfal.service.entity.dto.UserEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -66,14 +67,14 @@ public class ProjectController {
         return entity;
     }
 
-    public ProjectModel getProject(final UserModel user, final String projectId) {
+    public ProjectModel getProject(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
         return projectRepository.findProjectByUserId(user.getId(), projectId)
                 .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
     }
 
     @Transactional
-    public ProjectModel updateProject(final UserModel user, final String projectId, final ProjectModel project) {
+    public ProjectModel updateProject(final UserModel user, final UUID projectId, final ProjectModel project) {
         logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
@@ -85,7 +86,7 @@ public class ProjectController {
     }
 
     @Transactional
-    public boolean deleteProject(final UserModel user, final String projectId) {
+    public boolean deleteProject(final UserModel user, final UUID projectId) {
         logger.infov("Deleting a project (id = {0})", projectId);
         final ProjectEntity entity = projectRepository.findById(projectId);
         if (entity == null) {
@@ -97,14 +98,14 @@ public class ProjectController {
         }
     }
 
-    public MemberRole getProjectMemberRole(final UserModel user, final String projectId) {
+    public MemberRole getProjectMemberRole(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving project member role (user={0}, project={1})", user.getId(), projectId);
         return projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId)
             .map(ProjectMembershipEntity::getRole)
             .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
     }
 
-    public Set<? extends ProjectMemberModel> getProjectMembers(final UserModel user, final String projectId) {
+    public Set<? extends ProjectMemberModel> getProjectMembers(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving project membership (user={0}, project={1})", user.getId(), projectId);
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
@@ -112,8 +113,8 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectMemberModel addProjectMember(final UserModel user, final String projectId,
-            final ProjectMemberModel member) {
+    public ProjectMemberModel addProjectMember(final UserModel user, final UUID projectId,
+        final ProjectMemberModel member) {
         logger.infov("Adding a project membership (user={0}, project={1}, memberEmail={2}, memberRole={3})",
             user.getId(), projectId, member.getEmail(), member.getRole());
         final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
@@ -128,8 +129,8 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectMemberModel changeProjectMemberRole(final String projectId,
-            final String memberId, final MemberRole memberRole) {
+    public ProjectMemberModel changeProjectMemberRole(final UUID projectId, final UUID memberId,
+        final MemberRole memberRole) {
         logger.infov("Updating a project membership (projectId={0}, memberId={1}, memberRole={2})",
             projectId, memberId, memberRole);
         final ProjectMembershipEntity entity = projectRepository.findMembershipByUserIdAndProjectId(memberId, projectId)
@@ -139,7 +140,7 @@ public class ProjectController {
     }
 
     @Transactional
-    public boolean removeProjectMember(final String projectId, final String memberId) {
+    public boolean removeProjectMember(final UUID projectId, final UUID memberId) {
         logger.infov("Removing a project membership (projectId={0}, memberId={1})",
             projectId, memberId);
         return projectRepository.removeMembershipByUserIdAndProjectId(memberId, projectId);

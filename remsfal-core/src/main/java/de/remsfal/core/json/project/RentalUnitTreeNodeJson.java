@@ -10,6 +10,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import java.util.List;
+import java.util.UUID;
 
 @Immutable
 @ImmutableStyle
@@ -18,7 +19,7 @@ import java.util.List;
 public abstract class RentalUnitTreeNodeJson {
 
     @Schema(description = "Key of the node", required = true, examples = "Property 1")
-    public abstract String getKey();
+    public abstract UUID getKey();
 
     @Schema(description = "Data encapsulating node attributes")
     public abstract RentalUnitNodeDataJson getData();

@@ -8,6 +8,7 @@ import de.remsfal.chat.entity.dao.ChatMessageRepository;
 import de.remsfal.chat.entity.dto.ChatMessageEntity;
 
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @ApplicationScoped
 public class ChatMessageController {
@@ -18,7 +19,7 @@ public class ChatMessageController {
     @Inject
     ChatMessageRepository repository;
 
-    public ChatMessageEntity sendChatMessage(String sessionId, String userId, String contentType, String content) {
+    public ChatMessageEntity sendChatMessage(String sessionId, UUID userId, String contentType, String content) {
         logger.infov("Sending chat message (sessionId={0}, userEntity={1}, contentType={2})",
             sessionId, userId, contentType);
         return repository.sendMessage(sessionId, userId, contentType, content);

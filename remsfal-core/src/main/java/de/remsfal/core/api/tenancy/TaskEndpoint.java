@@ -14,6 +14,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -24,7 +26,6 @@ import de.remsfal.core.json.tenancy.TaskListJson;
 import de.remsfal.core.model.project.TaskModel.Status;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -39,11 +40,11 @@ public interface TaskEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     TaskListJson getTasks(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "Type of the rental", required = true)
         @PathParam("rentalType") @NotNull String rentalType,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId,
+        @PathParam("rentalId") @NotNull UUID rentalId,
         @Parameter(description = "Filter to return only tasks with a specific status")
         @QueryParam("status") Status status);
 
@@ -55,11 +56,11 @@ public interface TaskEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createTask(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "Type of the rental", required = true)
         @PathParam("rentalType") @NotNull String rentalType,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId,
+        @PathParam("rentalId") @NotNull UUID rentalId,
         @Parameter(description = "Task information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) TaskJson task);
 
@@ -71,13 +72,13 @@ public interface TaskEndpoint {
     @APIResponse(responseCode = "404", description = "The property does not exist")
     TaskJson getTask(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "Type of the rental", required = true)
         @PathParam("rentalType") @NotNull String rentalType,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId,
+        @PathParam("rentalId") @NotNull UUID rentalId,
         @Parameter(description = "ID of the task", required = true)
-        @PathParam("taskId") @NotNull @UUID String taskId);
+        @PathParam("taskId") @NotNull UUID taskId);
 
     @PATCH
     @Path("/{taskId}")
@@ -88,13 +89,13 @@ public interface TaskEndpoint {
     @APIResponse(responseCode = "404", description = "The task does not exist")
     TaskJson updateTask(
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull @UUID String tenancyId,
+        @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "Type of the rental", required = true)
         @PathParam("rentalType") @NotNull String rentalType,
         @Parameter(description = "ID of the rental", required = true)
-        @PathParam("rentalId") @NotNull @UUID String rentalId,
+        @PathParam("rentalId") @NotNull UUID rentalId,
         @Parameter(description = "ID of the task", required = true)
-        @PathParam("taskId") @NotNull @UUID String taskId,
+        @PathParam("taskId") @NotNull UUID taskId,
         @Parameter(description = "Task information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) TaskJson task);
 

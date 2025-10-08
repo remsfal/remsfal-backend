@@ -109,7 +109,7 @@
                             </quarkus.jacoco.report-location>
                         </systemPropertyVariables>
                         <!-- includes>
-                            <include>ApartmentResourceTest.java</include>
+                            <include>**/boundary/**</include>
                         </includes -->
                     </configuration>
                 </plugin>

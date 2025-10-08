@@ -1,5 +1,7 @@
 package de.remsfal.core.model;
 
+import java.util.UUID;
+
 /**
  * Model interface for a contractor.
  */
@@ -10,14 +12,14 @@ public interface ContractorModel {
      *
      * @return the ID
      */
-    String getId();
+    UUID getId();
 
     /**
      * Get the project ID of the contractor.
      *
      * @return the project ID
      */
-    String getProjectId();
+    UUID getProjectId();
 
     /**
      * Get the company name of the contractor.
@@ -46,4 +48,5 @@ public interface ContractorModel {
      * @return the trade
      */
     String getTrade();
+
 }

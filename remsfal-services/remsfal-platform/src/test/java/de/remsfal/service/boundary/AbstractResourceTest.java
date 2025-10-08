@@ -66,12 +66,12 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
             TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
             TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
             TestData.PROPERTY_PLOT_2, TestData.PROPERTY_ECONOMY_TYPE_2, TestData.PROPERTY_PLOT_AREA_2);
-        insertProperty(UUID.randomUUID().toString(), TestData.PROJECT_ID_2, TestData.PROPERTY_TITLE_1,
+        insertProperty(UUID.randomUUID(), TestData.PROJECT_ID_2, TestData.PROPERTY_TITLE_1,
             TestData.PROPERTY_LOCATION_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_LAND_REGISTRY_2,
             TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
             TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
             TestData.PROPERTY_PLOT_2, TestData.PROPERTY_ECONOMY_TYPE_2, TestData.PROPERTY_PLOT_AREA_2);
-        insertProperty(UUID.randomUUID().toString(), TestData.PROJECT_ID_3, TestData.PROPERTY_TITLE_2,
+        insertProperty(UUID.randomUUID(), TestData.PROJECT_ID_3, TestData.PROPERTY_TITLE_2,
             TestData.PROPERTY_LOCATION_2, TestData.PROPERTY_DESCRIPTION_2, TestData.PROPERTY_LAND_REGISTRY_2,
             TestData.PROPERTY_CADASTRAL_DESTRICT_2, TestData.PROPERTY_SHEET_NUMBER_2,
             TestData.PROPERTY_PLOT_NUMBER_2, TestData.PROPERTY_CADASTRAL_SECTION_2,
@@ -98,13 +98,13 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
             null, null, null, null, null, null, TestData.ADDRESS_ID_7);
         insertAddress(TestData.ADDRESS_ID_8, TestData.ADDRESS_STREET_8, TestData.ADDRESS_CITY_8,
             TestData.ADDRESS_PROVINCE_8, TestData.ADDRESS_ZIP_8, TestData.ADDRESS_COUNTRY_8);
-        insertBuilding(UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
+        insertBuilding(UUID.randomUUID(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
             TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1,
             null, null, null, TestData.BUILDING_LIVING_SPACE_1,
             TestData.BUILDING_USABLE_SPACE_1, TestData.BUILDING_HEATING_SPACE_1, TestData.ADDRESS_ID_8);
         insertAddress(TestData.ADDRESS_ID_9, TestData.ADDRESS_STREET_9, TestData.ADDRESS_CITY_9,
             TestData.ADDRESS_PROVINCE_9, TestData.ADDRESS_ZIP_9, TestData.ADDRESS_COUNTRY_9);
-        insertBuilding(UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
+        insertBuilding(UUID.randomUUID(), TestData.PROJECT_ID, TestData.PROPERTY_ID_2,
             TestData.BUILDING_TITLE_2, TestData.BUILDING_DESCRIPTION_2,
             TestData.BUILDING_GROSS_FLOOR_AREA_2, TestData.BUILDING_NET_FLOOR_AREA_2,
             TestData.BUILDING_CONSTRUCTION_FLOOR_AREA_2, null, null, TestData.BUILDING_HEATING_SPACE_2, TestData.ADDRESS_ID_9);
@@ -142,7 +142,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertAddress(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO ADDRESS (ID, STREET, CITY, PROVINCE, ZIP, COUNTRY) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO addresses (ID, STREET, CITY, PROVINCE, ZIP, COUNTRY) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -154,7 +154,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertUser(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME, ADDRESS_ID) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO users (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME, ADDRESS_ID) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -166,7 +166,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertProject(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .executeUpdate());
@@ -174,7 +174,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertProjectMember(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+                .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -183,7 +183,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertProperty(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LOCATION, DESCRIPTION, "
+                .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE, LOCATION, DESCRIPTION, "
                     + "LAND_REGISTRY, CADASTRAL_DISTRICT, SHEET_NUMBER, PLOT_NUMBER, CADASTRAL_SECTION, "
                     + "PLOT, ECONOMY_TYPE, PLOT_AREA) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
@@ -204,7 +204,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertSite(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO SITE (ID, PROJECT_ID, PROPERTY_ID, TITLE, ADDRESS_ID, DESCRIPTION, OUTDOOR_AREA) VALUES (?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO sites (ID, PROJECT_ID, PROPERTY_ID, TITLE, ADDRESS_ID, DESCRIPTION, OUTDOOR_AREA) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -217,7 +217,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertBuilding(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO BUILDING (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, "
+                .createNativeQuery("INSERT INTO buildings (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, "
                     + "GROSS_FLOOR_AREA, NET_FLOOR_AREA, CONSTRUCTION_FLOOR_AREA, LIVING_SPACE, USABLE_SPACE, "
                     + "HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
@@ -237,7 +237,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertApartment(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO apartments (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -252,7 +252,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertStorage(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO STORAGE (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO storages (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -265,7 +265,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertCommercial(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO COMMERCIAL (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, "
+                .createNativeQuery("INSERT INTO commercials (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, "
                     + "DESCRIPTION, NET_FLOOR_AREA, USABLE_FLOOR_AREA, TECHNICAL_SERVICE_AREA, TRAFFIC_AREA, "
                     + "HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
@@ -282,7 +282,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
                 .executeUpdate());
     }
 
-    protected Cookie buildAccessTokenCookie(final String userId, final String userEmail, final Duration ttl) {
+    protected Cookie buildAccessTokenCookie(final UUID userId, final String userEmail, final Duration ttl) {
         String accessToken;
         try {
             accessToken = sessionManager.generateAccessToken(userId, userEmail).getValue();
@@ -298,7 +298,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
         return cookieBuilder.build();
     }
 
-    protected Cookie buildRefreshTokenCookie(final String userId,final String userEmail, final Duration ttl) {
+    protected Cookie buildRefreshTokenCookie(final UUID userId,final String userEmail, final Duration ttl) {
         final String refreshToken = sessionManager.generateRefreshToken(userId, userEmail).getValue();
         Cookie.Builder cookieBuilder = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME, refreshToken);
 
@@ -308,7 +308,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
         return cookieBuilder.build();
     }
 
-    protected Map<String, ?> buildCookies (final String userId, final String userEmail, final Duration ttl) {
+    protected Map<String, ?> buildCookies (final UUID userId, final String userEmail, final Duration ttl) {
         return Map.of(
                 SessionManager.ACCESS_COOKIE_NAME, buildAccessTokenCookie(userId, userEmail, ttl).getValue(),
                 SessionManager.REFRESH_COOKIE_NAME, buildRefreshTokenCookie(userId, userEmail, ttl).getValue()

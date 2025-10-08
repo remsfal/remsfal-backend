@@ -34,7 +34,7 @@ class CommercialResourceTest extends AbstractResourceTest {
     void getCommercial_FAILED_noAuthentication() {
         given()
             .when()
-            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
             .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
@@ -46,12 +46,12 @@ class CommercialResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID_1))
+            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID_1.toString()))
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_1))
             .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
             .and().body("netFloorArea", Matchers.equalTo(TestData.COMMERCIAL_NET_FLOOR_AREA_1))
@@ -68,13 +68,13 @@ class CommercialResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID)
-                .replace("{propertyId}", TestData.PROPERTY_ID)
-                .replace("{buildingId}", TestData.BUILDING_ID_2) + "/"))
+            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID.toString())
+                .replace("{propertyId}", TestData.PROPERTY_ID.toString())
+                .replace("{buildingId}", TestData.BUILDING_ID_2.toString()) + "/"))
             .and().body("id", Matchers.notNullValue())
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_2));
 
@@ -96,12 +96,12 @@ class CommercialResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .patch(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID))
+            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_2))
             .and().body("description", Matchers.equalTo(TestData.COMMERCIAL_DESCRIPTION_1))
             .and().body("netFloorArea", Matchers.equalTo(TestData.COMMERCIAL_NET_FLOOR_AREA_1))
@@ -112,12 +112,12 @@ class CommercialResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID))
+            .and().body("id", Matchers.equalTo(TestData.COMMERCIAL_ID.toString()))
             .and().body("title", Matchers.equalTo(TestData.COMMERCIAL_TITLE_2));
     }
 
@@ -128,7 +128,7 @@ class CommercialResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .delete(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .delete(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
@@ -136,7 +136,7 @@ class CommercialResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID, TestData.PROPERTY_ID,
+            .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());

@@ -3,7 +3,6 @@ package de.remsfal.service.boundary.project;
 import static io.restassured.RestAssured.given;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +45,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -55,7 +54,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/" + TestData.BUILDING_ID_1, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .get(BASE_PATH + "/" + TestData.BUILDING_ID_1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -78,7 +77,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -87,7 +86,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .get(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode());
     }
@@ -99,7 +98,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(TestData.buildingBuilder2().id(null).build())
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .body("id", Matchers.notNullValue())
@@ -135,7 +134,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .post(BASE_PATH, TestData.PROJECT_ID.replace("0", "1"), TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString().replace("0", "1"), TestData.PROPERTY_ID.toString())
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -158,7 +157,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -173,13 +172,13 @@ class BuildingResourceTest extends AbstractResourceTest {
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
-                "     \"street\": \"" + "Lavochkina Street" + "\"," +
+                "     \"street\": \"Lavochkina Street\"," +
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .patch(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .patch(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.OK.getStatusCode());
     }
@@ -202,7 +201,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -216,13 +215,13 @@ class BuildingResourceTest extends AbstractResourceTest {
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
-                "     \"street\": \"" + "Lavochkina Street" + "\"," +
+                "     \"street\": \"Lavochkina Street\"," +
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .patch(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .patch(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
     }
@@ -239,13 +238,13 @@ class BuildingResourceTest extends AbstractResourceTest {
                 " \"usableSpace\":\"" + TestData.BUILDING_USABLE_SPACE_1 + "\"," +
                 " \"heatingSpace\":\"" + TestData.APARTMENT_HEATING_SPACE_1 + "\"," +
                 " \"address\": {" +
-                "     \"street\": \"" + "Lavochkina Street" + "\"," +
+                "     \"street\": \"Lavochkina Street\"," +
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .patch(BASE_PATH + "/" + UUID.randomUUID().toString(), TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .patch(BASE_PATH + "/" + java.util.UUID.randomUUID(), TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -268,7 +267,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -277,7 +276,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .delete(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .delete(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
@@ -300,7 +299,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
                 "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
-            .post(BASE_PATH, TestData.PROJECT_ID, TestData.PROPERTY_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -309,7 +308,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .get("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID)
+            .get("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode());
 
@@ -318,7 +317,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"usableSpace\":\"56.7\"}")
-            .patch("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID)
+            .patch("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode());
 
@@ -326,7 +325,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .when()
             .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .delete("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID)
+            .delete("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }

@@ -6,6 +6,8 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 
+import java.util.UUID;
+
 import de.remsfal.core.api.tenancy.TenancyEndpoint;
 import de.remsfal.core.json.tenancy.ImmutableTenancyListJson;
 import de.remsfal.core.json.tenancy.TenancyItemJson;
@@ -99,7 +101,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TenancyJson getPropertyTenancy(final String tenancyId, final String rentalId) {
+    public TenancyJson getPropertyTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
         PropertyRentEntity rent = tenancy.getPropertyRent().stream()
@@ -110,7 +112,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TenancyJson getSiteTenancy(final String tenancyId, final String rentalId) {
+    public TenancyJson getSiteTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
         SiteRentEntity rent = tenancy.getSiteRent().stream()
@@ -121,7 +123,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TenancyJson getBuildingTenancy(final String tenancyId, final String rentalId) {
+    public TenancyJson getBuildingTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
         BuildingRentEntity rent = tenancy.getBuildingRent().stream()
@@ -132,7 +134,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TenancyJson getApartmentTenancy(final String tenancyId, final String rentalId) {
+    public TenancyJson getApartmentTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
         ApartmentRentEntity rent = tenancy.getApartmentRent().stream()
@@ -143,7 +145,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TenancyJson getStorageTenancy(final String tenancyId, final String rentalId) {
+    public TenancyJson getStorageTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
         StorageRentEntity rent = tenancy.getStorageRent().stream()
@@ -154,7 +156,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TenancyJson getCommercialTenancy(final String tenancyId, final String rentalId) {
+    public TenancyJson getCommercialTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
         CommercialRentEntity rent = tenancy.getCommercialRent().stream()

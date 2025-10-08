@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.test.TestData;
 
 @QuarkusTest
 class ChatSubResourceTest {
@@ -33,7 +34,7 @@ class ChatSubResourceTest {
         RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
         JsonWebToken jwt = mock(JsonWebToken.class);
         when(principal.getJwt()).thenReturn(jwt);
-        when(principal.getId()).thenReturn("user1");
+        when(principal.getId()).thenReturn(TestData.USER_ID);
         when(jwt.getClaim("project_roles")).thenReturn(claim);
         return principal;
     }

@@ -33,7 +33,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
             entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();
         });
     }
-    
+
     /**
      * Wrap a call in a database transaction.
      *

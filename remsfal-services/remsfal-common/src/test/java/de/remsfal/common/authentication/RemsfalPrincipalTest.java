@@ -2,6 +2,7 @@ package de.remsfal.common.authentication;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import de.remsfal.test.AbstractTest;
+import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,15 +25,15 @@ class RemsfalPrincipalTest extends AbstractTest {
         RemsfalPrincipal principal = new RemsfalPrincipal();
 
         JsonWebToken jwt = Mockito.mock(JsonWebToken.class);
-        when(jwt.getSubject()).thenReturn("jwt-id");
-        when(jwt.getClaim("email")).thenReturn("jwt@example.com");
-        when(jwt.getClaim("name")).thenReturn("JWT User");
+        when(jwt.getSubject()).thenReturn(TestData.USER_ID.toString());
+        when(jwt.getClaim("email")).thenReturn(TestData.USER_EMAIL);
+        when(jwt.getClaim("name")).thenReturn(TestData.USER_FIRST_NAME);
         when(jwt.getClaim("active")).thenReturn(Boolean.TRUE);
         injectJwt(principal, jwt);
 
-        assertEquals("jwt-id", principal.getId());
-        assertEquals("jwt@example.com", principal.getEmail());
-        assertEquals("JWT User", principal.getName());
+        assertEquals(TestData.USER_ID, principal.getId());
+        assertEquals(TestData.USER_EMAIL, principal.getEmail());
+        assertEquals(TestData.USER_FIRST_NAME, principal.getName());
         assertTrue(principal.isActive());
     }
 

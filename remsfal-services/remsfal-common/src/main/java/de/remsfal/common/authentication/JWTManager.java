@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Default
 @ApplicationScoped
@@ -63,19 +63,16 @@ public class JWTManager {
     }
 
     /** Issue an access token using SmallRye JWT Build (platform only) */
-    public String createAccessToken(String userId, String email, String name, Boolean active,
-        Map<String, String> projectRoles, long ttlSeconds) {
+    public String createAccessToken(final UUID userId, final String email, final String name, final Boolean active,
+        final Map<String, String> projectRoles, final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", userId);
-        claims.put("email", email);
-        claims.put("name", name);
-        claims.put("active", active);
-        claims.put("project_roles", projectRoles);
-
-        return Jwt.claims(claims)
+        return Jwt.subject(userId.toString())
+                .claim("email", email)
+                .claim("name", name)
+                .claim("active", active)
+                .claim("project_roles", projectRoles)
                 .issuer(issuer)
                 .expiresAt(exp)
                 .jws()
@@ -86,23 +83,22 @@ public class JWTManager {
     }
 
     /** Issue a refresh token using SmallRye JWT Build (platform only) */
-    public String createRefreshToken(String userId, String email, String refreshTokenId, long ttlSeconds) {
+    public String createRefreshToken(final UUID userId, final String email,
+        final String refreshTokenId, final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", userId);
-        claims.put("email", email);
-        claims.put("refreshToken", refreshTokenId);
-
-        return Jwt.claims(claims)
-                .issuer(issuer)
-                .expiresAt(exp)
-                .jws()
-                .algorithm(SignatureAlgorithm.RS256)
-                .header("typ", "JWT")
-                .header("kid", keyId)
-                .sign(privateKey);
+        return Jwt
+            .subject(userId.toString())
+            .claim("email", email)
+            .claim("refreshToken", refreshTokenId)
+            .issuer(issuer)
+            .expiresAt(exp)
+            .jws()
+            .algorithm(SignatureAlgorithm.RS256)
+            .header("typ", "JWT")
+            .header("kid", keyId)
+            .sign(privateKey);
     }
 
     private void ensureIssuerMode() {

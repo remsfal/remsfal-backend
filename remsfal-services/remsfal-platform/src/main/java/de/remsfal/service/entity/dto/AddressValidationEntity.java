@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 @NamedQuery(name = "AddressValidationEntity.findByParameters",
     query = "SELECT a FROM AddressValidationEntity a WHERE " +
     "a.city = :city AND a.province = :province AND a.zip = :zip AND a.country = :country")
-@Table(name = "ADDRESS_VALIDATION")
+@Table(name = "address_validations")
 public class AddressValidationEntity {
 
     @Id
@@ -34,7 +34,7 @@ public class AddressValidationEntity {
     @Column(name = "ZIP", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
+    @Column(name = "COUNTRY", nullable = false)
     private String country;
 
     public String getCity() {

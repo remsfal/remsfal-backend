@@ -3,6 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dto.ApartmentEntity;
+
+import java.util.UUID;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -22,10 +25,10 @@ public class ApartmentController {
     ApartmentRepository apartmentRepository;
 
     @Transactional
-    public ApartmentModel createApartment(final String projectId, final String buildingId,
-                                          final ApartmentModel apartment) {
+    public ApartmentModel createApartment(final UUID projectId, final UUID buildingId,
+        final ApartmentModel apartment) {
         logger.infov("Creating an apartment (projectId={0}, buildingId={1}, apartment={2})",
-                projectId, buildingId, apartment);
+            projectId, buildingId, apartment);
         final ApartmentEntity entity = updateApartment(apartment, new ApartmentEntity());
         entity.generateId();
         entity.setProjectId(projectId);
@@ -35,20 +38,20 @@ public class ApartmentController {
         return getApartment(projectId, entity.getId());
     }
 
-    public ApartmentModel getApartment(final String projectId, final String apartmentId) {
+    public ApartmentModel getApartment(final UUID projectId, final UUID apartmentId) {
         logger.infov("Retrieving an apartment (projectId={0}, apartmentId={1})",
-                projectId, apartmentId);
+            projectId, apartmentId);
         return apartmentRepository.findByIds(projectId, apartmentId)
-                .orElseThrow(() -> new NotFoundException("Apartment not exist"));
+            .orElseThrow(() -> new NotFoundException("Apartment not exist"));
     }
 
     @Transactional
-    public ApartmentModel updateApartment(final String projectId, final String apartmentId,
+    public ApartmentModel updateApartment(final UUID projectId, final UUID apartmentId,
         final ApartmentModel apartment) {
         logger.infov("Update an apartment (projectId={0}, apartmentId={1}, apartment={2})",
-                projectId, apartmentId, apartment);
+            projectId, apartmentId, apartment);
         final ApartmentEntity entity = apartmentRepository.findByIds(projectId, apartmentId)
-                .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
+            .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
         return apartmentRepository.merge(updateApartment(apartment, entity));
     }
 
@@ -75,7 +78,7 @@ public class ApartmentController {
     }
 
     @Transactional
-    public boolean deleteApartment(final String projectId, final String apartmentId) {
+    public boolean deleteApartment(final UUID projectId, final UUID apartmentId) {
         logger.infov("Delete an apartment (projectId={0}, apartmentId={1})", projectId, apartmentId);
         return apartmentRepository.removeApartmentByIds(projectId, apartmentId) > 0;
     }

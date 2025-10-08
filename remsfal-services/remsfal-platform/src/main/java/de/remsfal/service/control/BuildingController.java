@@ -3,6 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dto.BuildingEntity;
+
+import java.util.UUID;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -24,7 +27,7 @@ public class BuildingController {
     AddressController addressController;
 
     @Transactional
-    public BuildingModel createBuilding(final String projectId, final String propertyId, final BuildingModel building) {
+    public BuildingModel createBuilding(final UUID projectId, final UUID propertyId, final BuildingModel building) {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
             projectId, propertyId, building);
         final BuildingEntity entity = updateBuilding(building, new BuildingEntity());
@@ -36,7 +39,7 @@ public class BuildingController {
         return getBuilding(projectId, entity.getId());
     }
 
-    public BuildingModel getBuilding(final String projectId, final String buildingId) {
+    public BuildingModel getBuilding(final UUID projectId, final UUID buildingId) {
         logger.infov("Retrieving a building (projectId={0}, buildingId={1})",
             projectId, buildingId);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
@@ -50,7 +53,7 @@ public class BuildingController {
     }
 
     @Transactional
-    public BuildingModel updateBuilding(final String projectId, final String buildingId, final BuildingModel building) {
+    public BuildingModel updateBuilding(final UUID projectId, final UUID buildingId, final BuildingModel building) {
         logger.infov("Update a building (projectId={0}, buildingId={1}, building={2})",
             projectId, buildingId, building);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
@@ -93,7 +96,7 @@ public class BuildingController {
     }
 
     @Transactional
-    public void deleteBuilding(final String projectId, final String buildingId) {
+    public void deleteBuilding(final UUID projectId, final UUID buildingId) {
         logger.infov("Delete a building (projectId={0}, buildingId={1})",
             projectId, buildingId);
         buildingRepository.deleteById(buildingId);

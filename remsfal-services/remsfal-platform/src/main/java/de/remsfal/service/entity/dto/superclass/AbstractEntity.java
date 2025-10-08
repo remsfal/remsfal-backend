@@ -14,19 +14,19 @@ import java.util.UUID;
 public abstract class AbstractEntity extends MetaDataEntity {
 
     @Id
-    @Column(name = "ID", columnDefinition = "char", nullable = false, length = 36)
-    protected String id;
+    @Column(name = "ID", nullable = false, columnDefinition = "uuid")
+    protected UUID id;
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(final String id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
     public void generateId() {
-        setId(UUID.randomUUID().toString());
+        setId(UUID.randomUUID());
     }
 
     @Override

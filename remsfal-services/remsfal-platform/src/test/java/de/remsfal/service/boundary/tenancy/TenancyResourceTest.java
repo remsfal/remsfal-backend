@@ -54,7 +54,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertTenancy(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO TENANCY (ID, PROJECT_ID, START_OF_RENTAL, END_OF_RENTAL) VALUES (?,?,?,?)")
+                .createNativeQuery("INSERT INTO tenancies (ID, PROJECT_ID, START_OF_RENTAL, END_OF_RENTAL) VALUES (?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -64,7 +64,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertTenant(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO TENANT (TENANCY_ID, USER_ID) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO tenants (TENANCY_ID, USER_ID) VALUES (?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .executeUpdate());
@@ -72,7 +72,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertPropertyRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROPERTY_RENT (TENANCY_ID, PROPERTY_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO property_rents (TENANCY_ID, PROPERTY_ID, FIRST_PAYMENT, LAST_PAYMENT,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -86,7 +86,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertSiteRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO SITE_RENT (TENANCY_ID, SITE_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO site_rents (TENANCY_ID, SITE_ID, FIRST_PAYMENT, LAST_PAYMENT,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -100,7 +100,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertBuildingRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO BUILDING_RENT (TENANCY_ID, BUILDING_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO building_rents (TENANCY_ID, BUILDING_ID, FIRST_PAYMENT, LAST_PAYMENT,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -114,7 +114,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertApartmentRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO APARTMENT_RENT (TENANCY_ID, APARTMENT_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO apartment_rents (TENANCY_ID, APARTMENT_ID, FIRST_PAYMENT, LAST_PAYMENT,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -128,7 +128,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertStorageRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO STORAGE_RENT (TENANCY_ID, STORAGE_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO storage_rents (TENANCY_ID, STORAGE_ID, FIRST_PAYMENT, LAST_PAYMENT,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -142,7 +142,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertCommercialRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO COMMERCIAL_RENT (TENANCY_ID, COMMERCIAL_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO commercial_rents (TENANCY_ID, COMMERCIAL_ID, FIRST_PAYMENT, LAST_PAYMENT,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -199,15 +199,15 @@ class TenancyResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/properties/{rentalId}", TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2)
+            .get(BASE_PATH + "/{tenancyId}/properties/{rentalId}", TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
             .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_3 + "/properties/" + TestData.PROPERTY_ID_2))
             .and().body("rentalType", Matchers.equalTo("PROPERTY"))
             .and().body("rentalTitle", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_3))
-            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_3))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_3.toString()))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_3.toString()))
             .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
             .and().body("basicRent", Matchers.equalTo(100f))
             .and().body("operatingCostsPrepayment", Matchers.nullValue())
@@ -219,15 +219,15 @@ class TenancyResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/sites/{rentalId}", TestData.TENANCY_ID_2, TestData.SITE_ID_1)
+            .get(BASE_PATH + "/{tenancyId}/sites/{rentalId}", TestData.TENANCY_ID_2.toString(), TestData.SITE_ID_1.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
             .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_2 + "/sites/" + TestData.SITE_ID_1))
             .and().body("rentalType", Matchers.equalTo("SITE"))
             .and().body("rentalTitle", Matchers.equalTo(TestData.SITE_TITLE_1))
-            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_2))
-            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_2))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_2.toString()))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_2.toString()))
             .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
             .and().body("basicRent", Matchers.equalTo(40f))
             .and().body("operatingCostsPrepayment", Matchers.nullValue())
@@ -239,15 +239,15 @@ class TenancyResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/buildings/{rentalId}", TestData.TENANCY_ID_2, TestData.BUILDING_ID_2)
+            .get(BASE_PATH + "/{tenancyId}/buildings/{rentalId}", TestData.TENANCY_ID_2.toString(), TestData.BUILDING_ID_2.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
             .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_2 + "/buildings/" + TestData.BUILDING_ID_2))
             .and().body("rentalType", Matchers.equalTo("BUILDING"))
             .and().body("rentalTitle", Matchers.equalTo(TestData.BUILDING_TITLE_2))
-            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_2))
-            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_2))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_2.toString()))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_2.toString()))
             .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
             .and().body("basicRent", Matchers.equalTo(899f))
             .and().body("operatingCostsPrepayment", Matchers.equalTo(150f))
@@ -259,15 +259,15 @@ class TenancyResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/apartments/{rentalId}", TestData.TENANCY_ID_1, TestData.APARTMENT_ID)
+            .get(BASE_PATH + "/{tenancyId}/apartments/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.APARTMENT_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
             .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_1 + "/apartments/" + TestData.APARTMENT_ID))
             .and().body("rentalType", Matchers.equalTo("APARTMENT"))
             .and().body("rentalTitle", Matchers.equalTo(TestData.APARTMENT_TITLE))
-            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1))
-            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1.toString()))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1.toString()))
             .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
             .and().body("basicRent", Matchers.equalTo(670f))
             .and().body("operatingCostsPrepayment", Matchers.equalTo(75f))
@@ -279,15 +279,15 @@ class TenancyResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/storages/{rentalId}", TestData.TENANCY_ID_1, TestData.STORAGE_ID)
+            .get(BASE_PATH + "/{tenancyId}/storages/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.STORAGE_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
             .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_1 + "/storages/" + TestData.STORAGE_ID))
             .and().body("rentalType", Matchers.equalTo("STORAGE"))
             .and().body("rentalTitle", Matchers.equalTo(TestData.STORAGE_TITLE))
-            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1))
-            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1.toString()))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1.toString()))
             .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
             .and().body("basicRent", Matchers.equalTo(30f))
             .and().body("operatingCostsPrepayment", Matchers.nullValue())
@@ -299,15 +299,15 @@ class TenancyResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{tenancyId}/commercials/{rentalId}", TestData.TENANCY_ID_1, TestData.COMMERCIAL_ID)
+            .get(BASE_PATH + "/{tenancyId}/commercials/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.COMMERCIAL_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
             .and().body("id", Matchers.equalTo(TestData.TENANCY_ID_1 + "/commercials/" + TestData.COMMERCIAL_ID))
             .and().body("rentalType", Matchers.equalTo("COMMERCIAL"))
             .and().body("rentalTitle", Matchers.equalTo(TestData.COMMERCIAL_TITLE))
-            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1))
-            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1))
+            .and().body("startOfRental", Matchers.equalTo(TestData.TENANCY_START_1.toString()))
+            .and().body("endOfRental", Matchers.equalTo(TestData.TENANCY_END_1.toString()))
             .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
             .and().body("basicRent", Matchers.equalTo(1030f))
             .and().body("operatingCostsPrepayment", Matchers.equalTo(230f))
@@ -324,7 +324,7 @@ class TenancyResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-                .and().body("id", Matchers.equalTo(TestData.USER_ID_3))
+                .and().body("id", Matchers.equalTo(TestData.USER_ID_3.toString()))
                 .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_3))
                 .and().body("userRoles.size()", Matchers.equalTo(1))
                 .and().body("userRoles[0]", Matchers.equalTo("TENANT"));
