@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
       - name: Archive test output
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
         with:
@@ -60,7 +60,7 @@ jobs:
     if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Check PR branches
         run: |
           if [ "${{ github.head_ref }}" == "main" ] && [ "${{ github.base_ref }}" == "main" ]; then
