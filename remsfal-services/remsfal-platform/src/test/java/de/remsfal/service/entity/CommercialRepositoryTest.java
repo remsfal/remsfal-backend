@@ -1,6 +1,5 @@
 package de.remsfal.service.entity;
 
-import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.BuildingController;
 import de.remsfal.service.control.PropertyController;
@@ -66,11 +65,10 @@ class CommercialRepositoryTest extends AbstractServiceTest {
     @Test
     void testCommercialById() {
         final Optional<CommercialEntity> found = repository.findCommercialById(TestData.PROJECT_ID, TestData.COMMERCIAL_ID);
-        final CommercialModel commercial = TestData.commercialBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
-        assertEquals(commercial.getId(), found.get().getId());
-        assertEquals(commercial.getTitle(), found.get().getTitle());
+        assertEquals(TestData.COMMERCIAL_ID, found.get().getId());
+        assertEquals(TestData.COMMERCIAL_TITLE, found.get().getTitle());
     }
 
     @Test

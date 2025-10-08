@@ -194,22 +194,22 @@ class SiteResourceTest extends AbstractResourceTest {
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION));
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = "{ \"tenancy\":{"
-        + "\"startOfRental\":\"" + TestData.TENANCY_START + "\","
-        + "\"endOfRental\":\"" + TestData.TENANCY_END + "\","
-        + "\"rent\":[{\"billingCycle\":\"MONTHLY\",\"firstPaymentDate\":\"" + TestData.TENANCY_START + "\","
-        + "\"lastPaymentDate\":\"" + TestData.TENANCY_END + "\", \"basicRent\":523.89,"
-        + "\"operatingCostsPrepayment\":123.66, \"heatingCostsPrepayment\":210.02}],"
-        + "\"tenant\":{ \"firstName\":\"" + TestData.USER_FIRST_NAME_3 + "\","
-        + "\"lastName\":\"" + TestData.USER_LAST_NAME_3 + "\","
-        + "\"email\":\"" + TestData.USER_EMAIL_3 + "\","
-        + "\"mobilePhoneNumber\":\"+491773289245\","
-        + "\"businessPhoneNumber\":\"+49302278349\","
-        + "\"privatePhoneNumber\":\"+4933012345611\"}},"
-        + "\"outdoorArea\":51.99}")
-    void updateSite_SUCCESS_tenancyCorrectlyUpdated(final String json) {
+    void updateSite_SUCCESS_tenancyCorrectlyUpdated() {
         setupTestSites();
+        final String json = "{ \"tenancy\":{"
+            + "\"startOfRental\":\"" + TestData.TENANCY_START.toString() + "\","
+            + "\"endOfRental\":\"" + TestData.TENANCY_END.toString() + "\","
+            + "\"rent\":[{\"billingCycle\":\"MONTHLY\",\"firstPaymentDate\":\""
+            + TestData.TENANCY_START.toString() + "\","
+            + "\"lastPaymentDate\":\"" + TestData.TENANCY_END.toString() + "\", \"basicRent\":523.89,"
+            + "\"operatingCostsPrepayment\":123.66, \"heatingCostsPrepayment\":210.02}],"
+            + "\"tenant\":{ \"firstName\":\"" + TestData.USER_FIRST_NAME_3 + "\","
+            + "\"lastName\":\"" + TestData.USER_LAST_NAME_3 + "\","
+            + "\"email\":\"" + TestData.USER_EMAIL_3 + "\","
+            + "\"mobilePhoneNumber\":\"+491773289245\","
+            + "\"businessPhoneNumber\":\"+49302278349\","
+            + "\"privatePhoneNumber\":\"+4933012345611\"}},"
+            + "\"outdoorArea\":51.99}";
 
         given()
             .when()

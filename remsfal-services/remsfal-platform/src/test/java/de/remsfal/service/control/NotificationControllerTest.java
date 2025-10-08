@@ -6,8 +6,6 @@ import de.remsfal.core.model.CustomerModel;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 
-import java.util.UUID;
-
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kafka.KafkaCompanionResource;
@@ -30,7 +28,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
                         .email(TestData.USER_EMAIL)
                         .build();
 
-        notificationController.informUserAboutProjectMembership(user, UUID.randomUUID());
+        notificationController.informUserAboutProjectMembership(user, TestData.PROJECT_ID);
 
         given()
             .topic(EmailEventJson.TOPIC)
@@ -38,7 +36,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("type", Matchers.equalTo("PROJECT_ADMISSION"))
-            .json("link", Matchers.equalTo("https://remsfal.de/projects/fakeId"));
+            .json("link", Matchers.equalTo("https://remsfal.de/projects/" + TestData.PROJECT_ID));
     }
 
     @Test

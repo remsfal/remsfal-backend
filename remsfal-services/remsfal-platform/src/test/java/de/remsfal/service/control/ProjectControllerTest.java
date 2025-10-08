@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -51,22 +52,22 @@ class ProjectControllerTest extends AbstractServiceTest {
         assertNotNull(project);
         assertEquals(TestData.PROJECT_TITLE, project.getTitle());
 
-        final String userId = entityManager
-            .createQuery("SELECT user.id FROM UserEntity user where user.email = :email", String.class)
+        final UUID userId = entityManager
+            .createQuery("SELECT user.id FROM UserEntity user where user.email = :email", UUID.class)
             .setParameter("email", TestData.USER_EMAIL)
             .getSingleResult();
         assertEquals(user.getId(), userId);
 
-        final String projectId = entityManager
+        final UUID projectId = entityManager
             .createQuery("SELECT project.id FROM ProjectEntity project where project.title = :title",
-                String.class)
+                UUID.class)
             .setParameter("title", TestData.PROJECT_TITLE)
             .getSingleResult();
         assertEquals(project.getId(), projectId);
 
         final String userRole = entityManager
             .createNativeQuery(
-                "SELECT MEMBER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
+                "SELECT MEMBER_ROLE FROM project_memberships WHERE PROJECT_ID = :projectId and USER_ID = :userId")
             .setParameter("projectId", projectId)
             .setParameter("userId", userId)
             .getSingleResult()
@@ -231,7 +232,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         
         final String userRole = entityManager
             .createNativeQuery(
-                "SELECT MEMBER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
+                "SELECT MEMBER_ROLE FROM project_memberships WHERE PROJECT_ID = :projectId and USER_ID = :userId")
             .setParameter("projectId", project.getId())
             .setParameter("userId", member2.getId())
             .getSingleResult()
@@ -344,7 +345,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         assertEquals(MemberRole.LESSOR, memberResponse.getRole());
         final String userRole = entityManager
             .createNativeQuery(
-                "SELECT MEMBER_ROLE FROM PROJECT_MEMBERSHIP WHERE PROJECT_ID = :projectId and USER_ID = :userId")
+                "SELECT MEMBER_ROLE FROM project_memberships WHERE PROJECT_ID = :projectId and USER_ID = :userId")
             .setParameter("projectId", project.getId())
             .setParameter("userId", user.getId())
             .getSingleResult()

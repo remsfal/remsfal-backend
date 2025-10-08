@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ImmutableContractorJson;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
@@ -67,11 +68,12 @@ class ContractorControllerTest extends AbstractServiceTest {
     @Test
     void createContractor_SUCCESS_contractorCreated() {
         // Create a contractor JSON
-        ContractorJson contractorJson = new ContractorJson();
-        contractorJson.setCompanyName(COMPANY_NAME_1);
-        contractorJson.setPhone(PHONE_1);
-        contractorJson.setEmail(EMAIL_1);
-        contractorJson.setTrade(TRADE_1);
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .phone(PHONE_1)
+            .email(EMAIL_1)
+            .trade(TRADE_1)
+            .build();
         
         // Create the contractor
         ContractorModel contractor = contractorController.createContractor(user, projectId, contractorJson);
@@ -97,11 +99,12 @@ class ContractorControllerTest extends AbstractServiceTest {
     @Test
     void getContractor_SUCCESS_contractorRetrieved() {
         // Create a contractor
-        ContractorJson contractorJson = new ContractorJson();
-        contractorJson.setCompanyName(COMPANY_NAME_1);
-        contractorJson.setPhone(PHONE_1);
-        contractorJson.setEmail(EMAIL_1);
-        contractorJson.setTrade(TRADE_1);
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .phone(PHONE_1)
+            .email(EMAIL_1)
+            .trade(TRADE_1)
+            .build();
         
         ContractorModel createdContractor = contractorController.createContractor(user, projectId, contractorJson);
         
@@ -128,21 +131,22 @@ class ContractorControllerTest extends AbstractServiceTest {
     @Test
     void updateContractor_SUCCESS_contractorUpdated() {
         // Create a contractor
-        ContractorJson contractorJson = new ContractorJson();
-        contractorJson.setCompanyName(COMPANY_NAME_1);
-        contractorJson.setPhone(PHONE_1);
-        contractorJson.setEmail(EMAIL_1);
-        contractorJson.setTrade(TRADE_1);
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .phone(PHONE_1)
+            .email(EMAIL_1)
+            .trade(TRADE_1)
+            .build();
         
         ContractorModel createdContractor = contractorController.createContractor(user, projectId, contractorJson);
         
         // Update the contractor
-        ContractorJson updateJson = new ContractorJson();
-        updateJson.setId(createdContractor.getId());
-        updateJson.setCompanyName(COMPANY_NAME_2);
-        updateJson.setPhone(PHONE_2);
-        updateJson.setEmail(EMAIL_2);
-        updateJson.setTrade(TRADE_2);
+        ContractorJson updateJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_2)
+            .phone(PHONE_2)
+            .email(EMAIL_2)
+            .trade(TRADE_2)
+            .build();
         
         ContractorModel updatedContractor = contractorController.updateContractor(user, projectId, createdContractor.getId(), updateJson);
         
@@ -163,8 +167,9 @@ class ContractorControllerTest extends AbstractServiceTest {
     @Test
     void updateContractor_FAILED_contractorNotFound() {
         // Try to update a non-existent contractor
-        ContractorJson updateJson = new ContractorJson();
-        updateJson.setCompanyName(COMPANY_NAME_2);
+        ContractorJson updateJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_2)
+            .build();
         
         assertThrows(NotFoundException.class, () -> 
             contractorController.updateContractor(user, projectId, UUID.randomUUID(), updateJson));
@@ -173,11 +178,12 @@ class ContractorControllerTest extends AbstractServiceTest {
     @Test
     void deleteContractor_SUCCESS_contractorDeleted() {
         // Create a contractor
-        ContractorJson contractorJson = new ContractorJson();
-        contractorJson.setCompanyName(COMPANY_NAME_1);
-        contractorJson.setPhone(PHONE_1);
-        contractorJson.setEmail(EMAIL_1);
-        contractorJson.setTrade(TRADE_1);
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .phone(PHONE_1)
+            .email(EMAIL_1)
+            .trade(TRADE_1)
+            .build();
         
         ContractorModel createdContractor = contractorController.createContractor(user, projectId, contractorJson);
         

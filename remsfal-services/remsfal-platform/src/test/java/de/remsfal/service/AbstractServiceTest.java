@@ -1,6 +1,5 @@
 package de.remsfal.service;
 
-import java.util.UUID;
 import java.util.function.Supplier;
 
 import jakarta.inject.Inject;

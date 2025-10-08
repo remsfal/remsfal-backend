@@ -59,12 +59,12 @@ class SessionManagerTest {
 
     private List<ProjectMembershipEntity> createMemberships(String p1Role, String p2Role) {
         return List.of(
-                mkMembership("p1", ProjectMemberModel.MemberRole.valueOf(p1Role)),
-                mkMembership("p2", ProjectMemberModel.MemberRole.valueOf(p2Role))
+                mkMembership(TestData.PROJECT_ID_1, ProjectMemberModel.MemberRole.valueOf(p1Role)),
+                mkMembership(TestData.PROJECT_ID_2, ProjectMemberModel.MemberRole.valueOf(p2Role))
         );
     }
 
-    private ProjectMembershipEntity mkMembership(String projectId, ProjectMemberModel.MemberRole role) {
+    private ProjectMembershipEntity mkMembership(UUID projectId, ProjectMemberModel.MemberRole role) {
         ProjectEntity project = new ProjectEntity();
         setPrivate(project, "id", projectId);
 
@@ -74,25 +74,25 @@ class SessionManagerTest {
         return membershipEntity;
     }
 
-    private static void setPrivate(Object target, String fieldName, Object value) {
+    private static void setPrivate(ProjectEntity projectId, String fieldName, UUID value) {
         try {
-            Field f = target.getClass().getSuperclass().getDeclaredField(fieldName);
+            Field f = projectId.getClass().getSuperclass().getDeclaredField(fieldName);
             f.setAccessible(true);
-            f.set(target, value);
+            f.set(projectId, value);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to set field '" + fieldName + "' on " + target.getClass(), e);
+            throw new RuntimeException("Failed to set field '" + fieldName + "' on " + projectId.getClass(), e);
         }
     }
 
-    private JsonWebToken fakeRefreshJwt(String subject, String email, String refreshId) {
+    private JsonWebToken fakeRefreshJwt(UUID subject, String email, String refreshId) {
         Map<String, Object> claims = new LinkedHashMap<>();
-        claims.put(Claims.sub.name(), subject);
+        claims.put(Claims.sub.name(), subject.toString());
         claims.put("email", email);
         claims.put("refreshToken", refreshId);
 
         return new JsonWebToken() {
-            @Override public String getSubject() { return subject; }
-            @Override public String getName() { return subject; }
+            @Override public String getSubject() { return subject.toString(); }
+            @Override public String getName() { return subject.toString(); }
             @Override public Set<String> getClaimNames() { return new LinkedHashSet<>(claims.keySet()); }
             @Override public <T> T getClaim(String claim) { return (T) claims.get(claim); }
             @Override public String getRawToken() { return null; }
@@ -111,7 +111,7 @@ class SessionManagerTest {
         String refreshId = "r-123";
         String refreshTokenValue = "refresh.jwt.token";
 
-        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID.toString(), email, refreshId));
+        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID, email, refreshId));
 
         UserEntity user = new UserEntity();
         user.setId(TestData.USER_ID);
@@ -130,7 +130,8 @@ class SessionManagerTest {
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
         when(jwtManager.createAccessToken(eq(TestData.USER_ID), eq(email), eq("John Doe"), eq(true),
-                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
+                argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
+                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), eq(300L)))
                 .thenReturn("new-access");
 
         when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L)))
@@ -150,7 +151,8 @@ class SessionManagerTest {
         verify(userRepository).findByIdOptional(TestData.USER_ID);
         verify(projectRepository).findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt());
         verify(jwtManager).createAccessToken(eq(TestData.USER_ID), eq(email), eq("John Doe"), eq(true),
-                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L));
+                argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
+                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), eq(300L));
         verify(jwtManager).createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L));
     }
 
@@ -173,7 +175,8 @@ class SessionManagerTest {
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
         when(jwtManager.createAccessToken(eq(TestData.USER_ID), eq(TestData.USER_EMAIL), eq("Jane Roe"), eq(true),
-                argThat(map -> "MANAGER".equals(map.get("p1")) && "STAFF".equals(map.get("p2"))), eq(300L)))
+                argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
+                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), eq(300L)))
                 .thenReturn("access.jwt");
 
         // Act
@@ -211,7 +214,7 @@ class SessionManagerTest {
     void test_logout_deletesPersistedRefreshToken_whenCookiePresent() throws ParseException {
         String refreshTokenValue = "refresh.jwt";
 
-        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID.toString(), "e@x", "r1"));
+        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID, "e@x", "r1"));
 
         sessionManager.logout(Map.of(SessionManager.REFRESH_COOKIE_NAME,
                 new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));

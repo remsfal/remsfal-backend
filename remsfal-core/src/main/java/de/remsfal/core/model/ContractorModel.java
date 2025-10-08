@@ -48,4 +48,5 @@ public interface ContractorModel {
      * @return the trade
      */
     String getTrade();
+
 }

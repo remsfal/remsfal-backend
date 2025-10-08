@@ -125,7 +125,7 @@ class PropertyControllerTest extends AbstractServiceTest {
         final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
         // Act
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
-            .title(TestData.PROPERTY_ID_2.toString())
+            .title(TestData.PROPERTY_TITLE_2)
             .landRegistry(TestData.PROPERTY_LAND_REGISTRY_2)
             .description(TestData.PROPERTY_DESCRIPTION_2)
             .plotArea(TestData.PROPERTY_PLOT_AREA_2)
@@ -191,7 +191,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     @Test
     void getProperty_SUCCESS_propertyRetrieved() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID)
             .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE)
@@ -202,7 +202,7 @@ class PropertyControllerTest extends AbstractServiceTest {
         
         final PropertyModel result = propertyController.getProperty(TestData.PROJECT_ID, TestData.PROPERTY_ID);
         
-        assertEquals(TestData.PROPERTY_ID.toString(), result.getId());
+        assertEquals(TestData.PROPERTY_ID, result.getId());
         assertEquals(TestData.PROPERTY_TITLE, result.getTitle());
         assertEquals(TestData.PROPERTY_LAND_REGISTRY, result.getLandRegistry());
         assertEquals(TestData.PROPERTY_DESCRIPTION, result.getDescription());
@@ -212,9 +212,9 @@ class PropertyControllerTest extends AbstractServiceTest {
     @Test
     void getProperty_FAILED_wrongProjectId() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROPERTY (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID)
-            .setParameter(2, TestData.PROJECT_ID_1.toString())
+            .setParameter(2, TestData.PROJECT_ID_1)
             .setParameter(3, TestData.PROPERTY_TITLE)
             .setParameter(4, TestData.PROPERTY_LAND_REGISTRY)
             .setParameter(5, TestData.PROPERTY_DESCRIPTION)

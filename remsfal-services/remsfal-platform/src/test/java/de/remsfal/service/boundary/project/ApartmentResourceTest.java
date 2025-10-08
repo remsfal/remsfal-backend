@@ -82,7 +82,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
         long entities = entityManager
             .createQuery("SELECT count(apartment) FROM ApartmentEntity apartment where apartment.buildingId = :buildingId",
                 long.class)
-            .setParameter("buildingId", TestData.BUILDING_ID_2.toString())
+            .setParameter("buildingId", TestData.BUILDING_ID_2)
             .getSingleResult();
         assertEquals(1, entities);
     }

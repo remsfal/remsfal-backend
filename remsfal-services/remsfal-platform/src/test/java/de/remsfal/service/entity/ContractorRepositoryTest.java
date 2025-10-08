@@ -140,7 +140,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         contractor.generateId();
 
         // Get the project entity
-        ProjectEntity project = entityManager.find(ProjectEntity.class, TestData.PROJECT_ID.toString());
+        ProjectEntity project = entityManager.find(ProjectEntity.class, TestData.PROJECT_ID);
         contractor.setProject(project);
 
         contractor.setCompanyName("New Contractor");

@@ -1,6 +1,5 @@
 package de.remsfal.service.entity;
 
-import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.BuildingController;
 import de.remsfal.service.control.PropertyController;
@@ -66,11 +65,10 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     @Test
     void testFindByIds_and_hashcode() {
         final Optional<ApartmentEntity> found = repository.findByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID);
-        final ApartmentModel apartment = TestData.apartmentBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
-        assertEquals(apartment.getId(), found.get().getId());
-        assertEquals(apartment.getTitle(), found.get().getTitle());
+        assertEquals(TestData.APARTMENT_ID, found.get().getId());
+        assertEquals(TestData.APARTMENT_TITLE, found.get().getTitle());
     }
 
     @Test

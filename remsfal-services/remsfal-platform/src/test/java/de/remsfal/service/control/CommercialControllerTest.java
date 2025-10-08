@@ -29,7 +29,7 @@ class CommercialControllerTest extends AbstractServiceTest {
     @BeforeEach
     void setupTestProjects() {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
                 .setParameter(1, TestData.PROJECT_ID_1)
                 .setParameter(2, TestData.PROJECT_TITLE_1)
                 .executeUpdate());
@@ -132,8 +132,8 @@ class CommercialControllerTest extends AbstractServiceTest {
         assertEquals(commercial.getTrafficArea(), result.getTrafficArea());
         assertEquals(commercial.getHeatingSpace(), result.getHeatingSpace());
 
-        final String commercialId = entityManager
-                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+        final UUID commercialId = entityManager
+                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", UUID.class)
                 .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);

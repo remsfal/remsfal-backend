@@ -192,7 +192,7 @@ class TaskResourceTest extends AbstractResourceTest {
 
     void createTask_FAILED_userIsNotPrivileged() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.USER_ID_2)
             .setParameter(3, "STAFF")
@@ -312,24 +312,24 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "OPEN")
-            .setParameter(6, TestData.USER_ID_1.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_1)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
-            .setParameter(6, TestData.USER_ID_2.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_2)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
 
         given()
@@ -350,24 +350,24 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_openTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "CLOSED")
-            .setParameter(6, TestData.USER_ID_1.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_1)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
-            .setParameter(6, TestData.USER_ID_2.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_2)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
 
         given()
@@ -388,24 +388,24 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "OPEN")
-            .setParameter(6, TestData.USER_ID_1.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_1)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
-            .setParameter(6, TestData.USER_ID_2.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_2)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
 
         given()
@@ -427,24 +427,24 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_1)
             .setParameter(5, "CLOSED")
-            .setParameter(6, TestData.USER_ID_1.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_1)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO TASK (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
             .setParameter(4, TestData.TASK_TITLE_2)
             .setParameter(5, "OPEN")
-            .setParameter(6, TestData.USER_ID_2.toString())
-            .setParameter(7, TestData.USER_ID_1.toString())
+            .setParameter(6, TestData.USER_ID_2)
+            .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
 
         given()
@@ -457,7 +457,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .and().body("tasks.size()", Matchers.is(2))
             .and().body("tasks.title", Matchers.hasItems(TestData.TASK_TITLE_1, TestData.TASK_TITLE_2))
             .and().body("tasks.status", Matchers.hasItems("CLOSED", "OPEN"))
-            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1.toString(), TestData.USER_ID_2));
+            .and().body("tasks.owner", Matchers.hasItems(TestData.USER_ID_1.toString(), TestData.USER_ID_2.toString()));
     }
 
     void getTasks_FAILED_userIsNotMember() {

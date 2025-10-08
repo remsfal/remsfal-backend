@@ -25,14 +25,14 @@ public class ContractorResource extends ProjectSubResource implements Contractor
     ContractorController controller;
 
     @Override
-    public ContractorListJson getContractors(final UUID projectId, Integer offset, Integer limit) {
+    public ContractorListJson getContractors(final UUID projectId, final Integer offset, final Integer limit) {
         checkReadPermissions(projectId);
         List<? extends ContractorModel> contractors = controller.getContractors(projectId, offset, limit);
         return ContractorListJson.valueOf(contractors, offset, controller.countContractors(principal, projectId));
     }
 
     @Override
-    public Response createContractor(final UUID projectId, ContractorJson contractor) {
+    public Response createContractor(final UUID projectId, final ContractorJson contractor) {
         checkWritePermissions(projectId);
         ContractorModel model = controller.createContractor(principal, projectId, contractor);
         URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
