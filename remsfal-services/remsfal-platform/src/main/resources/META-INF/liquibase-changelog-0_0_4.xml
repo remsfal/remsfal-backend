@@ -10,129 +10,129 @@
 
     <changeSet id="remsfal-backend-0.0.4-tenancy" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="tenancies">
-            <column name="ID" type="uuid">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="uuid">
+            <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="START_OF_RENTAL" type="date" />
-            <column name="END_OF_RENTAL" type="date" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="start_of_rental" type="date" />
+            <column name="end_of_rental" type="date" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_TENANCY_PROJECT_ID"
-            baseTableName="tenancies" baseColumnNames="PROJECT_ID"
-            referencedTableName="projects" referencedColumnNames="ID"
+            baseTableName="tenancies" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createTable tableName="tenants">
-            <column name="TENANCY_ID" type="uuid">
+            <column name="tenancy_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="USER_ID" type="uuid">
+            <column name="user_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
         <addPrimaryKey tableName="tenants" constraintName="PK_TENANT"
-                columnNames="TENANCY_ID,USER_ID"/>
+                columnNames="tenancy_id,user_id"/>
 
         <addForeignKeyConstraint constraintName="FK_TENANT_TENANCY_ID"
-            baseTableName="tenants" baseColumnNames="TENANCY_ID"
-            referencedTableName="tenancies" referencedColumnNames="ID"
+            baseTableName="tenants" baseColumnNames="tenancy_id"
+            referencedTableName="tenancies" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_TENANT_USER_ID"
-            baseTableName="tenants" baseColumnNames="USER_ID"
-            referencedTableName="users" referencedColumnNames="ID"
+            baseTableName="tenants" baseColumnNames="user_id"
+            referencedTableName="users" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.4-property" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="properties">
-            <column name="ID" type="uuid">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="uuid">
+            <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="TITLE" type="varchar(255)">
+            <column name="title" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="LOCATION" type="varchar(255)" />
-            <column name="DESCRIPTION" type="clob" />
-            <column name="LAND_REGISTRY" type="varchar(255)" />
-            <column name="CADASTRAL_DISTRICT" type="varchar(255)" />
-            <column name="SHEET_NUMBER" type="varchar(255)" />
-            <column name="PLOT_NUMBER" type="int" />
-            <column name="CADASTRAL_SECTION" type="varchar(255)" />
-            <column name="PLOT" type="varchar(255)" />
-            <column name="ECONOMY_TYPE" type="varchar(255)" />
-            <column name="PLOT_AREA" type="int" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="location" type="varchar(255)" />
+            <column name="description" type="clob" />
+            <column name="land_registry" type="varchar(255)" />
+            <column name="cadastral_district" type="varchar(255)" />
+            <column name="sheet_number" type="varchar(255)" />
+            <column name="plot_number" type="int" />
+            <column name="cadastral_section" type="varchar(255)" />
+            <column name="plot" type="varchar(255)" />
+            <column name="economy_type" type="varchar(255)" />
+            <column name="plot_area" type="int" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_PROPERTY_PROJECT_ID"
-            baseTableName="properties" baseColumnNames="PROJECT_ID"
-            referencedTableName="projects" referencedColumnNames="ID"
+            baseTableName="properties" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_PROPERTY_PROJECT_FK" tableName="properties">
-            <column name="PROJECT_ID" type="uuid" />
+            <column name="project_id" type="uuid" />
         </createIndex>
 
         <createTable tableName="property_rents">
-            <column name="TENANCY_ID" type="uuid">
+            <column name="tenancy_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="PROPERTY_ID" type="uuid">
+            <column name="property_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="FIRST_PAYMENT" type="date" />
-            <column name="LAST_PAYMENT" type="date" />
-            <column name="BILLING_CYCLE" type="varchar(20)" defaultValue="MONTHLY">
-                <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
+            <column name="first_payment" type="date" />
+            <column name="last_payment" type="date" />
+            <column name="billing_cycle" type="varchar(20)" defaultValue="MONTHLY">
+                <constraints nullable="false" checkConstraint="billing_cycle IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
             </column>
-            <column name="BASIC_RENT" type="decimal(10, 2)" />
-            <column name="OPERATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
-            <column name="HEATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="basic_rent" type="decimal(10, 2)" />
+            <column name="operating_costs_prepayment" type="decimal(10, 2)" />
+            <column name="heating_costs_prepayment" type="decimal(10, 2)" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_PROPERTY_RENT_TENANCY_ID"
-            baseTableName="property_rents" baseColumnNames="TENANCY_ID"
-            referencedTableName="tenancies" referencedColumnNames="ID"
+            baseTableName="property_rents" baseColumnNames="tenancy_id"
+            referencedTableName="tenancies" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_PROPERTY_RENT_PROPERTY_ID"
-            baseTableName="property_rents" baseColumnNames="PROPERTY_ID"
-            referencedTableName="properties" referencedColumnNames="ID"
+            baseTableName="property_rents" baseColumnNames="property_id"
+            referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_PROPERTY_RENT_TENANCY_FK" tableName="property_rents">
-            <column name="TENANCY_ID" type="uuid" />
+            <column name="tenancy_id" type="uuid" />
         </createIndex>
     </changeSet>
 

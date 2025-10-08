@@ -5,79 +5,79 @@
 
     <changeSet id="remsfal-backend-contractor" author="efehan.cekic@student.htw-berlin.de">
         <createTable tableName="contractors">
-            <column name="ID" type="uuid">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="uuid">
+            <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="COMPANY_NAME" type="varchar(255)">
+            <column name="company_name" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="PHONE" type="varchar(15)" remarks="According to E.164">
+            <column name="phone" type="varchar(15)" remarks="According to E.164">
                 <constraints nullable="true" />
             </column>
-            <column name="EMAIL" type="varchar(255)">
+            <column name="email" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
-            <column name="TRADE" type="varchar(255)">
+            <column name="trade" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_CONTRACTOR_PROJECT_ID"
-                                 baseTableName="contractors" baseColumnNames="PROJECT_ID"
-                                 referencedTableName="projects" referencedColumnNames="ID"
+                                 baseTableName="contractors" baseColumnNames="project_id"
+                                 referencedTableName="projects" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_CONTRACTOR_PROJECT_FK" tableName="contractors">
-            <column name="PROJECT_ID" type="uuid" />
+            <column name="project_id" type="uuid" />
         </createIndex>
 
         <createIndex indexName="IDX_CONTRACTOR_COMPANY_NAME" tableName="contractors">
-            <column name="COMPANY_NAME" type="varchar(255)" />
+            <column name="company_name" type="varchar(255)" />
         </createIndex>
 
         <createTable tableName="contractor_employees">
-            <column name="CONTRACTOR_ID" type="uuid">
+            <column name="contractor_id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="USER_ID" type="uuid">
+            <column name="user_id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="RESPONSIBILITY" type="varchar(255)">
+            <column name="responsibility" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
         <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_CONTRACTOR_ID"
-                                 baseTableName="contractor_employees" baseColumnNames="CONTRACTOR_ID"
-                                 referencedTableName="contractors" referencedColumnNames="ID"
+                                 baseTableName="contractor_employees" baseColumnNames="contractor_id"
+                                 referencedTableName="contractors" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_USER_ID"
-                                 baseTableName="contractor_employees" baseColumnNames="USER_ID"
-                                 referencedTableName="users" referencedColumnNames="ID"
+                                 baseTableName="contractor_employees" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_CONTRACTOR_FK" tableName="contractor_employees">
-            <column name="CONTRACTOR_ID" type="uuid" />
+            <column name="contractor_id" type="uuid" />
         </createIndex>
 
         <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_USER_FK" tableName="contractor_employees">
-            <column name="USER_ID" type="uuid" />
+            <column name="user_id" type="uuid" />
         </createIndex>
     </changeSet>
 
