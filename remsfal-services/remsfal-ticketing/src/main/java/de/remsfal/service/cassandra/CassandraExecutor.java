@@ -20,6 +20,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.IntStream;
 
+/**
+ * DEPRECATED: This class is now deprecated in favor of Liquibase for Cassandra migrations.
+ * The custom CQL script execution logic has been replaced with standard Liquibase changelogs.
+ * This class will be removed in a future version.
+ */
 @ApplicationScoped
 public class CassandraExecutor {
 
@@ -39,7 +44,9 @@ public class CassandraExecutor {
     @ConfigProperty(name = "quarkus.cassandra.keyspace")
     String cassandraKeyspace;
 
-    public void onStartup(@Observes StartupEvent event) {
+    // DEPRECATED: This method is disabled - Liquibase now handles Cassandra migrations
+    // @Observes StartupEvent
+    public void onStartup_DISABLED(StartupEvent event) {
         try (
             CqlSession session = CqlSession.builder()
                 .addContactPoint(getContactPoint(cassandraContactPoints))
