@@ -28,10 +28,10 @@ public class UserAuthenticationEntity extends MetaDataEntity implements UserAuth
 
     @Id
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "USER_ID", referencedColumnName = "ID", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, columnDefinition = "uuid")
     private UserEntity user;
 
-    @Column(name = "REFRESH_TOKEN", nullable = true)
+    @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
 
     @Override

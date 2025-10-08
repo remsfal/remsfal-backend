@@ -142,7 +142,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertAddress(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO addresses (ID, STREET, CITY, PROVINCE, ZIP, COUNTRY) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO addresses (id, street, city, province, zip, country) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -154,7 +154,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertUser(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO users (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME, ADDRESS_ID) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO users (id, token_id, email, first_name, last_name, address_id) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -166,7 +166,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertProject(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .executeUpdate());
@@ -174,7 +174,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertProjectMember(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+                .createNativeQuery("INSERT INTO project_memberships (project_id, user_id, member_role) VALUES (?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -183,9 +183,9 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertProperty(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE, LOCATION, DESCRIPTION, "
-                    + "LAND_REGISTRY, CADASTRAL_DISTRICT, SHEET_NUMBER, PLOT_NUMBER, CADASTRAL_SECTION, "
-                    + "PLOT, ECONOMY_TYPE, PLOT_AREA) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO properties (id, project_id, title, location, description, "
+                    + "land_registry, cadastral_district, sheet_number, plot_number, cadastral_section, "
+                    + "plot, economy_type, plot_area) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -204,7 +204,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertSite(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO sites (ID, PROJECT_ID, PROPERTY_ID, TITLE, ADDRESS_ID, DESCRIPTION, OUTDOOR_AREA) VALUES (?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO sites (id, project_id, property_id, title, address_id, description, outdoor_area) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -217,7 +217,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertBuilding(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO buildings (ID, PROJECT_ID, PROPERTY_ID, TITLE, DESCRIPTION, "
+                .createNativeQuery("INSERT INTO buildings (id, project_id, property_id, title, description, "
                     + "GROSS_FLOOR_AREA, NET_FLOOR_AREA, CONSTRUCTION_FLOOR_AREA, LIVING_SPACE, USABLE_SPACE, "
                     + "HEATING_SPACE, ADDRESS_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
@@ -237,7 +237,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertApartment(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO apartments (ID, PROJECT_ID, BUILDING_ID,TITLE, LOCATION, DESCRIPTION, LIVING_SPACE, USABLE_SPACE, HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO apartments (id, project_id, building_id, title, location, description, living_space, usable_space, heating_space) VALUES (?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -252,7 +252,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertStorage(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO storages (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, DESCRIPTION, USABLE_SPACE) VALUES (?,?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO storages (id, project_id, building_id, title, location, description, usable_space) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -265,8 +265,8 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertCommercial(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO commercials (ID, PROJECT_ID, BUILDING_ID, TITLE, LOCATION, "
-                    + "DESCRIPTION, NET_FLOOR_AREA, USABLE_FLOOR_AREA, TECHNICAL_SERVICE_AREA, TRAFFIC_AREA, "
+                .createNativeQuery("INSERT INTO commercials (id, project_id, building_id, title, location, "
+                    + "description, net_floor_area, usable_floor_area, technical_service_area, TRAFFIC_AREA, "
                     + "HEATING_SPACE) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])

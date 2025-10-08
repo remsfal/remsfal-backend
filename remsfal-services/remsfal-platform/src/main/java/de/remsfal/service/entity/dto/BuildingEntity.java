@@ -19,29 +19,29 @@ import java.util.UUID;
 @Table(name = "buildings")
 public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
 
-    @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "property_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID propertyId;
 
     @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
+    @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
 
-    @Column(name = "GROSS_FLOOR_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "gross_floor_area", columnDefinition = "numeric(10,2)")
     private Float grossFloorArea;
 
-    @Column(name = "NET_FLOOR_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "net_floor_area", columnDefinition = "numeric(10,2)")
     private Float netFloorArea;
 
-    @Column(name = "CONSTRUCTION_FLOOR_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "construction_floor_area", columnDefinition = "numeric(10,2)")
     private Float constructionFloorArea;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "living_space", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "usable_space", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "heating_space", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
     public UUID getPropertyId() {

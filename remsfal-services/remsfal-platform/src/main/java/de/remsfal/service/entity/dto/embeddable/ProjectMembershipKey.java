@@ -15,10 +15,10 @@ public class ProjectMembershipKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "PROJECT_ID", nullable = false, columnDefinition = "uuid")
+    @Column(name = "project_id", nullable = false, columnDefinition = "uuid")
     public UUID projectId;
     
-    @Column(name = "USER_ID", nullable = false, columnDefinition = "uuid")
+    @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
     public UUID userId;
 
     public UUID getProjectId() {

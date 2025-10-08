@@ -148,7 +148,7 @@ class PropertyResourceTest extends AbstractResourceTest {
     @Test
     void deleteProperty_SUCCESS_propertyIsdeleted() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO properties (id, project_id, title) VALUES (?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID_1)
             .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE_1)
@@ -172,7 +172,7 @@ class PropertyResourceTest extends AbstractResourceTest {
     @Test
     void updateProperty_SUCCESS_propertyCorrectlyUpdated() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO properties (id, project_id, title) VALUES (?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID_1)
             .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE_1)

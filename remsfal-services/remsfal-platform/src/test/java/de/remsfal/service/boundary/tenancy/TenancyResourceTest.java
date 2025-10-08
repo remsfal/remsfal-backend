@@ -54,7 +54,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertTenancy(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO tenancies (ID, PROJECT_ID, START_OF_RENTAL, END_OF_RENTAL) VALUES (?,?,?,?)")
+                .createNativeQuery("INSERT INTO tenancies (id, project_id, start_of_rental, end_of_rental) VALUES (?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -64,7 +64,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertTenant(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO tenants (TENANCY_ID, USER_ID) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO tenants (tenancy_id, user_id) VALUES (?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .executeUpdate());
@@ -72,7 +72,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertPropertyRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO property_rents (TENANCY_ID, PROPERTY_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO property_rents (tenancy_id, property_id, first_payment, last_payment,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -86,7 +86,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertSiteRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO site_rents (TENANCY_ID, SITE_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO site_rents (tenancy_id, site_id, first_payment, last_payment,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -100,7 +100,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertBuildingRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO building_rents (TENANCY_ID, BUILDING_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO building_rents (tenancy_id, building_id, first_payment, last_payment,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -114,7 +114,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertApartmentRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO apartment_rents (TENANCY_ID, APARTMENT_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO apartment_rents (tenancy_id, apartment_id, first_payment, last_payment,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -128,7 +128,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertStorageRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO storage_rents (TENANCY_ID, STORAGE_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO storage_rents (tenancy_id, storage_id, first_payment, last_payment,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
@@ -142,7 +142,7 @@ class TenancyResourceTest extends AbstractResourceTest {
 
     protected void insertCommercialRent(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO commercial_rents (TENANCY_ID, COMMERCIAL_ID, FIRST_PAYMENT, LAST_PAYMENT,"
+                .createNativeQuery("INSERT INTO commercial_rents (tenancy_id, commercial_id, first_payment, last_payment,"
                     + "BASIC_RENT, OPERATING_COSTS_PREPAYMENT, HEATING_COSTS_PREPAYMENT) VALUES (?,?,?,?,?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])

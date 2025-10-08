@@ -35,27 +35,27 @@ class PropertyControllerTest extends AbstractServiceTest {
     @BeforeEach
     void setupTestProjects() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_1)
             .setParameter(2, TestData.PROJECT_TITLE_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_2)
             .setParameter(2, TestData.PROJECT_TITLE_2)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_3)
             .setParameter(2, TestData.PROJECT_TITLE_3)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_4)
             .setParameter(2, TestData.PROJECT_TITLE_4)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID_5)
             .setParameter(2, TestData.PROJECT_TITLE_5)
             .executeUpdate());
@@ -191,7 +191,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     @Test
     void getProperty_SUCCESS_propertyRetrieved() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO properties (id, project_id, title, land_registry, description, plot_area) VALUES (?,?,?,?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID)
             .setParameter(2, TestData.PROJECT_ID)
             .setParameter(3, TestData.PROPERTY_TITLE)
@@ -212,7 +212,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     @Test
     void getProperty_FAILED_wrongProjectId() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO properties (ID, PROJECT_ID, TITLE, LAND_REGISTRY, DESCRIPTION, PLOT_AREA) VALUES (?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO properties (id, project_id, title, land_registry, description, plot_area) VALUES (?,?,?,?,?,?)")
             .setParameter(1, TestData.PROPERTY_ID)
             .setParameter(2, TestData.PROJECT_ID_1)
             .setParameter(3, TestData.PROPERTY_TITLE)

@@ -192,7 +192,7 @@ class TaskResourceTest extends AbstractResourceTest {
 
     void createTask_FAILED_userIsNotPrivileged() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO project_memberships (project_id, user_id, member_role) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.USER_ID_2)
             .setParameter(3, "STAFF")
@@ -312,7 +312,7 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
@@ -322,7 +322,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
@@ -350,7 +350,7 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_openTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
@@ -360,7 +360,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
@@ -388,7 +388,7 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_myOpenTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
@@ -398,7 +398,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
@@ -427,7 +427,7 @@ class TaskResourceTest extends AbstractResourceTest {
     @CsvSource({ TASK_PATH + ",TASK" })
     void getTasks_SUCCESS_allTasksAreReturned(String path, String type) {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)
@@ -437,7 +437,7 @@ class TaskResourceTest extends AbstractResourceTest {
             .setParameter(7, TestData.USER_ID_1)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, type)
             .setParameter(3, TestData.PROJECT_ID)

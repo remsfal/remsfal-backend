@@ -10,83 +10,83 @@
 
     <changeSet id="remsfal-backend-0.0.5-site" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="sites">
-            <column name="ID" type="uuid">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="uuid">
+            <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="PROPERTY_ID" type="uuid">
+            <column name="property_id" type="uuid">
                 <constraints nullable="false" />
              </column>
-            <column name="TITLE" type="varchar(255)">
+            <column name="title" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="LOCATION" type="varchar(255)" />
-            <column name="DESCRIPTION" type="clob" />
-            <column name="ADDRESS_ID" type="uuid" />
-            <column name="OUTDOOR_AREA" type="decimal(10, 2)" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="location" type="varchar(255)" />
+            <column name="description" type="clob" />
+            <column name="address_id" type="uuid" />
+            <column name="outdoor_area" type="decimal(10, 2)" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_SITE_PROJECT_ID"
-            baseTableName="sites" baseColumnNames="PROJECT_ID"
-            referencedTableName="projects" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_site_project_id"
+            baseTableName="sites" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_SITE_PROPERTY_ID"
-            baseTableName="sites" baseColumnNames="PROPERTY_ID"
-            referencedTableName="properties" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_site_property_id"
+            baseTableName="sites" baseColumnNames="property_id"
+            referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_SITE_PROJECT_FK" tableName="sites">
-            <column name="PROJECT_ID" type="uuid" />
+        <createIndex indexName="idx_site_project_fk" tableName="sites">
+            <column name="project_id" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_SITE_PROPERTY_FK" tableName="sites">
-            <column name="PROPERTY_ID" type="uuid" />
+        <createIndex indexName="idx_site_property_fk" tableName="sites">
+            <column name="property_id" type="uuid" />
         </createIndex>
 
         <createTable tableName="site_rents">
-            <column name="TENANCY_ID" type="uuid">
+            <column name="tenancy_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="SITE_ID" type="uuid">
+            <column name="site_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="FIRST_PAYMENT" type="date" />
-            <column name="LAST_PAYMENT" type="date" />
-            <column name="BILLING_CYCLE" type="varchar(20)" defaultValue="MONTHLY">
+            <column name="first_payment" type="date" />
+            <column name="last_payment" type="date" />
+            <column name="billing_cycle" type="varchar(20)" defaultValue="MONTHLY">
                 <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
             </column>
-            <column name="BASIC_RENT" type="decimal(10, 2)" />
-            <column name="OPERATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
-            <column name="HEATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="basic_rent" type="decimal(10, 2)" />
+            <column name="operating_costs_prepayment" type="decimal(10, 2)" />
+            <column name="heating_costs_prepayment" type="decimal(10, 2)" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_SITE_RENT_TENANCY_ID"
-            baseTableName="site_rents" baseColumnNames="TENANCY_ID"
-            referencedTableName="tenancies" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_site_rent_tenancy_id"
+            baseTableName="site_rents" baseColumnNames="tenancy_id"
+            referencedTableName="tenancies" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_SITE_RENT_SITE_ID"
-            baseTableName="site_rents" baseColumnNames="SITE_ID"
-            referencedTableName="sites" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_site_rent_site_id"
+            baseTableName="site_rents" baseColumnNames="site_id"
+            referencedTableName="sites" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_SITE_RENT_TENANCY_FK" tableName="site_rents">
-            <column name="TENANCY_ID" type="uuid" />
+        <createIndex indexName="idx_site_rent_tenancy_fk" tableName="site_rents">
+            <column name="tenancy_id" type="uuid" />
         </createIndex>
     </changeSet>
 

@@ -20,14 +20,14 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 @Table(name = "sites")
 public class SiteEntity extends RentalUnitEntity implements SiteModel {
 
-    @Column(name = "PROPERTY_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "property_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID propertyId;
 
     @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "ADDRESS_ID", columnDefinition = "uuid")
+    @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
 
-    @Column(name = "OUTDOOR_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "outdoor_area", columnDefinition = "numeric(10,2)")
     private Float outdoorArea;
 
     public UUID getPropertyId() {

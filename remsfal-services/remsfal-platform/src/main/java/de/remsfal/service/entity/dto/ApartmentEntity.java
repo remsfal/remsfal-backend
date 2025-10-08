@@ -17,16 +17,16 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 @Table(name = "apartments")
 public class ApartmentEntity extends RentalUnitEntity implements ApartmentModel {
 
-    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "building_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID buildingId;
 
-    @Column(name = "LIVING_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "living_space", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "usable_space", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "heating_space", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
     public UUID getBuildingId() {

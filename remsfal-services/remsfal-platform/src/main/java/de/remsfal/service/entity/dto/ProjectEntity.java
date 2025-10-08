@@ -24,7 +24,7 @@ import de.remsfal.core.model.UserModel;
 @Table(name = "projects")
 public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
-    @Column(name = "TITLE")
+    @Column(name = "title")
     private String title;
     
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

@@ -30,7 +30,7 @@ class TaskRepositoryTest extends AbstractServiceTest {
     @BeforeEach
     protected void setupTestTasks() {
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO users (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO users (id, token_id, email, first_name, last_name) VALUES (?,?,?,?,?)")
             .setParameter(1, TestData.USER_ID)
             .setParameter(2, TestData.USER_TOKEN)
             .setParameter(3, TestData.USER_EMAIL)
@@ -38,18 +38,18 @@ class TaskRepositoryTest extends AbstractServiceTest {
             .setParameter(5, TestData.USER_LAST_NAME)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO projects (ID, TITLE) VALUES (?,?)")
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.PROJECT_TITLE)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO project_memberships (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+            .createNativeQuery("INSERT INTO project_memberships (project_id, user_id, member_role) VALUES (?,?,?)")
             .setParameter(1, TestData.PROJECT_ID)
             .setParameter(2, TestData.USER_ID)
             .setParameter(3, "MANAGER")
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, "TASK")
             .setParameter(3, TestData.PROJECT_ID)
@@ -59,7 +59,7 @@ class TaskRepositoryTest extends AbstractServiceTest {
             .setParameter(7, TestData.USER_ID)
             .executeUpdate());
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO tasks (ID, TYPE, PROJECT_ID, TITLE, STATUS, OWNER_ID, CREATED_BY) VALUES (?,?,?,?,?,?,?)")
+            .createNativeQuery("INSERT INTO tasks (id, type, project_id, title, status, owner_id, created_by) VALUES (?,?,?,?,?,?,?)")
             .setParameter(1, UUID.randomUUID())
             .setParameter(2, "DEFECT")
             .setParameter(3, TestData.PROJECT_ID)

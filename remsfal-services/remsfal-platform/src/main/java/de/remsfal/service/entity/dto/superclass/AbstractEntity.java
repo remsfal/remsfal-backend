@@ -14,7 +14,7 @@ import java.util.UUID;
 public abstract class AbstractEntity extends MetaDataEntity {
 
     @Id
-    @Column(name = "ID", nullable = false, columnDefinition = "uuid")
+    @Column(name = "id", nullable = false, columnDefinition = "uuid")
     protected UUID id;
 
     public UUID getId() {

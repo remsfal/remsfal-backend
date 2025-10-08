@@ -10,94 +10,94 @@
 
     <changeSet id="remsfal-backend-0.0.3-project" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="projects">
-            <column name="ID" type="uuid">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="TITLE" type="varchar(255)">
+            <column name="title" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
         <createTable tableName="project_memberships">
-            <column name="PROJECT_ID" type="uuid">
+            <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="USER_ID" type="uuid">
+            <column name="user_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="MEMBER_ROLE" type="varchar(20)">
-                <constraints nullable="false" checkConstraint="MEMBER_ROLE IN ('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')" />
+            <column name="member_role" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="member_role IN ('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="project_memberships" constraintName="PK_PROJECT_MEMBERSHIP"
-                columnNames="PROJECT_ID,USER_ID"/>
+        <addPrimaryKey tableName="project_memberships" constraintName="pk_project_membership"
+                columnNames="project_id,user_id"/>
 
-        <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_PROJECT_ID"
-            baseTableName="project_memberships" baseColumnNames="PROJECT_ID"
-            referencedTableName="projects" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_membership_project_id"
+            baseTableName="project_memberships" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_USER_ID"
-            baseTableName="project_memberships" baseColumnNames="USER_ID"
-            referencedTableName="users" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_membership_user_id"
+            baseTableName="project_memberships" baseColumnNames="user_id"
+            referencedTableName="users" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.3-task" author="alexander.stanik@htw-berlin.de">
         <createTable tableName="tasks">
-            <column name="ID" type="uuid">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="TYPE" type="varchar(20)">
-                <constraints nullable="false" checkConstraint="TYPE IN ('TASK', 'DEFECT', 'MAINTENANCE')" />
+            <column name="type" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="type IN ('TASK', 'DEFECT', 'MAINTENANCE')" />
             </column>
-            <column name="PROJECT_ID" type="uuid">
+            <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="TITLE" type="varchar(255)">
+            <column name="title" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="STATUS" type="varchar(20)" defaultValue="PENDING">
-                <constraints nullable="false" checkConstraint="STATUS IN ('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" />
+            <column name="status" type="varchar(20)" defaultValue="PENDING">
+                <constraints nullable="false" checkConstraint="status IN ('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" />
             </column>
-            <column name="REPORTER_ID" type="uuid" />
-            <column name="OWNER_ID" type="uuid" />
-            <column name="DESCRIPTION" type="clob" />
-            <column name="BLOCKED_BY" type="uuid" />
-            <column name="RELATED_TO" type="uuid" />
-            <column name="DUPLICATE_OF" type="uuid" />
-            <column name="CREATED_BY" type="uuid">
+            <column name="reporter_id" type="uuid" />
+            <column name="owner_id" type="uuid" />
+            <column name="description" type="clob" />
+            <column name="blocked_by" type="uuid" />
+            <column name="related_to" type="uuid" />
+            <column name="duplicate_of" type="uuid" />
+            <column name="created_by" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_TASK_PROJECT_ID"
-            baseTableName="tasks" baseColumnNames="PROJECT_ID"
-            referencedTableName="projects" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_task_project_id"
+            baseTableName="tasks" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TASK_PROJECT_FK" tableName="tasks">
-            <column name="TYPE" />
-            <column name="PROJECT_ID" />
+        <createIndex indexName="idx_task_project_fk" tableName="tasks">
+            <column name="type" />
+            <column name="project_id" />
         </createIndex>
     </changeSet>
 
