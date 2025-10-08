@@ -21,9 +21,23 @@ import java.util.Comparator;
 import java.util.stream.IntStream;
 
 /**
- * DEPRECATED: This class is now deprecated in favor of Liquibase for Cassandra migrations.
- * The custom CQL script execution logic has been replaced with standard Liquibase changelogs.
- * This class will be removed in a future version.
+ * Cassandra Database Migration Executor
+ * 
+ * This class handles Cassandra schema migrations using a custom XML changelog format.
+ * It provides functionality similar to Liquibase but tailored for Cassandra-specific requirements.
+ * 
+ * MIGRATION NOTE: This implementation is maintained alongside Liquibase-ready structures
+ * in src/main/resources/db/cassandra/ to facilitate future migration to standard Liquibase.
+ * See CASSANDRA-MIGRATION.md for detailed migration strategy.
+ * 
+ * Features:
+ * - Automatic keyspace creation
+ * - Ordered script execution based on filename
+ * - XML changelog parsing with security features
+ * - Startup event-driven migration execution
+ * 
+ * @author CassandraExecutor (enhanced)
+ * @see src/main/resources/db/cassandra/ for Liquibase-ready structure
  */
 @ApplicationScoped
 public class CassandraExecutor {
@@ -44,9 +58,16 @@ public class CassandraExecutor {
     @ConfigProperty(name = "quarkus.cassandra.keyspace")
     String cassandraKeyspace;
 
-    // DEPRECATED: This method is disabled - Liquibase now handles Cassandra migrations
-    // @Observes StartupEvent
-    public void onStartup_DISABLED(StartupEvent event) {
+    /**
+     * Initializes Cassandra database schema on application startup.
+     * 
+     * This method ensures the keyspace exists and executes all migration scripts
+     * in the correct order based on the changelog XML configuration.
+     * 
+     * @param event Quarkus startup event
+     * @throws RuntimeException if Cassandra initialization fails
+     */
+    public void onStartup(@Observes StartupEvent event) {
         try (
             CqlSession session = CqlSession.builder()
                 .addContactPoint(getContactPoint(cassandraContactPoints))
