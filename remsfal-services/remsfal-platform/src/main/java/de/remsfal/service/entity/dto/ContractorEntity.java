@@ -25,19 +25,19 @@ import java.util.UUID;
 public class ContractorEntity extends AbstractEntity implements ContractorModel {
 
     @ManyToOne
-    @JoinColumn(name = "PROJECT_ID", columnDefinition = "uuid")
+    @JoinColumn(name = "project_id", columnDefinition = "uuid")
     private ProjectEntity project;
 
-    @Column(name = "COMPANY_NAME", nullable = false)
+    @Column(name = "company_name", nullable = false)
     private String companyName;
 
-    @Column(name = "PHONE")
+    @Column(name = "phone")
     private String phone;
 
-    @Column(name = "EMAIL")
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "TRADE")
+    @Column(name = "trade")
     private String trade;
 
     @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER)

@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 public class BuildingRentEntity extends RentEntity {
 
     @Id
-    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "building_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID buildingId;
 
     public UUID getBuildingId() {

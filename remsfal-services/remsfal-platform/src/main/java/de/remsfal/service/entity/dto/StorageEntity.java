@@ -17,13 +17,13 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 @Table(name = "storages")
 public class StorageEntity extends RentalUnitEntity implements StorageModel {
 
-    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "building_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID buildingId;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "usable_space", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "heating_space", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
 

@@ -22,19 +22,19 @@ import jakarta.persistence.Table;
 public class AddressValidationEntity {
 
     @Id
-    @Column(name = "ID", nullable = false)
+    @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "CITY", nullable = false)
+    @Column(name = "city", nullable = false)
     private String city;
 
-    @Column(name = "PROVINCE", nullable = false)
+    @Column(name = "province", nullable = false)
     private String province;
 
-    @Column(name = "ZIP", nullable = false)
+    @Column(name = "zip", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", nullable = false)
+    @Column(name = "country", nullable = false)
     private String country;
 
     public String getCity() {

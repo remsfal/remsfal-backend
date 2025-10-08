@@ -14,10 +14,10 @@ public class ContractorEmployeeKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "CONTRACTOR_ID", columnDefinition = "uuid")
+    @Column(name = "contractor_id", columnDefinition = "uuid")
     private String contractorId;
 
-    @Column(name = "USER_ID", columnDefinition = "uuid")
+    @Column(name = "user_id", columnDefinition = "uuid")
     private String userId;
 
     public String getContractorId() {

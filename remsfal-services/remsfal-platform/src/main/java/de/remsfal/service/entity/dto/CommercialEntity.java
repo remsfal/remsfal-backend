@@ -17,22 +17,22 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 @Table(name = "commercials")
 public class CommercialEntity extends RentalUnitEntity implements CommercialModel {
 
-    @Column(name = "BUILDING_ID", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "building_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID buildingId;
 
-    @Column(name = "NET_FLOOR_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "net_floor_area", columnDefinition = "numeric(10,2)")
     private Float netFloorArea;
 
-    @Column(name = "USABLE_FLOOR_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "usable_floor_area", columnDefinition = "numeric(10,2)")
     private Float usableFloorArea;
 
-    @Column(name = "TECHNICAL_SERVICE_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "technical_service_area", columnDefinition = "numeric(10,2)")
     private Float technicalServicesArea;
 
-    @Column(name = "TRAFFIC_AREA", columnDefinition = "numeric(10,2)")
+    @Column(name = "traffic_area", columnDefinition = "numeric(10,2)")
     private Float trafficArea;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "numeric(10,2)")
+    @Column(name = "heating_space", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
     public UUID getBuildingId() {
