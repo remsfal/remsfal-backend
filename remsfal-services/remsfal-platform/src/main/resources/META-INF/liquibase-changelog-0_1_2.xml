@@ -31,16 +31,16 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_CONTRACTOR_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_contractor_project_id"
                                  baseTableName="contractors" baseColumnNames="project_id"
                                  referencedTableName="projects" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_CONTRACTOR_PROJECT_FK" tableName="contractors">
+        <createIndex indexName="idx_contractor_project_fk" tableName="contractors">
             <column name="project_id" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_CONTRACTOR_COMPANY_NAME" tableName="contractors">
+        <createIndex indexName="idx_contractor_company_name" tableName="contractors">
             <column name="company_name" type="varchar(255)" />
         </createIndex>
 
@@ -62,21 +62,21 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_CONTRACTOR_ID"
+        <addForeignKeyConstraint constraintName="fk_contractor_employee_contractor_id"
                                  baseTableName="contractor_employees" baseColumnNames="contractor_id"
                                  referencedTableName="contractors" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_CONTRACTOR_EMPLOYEE_USER_ID"
+        <addForeignKeyConstraint constraintName="fk_contractor_employee_user_id"
                                  baseTableName="contractor_employees" baseColumnNames="user_id"
                                  referencedTableName="users" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_CONTRACTOR_FK" tableName="contractor_employees">
+        <createIndex indexName="idx_contractor_employee_contractor_fk" tableName="contractor_employees">
             <column name="contractor_id" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_CONTRACTOR_EMPLOYEE_USER_FK" tableName="contractor_employees">
+        <createIndex indexName="idx_contractor_employee_user_fk" tableName="contractor_employees">
             <column name="user_id" type="uuid" />
         </createIndex>
     </changeSet>

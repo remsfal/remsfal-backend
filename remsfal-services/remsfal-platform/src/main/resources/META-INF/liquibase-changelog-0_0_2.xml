@@ -33,7 +33,7 @@
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="address_validations" columnNames="country,province,city,zip" constraintName="UNIQUE_CITY_PER_ZIP" />
+        <addUniqueConstraint tableName="address_validations" columnNames="country,province,city,zip" constraintName="unique_city_per_zip" />
 
         <loadData tableName="address_validations" file="META-INF/germany_city2zip.csv" separator=";" encoding="UTF-8">
             <column header="osm_id" type="SKIP" />
@@ -44,10 +44,10 @@
             <column name="zip" header="plz" />
         </loadData>
 
-        <createIndex indexName="IDX_ADDRESS_VALIDATION_CITY_LOOKUP" tableName="address_validations">
+        <createIndex indexName="idx_address_validation_city_lookup" tableName="address_validations">
             <column name="city" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ADDRESS_VALIDATION_ZIP_LOOKUP" tableName="address_validations">
+        <createIndex indexName="idx_address_validation_zip_lookup" tableName="address_validations">
             <column name="zip" type="varchar(255)" />
         </createIndex>
     </changeSet>

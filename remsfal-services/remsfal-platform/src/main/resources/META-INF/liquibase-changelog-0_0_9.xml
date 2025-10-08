@@ -37,21 +37,21 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_project_id"
             baseTableName="commercials" baseColumnNames="PROJECT_ID"
             referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_BUILDING_ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_building_id"
             baseTableName="commercials" baseColumnNames="BUILDING_ID"
             referencedTableName="buildings" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_COMMERCIAL_PROJECT_FK" tableName="commercials">
+        <createIndex indexName="idx_commercial_project_fk" tableName="commercials">
             <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_COMMERCIAL_BUILDING_FK" tableName="commercials">
+        <createIndex indexName="idx_commercial_building_fk" tableName="commercials">
             <column name="BUILDING_ID" type="uuid" />
         </createIndex>
 
@@ -78,17 +78,17 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_RENT_TENANCY_ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_rent_tenancy_id"
             baseTableName="commercial_rents" baseColumnNames="TENANCY_ID"
             referencedTableName="tenancies" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_RENT_COMMERCIAL_ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_rent_commercial_id"
             baseTableName="commercial_rents" baseColumnNames="COMMERCIAL_ID"
             referencedTableName="commercials" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_COMMERCIAL_RENT_TENANCY_FK" tableName="commercial_rents">
+        <createIndex indexName="idx_commercial_rent_tenancy_fk" tableName="commercial_rents">
             <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>

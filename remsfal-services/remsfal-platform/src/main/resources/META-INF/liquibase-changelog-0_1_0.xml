@@ -22,7 +22,7 @@
         </createTable>
         <!-- Add Foreign Key Constraint -->
         <addForeignKeyConstraint
-                constraintName="FK_USERAUTHENTICATION_USER_ID"
+                constraintName="fk_user_authentication_user_id"
                 baseTableName="user_authentications"
                 baseColumnNames="user_id"
                 referencedTableName="users"

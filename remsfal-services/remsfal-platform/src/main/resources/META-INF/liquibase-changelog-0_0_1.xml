@@ -9,11 +9,11 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.1-init" author="alexander.stanik@htw-berlin.de">
-        <createIndex tableName="DATABASECHANGELOG" indexName="IDX_DATE_ORDER_EXECUTED">
+        <createIndex tableName="DATABASECHANGELOG" indexName="idx_date_order_executed">
             <column name="DATEEXECUTED"/>
             <column name="ORDEREXECUTED"/>
         </createIndex>
-        <addPrimaryKey tableName="DATABASECHANGELOG" constraintName="PK_DATABASECHANGELOG"
+        <addPrimaryKey tableName="DATABASECHANGELOG" constraintName="pk_databasechangelog"
                 columnNames="ID,AUTHOR,FILENAME"/>
     </changeSet>
 
@@ -45,10 +45,10 @@
             </column>
         </createTable>
 
-        <createIndex indexName="IDX_ADDRESS_STREET_LOOKUP" tableName="addresses">
+        <createIndex indexName="idx_address_street_lookup" tableName="addresses">
             <column name="street" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ADDRESS_ZIP_LOOKUP" tableName="addresses">
+        <createIndex indexName="idx_address_zip_lookup" tableName="addresses">
             <column name="zip" type="varchar(255)" />
         </createIndex>
 
@@ -77,17 +77,17 @@
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="users" columnNames="email" constraintName="UNIQUE_EMAIL" />
-        <addUniqueConstraint tableName="users" columnNames="token_id" constraintName="UNIQUE_TOKEN_ID" />
+        <addUniqueConstraint tableName="users" columnNames="email" constraintName="unique_email" />
+        <addUniqueConstraint tableName="users" columnNames="token_id" constraintName="unique_token_id" />
 
-        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="users">
+        <createIndex indexName="idx_email_lookup" tableName="users">
             <column name="email" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="users">
+        <createIndex indexName="idx_token_id_lookup" tableName="users">
             <column name="token_id" type="varchar(255)" />
         </createIndex>
 
-        <addForeignKeyConstraint constraintName="FK_ADDRESS_ID"
+        <addForeignKeyConstraint constraintName="fk_address_id"
                                  baseTableName="users" baseColumnNames="address_id"
                                  referencedTableName="addresses" referencedColumnNames="id"
                                  onDelete="SET NULL" onUpdate="RESTRICT" />

@@ -39,21 +39,21 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_BUILDING_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_building_project_id"
             baseTableName="buildings" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_BUILDING_PROPERTY_ID"
+        <addForeignKeyConstraint constraintName="fk_building_property_id"
             baseTableName="buildings" baseColumnNames="property_id"
             referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_BUILDING_PROJECT_FK" tableName="buildings">
+        <createIndex indexName="idx_building_project_fk" tableName="buildings">
             <column name="project_id" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_BUILDING_PROPERTY_FK" tableName="buildings">
+        <createIndex indexName="idx_building_property_fk" tableName="buildings">
             <column name="property_id" type="uuid" />
         </createIndex>
 
@@ -80,17 +80,17 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_BUILDING_RENT_TENANCY_ID"
+        <addForeignKeyConstraint constraintName="fk_building_rent_tenancy_id"
             baseTableName="building_rents" baseColumnNames="tenancy_id"
             referencedTableName="tenancies" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_BUILDING_RENT_BUILDING_ID"
+        <addForeignKeyConstraint constraintName="fk_building_rent_building_id"
             baseTableName="building_rents" baseColumnNames="building_id"
             referencedTableName="buildings" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_BUILDING_RENT_TENANCY_FK" tableName="building_rents">
+        <createIndex indexName="idx_building_rent_tenancy_fk" tableName="building_rents">
             <column name="tenancy_id" type="uuid" />
         </createIndex>
     </changeSet>

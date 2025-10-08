@@ -42,15 +42,15 @@
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="project_memberships" constraintName="PK_PROJECT_MEMBERSHIP"
+        <addPrimaryKey tableName="project_memberships" constraintName="pk_project_membership"
                 columnNames="project_id,user_id"/>
 
-        <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_membership_project_id"
             baseTableName="project_memberships" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_MEMBERSHIP_USER_ID"
+        <addForeignKeyConstraint constraintName="fk_membership_user_id"
             baseTableName="project_memberships" baseColumnNames="user_id"
             referencedTableName="users" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
@@ -90,12 +90,12 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_TASK_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_task_project_id"
             baseTableName="tasks" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TASK_PROJECT_FK" tableName="tasks">
+        <createIndex indexName="idx_task_project_fk" tableName="tasks">
             <column name="type" />
             <column name="project_id" />
         </createIndex>

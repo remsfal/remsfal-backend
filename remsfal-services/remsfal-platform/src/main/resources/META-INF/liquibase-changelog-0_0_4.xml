@@ -26,7 +26,7 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_TENANCY_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_tenancy_project_id"
             baseTableName="tenancies" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
@@ -46,15 +46,15 @@
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="tenants" constraintName="PK_TENANT"
+        <addPrimaryKey tableName="tenants" constraintName="pk_tenant"
                 columnNames="tenancy_id,user_id"/>
 
-        <addForeignKeyConstraint constraintName="FK_TENANT_TENANCY_ID"
+        <addForeignKeyConstraint constraintName="fk_tenant_tenancy_id"
             baseTableName="tenants" baseColumnNames="tenancy_id"
             referencedTableName="tenancies" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_TENANT_USER_ID"
+        <addForeignKeyConstraint constraintName="fk_tenant_user_id"
             baseTableName="tenants" baseColumnNames="user_id"
             referencedTableName="users" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
@@ -89,12 +89,12 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_PROPERTY_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_property_project_id"
             baseTableName="properties" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROPERTY_PROJECT_FK" tableName="properties">
+        <createIndex indexName="idx_property_project_fk" tableName="properties">
             <column name="project_id" type="uuid" />
         </createIndex>
 
@@ -121,17 +121,17 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_PROPERTY_RENT_TENANCY_ID"
+        <addForeignKeyConstraint constraintName="fk_property_rent_tenancy_id"
             baseTableName="property_rents" baseColumnNames="tenancy_id"
             referencedTableName="tenancies" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_PROPERTY_RENT_PROPERTY_ID"
+        <addForeignKeyConstraint constraintName="fk_property_rent_property_id"
             baseTableName="property_rents" baseColumnNames="property_id"
             referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROPERTY_RENT_TENANCY_FK" tableName="property_rents">
+        <createIndex indexName="idx_property_rent_tenancy_fk" tableName="property_rents">
             <column name="tenancy_id" type="uuid" />
         </createIndex>
     </changeSet>

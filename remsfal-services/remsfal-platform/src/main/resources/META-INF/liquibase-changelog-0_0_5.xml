@@ -34,21 +34,21 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_SITE_PROJECT_ID"
+        <addForeignKeyConstraint constraintName="fk_site_project_id"
             baseTableName="sites" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_SITE_PROPERTY_ID"
+        <addForeignKeyConstraint constraintName="fk_site_property_id"
             baseTableName="sites" baseColumnNames="property_id"
             referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_SITE_PROJECT_FK" tableName="sites">
+        <createIndex indexName="idx_site_project_fk" tableName="sites">
             <column name="project_id" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_SITE_PROPERTY_FK" tableName="sites">
+        <createIndex indexName="idx_site_property_fk" tableName="sites">
             <column name="property_id" type="uuid" />
         </createIndex>
 
@@ -75,17 +75,17 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_SITE_RENT_TENANCY_ID"
+        <addForeignKeyConstraint constraintName="fk_site_rent_tenancy_id"
             baseTableName="site_rents" baseColumnNames="tenancy_id"
             referencedTableName="tenancies" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_SITE_RENT_SITE_ID"
+        <addForeignKeyConstraint constraintName="fk_site_rent_site_id"
             baseTableName="site_rents" baseColumnNames="site_id"
             referencedTableName="sites" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_SITE_RENT_TENANCY_FK" tableName="site_rents">
+        <createIndex indexName="idx_site_rent_tenancy_fk" tableName="site_rents">
             <column name="tenancy_id" type="uuid" />
         </createIndex>
     </changeSet>
