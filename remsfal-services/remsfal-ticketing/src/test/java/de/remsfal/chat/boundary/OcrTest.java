@@ -1,12 +1,34 @@
 package de.remsfal.chat.boundary;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.awaitility.Awaitility;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.junit.jupiter.api.Test;
+
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.remsfal.chat.resource.OcrServiceResource;
+
 import de.remsfal.chat.TicketingTestData;
 import de.remsfal.chat.control.ChatMessageController;
 import de.remsfal.chat.control.FileStorageController;
+import de.remsfal.chat.resource.OcrServiceResource;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -15,28 +37,9 @@ import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.security.TestSecurity;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import org.awaitility.Awaitility;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.List;
-
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
-
-import java.util.Map;
-import java.util.UUID;
+import jakarta.ws.rs.core.Response;
 
 /**
  * @author Christopher Keller [christopher.keller@student.htw-berlin.de]
@@ -86,40 +89,32 @@ public class OcrTest extends AbstractResourceTest {
         String messageId = root.get("fileId").asText();
 
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
-                .untilAsserted(() ->
-                        verify(chatMessageController, atLeastOnce())
-                                .updateTextChatMessage(eq(sessionId), eq(messageId), eq("Das hier ist ein Text"))
-                );
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() -> verify(chatMessageController, atLeastOnce())
+                .updateTextChatMessage(eq(sessionId), eq(messageId), eq("Das hier ist ein Text")));
     }
 
     @Test
     void testNullInput_Exception() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                chatSessionResource.extractFileNameFromUrl(null)
-        );
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatSessionResource.extractFileNameFromUrl(null));
         assertEquals("File URL cannot be null or empty", ex.getMessage());
     }
 
     @Test
     void testBlankInput_Exception() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                chatSessionResource.extractFileNameFromUrl(" ")
-        );
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatSessionResource.extractFileNameFromUrl(" "));
         assertEquals("File URL cannot be null or empty", ex.getMessage());
     }
 
     @Test
     void testEndsWithSlash_Exception() {
         String input = "https://example.com/files/";
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                chatSessionResource.extractFileNameFromUrl(input)
-        );
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatSessionResource.extractFileNameFromUrl(input));
         assertEquals("Invalid file URL format: " + input, ex.getMessage());
     }
 
     private MultipartFormDataInput createMultipartFormDataInput(String fileName, String contentType, byte[] content)
-            throws Exception {
+        throws Exception {
         MultipartFormDataInput input = mock(MultipartFormDataInput.class);
         InputPart inputPart = mock(InputPart.class);
 

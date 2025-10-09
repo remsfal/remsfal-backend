@@ -58,12 +58,12 @@
         <dependency>
             <groupId>org.liquibase.ext</groupId>
             <artifactId>liquibase-cassandra</artifactId>
-            <version>4.32.0</version>
+            <version>5.0.1</version>
         </dependency>
         <dependency>
-            <groupId>com.github.adejanovski</groupId>
+            <groupId>com.ing.data</groupId>
             <artifactId>cassandra-jdbc-wrapper</artifactId>
-            <version>3.1.0</version>
+            <version>4.16.0</version>
         </dependency>
 
         <!-- TEST dependencies -->

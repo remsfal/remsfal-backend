@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-# REMSFAL Ticketing Service - Cassandra Database Migrations
-# Author: Copilot Agent
+#
+# Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+#
 -->
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -11,8 +12,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <include file="db/cassandra/changes/001-create-keyspace.xml"/>
-    <include file="db/cassandra/changes/002-create-chat-messages-table.xml"/>
-    <include file="db/cassandra/changes/003-create-chat-sessions-table.xml"/>
-
+    <!--  include file="META-INF/changesets/001-create-keyspace.xml"/ -->
+    <include file="META-INF/changesets/002-create-chat-messages-table.xml"/>
+    <include file="META-INF/changesets/003-create-chat-sessions-table.xml"/>
 </databaseChangeLog>

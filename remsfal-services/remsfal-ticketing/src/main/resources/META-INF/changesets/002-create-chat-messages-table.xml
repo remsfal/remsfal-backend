@@ -7,13 +7,23 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="001" author="cassandra-migration">
-        <comment>Create REMSFAL keyspace</comment>
-        <ext:createKeyspace keyspaceName="REMSFAL">
-            <ext:withClause>replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 2}</ext:withClause>
-        </ext:createKeyspace>
+    <changeSet id="remsfal-ticketing-0.0.2-chat_messages" author="alexander.stanik@htw-berlin.de">
+        <comment>Create chat_messages table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.chat_messages (
+                session_id UUID,
+                message_id UUID,
+                sender_id UUID,
+                content_type TEXT,
+                content TEXT,
+                url TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY (session_id, message_id)
+            ) WITH CLUSTERING ORDER BY (message_id ASC);
+        </sql>
         <rollback>
-            <sql>DROP KEYSPACE IF EXISTS REMSFAL;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.chat_messages;</sql>
         </rollback>
     </changeSet>
 
