@@ -86,7 +86,7 @@ public class CassandraExecutor {
         logger.infov("Ensuring keyspace {0} exists.", keyspace);
         String createKeyspaceCQL = String.format(
             "CREATE KEYSPACE IF NOT EXISTS %s " +
-            "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};",
+            "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};",
             keyspace
         );
         session.execute(createKeyspaceCQL);

@@ -8,13 +8,3 @@ services:
       - POSTGRES_PASSWORD=remsfal
     ports:
       - "5432:5432"
-
-  zeebe:
-    image: camunda/zeebe:latest
-    container_name: camunda
-    environment:
-      - ZEEBE_BROKER_CLUSTER_SIZE=1
-      - ZEEBE_BROKER_PARTITIONS_COUNT=1
-      - ZEEBE_BROKER_REPLICATION_FACTOR=1
-    ports:
-      - "26500:26500"
