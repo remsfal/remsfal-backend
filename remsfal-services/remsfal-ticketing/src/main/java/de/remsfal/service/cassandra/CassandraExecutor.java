@@ -21,7 +21,7 @@ import java.util.Properties;
 
 /**
  * Cassandra Database Migration Executor
- * 
+ *
  * This class handles Cassandra schema migrations using Liquibase.
  */
 @ApplicationScoped
@@ -52,10 +52,10 @@ public class CassandraExecutor {
 
     /**
      * Initializes Cassandra database schema on application startup.
-     * 
-     * This method ensures the keyspace exists and executes all migration scripts
-     * in the correct order based on the changelog XML configuration.
-     * 
+     *
+     * This method ensures the keyspace exists and executes all migration
+     * scripts in the correct order based on the changelog XML configuration.
+     *
      * @param event Quarkus startup event
      * @throws RuntimeException if Cassandra initialization fails
      */
@@ -84,27 +84,24 @@ public class CassandraExecutor {
 
     private void ensureKeyspaceExists(CqlSession session) {
         logger.infov("Ensuring keyspace {0} exists.", keyspace);
-        String createKeyspaceCQL = String.format(
-            "CREATE KEYSPACE IF NOT EXISTS %s " +
+        String createKeyspaceCQL = String.format("CREATE KEYSPACE IF NOT EXISTS %s " +
             "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};",
-            keyspace
-        );
+            keyspace);
         session.execute(createKeyspaceCQL);
         logger.infov("Keyspace {0} ensured.", keyspace);
     }
 
     private void processChangelogs(CqlSession session) throws SQLException, LiquibaseException {
         logger.infov("Processing Cassandra changelogs XML at {0}", liquibaseChangelog);
-        
+
         final String url = buildConnectionURL();
         try (Connection c = DriverManager.getConnection(url, getLiquibaseProperties())) {
-          @SuppressWarnings("resource")
-          Liquibase lb = new Liquibase(
-              liquibaseChangelog,
-              new ClassLoaderResourceAccessor(),
-              new JdbcConnection(c)
-          );
-          lb.update((String) null);
+            @SuppressWarnings("resource")
+            Liquibase lb = new Liquibase(
+                liquibaseChangelog,
+                new ClassLoaderResourceAccessor(),
+                new JdbcConnection(c));
+            lb.update((String) null);
         }
     }
 
