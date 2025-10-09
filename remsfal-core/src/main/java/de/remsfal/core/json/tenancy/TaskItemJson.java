@@ -3,9 +3,9 @@ package de.remsfal.core.json.tenancy;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import de.remsfal.core.model.project.TaskModel;
-import de.remsfal.core.model.project.TaskModel.Status;
-import de.remsfal.core.model.project.TaskModel.Type;
+import de.remsfal.core.model.ticketing.TaskModel;
+import de.remsfal.core.model.ticketing.TaskModel.Status;
+import de.remsfal.core.model.ticketing.TaskModel.Type;
 
 import java.util.UUID;
 

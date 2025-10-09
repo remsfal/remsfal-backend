@@ -2,7 +2,7 @@ package de.remsfal.core.api.ticketing;
 
 import jakarta.ws.rs.Path;
 
-import de.remsfal.core.api.project.TaskEndpoint;
+import de.remsfal.core.api.ticketing.TaskEndpoint;
 
 /**
  * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]

@@ -23,7 +23,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.tenancy.TaskJson;
 import de.remsfal.core.json.tenancy.TaskListJson;
-import de.remsfal.core.model.project.TaskModel.Status;
+import de.remsfal.core.model.ticketing.TaskModel.Status;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 

@@ -2,7 +2,7 @@ package de.remsfal.core.json.tenancy;
 
 import java.util.List;
 
-import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.core.model.ticketing.TaskModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;

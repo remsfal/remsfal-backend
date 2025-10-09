@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import de.remsfal.core.model.project.TaskModel;
+import de.remsfal.core.model.ticketing.TaskModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
 
