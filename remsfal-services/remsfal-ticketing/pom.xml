@@ -50,6 +50,11 @@
             <artifactId>quarkus-jnosql-cassandra</artifactId>
             <version>${quarkus-cassandra.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.liquibase.ext</groupId>
+            <artifactId>liquibase-cassandra</artifactId>
+            <version>5.0.1</version>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
