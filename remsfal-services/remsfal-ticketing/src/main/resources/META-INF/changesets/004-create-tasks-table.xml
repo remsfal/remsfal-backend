@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.4-tasks" author="alexander.stanik@htw-berlin.de">
+        <comment>Create tasks table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.tasks (
+                id UUID,
+                type TEXT,
+                project_id UUID,
+                title TEXT,
+                status TEXT,
+                reporter_id UUID,
+                owner_id UUID,
+                description TEXT,
+                blocked_by UUID,
+                related_to UUID,
+                duplicate_of UUID,
+                created_by UUID,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY (project_id, id)
+            ) WITH CLUSTERING ORDER BY (id ASC);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.tasks;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
