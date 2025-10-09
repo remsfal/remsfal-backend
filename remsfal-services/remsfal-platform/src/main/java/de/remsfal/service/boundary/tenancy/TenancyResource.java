@@ -19,6 +19,7 @@ import de.remsfal.service.control.CommercialController;
 import de.remsfal.service.control.PropertyController;
 import de.remsfal.service.control.SiteController;
 import de.remsfal.service.control.StorageController;
+import de.remsfal.service.boundary.tenancy.IssueResource;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
 import de.remsfal.service.entity.dto.BuildingRentEntity;
 import de.remsfal.service.entity.dto.CommercialRentEntity;
@@ -36,7 +37,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     ResourceContext resourceContext;
 
     @Inject
-    Instance<TaskResource> taskResource;
+    Instance<IssueResource> issueResource;
 
     @Inject
     PropertyController propertyController;
@@ -167,8 +168,8 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TaskResource getTaskResource() {
-        return resourceContext.initResource(taskResource.get());
+    public IssueResource getIssueResource() {
+        return resourceContext.initResource(issueResource.get());
     }
 
 }
