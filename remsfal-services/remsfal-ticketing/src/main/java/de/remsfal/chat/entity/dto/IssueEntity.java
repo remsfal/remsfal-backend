@@ -1,6 +1,6 @@
 package de.remsfal.chat.entity.dto;
 
-import de.remsfal.core.model.ticketing.TaskModel;
+import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
@@ -9,11 +9,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-@Entity("tasks")
-public class TaskEntity extends AbstractEntity implements TaskModel {
+@Entity("issues")
+public class IssueEntity extends AbstractEntity implements IssueModel {
 
     @Id
-    private TaskKey key;
+    private IssueKey key;
 
     @Column("type")
     private String type;
@@ -45,25 +45,25 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     @Column("created_by")
     private UUID createdBy;
 
-    public TaskKey getKey() {
+    public IssueKey getKey() {
         return key;
     }
 
-    public void setKey(TaskKey key) {
+    public void setKey(IssueKey key) {
         this.key = key;
     }
 
     @Override
     public UUID getId() {
         return Optional.ofNullable(key)
-            .map(TaskKey::getId)
+            .map(IssueKey::getId)
             .orElse(null);
     }
 
     @Override
     public UUID getProjectId() {
         return Optional.ofNullable(key)
-            .map(TaskKey::getProjectId)
+            .map(IssueKey::getProjectId)
             .orElse(null);
     }
 
@@ -168,7 +168,7 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
 
     public void generateId() {
         if (this.key == null) {
-            this.key = new TaskKey();
+            this.key = new IssueKey();
         }
         if (this.key.getId() == null) {
             this.key.setId(UUID.randomUUID());
@@ -177,7 +177,7 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
 
     public void setProjectId(UUID projectId) {
         if (this.key == null) {
-            this.key = new TaskKey();
+            this.key = new IssueKey();
         }
         this.key.setProjectId(projectId);
     }
@@ -186,7 +186,7 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TaskEntity that = (TaskEntity) o;
+        IssueEntity that = (IssueEntity) o;
         return Objects.equals(key, that.key);
     }
 
@@ -197,7 +197,7 @@ public class TaskEntity extends AbstractEntity implements TaskModel {
 
     @Override
     public String toString() {
-        return "TaskEntity{" +
+        return "IssueEntity{" +
                 "key=" + key +
                 ", type='" + type + '\'' +
                 ", title='" + title + '\'' +

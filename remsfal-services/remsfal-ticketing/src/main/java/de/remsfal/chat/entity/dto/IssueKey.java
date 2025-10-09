@@ -6,7 +6,7 @@ import jakarta.nosql.Id;
 import java.util.Objects;
 import java.util.UUID;
 
-public class TaskKey {
+public class IssueKey {
 
     @Id("project_id")
     private UUID projectId;
@@ -14,10 +14,10 @@ public class TaskKey {
     @Id("id")
     private UUID id;
 
-    public TaskKey() {
+    public IssueKey() {
     }
 
-    public TaskKey(UUID projectId, UUID id) {
+    public IssueKey(UUID projectId, UUID id) {
         this.projectId = projectId;
         this.id = id;
     }
@@ -42,8 +42,8 @@ public class TaskKey {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TaskKey taskKey = (TaskKey) o;
-        return Objects.equals(projectId, taskKey.projectId) && Objects.equals(id, taskKey.id);
+        IssueKey issueKey = (IssueKey) o;
+        return Objects.equals(projectId, issueKey.projectId) && Objects.equals(id, issueKey.id);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class TaskKey {
 
     @Override
     public String toString() {
-        return "TaskKey{" +
+        return "IssueKey{" +
                 "projectId=" + projectId +
                 ", id=" + id +
                 '}';

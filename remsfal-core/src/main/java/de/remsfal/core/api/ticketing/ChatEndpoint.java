@@ -2,7 +2,7 @@ package de.remsfal.core.api.ticketing;
 
 import jakarta.ws.rs.Path;
 
-import de.remsfal.core.api.ticketing.TaskEndpoint;
+import de.remsfal.core.api.ticketing.IssueEndpoint;
 
 /**
  * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -14,7 +14,7 @@ public interface ChatEndpoint {
     String VERSION = "v1";
     String SERVICE = "projects";
 
-    @Path("/{projectId}/" + TaskEndpoint.SERVICE + "/{taskId}/" + ChatSessionEndpoint.SERVICE)
+    @Path("/{projectId}/" + IssueEndpoint.SERVICE + "/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
 
 }

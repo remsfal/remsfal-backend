@@ -22,79 +22,79 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.ticketing.TaskJson;
-import de.remsfal.core.json.ticketing.TaskListJson;
-import de.remsfal.core.model.ticketing.TaskModel.Status;
+import de.remsfal.core.json.ticketing.IssueJson;
+import de.remsfal.core.json.ticketing.IssueListJson;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TaskEndpoint {
+public interface IssueEndpoint {
 
-    String SERVICE = "tasks";
+    String SERVICE = "issues";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information for all tasks.")
+    @Operation(summary = "Retrieve information for all issues.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    TaskListJson getTasks(
+    IssueListJson getIssues(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
-        @Parameter(description = "Filter to return only tasks of a specific user")
+        @Parameter(description = "Filter to return only issues of a specific user")
         @QueryParam("owner") UUID ownerId,
-        @Parameter(description = "Filter to return only tasks with a specific status")
+        @Parameter(description = "Filter to return only issues with a specific status")
         @QueryParam("status") Status status);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new task.")
-    @APIResponse(responseCode = "201", description = "Task created successfully",
-        headers = @Header(name = "Location", description = "URL of the new task"))
+    @Operation(summary = "Create a new issue.")
+    @APIResponse(responseCode = "201", description = "Issue created successfully",
+        headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createTask(
+    Response createIssue(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
-        @Parameter(description = "Task information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) TaskJson task);
+        @Parameter(description = "Issue information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
 
     @GET
-    @Path("/{taskId}")
+    @Path("/{issueId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of a task.")
+    @Operation(summary = "Retrieve information of an issue.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The property does not exist")
-    TaskJson getTask(
+    IssueJson getIssue(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
-        @Parameter(description = "ID of the task", required = true)
-        @PathParam("taskId") @NotNull UUID taskId);
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId);
 
     @PATCH
-    @Path("/{taskId}")
+    @Path("/{issueId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a task.")
+    @Operation(summary = "Update information of an issue.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "The task does not exist")
-    TaskJson updateTask(
+    @APIResponse(responseCode = "404", description = "The issue does not exist")
+    IssueJson updateIssue(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
-        @Parameter(description = "ID of the task", required = true)
-        @PathParam("taskId") @NotNull UUID taskId,
-        @Parameter(description = "Task information", required = true)
-        @Valid @ConvertGroup(to = PatchValidation.class) TaskJson task);
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Issue information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) IssueJson issue);
 
     @DELETE
-    @Path("/{taskId}")
-    @Operation(summary = "Delete an existing task.")
-    @APIResponse(responseCode = "204", description = "The task was deleted successfully")
+    @Path("/{issueId}")
+    @Operation(summary = "Delete an existing issue.")
+    @APIResponse(responseCode = "204", description = "The issue was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    void deleteTask(
+    void deleteIssue(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
-        @Parameter(description = "ID of the task", required = true)
-        @PathParam("taskId") @NotNull UUID taskId);
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId);
 
 }

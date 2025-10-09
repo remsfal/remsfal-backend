@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TaskModel {
+public interface IssueModel {
 
     UUID getId();
 
@@ -14,7 +14,7 @@ public interface TaskModel {
     String getTitle();
 
     public enum Type {
-        TASK,
+        ISSUE,
         DEFECT,
         MAINTENANCE
     }

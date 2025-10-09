@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ticketing.TaskModel;
+import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
 
@@ -24,10 +24,10 @@ import de.remsfal.core.validation.PostValidation;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A task")
-@JsonDeserialize(as = ImmutableTaskJson.class)
+@Schema(description = "An issue")
+@JsonDeserialize(as = ImmutableIssueJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TaskJson implements TaskModel {
+public abstract class IssueJson implements IssueModel {
 
     @Null
     @Nullable
@@ -74,8 +74,8 @@ public abstract class TaskJson implements TaskModel {
     @Override
     public abstract UUID getDuplicateOf();
 
-    public static TaskJson valueOf(final TaskModel model) {
-        return ImmutableTaskJson.builder()
+    public static IssueJson valueOf(final IssueModel model) {
+        return ImmutableIssueJson.builder()
                 .id(model.getId())
                 .projectId(model.getProjectId())
                 .title(model.getTitle())

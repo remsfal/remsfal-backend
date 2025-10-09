@@ -7,10 +7,10 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.4-tasks" author="alexander.stanik@htw-berlin.de">
-        <comment>Create tasks table</comment>
+    <changeSet id="remsfal-ticketing-0.0.4-issues" author="alexander.stanik@htw-berlin.de">
+        <comment>Create issues table</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.tasks (
+            CREATE TABLE IF NOT EXISTS REMSFAL.issues (
                 id UUID,
                 type TEXT,
                 project_id UUID,
@@ -29,7 +29,7 @@
             ) WITH CLUSTERING ORDER BY (id ASC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.tasks;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.issues;</sql>
         </rollback>
     </changeSet>
 
