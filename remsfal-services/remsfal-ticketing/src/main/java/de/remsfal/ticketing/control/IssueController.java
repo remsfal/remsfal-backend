@@ -51,7 +51,8 @@ public class IssueController {
             .orElseThrow(() -> new NotFoundException("Issue not found"));
     }
 
-    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId, UnitType rentalType, UUID rentalId, Status status) {
+    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
+        UnitType rentalType, UUID rentalId, Status status) {
         return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
     }
 
@@ -67,29 +68,29 @@ public class IssueController {
         logger.infov("Updating issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
         final IssueEntity entity = repository.find(key)
             .orElseThrow(() -> new NotFoundException("Issue not found"));
-        
-        if(issue.getTitle() != null) {
+
+        if (issue.getTitle() != null) {
             entity.setTitle(issue.getTitle());
         }
-        if(issue.getStatus() != null) {
+        if (issue.getStatus() != null) {
             entity.setStatus(issue.getStatus());
         }
-        if(issue.getOwnerId() != null) {
+        if (issue.getOwnerId() != null) {
             entity.setOwnerId(issue.getOwnerId());
         }
-        if(issue.getDescription() != null) {
+        if (issue.getDescription() != null) {
             entity.setDescription(issue.getDescription());
         }
-        if(issue.getBlockedBy() != null) {
+        if (issue.getBlockedBy() != null) {
             entity.setBlockedBy(issue.getBlockedBy());
         }
-        if(issue.getRelatedTo() != null) {
+        if (issue.getRelatedTo() != null) {
             entity.setRelatedTo(issue.getRelatedTo());
         }
-        if(issue.getDuplicateOf() != null) {
+        if (issue.getDuplicateOf() != null) {
             entity.setDuplicateOf(issue.getDuplicateOf());
         }
-        
+
         return repository.update(entity);
     }
 

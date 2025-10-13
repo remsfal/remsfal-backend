@@ -23,11 +23,12 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     public Optional<IssueEntity> findByIssueId(final UUID issueId) {
         return template.select(IssueEntity.class)
-                .where(ISSUE_ID).eq(issueId)
-                .singleResult();
+            .where(ISSUE_ID).eq(issueId)
+            .singleResult();
     }
-    
-    public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID ownerId, UUID tenancyId, UnitType rentalType, UUID rentalId, Status status) {
+
+    public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID ownerId, UUID tenancyId,
+        UnitType rentalType, UUID rentalId, Status status) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).in(projectIds);
         if (ownerId != null) {
@@ -50,14 +51,14 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     public List<? extends IssueModel> findByTenancyId(UUID tenancyId) {
         return template.select(IssueEntity.class)
-                .where("tenancy_id").eq(tenancyId)
-                .result();
+            .where("tenancy_id").eq(tenancyId)
+            .result();
     }
 
     public List<? extends IssueModel> findByTenancyIds(Set<UUID> keySet) {
         return template.select(IssueEntity.class)
-                .where("tenancy_id").in(keySet)
-                .result();
+            .where("tenancy_id").in(keySet)
+            .result();
     }
 
     public IssueEntity insert(final IssueEntity entity) {

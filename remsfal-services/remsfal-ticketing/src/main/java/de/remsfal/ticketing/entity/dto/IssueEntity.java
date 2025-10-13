@@ -87,7 +87,7 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     public void setType(Type type) {
         this.type = type != null ? type.name() : null;
     }
-    
+
     // Setter for string type for Cassandra mapping
     public void setType(String type) {
         this.type = type;
@@ -101,8 +101,8 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     public void setStatus(Status status) {
         this.status = status != null ? status.name() : null;
     }
-    
-    // Setter for string status for Cassandra mapping  
+
+    // Setter for string status for Cassandra mapping
     public void setStatus(String status) {
         this.status = status;
     }
