@@ -79,4 +79,8 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         template.delete(IssueEntity.class, key);
     }
 
+    public void deleteAll() {
+        template.delete(IssueEntity.class);
+    }
+
 }

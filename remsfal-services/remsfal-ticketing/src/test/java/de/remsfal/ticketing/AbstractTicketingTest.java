@@ -56,6 +56,11 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     void cleanColumnDatabase() {
         cqlSession.execute("TRUNCATE chat_sessions");
         cqlSession.execute("TRUNCATE chat_messages");
+        try {
+            cqlSession.execute("TRUNCATE issues");
+        } catch (Exception e) {
+            // Issues table might not exist yet, ignore
+        }
     }
 
     protected void setupTestFiles() throws Exception {
