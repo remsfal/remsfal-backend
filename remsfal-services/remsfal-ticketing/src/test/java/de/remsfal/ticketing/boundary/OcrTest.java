@@ -26,10 +26,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
+import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.test.TestData;
 import de.remsfal.ticketing.TicketingTestData;
-import de.remsfal.ticketing.boundary.ChatSessionResource;
 import de.remsfal.ticketing.control.ChatMessageController;
 import de.remsfal.ticketing.control.FileStorageController;
+import de.remsfal.ticketing.control.IssueController;
+import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.testcontainers.OcrServiceResource;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -57,6 +60,9 @@ public class OcrTest extends AbstractResourceTest {
     @Inject
     ChatSessionResource chatSessionResource;
 
+    @InjectMock
+    IssueController issueController;
+
     @Inject
     FileStorageController fileStorageService;
 
@@ -72,16 +78,19 @@ public class OcrTest extends AbstractResourceTest {
         MultipartFormDataInput input = createMultipartFormDataInput(
             TicketingTestData.FILE_PNG_PATH, TicketingTestData.FILE_PNG_TYPE, fileContent);
 
-        String projectId = UUID.randomUUID().toString();
-        String taskId = UUID.randomUUID().toString();
-        String sessionId = UUID.randomUUID().toString();
+        UUID taskId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
 
+        IssueEntity task = mock(IssueEntity.class);
+        when(task.getProjectId()).thenReturn(TestData.PROJECT_ID);
+        when(issueController.getIssue(eq(taskId))).thenReturn(task);
         when(principal.getId()).thenReturn(UUID.randomUUID());
+        when(principal.getProjectRoles()).thenReturn(Map.of(TestData.PROJECT_ID, MemberRole.MANAGER));
         JsonWebToken jwt = mock(JsonWebToken.class);
-        when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId, "MANAGER"));
+        when(jwt.getClaim("project_roles")).thenReturn(Map.of(TestData.PROJECT_ID, "MANAGER"));
         when(principal.getJwt()).thenReturn(jwt);
 
-        Response response = chatSessionResource.uploadFile(projectId, taskId, sessionId, input);
+        Response response = chatSessionResource.uploadFile(taskId, sessionId, input);
 
         assertEquals(201, response.getStatus());
 
@@ -92,7 +101,7 @@ public class OcrTest extends AbstractResourceTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() -> verify(chatMessageController, atLeastOnce())
-                .updateTextChatMessage(eq(sessionId), eq(messageId), eq("Das hier ist ein Text")));
+                .updateTextChatMessage(eq(sessionId), eq(UUID.fromString(messageId)), eq("Das hier ist ein Text")));
     }
 
     @Test

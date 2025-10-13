@@ -45,14 +45,14 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         FILE
     }
 
-    public Optional<ChatMessageEntity> findMessageById(String sessionId, String messageId) {
+    public Optional<ChatMessageEntity> findMessageById(UUID sessionId, UUID messageId) {
         return template.select(ChatMessageEntity.class)
-            .where(SESSION_ID).eq(UUID.fromString(sessionId))
-            .and(MESSAGE_ID).eq(UUID.fromString(messageId))
+            .where(SESSION_ID).eq(sessionId)
+            .and(MESSAGE_ID).eq(messageId)
             .singleResult();
     }
 
-    public ChatMessageEntity sendMessage(String sessionId, UUID userId, String contentType, String content) {
+    public ChatMessageEntity sendMessage(UUID sessionId, UUID userId, String contentType, String content) {
         try {
             if (!ContentType.TEXT.name().equals(contentType) && !ContentType.FILE.name().equals(contentType)) {
                 throw new IllegalArgumentException("Invalid content type: " + contentType);
@@ -63,13 +63,10 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
             if (ContentType.FILE.name().equals(contentType) && content.isBlank()) {
                 throw new IllegalArgumentException("File URL cannot be blank");
             }
-            if (sessionId == null || sessionId.isBlank()) {
-                throw new IllegalArgumentException("Session ID is null or blank");
-            }
 
             ChatMessageEntity message = new ChatMessageEntity();
             ChatMessageKey key = new ChatMessageKey();
-            key.setSessionId(UUID.fromString(sessionId));
+            key.setSessionId(sessionId);
             key.setMessageId(UUID.randomUUID());
             message.setKey(key);
             message.setSenderId(userId);
@@ -87,7 +84,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         }
     }
 
-    public void updateTextChatMessage(String sessionId, String messageId, String newContent) {
+    public void updateTextChatMessage(UUID sessionId, UUID messageId, String newContent) {
         try {
             if (newContent == null || newContent.isBlank()) {
                 throw new IllegalArgumentException("Content cannot be null or empty");
@@ -105,7 +102,7 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         }
     }
 
-    public void updateFileUrl(String sessionId, String messageId, String newUrl) {
+    public void updateFileUrl(UUID sessionId, UUID messageId, String newUrl) {
         try {
             if (newUrl == null || newUrl.isBlank()) {
                 throw new IllegalArgumentException("URL cannot be null or empty");
@@ -125,9 +122,9 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         }
     }
 
-    public void deleteChatMessage(String sessionId, String messageId) {
+    public void deleteChatMessage(UUID sessionId, UUID messageId) {
         try {
-            deleteMessage(UUID.fromString(sessionId), UUID.fromString(messageId));
+            deleteMessage(sessionId, messageId);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -143,9 +140,9 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
         List<ChatMessageEntity> messages = findMessagesByChatSession(sessionId);
 
         Map<String, Object> chatSessionJsonMap = new LinkedHashMap<>();
-        chatSessionJsonMap.put("SESSION_ID", session.getSessionId());
-        chatSessionJsonMap.put("TASK_ID", session.getTaskId());
-        chatSessionJsonMap.put("PROJECT_ID", session.getProjectId());
+        chatSessionJsonMap.put(SESSION_ID, session.getSessionId());
+        chatSessionJsonMap.put(ISSUE_ID, session.getIssueId());
+        chatSessionJsonMap.put(PROJECT_ID, session.getProjectId());
         chatSessionJsonMap.put("messages", messages.stream()
             .map(message -> mapChatMessageToJson(message, projectId, taskId))
             .collect(Collectors.toList()));

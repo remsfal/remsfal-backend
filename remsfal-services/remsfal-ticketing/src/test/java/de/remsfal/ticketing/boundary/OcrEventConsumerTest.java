@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 import java.util.Set;
+import java.util.UUID;
 
 @QuarkusTest
 @QuarkusTestResource(OcrServiceResource.class)
@@ -53,8 +54,8 @@ public class OcrEventConsumerTest extends AbstractKafkaTest {
     @Test
     public void testConsumerJson() {
         ImmutableOcrResultJson json = ImmutableOcrResultJson.builder()
-            .sessionId("123")
-            .messageId("456")
+            .sessionId(UUID.randomUUID())
+            .messageId(UUID.randomUUID())
             .extractedText("Text")
             .build();
         companion.produce(ImmutableOcrResultJson.class)
@@ -65,7 +66,7 @@ public class OcrEventConsumerTest extends AbstractKafkaTest {
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() ->
             verify(chatMessageController, atLeastOnce())
-                .updateTextChatMessage("123", "456", "Text")
+                .updateTextChatMessage(json.getSessionId(), json.getMessageId(), "Text")
             );
     }
 

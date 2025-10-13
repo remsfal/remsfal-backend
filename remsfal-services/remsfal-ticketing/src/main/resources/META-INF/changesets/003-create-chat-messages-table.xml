@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.2-chat_messages" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-0.0.3-chat_messages" author="alexander.stanik@htw-berlin.de">
         <comment>Create chat_messages table</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.chat_messages (

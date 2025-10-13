@@ -24,9 +24,9 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 import de.remsfal.test.TestData;
-import de.remsfal.ticketing.boundary.AbstractResource;
-import de.remsfal.ticketing.boundary.ChatSessionResource;
 import de.remsfal.ticketing.control.ChatSessionController;
+import de.remsfal.ticketing.control.IssueController;
+import de.remsfal.ticketing.entity.dto.IssueEntity;
 
 class ChatSessionResourceAuthTest {
 
@@ -36,40 +36,46 @@ class ChatSessionResourceAuthTest {
         f.set(target, value);
     }
 
-    private RemsfalPrincipal principalWithRole(String projectId, String role) {
+    private RemsfalPrincipal principalWithRole(UUID projectId, String role) {
         RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
         JsonWebToken jwt = mock(JsonWebToken.class);
         when(principal.getJwt()).thenReturn(jwt);
         when(principal.getId()).thenReturn(TestData.USER_ID);
-        when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId, role));
+        when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId.toString(), role));
+        when(principal.getProjectRoles()).thenReturn(Map.of(projectId, MemberRole.valueOf(role)));
         return principal;
     }
 
     @Test
     void testCreateChatSession() throws Exception {
-        String projectId = "11111111-1111-1111-1111-111111111111";
-        String taskId = "22222222-2222-2222-2222-222222222222";
+        UUID issueId = UUID.randomUUID();
         UUID sessionUUID = UUID.randomUUID();
+
+        IssueEntity issue = mock(IssueEntity.class);
+        when(issue.getProjectId()).thenReturn(TestData.PROJECT_ID);
+        IssueController issueController = mock(IssueController.class);
+        when(issueController.getIssue(issueId)).thenReturn(issue);
 
         ChatSessionModel session = mock(ChatSessionModel.class);
         when(session.getSessionId()).thenReturn(sessionUUID);
-        when(session.getProjectId()).thenReturn(UUID.fromString(projectId));
-        when(session.getTaskId()).thenReturn(UUID.fromString(taskId));
+        when(session.getProjectId()).thenReturn(TestData.PROJECT_ID);
+        when(session.getIssueId()).thenReturn(issueId);
         when(session.getCreatedAt()).thenReturn(Instant.now());
         when(session.getModifiedAt()).thenReturn(Instant.now());
 
         ChatSessionController controller = mock(ChatSessionController.class);
-        when(controller.createChatSession(projectId, taskId, TestData.USER_ID)).thenReturn(session);
+        when(controller.createChatSession(TestData.PROJECT_ID, issueId, TestData.USER_ID)).thenReturn(session);
 
         ChatSessionResource resource = new ChatSessionResource();
-        setField(resource, AbstractResource.class, "principal", principalWithRole(projectId, MemberRole.PROPRIETOR.name()));
+        setField(resource, AbstractResource.class, "issueController", issueController);
+        setField(resource, AbstractResource.class, "principal", principalWithRole(TestData.PROJECT_ID, MemberRole.PROPRIETOR.name()));
         setField(resource, ChatSessionResource.class, "chatSessionController", controller);
         setField(resource, ChatSessionResource.class, "logger", Logger.getLogger(ChatSessionResource.class));
         UriInfo uriInfo = mock(UriInfo.class);
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri(URI.create("http://localhost")));
         setField(resource, AbstractResource.class, "uri", uriInfo);
 
-        Response resp = resource.createChatSession(projectId, taskId);
+        Response resp = resource.createChatSession(issueId);
         assertEquals(Response.Status.CREATED.getStatusCode(), resp.getStatus());
         assertNotNull(resp.getEntity());
     }

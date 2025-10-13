@@ -40,7 +40,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void setUp() {
         logger.info("Setting up test data");
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
-                "(project_id, task_id, session_id, created_at, participants) " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?)";
         assertNotNull(TestData.PROJECT_ID);
         cqlSession.execute(insertSessionCql,
@@ -60,7 +60,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                     UUID.fromString(TicketingTestData.USER_ID_2.toString()), "HANDLER"));
         assertNotNull(session, "Session should be created");
         assertEquals(TicketingTestData.PROJECT_ID, session.getProjectId(), "Project ID should match");
-        assertEquals(TASK_ID, session.getTaskId(), "Task ID should match");
+        assertEquals(TASK_ID, session.getIssueId(), "Task ID should match");
         assertEquals(2, session.getParticipants().size(),
                 "Participants should match the initial value");
         assertNotNull(session.getCreatedAt(), "Created at should not be null");

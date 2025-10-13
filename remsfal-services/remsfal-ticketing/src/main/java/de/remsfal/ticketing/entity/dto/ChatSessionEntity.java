@@ -37,9 +37,9 @@ public class ChatSessionEntity extends AbstractEntity implements ChatSessionMode
     }
 
     @Override
-    public UUID getTaskId() {
+    public UUID getIssueId() {
         return Optional.ofNullable(key)
-            .map(ChatSessionKey::getTaskId)
+            .map(ChatSessionKey::getIssueId)
             .orElse(null);
     }
 

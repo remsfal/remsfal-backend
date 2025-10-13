@@ -2,18 +2,21 @@ package de.remsfal.ticketing.control;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
+
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
-import de.remsfal.core.model.ticketing.IssueModel.Type;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.dto.IssueKey;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -25,60 +28,45 @@ public class IssueController {
     @Inject
     IssueRepository repository;
 
-    public IssueModel createIssue(final UUID projectId, final UserModel user, final IssueModel issue) {
-        logger.infov("Creating an issue (projectId={0}, creator={1})", projectId, user.getEmail());
+    public IssueModel createIssue(final UserModel user, final IssueModel issue) {
+        return createIssue(user, issue, Status.OPEN);
+    }
+
+    public IssueModel createIssue(final UserModel user, final IssueModel issue, final Status initialStatus) {
+        logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
         final IssueEntity entity = new IssueEntity();
         entity.generateId();
         entity.setType(issue.getType());
-        entity.setProjectId(projectId);
+        entity.setProjectId(issue.getProjectId());
         entity.setCreatedBy(user.getId());
         entity.setTitle(issue.getTitle());
-        if(issue.getStatus() == null) {
-            entity.setStatus(Status.OPEN);
-        } else {
-            entity.setStatus(issue.getStatus());
-        }
-        entity.setOwnerId(issue.getOwnerId());
+        entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
-        entity.setBlockedBy(issue.getBlockedBy());
-        entity.setRelatedTo(issue.getRelatedTo());
-        entity.setDuplicateOf(issue.getDuplicateOf());
-        entity.setReporterId(issue.getReporterId());
-        return repository.save(entity);
+        return repository.insert(entity);
     }
 
-    public List<? extends IssueModel> getIssues(final UUID projectId, final Optional<Status> status) {
-        logger.infov("Retrieving issues (projectId = {0})", projectId);
-        if(status.isEmpty()) {
-            return repository.findIssueByProjectId(Type.TASK, projectId);
-        } else {
-            return repository.findIssueByProjectId(Type.TASK, projectId, status.get());
-        }
+    public IssueEntity getIssue(final UUID issueId) {
+        logger.infov("Retrieving issue (issueId={0})", issueId);
+        return repository.findByIssueId(issueId)
+            .orElseThrow(() -> new NotFoundException("Issue not found"));
     }
 
-    public List<? extends IssueModel>
-    getIssues(final UUID projectId, final UUID ownerId, final Optional<Status> status) {
-        logger.infov("Retrieving issues (projectId = {0}, ownerId = {1})", projectId, ownerId);
-        if(status.isEmpty()) {
-            return repository.findIssueByOwnerId(Type.TASK, projectId, ownerId);
-        } else {
-            return repository.findIssueByOwnerId(Type.TASK, projectId, ownerId, status.get());
-        }
+    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId, UnitType rentalType, UUID rentalId, Status status) {
+        return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
     }
 
-    protected IssueEntity getIssue(final Type type, final UUID projectId, final UUID issueId) {
-        logger.infov("Retrieving issue (type={0}, projectId={1}, issueId={2})", type, projectId, issueId);
-        return repository.findIssueById(type, projectId, issueId)
-            .orElseThrow(() -> new NoSuchElementException("Issue not found"));
+    public List<? extends IssueModel> getIssuesOfTenancy(UUID tenancyId) {
+        return repository.findByTenancyId(tenancyId);
     }
 
-    public IssueModel getIssue(final UUID projectId, final UUID issueId) {
-        return getIssue(Type.TASK, projectId, issueId);
+    public List<? extends IssueModel> getIssuesOfTenancies(Set<UUID> keySet) {
+        return repository.findByTenancyIds(keySet);
     }
 
-    public IssueModel updateIssue(final UUID projectId, final UUID issueId, final IssueModel issue) {
-        logger.infov("Updating issue (projectId={0}, issueId={1})", projectId, issueId);
-        final IssueEntity entity = getIssue(Type.TASK, projectId, issueId);
+    public IssueModel updateIssue(final IssueKey key, final IssueModel issue) {
+        logger.infov("Updating issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
+        final IssueEntity entity = repository.find(key)
+            .orElseThrow(() -> new NotFoundException("Issue not found"));
         
         if(issue.getTitle() != null) {
             entity.setTitle(issue.getTitle());
@@ -105,11 +93,18 @@ public class IssueController {
         return repository.update(entity);
     }
 
-    public void deleteIssue(final UUID projectId, final UUID issueId) {
-        logger.infov("Deleting issue (projectId={0}, issueId={1})", projectId, issueId);
-        boolean deleted = repository.deleteIssueById(Type.TASK, projectId, issueId);
-        if (!deleted) {
-            throw new NoSuchElementException("Issue not found");
-        }
+    public void deleteIssue(final IssueKey key) {
+        logger.infov("Deleting issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
+        repository.delete(key);
     }
+
+    public void closeIssue(final IssueKey key) {
+        logger.infov("Closing issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
+        final Optional<IssueEntity> entity = repository.find(key);
+        entity.ifPresent((e) -> {
+            e.setStatus(Status.CLOSED);
+            repository.update(e);
+        });
+    }
+
 }

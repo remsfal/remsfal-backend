@@ -34,6 +34,8 @@ public interface IssueModel {
 
     UUID getReporterId();
 
+    UUID getTenancyId();
+
     UUID getOwnerId();
 
     String getDescription();

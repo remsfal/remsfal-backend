@@ -1,26 +1,19 @@
 package de.remsfal.ticketing.entity.dto;
 
-import jakarta.nosql.Column;
+import jakarta.nosql.Embeddable;
 import jakarta.nosql.Id;
 
 import java.util.Objects;
 import java.util.UUID;
 
+@Embeddable
 public class IssueKey {
 
     @Id("project_id")
     private UUID projectId;
 
-    @Id("id")
-    private UUID id;
-
-    public IssueKey() {
-    }
-
-    public IssueKey(UUID projectId, UUID id) {
-        this.projectId = projectId;
-        this.id = id;
-    }
+    @Id("issue_id")
+    private UUID issueId;
 
     public UUID getProjectId() {
         return projectId;
@@ -30,12 +23,12 @@ public class IssueKey {
         this.projectId = projectId;
     }
 
-    public UUID getId() {
-        return id;
+    public UUID getIssueId() {
+        return issueId;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setIssueId(UUID issueId) {
+        this.issueId = issueId;
     }
 
     @Override
@@ -43,19 +36,12 @@ public class IssueKey {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         IssueKey issueKey = (IssueKey) o;
-        return Objects.equals(projectId, issueKey.projectId) && Objects.equals(id, issueKey.id);
+        return Objects.equals(projectId, issueKey.projectId) && Objects.equals(issueId, issueKey.issueId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(projectId, id);
+        return Objects.hash(projectId, issueId);
     }
 
-    @Override
-    public String toString() {
-        return "IssueKey{" +
-                "projectId=" + projectId +
-                ", id=" + id +
-                '}';
-    }
 }

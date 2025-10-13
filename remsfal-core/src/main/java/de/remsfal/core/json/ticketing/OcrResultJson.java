@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 
+import java.util.UUID;
+
 import org.immutables.value.Value.Immutable;
 
 /**
@@ -17,9 +19,9 @@ import org.immutables.value.Value.Immutable;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class OcrResultJson {
 
-    public abstract String getSessionId();
+    public abstract UUID getSessionId();
 
-    public abstract String getMessageId();
+    public abstract UUID getMessageId();
 
     public abstract String getExtractedText();
 

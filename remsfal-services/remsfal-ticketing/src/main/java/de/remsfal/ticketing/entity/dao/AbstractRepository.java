@@ -15,7 +15,7 @@ import de.remsfal.ticketing.entity.dto.AbstractEntity;
 public abstract class AbstractRepository<Entity extends AbstractEntity, Key> {
 
     public static final String PROJECT_ID = "project_id";
-    public static final String TASK_ID = "task_id";
+    public static final String ISSUE_ID   = "issue_id";
     public static final String SESSION_ID = "session_id";
     public static final String MESSAGE_ID = "message_id";
 

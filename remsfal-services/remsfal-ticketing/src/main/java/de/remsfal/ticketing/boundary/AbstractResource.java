@@ -1,20 +1,21 @@
 package de.remsfal.ticketing.boundary;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
+import de.remsfal.core.json.UserJson.UserRole;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.control.IssueController;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonString;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -32,69 +33,38 @@ public class AbstractResource {
     @Inject
     protected RemsfalPrincipal principal;
 
-    public boolean checkReadPermissions(final String projectId) {
-        JsonWebToken jwt = principal.getJwt();
-        if (jwt == null || principal.getId() == null) {
-            throw new NotAuthorizedException("No user authentication provided via session cookie");
+    @Inject
+    protected IssueController issueController;
+
+    public UserRole getPrincipalRole(@NotNull final UUID projectId) {
+        Map<UUID, MemberRole> roles = principal.getProjectRoles();
+        if (roles.containsKey(projectId)) {
+            return UserRole.MANAGER;
         }
-        MemberRole role = getProjectRole(projectId);
-        if (role == null) {
-            throw new ForbiddenException("User is not a member of the project");
+        Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
+        if (tenancyProjects.containsValue(projectId)) {
+            return UserRole.TENANT;
         }
-        return true;
+        // return null if no role found
+        return null;
     }
 
-    public boolean checkWritePermissions(final String projectId) {
-        JsonWebToken jwt = principal.getJwt();
-        if (jwt == null || principal.getId() == null) {
-            throw new NotAuthorizedException("No user authentication provided via session cookie");
+
+    public UUID checkReadPermissions(final UUID issueId) {
+        IssueModel issue = issueController.getIssue(issueId);
+        if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
+            return issue.getProjectId();
         }
-        MemberRole role = getProjectRole(projectId);
-        if (!(role == MemberRole.PROPRIETOR || role == MemberRole.MANAGER)) {
-            throw new ForbiddenException("Inadequate user rights");
-        }
-        return true;
+        throw new ForbiddenException("Inadequate user rights");
     }
 
-    public boolean checkOwnerPermissions(final String projectId) {
-        JsonWebToken jwt = principal.getJwt();
-        if (jwt == null || principal.getId() == null) {
-            throw new NotAuthorizedException("No user authentication provided via session cookie");
+    public UUID checkWritePermissions(final UUID issueId) {
+        IssueModel issue = issueController.getIssue(issueId);
+        MemberRole role = principal.getProjectRoles().get(issue.getProjectId());
+        if (role != null && role.isPrivileged()) {
+            return issue.getProjectId();
         }
-        MemberRole role = getProjectRole(projectId);
-        if (role != MemberRole.PROPRIETOR) {
-            throw new ForbiddenException("Owner rights are required");
-        }
-        return true;
-    }
-
-    private MemberRole getProjectRole(final String projectId) {
-        JsonWebToken jwt = principal.getJwt();
-        if (jwt == null) return null;
-
-        Object claim = jwt.getClaim("project_roles");
-        if (claim == null) return null;
-
-        Object raw = null;
-        if (claim instanceof Map<?, ?> map) {
-            raw = map.get(projectId);
-        } else if (claim instanceof JsonObject json) {
-            raw = json.get(projectId);
-        }
-        if (raw == null) return null;
-
-        String roleStr;
-        if (raw instanceof JsonString jsonString) {
-            roleStr = jsonString.getString();
-        } else {
-            roleStr = String.valueOf(raw);
-        }
-
-        try {
-            return MemberRole.valueOf(roleStr);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        throw new ForbiddenException("Inadequate user rights");
     }
 
 }

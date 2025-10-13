@@ -71,12 +71,12 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     private static final String NOT_FOUND_SESSION_MESSAGE = "Chat session not found";
 
     @Override
-    public Response createChatSession(final String taskId) {
+    public Response createChatSession(final UUID issueId) {
         try {
-            checkWritePermissions(projectId);
+            UUID projectId = checkWritePermissions(issueId);
 
             ChatSessionModel session = chatSessionController
-                .createChatSession(projectId, taskId, principal.getId());
+                .createChatSession(projectId, issueId, principal.getId());
             URI location = uri.getAbsolutePathBuilder().path(session.getSessionId().toString()).build();
             return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
@@ -89,11 +89,11 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response getChatSession(final String taskId, final String sessionId) {
+    public Response getChatSession(final UUID issueId, final UUID sessionId) {
         try {
-            checkReadPermissions(projectId);
+            UUID projectId = checkReadPermissions(issueId);
             Optional<ChatSessionEntity> session = chatSessionController
-                .getChatSession(projectId, taskId, sessionId);
+                .getChatSession(projectId, issueId, sessionId);
             if (session.isPresent())
                 return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
@@ -110,10 +110,10 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response deleteChatSession(final String taskId, final String sessionId) {
+    public Response deleteChatSession(final UUID issueId, final UUID sessionId) {
         try {
-            checkWritePermissions(projectId);
-            chatSessionController.deleteChatSession(projectId, taskId, sessionId);
+            UUID projectId = checkWritePermissions(issueId);
+            chatSessionController.deleteChatSession(projectId, issueId, sessionId);
             return Response.noContent().build();
         } catch (Exception e) {
             logger.error("Failed to delete chat session", e);
@@ -122,13 +122,13 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response joinChatSession(final String taskId, final String sessionId) {
+    public Response joinChatSession(final UUID issueId, final UUID sessionId) {
         try {
-            checkWritePermissions(projectId);
-            chatSessionController.addParticipant(projectId, taskId,
+            UUID projectId = checkWritePermissions(issueId);
+            chatSessionController.addParticipant(projectId, issueId,
                 sessionId, principal.getId(), ParticipantRole.OBSERVER);
             Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, taskId, sessionId);
+                chatSessionController.getParticipants(projectId, issueId, sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -145,11 +145,11 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response getParticipants(final String taskId, final String sessionId) {
+    public Response getParticipants(final UUID issueId, final UUID sessionId) {
         try {
-            checkWritePermissions(projectId);
+            UUID projectId = checkWritePermissions(issueId);
             Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, taskId, sessionId);
+                chatSessionController.getParticipants(projectId, issueId, sessionId);
             String json = jsonifyParticipantsMap(participants);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
@@ -164,15 +164,14 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response getParticipant(final String taskId,
-        final String sessionId, final String participantId) {
+    public Response getParticipant(final UUID issueId,
+        final UUID sessionId, final UUID participantId) {
         try {
-            checkWritePermissions(projectId);
-            UUID participantUUID = UUID.fromString(participantId);
+            UUID projectId = checkWritePermissions(issueId);
             Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, taskId, sessionId);
-            if (participants.containsKey(participantUUID)) {
-                String json = jsonifyParticipantsMap(Map.of(participantUUID, participants.get(participantUUID)));
+                chatSessionController.getParticipants(projectId, issueId, sessionId);
+            if (participants.containsKey(participantId)) {
+                String json = jsonifyParticipantsMap(Map.of(participantId, participants.get(participantId)));
                 return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
                     .entity(json)
@@ -189,20 +188,19 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response changeParticipantRole(final String taskId,
-        final String sessionId, final String participantId, String role) {
+    public Response changeParticipantRole(final UUID issueId,
+        final UUID sessionId, final UUID participantId, String role) {
         try {
-            checkWritePermissions(projectId);
+            UUID projectId = checkWritePermissions(issueId);
             role = cleanRole(role);
-            UUID participantUUID = UUID.fromString(participantId);
             Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, taskId, sessionId);
-            validateParticipant(participants, participantUUID);
+                chatSessionController.getParticipants(projectId, issueId, sessionId);
+            validateParticipant(participants, participantId);
             validateRole(role);
             chatSessionController
-                .updateParticipantRole(projectId, taskId, sessionId, participantId,
+                .updateParticipantRole(projectId, issueId, sessionId, participantId,
                 ParticipantRole.valueOf(role));
-            String json = jsonifyParticipantsMap(Map.of(participantUUID, role));
+            String json = jsonifyParticipantsMap(Map.of(participantId, role));
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
                 .entity(json)
@@ -216,18 +214,17 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response removeParticipant(final String taskId,
-        final String sessionId, final String participantId) {
+    public Response removeParticipant(final UUID issueId,
+        final UUID sessionId, final UUID participantId) {
         try {
-            checkWritePermissions(projectId);
-            UUID participantUUID = UUID.fromString(participantId);
+            UUID projectId = checkWritePermissions(issueId);
             Map<UUID, String> participants = chatSessionController
-                .getParticipants(projectId, taskId, sessionId);
-            if (!participants.containsKey(participantUUID)) {
+                .getParticipants(projectId, issueId, sessionId);
+            if (!participants.containsKey(participantId)) {
                 throw new NotFoundException("Participant not found");
             }
             chatSessionController
-                .removeParticipant(projectId, taskId, sessionId, participantId);
+                .removeParticipant(projectId, issueId, sessionId, participantId);
             return Response.noContent().build();
         } catch (Exception e) {
             logger.error("Failed to remove participant from chat session", e);
@@ -236,19 +233,19 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response sendMessage(final String taskId,
-        final String sessionId, final ChatMessageJson message) {
+    public Response sendMessage(final UUID issueId,
+        final UUID sessionId, final ChatMessageJson message) {
         try {
+            UUID projectId = checkWritePermissions(issueId);
             UUID userId = principal.getId();
             if (userId == null) {
                 throw new NotAuthorizedException("No user authentication provided via session cookie");
             }
             Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, taskId, sessionId);
+                chatSessionController.getParticipants(projectId, issueId, sessionId);
             boolean isParticipant = participants.containsKey(userId);
             boolean hasWritePermission = false;
             try {
-                checkWritePermissions(projectId);
                 hasWritePermission = true;
             } catch (NotAuthorizedException | ForbiddenException ignored) {
                 // User does not have write permissions
@@ -284,13 +281,13 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response getChatMessages(final String taskId,
-        final String sessionId) {
+    public Response getChatMessages(final UUID issueId,
+        final UUID sessionId) {
         try {
-            checkWritePermissions(projectId);
+            UUID projectId = checkWritePermissions(issueId);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
-                .entity(chatSessionController.getChatLogs(projectId, sessionId, taskId))
+                .entity(chatSessionController.getChatLogs(projectId, sessionId, issueId))
                 .build();
 
         } catch (NoSuchElementException e) {
@@ -303,10 +300,10 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response getChatMessage(final String taskId,
-        final String sessionId, final String messageId) {
+    public Response getChatMessage(final UUID issueId,
+        final UUID sessionId, final UUID messageId) {
         try {
-            checkWritePermissions(projectId);
+            UUID projectId = checkWritePermissions(issueId);
             ChatMessageEntity chatMessageEntity =
                 chatMessageController.getChatMessage(sessionId, messageId);
             if (chatMessageEntity.getContentType().equals(ContentType.TEXT.name()))
@@ -352,12 +349,12 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response updateChatMessage(final String taskId,
-        final String sessionId,
-        final String messageId,
+    public Response updateChatMessage(final UUID issueId,
+        final UUID sessionId,
+        final UUID messageId,
         final ChatMessageJson message) {
         try {
-            checkWritePermissions(projectId);
+            UUID projectId = checkWritePermissions(issueId);
             int maxPayloadSize = 8000;
             if (Objects.requireNonNull(message.getContent()).length() > maxPayloadSize) {
                 throw new BadRequestException("Payload size exceeds limit");
@@ -382,11 +379,11 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response deleteChatMessage(final String taskId,
-        final String sessionId, final String messageId) {
+    public Response deleteChatMessage(final UUID issueId,
+        final UUID sessionId, final UUID messageId) {
         try {
-            checkWritePermissions(projectId);
-            if (chatSessionController.getChatSession(projectId, taskId, sessionId).isPresent()) {
+            UUID projectId = checkWritePermissions(issueId);
+            if (chatSessionController.getChatSession(projectId, issueId, sessionId).isPresent()) {
                 chatMessageController.deleteChatMessage(sessionId, messageId);
                 return Response.noContent().build();
             } else {
@@ -401,10 +398,10 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response uploadFile(final String taskId,
-        final String sessionId, final MultipartFormDataInput input) {
+    public Response uploadFile(final UUID issueId,
+        final UUID sessionId, final MultipartFormDataInput input) {
         try {
-            checkWritePermissions(projectId);
+            UUID projectId = checkWritePermissions(issueId);
             Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
             List<InputPart> fileParts = formDataMap.get("file");
             if (fileParts == null || fileParts.isEmpty()) {
@@ -450,7 +447,7 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
                         .sendChatMessage(sessionId, principal.getId(), ContentType.FILE.name(), fileUrl);
 
                     FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
-                        .sessionId(UUID.fromString(sessionId))
+                        .sessionId(sessionId)
                         .messageId(fileMetadataEntity.getMessageId())
                         .senderId(principal.getId())
                         .bucket(FileStorage.DEFAULT_BUCKET_NAME)

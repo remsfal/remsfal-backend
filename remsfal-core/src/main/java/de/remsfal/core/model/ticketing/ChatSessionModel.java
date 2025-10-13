@@ -17,7 +17,7 @@ public interface ChatSessionModel {
     
     UUID getProjectId();
 
-    UUID getTaskId();
+    UUID getIssueId();
 
     UUID getSessionId();
 

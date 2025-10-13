@@ -11,8 +11,8 @@ public class ChatSessionKey {
     @Column("project_id")
     private UUID projectId;
 
-    @Column("task_id")
-    private UUID taskId;
+    @Column("issue_id")
+    private UUID issueId;
 
     @Column("session_id")
     private UUID sessionId;
@@ -25,12 +25,12 @@ public class ChatSessionKey {
         this.projectId = projectId;
     }
 
-    public UUID getTaskId() {
-        return taskId;
+    public UUID getIssueId() {
+        return issueId;
     }
 
-    public void setTaskId(UUID taskId) {
-        this.taskId = taskId;
+    public void setIssueId(UUID issueId) {
+        this.issueId = issueId;
     }
 
     public UUID getSessionId() {

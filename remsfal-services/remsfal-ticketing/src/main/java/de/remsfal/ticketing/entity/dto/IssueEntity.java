@@ -27,6 +27,9 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("reporter_id")
     private UUID reporterId;
 
+    @Column("tenancy_id")
+    private UUID tenancyId;
+
     @Column("owner_id")
     private UUID ownerId;
 
@@ -56,7 +59,7 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Override
     public UUID getId() {
         return Optional.ofNullable(key)
-            .map(IssueKey::getId)
+            .map(IssueKey::getIssueId)
             .orElse(null);
     }
 
@@ -111,6 +114,15 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setReporterId(UUID reporterId) {
         this.reporterId = reporterId;
+    }
+
+    @Override
+    public UUID getTenancyId() {
+        return tenancyId;
+    }
+
+    public void setTenancyId(UUID tenancyId) {
+        this.tenancyId = tenancyId;
     }
 
     @Override
@@ -170,8 +182,8 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         if (this.key == null) {
             this.key = new IssueKey();
         }
-        if (this.key.getId() == null) {
-            this.key.setId(UUID.randomUUID());
+        if (this.key.getIssueId() == null) {
+            this.key.setIssueId(UUID.randomUUID());
         }
     }
 
@@ -183,29 +195,8 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        IssueEntity that = (IssueEntity) o;
-        return Objects.equals(key, that.key);
-    }
-
-    @Override
     public int hashCode() {
         return Objects.hash(key);
     }
 
-    @Override
-    public String toString() {
-        return "IssueEntity{" +
-                "key=" + key +
-                ", type='" + type + '\'' +
-                ", title='" + title + '\'' +
-                ", status='" + status + '\'' +
-                ", ownerId=" + ownerId +
-                ", description='" + description + '\'' +
-                ", createdAt=" + createdAt +
-                ", modifiedAt=" + modifiedAt +
-                '}';
-    }
 }

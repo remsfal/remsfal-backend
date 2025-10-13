@@ -48,7 +48,7 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
     void setUp() {
         logger.info("Setting up test data");
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
-                "(project_id, task_id, session_id, created_at, participants) " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertSessionCql,
                 PROJECT_ID, TASK_ID, SESSION_ID,
@@ -83,14 +83,13 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
 
     @Test
     void findChatMessageById_SUCCESS() {
-        String sessionId = SESSION_ID.toString();
         UUID messageId = UUID.randomUUID();
         String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
                 "(session_id, message_id, sender_id, content_type, content, url, created_at) " +
                 "VALUES (?, ?, ?, ?, 'Test message content', null, toTimestamp(now()))";
         cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name());
         ChatMessageEntity result = chatMessageRepository
-                .findMessageById(sessionId, messageId.toString()).get();
+                .findMessageById(SESSION_ID, messageId).get();
         logger.info("Entity: " + result);
         assertNotNull(result, "Chat message should be found");
         assertEquals(messageId, result.getMessageId(), "Message ID should match");
@@ -99,13 +98,12 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
 
     @Test
     void sendCassChatMessage_SUCCESS() {
-        String sessionId = SESSION_ID.toString();
         String contentType = ContentType.TEXT.name();
         String content = "Test message content";
         ChatMessageEntity result = chatMessageRepository
-                .sendMessage(sessionId, TestData.USER_ID_1, contentType, content);
+                .sendMessage(SESSION_ID, TestData.USER_ID_1, contentType, content);
         assertNotNull(result, "Chat message should be sent");
-        assertEquals(UUID.fromString(sessionId), result.getSessionId(), "Session ID should match");
+        assertEquals(SESSION_ID, result.getSessionId(), "Session ID should match");
         assertEquals(TestData.USER_ID_1, result.getSenderId(), "Sender ID should match");
         assertEquals(contentType, result.getContentType(), "Content type should match");
         assertEquals(content, result.getContent(), "Message content should match");
@@ -113,7 +111,6 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
 
     @Test
     void deleteMessageById_SUCCESS() {
-        String sessionId = SESSION_ID.toString();
         UUID messageId = UUID.randomUUID();
         String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
                 "(session_id, message_id, sender_id, content_type, content, url, created_at) " +
@@ -121,13 +118,12 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
 
         cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name());
 
-        chatMessageRepository.deleteChatMessage(sessionId, messageId.toString());
+        chatMessageRepository.deleteChatMessage(SESSION_ID, messageId);
     }
 
 
     @Test
     void updateTextChatMessage_SUCCESS() {
-        String sessionId = SESSION_ID.toString();
         UUID messageId = UUID.randomUUID();
         String newContent = "Updated text content";
         String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
@@ -136,15 +132,14 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
         cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name()
         );
 
-        chatMessageRepository.updateTextChatMessage(sessionId, messageId.toString(), newContent);
-        ChatMessageEntity updatedMessage = chatMessageRepository.findMessageById(sessionId, messageId.toString()).get();
+        chatMessageRepository.updateTextChatMessage(SESSION_ID, messageId, newContent);
+        ChatMessageEntity updatedMessage = chatMessageRepository.findMessageById(SESSION_ID, messageId).get();
 
         assertEquals(newContent, updatedMessage.getContent(), "Message content should be updated");
     }
 
     @Test
     void updateFileUrl_SUCCESS() {
-        String sessionId = SESSION_ID.toString();
         UUID messageId = UUID.randomUUID();
         String newUrl = "Updated.url";
         String insertMessageCql = "INSERT INTO remsfal.chat_messages " +
@@ -152,8 +147,8 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
                 "VALUES (?, ?, ?, ?, null, 'Original.url', toTimestamp(now()))";
         cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.FILE.name());
 
-        chatMessageRepository.updateFileUrl(sessionId, messageId.toString(), newUrl);
-        ChatMessageEntity updatedMessage = chatMessageRepository.findMessageById(sessionId, messageId.toString()).get();
+        chatMessageRepository.updateFileUrl(SESSION_ID, messageId, newUrl);
+        ChatMessageEntity updatedMessage = chatMessageRepository.findMessageById(SESSION_ID, messageId).get();
 
         assertEquals(newUrl, updatedMessage.getUrl(), "Message URL should be updated");
     }

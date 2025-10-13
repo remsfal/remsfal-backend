@@ -2,6 +2,7 @@ package de.remsfal.core.json.ticketing;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
@@ -34,7 +35,7 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getId();
 
-    @Null
+    @NotNull(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract UUID getProjectId();
@@ -46,14 +47,17 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract String getTitle();
 
+    @NotNull(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract Type getType();
 
+    @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract Status getStatus();
 
+    @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract UUID getOwnerId();
@@ -62,18 +66,30 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract String getDescription();
 
+    @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract UUID getBlockedBy();
 
+    @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract UUID getRelatedTo();
 
+    @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract UUID getDuplicateOf();
 
+    /**
+     * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
+     * <p>
+     * This method is intended for internal or privileged users and exposes all information from the IssueModel.
+     * All fields are mapped to the resulting IssueJson instance.
+     *
+     * @param model the source {@link IssueModel}
+     * @return an immutable {@link IssueJson} containing all fields
+     */
     public static IssueJson valueOf(final IssueModel model) {
         return ImmutableIssueJson.builder()
                 .id(model.getId())
@@ -86,6 +102,26 @@ public abstract class IssueJson implements IssueModel {
                 .blockedBy(model.getBlockedBy())
                 .relatedTo(model.getRelatedTo())
                 .duplicateOf(model.getDuplicateOf())
+                .build();
+    }
+
+    /**
+     * Creates a filtered {@link IssueJson} DTO from the given {@link IssueModel}, exposing only public fields.
+     * <p>
+     * This method is intended for external or restricted users and hides sensitive or internal information.
+     * Only basic issue information (id, projectId, title, type, status) is included in the resulting IssueJson.
+     *
+     * @param model the source {@link IssueModel}
+     * @return an immutable {@link IssueJson} containing only public fields
+     */
+    public static IssueJson valueOfFiltered(final IssueModel model) {
+        return ImmutableIssueJson.builder()
+                .id(model.getId())
+                .projectId(model.getProjectId())
+                .title(model.getTitle())
+                .type(model.getType())
+                .status(model.getStatus())
+                // ownerId, description, blockedBy, relatedTo, duplicateOf are omitted
                 .build();
     }
 

@@ -48,13 +48,13 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
     }
 
     public ChatSessionEntity createChatSession(UUID projectId,
-        UUID taskId, Map<UUID, String> participants) {
+        UUID issueId, Map<UUID, String> participants) {
         ChatSessionEntity session = new ChatSessionEntity();
         ChatSessionKey key = new ChatSessionKey();
         UUID sessionId = UUID.randomUUID();
         key.setProjectId(projectId);
         key.setSessionId(sessionId);
-        key.setTaskId(taskId);
+        key.setIssueId(issueId);
         session.setKey(key);
         session.setParticipants(participants);
         session.setCreatedAt(Instant.now());
@@ -63,18 +63,18 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         return session;
     }
 
-    public Optional<ChatSessionEntity> findSessionById(UUID projectId, UUID sessionId, UUID taskId) {
+    public Optional<ChatSessionEntity> findSessionById(UUID projectId, UUID sessionId, UUID issueId) {
         return template.select(ChatSessionEntity.class)
             .where(PROJECT_ID).eq(projectId)
-            .and(TASK_ID).eq(taskId)
+            .and(ISSUE_ID).eq(issueId)
             .and(SESSION_ID).eq(sessionId)
             .singleResult();
     }
 
-    public String findStatusById(UUID projectId, UUID sessionId, UUID taskId) {
+    public String findStatusById(UUID projectId, UUID sessionId, UUID issueId) {
         try {
             Select selectQuery = makeSelectQuery(STATUS_COLUMN,
-                projectId, sessionId, taskId);
+                projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
@@ -82,17 +82,17 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             } else {
                 throw new RuntimeException("No status found for the given projectId " + projectId +
                     " and sessionId " + sessionId +
-                    " and taskId" + taskId);
+                    " and issueId" + issueId);
             }
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while fetching the status", e);
         }
     }
 
-    public Map<UUID, String> findParticipantsById(UUID projectId, UUID sessionId, UUID taskId) {
+    public Map<UUID, String> findParticipantsById(UUID projectId, UUID sessionId, UUID issueId) {
         try {
             Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, taskId);
+                projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
@@ -107,10 +107,10 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         }
     }
 
-    public String findTaskTypeById(UUID projectId, UUID sessionId, UUID taskId) {
+    public String findTaskTypeById(UUID projectId, UUID sessionId, UUID issueId) {
         try {
             Select selectQuery = makeSelectQuery(TASK_TYPE_COLUMN,
-                projectId, sessionId, taskId);
+                projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
@@ -123,17 +123,17 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         }
     }
 
-    public String findParticipantRole(UUID projectId, UUID sessionId, UUID taskId, UUID userId) {
-        Optional<ChatSessionEntity> entity = findSessionById(projectId, sessionId, taskId);
+    public String findParticipantRole(UUID projectId, UUID sessionId, UUID issueId, UUID userId) {
+        Optional<ChatSessionEntity> entity = findSessionById(projectId, sessionId, issueId);
         return entity
             .map(ChatSessionEntity::getParticipants)
             .map(map -> map.get(userId))
             .orElse(null);
     }
 
-    public void addParticipant(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String role) {
+    public void addParticipant(UUID projectId, UUID sessionId, UUID issueId, UUID userId, String role) {
         try {
-            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, taskId);
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
 
@@ -145,7 +145,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
 
             logParticipants(participants);
             validateParticipantAddition(participants, userId, role);
-            addParticipantToDatabase(projectId, sessionId, taskId, userId, role, participants);
+            addParticipantToDatabase(projectId, sessionId, issueId, userId, role, participants);
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
@@ -153,10 +153,10 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         }
     }
 
-    public void changeParticipantRole(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String newRole) {
+    public void changeParticipantRole(UUID projectId, UUID sessionId, UUID issueId, UUID userId, String newRole) {
         try {
             Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, taskId);
+                projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
@@ -169,7 +169,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
                     .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
                     .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(TASK_ID).isEqualTo(QueryBuilder.literal(taskId));
+                    .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
                 cqlSession.execute(updateQuery.build());
             } else {
                 throw new RuntimeException("An error occurred while changing the participant role");
@@ -179,10 +179,10 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         }
     }
 
-    public void deleteMember(UUID projectId, UUID sessionId, UUID taskId, UUID userId) {
+    public void deleteMember(UUID projectId, UUID sessionId, UUID issueId, UUID userId) {
         try {
             Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, taskId);
+                projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
             if (row != null) {
@@ -195,7 +195,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
                     .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
                     .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(TASK_ID).isEqualTo(QueryBuilder.literal(taskId));
+                    .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
                 cqlSession.execute(updateQuery.build());
             } else {
                 throw new IllegalArgumentException(NOT_FOUND_PARTICIPANTS);
@@ -207,12 +207,12 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         }
     }
 
-    public void deleteSession(UUID projectId, UUID sessionId, UUID taskId) {
+    public void deleteSession(UUID projectId, UUID sessionId, UUID issueId) {
         try {
             Delete deleteQuery = QueryBuilder.deleteFrom(keyspace, TABLE)
                 .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
                 .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                .whereColumn(TASK_ID).isEqualTo(QueryBuilder.literal(taskId));
+                .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
             logger.info("Executing delete query: " + deleteQuery.asCql());
             cqlSession.execute(deleteQuery.build());
         } catch (Exception e) {
@@ -224,7 +224,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         Insert insertQuery = QueryBuilder.insertInto(keyspace, TABLE)
             .value(PROJECT_ID, QueryBuilder.literal(session.getProjectId()))
             .value(SESSION_ID, QueryBuilder.literal(session.getSessionId()))
-            .value(TASK_ID, QueryBuilder.literal(session.getTaskId()))
+            .value(ISSUE_ID, QueryBuilder.literal(session.getIssueId()))
             .value(PARTICIPANTS_COLUMN, QueryBuilder.literal(session.getParticipants()))
             .value("created_at", QueryBuilder.literal(session.getCreatedAt()))
             .value(MODIFIED_AT_COLUMN, QueryBuilder.literal(session.getModifiedAt()));
@@ -232,12 +232,12 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         cqlSession.execute(insertQuery.build());
     }
 
-    private Select makeSelectQuery(String column, UUID projectId, UUID sessionId, UUID taskId) {
+    private Select makeSelectQuery(String column, UUID projectId, UUID sessionId, UUID issueId) {
         return QueryBuilder.selectFrom(keyspace, TABLE)
             .column(column)
             .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
             .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-            .whereColumn(TASK_ID).isEqualTo(QueryBuilder.literal(taskId));
+            .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
     }
 
     private Map<UUID, String> getParticipants(Row row) {
@@ -280,7 +280,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         });
     }
 
-    private void addParticipantToDatabase(UUID projectId, UUID sessionId, UUID taskId, UUID userId, String role,
+    private void addParticipantToDatabase(UUID projectId, UUID sessionId, UUID issueId, UUID userId, String role,
         Map<UUID, String> participants) {
         participants.put(userId, role);
 
@@ -289,7 +289,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
             .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
             .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-            .whereColumn(TASK_ID).isEqualTo(QueryBuilder.literal(taskId));
+            .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
 
         cqlSession.execute(updateQuery.build());
     }
