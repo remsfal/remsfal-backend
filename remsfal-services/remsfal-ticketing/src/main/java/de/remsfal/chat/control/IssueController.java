@@ -6,7 +6,6 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.chat.entity.dao.IssueRepository;
 import de.remsfal.chat.entity.dto.IssueEntity;
-import de.remsfal.chat.entity.dto.IssueKey;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
@@ -51,9 +50,9 @@ public class IssueController {
     public List<? extends IssueModel> getIssues(final UUID projectId, final Optional<Status> status) {
         logger.infov("Retrieving issues (projectId = {0})", projectId);
         if(status.isEmpty()) {
-            return repository.findIssueByProjectId(Type.ISSUE, projectId);
+            return repository.findIssueByProjectId(Type.TASK, projectId);
         } else {
-            return repository.findIssueByProjectId(Type.ISSUE, projectId, status.get());
+            return repository.findIssueByProjectId(Type.TASK, projectId, status.get());
         }
     }
 
@@ -61,9 +60,9 @@ public class IssueController {
     getIssues(final UUID projectId, final UUID ownerId, final Optional<Status> status) {
         logger.infov("Retrieving issues (projectId = {0}, ownerId = {1})", projectId, ownerId);
         if(status.isEmpty()) {
-            return repository.findIssueByOwnerId(Type.ISSUE, projectId, ownerId);
+            return repository.findIssueByOwnerId(Type.TASK, projectId, ownerId);
         } else {
-            return repository.findIssueByOwnerId(Type.ISSUE, projectId, ownerId, status.get());
+            return repository.findIssueByOwnerId(Type.TASK, projectId, ownerId, status.get());
         }
     }
 
@@ -74,12 +73,12 @@ public class IssueController {
     }
 
     public IssueModel getIssue(final UUID projectId, final UUID issueId) {
-        return getIssue(Type.ISSUE, projectId, issueId);
+        return getIssue(Type.TASK, projectId, issueId);
     }
 
     public IssueModel updateIssue(final UUID projectId, final UUID issueId, final IssueModel issue) {
         logger.infov("Updating issue (projectId={0}, issueId={1})", projectId, issueId);
-        final IssueEntity entity = getIssue(Type.ISSUE, projectId, issueId);
+        final IssueEntity entity = getIssue(Type.TASK, projectId, issueId);
         
         if(issue.getTitle() != null) {
             entity.setTitle(issue.getTitle());
@@ -108,7 +107,7 @@ public class IssueController {
 
     public void deleteIssue(final UUID projectId, final UUID issueId) {
         logger.infov("Deleting issue (projectId={0}, issueId={1})", projectId, issueId);
-        boolean deleted = repository.deleteIssueById(Type.ISSUE, projectId, issueId);
+        boolean deleted = repository.deleteIssueById(Type.TASK, projectId, issueId);
         if (!deleted) {
             throw new NoSuchElementException("Issue not found");
         }

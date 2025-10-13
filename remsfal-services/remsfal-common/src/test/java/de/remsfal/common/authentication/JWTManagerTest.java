@@ -3,6 +3,8 @@ package de.remsfal.common.authentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
+
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.test.AbstractTest;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
@@ -46,25 +48,35 @@ class JWTManagerTest extends AbstractTest {
 
     @Test
     void testCreateAccessToken_containsStandardAndProjectClaims() {
+        ImmutableUserJson user = ImmutableUserJson.builder()
+            .id(TestData.USER_ID_1)
+            .email(TestData.USER_EMAIL_1)
+            .name(TestData.USER_FIRST_NAME_1)
+            .active(true)
+            .build();
         Map<String, String> projectRoles = Map.of(
-                TestData.PROJECT_ID_1.toString(), "MANAGER",
-                TestData.PROJECT_ID_2.toString(), "PROPRIETOR"
+            TestData.PROJECT_ID_1.toString(), "MANAGER",
+            TestData.PROJECT_ID_2.toString(), "PROPRIETOR"
+        );
+        Map<String, String> tenancyProjects = Map.of(
+            TestData.TENANCY_ID_1.toString(), TestData.PROJECT_ID_3.toString(),
+            TestData.TENANCY_ID_2.toString(), TestData.PROJECT_ID_4.toString()
         );
 
-        String token = jwtManager.createAccessToken(TestData.USER_ID_1, "u1@example.com", "User One",
-                true, projectRoles, 3600);
+        String token = jwtManager.createAccessToken(user, projectRoles, tenancyProjects, 3600);
 
         assertNotNull(token);
         assertEquals(3, token.split("\\.").length, "JWT must have 3 parts");
 
         Map<String, Object> payload = decodePayload(token);
         assertEquals(TestData.USER_ID_1.toString(), payload.get("sub"));
-        assertEquals("u1@example.com", payload.get("email"));
-        assertEquals("User One", payload.get("name"));
+        assertEquals(TestData.USER_EMAIL_1, payload.get("email"));
+        assertEquals(TestData.USER_FIRST_NAME_1, payload.get("name"));
         assertEquals(Boolean.TRUE, payload.get("active"));
         assertEquals("REMSFAL", payload.get("iss"));
         assertTrue(((Number) payload.get("exp")).longValue() > (System.currentTimeMillis() / 1000));
         assertEquals(projectRoles, payload.get("project_roles"));
+        assertEquals(tenancyProjects, payload.get("tenancy_projects"));
 
         assertNull(payload.get("refreshToken"), "access token must NOT contain refreshToken claim");
     }
@@ -89,13 +101,20 @@ class JWTManagerTest extends AbstractTest {
     @Test
     void testIssuerGuard_throwsWhenNoPrivateKey() {
         JWTManager verifierOnly = new JWTManager();
-        Map<String, String> projectRoles = Map.of();
+        ImmutableUserJson user = ImmutableUserJson.builder()
+            .id(TestData.USER_ID_1)
+            .email(TestData.USER_EMAIL_1)
+            .firstName(TestData.USER_FIRST_NAME_1)
+            .lastName(TestData.USER_LAST_NAME_1)
+            .active(true)
+            .build();
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> verifierOnly.createAccessToken(TestData.USER_ID_1, "e@x", "Name", true, projectRoles, 60));
+                () -> verifierOnly.createAccessToken(user, Map.of(), Map.of(), 60));
 
         assertTrue(exception.getMessage().contains("issuer mode"), exception.getMessage());
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> decodePayload(String jwt) {
         try {
             String payloadB64 = jwt.split("\\.")[1];

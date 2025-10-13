@@ -14,7 +14,8 @@ public interface IssueModel {
     String getTitle();
 
     public enum Type {
-        ISSUE,
+        APPLICATION,
+        TASK,
         DEFECT,
         MAINTENANCE
     }

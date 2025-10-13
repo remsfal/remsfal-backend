@@ -60,12 +60,12 @@ class ChatSessionResourceAuthTest {
         when(controller.createChatSession(projectId, taskId, TestData.USER_ID)).thenReturn(session);
 
         ChatSessionResource resource = new ChatSessionResource();
-        setField(resource, ChatSubResource.class, "principal", principalWithRole(projectId, MemberRole.PROPRIETOR.name()));
+        setField(resource, AbstractResource.class, "principal", principalWithRole(projectId, MemberRole.PROPRIETOR.name()));
         setField(resource, ChatSessionResource.class, "chatSessionController", controller);
         setField(resource, ChatSessionResource.class, "logger", Logger.getLogger(ChatSessionResource.class));
         UriInfo uriInfo = mock(UriInfo.class);
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri(URI.create("http://localhost")));
-        setField(resource, ChatSubResource.class, "uri", uriInfo);
+        setField(resource, AbstractResource.class, "uri", uriInfo);
 
         Response resp = resource.createChatSession(projectId, taskId);
         assertEquals(Response.Status.CREATED.getStatusCode(), resp.getStatus());

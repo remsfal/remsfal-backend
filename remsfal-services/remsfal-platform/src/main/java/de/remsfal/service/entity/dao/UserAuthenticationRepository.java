@@ -1,7 +1,6 @@
 package de.remsfal.service.entity.dao;
 
 import de.remsfal.core.model.UserAuthenticationModel;
-import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -19,20 +18,16 @@ public class UserAuthenticationRepository extends AbstractRepository<UserAuthent
             .findFirst();
     }
 
+    public void updateRefreshToken(final UserAuthenticationModel userAuthentication) {
+        updateRefreshToken(userAuthentication.getId(), userAuthentication.getRefreshToken());
+    }
+
     public void updateRefreshToken(final UUID userId, final String refreshToken) {
         getEntityManager()
             .createNamedQuery("UserAuthenticationEntity.updateRefreshToken")
             .setParameter("refreshToken", refreshToken)
             .setParameter(PARAM_USER_ID, userId)
             .executeUpdate();
-    }
-
-    public void updateRefreshToken(final UserAuthenticationModel userAuthentication) {
-        updateRefreshToken(userAuthentication.getUser().getId(), userAuthentication.getRefreshToken());
-    }
-
-    public void updateRefreshToken(final UserModel user, final String refreshToken) {
-        updateRefreshToken(user.getId(), refreshToken);
     }
 
     public void deleteRefreshToken(final UUID userId) {

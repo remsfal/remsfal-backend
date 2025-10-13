@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Authenticated
 @RequestScoped
-public class ChatSubResource {
+public class AbstractResource {
 
     @Context
     protected UriInfo uri;

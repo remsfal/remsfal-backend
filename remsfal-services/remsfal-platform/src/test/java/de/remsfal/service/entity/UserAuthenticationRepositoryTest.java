@@ -99,11 +99,8 @@ class UserAuthenticationRepositoryTest {
 
     @Test
     void testUpdateRefreshTokenUsingModel() {
-        UserModel userModel = mock(UserModel.class);
-        when(userModel.getId()).thenReturn(TestData.USER_ID);
-
         UserAuthenticationModel userAuthenticationModel = mock(UserAuthenticationModel.class);
-        when(userAuthenticationModel.getUser()).thenReturn(userModel);
+        when(userAuthenticationModel.getId()).thenReturn(TestData.USER_ID);
         when(userAuthenticationModel.getRefreshToken()).thenReturn("newRefreshToken");
 
         Query query = mock(Query.class);
@@ -118,17 +115,14 @@ class UserAuthenticationRepositoryTest {
 
     @Test
     void testDeleteRefreshTokenUsingModel() {
-        UserModel userModel = mock(UserModel.class);
-        when(userModel.getId()).thenReturn(TestData.USER_ID);
-
         UserAuthenticationModel userAuthenticationModel = mock(UserAuthenticationModel.class);
-        when(userAuthenticationModel.getUser()).thenReturn(userModel);
+        when(userAuthenticationModel.getId()).thenReturn(TestData.USER_ID);
 
         Query query = mock(Query.class);
         when(entityManager.createNamedQuery("UserAuthenticationEntity.deleteRefreshToken")).thenReturn(query);
         when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
 
-        repository.deleteRefreshToken(userAuthenticationModel.getUser().getId());
+        repository.deleteRefreshToken(userAuthenticationModel.getId());
 
         verify(query).executeUpdate();
     }

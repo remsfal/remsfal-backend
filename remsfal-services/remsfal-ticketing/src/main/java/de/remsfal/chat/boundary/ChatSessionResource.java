@@ -51,7 +51,7 @@ import jakarta.ws.rs.core.StreamingOutput;
  */
 @Authenticated
 @RequestScoped
-public class ChatSessionResource extends ChatSubResource implements ChatSessionEndpoint {
+public class ChatSessionResource extends AbstractResource implements ChatSessionEndpoint {
 
     @Inject
     ChatSessionController chatSessionController;
@@ -71,7 +71,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     private static final String NOT_FOUND_SESSION_MESSAGE = "Chat session not found";
 
     @Override
-    public Response createChatSession(final String projectId, final String taskId) {
+    public Response createChatSession(final String taskId) {
         try {
             checkWritePermissions(projectId);
 
@@ -89,7 +89,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response getChatSession(final String projectId, final String taskId, final String sessionId) {
+    public Response getChatSession(final String taskId, final String sessionId) {
         try {
             checkReadPermissions(projectId);
             Optional<ChatSessionEntity> session = chatSessionController
@@ -110,7 +110,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response deleteChatSession(final String projectId, final String taskId, final String sessionId) {
+    public Response deleteChatSession(final String taskId, final String sessionId) {
         try {
             checkWritePermissions(projectId);
             chatSessionController.deleteChatSession(projectId, taskId, sessionId);
@@ -122,7 +122,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response joinChatSession(final String projectId, final String taskId, final String sessionId) {
+    public Response joinChatSession(final String taskId, final String sessionId) {
         try {
             checkWritePermissions(projectId);
             chatSessionController.addParticipant(projectId, taskId,
@@ -145,7 +145,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response getParticipants(final String projectId, final String taskId, final String sessionId) {
+    public Response getParticipants(final String taskId, final String sessionId) {
         try {
             checkWritePermissions(projectId);
             Map<UUID, String> participants =
@@ -164,7 +164,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response getParticipant(final String projectId, final String taskId,
+    public Response getParticipant(final String taskId,
         final String sessionId, final String participantId) {
         try {
             checkWritePermissions(projectId);
@@ -189,7 +189,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response changeParticipantRole(final String projectId, final String taskId,
+    public Response changeParticipantRole(final String taskId,
         final String sessionId, final String participantId, String role) {
         try {
             checkWritePermissions(projectId);
@@ -216,7 +216,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response removeParticipant(final String projectId, final String taskId,
+    public Response removeParticipant(final String taskId,
         final String sessionId, final String participantId) {
         try {
             checkWritePermissions(projectId);
@@ -236,7 +236,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response sendMessage(final String projectId, final String taskId,
+    public Response sendMessage(final String taskId,
         final String sessionId, final ChatMessageJson message) {
         try {
             UUID userId = principal.getId();
@@ -284,7 +284,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response getChatMessages(final String projectId, final String taskId,
+    public Response getChatMessages(final String taskId,
         final String sessionId) {
         try {
             checkWritePermissions(projectId);
@@ -303,7 +303,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response getChatMessage(final String projectId, final String taskId,
+    public Response getChatMessage(final String taskId,
         final String sessionId, final String messageId) {
         try {
             checkWritePermissions(projectId);
@@ -352,7 +352,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response updateChatMessage(final String projectId, final String taskId,
+    public Response updateChatMessage(final String taskId,
         final String sessionId,
         final String messageId,
         final ChatMessageJson message) {
@@ -382,7 +382,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response deleteChatMessage(final String projectId, final String taskId,
+    public Response deleteChatMessage(final String taskId,
         final String sessionId, final String messageId) {
         try {
             checkWritePermissions(projectId);
@@ -401,7 +401,7 @@ public class ChatSessionResource extends ChatSubResource implements ChatSessionE
     }
 
     @Override
-    public Response uploadFile(final String projectId, final String taskId,
+    public Response uploadFile(final String taskId,
         final String sessionId, final MultipartFormDataInput input) {
         try {
             checkWritePermissions(projectId);

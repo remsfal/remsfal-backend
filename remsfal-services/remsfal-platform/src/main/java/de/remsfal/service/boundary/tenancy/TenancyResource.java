@@ -1,10 +1,7 @@
 package de.remsfal.service.boundary.tenancy;
 
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.container.ResourceContext;
-import jakarta.ws.rs.core.Context;
 
 import java.util.UUID;
 
@@ -19,7 +16,6 @@ import de.remsfal.service.control.CommercialController;
 import de.remsfal.service.control.PropertyController;
 import de.remsfal.service.control.SiteController;
 import de.remsfal.service.control.StorageController;
-import de.remsfal.service.boundary.tenancy.IssueResource;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
 import de.remsfal.service.entity.dto.BuildingRentEntity;
 import de.remsfal.service.entity.dto.CommercialRentEntity;
@@ -32,12 +28,6 @@ import de.remsfal.service.entity.dto.TenancyEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public class TenancyResource extends AbstractTenancyResource implements TenancyEndpoint {
-
-    @Context
-    ResourceContext resourceContext;
-
-    @Inject
-    Instance<IssueResource> issueResource;
 
     @Inject
     PropertyController propertyController;
@@ -165,11 +155,6 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
         return TenancyJson.valueOf(tenancy, rent, commercialController.getCommercial(tenancy.getProjectId(), rentalId));
-    }
-
-    @Override
-    public IssueResource getIssueResource() {
-        return resourceContext.initResource(issueResource.get());
     }
 
 }

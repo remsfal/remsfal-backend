@@ -1,10 +1,14 @@
 package de.remsfal.core.api.ticketing;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
@@ -24,6 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
+import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -31,8 +36,11 @@ import de.remsfal.core.validation.PostValidation;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
+@Path(IssueEndpoint.CONTEXT + "/" + IssueEndpoint.VERSION + "/" + IssueEndpoint.SERVICE)
 public interface IssueEndpoint {
 
+    String CONTEXT = "ticketing";
+    String VERSION = "v1";
     String SERVICE = "issues";
 
     @GET
@@ -40,10 +48,20 @@ public interface IssueEndpoint {
     @Operation(summary = "Retrieve information for all issues.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     IssueListJson getIssues(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "Offset of the first project to return")
+        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
+        @Parameter(description = "Maximum number of projects to return")
+        @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit,
+        @Parameter(description = "Filter to return only issues of a specific project")
+        @QueryParam("projectId") UUID projectId,
         @Parameter(description = "Filter to return only issues of a specific user")
         @QueryParam("owner") UUID ownerId,
+        @Parameter(description = "Filter to return only issuesfor a specific tenancy")
+        @QueryParam("tenancyId") UUID tenancyId,
+        @Parameter(description = "Filter to return only issuesfor a specific rental type")
+        @QueryParam("rentalType") UnitType rentalType,
+        @Parameter(description = "Filter to return only issuesfor a specific rental")
+        @QueryParam("rentalId") UUID rentalId,
         @Parameter(description = "Filter to return only issues with a specific status")
         @QueryParam("status") Status status);
 
@@ -54,8 +72,6 @@ public interface IssueEndpoint {
         headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createIssue(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Issue information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
 
@@ -66,8 +82,6 @@ public interface IssueEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The property does not exist")
     IssueJson getIssue(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId);
 
@@ -79,8 +93,6 @@ public interface IssueEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The issue does not exist")
     IssueJson updateIssue(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "Issue information", required = true)
@@ -92,9 +104,10 @@ public interface IssueEndpoint {
     @APIResponse(responseCode = "204", description = "The issue was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteIssue(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId);
+
+    @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
+    ChatSessionEndpoint getChatSessionResource();
 
 }

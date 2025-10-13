@@ -24,8 +24,8 @@ import de.remsfal.test.TestData;
 @QuarkusTest
 class ChatSubResourceTest {
 
-    private static void injectPrincipal(ChatSubResource resource, RemsfalPrincipal principal) throws Exception {
-        Field field = ChatSubResource.class.getDeclaredField("principal");
+    private static void injectPrincipal(AbstractResource resource, RemsfalPrincipal principal) throws Exception {
+        Field field = AbstractResource.class.getDeclaredField("principal");
         field.setAccessible(true);
         field.set(resource, principal);
     }
@@ -41,14 +41,14 @@ class ChatSubResourceTest {
 
     @Test
     void testCheckReadPermissionsSuccess() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of("p1", MemberRole.MANAGER.name())));
         assertTrue(resource.checkReadPermissions("p1"));
     }
 
     @Test
     void testCheckReadPermissionsWithJsonObjectClaim() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         JsonObject roles = Json.createObjectBuilder()
                 .add("p1", MemberRole.PROPRIETOR.name()).build();
         injectPrincipal(resource, mockPrincipal(roles));
@@ -57,7 +57,7 @@ class ChatSubResourceTest {
 
     @Test
     void testCheckReadPermissionsNotAuthorized() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
         when(principal.getJwt()).thenReturn(null);
         when(principal.getId()).thenReturn(null);
@@ -67,49 +67,49 @@ class ChatSubResourceTest {
 
     @Test
     void testCheckReadPermissionsForbidden() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of()));
         assertThrows(ForbiddenException.class, () -> resource.checkReadPermissions("p1"));
     }
 
     @Test
     void testCheckReadPermissionsInvalidRole() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of("p1", "INVALID")));
         assertThrows(ForbiddenException.class, () -> resource.checkReadPermissions("p1"));
     }
 
     @Test
     void testCheckWritePermissionsProprietor() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of("p1", MemberRole.PROPRIETOR.name())));
         assertTrue(resource.checkWritePermissions("p1"));
     }
 
     @Test
     void testCheckWritePermissionsManager() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of("p1", MemberRole.MANAGER.name())));
         assertTrue(resource.checkWritePermissions("p1"));
     }
 
     @Test
     void testCheckWritePermissionsForbidden() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of("p1", MemberRole.LESSOR.name())));
         assertThrows(ForbiddenException.class, () -> resource.checkWritePermissions("p1"));
     }
 
     @Test
     void testCheckOwnerPermissionsProprietor() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of("p1", MemberRole.PROPRIETOR.name())));
         assertTrue(resource.checkOwnerPermissions("p1"));
     }
 
     @Test
     void testCheckOwnerPermissionsForbidden() throws Exception {
-        ChatSubResource resource = new ChatSubResource();
+        AbstractResource resource = new AbstractResource();
         injectPrincipal(resource, mockPrincipal(Map.of("p1", MemberRole.MANAGER.name())));
         assertThrows(ForbiddenException.class, () -> resource.checkOwnerPermissions("p1"));
     }

@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
@@ -35,8 +36,27 @@ public class UserAuthenticationEntity extends MetaDataEntity implements UserAuth
     private String refreshToken;
 
     @Override
+    public UUID getId() {
+        return user != null ? user.getId() : null;
+    }
+
+    @Override
+    public String getEmail() {
+        return user != null ? user.getEmail() : null;
+    }
+
+    @Override
+    public String getName() {
+        return user != null ? user.getName() : null;
+    }
+
+    @Override
+    public Boolean isActive() {
+        return user != null ? user.isActive() : null;
+    }
+
     public UserEntity getUser() {
-        return user != null ? user : null;
+        return user;
     }
 
     public void setUser(UserEntity user) {

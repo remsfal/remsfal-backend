@@ -3,6 +3,8 @@ package de.remsfal.common.authentication;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
+
+import de.remsfal.core.model.UserModel;
 import io.smallrye.jwt.algorithm.SignatureAlgorithm;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.annotation.PostConstruct;
@@ -63,16 +65,17 @@ public class JWTManager {
     }
 
     /** Issue an access token using SmallRye JWT Build (platform only) */
-    public String createAccessToken(final UUID userId, final String email, final String name, final Boolean active,
-        final Map<String, String> projectRoles, final long ttlSeconds) {
+    public String createAccessToken(final UserModel user, final Map<String, String> projectRoles,
+        final Map<String, String> tenancyProjects, final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
-        return Jwt.subject(userId.toString())
-                .claim("email", email)
-                .claim("name", name)
-                .claim("active", active)
+        return Jwt.subject(user.getId().toString())
+                .claim("email", user.getEmail())
+                .claim("name", user.getName())
+                .claim("active", user.isActive())
                 .claim("project_roles", projectRoles)
+                .claim("tenancy_projects", tenancyProjects)
                 .issuer(issuer)
                 .expiresAt(exp)
                 .jws()

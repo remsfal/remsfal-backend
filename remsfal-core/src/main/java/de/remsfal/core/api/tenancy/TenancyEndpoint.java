@@ -15,7 +15,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.tenancy.TenancyJson;
 import de.remsfal.core.json.tenancy.TenancyListJson;
-import de.remsfal.core.api.tenancy.IssueEndpoint;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -109,9 +108,5 @@ public interface TenancyEndpoint {
         @Parameter(description = "ID of the rental", required = true)
         @PathParam("rentalId") @NotNull UUID rentalId
     );
-
-    @Path("/{tenancyId}/{rentalType:properties|sites|buildings|apartments|storages|commercials}/{rentalId}"
-        + IssueEndpoint.SERVICE)
-    IssueEndpoint getIssueResource();
 
 }
