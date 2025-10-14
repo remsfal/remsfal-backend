@@ -66,6 +66,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/ticketing/v1/issues";
     static final String CHAT_SESSION_PATH = BASE_PATH + "/{issueId}/chats";
     static final String CHAT_SESSION_ID_PATH = CHAT_SESSION_PATH + "/{sessionId}";
+    static final String CHAT_PARTICIPANTS_PATH = CHAT_SESSION_ID_PATH + "/participants";
+    static final String CHAT_MESSAGES_PATH = CHAT_SESSION_ID_PATH + "/messages";
 
     static final String TASK_ID_1 = "5b111b34-1073-4f48-a79d-f19b17e7d56b";
     static final String TASK_ID_2 = "4b8cd355-ad07-437a-9e71-a4e2e3624957";
@@ -338,7 +340,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     // important logic tests
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages" })
+    @ValueSource(strings = { CHAT_MESSAGES_PATH })
     void sendMessage_FAILURE_INVALID_PAYLOAD(String path) {
         String largePayload = "{\"content\":\"" + "a".repeat(9000) + "\"}";
         given()
@@ -354,7 +356,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants" })
+    @ValueSource(strings = { CHAT_PARTICIPANTS_PATH })
     void getParticipants_EMPTY_SESSION(String path) {
         // Create an empty session
         String emptySessionId = UUID.randomUUID().toString();
@@ -400,7 +402,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages" })
+    @ValueSource(strings = { CHAT_MESSAGES_PATH })
     void sendMessage_INVALID_INPUT(String path) {
         given()
             .body(CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT)
@@ -485,7 +487,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants" })
+    @ValueSource(strings = { CHAT_PARTICIPANTS_PATH })
     void getParticipants_SUCCESS(String path) {
         given()
             .when()
@@ -554,7 +556,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages" })
+    @ValueSource(strings = { CHAT_MESSAGES_PATH })
     void sendMessage_SUCCESS(String path) {
         given()
             .body(CHAT_MESSAGE_JSON_PAYLOAD)
@@ -571,7 +573,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages" })
+    @ValueSource(strings = { CHAT_MESSAGES_PATH })
     void getChatMessages_SUCCESS(String path) {
         given()
             .when()
@@ -636,7 +638,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     }
 
     @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages" })
+    @ValueSource(strings = { CHAT_MESSAGES_PATH })
     void getChatMessages_FAILURE(String path) {
         given()
             .when()

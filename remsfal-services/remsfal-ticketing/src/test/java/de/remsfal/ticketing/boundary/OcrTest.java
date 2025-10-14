@@ -60,6 +60,9 @@ public class OcrTest extends AbstractResourceTest {
     @Inject
     ChatSessionResource chatSessionResource;
 
+    @Inject
+    ChatMessageResource chatMessageResource;
+
     @InjectMock
     IssueController issueController;
 
@@ -90,7 +93,7 @@ public class OcrTest extends AbstractResourceTest {
         when(jwt.getClaim("project_roles")).thenReturn(Map.of(TestData.PROJECT_ID, "MANAGER"));
         when(principal.getJwt()).thenReturn(jwt);
 
-        Response response = chatSessionResource.uploadFile(taskId, sessionId, input);
+        Response response = chatMessageResource.uploadFile(taskId, sessionId, input);
 
         assertEquals(201, response.getStatus());
 
@@ -106,20 +109,20 @@ public class OcrTest extends AbstractResourceTest {
 
     @Test
     void testNullInput_Exception() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatSessionResource.extractFileNameFromUrl(null));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatMessageResource.extractFileNameFromUrl(null));
         assertEquals("File URL cannot be null or empty", ex.getMessage());
     }
 
     @Test
     void testBlankInput_Exception() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatSessionResource.extractFileNameFromUrl(" "));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatMessageResource.extractFileNameFromUrl(" "));
         assertEquals("File URL cannot be null or empty", ex.getMessage());
     }
 
     @Test
     void testEndsWithSlash_Exception() {
         String input = "https://example.com/files/";
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatSessionResource.extractFileNameFromUrl(input));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatMessageResource.extractFileNameFromUrl(input));
         assertEquals("Invalid file URL format: " + input, ex.getMessage());
     }
 
