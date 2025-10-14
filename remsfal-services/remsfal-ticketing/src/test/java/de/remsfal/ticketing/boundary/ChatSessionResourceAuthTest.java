@@ -82,7 +82,7 @@ class ChatSessionResourceAuthTest {
 
     @Test
     void testExtractFileNameFromUrl() {
-        ChatSessionResource resource = new ChatSessionResource();
+        ChatMessageResource resource = new ChatMessageResource();
         assertEquals("file.txt", resource.extractFileNameFromUrl("http://localhost/files/file.txt"));
         assertEquals("file.txt", resource.extractFileNameFromUrl("file.txt"));
         assertThrows(IllegalArgumentException.class, () -> resource.extractFileNameFromUrl("http://localhost/files/"));
