@@ -1,7 +1,9 @@
 package de.remsfal.service.boundary.authentication;
 
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dao.TenancyRepository;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
+import de.remsfal.service.entity.dto.TenancyEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import de.remsfal.common.authentication.JWTManager;
@@ -12,6 +14,7 @@ import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import io.smallrye.jwt.auth.principal.ParseException;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
@@ -32,48 +35,44 @@ public class SessionManager {
     public static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
     public static final String REFRESH_COOKIE_NAME = "remsfal_refresh_token";
 
-    private final String sessionCookiePath;
+    @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/")
+    String sessionCookiePath;
 
-    private final SameSite sessionCookieSameSite;
+    @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT")
+    SameSite sessionCookieSameSite;
 
-    private final Duration accessTokenTimeout;
+    @ConfigProperty(name = "de.remsfal.auth.access-token.timeout", defaultValue = "PT5M")
+    Duration accessTokenTimeout;
 
-    private final Duration refreshTokenTimeout;
+    @ConfigProperty(name = "de.remsfal.auth.refresh-token.timeout", defaultValue = "P7D")
+    Duration refreshTokenTimeout;
 
-    private final JWTManager jwtManager;
+    @Inject
+    JWTManager jwtManager;
 
-    private final UserAuthenticationRepository userAuthRepository;
+    @Inject
+    JWTParser jwtParser;
 
-    private final UserRepository userRepository;
+    @Inject
+    UserAuthenticationRepository userAuthRepository;
 
-    private final ProjectRepository projectRepository;
+    @Inject
+    UserRepository userRepository;
 
-    private final JWTParser jwtParser;
+    @Inject
+    ProjectRepository projectRepository;
 
-    public SessionManager(
-        @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/")
-        String sessionCookiePath,
-        @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT")
-        SameSite sessionCookieSameSite,
-        @ConfigProperty(name = "de.remsfal.auth.access-token.timeout", defaultValue = "PT5M")
-        Duration accessTokenTimeout,
-        @ConfigProperty(name = "de.remsfal.auth.refresh-token.timeout", defaultValue = "P7D")
-        Duration refreshTokenTimeout,
-        JWTManager jwtManager,
-        UserAuthenticationRepository userAuthRepository,
-        UserRepository userRepository,
-        ProjectRepository projectRepository,
-        JWTParser jwtParser) {
+    @Inject
+    TenancyRepository tenancyRepository;
 
-        this.sessionCookiePath = sessionCookiePath;
-        this.sessionCookieSameSite = sessionCookieSameSite;
-        this.accessTokenTimeout = accessTokenTimeout;
-        this.refreshTokenTimeout = refreshTokenTimeout;
-        this.jwtManager = jwtManager;
-        this.userAuthRepository = userAuthRepository;
-        this.userRepository = userRepository;
-        this.projectRepository = projectRepository;
-        this.jwtParser = jwtParser;
+    /**
+     * Generates a new access token for the given user authentication entity.
+     *
+     * @param userAuth User authentication entity to generate the access token for
+     * @return NewCookie containing the access token
+     */
+    public NewCookie generateAccessToken(final UserAuthenticationModel userAuth) {
+        return generateAccessToken(userAuth.getId(), userAuth.getEmail());
     }
 
     /**
@@ -91,26 +90,29 @@ public class SessionManager {
         UserEntity user = userRepository.findByIdOptional(userId)
             .orElseThrow(() -> new UnauthorizedException("User not found: " + userId));
 
-        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
-            Integer.MAX_VALUE);
-        Map<String, String> projectRoles = memberships.stream().collect(Collectors.toMap(
-            m -> m.getProject().getId().toString(),
-            m -> m.getRole().name()
-        ));
+        Map<String, String> projectRoles = getProjectAuthorization(userId);
+        Map<String, String> tenancyProjects = getTenancyAuthorization(userId);
 
-        String jwt = jwtManager.createAccessToken(userId, email, user.getName(), user.isActive(), projectRoles,
+        String jwt = jwtManager.createAccessToken(user, projectRoles, tenancyProjects,
             accessTokenTimeout.getSeconds());
         return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false);
     }
 
-    /**
-     * Generates a new access token for the given user authentication entity.
-     *
-     * @param userAuth User authentication entity to generate the access token for
-     * @return NewCookie containing the access token
-     */
-    public NewCookie generateAccessToken(final UserAuthenticationModel userAuth) {
-        return generateAccessToken(userAuth.getUser().getId(), userAuth.getUser().getEmail());
+    private Map<String, String> getProjectAuthorization(final UUID userId) {
+        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
+            Integer.MAX_VALUE);
+        return memberships.stream().collect(Collectors.toMap(
+            m -> m.getProject().getId().toString(),
+            m -> m.getRole().name()
+        ));
+    }
+
+    private Map<String, String> getTenancyAuthorization(final UUID userId) {
+        List<TenancyEntity> tenancies = tenancyRepository.findTenanciesByTenant(userId);
+        return tenancies.stream().collect(Collectors.toMap(
+            t -> t.getId().toString(),
+            t -> t.getProjectId().toString()
+        ));
     }
 
     /**

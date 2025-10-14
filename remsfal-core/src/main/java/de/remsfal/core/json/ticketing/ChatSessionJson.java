@@ -36,12 +36,12 @@ public abstract class ChatSessionJson implements ChatSessionModel {
 
     @Nullable
     @Override
-    public abstract UUID getTaskId();
+    public abstract UUID getIssueId();
 
     @Nullable
     @Override
     @JsonIgnore
-    public abstract Map<java.util.UUID, String> getParticipants();
+    public abstract Map<UUID, String> getParticipants();
 
     @Null
     @Nullable
@@ -53,12 +53,12 @@ public abstract class ChatSessionJson implements ChatSessionModel {
 
     public static ChatSessionJson valueOf(final ChatSessionModel model) {
         return ImmutableChatSessionJson.builder()
-                .sessionId(model.getSessionId())
-                .projectId(model.getProjectId())
-                .taskId(model.getTaskId())
-                .createdAt(model.getCreatedAt())
-                .modifiedAt(model.getModifiedAt())
-                .build();
+            .sessionId(model.getSessionId())
+            .projectId(model.getProjectId())
+            .issueId(model.getIssueId())
+            .createdAt(model.getCreatedAt())
+            .modifiedAt(model.getModifiedAt())
+            .build();
     }
 
 }

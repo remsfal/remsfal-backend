@@ -298,7 +298,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
         return cookieBuilder.build();
     }
 
-    protected Cookie buildRefreshTokenCookie(final UUID userId,final String userEmail, final Duration ttl) {
+    protected Cookie buildRefreshTokenCookie(final UUID userId, final String userEmail, final Duration ttl) {
         final String refreshToken = sessionManager.generateRefreshToken(userId, userEmail).getValue();
         Cookie.Builder cookieBuilder = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME, refreshToken);
 

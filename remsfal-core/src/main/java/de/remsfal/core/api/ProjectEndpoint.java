@@ -36,7 +36,7 @@ import de.remsfal.core.api.project.ContractorEndpoint;
 import de.remsfal.core.api.project.MemberEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
 import de.remsfal.core.api.project.SiteEndpoint;
-import de.remsfal.core.api.project.TaskEndpoint;
+
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.validation.PatchValidation;
@@ -141,9 +141,6 @@ public interface ProjectEndpoint {
 
     @Path("/{projectId}/" + StorageEndpoint.SERVICE)
     StorageEndpoint getStorageResource();
-
-    @Path("/{projectId}/" + TaskEndpoint.SERVICE)
-    TaskEndpoint getTaskResource();
 
     @Path("/{projectId}/" + ContractorEndpoint.SERVICE)
     ContractorEndpoint getContractorResource();

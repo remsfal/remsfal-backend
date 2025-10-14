@@ -1,61 +1,74 @@
 package de.remsfal.service.boundary.authentication;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.Test;
+
 import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
-import de.remsfal.service.entity.dto.ProjectEntity;
-import de.remsfal.service.entity.dto.ProjectMembershipEntity;
-import de.remsfal.service.entity.dto.UserEntity;
-import de.remsfal.test.TestData;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.ProjectEntity;
+import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
+import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.test.TestData;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
-import org.eclipse.microprofile.jwt.Claims;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.lang.reflect.Field;
-import java.time.Duration;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class SessionManagerTest {
 
+    @Inject
     SessionManager sessionManager;
 
+    @InjectMock
     UserAuthenticationRepository userAuthRepository;
 
+    @InjectMock
     UserRepository userRepository;
 
+    @InjectMock
     ProjectRepository projectRepository;
 
+    @InjectMock
     JWTManager jwtManager;
 
+    @InjectMock
     JWTParser jwtParser;
-
-    @BeforeEach
-    void setup() {
-        userRepository = Mockito.mock(UserRepository.class);
-        userAuthRepository = Mockito.mock(UserAuthenticationRepository.class);
-        projectRepository = Mockito.mock(ProjectRepository.class);
-        jwtManager = Mockito.mock(JWTManager.class);
-        jwtParser = Mockito.mock(JWTParser.class);
-
-        sessionManager = new SessionManager("/", NewCookie.SameSite.STRICT, Duration.ofMinutes(5),
-            Duration.ofDays(7), jwtManager, userAuthRepository, userRepository, projectRepository, jwtParser);
-    }
 
     private List<ProjectMembershipEntity> createMemberships(String p1Role, String p2Role) {
         return List.of(
@@ -94,6 +107,7 @@ class SessionManagerTest {
             @Override public String getSubject() { return subject.toString(); }
             @Override public String getName() { return subject.toString(); }
             @Override public Set<String> getClaimNames() { return new LinkedHashSet<>(claims.keySet()); }
+            @SuppressWarnings("unchecked")
             @Override public <T> T getClaim(String claim) { return (T) claims.get(claim); }
             @Override public String getRawToken() { return null; }
             @Override public Set<String> getAudience() { return Collections.emptySet(); }
@@ -129,9 +143,9 @@ class SessionManagerTest {
         when(projectRepository.findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt()))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
-        when(jwtManager.createAccessToken(eq(TestData.USER_ID), eq(email), eq("John Doe"), eq(true),
+        when(jwtManager.createAccessToken(eq(user),
                 argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
-                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), eq(300L)))
+                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), anyMap(), eq(300L)))
                 .thenReturn("new-access");
 
         when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L)))
@@ -150,9 +164,9 @@ class SessionManagerTest {
         verify(userAuthRepository, times(2)).findByUserId(TestData.USER_ID);
         verify(userRepository).findByIdOptional(TestData.USER_ID);
         verify(projectRepository).findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt());
-        verify(jwtManager).createAccessToken(eq(TestData.USER_ID), eq(email), eq("John Doe"), eq(true),
+        verify(jwtManager).createAccessToken(eq(user),
                 argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
-                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), eq(300L));
+                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), anyMap(), eq(300L));
         verify(jwtManager).createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L));
     }
 
@@ -174,9 +188,10 @@ class SessionManagerTest {
         when(projectRepository.findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt()))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
 
-        when(jwtManager.createAccessToken(eq(TestData.USER_ID), eq(TestData.USER_EMAIL), eq("Jane Roe"), eq(true),
+        when(jwtManager.createAccessToken(eq(user),
                 argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
-                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), eq(300L)))
+                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))),
+                anyMap(), eq(300L)))
                 .thenReturn("access.jwt");
 
         // Act
@@ -237,7 +252,7 @@ class SessionManagerTest {
     void test_generateAccessToken_throws_whenUserMissing() {
         when(userRepository.findByIdOptional(TestData.USER_ID_4)).thenReturn(Optional.empty());
         assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken(TestData.USER_ID_4, "x@x"));
-        verify(jwtManager, never()).createAccessToken(any(UUID.class), anyString(), anyString(), anyBoolean(), anyMap(), anyLong());
+        verify(jwtManager, never()).createAccessToken(any(UserEntity.class), anyMap(), anyMap(), anyLong());
     }
 
 }

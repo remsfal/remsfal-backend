@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.2-chat_sessions" author="alexander.stanik@htw-berlin.de">
+        <comment>Create chat_sessions table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.chat_sessions (
+                project_id UUID,
+                issue_id UUID,
+                session_id UUID,
+                participants MAP&lt;UUID, TEXT&gt;,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY ((project_id, issue_id), session_id)
+            ) WITH CLUSTERING ORDER BY (session_id ASC);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.chat_sessions;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

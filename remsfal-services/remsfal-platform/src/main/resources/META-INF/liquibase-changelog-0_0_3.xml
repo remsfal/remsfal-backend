@@ -56,49 +56,4 @@
             onDelete="CASCADE" onUpdate="RESTRICT" />
     </changeSet>
 
-    <changeSet id="remsfal-backend-0.0.3-task" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="tasks">
-            <column name="id" type="uuid">
-                <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="type" type="varchar(20)">
-                <constraints nullable="false" checkConstraint="type IN ('TASK', 'DEFECT', 'MAINTENANCE')" />
-            </column>
-            <column name="project_id" type="uuid">
-                <constraints nullable="false" />
-            </column>
-            <column name="title" type="varchar(255)">
-                <constraints nullable="false" />
-            </column>
-            <column name="status" type="varchar(20)" defaultValue="PENDING">
-                <constraints nullable="false" checkConstraint="status IN ('PENDING', 'OPEN', 'IN_PROGRESS', 'CLOSED', 'REJECTED')" />
-            </column>
-            <column name="reporter_id" type="uuid" />
-            <column name="owner_id" type="uuid" />
-            <column name="description" type="clob" />
-            <column name="blocked_by" type="uuid" />
-            <column name="related_to" type="uuid" />
-            <column name="duplicate_of" type="uuid" />
-            <column name="created_by" type="uuid">
-                <constraints nullable="false" />
-            </column>
-            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-
-        <addForeignKeyConstraint constraintName="fk_task_project_id"
-            baseTableName="tasks" baseColumnNames="project_id"
-            referencedTableName="projects" referencedColumnNames="id"
-            onDelete="CASCADE" onUpdate="RESTRICT" />
-
-        <createIndex indexName="idx_task_project_fk" tableName="tasks">
-            <column name="type" />
-            <column name="project_id" />
-        </createIndex>
-    </changeSet>
-
 </databaseChangeLog>
