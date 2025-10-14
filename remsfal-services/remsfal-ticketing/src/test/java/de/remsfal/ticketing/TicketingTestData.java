@@ -76,7 +76,7 @@ public class TicketingTestData extends TestData {
     );
     
     public static final Map<String, String> TENANT_PROJECT_ROLES = Map.of(
-        PROJECT_ID.toString(), "TENANT"
+        TENANCY_ID.toString(), PROJECT_ID.toString()
     );
 
 }

@@ -18,7 +18,10 @@ import java.util.UUID;
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     public Optional<IssueEntity> find(final IssueKey key) {
-        return template.find(IssueEntity.class, key);
+        return template.select(IssueEntity.class)
+            .where(PROJECT_ID).eq(key.getProjectId())
+            .and(ISSUE_ID).eq(key.getIssueId())
+            .singleResult();
     }
 
     public Optional<IssueEntity> findByIssueId(final UUID issueId) {
@@ -76,11 +79,10 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     }
 
     public void delete(final IssueKey key) {
-        template.delete(IssueEntity.class, key);
-    }
-
-    public void deleteAll() {
-        template.delete(IssueEntity.class);
+        template.delete(IssueEntity.class)
+            .where(PROJECT_ID).eq(key.getProjectId())
+            .and(ISSUE_ID).eq(key.getIssueId())
+            .execute();
     }
 
 }

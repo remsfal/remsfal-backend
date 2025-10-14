@@ -129,8 +129,9 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             issueController.deleteIssue(entity.getKey());
         } else if (principal.getTenancyProjects().containsKey(entity.getTenancyId())) {
             issueController.closeIssue(entity.getKey());
+        } else {
+            throw new ForbiddenException("User does not have permission to delete this issue");
         }
-        throw new ForbiddenException("User does not have permission to delete this issue");
     }
 
     @Override

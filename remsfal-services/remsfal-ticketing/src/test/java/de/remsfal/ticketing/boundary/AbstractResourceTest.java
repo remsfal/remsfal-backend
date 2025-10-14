@@ -21,18 +21,20 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
     private static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
 
     protected Cookie buildCookie(final UUID userId, final String userEmail, final String userName,
-                                 final Boolean active, final Map<String, String> projectRoles, final Duration ttl) {
+        final Boolean active, final Map<String, String> projectRoles, final Map<String, String> tenancyProjects,
+        final Duration ttl) {
         long exp = (System.currentTimeMillis() / 1000) + ttl.getSeconds();
 
         String jwt = Jwt.claims()
-                .claim("sub", userId)
-                .claim("email", userEmail)
-                .claim("name", userName)
-                .claim("active", active)
-                .claim("project_roles", projectRoles)
-                .issuer("REMSFAL")
-                .expiresAt(exp)
-                .sign();
+            .claim("sub", userId)
+            .claim("email", userEmail)
+            .claim("name", userName)
+            .claim("active", active)
+            .claim("project_roles", projectRoles)
+            .claim("tenancy_projects", tenancyProjects)
+            .issuer("REMSFAL")
+            .expiresAt(exp)
+            .sign();
 
         return new Cookie.Builder(ACCESS_COOKIE_NAME, jwt).setMaxAge(ttl.toSeconds()).build();
     }

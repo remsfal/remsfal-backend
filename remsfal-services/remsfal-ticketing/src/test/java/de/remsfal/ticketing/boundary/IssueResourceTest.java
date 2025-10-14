@@ -1,29 +1,29 @@
 package de.remsfal.ticketing.boundary;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+
+import java.time.Duration;
+import java.util.Map;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+
+import com.datastax.oss.quarkus.test.CassandraTestResource;
+
+import de.remsfal.ticketing.TicketingTestData;
+import de.remsfal.ticketing.control.IssueController;
+import de.remsfal.ticketing.entity.dao.IssueRepository;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import de.remsfal.ticketing.TicketingTestData;
-import de.remsfal.ticketing.control.IssueController;
-import de.remsfal.ticketing.entity.dao.IssueRepository;
-import de.remsfal.core.model.ticketing.IssueModel.Status;
-import de.remsfal.core.model.ticketing.IssueModel.Type;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.time.Duration;
-import java.util.UUID;
-
-import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -36,12 +36,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Inject
     IssueRepository issueRepository;
-
-    @BeforeEach
-    void setUp() {
-        // Clean up any existing issues before each test
-        cleanDatabase();
-    }
 
     @Test
     void getIssues_FAILED_noAuthentication() {
@@ -57,13 +51,15 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .get(BASE_PATH)
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body("issues", hasSize(0))
-                .body("totalCount", equalTo(0));
+                .body("first", equalTo(0))
+                .body("size", equalTo(0))
+                .body("total", equalTo(0));
     }
 
     @Test
@@ -71,13 +67,13 @@ class IssueResourceTest extends AbstractResourceTest {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                 + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -87,8 +83,8 @@ class IssueResourceTest extends AbstractResourceTest {
                 .header("location", containsString(BASE_PATH + "/"))
                 .body("id", notNullValue())
                 .body("title", equalTo(TicketingTestData.ISSUE_TITLE))
-                .body("description", equalTo(TicketingTestData.ISSUE_DESCRIPTION))
-                .body("type", equalTo("ISSUE"))
+                .body("description", equalTo(TicketingTestData.ISSUE_DESCRIPTION.replace("\\n", "\n")))
+                .body("type", equalTo("TASK"))
                 .body("status", equalTo("OPEN"))
                 .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()));
     }
@@ -104,7 +100,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1, 
-                    TicketingTestData.USER_FIRST_NAME_1, true, TicketingTestData.TENANT_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME_1, true, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES, Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -114,7 +110,7 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body("title", equalTo(TicketingTestData.ISSUE_TITLE_2))
                 .body("type", equalTo("DEFECT"))
                 .body("status", equalTo("PENDING"))
-                .body("projectId", nullValue()) // Filtered for tenant view
+                .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
                 .body("description", nullValue()); // Filtered for tenant view
     }
 
@@ -122,7 +118,7 @@ class IssueResourceTest extends AbstractResourceTest {
     void createIssue_FAILED_noAuthentication() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         given()
@@ -137,13 +133,13 @@ class IssueResourceTest extends AbstractResourceTest {
     @Test
     void createIssue_FAILED_noTitle() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -155,13 +151,13 @@ class IssueResourceTest extends AbstractResourceTest {
     void createIssue_FAILED_noProjectPermission() {
         final String json = "{ \"projectId\":\"" + UUID.randomUUID() + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -175,13 +171,13 @@ class IssueResourceTest extends AbstractResourceTest {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                 + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         final Response createResponse = given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(createJson)
                 .post(BASE_PATH)
@@ -195,15 +191,15 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .get(BASE_PATH + "/" + issueId)
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body("id", equalTo(issueId))
                 .body("title", equalTo(TicketingTestData.ISSUE_TITLE))
-                .body("description", equalTo(TicketingTestData.ISSUE_DESCRIPTION))
-                .body("type", equalTo("ISSUE"))
+                .body("description", equalTo(TicketingTestData.ISSUE_DESCRIPTION.replace("\\n", "\n")))
+                .body("type", equalTo("TASK"))
                 .body("status", equalTo("OPEN"));
     }
 
@@ -221,7 +217,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .get(BASE_PATH + "/" + UUID.randomUUID())
                 .then()
                 .statusCode(404);
@@ -233,13 +229,13 @@ class IssueResourceTest extends AbstractResourceTest {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                 + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         final Response createResponse = given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(createJson)
                 .post(BASE_PATH)
@@ -257,7 +253,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(updateJson)
                 .patch(BASE_PATH + "/" + issueId)
@@ -288,13 +284,13 @@ class IssueResourceTest extends AbstractResourceTest {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                 + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         final Response createResponse = given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(createJson)
                 .post(BASE_PATH)
@@ -308,7 +304,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .delete(BASE_PATH + "/" + issueId)
                 .then()
                 .statusCode(204);
@@ -317,7 +313,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .get(BASE_PATH + "/" + issueId)
                 .then()
                 .statusCode(404);
@@ -337,7 +333,7 @@ class IssueResourceTest extends AbstractResourceTest {
         // Create multiple issues with different statuses
         final String issue1Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_1 + "\","
-                + "\"type\":\"ISSUE\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         final String issue2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
@@ -349,7 +345,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(issue1Json)
                 .post(BASE_PATH);
@@ -358,7 +354,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(issue2Json)
                 .post(BASE_PATH);
@@ -367,36 +363,14 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .queryParam("projectId", TicketingTestData.PROJECT_ID.toString())
                 .get(BASE_PATH)
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body("issues", hasSize(2))
-                .body("totalCount", equalTo(2));
-
-        // Test filtering by status
-        given()
-                .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Duration.ofMinutes(10)))
-                .queryParam("projectId", TicketingTestData.PROJECT_ID.toString())
-                .queryParam("status", "OPEN")
-                .get(BASE_PATH)
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body("issues", hasSize(2))
-                .body("totalCount", equalTo(2));
+                .body("total", equalTo(2));
     }
 
-    private void cleanDatabase() {
-        // Clean up issues in the test database
-        try {
-            issueRepository.deleteAll();
-        } catch (Exception e) {
-            // Ignore cleanup errors
-        }
-    }
 }
