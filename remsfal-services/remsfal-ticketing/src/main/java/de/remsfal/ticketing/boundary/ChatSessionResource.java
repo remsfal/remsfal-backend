@@ -1,6 +1,7 @@
 package de.remsfal.ticketing.boundary;
 
-import java.util.Map;
+import java.net.URI;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,16 +11,13 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import org.jboss.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.remsfal.core.api.ticketing.ChatSessionEndpoint;
 import de.remsfal.core.api.ticketing.ChatParticipantEndpoint;
 import de.remsfal.core.api.ticketing.ChatMessageEndpoint;
 import de.remsfal.core.json.ticketing.ChatSessionJson;
+import de.remsfal.core.json.ticketing.ChatSessionListJson;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 import de.remsfal.ticketing.control.ChatSessionController;
-import de.remsfal.ticketing.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
@@ -28,9 +26,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
@@ -105,25 +104,17 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     }
 
     @Override
-    public Response joinChatSession(final UUID issueId, final UUID sessionId) {
+    public Response getChatSessions(final UUID issueId) {
         try {
-            UUID projectId = checkWritePermissions(issueId);
-            chatSessionController.addParticipant(projectId, issueId,
-                sessionId, principal.getId(), ParticipantRole.OBSERVER);
-            Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, issueId, sessionId);
-            String json = jsonifyParticipantsMap(participants);
+            UUID projectId = checkReadPermissions(issueId);
+            List<ChatSessionEntity> sessions = chatSessionController.getChatSessions(projectId, issueId);
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
-                .entity(json)
+                .entity(ChatSessionListJson.valueOf(sessions))
                 .build();
-        } catch (NoSuchElementException | IllegalArgumentException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (ForbiddenException e) {
-            throw e;
         } catch (Exception e) {
-            logger.error("Failed to join chat session", e);
-            throw new ForbiddenException();
+            logger.error("Failed to get chat sessions", e);
+            throw e;
         }
     }
 
@@ -137,17 +128,4 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
         return resourceContext.initResource(chatMessageResource.get());
     }
 
-    // ---------------------Helper Methods---------------------
-
-    private String jsonifyParticipantsMap(Map<UUID, String> participants) throws JsonProcessingException {
-        List<Map<String, String>> participantList = new ArrayList<>();
-        participants.forEach((id, role) -> {
-            Map<String, String> participant = new HashMap<>();
-            participant.put("userId", id.toString());
-            participant.put("userRole", role);
-            participantList.add(participant);
-        });
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(participantList);
-    }
 }

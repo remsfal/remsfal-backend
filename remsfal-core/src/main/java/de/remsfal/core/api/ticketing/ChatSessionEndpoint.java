@@ -62,19 +62,15 @@ public interface ChatSessionEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @PathParam("sessionId") @NotNull UUID sessionId);
 
-    @POST
-    @Path("/{sessionId}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Add a participant to chat session")
-    @APIResponse(responseCode = "200", description = "Chat session joined")
-    @APIResponse(responseCode = "400", description = "Invalid input")
-    @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
+    @Operation(summary = "Get all chat sessions for an issue")
+    @APIResponse(responseCode = "200", description = "Chat sessions retrieved")
+    @APIResponse(responseCode = "404", description = "Project or task not found")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response joinChatSession(
+    Response getChatSessions(
         @Parameter(description = "ID of the task", required = true)
-        @PathParam("issueId") @NotNull UUID issueId,
-        @PathParam("sessionId") @NotNull UUID sessionId);
+        @PathParam("issueId") @NotNull UUID issueId);
 
     @Path("/{sessionId}/" + ChatParticipantEndpoint.SERVICE)
     ChatParticipantEndpoint getChatParticipantResource();
