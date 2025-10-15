@@ -37,7 +37,10 @@ jobs:
           retention-days: 14
       - name: Verify and Build Reports (only on JDK 21)
         if: ${{ matrix.java == 21 }}
-        run: mvn -B verify checkstyle:checkstyle-aggregate
+        run: |
+          mvn -B verify checkstyle:checkstyle-aggregate \
+            -Dcheckstyle.excludeGeneratedSources=true \
+            -Dcheckstyle.excludes="**/target/generated-sources/**,**/target/generated-test-sources/**"
       - name: Upload Coverage Reports (only on JDK 21)
         if: ${{ matrix.java == 21 }}
         uses: actions/upload-artifact@v4

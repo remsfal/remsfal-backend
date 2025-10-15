@@ -130,10 +130,6 @@
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <linkXRef>false</linkXRef>
-                        <excludes>
-                            <exclude>**/target/generated-sources/**</exclude>
-                            <exclude>**/target/generated-test-sources/**</exclude>
-                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
