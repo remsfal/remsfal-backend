@@ -2,31 +2,32 @@ package de.remsfal.ticketing.boundary;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
-import org.hamcrest.Matchers;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.ticketing.TicketingTestData;
+import de.remsfal.ticketing.entity.dao.ChatSessionRepository;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository.ParticipantRole;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class ChatSessionResourceTest extends AbstractResourceTest {
+class ChatParticipantResourceTest extends AbstractResourceTest {
 
     @Inject
     CqlSession cqlSession;
@@ -34,6 +35,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/ticketing/v1/issues";
     static final String CHAT_SESSION_PATH = BASE_PATH + "/{issueId}/chats";
     static final String CHAT_SESSION_ID_PATH = CHAT_SESSION_PATH + "/{sessionId}";
+    static final String CHAT_PARTICIPANTS_PATH = CHAT_SESSION_ID_PATH + "/participants";
 
     static final String EXAMPLE_CHAT_SESSION_ID_1 = "64ab9ef0-25ef-4a1c-81c9-5963f7c7d211";
     static final String EXAMPLE_CHAT_SESSION_ID_2 = "30444d17-56a9-4275-a9a8-e4fb7305359a";
@@ -60,7 +62,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             TicketingTestData.USER_ID, TicketingTestData.USER_ID,
             "Test issue for chat session 2",
             TicketingTestData.USER_ID, Instant.now(), Instant.now());
-        logger.info("Setting up chat sessions");
+        logger.info("Setting up chat sessions and participants");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
             "(project_id, issue_id, session_id, created_at, participants) " +
             "VALUES (?, ?, ?, ?, ?)";
@@ -90,118 +92,178 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         return first + " " + last;
     }
 
-    @Test
-    void getChatSession_UNAUTHENTICATED() {
+    @ParameterizedTest
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}/role" })
+    void changeParticipantRole_UNPRIVILEGED(String path) {
+        String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
+        String jsonBody = "\"" + newRole + "\"";
+
         given()
+            .body(jsonBody)
+            .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1)
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), rolesNone(), Duration.ofMinutes(10)))
+            .put(path, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
-            .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
-    @Test
-    void getChatSession_UNPRIVILEGED() {
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}" })
+    void getParticipant_FAILURE_INVALID_PARTICIPANT(String path) {
+        String nonExistingParticipantId = UUID.randomUUID().toString();
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .get(path, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1, nonExistingParticipantId)
+            .then()
+            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}" })
+    void getParticipant_FAILURE_UNPRIVILEGED(String path) {
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), Duration.ofMinutes(10)))
-            .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1)
+            .get(path, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
-    @Test
-    void deleteChatSession_INVALID_INPUT() {
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}/role" })
+    void changeParticipantRole_FAILURE_INVALID_ROLE(String path) {
+        // invalid input - non-existing role in the database
+        String nonExistingRole = "INVALID_ROLE";
+        String jsonBody = "\"" + nonExistingRole + "\"";
         given()
+            .body(jsonBody)
+            .contentType(MediaType.APPLICATION_JSON)
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .delete(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1)
+            .put(path, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .delete(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1.toString(), UUID.randomUUID().toString())
-            .then()
-            .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
 
-    @Test
-    void getChatSession_FAILURE_INVALID_SESSION() {
-        // invalid input - non-existing sessionId in the database
-        String nonExistingSessionId = UUID.randomUUID().toString();
+    @ParameterizedTest(name = "{displayName} - {arguments}")
+    @ValueSource(strings = { CHAT_PARTICIPANTS_PATH })
+    void getParticipants_EMPTY_SESSION(String path) {
+        // Create an empty session
+        String emptySessionId = UUID.randomUUID().toString();
+
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1.toString(), nonExistingSessionId)
+            .get(path, TicketingTestData.ISSUE_ID_1.toString(), emptySessionId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
-    @Test
-    void createChatSession_OnTask_SUCCESS() {
+    @ParameterizedTest
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}" })
+    void removeParticipant_INVALID_INPUT(String path) {
+        String path_task1_session1 = path
+            .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
+            .replace("{sessionId}", EXAMPLE_CHAT_SESSION_ID_1.toString());
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .post(CHAT_SESSION_PATH, TicketingTestData.ISSUE_ID_1.toString())
+            .delete(path_task1_session1
+                .replace("{participantId}", UUID.randomUUID().toString()))
             .then()
-            .statusCode(Response.Status.CREATED.getStatusCode())
+            .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+                    rolesNone(), rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .header("Location", Matchers.containsString(CHAT_SESSION_PATH
-                .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())))
-            .and().body("sessionId", notNullValue());
+            .delete(path_task1_session1
+                .replace("{participantId}", TicketingTestData.USER_ID_3.toString()))
+            .then()
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
-    @Test
-    void getChatSession_SUCCESS() {
+    @ParameterizedTest
+    @ValueSource(strings = { CHAT_PARTICIPANTS_PATH })
+    void getParticipants_SUCCESS(String path) {
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1)
+            .contentType(ContentType.JSON)
+            .get(path, TicketingTestData.ISSUE_ID_2.toString(), EXAMPLE_CHAT_SESSION_ID_2)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("sessionId", equalTo(EXAMPLE_CHAT_SESSION_ID_1));
+            .body("[1].userId", equalTo(TicketingTestData.USER_ID_4.toString()))
+            .body("[1].userRole", equalTo("INITIATOR"));
     }
 
-    @Test
-    void deleteChatSession_SUCCESS() {
+    @ParameterizedTest
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}" })
+    void getParticipant_SUCCESS(String path) {
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .delete(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1)
+            .contentType(ContentType.JSON)
+            .get(path, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .body("[0].userId", equalTo(TicketingTestData.USER_ID_4.toString()))
+            .body("[0].userRole", equalTo("INITIATOR"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}/role" })
+    void changeParticipantRole_SUCCESS(String path) {
+        String newRole = ChatSessionRepository.ParticipantRole.OBSERVER.toString();
+        String jsonBody = "\"" + newRole + "\"";
+
+        given()
+            .body(jsonBody)
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .put(path, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .body("[0].userId", equalTo(TicketingTestData.USER_ID_4.toString()))
+            .body("[0].userRole", equalTo(newRole));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/participants/{participantId}" })
+    void removeParticipant_SUCCESS(String path) {
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .delete(path, TicketingTestData.ISSUE_ID_1.toString(), EXAMPLE_CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
-    }
-
-    @Test
-    void getChatSessions_SUCCESS() {
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .get(CHAT_SESSION_PATH, TicketingTestData.ISSUE_ID_1.toString())
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .body("size", equalTo(1))
-            .body("chatSessions[0].sessionId", equalTo(EXAMPLE_CHAT_SESSION_ID_1));
     }
 
 }

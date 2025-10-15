@@ -5,15 +5,16 @@ import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
-@RequestScoped
+@ApplicationScoped
 public class ChatSessionController {
 
     @Inject
@@ -75,5 +76,10 @@ public class ChatSessionController {
     public String getParticipantRole(UUID projectId, UUID issueId, UUID sessionId, UUID userId) {
         logger.infov("Retrieving participant role (sessionId={0}, participantId={1})", sessionId, userId);
         return chatSessionRepository.findParticipantRole(projectId, sessionId, issueId, userId);
+    }
+
+    public List<ChatSessionEntity> getChatSessions(UUID projectId, UUID issueId) {
+        logger.infov("Retrieving chat sessions for issue (projectId={0}, issueId={1})", projectId, issueId);
+        return chatSessionRepository.findByIssueId(projectId, issueId);
     }
 }

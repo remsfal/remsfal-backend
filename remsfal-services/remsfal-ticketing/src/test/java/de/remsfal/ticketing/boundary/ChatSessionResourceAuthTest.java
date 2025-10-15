@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
@@ -70,7 +69,6 @@ class ChatSessionResourceAuthTest {
         setField(resource, AbstractResource.class, "issueController", issueController);
         setField(resource, AbstractResource.class, "principal", principalWithRole(TestData.PROJECT_ID, MemberRole.PROPRIETOR.name()));
         setField(resource, ChatSessionResource.class, "chatSessionController", controller);
-        setField(resource, ChatSessionResource.class, "logger", Logger.getLogger(ChatSessionResource.class));
         UriInfo uriInfo = mock(UriInfo.class);
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri(URI.create("http://localhost")));
         setField(resource, AbstractResource.class, "uri", uriInfo);
