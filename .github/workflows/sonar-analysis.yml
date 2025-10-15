@@ -55,6 +55,7 @@ jobs:
         with:
           projectBaseDir: .
           args: >
+            -Dsonar.java.binaries=**/target/classes/*
             -Dsonar.coverage.jacoco.xmlReportPaths=coverage/jacoco.xml
             -Dsonar.java.checkstyle.reportPaths=checkstyle/checkstyle-result.xml
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
@@ -70,6 +71,7 @@ jobs:
         with:
           projectBaseDir: .
           args: >
+            -Dsonar.java.binaries=**/target/classes/*
             -Dsonar.coverage.jacoco.xmlReportPaths=coverage/jacoco.xml
             -Dsonar.java.checkstyle.reportPaths=checkstyle/checkstyle-result.xml
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
