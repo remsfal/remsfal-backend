@@ -32,6 +32,13 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: checkstyle-${{ github.event.workflow_run.head_sha }}
           path: checkstyle
+      - name: Download Compiled Classes from CI Build
+        uses: actions/download-artifact@v5
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: binaries-${{ github.event.workflow_run.head_sha }}
+          path: .
       - name: Checkout at triggering ref (read-only)
         uses: actions/checkout@v5
         with:

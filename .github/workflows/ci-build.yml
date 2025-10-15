@@ -26,7 +26,7 @@ jobs:
         uses: ./.github/actions/build-remsfal
         with:
           java-version: ${{ matrix.java }}
-      - name: Archive test output
+      - name: Upload Surefire Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -46,6 +46,15 @@ jobs:
           path: target/site/jacoco/jacoco.xml
           retention-days: 1
           if-no-files-found: error
+      - name: Upload Compiled Classes (only on JDK 25)
+        if: ${{ matrix.java == 25 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ github.sha }}
+          path: |
+            **/target/classes/
+            **/target/generated-sources/
+          retention-days: 1
       - name: Build Checkstyle Reports (only on JDK 25)
         if: ${{ matrix.java == 25 }}
         run: mvn -B checkstyle:checkstyle-aggregate
