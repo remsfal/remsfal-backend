@@ -35,22 +35,22 @@ jobs:
             remsfal-core/target/surefire-reports/
             remsfal-services/*/target/surefire-reports/
           retention-days: 14
-      - name: Build JaCoCo Reports (only on JDK 21)
-        if: ${{ matrix.java == 21 }}
+      - name: Build JaCoCo Reports (only on JDK 25)
+        if: ${{ matrix.java == 25 }}
         run: mvn -B verify
-      - name: Upload Coverage Reports (only on JDK 21)
-        if: ${{ matrix.java == 21 }}
+      - name: Upload Coverage Reports (only on JDK 25)
+        if: ${{ matrix.java == 25 }}
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ github.sha }}
           path: target/site/jacoco/jacoco.xml
           retention-days: 1
           if-no-files-found: error
-      - name: Build Checkstyle Reports (only on JDK 21)
-        if: ${{ matrix.java == 21 }}
+      - name: Build Checkstyle Reports (only on JDK 25)
+        if: ${{ matrix.java == 25 }}
         run: mvn -B checkstyle:checkstyle-aggregate
-      - name: Upload Checkstyle Reports (only on JDK 21)
-        if: ${{ matrix.java == 21 }}
+      - name: Upload Checkstyle Reports (only on JDK 25)
+        if: ${{ matrix.java == 25 }}
         uses: actions/upload-artifact@v4
         with:
           name: checkstyle-${{ github.sha }}
