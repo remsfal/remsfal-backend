@@ -18,6 +18,16 @@ jobs:
     if: github.actor != 'dependabot[bot]' && github.repository_owner == 'remsfal' && github.event.workflow_run.conclusion == 'success'
 
     steps:
+      - name: List artifacts on source run
+        uses: actions/github-script@v7
+        with:
+        script: |
+          const [owner, repo] = '${{ github.event.workflow_run.repository.full_name }}'.split('/');
+          const res = await github.rest.actions.listWorkflowRunArtifacts({
+            owner, repo, run_id: ${{ github.event.workflow_run.id }}
+          });
+          core.info('Artifacts: ' + res.data.artifacts.map(a => a.name).join(', '));
+
       - name: Download Coverage Report from CI Build
         uses: actions/download-artifact@v4
         with:
