@@ -29,13 +29,14 @@ jobs:
             core.info('Artifacts: ' + res.data.artifacts.map(a => a.name).join(', '));
 
       - name: Download Coverage Report from CI Build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           name: coverage-${{ github.event.workflow_run.head_sha }}
           path: coverage
       - name: Download Checkstyle Report from CI Build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           run-id: ${{ github.event.workflow_run.id }}
           name: checkstyle-${{ github.event.workflow_run.head_sha }}
