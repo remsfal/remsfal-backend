@@ -35,12 +35,9 @@ jobs:
             remsfal-core/target/surefire-reports/
             remsfal-services/*/target/surefire-reports/
           retention-days: 14
-      - name: Verify and Build Reports (only on JDK 21)
+      - name: Build JaCoCo Reports (only on JDK 21)
         if: ${{ matrix.java == 21 }}
-        run: |
-          mvn -B verify checkstyle:checkstyle-aggregate \
-            -Dcheckstyle.excludeGeneratedSources=true \
-            -Dcheckstyle.excludes="**/target/generated-sources/**,**/target/generated-test-sources/**"
+        run: mvn -B verify
       - name: Upload Coverage Reports (only on JDK 21)
         if: ${{ matrix.java == 21 }}
         uses: actions/upload-artifact@v4
@@ -49,6 +46,9 @@ jobs:
           path: target/site/jacoco/jacoco.xml
           retention-days: 1
           if-no-files-found: error
+      - name: Build Checkstyle Reports (only on JDK 21)
+        if: ${{ matrix.java == 21 }}
+        run: mvn -B checkstyle:checkstyle-aggregate
       - name: Upload Checkstyle Reports (only on JDK 21)
         if: ${{ matrix.java == 21 }}
         uses: actions/upload-artifact@v4
