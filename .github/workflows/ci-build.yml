@@ -3,61 +3,62 @@ name: "CI Build"
 on:
   push:
     branches: ["main"]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
   pull_request:
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
-  pull_request_target:
-    branches: ["main"]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
 
 jobs:
-  jdk17-build:
-    name: "JDK 17 Build"
+  run-tests:
+    name: JDK ${{ matrix.java }} Build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [17, 21, 25] # LTS-Versions
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
+        with:
+          java-version: ${{ matrix.java }}
       - name: Archive test output
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
+          name: surefire-reports-jdk-${{ matrix.java }}-${{ github.sha }}
           path: |
             remsfal-core/target/surefire-reports/
             remsfal-services/*/target/surefire-reports/
-          retention-days: 30
-      - name: Save PR number to file for subsequently Sonar Analysis
-        if: github.event_name == 'pull_request'
-        env:
-          PR_NUMBER: ${{ github.event.number }}
-        run: echo $PR_NUMBER > PR_NUMBER.txt
-      - name: Archive PR number for subsequently Sonar Analysis
-        if: github.event_name == 'pull_request'
+          retention-days: 14
+      - name: Verify and Build Reports (only on JDK 21)
+        if: ${{ matrix.java == 21 }}
+        run: mvn -B verify checkstyle:checkstyle-aggregate
+      - name: Upload Coverage Reports (only on JDK 21)
+        if: ${{ matrix.java == 21 }}
         uses: actions/upload-artifact@v4
         with:
-          name: PR_NUMBER
-          path: PR_NUMBER.txt
-
-  jdk21-build:
-    name: "JDK 21 Build"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Build REMSFAL
-        uses: ./.github/actions/build-remsfal
+          name: coverage-${{ github.sha }}
+          path: target/site/jacoco/jacoco.xml
+          retention-days: 1
+          if-no-files-found: error
+      - name: Upload Checkstyle Reports (only on JDK 21)
+        if: ${{ matrix.java == 21 }}
+        uses: actions/upload-artifact@v4
         with:
-          java-version: '21'
+          name: checkstyle-${{ github.sha }}
+          path: /target/checkstyle-result.xml
+          retention-days: 1
+          if-no-files-found: error
 
   check-branches:
     name: "Check Pull Request Conditions"
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
