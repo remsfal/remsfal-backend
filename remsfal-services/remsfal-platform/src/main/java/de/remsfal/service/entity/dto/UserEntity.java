@@ -27,36 +27,36 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 @NamedQuery(name = "UserEntity.deleteById",
     query = "delete from UserEntity user where user.id = :id")
 @Entity
-@Table(name = "USER")
+@Table(name = "users")
 public class UserEntity extends AbstractEntity implements CustomerModel {
 
-    @Column(name = "TOKEN_ID", unique = true)
+    @Column(name = "token_id", unique = true)
     private String tokenId;
 
     @Email
-    @Column(name = "EMAIL", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "AUTHENTICATED_AT")
+    @Column(name = "authenticated_at")
     private LocalDateTime authenticatedAt;
 
-    @Column(name = "FIRST_NAME")
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "LAST_NAME")
+    @Column(name = "last_name")
     private String lastName;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "ADDRESS_ID", referencedColumnName = "id")
+    @JoinColumn(name = "address_id", referencedColumnName = "id", columnDefinition = "uuid")
     private AddressEntity address;
 
-    @Column(name = "MOBILE_PHONE_NUMBER")
+    @Column(name = "mobile_phone_number")
     private String mobilePhoneNumber;
 
-    @Column(name = "BUSINESS_PHONE_NUMBER")
+    @Column(name = "business_phone_number")
     private String businessPhoneNumber;
 
-    @Column(name = "PRIVATE_PHONE_NUMBER")
+    @Column(name = "private_phone_number")
     private String privatePhoneNumber;
 
     @OneToMany(mappedBy = "user")

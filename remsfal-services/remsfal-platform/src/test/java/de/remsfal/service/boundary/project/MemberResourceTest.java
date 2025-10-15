@@ -34,7 +34,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
-            .get(BASE_PATH, TestData.PROJECT_ID)
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -47,7 +47,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"LESSOR\"}")
-            .post(BASE_PATH, TestData.PROJECT_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -60,7 +60,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{\"role\":\"LESSOR\"}")
-            .patch(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .patch(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -71,7 +71,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
-            .delete(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .delete(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -82,7 +82,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
-            .delete(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .delete(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
@@ -95,7 +95,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"LESSOR\"}")
-            .patch(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .patch(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
@@ -106,12 +106,12 @@ class MemberResourceTest extends AbstractResourceTest {
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
-            .get(BASE_PATH, TestData.PROJECT_ID)
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("members.size()", Matchers.equalTo(1))
-            .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1))
+            .and().body("members.id", Matchers.hasItem(TestData.USER_ID_1.toString()))
             .and().body("members.email", Matchers.hasItem(TestData.USER_EMAIL_1))
             .and().body("members.active", Matchers.hasItem(true))
             .and().body("members.role", Matchers.hasItem("MANAGER"));
@@ -125,7 +125,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"email\":\"newUser@example.org\",  \"role\":\"STAFF\"}")
-            .post(BASE_PATH, TestData.PROJECT_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -143,11 +143,11 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"LESSOR\"}")
-            .post(BASE_PATH, TestData.PROJECT_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(TestData.USER_ID_2))
+            .and().body("id", Matchers.equalTo(TestData.USER_ID_2.toString()))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2))
             .and().body("active", Matchers.is(true))
             .and().body("role", Matchers.equalTo("LESSOR"));
@@ -161,11 +161,11 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{\"role\":\"PROPRIETOR\"}")
-            .patch(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .patch(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(TestData.USER_ID_1))
+            .and().body("id", Matchers.equalTo(TestData.USER_ID_1.toString()))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_1))
             .and().body("active", Matchers.is(true))
             .and().body("role", Matchers.equalTo("PROPRIETOR"));
@@ -179,7 +179,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"PROPRIETOR\"}")
-            .post(BASE_PATH, TestData.PROJECT_ID)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode());
 
@@ -187,7 +187,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
-            .delete(MEMBER_PATH, TestData.PROJECT_ID, TestData.USER_ID_1)
+            .delete(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
     }
@@ -202,7 +202,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-                .and().body("id", Matchers.equalTo(TestData.USER_ID))
+                .and().body("id", Matchers.equalTo(TestData.USER_ID.toString()))
                 .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
                 .and().body("userRoles.size()", Matchers.equalTo(1))
                 .and().body("userRoles[0]", Matchers.equalTo("MANAGER"));

@@ -3,6 +3,7 @@ package de.remsfal.service.entity.dto.superclass;
 import de.remsfal.core.model.project.RentalUnitModel;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -13,23 +14,23 @@ import jakarta.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class RentalUnitEntity extends AbstractEntity implements RentalUnitModel {
 
-    @Column(name = "PROJECT_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String projectId;
+    @Column(name = "project_id", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID projectId;
 
-    @Column(name = "TITLE", nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "LOCATION")
+    @Column(name = "location")
     private String location;
 
-    @Column(name = "DESCRIPTION")
+    @Column(name = "description")
     private String description;
 
-    public String getProjectId() {
+    public UUID getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(final String projectId) {
+    public void setProjectId(final UUID projectId) {
         this.projectId = projectId;
     }
 

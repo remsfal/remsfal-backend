@@ -33,11 +33,11 @@ class UserControllerTest extends AbstractServiceTest {
     void createUser_SUCCESS_simpleUserCreated() {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user);
-        assertEquals(36, user.getId().length());
+        assertEquals(36, user.getId().toString().length());
         assertEquals(TestData.USER_EMAIL, user.getEmail());
 
-        final String userId = entityManager
-            .createQuery("SELECT user.id FROM UserEntity user where user.email = :email", String.class)
+        final UUID userId = entityManager
+            .createQuery("SELECT user.id FROM UserEntity user where user.email = :email", UUID.class)
             .setParameter("email", TestData.USER_EMAIL)
             .getSingleResult();
         assertEquals(user.getId(), userId);
@@ -54,9 +54,9 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void getUser_SUCCESS_retrieveUser() {
-        final String userId = UUID.randomUUID().toString();
+        final UUID userId = UUID.randomUUID();
         runInTransaction(() -> entityManager
-            .createNativeQuery("INSERT INTO USER (ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?)")
+            .createNativeQuery("INSERT INTO users (id, email, first_name, last_name) VALUES (?,?,?,?)")
             .setParameter(1, userId)
             .setParameter(2, TestData.USER_EMAIL)
             .setParameter(3, TestData.USER_FIRST_NAME)
@@ -75,7 +75,7 @@ class UserControllerTest extends AbstractServiceTest {
     void getUser_FAILED_userNotExist() {
         assertThrows(
             NotFoundException.class,
-            () -> controller.getUser("any-strange-id"));
+            () -> controller.getUser(UUID.randomUUID()));
     }
 
     @Test
@@ -142,8 +142,8 @@ class UserControllerTest extends AbstractServiceTest {
         assertEquals(user.getId(), updatedUser.getId());
         assertEquals("Berliner Str. 101", updatedUser.getAddress().getStreet());
 
-        final String addressId = entityManager
-            .createQuery("SELECT user.address.id FROM UserEntity user where user.id = :userId", String.class)
+        final UUID addressId = entityManager
+            .createQuery("SELECT user.address.id FROM UserEntity user where user.id = :userId", UUID.class)
             .setParameter("userId", user.getId())
             .getSingleResult();
         assertNotNull(addressId);

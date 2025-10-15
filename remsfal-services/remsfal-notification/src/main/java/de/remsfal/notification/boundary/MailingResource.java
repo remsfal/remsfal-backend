@@ -27,8 +27,8 @@ public class MailingResource {
     public Response sendTestEmails(@QueryParam("to") @NotNull @Email final String to) {
         final UserModel recipient = new UserModel() {
             @Override
-            public String getId() {
-                return UUID.randomUUID().toString();
+            public UUID getId() {
+                return UUID.randomUUID();
             }
             @Override
             public String getEmail() {

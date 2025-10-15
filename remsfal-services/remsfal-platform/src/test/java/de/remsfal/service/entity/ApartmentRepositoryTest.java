@@ -1,6 +1,5 @@
 package de.remsfal.service.entity;
 
-import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.BuildingController;
 import de.remsfal.service.control.PropertyController;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,14 +30,14 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     @Inject
     PropertyController propertyController;
 
-    String propertyId;
+    UUID propertyId;
 
-    String buildingId;
+    UUID buildingId;
 
     @BeforeEach
     public void setupApartments() {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?, ?)")
+                .createNativeQuery("INSERT INTO projects (id, title) VALUES (?, ?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
@@ -54,7 +54,7 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
                 .getId();
         assertNotNull(buildingId);
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO APARTMENT (ID, PROJECT_ID, BUILDING_ID, TITLE) VALUES (?, ?, ?, ?)")
+                .createNativeQuery("INSERT INTO apartments (id, project_id, building_id, title) VALUES (?, ?, ?, ?)")
                 .setParameter(1, TestData.APARTMENT_ID)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, buildingId)
@@ -65,11 +65,10 @@ class ApartmentRepositoryTest extends AbstractServiceTest {
     @Test
     void testFindByIds_and_hashcode() {
         final Optional<ApartmentEntity> found = repository.findByIds(TestData.PROJECT_ID, TestData.APARTMENT_ID);
-        final ApartmentModel apartment = TestData.apartmentBuilder().build();
         assertTrue(found.isPresent());
         assertTrue(found.hashCode() != 0);
-        assertEquals(apartment.getId(), found.get().getId());
-        assertEquals(apartment.getTitle(), found.get().getTitle());
+        assertEquals(TestData.APARTMENT_ID, found.get().getId());
+        assertEquals(TestData.APARTMENT_TITLE, found.get().getTitle());
     }
 
     @Test

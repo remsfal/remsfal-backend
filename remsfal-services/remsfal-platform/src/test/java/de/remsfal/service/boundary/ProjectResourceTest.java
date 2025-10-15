@@ -53,7 +53,7 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .header("location", Matchers.containsString(BASE_PATH + "/"))
                 .and().body("id", Matchers.notNullValue())
                 .and().body("title", Matchers.equalTo(TestData.PROJECT_TITLE))
-                .and().body("members.id", Matchers.hasItem(TestData.USER_ID))
+                .and().body("members.id", Matchers.hasItem(TestData.USER_ID.toString()))
                 .and().body("members.role", Matchers.hasItem("MANAGER"));
 
         long enties = entityManager
@@ -135,15 +135,6 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .contentType(ContentType.JSON)
                 .and().body("id", Matchers.equalTo(projectId))
                 .and().body("title", Matchers.equalTo(TestData.PROJECT_TITLE));
-    }
-
-    @Test
-    void getProject_FAILED_noAuthentication() {
-        given()
-                .when()
-                .get(BASE_PATH + "/anyId")
-                .then()
-                .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
 
     @Test

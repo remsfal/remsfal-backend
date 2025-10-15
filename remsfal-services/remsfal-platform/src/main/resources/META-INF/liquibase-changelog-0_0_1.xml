@@ -9,87 +9,87 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.1-init" author="alexander.stanik@htw-berlin.de">
-        <createIndex tableName="DATABASECHANGELOG" indexName="IDX_DATE_ORDER_EXECUTED">
+        <createIndex tableName="DATABASECHANGELOG" indexName="idx_date_order_executed">
             <column name="DATEEXECUTED"/>
             <column name="ORDEREXECUTED"/>
         </createIndex>
-        <addPrimaryKey tableName="DATABASECHANGELOG" constraintName="PK_DATABASECHANGELOG"
+        <addPrimaryKey tableName="DATABASECHANGELOG" constraintName="pk_databasechangelog"
                 columnNames="ID,AUTHOR,FILENAME"/>
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.1-user" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="ADDRESS">
-            <column name="ID" type="char(36)">
+        <createTable tableName="addresses">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="STREET" type="varchar(255)">
+            <column name="street" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="CITY" type="varchar(255)">
+            <column name="city" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="ZIP" type="varchar(10)">
+            <column name="zip" type="varchar(10)">
                 <constraints nullable="false" />
             </column>
-            <column name="PROVINCE" type="varchar(255)">
+            <column name="province" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="COUNTRY" type="char(2)">
+            <column name="country" type="varchar(2)">
                 <constraints nullable="false" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <createIndex indexName="IDX_STREET_LOOKUP" tableName="ADDRESS">
-            <column name="STREET" type="varchar(255)" />
+        <createIndex indexName="idx_address_street_lookup" tableName="addresses">
+            <column name="street" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ZIP_LOOKUP" tableName="ADDRESS">
-            <column name="ZIP" type="varchar(255)" />
+        <createIndex indexName="idx_address_zip_lookup" tableName="addresses">
+            <column name="zip" type="varchar(255)" />
         </createIndex>
 
-        <createTable tableName="USER">
-            <column name="ID" type="char(36)">
+        <createTable tableName="users">
+            <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="TOKEN_ID" type="varchar(255)" />
-            <column name="EMAIL" type="varchar(255)">
+            <column name="token_id" type="varchar(255)" />
+            <column name="email" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="AUTHENTICATED_AT" type="timestamp">
+            <column name="authenticated_at" type="timestamp">
                 <constraints nullable="true" />
             </column>
-            <column name="FIRST_NAME" type="varchar(255)" />
-            <column name="LAST_NAME" type="varchar(255)" />
-            <column name="ADDRESS_ID" type="char(36)" />
-            <column name="MOBILE_PHONE_NUMBER" type="varchar(15)" remarks="According to E.164" />
-            <column name="BUSINESS_PHONE_NUMBER" type="varchar(15)" remarks="According to E.164"/>
-            <column name="PRIVATE_PHONE_NUMBER" type="varchar(15)" remarks="According to E.164"/>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="first_name" type="varchar(255)" />
+            <column name="last_name" type="varchar(255)" />
+            <column name="address_id" type="uuid" />
+            <column name="mobile_phone_number" type="varchar(15)" remarks="According to E.164" />
+            <column name="business_phone_number" type="varchar(15)" remarks="According to E.164"/>
+            <column name="private_phone_number" type="varchar(15)" remarks="According to E.164"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="USER" columnNames="EMAIL" constraintName="UNIQUE_EMAIL" />
-        <addUniqueConstraint tableName="USER" columnNames="TOKEN_ID" constraintName="UNIQUE_TOKEN_ID" />
+        <addUniqueConstraint tableName="users" columnNames="email" constraintName="unique_email" />
+        <addUniqueConstraint tableName="users" columnNames="token_id" constraintName="unique_token_id" />
 
-        <createIndex indexName="IDX_EMAIL_LOOKUP" tableName="USER">
-            <column name="EMAIL" type="varchar(255)" />
+        <createIndex indexName="idx_email_lookup" tableName="users">
+            <column name="email" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_TOKEN_ID_LOOKUP" tableName="USER">
-            <column name="TOKEN_ID" type="varchar(255)" />
+        <createIndex indexName="idx_token_id_lookup" tableName="users">
+            <column name="token_id" type="varchar(255)" />
         </createIndex>
 
-        <addForeignKeyConstraint constraintName="FK_ADDRESS_ID"
-                                 baseTableName="USER" baseColumnNames="ADDRESS_ID"
-                                 referencedTableName="ADDRESS" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_address_id"
+                                 baseTableName="users" baseColumnNames="address_id"
+                                 referencedTableName="addresses" referencedColumnNames="id"
                                  onDelete="SET NULL" onUpdate="RESTRICT" />
     </changeSet>
 

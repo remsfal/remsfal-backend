@@ -3,6 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.test.TestData;
+
+import java.util.UUID;
+
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -29,7 +32,7 @@ class ApartmentControllerTest extends AbstractServiceTest {
     @BeforeEach
     void setupTestProjects() {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
                 .setParameter(1, TestData.PROJECT_ID_1)
                 .setParameter(2, TestData.PROJECT_TITLE_1)
                 .executeUpdate());
@@ -38,12 +41,12 @@ class ApartmentControllerTest extends AbstractServiceTest {
 
     @Test
     void createApartment_SUCCESS_getApartment() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
                 .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
-        final String buildingId = buildingController
+        final UUID buildingId = buildingController
                 .createBuilding(TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
@@ -63,8 +66,8 @@ class ApartmentControllerTest extends AbstractServiceTest {
         assertEquals(apartment.getLivingSpace(), result.getLivingSpace());
         assertEquals(apartment.getUsableSpace(), result.getUsableSpace());
 
-        final String apartmentId = entityManager
-                .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", String.class)
+        final UUID apartmentId = entityManager
+                .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", UUID.class)
                 .setParameter("title", TestData.APARTMENT_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), apartmentId);
@@ -77,12 +80,12 @@ class ApartmentControllerTest extends AbstractServiceTest {
 
     @Test
     void createApartment_SUCCESS_deleteApartment() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
                 .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
-        final String buildingId = buildingController
+        final UUID buildingId = buildingController
                 .createBuilding(TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
@@ -102,8 +105,8 @@ class ApartmentControllerTest extends AbstractServiceTest {
         assertEquals(apartment.getLivingSpace(), result.getLivingSpace());
         assertEquals(apartment.getUsableSpace(), result.getUsableSpace());
 
-        final String apartmentId = entityManager
-                .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", String.class)
+        final UUID apartmentId = entityManager
+                .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", UUID.class)
                 .setParameter("title", TestData.APARTMENT_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), apartmentId);
@@ -114,12 +117,12 @@ class ApartmentControllerTest extends AbstractServiceTest {
 
     @Test
     void createApartment_SUCCESS_updateApartment() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
                 .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
-        final String buildingId = buildingController
+        final UUID buildingId = buildingController
                 .createBuilding(TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
@@ -139,8 +142,8 @@ class ApartmentControllerTest extends AbstractServiceTest {
         assertEquals(apartment.getLivingSpace(), result.getLivingSpace());
         assertEquals(apartment.getUsableSpace(), result.getUsableSpace());
 
-        final String apartmentId = entityManager
-                .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", String.class)
+        final UUID apartmentId = entityManager
+                .createQuery("SELECT a.id FROM ApartmentEntity a where a.title = :title", UUID.class)
                 .setParameter("title", TestData.APARTMENT_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), apartmentId);

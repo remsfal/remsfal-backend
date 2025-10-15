@@ -46,7 +46,7 @@ class NotificationConsumerTest extends AbstractKafkaTest {
     @Test
     void testConsumeUserNotification_NewRegistration() {
         UserJson user = ImmutableUserJson.builder()
-                .id(UUID.randomUUID().toString())
+                .id(UUID.randomUUID())
                 .email("test@example.com")
                 .firstName("Test")
                 .lastName("Consumer")
@@ -74,7 +74,7 @@ class NotificationConsumerTest extends AbstractKafkaTest {
     @Test
     void testConsumeUserNotification_NewMembership() {
         UserJson user = ImmutableUserJson.builder()
-                .id(UUID.randomUUID().toString())
+                .id(UUID.randomUUID())
                 .email("test2@example.com")
                 .firstName("Test")
                 .lastName("Membership")

@@ -1,7 +1,6 @@
 package de.remsfal.core.api.project;
 
 import de.remsfal.core.validation.PatchValidation;
-import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
@@ -16,6 +15,9 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -47,9 +49,9 @@ public interface ApartmentEndpoint {
     )
     Response createApartment(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the building", required = true)
-        @PathParam("buildingId") @NotNull @UUID String buildingId,
+        @PathParam("buildingId") @NotNull UUID buildingId,
         @Parameter(description = "Apartment information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) ApartmentJson apartment
     );
@@ -63,9 +65,9 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
     ApartmentJson getApartment(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the apartment", required = true)
-        @PathParam("apartmentId") @NotNull @UUID String apartmentId
+        @PathParam("apartmentId") @NotNull UUID apartmentId
     );
 
     @PATCH
@@ -78,9 +80,9 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "404", description = "The apartment does not exist")
     ApartmentJson updateApartment(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the apartment", required = true)
-        @PathParam("apartmentId") @NotNull @UUID String apartmentId,
+        @PathParam("apartmentId") @NotNull UUID apartmentId,
         @Parameter(description = "Apartment object with information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) ApartmentJson apartment
     );
@@ -92,9 +94,9 @@ public interface ApartmentEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteApartment(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the apartment", required = true)
-        @PathParam("apartmentId") @NotNull @UUID String apartmentId
+        @PathParam("apartmentId") @NotNull UUID apartmentId
     );
 
 }

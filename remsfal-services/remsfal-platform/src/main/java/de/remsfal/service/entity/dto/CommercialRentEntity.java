@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.persistence.Column;
@@ -11,17 +12,17 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "COMMERCIAL_RENT")
+@Table(name = "commercial_rents")
 public class CommercialRentEntity extends RentEntity {
 
-    @Column(name = "COMMERCIAL_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String commercialId;
+    @Column(name = "commercial_id", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID commercialId;
 
-    public String getCommercialId() {
+    public UUID getCommercialId() {
         return commercialId;
     }
 
-    public void setCommercialId(final String commercialId) {
+    public void setCommercialId(final UUID commercialId) {
         this.commercialId = commercialId;
     }
 

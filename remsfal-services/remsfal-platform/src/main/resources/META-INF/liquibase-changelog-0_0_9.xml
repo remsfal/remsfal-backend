@@ -9,14 +9,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.1.0-commercial" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="COMMERCIAL">
-            <column name="ID" type="char(36)">
+        <createTable tableName="commercials">
+            <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="PROJECT_ID" type="char(36)">
+            <column name="PROJECT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="BUILDING_ID" type="char(36)">
+            <column name="BUILDING_ID" type="uuid">
                 <constraints nullable="false" />
              </column>
             <column name="TITLE" type="varchar(255)">
@@ -37,35 +37,35 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_PROJECT_ID"
-            baseTableName="COMMERCIAL" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECT" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_project_id"
+            baseTableName="commercials" baseColumnNames="PROJECT_ID"
+            referencedTableName="projects" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_BUILDING_ID"
-            baseTableName="COMMERCIAL" baseColumnNames="BUILDING_ID"
-            referencedTableName="BUILDING" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_building_id"
+            baseTableName="commercials" baseColumnNames="BUILDING_ID"
+            referencedTableName="buildings" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_PROJECT_FK" tableName="COMMERCIAL">
-            <column name="PROJECT_ID" type="char(36)" />
+        <createIndex indexName="idx_commercial_project_fk" tableName="commercials">
+            <column name="PROJECT_ID" type="uuid" />
         </createIndex>
 
-        <createIndex indexName="IDX_BUILDING_FK" tableName="COMMERCIAL">
-            <column name="BUILDING_ID" type="char(36)" />
+        <createIndex indexName="idx_commercial_building_fk" tableName="commercials">
+            <column name="BUILDING_ID" type="uuid" />
         </createIndex>
 
-        <createTable tableName="COMMERCIAL_RENT">
-            <column name="TENANCY_ID" type="char(36)">
+        <createTable tableName="commercial_rents">
+            <column name="TENANCY_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="COMMERCIAL_ID" type="char(36)">
+            <column name="COMMERCIAL_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="FIRST_PAYMENT" type="date" />
             <column name="LAST_PAYMENT" type="date" />
-            <column name="BILLING_CYCLE" type="ENUM('WEEKLY', 'MONTHLY', 'YEARLY')" defaultValue="MONTHLY">
-                <constraints nullable="false" />
+            <column name="BILLING_CYCLE" type="varchar(20)" defaultValue="MONTHLY">
+                <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
             </column>
             <column name="BASIC_RENT" type="decimal(10, 2)" />
             <column name="OPERATING_COSTS_PREPAYMENT" type="decimal(10, 2)" />
@@ -78,18 +78,18 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_RENT_TENANCY_ID"
-            baseTableName="COMMERCIAL_RENT" baseColumnNames="TENANCY_ID"
-            referencedTableName="TENANCY" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_rent_tenancy_id"
+            baseTableName="commercial_rents" baseColumnNames="TENANCY_ID"
+            referencedTableName="tenancies" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <addForeignKeyConstraint constraintName="FK_COMMERCIAL_RENT_COMMERCIAL_ID"
-            baseTableName="COMMERCIAL_RENT" baseColumnNames="COMMERCIAL_ID"
-            referencedTableName="COMMERCIAL" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_rent_commercial_id"
+            baseTableName="commercial_rents" baseColumnNames="COMMERCIAL_ID"
+            referencedTableName="commercials" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="IDX_TENANCY_FK" tableName="COMMERCIAL_RENT">
-            <column name="TENANCY_ID" type="char(36)" />
+        <createIndex indexName="idx_commercial_rent_tenancy_fk" tableName="commercial_rents">
+            <column name="TENANCY_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

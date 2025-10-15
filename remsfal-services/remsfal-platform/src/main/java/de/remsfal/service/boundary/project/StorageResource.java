@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -21,10 +22,10 @@ public class StorageResource extends ProjectSubResource implements StorageEndpoi
     StorageController controller;
 
     @Override
-    public Response createStorage(final String projectId, final String buildingId, final StorageJson storage) {
+    public Response createStorage(final UUID projectId, final UUID buildingId, final StorageJson storage) {
         checkWritePermissions(projectId);
         final StorageModel model = controller.createStorage(projectId, buildingId, storage);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(StorageJson.valueOf(model))
@@ -32,21 +33,21 @@ public class StorageResource extends ProjectSubResource implements StorageEndpoi
     }
 
     @Override
-    public StorageJson getStorage(final String projectId, final String storageId) {
+    public StorageJson getStorage(final UUID projectId, final UUID storageId) {
         checkReadPermissions(projectId);
         final StorageModel model = controller.getStorage(projectId, storageId);
         return StorageJson.valueOf(model);
     }
 
     @Override
-    public StorageJson updateStorage(final String projectId, final String storageId, final StorageJson storage) {
+    public StorageJson updateStorage(final UUID projectId, final UUID storageId, final StorageJson storage) {
         checkWritePermissions(projectId);
         final StorageModel model = controller.updateStorage(projectId, storageId, storage);
         return StorageJson.valueOf(model);
     }
 
     @Override
-    public void deleteStorage(final String projectId, final String storageId) {
+    public void deleteStorage(final UUID projectId, final UUID storageId) {
         checkWritePermissions(projectId);
         controller.deleteStorage(projectId, storageId);
     }

@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
@@ -13,24 +14,24 @@ import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "STORAGE")
+@Table(name = "storages")
 public class StorageEntity extends RentalUnitEntity implements StorageModel {
 
-    @Column(name = "BUILDING_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String buildingId;
+    @Column(name = "building_id", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID buildingId;
 
-    @Column(name = "USABLE_SPACE", columnDefinition = "decimal")
+    @Column(name = "usable_space", columnDefinition = "numeric(10,2)")
     private Float usableSpace;
 
-    @Column(name = "HEATING_SPACE", columnDefinition = "decimal")
+    @Column(name = "heating_space", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
 
-    public String getBuildingId() {
+    public UUID getBuildingId() {
         return buildingId;
     }
 
-    public void setBuildingId(String buildingId) {
+    public void setBuildingId(final UUID buildingId) {
         this.buildingId = buildingId;
     }
 
@@ -39,7 +40,7 @@ public class StorageEntity extends RentalUnitEntity implements StorageModel {
         return usableSpace;
     }
 
-    public void setUsableSpace(Float usableSpace) {
+    public void setUsableSpace(final Float usableSpace) {
         this.usableSpace = usableSpace;
     }
 
@@ -48,7 +49,7 @@ public class StorageEntity extends RentalUnitEntity implements StorageModel {
         return heatingSpace;
     }
 
-    public void setHeatingSpace(Float heatingSpace) {
+    public void setHeatingSpace(final Float heatingSpace) {
         this.heatingSpace = heatingSpace;
     }
 

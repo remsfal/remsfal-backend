@@ -1,7 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.tenancy.TenancyItemJson;
-import de.remsfal.core.json.tenancy.TenancyJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.TenancyModel;
 import de.remsfal.service.entity.dao.TenancyRepository;
@@ -13,6 +11,7 @@ import jakarta.transaction.Transactional.TxType;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.jboss.logging.Logger;
 
@@ -33,7 +32,7 @@ public class TenancyController {
         return tenancyRepository.findTenanciesByTenant(tenant.getId());
     }
 
-    public TenancyEntity getTenancy(final UserModel tenant, final String tenancyId) {
+    public TenancyEntity getTenancy(final UserModel tenant, final UUID tenancyId) {
         logger.infov("Retrieving a tenancy (tenantId = {0}, tenancyId = {1})",
             tenant.getId(), tenancyId);
         return tenancyRepository.findTenancyByTenant(tenant.getId(), tenancyId)
@@ -41,7 +40,7 @@ public class TenancyController {
     }
 
     @Transactional(TxType.MANDATORY)
-    public TenancyEntity updateTenancy(final String projectId, TenancyEntity entity, final TenancyModel tenancy) {
+    public TenancyEntity updateTenancy(final UUID projectId, TenancyEntity entity, final TenancyModel tenancy) {
         if(entity == null) {
             entity = new TenancyEntity();
             entity.generateId();

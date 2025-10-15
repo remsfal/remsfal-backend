@@ -15,7 +15,7 @@ public class JacksonConfig implements ObjectMapperCustomizer {
     @Override
     public void customize(final ObjectMapper objectMapper) {
         // Ignore all null-values for serialization
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
     }
 
 }

@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <quarkus-minio.version>3.8.5</quarkus-minio.version>
+        <quarkus-minio.version>3.8.6</quarkus-minio.version>
         <quarkus-cassandra.version>3.4.10</quarkus-cassandra.version>
     </properties>
 
@@ -49,6 +49,17 @@
             <groupId>io.quarkiverse.jnosql</groupId>
             <artifactId>quarkus-jnosql-cassandra</artifactId>
             <version>${quarkus-cassandra.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.liquibase.ext</groupId>
+            <artifactId>liquibase-cassandra</artifactId>
+            <version>5.0.1</version>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.projectlombok</groupId>
+            		<artifactId>lombok</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <!-- TEST dependencies -->

@@ -23,8 +23,8 @@ class ContractorRepositoryTest extends AbstractServiceTest {
     ContractorRepository repository;
 
     // Test data for contractors
-    private static final String CONTRACTOR_ID_1 = "c9440c43-b5c0-4951-9c29-000000000001";
-    private static final String CONTRACTOR_ID_2 = "c9440c43-b5c0-4951-9c29-000000000002";
+    private static final UUID CONTRACTOR_ID_1 = UUID.fromString("c9440c43-b5c0-4951-9c29-000000000001");
+    private static final UUID CONTRACTOR_ID_2 = UUID.fromString("c9440c43-b5c0-4951-9c29-000000000002");
     private static final String COMPANY_NAME_1 = "Test Contractor 1";
     private static final String COMPANY_NAME_2 = "Test Contractor 2";
     private static final String PHONE_1 = "+491234567890";
@@ -38,7 +38,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
     protected void setupTestData() {
         // Insert test users and projects
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO USER (ID, TOKEN_ID, EMAIL, FIRST_NAME, LAST_NAME) VALUES (?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO users (id, token_id, email, first_name, last_name) VALUES (?,?,?,?,?)")
                 .setParameter(1, TestData.USER_ID)
                 .setParameter(2, TestData.USER_TOKEN)
                 .setParameter(3, TestData.USER_EMAIL)
@@ -47,13 +47,13 @@ class ContractorRepositoryTest extends AbstractServiceTest {
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT_MEMBERSHIP (PROJECT_ID, USER_ID, MEMBER_ROLE) VALUES (?,?,?)")
+                .createNativeQuery("INSERT INTO project_memberships (project_id, user_id, member_role) VALUES (?,?,?)")
                 .setParameter(1, TestData.PROJECT_ID)
                 .setParameter(2, TestData.USER_ID)
                 .setParameter(3, "MANAGER")
@@ -61,7 +61,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
         // Insert test contractors
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO CONTRACTOR (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO contractors (id, project_id, company_name, phone, email, trade) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_1)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_1)
@@ -71,7 +71,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO CONTRACTOR (ID, PROJECT_ID, COMPANY_NAME, PHONE, EMAIL, TRADE) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO contractors (id, project_id, company_name, phone, email, trade) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_2)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_2)
@@ -129,7 +129,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
     @Test
     void findByProjectIdAndContractorId_FAILED_contractorNotFound() {
-        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, UUID.randomUUID().toString());
+        Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, UUID.randomUUID());
         assertFalse(optionalContractor.isPresent());
     }
 

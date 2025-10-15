@@ -21,10 +21,10 @@ import de.remsfal.core.model.UserModel;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "PROJECT")
+@Table(name = "projects")
 public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
-    @Column(name = "TITLE")
+    @Column(name = "title")
     private String title;
     
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import de.remsfal.core.model.project.RentModel;
 import jakarta.persistence.Column;
@@ -20,34 +21,34 @@ import jakarta.persistence.MappedSuperclass;
 public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Id
-    @Column(name = "TENANCY_ID", columnDefinition = "char", nullable = false, updatable = false, length = 36)
-    private String tenancyId;
+    @Column(name = "tenancy_id", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID tenancyId;
 
     @Id
-    @Column(name = "FIRST_PAYMENT", columnDefinition = "date", nullable = false)
+    @Column(name = "first_payment", columnDefinition = "date", nullable = false)
     private LocalDate firstPaymentDate;
 
-    @Column(name = "LAST_PAYMENT", columnDefinition = "date")
+    @Column(name = "last_payment", columnDefinition = "date")
     private LocalDate lastPaymentDate;
 
-    @Column(name = "BILLING_CYCLE", nullable = false)
+    @Column(name = "billing_cycle", nullable = false)
     @Enumerated(EnumType.STRING)
     private BillingCycle billingCycle;
 
-    @Column(name = "BASIC_RENT", columnDefinition = "decimal", precision=6, scale=2)
+    @Column(name = "basic_rent", columnDefinition = "numeric(6,2)", precision=6, scale=2)
     private BigDecimal basicRent;
 
-    @Column(name = "OPERATING_COSTS_PREPAYMENT", columnDefinition = "decimal", precision=6, scale=2)
+    @Column(name = "operating_costs_prepayment", columnDefinition = "numeric(6,2)", precision=6, scale=2)
     private BigDecimal operatingCostsPrepayment;
 
-    @Column(name = "HEATING_COSTS_PREPAYMENT", columnDefinition = "decimal",  precision=6, scale=2)
+    @Column(name = "heating_costs_prepayment", columnDefinition = "numeric(6,2)",  precision=6, scale=2)
     private BigDecimal heatingCostsPrepayment;
 
-    public String getTenancyId() {
+    public UUID getTenancyId() {
         return tenancyId;
     }
 
-    public void setTenancyId(final String tenancyId) {
+    public void setTenancyId(final UUID tenancyId) {
         this.tenancyId = tenancyId;
     }
 

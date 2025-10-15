@@ -9,46 +9,46 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.2-address-validation" author="alexander.stanik@htw-berlin.de">
-        <createTable tableName="ADDRESS_VALIDATION">
-            <column name="ID" type="int" autoIncrement="true">
+        <createTable tableName="address_validations">
+            <column name="id" type="int" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="COUNTRY" type="char(2)">
+            <column name="country" type="varchar(2)">
                 <constraints nullable="false" />
             </column>
-            <column name="PROVINCE" type="varchar(255)">
+            <column name="province" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="CITY" type="varchar(255)">
+            <column name="city" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="ZIP" type="varchar(10)">
+            <column name="zip" type="varchar(10)">
                 <constraints nullable="false" />
             </column>
-            <column name="CREATED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
-            <column name="MODIFIED_AT" type="timestamp" defaultValueComputed="current_timestamp">
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="ADDRESS_VALIDATION" columnNames="COUNTRY,PROVINCE,CITY,ZIP" constraintName="UNIQUE_CITY_PER_ZIP" />
+        <addUniqueConstraint tableName="address_validations" columnNames="country,province,city,zip" constraintName="unique_city_per_zip" />
 
-        <loadData tableName="ADDRESS_VALIDATION" file="META-INF/germany_city2zip.csv" separator=";" encoding="UTF-8">
+        <loadData tableName="address_validations" file="META-INF/germany_city2zip.csv" separator=";" encoding="UTF-8">
             <column header="osm_id" type="SKIP" />
             <column header="landkreis" type="SKIP" />
-            <column name="COUNTRY" header="land" />
-            <column name="PROVINCE" header="bundesland" />
-            <column name="CITY" header="ort" />
-            <column name="ZIP" header="plz" />
+            <column name="country" header="land" />
+            <column name="province" header="bundesland" />
+            <column name="city" header="ort" />
+            <column name="zip" header="plz" />
         </loadData>
 
-        <createIndex indexName="IDX_CITY_LOOKUP" tableName="ADDRESS_VALIDATION">
-            <column name="CITY" type="varchar(255)" />
+        <createIndex indexName="idx_address_validation_city_lookup" tableName="address_validations">
+            <column name="city" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="IDX_ZIP_LOOKUP" tableName="ADDRESS_VALIDATION">
-            <column name="ZIP" type="varchar(255)" />
+        <createIndex indexName="idx_address_validation_zip_lookup" tableName="address_validations">
+            <column name="zip" type="varchar(255)" />
         </createIndex>
     </changeSet>
 

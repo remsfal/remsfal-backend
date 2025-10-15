@@ -18,23 +18,23 @@ import jakarta.persistence.Table;
 @NamedQuery(name = "AddressValidationEntity.findByParameters",
     query = "SELECT a FROM AddressValidationEntity a WHERE " +
     "a.city = :city AND a.province = :province AND a.zip = :zip AND a.country = :country")
-@Table(name = "ADDRESS_VALIDATION")
+@Table(name = "address_validations")
 public class AddressValidationEntity {
 
     @Id
-    @Column(name = "ID", nullable = false)
+    @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "CITY", nullable = false)
+    @Column(name = "city", nullable = false)
     private String city;
 
-    @Column(name = "PROVINCE", nullable = false)
+    @Column(name = "province", nullable = false)
     private String province;
 
-    @Column(name = "ZIP", nullable = false)
+    @Column(name = "zip", nullable = false)
     private String zip;
 
-    @Column(name = "COUNTRY", columnDefinition = "char", nullable = false)
+    @Column(name = "country", nullable = false)
     private String country;
 
     public String getCity() {

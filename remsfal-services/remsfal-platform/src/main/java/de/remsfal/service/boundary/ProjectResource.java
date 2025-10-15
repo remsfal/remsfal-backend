@@ -2,6 +2,7 @@ package de.remsfal.service.boundary;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
@@ -28,7 +29,7 @@ import de.remsfal.service.boundary.project.StorageResource;
 import de.remsfal.service.boundary.project.MemberResource;
 import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.boundary.project.SiteResource;
-import de.remsfal.service.boundary.project.TaskResource;
+
 import de.remsfal.service.control.ProjectController;
 
 import org.eclipse.microprofile.metrics.annotation.Timed;
@@ -75,9 +76,6 @@ public class ProjectResource implements ProjectEndpoint {
     Instance<StorageResource> storageResource;
 
     @Inject
-    Instance<TaskResource> taskResource;
-
-    @Inject
     Instance<ContractorResource> contractorResource;
 
     @Override
@@ -91,7 +89,7 @@ public class ProjectResource implements ProjectEndpoint {
     @Timed(name = "CreateProjectTimer", unit = MetricUnits.MILLISECONDS)
     public Response createProject(final ProjectJson project) {
         final ProjectModel model = controller.createProject(principal, project);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(ProjectJson.valueOf(model))
@@ -100,21 +98,21 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Override
     @Timed(name = "GetSingleProjectTimer", unit = MetricUnits.MILLISECONDS)
-    public ProjectJson getProject(final String projectId) {
+    public ProjectJson getProject(final UUID projectId) {
         final ProjectModel model = controller.getProject(principal, projectId);
         return ProjectJson.valueOf(model);
     }
 
     @Override
     @Timed(name = "UpdateProjectTimer", unit = MetricUnits.MILLISECONDS)
-    public ProjectJson updateProject(final String projectId, final ProjectJson project) {
+    public ProjectJson updateProject(final UUID projectId, final ProjectJson project) {
         final ProjectModel model = controller.updateProject(principal, projectId, project);
         return ProjectJson.valueOf(model);
     }
 
     @Override
     @Timed(name = "deleteProjectTimer", unit = MetricUnits.MILLISECONDS)
-    public void deleteProject(final String projectId) {
+    public void deleteProject(final UUID projectId) {
         controller.deleteProject(principal, projectId);
     }
 
@@ -151,11 +149,6 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public StorageResource getStorageResource() {
         return resourceContext.initResource(storageResource.get());
-    }
-
-    @Override
-    public TaskResource getTaskResource() {
-        return resourceContext.initResource(taskResource.get());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package de.remsfal.core.api.project;
 
 import de.remsfal.core.validation.PatchValidation;
-import de.remsfal.core.validation.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
@@ -15,6 +14,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
@@ -47,9 +48,9 @@ public interface StorageEndpoint {
     )
     Response createStorage(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the building", required = true)
-        @PathParam("buildingId") String buildingId,
+        @PathParam("buildingId") @NotNull UUID buildingId,
         @Parameter(description = "Storage information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) StorageJson storage
     );
@@ -63,9 +64,9 @@ public interface StorageEndpoint {
     @APIResponse(responseCode = "404", description = "The storage does not exist")
     StorageJson getStorage(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the storage", required = true)
-        @PathParam("storageId") String storageId
+        @PathParam("storageId") @NotNull UUID storageId
     );
 
     @PATCH
@@ -78,9 +79,9 @@ public interface StorageEndpoint {
     @APIResponse(responseCode = "404", description = "The storage does not exist")
     StorageJson updateStorage(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the storage", required = true)
-        @PathParam("storageId") @NotNull @UUID String storageId,
+        @PathParam("storageId") @NotNull UUID storageId,
         @Parameter(description = "Storage information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) StorageJson storage
     );
@@ -92,9 +93,9 @@ public interface StorageEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteStorage(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull @UUID String projectId,
+        @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the storage", required = true)
-        @PathParam("storageId") @NotNull @UUID String storageId
+        @PathParam("storageId") @NotNull UUID storageId
     );
 
 }

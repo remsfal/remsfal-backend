@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -21,11 +22,11 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     ApartmentController controller;
 
     @Override
-    public Response createApartment(final String projectId, final String buildingId,
+    public Response createApartment(final UUID projectId, final UUID buildingId,
         final ApartmentJson apartment) {
         checkWritePermissions(projectId);
         final ApartmentModel model = controller.createApartment(projectId, buildingId, apartment);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(ApartmentJson.valueOf(model))
@@ -33,7 +34,7 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     }
 
     @Override
-    public ApartmentJson getApartment(final String projectId, final String apartmentId) {
+    public ApartmentJson getApartment(final UUID projectId, final UUID apartmentId) {
         checkReadPermissions(projectId);
         final ApartmentModel model = controller.getApartment(projectId, apartmentId);
 
@@ -41,7 +42,7 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     }
 
     @Override
-    public ApartmentJson updateApartment(final String projectId, final String apartmentId,
+    public ApartmentJson updateApartment(final UUID projectId, final UUID apartmentId,
         final ApartmentJson apartment) {
         checkWritePermissions(projectId);
         return ApartmentJson
@@ -49,7 +50,7 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     }
 
     @Override
-    public void deleteApartment(final String projectId, final String apartmentId) {
+    public void deleteApartment(final UUID projectId, final UUID apartmentId) {
         checkWritePermissions(projectId);
         controller.deleteApartment(projectId, apartmentId);
     }

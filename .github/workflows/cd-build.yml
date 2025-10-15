@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
       - name: Verify JAR artifact exists
@@ -49,7 +49,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
       - name: Generate artifact attestation
         id: attest
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}

@@ -6,9 +6,9 @@ COPY remsfal-services/remsfal-platform/target/remsfal-service-runner.jar ./remsf
 
 EXPOSE 8080
 
-ENV DB_USERNAME=root
-ENV DB_PASSWORD=
-ENV DB_URL=jdbc:mysql://mysql:3306/REMSFAL
+ENV DB_USERNAME=remsfal
+ENV DB_PASSWORD=remsfal
+ENV DB_URL=jdbc:postgresql://postgres:5432/REMSFAL
 
 
 CMD ["java", "-jar", "remsfal-service-runner.jar"]

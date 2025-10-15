@@ -7,13 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.UUID;
+
 class ContractorJsonTest {
 
     @Test
     void testValueOf() {
         ContractorModel model = new ContractorModelEntity(
-                "c8330c43-b5c0-4951-9c24-000000000001",
-                "p7220c43-b5c0-4951-9c24-000000000002",
+                UUID.randomUUID(),
+                UUID.randomUUID(),
                 "ACME Construction",
                 "+12345678901",
                 "info@acme.com",
@@ -38,14 +40,14 @@ class ContractorJsonTest {
     }
 
     static class ContractorModelEntity implements ContractorModel {
-        private final String id;
-        private final String projectId;
+        private final UUID id;
+        private final UUID projectId;
         private final String companyName;
         private final String phone;
         private final String email;
         private final String trade;
 
-        public ContractorModelEntity(String id, String projectId, String companyName, String phone, String email, String trade) {
+        public ContractorModelEntity(UUID id, UUID projectId, String companyName, String phone, String email, String trade) {
             this.id = id;
             this.projectId = projectId;
             this.companyName = companyName;
@@ -55,12 +57,12 @@ class ContractorJsonTest {
         }
 
         @Override
-        public String getId() {
+        public UUID getId() {
             return id;
         }
 
         @Override
-        public String getProjectId() {
+        public UUID getProjectId() {
             return projectId;
         }
 

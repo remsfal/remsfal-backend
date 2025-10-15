@@ -13,6 +13,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Controller for contractor operations.
@@ -42,8 +43,8 @@ public class ContractorController {
      * @param limit the limit
      * @return the list of contractors
      */
-    public List<ContractorEntity> getContractors(final String projectId,
-                                               final Integer offset, final Integer limit) {
+    public List<ContractorEntity> getContractors(final UUID projectId,
+        final Integer offset, final Integer limit) {
         logger.infov("Retrieving contractors for project (id = {0})", projectId);
         return contractorRepository.findByProjectId(projectId, offset, limit);
     }
@@ -55,7 +56,7 @@ public class ContractorController {
      * @param projectId the project ID
      * @return the count
      */
-    public long countContractors(final UserModel user, final String projectId) {
+    public long countContractors(final UserModel user, final UUID projectId) {
         return contractorRepository.countByProjectId(projectId);
     }
 
@@ -67,10 +68,10 @@ public class ContractorController {
      * @param contractorId the contractor ID
      * @return the contractor
      */
-    public ContractorModel getContractor(final UserModel user, final String projectId, final String contractorId) {
+    public ContractorModel getContractor(final UserModel user, final UUID projectId, final UUID contractorId) {
         logger.infov("Retrieving contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         return contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
-                .orElseThrow(() -> new NotFoundException("Contractor not found"));
+            .orElseThrow(() -> new NotFoundException("Contractor not found"));
     }
 
     /**
@@ -82,12 +83,12 @@ public class ContractorController {
      * @return the created contractor
      */
     @Transactional
-    public ContractorModel createContractor(final UserModel user, final String projectId,
-                                           final ContractorModel contractor) {
+    public ContractorModel createContractor(final UserModel user, final UUID projectId,
+        final ContractorModel contractor) {
         logger.infov("Creating contractor for project (id = {0})", projectId);
 
         ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
-                .orElseThrow(() -> new NotFoundException("Project not found"));
+            .orElseThrow(() -> new NotFoundException("Project not found"));
 
         ContractorEntity entity = new ContractorEntity();
         entity.generateId();
@@ -111,12 +112,12 @@ public class ContractorController {
      * @return the updated contractor
      */
     @Transactional
-    public ContractorModel updateContractor(final UserModel user, final String projectId,
-                                           final String contractorId, final ContractorModel contractor) {
+    public ContractorModel updateContractor(final UserModel user, final UUID projectId,
+        final UUID contractorId, final ContractorModel contractor) {
         logger.infov("Updating contractor (id = {0}) for project (id = {1})", contractorId, projectId);
 
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
-                .orElseThrow(() -> new NotFoundException("Contractor not found"));
+            .orElseThrow(() -> new NotFoundException("Contractor not found"));
 
         if (contractor.getCompanyName() != null) {
             entity.setCompanyName(contractor.getCompanyName());
@@ -143,10 +144,10 @@ public class ContractorController {
      * @return true if deleted
      */
     @Transactional
-    public boolean deleteContractor(final UserModel user, final String projectId, final String contractorId) {
+    public boolean deleteContractor(final UserModel user, final UUID projectId, final UUID contractorId) {
         logger.infov("Deleting contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
-                .orElseThrow(() -> new NotFoundException("Contractor not found"));
+            .orElseThrow(() -> new NotFoundException("Contractor not found"));
         return contractorRepository.deleteById(entity.getId());
     }
 

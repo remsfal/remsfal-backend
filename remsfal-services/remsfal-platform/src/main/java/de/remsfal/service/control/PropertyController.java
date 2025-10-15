@@ -19,6 +19,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -48,7 +49,7 @@ public class PropertyController {
     StorageRepository storageRepository;
 
     @Transactional
-    public PropertyModel createProperty(final String projectId, final PropertyModel property) {
+    public PropertyModel createProperty(final UUID projectId, final PropertyModel property) {
         logger.infov("Creating a property (projectId={0})", projectId);
         PropertyEntity entity = updateProperty(property, new PropertyEntity());
         entity.generateId();
@@ -58,7 +59,7 @@ public class PropertyController {
         return getProperty(projectId, entity.getId());
     }
 
-    public PropertyModel getProperty(final String projectId, final String propertyId) {
+    public PropertyModel getProperty(final UUID projectId, final UUID propertyId) {
         logger.infov("Retrieving a property (projectId = {0}, propertyId = {1})", projectId, propertyId);
         PropertyEntity entity = propertyRepository.findByIdOptional(propertyId)
             .orElseThrow(() -> new NotFoundException("Property not exist"));
@@ -70,12 +71,12 @@ public class PropertyController {
         return entity;
     }
 
-    public long countProperties(final String projectId) {
+    public long countProperties(final UUID projectId) {
         return propertyRepository.countPropertiesByProjectId(projectId);
     }
 
     @Transactional
-    public PropertyModel updateProperty(final String projectId, final String propertyId, final PropertyModel property) {
+    public PropertyModel updateProperty(final UUID projectId, final UUID propertyId, final PropertyModel property) {
         logger.infov("Updating a property (projectId = {0}, propertyId = {1}, property={2})",
             projectId, propertyId, property);
         final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
@@ -121,12 +122,12 @@ public class PropertyController {
     }
 
     @Transactional
-    public boolean deleteProperty(final String projectId, final String propertyId) {
+    public boolean deleteProperty(final UUID projectId, final UUID propertyId) {
         logger.infov("Deleting a property (projectId={0}, propertyId={1})", projectId, propertyId);
         return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
     }
 
-    public List<RentalUnitTreeNodeJson> getPropertyTree(final String projectId) {
+    public List<RentalUnitTreeNodeJson> getPropertyTree(final UUID projectId) {
         logger.infov("Retrieving properties (projectId = {0})", projectId);
 
         // Fetch properties for the project

@@ -1,15 +1,17 @@
 package de.remsfal.core.model.ticketing;
 
+import java.util.UUID;
+
 /**
  * Represents an uploaded file in Minio.
  */
 public interface FileUploadModel {
 
-    String getSessionId();
+    UUID getSessionId();
 
-    String getMessageId();
+    UUID getMessageId();
 
-    String getSenderId();
+    UUID getSenderId();
 
     String getContentType();
 

@@ -11,12 +11,13 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Entity class for a contractor.
  */
 @Entity
-@Table(name = "CONTRACTOR")
+@Table(name = "contractors")
 @NamedQuery(name = "ContractorEntity.findByProjectId",
     query = "SELECT c FROM ContractorEntity c WHERE c.project.id = :projectId")
 @NamedQuery(name = "ContractorEntity.countByProjectId",
@@ -24,26 +25,26 @@ import java.util.Set;
 public class ContractorEntity extends AbstractEntity implements ContractorModel {
 
     @ManyToOne
-    @JoinColumn(name = "PROJECT_ID", columnDefinition = "char")
+    @JoinColumn(name = "project_id", columnDefinition = "uuid")
     private ProjectEntity project;
 
-    @Column(name = "COMPANY_NAME", nullable = false)
+    @Column(name = "company_name", nullable = false)
     private String companyName;
 
-    @Column(name = "PHONE")
+    @Column(name = "phone")
     private String phone;
 
-    @Column(name = "EMAIL")
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "TRADE")
+    @Column(name = "trade")
     private String trade;
 
     @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER)
     private Set<ContractorEmployeeEntity> employees;
 
     @Override
-    public String getProjectId() {
+    public UUID getProjectId() {
         return project != null ? project.getId() : null;
     }
 

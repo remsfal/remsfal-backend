@@ -6,31 +6,31 @@
 
     <changeSet id="1-create-user-authentication" author="gflachs">
         <!-- Create USERAUTHENTICATION Table -->
-        <createTable tableName="USERAUTHENTICATION">
-            <column name="USER_ID" type="CHAR(36)">
+        <createTable tableName="user_authentications">
+            <column name="user_id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="REFRESH_TOKEN" type="VARCHAR(255)">
+            <column name="refresh_token" type="VARCHAR(255)">
                 <constraints nullable="true"/>
             </column>
-            <column name="CREATED_AT" type="TIMESTAMP">
+            <column name="created_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="MODIFIED_AT" type="TIMESTAMP">
+            <column name="modified_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
         </createTable>
         <!-- Add Foreign Key Constraint -->
         <addForeignKeyConstraint
-                constraintName="FK_USERAUTHENTICATION_USER_ID"
-                baseTableName="USERAUTHENTICATION"
-                baseColumnNames="USER_ID"
-                referencedTableName="USER"
-                referencedColumnNames="ID"
+                constraintName="fk_user_authentication_user_id"
+                baseTableName="user_authentications"
+                baseColumnNames="user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"
                 onDelete="CASCADE"/>
 
-        <createIndex tableName="USERAUTHENTICATION" indexName="idx_user_authentication_user_id">
-            <column name="USER_ID"/>
+        <createIndex tableName="user_authentications" indexName="idx_user_authentication_user_id">
+            <column name="user_id"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>

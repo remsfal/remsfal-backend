@@ -1,15 +1,14 @@
 package de.remsfal.core.json;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import de.remsfal.core.model.ContractorEmployeeModel;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.UUID;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
@@ -19,15 +18,15 @@ import jakarta.validation.constraints.Size;
 @JsonInclude(Include.NON_NULL)
 public class ContractorEmployeeJson implements ContractorEmployeeModel {
 
-    protected String contractorId;
-    protected String userId;
+    protected UUID contractorId;
+    protected UUID userId;
     protected String responsibility;
 
-    public void setContractorId(String contractorId) {
+    public void setContractorId(UUID contractorId) {
         this.contractorId = contractorId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 
@@ -46,15 +45,12 @@ public class ContractorEmployeeJson implements ContractorEmployeeModel {
 
     @Null
     @Override
-    public String getContractorId() {
+    public UUID getContractorId() {
         return contractorId;
     }
 
-    @NotNull(groups = PostValidation.class)
-    @Null(groups = PatchValidation.class)
-    @UUID
     @Override
-    public String getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
@@ -93,7 +89,7 @@ public class ContractorEmployeeJson implements ContractorEmployeeModel {
         // Return a simple implementation of UserModel with the available user information
         return new UserModel() {
             @Override
-            public String getId() {
+            public UUID getId() {
                 return userId;
             }
 

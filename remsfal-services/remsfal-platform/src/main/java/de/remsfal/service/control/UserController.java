@@ -12,6 +12,7 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.jboss.logging.Logger;
 
@@ -74,7 +75,7 @@ public class UserController {
         }
     }
 
-    public UserEntity getUser(final String userId) {
+    public UserEntity getUser(final UUID userId) {
         logger.infov("Retrieving a user (id = {0})", userId);
         return repository.findByIdOptional(userId).orElseThrow(() -> new NotFoundException("User does not exist"));
     }
@@ -101,7 +102,7 @@ public class UserController {
     }
 
     @Transactional
-    public CustomerModel updateUser(final String userId, final CustomerModel user) {
+    public CustomerModel updateUser(final UUID userId, final CustomerModel user) {
         logger.infov("Updating a user ({0})", user);
         final UserEntity entity = repository.findByIdOptional(userId)
             .orElseThrow(() -> new NotFoundException("User not exist"));
@@ -129,7 +130,7 @@ public class UserController {
     
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
         logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})",
-                event.getGoogleId(), event.getEmail());
+            event.getGoogleId(), event.getEmail());
         try {
             repository.updateAuthenticatedAt(event.getGoogleId(), event.getAuthenticatedAt());
         } catch (Exception e) {
@@ -138,7 +139,7 @@ public class UserController {
     }
 
     @Transactional
-    public boolean deleteUser(final String userId) {
+    public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
         return repository.remove(userId);
     }

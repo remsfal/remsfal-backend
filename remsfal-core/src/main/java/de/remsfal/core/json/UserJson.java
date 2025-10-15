@@ -3,6 +3,7 @@ package de.remsfal.core.json;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import de.remsfal.core.validation.PostValidation;
 import jakarta.annotation.Nullable;
@@ -42,7 +43,7 @@ public abstract class UserJson implements CustomerModel {
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract String getId();
+    public abstract UUID getId();
 
     @Null
     @Nullable

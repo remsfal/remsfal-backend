@@ -3,6 +3,9 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.project.CommercialModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.test.TestData;
+
+import java.util.UUID;
+
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -26,7 +29,7 @@ class CommercialControllerTest extends AbstractServiceTest {
     @BeforeEach
     void setupTestProjects() {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO PROJECT (ID, TITLE) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
                 .setParameter(1, TestData.PROJECT_ID_1)
                 .setParameter(2, TestData.PROJECT_TITLE_1)
                 .executeUpdate());
@@ -34,12 +37,12 @@ class CommercialControllerTest extends AbstractServiceTest {
 
     @Test
     void createCommercial_SUCCESS_getCommercial() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
                 .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
-        final String buildingId = buildingController
+        final UUID buildingId = buildingController
                 .createBuilding(TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
@@ -58,8 +61,8 @@ class CommercialControllerTest extends AbstractServiceTest {
         assertEquals(commercial.getNetFloorArea(), result.getNetFloorArea());
         assertEquals(commercial.getHeatingSpace(), result.getHeatingSpace());
 
-        final String commercialId = entityManager
-                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+        final UUID commercialId = entityManager
+                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", UUID.class)
                 .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
@@ -72,12 +75,12 @@ class CommercialControllerTest extends AbstractServiceTest {
 
     @Test
     void createCommercial_SUCCESS_deleteCommercial() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
                 .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
-        final String buildingId = buildingController
+        final UUID buildingId = buildingController
                 .createBuilding(TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
@@ -90,8 +93,8 @@ class CommercialControllerTest extends AbstractServiceTest {
         final CommercialModel result = commercialController
                 .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
 
-        final String commercialId = entityManager
-                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+        final UUID commercialId = entityManager
+                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", UUID.class)
                 .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
@@ -102,12 +105,12 @@ class CommercialControllerTest extends AbstractServiceTest {
 
     @Test
     void createCommercial_SUCCESS_updateCommercial() {
-        final String propertyId = propertyController
+        final UUID propertyId = propertyController
                 .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
-        final String buildingId = buildingController
+        final UUID buildingId = buildingController
                 .createBuilding(TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
@@ -129,8 +132,8 @@ class CommercialControllerTest extends AbstractServiceTest {
         assertEquals(commercial.getTrafficArea(), result.getTrafficArea());
         assertEquals(commercial.getHeatingSpace(), result.getHeatingSpace());
 
-        final String commercialId = entityManager
-                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", String.class)
+        final UUID commercialId = entityManager
+                .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", UUID.class)
                 .setParameter("title", TestData.COMMERCIAL_TITLE)
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);

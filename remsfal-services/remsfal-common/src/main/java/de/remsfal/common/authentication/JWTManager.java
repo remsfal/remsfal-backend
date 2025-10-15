@@ -3,6 +3,8 @@ package de.remsfal.common.authentication;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
+
+import de.remsfal.core.model.UserModel;
 import io.smallrye.jwt.algorithm.SignatureAlgorithm;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.annotation.PostConstruct;
@@ -15,8 +17,8 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Default
 @ApplicationScoped
@@ -63,19 +65,17 @@ public class JWTManager {
     }
 
     /** Issue an access token using SmallRye JWT Build (platform only) */
-    public String createAccessToken(String userId, String email, String name, Boolean active,
-        Map<String, String> projectRoles, long ttlSeconds) {
+    public String createAccessToken(final UserModel user, final Map<String, String> projectRoles,
+        final Map<String, String> tenancyProjects, final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", userId);
-        claims.put("email", email);
-        claims.put("name", name);
-        claims.put("active", active);
-        claims.put("project_roles", projectRoles);
-
-        return Jwt.claims(claims)
+        return Jwt.subject(user.getId().toString())
+                .claim("email", user.getEmail())
+                .claim("name", user.getName())
+                .claim("active", user.isActive())
+                .claim("project_roles", projectRoles)
+                .claim("tenancy_projects", tenancyProjects)
                 .issuer(issuer)
                 .expiresAt(exp)
                 .jws()
@@ -86,23 +86,22 @@ public class JWTManager {
     }
 
     /** Issue a refresh token using SmallRye JWT Build (platform only) */
-    public String createRefreshToken(String userId, String email, String refreshTokenId, long ttlSeconds) {
+    public String createRefreshToken(final UUID userId, final String email,
+        final String refreshTokenId, final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", userId);
-        claims.put("email", email);
-        claims.put("refreshToken", refreshTokenId);
-
-        return Jwt.claims(claims)
-                .issuer(issuer)
-                .expiresAt(exp)
-                .jws()
-                .algorithm(SignatureAlgorithm.RS256)
-                .header("typ", "JWT")
-                .header("kid", keyId)
-                .sign(privateKey);
+        return Jwt
+            .subject(userId.toString())
+            .claim("email", email)
+            .claim("refreshToken", refreshTokenId)
+            .issuer(issuer)
+            .expiresAt(exp)
+            .jws()
+            .algorithm(SignatureAlgorithm.RS256)
+            .header("typ", "JWT")
+            .header("kid", keyId)
+            .sign(privateKey);
     }
 
     private void ensureIssuerMode() {

@@ -1,5 +1,7 @@
 package de.remsfal.service.control;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -43,7 +45,7 @@ public class NotificationController {
         notificationEmitter.send(mail);
     }
 
-    public void informUserAboutProjectMembership(final CustomerModel user, final String projectId) {
+    public void informUserAboutProjectMembership(final CustomerModel user, final UUID projectId) {
         logger.infov("Sending information about new membership (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
             .user(UserJson.valueOf(user))
