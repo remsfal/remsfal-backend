@@ -70,6 +70,12 @@ jobs:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
+      - name: Upload Debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug
+          path: .
+          retention-days: 1
 
       # --- Sonar -> PULL REQUESTS ---
       - name: SonarCloud Scan (PR decoration)
