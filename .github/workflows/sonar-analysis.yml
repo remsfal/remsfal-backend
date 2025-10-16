@@ -68,7 +68,7 @@ jobs:
           find "${{ runner.temp }}/artifacts/binaries" -type d -name target | while read src; do
             rel=$(realpath --relative-to="${{ runner.temp }}/artifacts/binaries" "$src")
             mkdir -p "$rel"
-            cp -R "$src/" "$rel/"
+            cp -R "$src/" "$rel"
           done
       - name: Upload Debug
         uses: actions/upload-artifact@v4
