@@ -40,6 +40,7 @@
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
         <jandex-plugin.version>3.5.0</jandex-plugin.version>
         <jacoco-plugin.version>0.8.14</jacoco-plugin.version>
+        <sonar-plugin.version>5.1.0.4751</sonar-plugin.version>
     </properties>
 
     <profiles>
@@ -141,6 +142,11 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
