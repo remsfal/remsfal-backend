@@ -18,6 +18,12 @@ jobs:
     if: github.actor != 'dependabot[bot]' && github.repository_owner == 'remsfal' && github.event.workflow_run.conclusion == 'success'
 
     steps:
+      - name: Checkout at triggering ref (read-only)
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
       - name: Download Coverage Report from CI Build
         uses: actions/download-artifact@v5
         with:
@@ -64,12 +70,6 @@ jobs:
             mkdir -p "$rel"
             cp -R "$src/" "$rel/"
           done
-      - name: Checkout at triggering ref (read-only)
-        uses: actions/checkout@v5
-        with:
-          repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_branch }}
-          fetch-depth: 0
       - name: Upload Debug
         uses: actions/upload-artifact@v4
         with:
