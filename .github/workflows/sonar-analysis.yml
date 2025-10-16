@@ -68,7 +68,7 @@ jobs:
           find "${{ runner.temp }}/artifacts/binaries" -type d -name target | while read src; do
             rel=$(realpath --relative-to="${{ runner.temp }}/artifacts/binaries" "$src")
             mkdir -p "$rel"
-            cp -R "$src/" "$rel"
+            cp -R "$src/"* "$rel/"
           done
       - name: Upload Debug
         uses: actions/upload-artifact@v4
@@ -83,11 +83,12 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           mvn sonar:sonar \
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
             -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }}
-            -Dsonar.pullrequest.branch=${{ github.event.workflow_run.head_branch }}
+            -Dsonar.pullrequest.branch="$HEAD_BRANCH" \
             -Dsonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }}
       # --- Sonar -> PUSH on main ---
       - name: SonarCloud Scan (main branch analysis)
