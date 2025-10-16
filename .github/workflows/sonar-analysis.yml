@@ -29,7 +29,7 @@ jobs:
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          name: coverage-${{ github.event.workflow_run.head_sha }}
+          name: coverage-${{ github.event.workflow_run.id }}
           path: ${{ runner.temp }}/artifacts/coverage
       - name: Prepare coverage directory and move jacoco.xml
         run: |
@@ -45,7 +45,7 @@ jobs:
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          name: checkstyle-${{ github.event.workflow_run.head_sha }}
+          name: checkstyle-${{ github.event.workflow_run.id }}
           path: ${{ runner.temp }}/artifacts/checkstyle
       - name: Prepare checkstyle directory and move checkstyle-result.xml
         run: |
@@ -61,7 +61,7 @@ jobs:
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          name: binaries-${{ github.event.workflow_run.head_sha }}
+          name: binaries-${{ github.event.workflow_run.id }}
           path: ${{ runner.temp }}/artifacts/binaries
       - name: Move binaries in target only
         run: |
