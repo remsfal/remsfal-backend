@@ -24,21 +24,45 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: coverage-${{ github.event.workflow_run.head_sha }}
-          path: coverage
+          path: ${{ runner.temp }}/artifacts/coverage
+      - name: Prepare coverage directory and move jacoco.xml
+        run: |
+          mkdir -p coverage
+          if [ -f "${{ runner.temp }}/artifacts/coverage/jacoco.xml" ]; then
+            mv "${{ runner.temp }}/artifacts/coverage/jacoco.xml" coverage/
+          else
+            echo "Error: jacoco.xml not found in coverage artifact." >&2
+            exit 1
+          fi
       - name: Download Checkstyle Report from CI Build
         uses: actions/download-artifact@v5
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: checkstyle-${{ github.event.workflow_run.head_sha }}
-          path: checkstyle
+          path: ${{ runner.temp }}/artifacts/checkstyle
+      - name: Prepare checkstyle directory and move checkstyle-result.xml
+        run: |
+          mkdir -p checkstyle
+          if [ -f "${{ runner.temp }}/artifacts/checkstyle/checkstyle-result.xml" ]; then
+            mv "${{ runner.temp }}/artifacts/checkstyle/checkstyle-result.xml" checkstyle/
+          else
+            echo "Error: checkstyle-result.xml not found in checkstyle artifact." >&2
+            exit 1
+          fi
       - name: Download Compiled Classes from CI Build
         uses: actions/download-artifact@v5
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: binaries-${{ github.event.workflow_run.head_sha }}
-          path: .
+          path: ${{ runner.temp }}/artifacts/binaries
+      - name: Move binaries (if required)
+        run: |
+          # Adapt this step based on artifact contents, e.g. move specific expected .class/.jar files as needed
+          # Example: mv "${{ runner.temp }}/artifacts/binaries/target" target
+          # If not needed, you may remove this step.
+          echo "Implement safe move/copy of needed binaries if applicable."
       - name: Checkout at triggering ref (read-only)
         uses: actions/checkout@v5
         with:
