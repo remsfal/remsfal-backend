@@ -24,21 +24,46 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: coverage-${{ github.event.workflow_run.head_sha }}
-          path: coverage
+          path: ${{ runner.temp }}/artifacts/coverage
+      - name: Prepare coverage directory and move jacoco.xml
+        run: |
+          mkdir -p target/site/jacoco
+          if [ -f "${{ runner.temp }}/artifacts/coverage/jacoco.xml" ]; then
+            mv "${{ runner.temp }}/artifacts/coverage/jacoco.xml" target/site/jacoco/
+          else
+            echo "Error: jacoco.xml not found in coverage artifact." >&2
+            exit 1
+          fi
       - name: Download Checkstyle Report from CI Build
         uses: actions/download-artifact@v5
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: checkstyle-${{ github.event.workflow_run.head_sha }}
-          path: checkstyle
+          path: ${{ runner.temp }}/artifacts/checkstyle
+      - name: Prepare checkstyle directory and move checkstyle-result.xml
+        run: |
+          mkdir -p checkstyle
+          if [ -f "${{ runner.temp }}/artifacts/checkstyle/checkstyle-result.xml" ]; then
+            mv "${{ runner.temp }}/artifacts/checkstyle/checkstyle-result.xml" target/
+          else
+            echo "Error: checkstyle-result.xml not found in checkstyle artifact." >&2
+            exit 1
+          fi
       - name: Download Compiled Classes from CI Build
         uses: actions/download-artifact@v5
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: binaries-${{ github.event.workflow_run.head_sha }}
-          path: .
+          path: ${{ runner.temp }}/artifacts/binaries
+      - name: Move binaries in target only
+        run: |
+          find "${{ runner.temp }}/artifacts/binaries" -type d -name target | while read src; do
+            rel=$(realpath --relative-to="${{ runner.temp }}/artifacts/binaries" "$src")
+            mkdir -p "$rel"
+            cp -R "$src/" "$rel/"
+          done
       - name: Checkout at triggering ref (read-only)
         uses: actions/checkout@v5
         with:
@@ -54,8 +79,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mvn sonar:sonar \
-            -Dsonar.coverage.jacoco.xmlReportPaths=coverage/jacoco.xml
-            -Dsonar.java.checkstyle.reportPaths=checkstyle/checkstyle-result.xml
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
             -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }}
             -Dsonar.pullrequest.branch=${{ github.event.workflow_run.head_branch }}
@@ -67,7 +90,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn sonar:sonar \
-            -Dsonar.coverage.jacoco.xmlReportPaths=coverage/jacoco.xml
-            -Dsonar.java.checkstyle.reportPaths=checkstyle/checkstyle-result.xml
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
             -Dsonar.branch.name=main
