@@ -40,6 +40,22 @@
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
         <jandex-plugin.version>3.5.0</jandex-plugin.version>
         <jacoco-plugin.version>0.8.14</jacoco-plugin.version>
+        <sonar-plugin.version>5.1.0.4751</sonar-plugin.version>
+        <sonar.organization>remsfal</sonar.organization>
+        <sonar.projectKey>remsfal_remsfal-backend</sonar.projectKey>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.java.checkstyle.reportPaths>
+            ${maven.multiModuleProjectDirectory}/target/checkstyle-result.xml
+        </sonar.java.checkstyle.reportPaths>
+        <sonar.coverage.exclusions>
+            **/de/remsfal/test/**
+        </sonar.coverage.exclusions>
+        <sonar.cpd.exclusions>
+            **/de/remsfal/service/entity/dto/**
+        </sonar.cpd.exclusions>
     </properties>
 
     <profiles>
@@ -141,6 +157,11 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
