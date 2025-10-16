@@ -41,6 +41,14 @@
         <jandex-plugin.version>3.5.0</jandex-plugin.version>
         <jacoco-plugin.version>0.8.14</jacoco-plugin.version>
         <sonar-plugin.version>5.1.0.4751</sonar-plugin.version>
+        <sonar.organization>remsfal</sonar.organization>
+        <sonar.projectKey>remsfal_remsfal-backend</sonar.projectKey>
+        <sonar.coverage.exclusions>
+            **/de/remsfal/test/**
+        </sonar.coverage.exclusions>
+        <sonar.cpd.exclusions>
+            **/de/remsfal/service/entity/dto/**
+        </sonar.cpd.exclusions>
     </properties>
 
     <profiles>
