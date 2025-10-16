@@ -45,19 +45,6 @@ jobs:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
-      - name: Build binaries lists (multi-module)
-        id: bins
-        shell: bash
-        run: |
-          set -e
-          mapfile -t mainDirs < <(find . -type d -path "*/target/classes" | sort)
-          mapfile -t testDirs < <(find . -type d -path "*/target/test-classes" | sort)
-          if [ ${#mainDirs[@]} -eq 0 ]; then
-            echo "No target/classes found!" >&2
-            exit 1
-          fi
-          printf "MAIN=%s\n" "$(IFS=, ; echo "${mainDirs[*]}")" >> "$GITHUB_OUTPUT"
-          printf "TEST=%s\n" "$(IFS=, ; echo "${testDirs[*]}")" >> "$GITHUB_OUTPUT"
 
       # --- Sonar -> PULL REQUESTS ---
       - name: SonarCloud Scan (PR decoration)
@@ -69,8 +56,6 @@ jobs:
         with:
           projectBaseDir: .
           args: >
-            -Dsonar.java.binaries=${{ steps.bins.outputs.MAIN }}
-            -Dsonar.java.test.binaries=${{ steps.bins.outputs.TEST }}
             -Dsonar.coverage.jacoco.xmlReportPaths=coverage/jacoco.xml
             -Dsonar.java.checkstyle.reportPaths=checkstyle/checkstyle-result.xml
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
@@ -86,8 +71,6 @@ jobs:
         with:
           projectBaseDir: .
           args: >
-            -Dsonar.java.binaries=${{ steps.bins.outputs.MAIN }}
-            -Dsonar.java.test.binaries=${{ steps.bins.outputs.TEST }}
             -Dsonar.coverage.jacoco.xmlReportPaths=coverage/jacoco.xml
             -Dsonar.java.checkstyle.reportPaths=checkstyle/checkstyle-result.xml
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
