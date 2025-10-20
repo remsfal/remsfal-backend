@@ -1,4 +1,4 @@
-<img src="https://remsfal.de/logo_upscaled.png" width="60%">
+<img src="https://remsfal.de/remsfal-logo.svg" width="60%">
 
 ![GitHub Release](https://img.shields.io/github/v/release/remsfal/remsfal-backend?label=latest%20release)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
