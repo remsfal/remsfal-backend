@@ -10,8 +10,6 @@ import jakarta.ws.rs.core.MediaType;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -76,14 +74,7 @@ public interface TenancyEndpoint {
     @Path("/{tenancyId}/apartments/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
-    @APIResponse(
-        responseCode = "200",
-        description = "The tenancy exists",
-        content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = TenancyJson.class)
-        )
-    )
+    @APIResponse(responseCode = "200", description = "The tenancy exists")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getApartmentTenancy(
