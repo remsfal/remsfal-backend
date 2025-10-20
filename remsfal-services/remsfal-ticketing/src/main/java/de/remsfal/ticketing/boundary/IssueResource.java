@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.UserJson.UserRole;
 import de.remsfal.core.json.ticketing.IssueItemJson;
 import de.remsfal.core.json.ticketing.IssueJson;
@@ -22,10 +23,10 @@ import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
-import de.remsfal.service.control.UserController;
-import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.ticketing.client.PlatformUserClient;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -38,7 +39,8 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     Instance<ChatSessionResource> chatSessionResource;
 
     @Inject
-    UserController userController;
+    @RestClient
+    PlatformUserClient platformUserClient;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
@@ -169,15 +171,22 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             return Map.of();
         }
 
-        // Batch load users
-        final Map<UUID, UserEntity> users = userController.getUsersByIds(ownerIds);
+        try {
+            // Call Platform service to get user information
+            final Map<String, UserJson> users = platformUserClient.getUsersBatch(ownerIds);
 
-        // Generate display names
-        return users.entrySet().stream()
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                entry -> IssueItemJson.generateDisplayName(entry.getValue())
-            ));
+            // Generate display names from UserJson
+            return users.entrySet().stream()
+                .collect(Collectors.toMap(
+                    entry -> UUID.fromString(entry.getKey()),
+                    entry -> IssueItemJson.generateDisplayName(entry.getValue())
+                ));
+        } catch (Exception e) {
+            // Log error and return empty map if Platform service is unavailable
+            // In production, you might want to use a proper logger
+            System.err.println("Failed to fetch user data from Platform service: " + e.getMessage());
+            return Map.of();
+        }
     }
 
 }

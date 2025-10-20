@@ -241,4 +241,105 @@ class UserResourceTest extends AbstractResourceTest {
             .statusCode(200)
             .body(containsString("DeleteUserTimer"));
     }
+
+    @Test
+    void getUsersBatch_FAILED_noAuthentication() {
+        given()
+            .when().get(BASE_PATH + "/batch?ids=" + TestData.USER_ID)
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getUsersBatch_SUCCESS_emptyListWhenNoIds() {
+        setupTestUsers();
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/batch")
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("size()", Matchers.equalTo(0));
+    }
+
+    @Test
+    void getUsersBatch_SUCCESS_singleUser() {
+        setupTestUsers();
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/batch?ids=" + TestData.USER_ID)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("size()", Matchers.equalTo(1))
+            .and().body("'" + TestData.USER_ID + "'.id", Matchers.equalTo(TestData.USER_ID.toString()))
+            .and().body("'" + TestData.USER_ID + "'.email", Matchers.equalTo(TestData.USER_EMAIL))
+            .and().body("'" + TestData.USER_ID + "'.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
+            .and().body("'" + TestData.USER_ID + "'.lastName", Matchers.equalTo(TestData.USER_LAST_NAME));
+    }
+
+    @Test
+    void getUsersBatch_SUCCESS_multipleUsers() {
+        setupTestUsers();
+        final java.util.UUID secondUserId = java.util.UUID.randomUUID();
+        final String secondUserEmail = "second.user@example.com";
+        final String secondUserFirstName = "Jane";
+        final String secondUserLastName = "Smith";
+
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO users (id, email, authenticated_at, first_name, last_name) VALUES (?,?,?,?,?)")
+            .setParameter(1, secondUserId)
+            .setParameter(2, secondUserEmail)
+            .setParameter(3, new Date())
+            .setParameter(4, secondUserFirstName)
+            .setParameter(5, secondUserLastName)
+            .executeUpdate());
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/batch?ids=" + TestData.USER_ID + "&ids=" + secondUserId)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("size()", Matchers.equalTo(2))
+            .and().body("'" + TestData.USER_ID + "'.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
+            .and().body("'" + secondUserId + "'.firstName", Matchers.equalTo(secondUserFirstName));
+    }
+
+    @Test
+    void getUsersBatch_SUCCESS_ignoresNonExistentUsers() {
+        setupTestUsers();
+        final java.util.UUID nonExistentUserId = java.util.UUID.randomUUID();
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/batch?ids=" + TestData.USER_ID + "&ids=" + nonExistentUserId)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("size()", Matchers.equalTo(1))
+            .and().body("'" + TestData.USER_ID + "'.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME));
+    }
+
+    @Test
+    void metricGenerated_afterGetUsersBatch() {
+        setupTestUsers();
+
+        given()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .when().get(BASE_PATH + "/batch?ids=" + TestData.USER_ID)
+            .then().statusCode(Status.OK.getStatusCode());
+
+        given()
+            .when().get("/q/metrics")
+            .then()
+            .statusCode(200)
+            .body(containsString("GetUsersBatchTimer"));
+    }
 }

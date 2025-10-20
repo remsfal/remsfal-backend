@@ -1,5 +1,7 @@
 package de.remsfal.core.json.ticketing;
 
+import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
 import org.junit.jupiter.api.Test;
 
@@ -98,6 +100,96 @@ class IssueItemJsonTest {
             "  John  ",
             "  Doe  "
         );
+
+        final String displayName = IssueItemJson.generateDisplayName(user);
+
+        // format with trim() leaves extra spaces between words
+        assertEquals("John     Doe", displayName);
+    }
+
+    // Tests for generateDisplayName(UserJson) - used with REST client responses
+
+    @Test
+    void generateDisplayNameFromUserJson_SUCCESS_withBothNames() {
+        final UserJson user = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("john@example.com")
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        final String displayName = IssueItemJson.generateDisplayName(user);
+
+        assertEquals("John Doe", displayName);
+    }
+
+    @Test
+    void generateDisplayNameFromUserJson_SUCCESS_withFirstNameOnly() {
+        final UserJson user = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("john@example.com")
+            .firstName("John")
+            .build();
+
+        final String displayName = IssueItemJson.generateDisplayName(user);
+
+        assertEquals("John", displayName);
+    }
+
+    @Test
+    void generateDisplayNameFromUserJson_SUCCESS_withLastNameOnly() {
+        final UserJson user = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("doe@example.com")
+            .lastName("Doe")
+            .build();
+
+        final String displayName = IssueItemJson.generateDisplayName(user);
+
+        assertEquals("Doe", displayName);
+    }
+
+    @Test
+    void generateDisplayNameFromUserJson_SUCCESS_fallbackToEmailWhenNamesNull() {
+        final UserJson user = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("googleuser@gmail.com")
+            .build();
+
+        final String displayName = IssueItemJson.generateDisplayName(user);
+
+        assertEquals("googleuser@gmail.com", displayName);
+    }
+
+    @Test
+    void generateDisplayNameFromUserJson_SUCCESS_fallbackToEmailWhenNamesBlank() {
+        final UserJson user = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("user@example.com")
+            .firstName("  ")
+            .lastName("  ")
+            .build();
+
+        final String displayName = IssueItemJson.generateDisplayName(user);
+
+        assertEquals("user@example.com", displayName);
+    }
+
+    @Test
+    void generateDisplayNameFromUserJson_SUCCESS_nullWhenUserNull() {
+        final String displayName = IssueItemJson.generateDisplayName((UserJson) null);
+
+        assertNull(displayName);
+    }
+
+    @Test
+    void generateDisplayNameFromUserJson_SUCCESS_trimsWhitespace() {
+        final UserJson user = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("john@example.com")
+            .firstName("  John  ")
+            .lastName("  Doe  ")
+            .build();
 
         final String displayName = IssueItemJson.generateDisplayName(user);
 

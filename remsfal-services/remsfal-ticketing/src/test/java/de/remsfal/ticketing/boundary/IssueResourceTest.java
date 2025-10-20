@@ -375,11 +375,10 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Test
     void getIssues_SUCCESS_ownerNameIsReturned() {
-        // Create an issue with owner
+        // Create an issue WITHOUT owner (ownerId must be null during creation per validation)
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-                + "\"type\":\"TASK\","
-                + "\"ownerId\":\"" + TicketingTestData.USER_ID + "\""
+                + "\"type\":\"TASK\""
                 + "}";
 
         // Create issue
@@ -393,6 +392,7 @@ class IssueResourceTest extends AbstractResourceTest {
                 .thenReturn();
 
         final String issueId = createResponse.then()
+                .statusCode(201)
                 .contentType(MediaType.APPLICATION_JSON)
                 .extract().path("id");
 

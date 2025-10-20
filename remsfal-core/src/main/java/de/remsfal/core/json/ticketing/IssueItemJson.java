@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
@@ -52,6 +53,41 @@ public abstract class IssueItemJson {
      * @return the display name
      */
     public static String generateDisplayName(final CustomerModel user) {
+        if (user == null) {
+            return null;
+        }
+
+        final String firstName = user.getFirstName();
+        final String lastName = user.getLastName();
+
+        // If both firstName and lastName are present, use them
+        if (firstName != null && !firstName.isBlank() &&
+            lastName != null && !lastName.isBlank()) {
+            return String.format("%s %s", firstName, lastName).trim();
+        }
+
+        // If only firstName is present
+        if (firstName != null && !firstName.isBlank()) {
+            return firstName.trim();
+        }
+
+        // If only lastName is present
+        if (lastName != null && !lastName.isBlank()) {
+            return lastName.trim();
+        }
+
+        // Fallback to email
+        return user.getEmail();
+    }
+
+    /**
+     * Generate a display name from UserJson (for REST client responses).
+     * Prioritizes firstName + lastName, falls back to email.
+     *
+     * @param user the user JSON
+     * @return the display name
+     */
+    public static String generateDisplayName(final UserJson user) {
         if (user == null) {
             return null;
         }

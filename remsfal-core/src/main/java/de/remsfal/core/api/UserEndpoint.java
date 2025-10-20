@@ -8,6 +8,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -16,6 +17,10 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.validation.PatchValidation;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author: Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -50,5 +55,16 @@ public interface UserEndpoint {
     @APIResponse(responseCode = "204", description = "The former logged in user was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteUser();
+
+    @GET
+    @Path("/batch")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Retrieve basic information for multiple users by their IDs.")
+    @APIResponse(responseCode = "200", description = "User information was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    Map<String, UserJson> getUsersBatch(
+        @Parameter(description = "List of user IDs", required = true)
+        @QueryParam("ids") List<UUID> userIds
+    );
 
 }

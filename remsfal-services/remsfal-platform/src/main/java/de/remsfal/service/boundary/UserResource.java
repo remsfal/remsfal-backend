@@ -18,9 +18,14 @@ import de.remsfal.service.control.UserController;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.metrics.MetricUnits;
+import de.remsfal.service.entity.dto.UserEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -78,6 +83,22 @@ public class UserResource implements UserEndpoint {
         if (!userController.deleteUser(principal.getId())) {
             throw new NotFoundException();
         }
+    }
+
+    @Override
+    @Timed(name = "GetUsersBatchTimer", unit = MetricUnits.MILLISECONDS)
+    public Map<String, UserJson> getUsersBatch(final List<UUID> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        final Map<UUID, UserEntity> users = userController.getUsersByIds(userIds);
+
+        return users.entrySet().stream()
+            .collect(Collectors.toMap(
+                entry -> entry.getKey().toString(),
+                entry -> UserJson.valueOf(entry.getValue())
+            ));
     }
 
 }
