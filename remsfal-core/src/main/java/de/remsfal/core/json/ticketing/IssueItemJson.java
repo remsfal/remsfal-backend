@@ -56,28 +56,7 @@ public abstract class IssueItemJson {
         if (user == null) {
             return null;
         }
-
-        final String firstName = user.getFirstName();
-        final String lastName = user.getLastName();
-
-        // If both firstName and lastName are present, use them
-        if (firstName != null && !firstName.isBlank() &&
-            lastName != null && !lastName.isBlank()) {
-            return String.format("%s %s", firstName, lastName).trim();
-        }
-
-        // If only firstName is present
-        if (firstName != null && !firstName.isBlank()) {
-            return firstName.trim();
-        }
-
-        // If only lastName is present
-        if (lastName != null && !lastName.isBlank()) {
-            return lastName.trim();
-        }
-
-        // Fallback to email
-        return user.getEmail();
+        return buildDisplayName(user.getFirstName(), user.getLastName(), user.getEmail());
     }
 
     /**
@@ -91,10 +70,18 @@ public abstract class IssueItemJson {
         if (user == null) {
             return null;
         }
+        return buildDisplayName(user.getFirstName(), user.getLastName(), user.getEmail());
+    }
 
-        final String firstName = user.getFirstName();
-        final String lastName = user.getLastName();
-
+    /**
+     * Common logic for building a display name from name components.
+     *
+     * @param firstName the first name
+     * @param lastName the last name
+     * @param email the email address (fallback)
+     * @return the display name
+     */
+    private static String buildDisplayName(final String firstName, final String lastName, final String email) {
         // If both firstName and lastName are present, use them
         if (firstName != null && !firstName.isBlank() &&
             lastName != null && !lastName.isBlank()) {
@@ -112,7 +99,7 @@ public abstract class IssueItemJson {
         }
 
         // Fallback to email
-        return user.getEmail();
+        return email;
     }
 
     public static IssueItemJson valueOf(final IssueModel model) {
