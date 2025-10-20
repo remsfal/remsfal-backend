@@ -80,6 +80,11 @@ public class UserController {
         return repository.findByIdOptional(userId).orElseThrow(() -> new NotFoundException("User does not exist"));
     }
 
+    public java.util.Map<UUID, UserEntity> getUsersByIds(final java.util.List<UUID> userIds) {
+        logger.infov("Retrieving users by IDs (count = {0})", userIds != null ? userIds.size() : 0);
+        return repository.findByIds(userIds);
+    }
+
     @Transactional(TxType.MANDATORY)
     public UserEntity findOrCreateUser(final UserModel user) {
         if (user.getId() != null) {

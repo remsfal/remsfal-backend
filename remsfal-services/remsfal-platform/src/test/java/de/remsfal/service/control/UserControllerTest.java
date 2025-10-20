@@ -5,9 +5,12 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import jakarta.inject.Inject;
@@ -21,6 +24,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
 
 @QuarkusTest
@@ -168,6 +172,109 @@ class UserControllerTest extends AbstractServiceTest {
         assertEquals(0, enties);
 
         assertFalse(controller.deleteUser(user.getId()));
+    }
+
+    @Test
+    void getUsersByIds_SUCCESS_multipleUsersRetrieved() {
+        // Create multiple users with different profiles
+        final UUID userId1 = UUID.randomUUID();
+        final UUID userId2 = UUID.randomUUID();
+        final UUID userId3 = UUID.randomUUID();
+
+        runInTransaction(() -> {
+            // Regular user with firstName and lastName
+            entityManager
+                .createNativeQuery("INSERT INTO users (id, email, first_name, last_name) VALUES (?,?,?,?)")
+                .setParameter(1, userId1)
+                .setParameter(2, "user1@example.com")
+                .setParameter(3, "John")
+                .setParameter(4, "Doe")
+                .executeUpdate();
+
+            // Another regular user
+            entityManager
+                .createNativeQuery("INSERT INTO users (id, email, first_name, last_name) VALUES (?,?,?,?)")
+                .setParameter(1, userId2)
+                .setParameter(2, "user2@example.com")
+                .setParameter(3, "Jane")
+                .setParameter(4, "Smith")
+                .executeUpdate();
+
+            // Google auth user without firstName and lastName (simulating issue #282)
+            entityManager
+                .createNativeQuery("INSERT INTO users (id, email) VALUES (?,?)")
+                .setParameter(1, userId3)
+                .setParameter(2, "googleuser@gmail.com")
+                .executeUpdate();
+        });
+
+        // Retrieve users by IDs
+        final Map<UUID, UserEntity> users = controller.getUsersByIds(List.of(userId1, userId2, userId3));
+
+        assertNotNull(users);
+        assertEquals(3, users.size());
+
+        // Verify first user
+        final UserEntity user1 = users.get(userId1);
+        assertNotNull(user1);
+        assertEquals("user1@example.com", user1.getEmail());
+        assertEquals("John", user1.getFirstName());
+        assertEquals("Doe", user1.getLastName());
+
+        // Verify second user
+        final UserEntity user2 = users.get(userId2);
+        assertNotNull(user2);
+        assertEquals("user2@example.com", user2.getEmail());
+        assertEquals("Jane", user2.getFirstName());
+        assertEquals("Smith", user2.getLastName());
+
+        // Verify Google auth user (firstName/lastName are NULL)
+        final UserEntity user3 = users.get(userId3);
+        assertNotNull(user3);
+        assertEquals("googleuser@gmail.com", user3.getEmail());
+        assertNull(user3.getFirstName());
+        assertNull(user3.getLastName());
+    }
+
+    @Test
+    void getUsersByIds_SUCCESS_emptyMapWhenEmptyList() {
+        final Map<UUID, UserEntity> users = controller.getUsersByIds(List.of());
+        assertNotNull(users);
+        assertTrue(users.isEmpty());
+    }
+
+    @Test
+    void getUsersByIds_SUCCESS_emptyMapWhenNull() {
+        final Map<UUID, UserEntity> users = controller.getUsersByIds(null);
+        assertNotNull(users);
+        assertTrue(users.isEmpty());
+    }
+
+    @Test
+    void getUsersByIds_SUCCESS_partialResults() {
+        // Create only one user
+        final UUID existingUserId = UUID.randomUUID();
+        final UUID nonExistingUserId = UUID.randomUUID();
+
+        runInTransaction(() ->
+            entityManager
+                .createNativeQuery("INSERT INTO users (id, email, first_name, last_name) VALUES (?,?,?,?)")
+                .setParameter(1, existingUserId)
+                .setParameter(2, "existing@example.com")
+                .setParameter(3, "Existing")
+                .setParameter(4, "User")
+                .executeUpdate()
+        );
+
+        // Request both existing and non-existing users
+        final Map<UUID, UserEntity> users = controller.getUsersByIds(List.of(existingUserId, nonExistingUserId));
+
+        assertNotNull(users);
+        assertEquals(1, users.size());
+        assertTrue(users.containsKey(existingUserId));
+        assertFalse(users.containsKey(nonExistingUserId));
+
+        assertEquals("existing@example.com", users.get(existingUserId).getEmail());
     }
 
 }

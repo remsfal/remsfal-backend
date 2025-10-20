@@ -4,8 +4,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import de.remsfal.service.entity.dto.UserEntity;
 
@@ -21,6 +24,17 @@ public class UserRepository extends AbstractRepository<UserEntity> {
 
     public Optional<UserEntity> findByEmail(final String email) {
         return find("email", email).singleResultOptional();
+    }
+
+    public Map<UUID, UserEntity> findByIds(final List<UUID> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+        return getEntityManager()
+            .createQuery("SELECT u FROM UserEntity u WHERE u.id IN :ids", UserEntity.class)
+            .setParameter("ids", userIds)
+            .getResultStream()
+            .collect(Collectors.toMap(UserEntity::getId, user -> user));
     }
 
     public boolean remove(final UUID userId) {

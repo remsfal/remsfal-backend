@@ -26,6 +26,17 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>de.remsfal</groupId>
+            <artifactId>remsfal-platform</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-liquibase</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-multipart</artifactId>
         </dependency>

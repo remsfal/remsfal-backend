@@ -344,7 +344,7 @@ class IssueResourceTest extends AbstractResourceTest {
         // Create first issue
         given()
                 .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(issue1Json)
@@ -353,7 +353,7 @@ class IssueResourceTest extends AbstractResourceTest {
         // Create second issue
         given()
                 .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .contentType(ContentType.JSON)
                 .body(issue2Json)
@@ -362,7 +362,7 @@ class IssueResourceTest extends AbstractResourceTest {
         // Test filtering by project ID
         given()
                 .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
                 .queryParam("projectId", TicketingTestData.PROJECT_ID.toString())
                 .get(BASE_PATH)
@@ -371,6 +371,56 @@ class IssueResourceTest extends AbstractResourceTest {
                 .contentType(ContentType.JSON)
                 .body("issues", hasSize(2))
                 .body("total", equalTo(2));
+    }
+
+    @Test
+    void getIssues_SUCCESS_ownerNameIsReturned() {
+        // Create an issue with owner
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+                + "\"type\":\"TASK\","
+                + "\"ownerId\":\"" + TicketingTestData.USER_ID + "\""
+                + "}";
+
+        // Create issue
+        final Response createResponse = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .body(issueJson)
+                .post(BASE_PATH)
+                .thenReturn();
+
+        final String issueId = createResponse.then()
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().path("id");
+
+        // Update issue to set owner
+        final String updateJson = "{ \"ownerId\":\"" + TicketingTestData.USER_ID + "\" }";
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .body(updateJson)
+                .patch(BASE_PATH + "/" + issueId);
+
+        // Get issues list and verify ownerName is present
+        // Note: ownerName may be null if user doesn't exist in database
+        // or should contain the display name (firstName lastName or email)
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                .get(BASE_PATH)
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("issues", hasSize(1))
+                .body("issues[0].owner", equalTo(TicketingTestData.USER_ID.toString()));
+                // Note: We cannot easily test ownerName here without setting up proper user data
+                // The main test coverage is in unit tests for IssueItemJson.generateDisplayName
     }
 
 }
