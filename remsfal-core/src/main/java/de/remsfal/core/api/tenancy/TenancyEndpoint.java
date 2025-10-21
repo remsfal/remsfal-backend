@@ -74,6 +74,7 @@ public interface TenancyEndpoint {
     @Path("/{tenancyId}/apartments/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
+    @APIResponse(responseCode = "200", description = "The tenancy exists")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getApartmentTenancy(
