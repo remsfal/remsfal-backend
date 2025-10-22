@@ -136,19 +136,8 @@ public class ProjectResource implements ProjectEndpoint {
         return resourceContext.initResource(buildingResource.get());
     }
 
-    @Override
-    public ApartmentResource getApartmentResource() {
-        return resourceContext.initResource(apartmentResource.get());
-    }
-
-    @Override
-    public CommercialResource getCommercialResource() {
-        return resourceContext.initResource(commercialResource.get());
-    }
-
-    @Override
-    public StorageResource getStorageResource() {
-        return resourceContext.initResource(storageResource.get());
+    private <T> T init(Instance<T> resource) {
+        return resourceContext.initResource(resource.get());
     }
 
     @Override
