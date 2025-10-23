@@ -6,8 +6,8 @@ COPY remsfal-services/remsfal-platform/target/remsfal-service-runner.jar ./remsf
 
 EXPOSE 8080
 
-ENV DB_USERNAME=remsfal
-ENV DB_PASSWORD=remsfal
+ENV DB_USERNAME=remsfaladmin
+ENV DB_PASSWORD=remsfalSecret
 ENV DB_URL=jdbc:postgresql://postgres:5432/REMSFAL
 
 
