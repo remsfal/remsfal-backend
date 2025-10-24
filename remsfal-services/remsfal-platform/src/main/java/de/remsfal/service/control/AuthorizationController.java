@@ -56,7 +56,7 @@ public class AuthorizationController {
 
     public UserModel getAuthenticatedUser(final UUID userId) {
         logger.infov("Retrieving authenticated user (id = {0})", userId);
-        return userRepository.findByIdOptional(userId)
+        return userAuthRepository.findByUserId(userId)
             .orElseThrow(() -> new UnauthorizedException("User does not exist"));
     }
 
