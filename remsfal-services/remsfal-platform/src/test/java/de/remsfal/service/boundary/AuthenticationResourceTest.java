@@ -4,6 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.matcher.RestAssuredMatchers;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -108,6 +109,45 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .body("keys[0].kty", Matchers.equalTo("RSA"))
             .body("keys[0].kid", Matchers.equalTo("remsfal-platform-key"))
             .body("keys[0].alg", Matchers.equalTo("RS256"));
+    }
+
+    @Test
+    void refresh_SUCCESS_tokensAreRefreshed() {
+        // Don't use setupTestUsers() here as it inserts a random refresh token
+        // Instead, build the refresh token cookie which will create the proper token in the database
+        insertAddress(de.remsfal.test.TestData.ADDRESS_ID_1, de.remsfal.test.TestData.ADDRESS_STREET_1,
+            de.remsfal.test.TestData.ADDRESS_CITY_1, de.remsfal.test.TestData.ADDRESS_PROVINCE_1,
+            de.remsfal.test.TestData.ADDRESS_ZIP_1, de.remsfal.test.TestData.ADDRESS_COUNTRY_1);
+        insertUser(de.remsfal.test.TestData.USER_ID_1, de.remsfal.test.TestData.USER_TOKEN_1,
+            de.remsfal.test.TestData.USER_EMAIL_1, de.remsfal.test.TestData.USER_FIRST_NAME_1,
+            de.remsfal.test.TestData.USER_LAST_NAME_1, de.remsfal.test.TestData.ADDRESS_ID_1);
+
+        final var refreshCookie = buildRefreshTokenCookie(
+            de.remsfal.test.TestData.USER_ID_1,
+            de.remsfal.test.TestData.USER_EMAIL_1,
+            null);
+
+        given()
+            .cookie(refreshCookie)
+            .when().post(BASE_PATH + "/refresh")
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode())
+            .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
+                    .path("/")
+                    .sameSite("Strict")
+                    .secured(true))
+            .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
+                    .path("/api")
+                    .sameSite("Strict")
+                    .secured(true));
+    }
+
+    @Test
+    void refresh_FAILED_noRefreshToken() {
+        given()
+            .when().post(BASE_PATH + "/refresh")
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
 
 }

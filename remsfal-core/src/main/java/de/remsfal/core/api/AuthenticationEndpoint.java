@@ -2,6 +2,7 @@ package de.remsfal.core.api;
 
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -28,10 +29,12 @@ public interface AuthenticationEndpoint {
         final String sessionPath = basePath + "/session";
         final String logoutPath = basePath + "/logout";
         final String jwksPath = basePath + "/jwks";
+        final String refreshPath = basePath + "/refresh";
         return loginPath.equalsIgnoreCase(path)
                 || sessionPath.equalsIgnoreCase(path)
                 || logoutPath.equalsIgnoreCase(path)
-                || jwksPath.equalsIgnoreCase(path);
+                || jwksPath.equalsIgnoreCase(path)
+                || refreshPath.equalsIgnoreCase(path);
     }
 
     @GET
@@ -60,4 +63,11 @@ public interface AuthenticationEndpoint {
     @Operation(summary = "Expose the JSON Web Key Set used to sign tokens.")
     @APIResponse(responseCode = "200", description = "JWKS containing the public keys")
     Response jwks();
+
+    @POST
+    @Path("/refresh")
+    @Operation(summary = "Refresh the access and refresh tokens using the refresh token cookie.")
+    @APIResponse(responseCode = "204", description = "Tokens refreshed successfully, new tokens set as cookies")
+    @APIResponse(responseCode = "401", description = "Unauthorized - Invalid or missing refresh token")
+    Response refresh();
 }

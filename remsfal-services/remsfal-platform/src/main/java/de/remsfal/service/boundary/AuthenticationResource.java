@@ -110,6 +110,14 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         return Response.ok(jwkSet.toJSONObject()).build();
     }
 
+    @Override
+    public Response refresh() {
+        SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(httpHeaders.getCookies());
+        return Response.noContent()
+            .cookie(response.getAccessToken(), response.getRefreshToken())
+            .build();
+    }
+
     private Response.ResponseBuilder redirect(final URI redirectUrl) {
         return Response.status(302).header("location", redirectUrl);
     }
