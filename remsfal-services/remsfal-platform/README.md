@@ -29,8 +29,8 @@ directly as JVM argument.
 Adjust the configuration for your database, don't use the provided ones in production!
 
 ```properties
-quarkus.datasource.username=remsfal
-quarkus.datasource.password=remsfal
+quarkus.datasource.username=remsfaladmin
+quarkus.datasource.password=remsfalSecret
 quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL
 quarkus.datasource.devservices.enabled=false
 ```
@@ -38,8 +38,8 @@ quarkus.datasource.devservices.enabled=false
 Or use JVM arguments
 
 ```sh
-java -Dquarkus.datasource.username=remsfal \
-     -Dquarkus.datasource.password=remsfal \
+java -Dquarkus.datasource.username=remsfaladmin \
+     -Dquarkus.datasource.password=remsfalSecret \
      -Dquarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL \
      -Dquarkus.datasource.devservices.enabled=false \
      -jar remsfal-service/target/remsfal-service-runner.jar
@@ -66,6 +66,21 @@ For the JWT token its highly recommended to replace the default private key and 
 ```sh
 openssl genrsa -out private.pem 2048
 openssl rsa -in private.pem -pubout -out public.pem
+```
+
+#### Cookie Configuration
+
+The platform service uses separate paths for access and refresh token cookies to enhance security:
+
+- **Access Token** (`remsfal_access_token`): Path set to `/api` to allow sharing across microservices
+- **Refresh Token** (`remsfal_refresh_token`): Path set to `/api/v1/authentication` to restrict to platform service only
+
+This configuration prevents refresh tokens from being sent to other microservices running on different ports (e.g., ticketing service on port 8081). Only the platform service can receive and process refresh tokens, while all services can validate access tokens.
+
+Default configuration (can be overridden in application.properties):
+```properties
+de.remsfal.auth.access-token.cookie-path=/api
+de.remsfal.auth.refresh-token.cookie-path=/api/v1/authentication
 ```
 
 #### Run

@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.containsString;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.UUID;
 
 import jakarta.ws.rs.core.Response.Status;
 
@@ -105,6 +106,7 @@ class UserResourceTest extends AbstractResourceTest {
             .setParameter(4, TestData.USER_FIRST_NAME)
             .setParameter(5, TestData.USER_LAST_NAME)
             .executeUpdate());
+        insertRefreshToken(TestData.USER_ID, UUID.randomUUID());
 
         given()
             .when()
@@ -192,6 +194,8 @@ class UserResourceTest extends AbstractResourceTest {
             .setParameter(4, TestData.USER_FIRST_NAME)
             .setParameter(5, TestData.USER_LAST_NAME)
             .executeUpdate());
+        insertRefreshToken(TestData.USER_ID, UUID.randomUUID());
+
         given()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))

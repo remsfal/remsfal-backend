@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.jboss.logging.Logger;
+
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.UserJson.UserRole;
@@ -36,6 +38,9 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Inject
+    Logger logger;
+
+    @Inject
     Instance<ChatSessionResource> chatSessionResource;
 
     @Inject
@@ -45,6 +50,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
         UnitType rentalType, UUID rentalId, Status status) {
+        logger.info("Yes i was called");
         List<UUID> projectFilter = null;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
             projectFilter = List.of(projectId);

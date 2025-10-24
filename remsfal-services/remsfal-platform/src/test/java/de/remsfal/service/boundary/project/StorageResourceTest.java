@@ -34,7 +34,7 @@ class StorageResourceTest extends AbstractResourceTest {
         "     \"city\": \"" + TestData.ADDRESS_CITY + "\"," +
         "     \"province\": \"" + TestData.ADDRESS_PROVINCE + "\"," +
         "     \"zip\": \"" + TestData.ADDRESS_ZIP + "\"," +
-        "     \"country\": \"" + TestData.ADDRESS_COUNTRY + "\"" +
+        "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY + "\"" +
         " } }";
 
     private static final String STORAGE_JSON = "{ \"title\": \"" + TestData.STORAGE_TITLE + "\"," +

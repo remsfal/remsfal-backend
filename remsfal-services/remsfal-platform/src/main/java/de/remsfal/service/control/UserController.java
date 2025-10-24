@@ -1,8 +1,6 @@
 package de.remsfal.service.control;
 
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.event.Event;
-import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
@@ -18,7 +16,6 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.service.boundary.authentication.AuthenticationEvent;
 import de.remsfal.service.boundary.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserEntity;
@@ -40,22 +37,6 @@ public class UserController {
 
     @Inject
     NotificationController notificationController;
-
-    @Inject
-    private Event<AuthenticationEvent> authenticatedUser;
-
-    @Transactional
-    public UserModel authenticateUser(final String googleId, final String email) {
-        logger.infov("Authenticating a user (googleId={0}, email={1})", googleId, email);
-
-        final Optional<UserEntity> entity = repository.findByTokenId(googleId);
-        if(entity.isPresent()) {
-            authenticatedUser.fireAsync(new AuthenticationEvent(googleId, email));
-            return entity.get();
-        }
-
-        return createUser(googleId, email);
-    }
 
     @Transactional
     protected UserModel createUser(final String googleId, final String email) {
@@ -133,16 +114,6 @@ public class UserController {
         return repository.merge(entity);
     }
     
-    public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
-        logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})",
-            event.getGoogleId(), event.getEmail());
-        try {
-            repository.updateAuthenticatedAt(event.getGoogleId(), event.getAuthenticatedAt());
-        } catch (Exception e) {
-            logger.error("Unable to update authentication timestamp", e);
-        }
-    }
-
     @Transactional
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.2-issues-indexes" author="github-copilot">
+        <comment>Add indexes for status, owner_id, and tenancy_id columns to support filtering</comment>
+        <sql>
+            CREATE INDEX IF NOT EXISTS issues_status_idx ON REMSFAL.issues (status);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS issues_owner_id_idx ON REMSFAL.issues (owner_id);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS issues_tenancy_id_idx ON REMSFAL.issues (tenancy_id);
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_status_idx;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_owner_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_tenancy_id_idx;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

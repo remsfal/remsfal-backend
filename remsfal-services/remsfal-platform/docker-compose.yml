@@ -4,7 +4,7 @@ services:
     container_name: postgres
     environment:
       - POSTGRES_DB=REMSFAL
-      - POSTGRES_USER=remsfal
-      - POSTGRES_PASSWORD=remsfal
+      - POSTGRES_USER=remsfaladmin
+      - POSTGRES_PASSWORD=remsfalSecret
     ports:
       - "5432:5432"

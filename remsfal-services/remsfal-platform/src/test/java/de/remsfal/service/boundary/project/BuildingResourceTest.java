@@ -43,7 +43,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -75,7 +75,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -132,7 +132,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .post(BASE_PATH, TestData.PROJECT_ID.toString().replace("0", "1"), TestData.PROPERTY_ID.toString())
             .then()
@@ -155,7 +155,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -176,7 +176,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .patch(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -199,7 +199,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -219,7 +219,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .patch(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -242,7 +242,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .patch(BASE_PATH + "/" + java.util.UUID.randomUUID(), TestData.PROJECT_ID, TestData.PROPERTY_ID)
             .then()
@@ -265,7 +265,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -297,7 +297,7 @@ class BuildingResourceTest extends AbstractResourceTest {
                 "     \"city\": \"" + TestData.ADDRESS_CITY_1 + "\"," +
                 "     \"province\": \"" + TestData.ADDRESS_PROVINCE_1 + "\"," +
                 "     \"zip\": \"" + TestData.ADDRESS_ZIP_1 + "\"," +
-                "     \"country\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
+                "     \"countryCode\": \"" + TestData.ADDRESS_COUNTRY_1 + "\"" +
                 " } }")
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()

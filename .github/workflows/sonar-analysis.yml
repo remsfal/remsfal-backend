@@ -77,10 +77,11 @@ jobs:
         id: pr_by_branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           pr_json=$(gh pr list \
             --repo "${{ github.event.workflow_run.repository.full_name }}" \
-            --head "${{ github.event.workflow_run.head_branch }}" \
+            --head "$HEAD_BRANCH" \
             --state all \
             --json number,headRefName,baseRefName \
             --limit 1)
