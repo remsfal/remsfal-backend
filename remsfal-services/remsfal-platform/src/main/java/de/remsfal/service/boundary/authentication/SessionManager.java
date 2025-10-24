@@ -98,7 +98,8 @@ public class SessionManager {
 
         String jwt = jwtManager.createAccessToken(user, projectRoles, tenancyProjects,
             accessTokenTimeout.getSeconds());
-        return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false, accessTokenCookiePath);
+        return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false,
+            accessTokenCookiePath);
     }
 
     private Map<String, String> getProjectAuthorization(final UUID userId) {
@@ -137,8 +138,10 @@ public class SessionManager {
             updateExistingRefreshToken(userId, refreshId);
         }
 
-        String jwt = jwtManager.createRefreshToken(userId, userEmail, refreshId, refreshTokenTimeout.getSeconds());
-        return buildCookie(REFRESH_COOKIE_NAME, jwt, (int) refreshTokenTimeout.getSeconds(), true, refreshTokenCookiePath);
+        String jwt = jwtManager.createRefreshToken(userId, userEmail, refreshId,
+            refreshTokenTimeout.getSeconds());
+        return buildCookie(REFRESH_COOKIE_NAME, jwt, (int) refreshTokenTimeout.getSeconds(), true,
+            refreshTokenCookiePath);
     }
 
     /**
@@ -215,7 +218,8 @@ public class SessionManager {
     }
 
     /** Builds a new cookie with the given parameters */
-    private NewCookie buildCookie(final String name, final String value, int maxAge, boolean httpOnly, String cookiePath) {
+    private NewCookie buildCookie(final String name, final String value, int maxAge, boolean httpOnly,
+        String cookiePath) {
         return new NewCookie.Builder(name).value(value).path(cookiePath + getSameSiteWorkaround())
             .httpOnly(httpOnly).secure(true).maxAge(maxAge).build();
     }
