@@ -90,11 +90,11 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/"))
             .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
-                    .path("/")
+                    .path("/api")
                     .sameSite("Strict")
                     .maxAge(0))
             .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
-                    .path("/")
+                    .path("/api/v1/authentication")
                     .sameSite("Strict")
                     .maxAge(0));
     }

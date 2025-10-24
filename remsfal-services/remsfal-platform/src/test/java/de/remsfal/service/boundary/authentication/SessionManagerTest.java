@@ -201,6 +201,7 @@ class SessionManagerTest {
         assertEquals("access.jwt", cookie.getValue());
         assertEquals(SessionManager.ACCESS_COOKIE_NAME, cookie.getName());
         assertFalse(cookie.isHttpOnly());
+        assertTrue(cookie.getPath().startsWith("/api"));
     }
 
     @Test
@@ -221,8 +222,43 @@ class SessionManagerTest {
         assertEquals(SessionManager.REFRESH_COOKIE_NAME, cookie.getName());
         assertEquals("refresh.jwt", cookie.getValue());
         assertTrue(cookie.isHttpOnly());
+        assertTrue(cookie.getPath().startsWith("/api/v1/authentication"));
 
         verify(userAuthRepository).persist(any(UserAuthenticationEntity.class));
+    }
+
+    @Test
+    void test_cookiePaths_areDifferentForAccessAndRefresh() {
+        // Setup for access token
+        UserEntity user = new UserEntity();
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
+        user.setFirstName("Jane");
+        user.setLastName("Roe");
+        user.setTokenId("active");
+
+        when(userRepository.findByIdOptional(TestData.USER_ID)).thenReturn(Optional.of(user));
+        when(projectRepository.findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt()))
+                .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), eq(300L)))
+                .thenReturn("access.jwt");
+
+        // Setup for refresh token
+        when(userAuthRepository.findByUserId(TestData.USER_ID)).thenReturn(Optional.empty());
+        when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(TestData.USER_EMAIL), anyString(), eq(604800L)))
+                .thenReturn("refresh.jwt");
+
+        // Act
+        NewCookie accessCookie = sessionManager.generateAccessToken(TestData.USER_ID, TestData.USER_EMAIL);
+        NewCookie refreshCookie = sessionManager.generateRefreshToken(TestData.USER_ID, TestData.USER_EMAIL);
+
+        // Assert - paths should be different
+        assertFalse(accessCookie.getPath().equals(refreshCookie.getPath()),
+                "Access and refresh tokens should have different paths");
+        assertTrue(accessCookie.getPath().startsWith("/api"),
+                "Access token path should start with /api");
+        assertTrue(refreshCookie.getPath().startsWith("/api/v1/authentication"),
+                "Refresh token path should start with /api/v1/authentication");
     }
 
     @Test
