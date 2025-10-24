@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,11 +78,12 @@ class UserAuthenticationRepositoryTest {
     @Test
     void testUpdateRefreshToken() {
         Query query = mock(Query.class);
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.updateRefreshToken")).thenReturn(query);
-        when(query.setParameter("refreshToken", "newRefreshToken")).thenReturn(query);
+        UUID newRefreshToken = UUID.randomUUID();
+        when(entityManager.createNamedQuery("UserAuthenticationEntity.updateRefreshTokenId")).thenReturn(query);
+        when(query.setParameter("refreshTokenId", newRefreshToken)).thenReturn(query);
         when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
 
-        repository.updateRefreshToken(TestData.USER_ID, "newRefreshToken");
+        repository.updateRefreshTokenId(TestData.USER_ID, newRefreshToken);
 
         verify(query).executeUpdate();
     }
@@ -89,26 +91,27 @@ class UserAuthenticationRepositoryTest {
     @Test
     void testDeleteRefreshToken() {
         Query query = mock(Query.class);
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.deleteRefreshToken")).thenReturn(query);
+        when(entityManager.createNamedQuery("UserAuthenticationEntity.deleteByUserId")).thenReturn(query);
         when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
 
-        repository.deleteRefreshToken(TestData.USER_ID);
+        repository.deleteByUserId(TestData.USER_ID);
 
         verify(query).executeUpdate();
     }
 
     @Test
     void testUpdateRefreshTokenUsingModel() {
+        UUID newRefreshToken = UUID.randomUUID();
         UserAuthenticationModel userAuthenticationModel = mock(UserAuthenticationModel.class);
         when(userAuthenticationModel.getId()).thenReturn(TestData.USER_ID);
-        when(userAuthenticationModel.getRefreshToken()).thenReturn("newRefreshToken");
+        when(userAuthenticationModel.getRefreshTokenId()).thenReturn(newRefreshToken);
 
         Query query = mock(Query.class);
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.updateRefreshToken")).thenReturn(query);
-        when(query.setParameter("refreshToken", "newRefreshToken")).thenReturn(query);
+        when(entityManager.createNamedQuery("UserAuthenticationEntity.updateRefreshTokenId")).thenReturn(query);
+        when(query.setParameter("refreshTokenId", newRefreshToken)).thenReturn(query);
         when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
 
-        repository.updateRefreshToken(userAuthenticationModel);
+        repository.updateRefreshTokenId(userAuthenticationModel);
 
         verify(query).executeUpdate();
     }
@@ -119,10 +122,10 @@ class UserAuthenticationRepositoryTest {
         when(userAuthenticationModel.getId()).thenReturn(TestData.USER_ID);
 
         Query query = mock(Query.class);
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.deleteRefreshToken")).thenReturn(query);
+        when(entityManager.createNamedQuery("UserAuthenticationEntity.deleteByUserId")).thenReturn(query);
         when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
 
-        repository.deleteRefreshToken(userAuthenticationModel.getId());
+        repository.deleteByUserId(userAuthenticationModel.getId());
 
         verify(query).executeUpdate();
     }

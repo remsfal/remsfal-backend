@@ -63,11 +63,11 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/my/callback"))
             .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
-                .path("/api")
+                .path("/")
                 .sameSite("Strict")
-                .maxAge(60 * 5))
+                .maxAge(60 * 25))
             .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
-                .path("/api/v1/authentication")
+                .path("/api")
                 .sameSite("Strict")
                 .maxAge(60 * 60 * 24 * 7));
 
@@ -105,11 +105,11 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/"))
             .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
-                    .path("/api")
+                    .path("/")
                     .sameSite("Strict")
-                    .maxAge(60 * 5))
+                    .maxAge(60 * 25))
             .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
-                    .path("/api/v1/authentication")
+                    .path("/api")
                     .sameSite("Strict")
                     .maxAge(60 * 60 * 24 * 7));
 

@@ -12,6 +12,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import org.jboss.logging.Logger;
+
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.json.UserJson.UserRole;
 import de.remsfal.core.json.ticketing.IssueJson;
@@ -30,11 +32,15 @@ import io.quarkus.security.Authenticated;
 public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Inject
+    Logger logger;
+
+    @Inject
     Instance<ChatSessionResource> chatSessionResource;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
         UnitType rentalType, UUID rentalId, Status status) {
+        logger.info("Yes i was called");
         List<UUID> projectFilter = null;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
             projectFilter = List.of(projectId);

@@ -10,8 +10,8 @@
             <column name="user_id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="refresh_token" type="VARCHAR(255)">
-                <constraints nullable="true"/>
+            <column name="refresh_token_id" type="uuid">
+                <constraints nullable="false"/>
             </column>
             <column name="created_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
