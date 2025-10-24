@@ -1,17 +1,18 @@
 package de.remsfal.service.boundary.authentication;
 
-import de.remsfal.service.entity.dao.ProjectRepository;
-import de.remsfal.service.entity.dao.TenancyRepository;
-import de.remsfal.service.entity.dto.ProjectMembershipEntity;
-import de.remsfal.service.entity.dto.TenancyEntity;
-import de.remsfal.service.entity.dto.UserEntity;
-import io.smallrye.jwt.auth.principal.JWTParser;
+import java.time.Duration;
+import java.util.Map;
+import java.util.UUID;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+
 import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.model.UserAuthenticationModel;
-import de.remsfal.service.entity.dao.UserAuthenticationRepository;
-import de.remsfal.service.entity.dao.UserRepository;
-import de.remsfal.service.entity.dto.UserAuthenticationEntity;
+import de.remsfal.core.model.UserModel;
+import de.remsfal.service.control.AuthorizationController;
+import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,15 +20,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.NewCookie.SameSite;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SessionManager {
@@ -35,13 +27,17 @@ public class SessionManager {
     public static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
     public static final String REFRESH_COOKIE_NAME = "remsfal_refresh_token";
 
-    @ConfigProperty(name = "de.remsfal.auth.session.cookie-path", defaultValue = "/")
-    String sessionCookiePath;
-
     @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT")
     SameSite sessionCookieSameSite;
 
-    @ConfigProperty(name = "de.remsfal.auth.access-token.timeout", defaultValue = "PT5M")
+    @ConfigProperty(name = "de.remsfal.auth.access-token.cookie-path", defaultValue = "/")
+    String accessTokenCookiePath;
+
+    // TODO: Change to authentication endpoint path
+    @ConfigProperty(name = "de.remsfal.auth.refresh-token.cookie-path", defaultValue = "/api")
+    String refreshTokenCookiePath;
+
+    @ConfigProperty(name = "de.remsfal.auth.access-token.timeout", defaultValue = "PT25M")
     Duration accessTokenTimeout;
 
     @ConfigProperty(name = "de.remsfal.auth.refresh-token.timeout", defaultValue = "P7D")
@@ -54,16 +50,7 @@ public class SessionManager {
     JWTParser jwtParser;
 
     @Inject
-    UserAuthenticationRepository userAuthRepository;
-
-    @Inject
-    UserRepository userRepository;
-
-    @Inject
-    ProjectRepository projectRepository;
-
-    @Inject
-    TenancyRepository tenancyRepository;
+    AuthorizationController controller;
 
     /**
      * Generates a new access token for the given user authentication entity.
@@ -87,32 +74,15 @@ public class SessionManager {
             throw new UnauthorizedException("User id and email are required");
         }
 
-        UserEntity user = userRepository.findByIdOptional(userId)
-            .orElseThrow(() -> new UnauthorizedException("User not found: " + userId));
+        UserModel user = controller.getAuthenticatedUser(userId);
 
-        Map<String, String> projectRoles = getProjectAuthorization(userId);
-        Map<String, String> tenancyProjects = getTenancyAuthorization(userId);
+        Map<String, String> projectRoles = controller.getProjectAuthorization(userId);
+        Map<String, String> tenancyProjects = controller.getTenancyAuthorization(userId);
 
         String jwt = jwtManager.createAccessToken(user, projectRoles, tenancyProjects,
             accessTokenTimeout.getSeconds());
-        return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false);
-    }
-
-    private Map<String, String> getProjectAuthorization(final UUID userId) {
-        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
-            Integer.MAX_VALUE);
-        return memberships.stream().collect(Collectors.toMap(
-            m -> m.getProject().getId().toString(),
-            m -> m.getRole().name()
-        ));
-    }
-
-    private Map<String, String> getTenancyAuthorization(final UUID userId) {
-        List<TenancyEntity> tenancies = tenancyRepository.findTenanciesByTenant(userId);
-        return tenancies.stream().collect(Collectors.toMap(
-            t -> t.getId().toString(),
-            t -> t.getProjectId().toString()
-        ));
+        return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false,
+            accessTokenCookiePath);
     }
 
     /**
@@ -126,16 +96,18 @@ public class SessionManager {
      */
     @Transactional
     public NewCookie generateRefreshToken(final UUID userId, final String userEmail) {
-        String refreshId = UUID.randomUUID().toString();
+        UUID newRefreshTokenId = UUID.randomUUID();
 
-        if (isNewUserAuthenticationEntity(userId)) {
-            createNewUserAuthentication(userId, refreshId);
+        if (controller.hasUserRefreshToken(userId)) {
+            controller.createRefreshToken(userId, newRefreshTokenId);
         } else {
-            updateExistingRefreshToken(userId, refreshId);
+            controller.updateExistingRefreshToken(userId, newRefreshTokenId);
         }
 
-        String jwt = jwtManager.createRefreshToken(userId, userEmail, refreshId, refreshTokenTimeout.getSeconds());
-        return buildCookie(REFRESH_COOKIE_NAME, jwt, (int) refreshTokenTimeout.getSeconds(), true);
+        String jwt = jwtManager.createRefreshToken(userId, userEmail, newRefreshTokenId.toString(),
+            refreshTokenTimeout.getSeconds());
+        return buildCookie(REFRESH_COOKIE_NAME, jwt, (int) refreshTokenTimeout.getSeconds(), true,
+            refreshTokenCookiePath);
     }
 
     /**
@@ -155,9 +127,9 @@ public class SessionManager {
         JsonWebToken refreshJwt = parseRefreshToken(refreshCookie.getValue());
         UUID userId = UUID.fromString(refreshJwt.getSubject());
         String email = refreshJwt.getClaim("email");
-        String refreshId = refreshJwt.getClaim("refreshToken");
+        UUID refreshId = UUID.fromString(refreshJwt.getClaim("refreshTokenId"));
 
-        UserAuthenticationModel userAuth = requireValidRefreshToken(userId, refreshId);
+        UserAuthenticationModel userAuth = controller.requireValidRefreshToken(userId, refreshId);
 
         NewCookie newAccess = generateAccessToken(userAuth);
         NewCookie newRefresh = generateRefreshToken(userId, email);
@@ -174,46 +146,10 @@ public class SessionManager {
         }
     }
 
-    /** Checks if there is an existing user authentication entity for the given user ID */
-    private boolean isNewUserAuthenticationEntity(final UUID userId) {
-        return userAuthRepository.findByUserId(userId).isEmpty();
-    }
-
-    /** Creates a new user authentication entity with the given user ID and refresh token */
-    private void createNewUserAuthentication(final UUID userId, final String refreshToken) {
-        UserAuthenticationEntity userAuthenticationEntity = new UserAuthenticationEntity();
-        userRepository.findByIdOptional(userId).ifPresentOrElse(userAuthenticationEntity::setUser,
-            () -> {
-                throw new UnauthorizedException("User not found: " + userId);
-            });
-        userAuthenticationEntity.setRefreshToken(refreshToken);
-        userAuthRepository.persist(userAuthenticationEntity);
-    }
-
-    /** Updates the existing refresh token for the given user ID */
-    private void updateExistingRefreshToken(final UUID userId, final String refreshToken) {
-        userAuthRepository.updateRefreshToken(userId, refreshToken);
-    }
-
-    /** Validates the refresh token claim against the stored refresh token for the given user ID */
-    private UserAuthenticationModel requireValidRefreshToken(final UUID userId, final String refreshTokenClaim) {
-        Optional<UserAuthenticationEntity> userAuth = userAuthRepository.findByUserId(userId);
-
-        if (userAuth.isEmpty()) {
-            throw new UnauthorizedException("User not found: " + userId);
-        }
-
-        String saved = userAuth.get().getRefreshToken();
-        if (saved == null || !saved.equals(refreshTokenClaim)) {
-            throw new UnauthorizedException("Refresh token mismatch.");
-        }
-
-        return userAuth.get();
-    }
-
     /** Builds a new cookie with the given parameters */
-    private NewCookie buildCookie(final String name, final String value, int maxAge, boolean httpOnly) {
-        return new NewCookie.Builder(name).value(value).path(sessionCookiePath + getSameSiteWorkaround())
+    private NewCookie buildCookie(final String name, final String value, int maxAge, boolean httpOnly,
+        String cookiePath) {
+        return new NewCookie.Builder(name).value(value).path(cookiePath + getSameSiteWorkaround())
             .httpOnly(httpOnly).secure(true).maxAge(maxAge).build();
     }
 
@@ -224,7 +160,7 @@ public class SessionManager {
         if (refreshCookie != null) {
             JsonWebToken refresh = parseRefreshToken(refreshCookie.getValue());
             UUID userId = UUID.fromString(refresh.getSubject());
-            userAuthRepository.deleteRefreshToken(userId);
+            controller.deleteRefreshToken(userId);
         }
     }
 
@@ -235,8 +171,8 @@ public class SessionManager {
      * @return NewCookie to remove the cookie
      */
     public NewCookie removalCookie(String cookieName) {
-
-        return new NewCookie.Builder(cookieName).value("").path(sessionCookiePath + getSameSiteWorkaround())
+        String cookiePath = ACCESS_COOKIE_NAME.equals(cookieName) ? accessTokenCookiePath : refreshTokenCookiePath;
+        return new NewCookie.Builder(cookieName).value("").path(cookiePath + getSameSiteWorkaround())
             // sameSite is currently not supported
             .sameSite(sessionCookieSameSite).maxAge(0).build();
     }

@@ -65,9 +65,9 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
                 .path("/")
                 .sameSite("Strict")
-                .maxAge(60 * 5))
+                .maxAge(60 * 25))
             .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
-                .path("/")
+                .path("/api")
                 .sameSite("Strict")
                 .maxAge(60 * 60 * 24 * 7));
 
@@ -107,9 +107,9 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
                     .path("/")
                     .sameSite("Strict")
-                    .maxAge(60 * 5))
+                    .maxAge(60 * 25))
             .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
-                    .path("/")
+                    .path("/api")
                     .sameSite("Strict")
                     .maxAge(60 * 60 * 24 * 7));
 

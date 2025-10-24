@@ -11,7 +11,7 @@ import de.remsfal.core.api.AuthenticationEndpoint;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 import de.remsfal.service.boundary.authentication.SessionManager;
-import de.remsfal.service.control.UserController;
+import de.remsfal.service.control.AuthorizationController;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Context;
@@ -52,7 +52,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     JWTManager jwtManager;
 
     @Inject
-    UserController controller;
+    AuthorizationController controller;
 
     @Inject
     Logger logger;
@@ -87,9 +87,8 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     private Response createSession(final UserModel user, final String route) {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath(route).build();
-        final NewCookie accessToken = sessionManager.generateAccessToken(
-            user.getId(), user.getEmail());
         final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
+        final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
         return redirect(redirectUri).cookie(accessToken, refreshToken).build();
     }
 
@@ -98,8 +97,11 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     public Response logout() {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath("/").build();
         sessionManager.logout(httpHeaders.getCookies());
-        return redirect(redirectUri).cookie(sessionManager.removalCookie(SessionManager.ACCESS_COOKIE_NAME),
-                sessionManager.removalCookie(SessionManager.REFRESH_COOKIE_NAME)).build();
+        return redirect(redirectUri)
+            .cookie(sessionManager.removalCookie(SessionManager.ACCESS_COOKIE_NAME),
+                sessionManager.removalCookie(SessionManager.REFRESH_COOKIE_NAME))
+            .header("Clear-Site-Data", "cookies")
+            .build();
     }
 
     @Override
