@@ -10,19 +10,25 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.UserJson.UserRole;
+import de.remsfal.core.json.ticketing.IssueItemJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.ticketing.client.PlatformUserClient;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -36,6 +42,10 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
+
+    @Inject
+    @RestClient
+    PlatformUserClient platformUserClient;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
@@ -61,7 +71,8 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         final List<? extends IssueModel> issues =
             issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId,
                 status);
-        return IssueListJson.valueOf(issues, 0, issues.size());
+        final Map<UUID, String> ownerNames = resolveOwnerNames(issues);
+        return IssueListJson.valueOf(issues, 0, issues.size(), ownerNames);
     }
 
     private IssueListJson getTenancyIssues(Integer offset, Integer limit, UUID tenancyId, Status status) {
@@ -84,7 +95,8 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
                 .filter(issue -> issue.getStatus() == status)
                 .toList();
         }
-        return IssueListJson.valueOf(issues, 0, issues.size());
+        final Map<UUID, String> ownerNames = resolveOwnerNames(issues);
+        return IssueListJson.valueOf(issues, 0, issues.size(), ownerNames);
     }
 
     @Override
@@ -143,6 +155,44 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     @Override
     public ChatSessionResource getChatSessionResource() {
         return resourceContext.initResource(chatSessionResource.get());
+    }
+
+    /**
+     * Resolves owner names for a list of issues.
+     * Extracts unique owner IDs, batch loads the corresponding users,
+     * and generates display names (firstName lastName or email fallback).
+     *
+     * @param issues the list of issues
+     * @return a map of owner ID to display name
+     */
+    private Map<UUID, String> resolveOwnerNames(final List<? extends IssueModel> issues) {
+        // Extract unique owner IDs
+        final List<UUID> ownerIds = issues.stream()
+            .map(IssueModel::getOwnerId)
+            .filter(id -> id != null)
+            .distinct()
+            .toList();
+
+        if (ownerIds.isEmpty()) {
+            return Map.of();
+        }
+
+        try {
+            // Call Platform service to get user information
+            final Map<String, UserJson> users = platformUserClient.getUsersBatch(ownerIds);
+
+            // Generate display names from UserJson
+            return users.entrySet().stream()
+                .collect(Collectors.toMap(
+                    entry -> UUID.fromString(entry.getKey()),
+                    entry -> IssueItemJson.generateDisplayName(entry.getValue())
+                ));
+        } catch (Exception e) {
+            // Log error and return empty map if Platform service is unavailable
+            // In production, you might want to use a proper logger
+            System.err.println("Failed to fetch user data from Platform service: " + e.getMessage());
+            return Map.of();
+        }
     }
 
 }

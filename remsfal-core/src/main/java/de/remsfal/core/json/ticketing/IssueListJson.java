@@ -1,6 +1,8 @@
 package de.remsfal.core.json.ticketing;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -45,6 +47,24 @@ public abstract class IssueListJson {
             .total(total)
             .issues(issues.stream()
                 .map(IssueItemJson::valueOf)
+                .toList())
+            .build();
+    }
+
+    public static IssueListJson valueOf(final List<? extends IssueModel> issues,
+        final int first, final int total, final Map<UUID, String> ownerNames) {
+
+        return ImmutableIssueListJson.builder()
+            .size(issues.size())
+            .first(first)
+            .total(total)
+            .issues(issues.stream()
+                .map(issue -> {
+                    final String ownerName = issue.getOwnerId() != null
+                        ? ownerNames.get(issue.getOwnerId())
+                        : null;
+                    return IssueItemJson.valueOf(issue, ownerName);
+                })
                 .toList())
             .build();
     }
