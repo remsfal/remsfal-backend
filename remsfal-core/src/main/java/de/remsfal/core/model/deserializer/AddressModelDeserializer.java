@@ -16,12 +16,22 @@ public class AddressModelDeserializer extends JsonDeserializer<AddressModel> {
         ObjectMapper mapper = (ObjectMapper) p.getCodec();
         JsonNode node = mapper.readTree(p);
 
+        // Support both "country" and "countryCode" for backward compatibility
+        String countryCode;
+        if (node.has("countryCode")) {
+            countryCode = node.get("countryCode").asText();
+        } else if (node.has("country")) {
+            countryCode = node.get("country").asText();
+        } else {
+            countryCode = "";
+        }
+
         return ImmutableAddressJson.builder()
                 .street(node.get("street").asText())
                 .city(node.get("city").asText())
                 .province(node.get("province").asText())
                 .zip(node.get("zip").asText())
-                .countryCode(node.get("country").asText())
+                .countryCode(countryCode)
                 .build();
     }
 }
