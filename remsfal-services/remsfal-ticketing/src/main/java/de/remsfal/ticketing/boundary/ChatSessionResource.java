@@ -1,50 +1,27 @@
 package de.remsfal.ticketing.boundary;
 
-import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.InternalServerErrorException;
-import org.jboss.logging.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.remsfal.core.api.ticketing.ChatSessionEndpoint;
-import de.remsfal.core.json.ticketing.ChatMessageJson;
+import de.remsfal.core.api.ticketing.ChatParticipantEndpoint;
+import de.remsfal.core.api.ticketing.ChatMessageEndpoint;
 import de.remsfal.core.json.ticketing.ChatSessionJson;
-import de.remsfal.core.json.ticketing.FileUploadJson;
-import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
+import de.remsfal.core.json.ticketing.ChatSessionListJson;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
-import de.remsfal.ticketing.control.ChatMessageController;
 import de.remsfal.ticketing.control.ChatSessionController;
-import de.remsfal.ticketing.control.FileStorageController;
-import de.remsfal.ticketing.control.OcrEventProducer;
-import de.remsfal.ticketing.entity.dao.FileStorage;
-import de.remsfal.ticketing.entity.dao.ChatMessageRepository.ContentType;
-import de.remsfal.ticketing.entity.dao.ChatSessionRepository.ParticipantRole;
-import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
@@ -57,502 +34,66 @@ public class ChatSessionResource extends AbstractResource implements ChatSession
     ChatSessionController chatSessionController;
 
     @Inject
-    ChatMessageController chatMessageController;
+    Instance<ChatParticipantResource> chatParticipantResource;
 
     @Inject
-    Logger logger;
-
-    @Inject
-    FileStorageController fileStorageController;
-
-    @Inject
-    OcrEventProducer ocrEventProducer;
+    Instance<ChatMessageResource> chatMessageResource;
 
     private static final String NOT_FOUND_SESSION_MESSAGE = "Chat session not found";
 
     @Override
     public Response createChatSession(final UUID issueId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
+        UUID projectId = checkWritePermissions(issueId);
 
-            ChatSessionModel session = chatSessionController
-                .createChatSession(projectId, issueId, principal.getId());
-            URI location = uri.getAbsolutePathBuilder().path(session.getSessionId().toString()).build();
-            return Response.created(location)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatSessionJson.valueOf(session))
-                .build();
-        } catch (Exception e) {
-            logger.error("Failed to create chat session", e);
-            throw e;
-        }
+        ChatSessionModel session = chatSessionController
+            .createChatSession(projectId, issueId, principal.getId());
+        URI location = uri.getAbsolutePathBuilder().path(session.getSessionId().toString()).build();
+        return Response.created(location)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ChatSessionJson.valueOf(session))
+            .build();
     }
 
     @Override
     public Response getChatSession(final UUID issueId, final UUID sessionId) {
-        try {
-            UUID projectId = checkReadPermissions(issueId);
-            Optional<ChatSessionEntity> session = chatSessionController
-                .getChatSession(projectId, issueId, sessionId);
-            if (session.isPresent())
-                return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatSessionJson.valueOf(session.get()))
-                    .build();
-            else
-                throw new NoSuchElementException(NOT_FOUND_SESSION_MESSAGE);
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to get chat session", e);
-            throw e;
+        UUID projectId = checkReadPermissions(issueId);
+        Optional<ChatSessionEntity> session = chatSessionController
+            .getChatSession(projectId, issueId, sessionId);
+        if (session.isPresent()) {
+            return Response.ok()
+                .type(MediaType.APPLICATION_JSON)
+                .entity(ChatSessionJson.valueOf(session.get()))
+                .build();
+        } else {
+            throw new NotFoundException(NOT_FOUND_SESSION_MESSAGE);
         }
     }
 
     @Override
     public Response deleteChatSession(final UUID issueId, final UUID sessionId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            chatSessionController.deleteChatSession(projectId, issueId, sessionId);
-            return Response.noContent().build();
-        } catch (Exception e) {
-            logger.error("Failed to delete chat session", e);
-            throw e;
-        }
+        UUID projectId = checkWritePermissions(issueId);
+        chatSessionController.deleteChatSession(projectId, issueId, sessionId);
+        return Response.noContent().build();
     }
 
     @Override
-    public Response joinChatSession(final UUID issueId, final UUID sessionId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            chatSessionController.addParticipant(projectId, issueId,
-                sessionId, principal.getId(), ParticipantRole.OBSERVER);
-            Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, issueId, sessionId);
-            String json = jsonifyParticipantsMap(participants);
-            return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(json)
-                .build();
-        } catch (NoSuchElementException | IllegalArgumentException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (ForbiddenException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Failed to join chat session", e);
-            throw new ForbiddenException();
-        }
-    }
-
-    @Override
-    public Response getParticipants(final UUID issueId, final UUID sessionId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, issueId, sessionId);
-            String json = jsonifyParticipantsMap(participants);
-            return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(json)
-                .build();
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to get participants", e);
-            throw new ForbiddenException();
-        }
-    }
-
-    @Override
-    public Response getParticipant(final UUID issueId,
-        final UUID sessionId, final UUID participantId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, issueId, sessionId);
-            if (participants.containsKey(participantId)) {
-                String json = jsonifyParticipantsMap(Map.of(participantId, participants.get(participantId)));
-                return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(json)
-                    .build();
-            } else {
-                throw new NoSuchElementException("Participant not found");
-            }
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to get participant", e);
-            throw new ForbiddenException();
-        }
-    }
-
-    @Override
-    public Response changeParticipantRole(final UUID issueId,
-        final UUID sessionId, final UUID participantId, String role) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            role = cleanRole(role);
-            Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, issueId, sessionId);
-            validateParticipant(participants, participantId);
-            validateRole(role);
-            chatSessionController
-                .updateParticipantRole(projectId, issueId, sessionId, participantId,
-                ParticipantRole.valueOf(role));
-            String json = jsonifyParticipantsMap(Map.of(participantId, role));
-            return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(json)
-                .build();
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to change participant role", e);
-            throw new ForbiddenException();
-        }
-    }
-
-    @Override
-    public Response removeParticipant(final UUID issueId,
-        final UUID sessionId, final UUID participantId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            Map<UUID, String> participants = chatSessionController
-                .getParticipants(projectId, issueId, sessionId);
-            if (!participants.containsKey(participantId)) {
-                throw new NotFoundException("Participant not found");
-            }
-            chatSessionController
-                .removeParticipant(projectId, issueId, sessionId, participantId);
-            return Response.noContent().build();
-        } catch (Exception e) {
-            logger.error("Failed to remove participant from chat session", e);
-            throw e;
-        }
-    }
-
-    @Override
-    public Response sendMessage(final UUID issueId,
-        final UUID sessionId, final ChatMessageJson message) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            UUID userId = principal.getId();
-            if (userId == null) {
-                throw new NotAuthorizedException("No user authentication provided via session cookie");
-            }
-            Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, issueId, sessionId);
-            boolean isParticipant = participants.containsKey(userId);
-            boolean hasWritePermission = false;
-            try {
-                hasWritePermission = true;
-            } catch (NotAuthorizedException | ForbiddenException ignored) {
-                // User does not have write permissions
-            }
-            if (!isParticipant && !hasWritePermission) {
-                throw new ForbiddenException("Inadequate user rights");
-            }
-            if (message.getContent() == null || message.getContent().isBlank()) {
-                throw new BadRequestException("Message content cannot be null or empty");
-            }
-            int maxPayloadSize = 8000;
-            if (message.getContent().length() > maxPayloadSize) {
-                throw new BadRequestException("Payload size exceeds limit");
-            }
-            ChatMessageEntity entity = chatMessageController.sendChatMessage(
-                sessionId, userId, message.getContentType(), message.getContent());
-            URI location = uri.getAbsolutePathBuilder()
-                .path(entity.getMessageId().toString()).build();
-            return Response.created(location)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(ChatMessageJson.valueOf(entity))
-                .build();
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException(e.getMessage());
-        } catch (ForbiddenException | BadRequestException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Failed to send message", e);
-            throw e;
-        }
-    }
-
-    @Override
-    public Response getChatMessages(final UUID issueId,
-        final UUID sessionId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            return Response.ok()
-                .type(MediaType.APPLICATION_JSON)
-                .entity(chatSessionController.getChatLogs(projectId, sessionId, issueId))
-                .build();
-
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to get chat messages", e);
-            throw e;
-        }
-
-    }
-
-    @Override
-    public Response getChatMessage(final UUID issueId,
-        final UUID sessionId, final UUID messageId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            ChatMessageEntity chatMessageEntity =
-                chatMessageController.getChatMessage(sessionId, messageId);
-            if (chatMessageEntity.getContentType().equals(ContentType.TEXT.name()))
-                return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatMessageJson.valueOf(chatMessageEntity))
-                    .build();
-            if (chatMessageEntity.getContentType().equals(ContentType.FILE.name())) {
-                // Extract the file URL and derive the file name
-                String fileUrl = chatMessageEntity.getUrl();
-                String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-
-                // Download the file from the storage service
-                InputStream fileStream = fileStorageController.downloadFile(fileName);
-                // Stream the file content to the client as a binary response
-                return Response.ok((StreamingOutput) output -> {
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-
-                    // Read chunks from the file and write them to the HTTP response
-                    while (true) {
-                        bytesRead = fileStream.read(buffer);
-                        if (bytesRead == -1) {
-                            break; // End of file reached
-                        }
-                        output.write(buffer, 0, bytesRead);
-                    }
-                })
-                    .type(MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                    .build();
-            }
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to get chat message", e);
-            throw e;
-        }
-        return Response.status(Response.Status.BAD_REQUEST)
-            .entity("{\"message\": \"The file type is not recognized\"}")
+    public Response getChatSessions(final UUID issueId) {
+        UUID projectId = checkReadPermissions(issueId);
+        List<ChatSessionEntity> sessions = chatSessionController.getChatSessions(projectId, issueId);
+        return Response.ok()
             .type(MediaType.APPLICATION_JSON)
+            .entity(ChatSessionListJson.valueOf(sessions))
             .build();
     }
 
     @Override
-    public Response updateChatMessage(final UUID issueId,
-        final UUID sessionId,
-        final UUID messageId,
-        final ChatMessageJson message) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            int maxPayloadSize = 8000;
-            if (Objects.requireNonNull(message.getContent()).length() > maxPayloadSize) {
-                throw new BadRequestException("Payload size exceeds limit");
-            }
-            chatMessageController.updateTextChatMessage(sessionId, messageId, message.getContent());
-            ChatMessageEntity updatedMessage =
-                chatMessageController.getChatMessage(sessionId, messageId);
-            if (updatedMessage.getContent().equals(message.getContent())) {
-                return Response.ok()
-                    .type(MediaType.APPLICATION_JSON)
-                    .entity(ChatMessageJson.valueOf(updatedMessage))
-                    .build();
-            } else {
-                throw new InternalServerErrorException("Failed to update message");
-            }
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to update message", e);
-            throw e;
-        }
+    public ChatParticipantEndpoint getChatParticipantResource() {
+        return resourceContext.initResource(chatParticipantResource.get());
     }
 
     @Override
-    public Response deleteChatMessage(final UUID issueId,
-        final UUID sessionId, final UUID messageId) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            if (chatSessionController.getChatSession(projectId, issueId, sessionId).isPresent()) {
-                chatMessageController.deleteChatMessage(sessionId, messageId);
-                return Response.noContent().build();
-            } else {
-                throw new NotFoundException(NOT_FOUND_SESSION_MESSAGE);
-            }
-        } catch (NotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Failed to delete message", e);
-            throw e;
-        }
+    public ChatMessageEndpoint getChatMessageResource() {
+        return resourceContext.initResource(chatMessageResource.get());
     }
 
-    @Override
-    public Response uploadFile(final UUID issueId,
-        final UUID sessionId, final MultipartFormDataInput input) {
-        try {
-            UUID projectId = checkWritePermissions(issueId);
-            Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-            List<InputPart> fileParts = formDataMap.get("file");
-            if (fileParts == null || fileParts.isEmpty()) {
-                logger.error("No 'file' part found in the form data");
-                return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"message\": \"No file part found in the form data\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
-            }
-
-            for (InputPart inputPart : fileParts) {
-                String fileName = getFileName(inputPart.getHeaders());
-                if (!isFileNameValid(fileName)) {
-                    logger.error("Invalid file name: " + fileName);
-                    return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"message\": \"Invalid file name: " + fileName + "\"}")
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
-                }
-
-                String contentType = inputPart.getMediaType().toString();
-                if (!isContentTypeValid(contentType)) {
-                    logger.error("Invalid file type: " + contentType);
-                    return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
-                        .entity("{\"message\": \"Unsupported Media Type: "
-                            + contentType + "\"}")
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
-                }
-
-                try (InputStream fileStream = inputPart.getBody(InputStream.class, null)) {
-                    if (fileStream == null || fileStream.available() == 0) {
-                        logger.error("File stream is null or empty");
-                        return Response.status(Response.Status.BAD_REQUEST)
-                            .entity("{\"message\": \"Failed to read file stream: unknown\"}")
-                            .type(MediaType.APPLICATION_JSON)
-                            .build();
-                    }
-
-                    String fileUrl = fileStorageController.uploadFile(input);
-
-                    ChatMessageEntity fileMetadataEntity = chatMessageController
-                        .sendChatMessage(sessionId, principal.getId(), ContentType.FILE.name(), fileUrl);
-
-                    FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
-                        .sessionId(sessionId)
-                        .messageId(fileMetadataEntity.getMessageId())
-                        .senderId(principal.getId())
-                        .bucket(FileStorage.DEFAULT_BUCKET_NAME)
-                        .fileName(extractFileNameFromUrl(fileUrl))
-                        .build();
-                    ocrEventProducer.sendOcrRequest(uploadedFile);
-                    String mergedJson = String.format(
-                        "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
-                        " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
-                        fileMetadataEntity.getMessageId(),
-                        fileUrl,
-                        fileMetadataEntity.getSessionId(),
-                        fileMetadataEntity.getCreatedAt(),
-                        fileMetadataEntity.getSenderId());
-
-                    return Response.status(Response.Status.CREATED)
-                        .entity(mergedJson)
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
-                }
-            }
-
-            throw new BadRequestException("No valid file uploaded");
-
-        } catch (Exception e) {
-            logger.error("Error during file upload", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    // ---------------------Helper Methods---------------------
-
-    private String jsonifyParticipantsMap(Map<UUID, String> participants) throws JsonProcessingException {
-        List<Map<String, String>> participantList = new ArrayList<>();
-        participants.forEach((id, role) -> {
-            Map<String, String> participant = new HashMap<>();
-            participant.put("userId", id.toString());
-            participant.put("userRole", role);
-            participantList.add(participant);
-        });
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(participantList);
-    }
-
-    private String getFileName(Map<String, List<String>> headers) {
-        List<String> contentDisposition = headers.get("Content-Disposition");
-        if (contentDisposition != null && !contentDisposition.isEmpty()) {
-            for (String part : contentDisposition.get(0).split(";")) {
-                if (part.trim().startsWith("filename")) {
-                    return part.split("=")[1].trim().replaceAll("\"", "");
-                }
-            }
-        }
-        return "unknown";
-    }
-
-    private boolean isFileNameValid(String fileName) {
-        if (fileName == null || fileName.isBlank()) {
-            return false;
-        }
-        return fileName.matches("^[\\w\\-. ]+$");
-    }
-
-    private boolean isContentTypeValid(String contentType) {
-        if (contentType == null) {
-            return false;
-        }
-        // Normalize content type (remove charset if present)
-        String normalizedContentType = contentType.split(";")[0].trim();
-        Set<String> allowedTypes = fileStorageController.getAllowedTypes();
-        return allowedTypes.contains(normalizedContentType);
-    }
-
-    private String cleanRole(String role) {
-        if (role.startsWith("\"") && role.endsWith("\"")) {
-            return role.substring(1, role.length() - 1);
-        }
-        return role;
-    }
-
-    private void validateParticipant(Map<UUID, String> participants, UUID participantUUID) {
-        if (!participants.containsKey(participantUUID)) {
-            throw new NoSuchElementException("Participant not found");
-        }
-    }
-
-    private void validateRole(String role) {
-        if (!role.equals(ParticipantRole.OBSERVER.name())
-            && !role.equals(ParticipantRole.HANDLER.name())
-            && !role.equals(ParticipantRole.INITIATOR.name())) {
-            throw new ForbiddenException("Invalid role");
-        }
-    }
-
-    public String extractFileNameFromUrl(String fileUrl) {
-        if (fileUrl == null || fileUrl.isBlank()) {
-            throw new IllegalArgumentException("File URL cannot be null or empty");
-        }
-        int lastSlashIndex = fileUrl.lastIndexOf('/');
-        if (lastSlashIndex == -1) {
-            return fileUrl;
-        }
-        if (lastSlashIndex == fileUrl.length() - 1) {
-            throw new IllegalArgumentException("Invalid file URL format: " + fileUrl);
-        }
-        return fileUrl.substring(lastSlashIndex + 1);
-    }
 }
