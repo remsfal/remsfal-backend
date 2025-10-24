@@ -94,7 +94,7 @@ class AuthenticationResourceTest extends AbstractResourceTest {
                     .sameSite("Strict")
                     .maxAge(0))
             .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
-                    .path("/")
+                    .path("/api")
                     .sameSite("Strict")
                     .maxAge(0));
     }

@@ -18,20 +18,20 @@ public class UserAuthenticationRepository extends AbstractRepository<UserAuthent
             .findFirst();
     }
 
-    public void updateRefreshToken(final UserAuthenticationModel userAuthentication) {
-        updateRefreshToken(userAuthentication.getId(), userAuthentication.getRefreshToken());
+    public void updateRefreshTokenId(final UserAuthenticationModel userAuthentication) {
+        updateRefreshTokenId(userAuthentication.getId(), userAuthentication.getRefreshTokenId());
     }
 
-    public void updateRefreshToken(final UUID userId, final String refreshToken) {
+    public void updateRefreshTokenId(final UUID userId, final UUID refreshToken) {
         getEntityManager()
-            .createNamedQuery("UserAuthenticationEntity.updateRefreshToken")
-            .setParameter("refreshToken", refreshToken)
+            .createNamedQuery("UserAuthenticationEntity.updateRefreshTokenId")
+            .setParameter("refreshTokenId", refreshToken)
             .setParameter(PARAM_USER_ID, userId)
             .executeUpdate();
     }
 
-    public void deleteRefreshToken(final UUID userId) {
-        getEntityManager().createNamedQuery("UserAuthenticationEntity.deleteRefreshToken")
+    public void deleteByUserId(final UUID userId) {
+        getEntityManager().createNamedQuery("UserAuthenticationEntity.deleteByUserId")
             .setParameter(PARAM_USER_ID, userId).executeUpdate();
     }
 
