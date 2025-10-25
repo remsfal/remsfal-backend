@@ -163,7 +163,7 @@ class HeaderExtensionResponseFilterTest {
 
     @Test
     void testAccessTokenRenewedOnProjectCreation() {
-        when(uriInfo.getPath()).thenReturn("api/v1/projects");
+        when(uriInfo.getPath()).thenReturn("/api/v1/projects");
         when(requestContext.getMethod()).thenReturn("POST");
 
         Map<String, Cookie> cookies = new HashMap<>();

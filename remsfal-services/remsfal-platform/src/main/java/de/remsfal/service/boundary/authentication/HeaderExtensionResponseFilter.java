@@ -57,7 +57,7 @@ public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
     private boolean isProjectCreationRequest(ContainerRequestContext requestContext) {
         String path = requestContext.getUriInfo().getPath();
         String method = requestContext.getMethod();
-        return "POST".equals(method) && "api/v1/projects".equals(path);
+        return "POST".equals(method) && "/api/v1/projects".equals(path);
     }
 
     private void renewTokens(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
