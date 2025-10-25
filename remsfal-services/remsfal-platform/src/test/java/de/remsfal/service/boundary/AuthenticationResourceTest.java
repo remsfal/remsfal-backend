@@ -4,8 +4,9 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.matcher.RestAssuredMatchers;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
 import jakarta.ws.rs.core.Response.Status;
@@ -115,16 +116,16 @@ class AuthenticationResourceTest extends AbstractResourceTest {
     void refresh_SUCCESS_tokensAreRefreshed() {
         // Don't use setupTestUsers() here as it inserts a random refresh token
         // Instead, build the refresh token cookie which will create the proper token in the database
-        insertAddress(de.remsfal.test.TestData.ADDRESS_ID_1, de.remsfal.test.TestData.ADDRESS_STREET_1,
-            de.remsfal.test.TestData.ADDRESS_CITY_1, de.remsfal.test.TestData.ADDRESS_PROVINCE_1,
-            de.remsfal.test.TestData.ADDRESS_ZIP_1, de.remsfal.test.TestData.ADDRESS_COUNTRY_1);
-        insertUser(de.remsfal.test.TestData.USER_ID_1, de.remsfal.test.TestData.USER_TOKEN_1,
-            de.remsfal.test.TestData.USER_EMAIL_1, de.remsfal.test.TestData.USER_FIRST_NAME_1,
-            de.remsfal.test.TestData.USER_LAST_NAME_1, de.remsfal.test.TestData.ADDRESS_ID_1);
+        insertAddress(TestData.ADDRESS_ID_1, TestData.ADDRESS_STREET_1,
+            TestData.ADDRESS_CITY_1, TestData.ADDRESS_PROVINCE_1,
+            TestData.ADDRESS_ZIP_1, TestData.ADDRESS_COUNTRY_1);
+        insertUser(TestData.USER_ID_1, TestData.USER_TOKEN_1,
+            TestData.USER_EMAIL_1, TestData.USER_FIRST_NAME_1,
+            TestData.USER_LAST_NAME_1, TestData.ADDRESS_ID_1);
 
         final var refreshCookie = buildRefreshTokenCookie(
-            de.remsfal.test.TestData.USER_ID_1,
-            de.remsfal.test.TestData.USER_EMAIL_1,
+            TestData.USER_ID_1,
+            TestData.USER_EMAIL_1,
             null);
 
         given()

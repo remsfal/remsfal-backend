@@ -116,11 +116,8 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         if (refreshCookie == null) {
             throw new UnauthorizedException("No refresh token provided.");
         }
-        SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(
-            java.util.Map.of(SessionManager.REFRESH_COOKIE_NAME, 
-                new jakarta.ws.rs.core.Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME)
-                    .value(refreshCookie.getValue())
-                    .build()));
+        SessionManager.TokenRenewalResponse response = sessionManager
+            .renewTokens(refreshCookie);
         return Response.noContent()
             .cookie(response.getAccessToken(), response.getRefreshToken())
             .build();

@@ -117,9 +117,7 @@ public class SessionManager {
      * @return TokenRenewalResponse containing the new access and refresh tokens
      */
     @Transactional
-    public TokenRenewalResponse renewTokens(Map<String, Cookie> cookies) {
-        Cookie refreshCookie = cookies.get(REFRESH_COOKIE_NAME);
-
+    public TokenRenewalResponse renewTokens(final Cookie refreshCookie) {
         if (refreshCookie == null) {
             throw new UnauthorizedException("No refresh token provided.");
         }

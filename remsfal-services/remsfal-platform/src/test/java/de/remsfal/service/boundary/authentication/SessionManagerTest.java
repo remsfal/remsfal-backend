@@ -117,8 +117,8 @@ class SessionManagerTest {
 
         // Act
         SessionManager.TokenRenewalResponse response =
-                sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME,
-                        new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));
+                sessionManager.renewTokens(new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME)
+                    .value(refreshTokenValue).build());
 
         // Assert
         assertEquals("new-access", response.getAccessToken().getValue());
@@ -132,7 +132,7 @@ class SessionManagerTest {
 
     @Test
     void test_renewTokens_throws_whenCookieMissing() {
-        assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(Map.of()));
+        assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(null));
     }
 
     @Test
