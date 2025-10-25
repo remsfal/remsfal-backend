@@ -127,7 +127,7 @@ public class SessionManager {
         JsonWebToken refreshJwt = parseRefreshToken(refreshCookie.getValue());
         UUID userId = UUID.fromString(refreshJwt.getSubject());
         String email = refreshJwt.getClaim("email");
-        UUID refreshId = UUID.fromString(refreshJwt.getClaim("refreshToken"));
+        UUID refreshId = UUID.fromString(refreshJwt.getClaim("refreshTokenId"));
 
         UserAuthenticationModel userAuth = controller.requireValidRefreshToken(userId, refreshId);
 

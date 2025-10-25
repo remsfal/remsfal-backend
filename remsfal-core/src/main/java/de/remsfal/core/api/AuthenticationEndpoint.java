@@ -1,11 +1,14 @@
 package de.remsfal.core.api;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -16,26 +19,12 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE)
+@PermitAll
 public interface AuthenticationEndpoint {
 
     String CONTEXT = "api";
     String VERSION = "v1";
     String SERVICE = "authentication";
-
-    static boolean isAuthenticationPath(final String path) {
-        final String basePath = "/" + AuthenticationEndpoint.CONTEXT + "/"
-            + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE;
-        final String loginPath = basePath + "/login";
-        final String sessionPath = basePath + "/session";
-        final String logoutPath = basePath + "/logout";
-        final String jwksPath = basePath + "/jwks";
-        final String refreshPath = basePath + "/refresh";
-        return loginPath.equalsIgnoreCase(path)
-                || sessionPath.equalsIgnoreCase(path)
-                || logoutPath.equalsIgnoreCase(path)
-                || jwksPath.equalsIgnoreCase(path)
-                || refreshPath.equalsIgnoreCase(path);
-    }
 
     @GET
     @Path("/login")
@@ -69,5 +58,5 @@ public interface AuthenticationEndpoint {
     @Operation(summary = "Refresh the access and refresh tokens using the refresh token cookie.")
     @APIResponse(responseCode = "204", description = "Tokens refreshed successfully, new tokens set as cookies")
     @APIResponse(responseCode = "401", description = "Unauthorized - Invalid or missing refresh token")
-    Response refresh();
+    Response refresh(@CookieParam("remsfal_refresh_token") Cookie refreshCookie);
 }

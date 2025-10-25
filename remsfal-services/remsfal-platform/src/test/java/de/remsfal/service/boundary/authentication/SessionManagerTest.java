@@ -64,7 +64,7 @@ class SessionManagerTest {
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put(Claims.sub.name(), subject.toString());
         claims.put("email", email);
-        claims.put("refreshToken", refreshId);
+        claims.put("refreshTokenId", refreshId);
 
         return new JsonWebToken() {
             @Override public String getSubject() { return subject.toString(); }

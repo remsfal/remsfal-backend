@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.authentication;
 
-import de.remsfal.core.api.AuthenticationEndpoint;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -24,7 +23,7 @@ public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
 
-        if (AuthenticationEndpoint.isAuthenticationPath(requestContext.getUriInfo().getPath())) {
+        if (requestContext.getUriInfo().getPath().startsWith("api/v1/authentication")) {
             logger.infov("Skipping HeaderExtensionResponseFilter for authentication path: {0}",
                 requestContext.getUriInfo().getPath());
             return;
