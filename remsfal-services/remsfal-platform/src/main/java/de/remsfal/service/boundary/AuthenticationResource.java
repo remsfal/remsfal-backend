@@ -15,6 +15,7 @@ import de.remsfal.service.control.AuthorizationController;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
@@ -108,6 +109,18 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     public Response jwks() {
         JWKSet jwkSet = new JWKSet(jwtManager.getPublicJwk());
         return Response.ok(jwkSet.toJSONObject()).build();
+    }
+
+    @Override
+    public Response refresh(Cookie refreshCookie) {
+        if (refreshCookie == null) {
+            throw new UnauthorizedException("No refresh token provided.");
+        }
+        SessionManager.TokenRenewalResponse response = sessionManager
+            .renewTokens(refreshCookie);
+        return Response.noContent()
+            .cookie(response.getAccessToken(), response.getRefreshToken())
+            .build();
     }
 
     private Response.ResponseBuilder redirect(final URI redirectUrl) {

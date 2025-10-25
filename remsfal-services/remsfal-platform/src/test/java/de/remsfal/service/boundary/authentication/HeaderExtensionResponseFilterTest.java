@@ -62,11 +62,7 @@ class HeaderExtensionResponseFilterTest {
         filter.filter(requestContext, responseContext);
 
         // Verify Logging and Behavior
-        verify(logger).infov(
-        "Skipping HeaderExtensionResponseFilter for authentication path: {0}",
-        "/" + AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION + "/"
-                + AuthenticationEndpoint.SERVICE + "/login"
-        );
+        verify(logger).infov(anyString(), eq("/api/v1/authentication/login"));
         verifyNoInteractions(sessionManager);
         verifyNoInteractions(headers);
     }
@@ -81,7 +77,7 @@ class HeaderExtensionResponseFilterTest {
         filter.filter(requestContext, responseContext);
 
         verify(sessionManager).findAccessTokenCookie(Collections.emptyMap());
-        verify(sessionManager).renewTokens(Collections.emptyMap());
+        verify(sessionManager).renewTokens(any());
         verify(logger).error(org.mockito.ArgumentMatchers.contains("Error renewing tokens"));
     }
 
@@ -102,7 +98,7 @@ class HeaderExtensionResponseFilterTest {
 
         when(tokenResponse.getAccessToken()).thenReturn(newAccess);
         when(tokenResponse.getRefreshToken()).thenReturn(newRefresh);
-        when(sessionManager.renewTokens(cookies)).thenReturn(tokenResponse);
+        when(sessionManager.renewTokens(refreshCookie)).thenReturn(tokenResponse);
 
         filter.filter(requestContext, responseContext);
 

@@ -94,7 +94,7 @@ public class JWTManager {
         return Jwt
             .subject(userId.toString())
             .claim("email", email)
-            .claim("refreshToken", refreshTokenId)
+            .claim("refreshTokenId", refreshTokenId)
             .issuer(issuer)
             .expiresAt(exp)
             .jws()

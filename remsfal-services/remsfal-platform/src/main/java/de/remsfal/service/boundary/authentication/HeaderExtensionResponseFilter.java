@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.authentication;
 
-import de.remsfal.core.api.AuthenticationEndpoint;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -24,7 +23,7 @@ public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
 
-        if (AuthenticationEndpoint.isAuthenticationPath(requestContext.getUriInfo().getPath())) {
+        if (requestContext.getUriInfo().getPath().startsWith("/api/v1/authentication")) {
             logger.infov("Skipping HeaderExtensionResponseFilter for authentication path: {0}",
                 requestContext.getUriInfo().getPath());
             return;
@@ -44,7 +43,8 @@ public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
 
     private void renewTokens(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
         try {
-            SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(requestContext.getCookies());
+            Cookie refreshCookie = requestContext.getCookies().get(SessionManager.REFRESH_COOKIE_NAME);
+            SessionManager.TokenRenewalResponse response = sessionManager.renewTokens(refreshCookie);
             responseContext.getHeaders().add("Set-Cookie", response.getAccessToken());
             responseContext.getHeaders().add("Set-Cookie", response.getRefreshToken());
         } catch (Exception e) {
