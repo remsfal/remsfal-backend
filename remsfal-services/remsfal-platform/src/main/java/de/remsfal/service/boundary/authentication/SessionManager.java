@@ -201,6 +201,32 @@ public class SessionManager {
         return null;
     }
 
+    /**
+     * Checks if the access token needs renewal based on its expiration time.
+     * A token needs renewal if it expires in less than 5 minutes.
+     *
+     * @param accessToken The access token cookie to check
+     * @return true if the token needs renewal, false otherwise
+     */
+    public boolean needsRenewal(final Cookie accessToken) {
+        if (accessToken == null) {
+            return true;
+        }
+
+        try {
+            JsonWebToken jwt = jwtParser.parse(accessToken.getValue());
+            long expirationTime = jwt.getExpirationTime();
+            long currentTime = System.currentTimeMillis() / 1000;
+            long timeUntilExpiration = expirationTime - currentTime;
+            
+            // Renew if token expires in less than 5 minutes (300 seconds)
+            return timeUntilExpiration < 300;
+        } catch (ParseException e) {
+            // If token is invalid or cannot be parsed, it needs renewal
+            return true;
+        }
+    }
+
     private String getSameSiteWorkaround() {
         // see: https://github.com/jakartaee/rest/issues/862
         return ";SameSite=" + sessionCookieSameSite.name().substring(0, 1).toUpperCase() +
