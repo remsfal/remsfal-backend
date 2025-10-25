@@ -26,6 +26,9 @@ public class SessionManager {
 
     public static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
     public static final String REFRESH_COOKIE_NAME = "remsfal_refresh_token";
+    
+    // Token renewal threshold: renew access token if it expires in less than 5 minutes
+    private static final long TOKEN_RENEWAL_THRESHOLD_SECONDS = 300;
 
     @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT")
     SameSite sessionCookieSameSite;
@@ -199,6 +202,32 @@ public class SessionManager {
             return cookies.get(REFRESH_COOKIE_NAME);
         }
         return null;
+    }
+
+    /**
+     * Checks if the access token needs renewal based on its expiration time.
+     * A token needs renewal if it expires in less than 5 minutes.
+     *
+     * @param accessToken The access token cookie to check
+     * @return true if the token needs renewal, false otherwise
+     */
+    public boolean needsRenewal(final Cookie accessToken) {
+        if (accessToken == null) {
+            return true;
+        }
+
+        try {
+            JsonWebToken jwt = jwtParser.parse(accessToken.getValue());
+            long expirationTime = jwt.getExpirationTime();
+            long currentTime = System.currentTimeMillis() / 1000;
+            long timeUntilExpiration = expirationTime - currentTime;
+            
+            // Renew if token expires in less than the threshold (5 minutes)
+            return timeUntilExpiration < TOKEN_RENEWAL_THRESHOLD_SECONDS;
+        } catch (ParseException e) {
+            // If token is invalid or cannot be parsed, it needs renewal
+            return true;
+        }
     }
 
     private String getSameSiteWorkaround() {

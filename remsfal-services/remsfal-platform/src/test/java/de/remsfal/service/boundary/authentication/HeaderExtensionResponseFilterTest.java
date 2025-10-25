@@ -70,6 +70,7 @@ class HeaderExtensionResponseFilterTest {
     @Test
     void testNoCookiesNoAction () {
         when(uriInfo.getPath()).thenReturn("/some/endpoint");
+        when(requestContext.getMethod()).thenReturn("GET");
         when(requestContext.getCookies()).thenReturn(Collections.emptyMap());
         when(sessionManager.findAccessTokenCookie(any())).thenReturn(null);
         when(responseContext.getHeaders()).thenReturn(headers);
@@ -84,6 +85,7 @@ class HeaderExtensionResponseFilterTest {
     @Test
     void testRenewTokensWithRefreshTokenOnly() {
         when(uriInfo.getPath()).thenReturn("/some/endpoint");
+        when(requestContext.getMethod()).thenReturn("GET");
 
         Map<String, Cookie> cookies = new HashMap<>();
         Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("refresh.jwt").build();
@@ -102,6 +104,91 @@ class HeaderExtensionResponseFilterTest {
 
         filter.filter(requestContext, responseContext);
 
+        verify(headers).add("Set-Cookie", newAccess);
+        verify(headers).add("Set-Cookie", newRefresh);
+    }
+
+    @Test
+    void testAccessTokenNotRenewedWhenValid() {
+        when(uriInfo.getPath()).thenReturn("/some/endpoint");
+        when(requestContext.getMethod()).thenReturn("GET");
+
+        Map<String, Cookie> cookies = new HashMap<>();
+        Cookie accessCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("access.jwt").build();
+        cookies.put(SessionManager.ACCESS_COOKIE_NAME, accessCookie);
+
+        when(requestContext.getCookies()).thenReturn(cookies);
+        when(sessionManager.findAccessTokenCookie(cookies)).thenReturn(accessCookie);
+        when(sessionManager.needsRenewal(accessCookie)).thenReturn(false);
+
+        filter.filter(requestContext, responseContext);
+
+        verify(sessionManager).findAccessTokenCookie(cookies);
+        verify(sessionManager).needsRenewal(accessCookie);
+        verify(sessionManager, never()).renewTokens(any());
+        verify(headers, never()).add(eq("Set-Cookie"), any());
+    }
+
+    @Test
+    void testAccessTokenRenewedWhenExpiringSoon() {
+        when(uriInfo.getPath()).thenReturn("/some/endpoint");
+        when(requestContext.getMethod()).thenReturn("GET");
+
+        Map<String, Cookie> cookies = new HashMap<>();
+        Cookie accessCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("access.jwt").build();
+        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("refresh.jwt").build();
+        cookies.put(SessionManager.ACCESS_COOKIE_NAME, accessCookie);
+        cookies.put(SessionManager.REFRESH_COOKIE_NAME, refreshCookie);
+
+        when(requestContext.getCookies()).thenReturn(cookies);
+        when(sessionManager.findAccessTokenCookie(cookies)).thenReturn(accessCookie);
+        when(sessionManager.needsRenewal(accessCookie)).thenReturn(true);
+
+        SessionManager.TokenRenewalResponse tokenResponse = mock(SessionManager.TokenRenewalResponse.class);
+        NewCookie newAccess = new NewCookie.Builder("newAccess").value("new-access.jwt").build();
+        NewCookie newRefresh = new NewCookie.Builder("newRefresh").value("new-refresh.jwt").build();
+
+        when(tokenResponse.getAccessToken()).thenReturn(newAccess);
+        when(tokenResponse.getRefreshToken()).thenReturn(newRefresh);
+        when(sessionManager.renewTokens(refreshCookie)).thenReturn(tokenResponse);
+
+        filter.filter(requestContext, responseContext);
+
+        verify(sessionManager).findAccessTokenCookie(cookies);
+        verify(sessionManager).needsRenewal(accessCookie);
+        verify(sessionManager).renewTokens(refreshCookie);
+        verify(headers).add("Set-Cookie", newAccess);
+        verify(headers).add("Set-Cookie", newRefresh);
+    }
+
+    @Test
+    void testAccessTokenRenewedOnProjectCreation() {
+        when(uriInfo.getPath()).thenReturn("/api/v1/projects");
+        when(requestContext.getMethod()).thenReturn("POST");
+
+        Map<String, Cookie> cookies = new HashMap<>();
+        Cookie accessCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("access.jwt").build();
+        Cookie refreshCookie = new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value("refresh.jwt").build();
+        cookies.put(SessionManager.ACCESS_COOKIE_NAME, accessCookie);
+        cookies.put(SessionManager.REFRESH_COOKIE_NAME, refreshCookie);
+
+        when(requestContext.getCookies()).thenReturn(cookies);
+        when(sessionManager.findAccessTokenCookie(cookies)).thenReturn(accessCookie);
+        when(sessionManager.needsRenewal(accessCookie)).thenReturn(false); // Token is valid but we force renewal
+
+        SessionManager.TokenRenewalResponse tokenResponse = mock(SessionManager.TokenRenewalResponse.class);
+        NewCookie newAccess = new NewCookie.Builder("newAccess").value("new-access.jwt").build();
+        NewCookie newRefresh = new NewCookie.Builder("newRefresh").value("new-refresh.jwt").build();
+
+        when(tokenResponse.getAccessToken()).thenReturn(newAccess);
+        when(tokenResponse.getRefreshToken()).thenReturn(newRefresh);
+        when(sessionManager.renewTokens(refreshCookie)).thenReturn(tokenResponse);
+
+        filter.filter(requestContext, responseContext);
+
+        verify(sessionManager).findAccessTokenCookie(cookies);
+        // Token renewal should happen even though needsRenewal returns false
+        verify(sessionManager).renewTokens(refreshCookie);
         verify(headers).add("Set-Cookie", newAccess);
         verify(headers).add("Set-Cookie", newRefresh);
     }

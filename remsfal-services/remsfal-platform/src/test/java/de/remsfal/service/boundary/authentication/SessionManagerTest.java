@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -246,6 +247,49 @@ class SessionManagerTest {
         when(controller.getAuthenticatedUser(TestData.USER_ID_4)).thenThrow(UnauthorizedException.class);  
         assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken(TestData.USER_ID_4, "x@x"));
         verify(jwtManager, never()).createAccessToken(any(UserEntity.class), anyMap(), anyMap(), anyLong());
+    }
+
+    @Test
+    void test_needsRenewal_returnsTrueWhenTokenNull() {
+        assertTrue(sessionManager.needsRenewal(null));
+    }
+
+    @Test
+    void test_needsRenewal_returnsTrueWhenTokenExpiresSoon() throws ParseException {
+        // Create a token that expires in 4 minutes (240 seconds)
+        long currentTime = System.currentTimeMillis() / 1000;
+        long expirationTime = currentTime + 240;
+
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getExpirationTime()).thenReturn(expirationTime);
+
+        Cookie accessToken = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("token.jwt").build();
+        when(jwtParser.parse("token.jwt")).thenReturn(mockJwt);
+
+        assertTrue(sessionManager.needsRenewal(accessToken));
+    }
+
+    @Test
+    void test_needsRenewal_returnsFalseWhenTokenStillValid() throws ParseException {
+        // Create a token that expires in 10 minutes (600 seconds)
+        long currentTime = System.currentTimeMillis() / 1000;
+        long expirationTime = currentTime + 600;
+
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getExpirationTime()).thenReturn(expirationTime);
+
+        Cookie accessToken = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("token.jwt").build();
+        when(jwtParser.parse("token.jwt")).thenReturn(mockJwt);
+
+        assertFalse(sessionManager.needsRenewal(accessToken));
+    }
+
+    @Test
+    void test_needsRenewal_returnsTrueWhenTokenInvalid() throws ParseException {
+        Cookie accessToken = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("invalid.jwt").build();
+        when(jwtParser.parse("invalid.jwt")).thenThrow(new ParseException("Invalid token"));
+
+        assertTrue(sessionManager.needsRenewal(accessToken));
     }
 
 }
