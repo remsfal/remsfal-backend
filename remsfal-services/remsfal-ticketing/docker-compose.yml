@@ -28,9 +28,13 @@ services:
     image: ghcr.io/remsfal/remsfal-ocr:latest
     container_name: remsfal-ocr
     depends_on:
-      - kafka-broker
-      - minio
+      kafka-broker:
+        condition: service_healthy
+      minio:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka-broker:29092
       - MINIO_ENDPOINT=minio:9000
       - PYTHONUNBUFFERED=1
+    networks:
+      - remsfal
