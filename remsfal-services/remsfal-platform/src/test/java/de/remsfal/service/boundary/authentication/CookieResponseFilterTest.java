@@ -19,9 +19,9 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-class HeaderExtensionResponseFilterTest {
+class CookieResponseFilterTest {
 
-    private HeaderExtensionResponseFilter filter;
+    private CookieResponseFilter filter;
     private SessionManager sessionManager;
     private Logger logger;
 
@@ -36,7 +36,7 @@ class HeaderExtensionResponseFilterTest {
         sessionManager = mock(SessionManager.class);
         logger = mock(Logger.class);
 
-        filter = new HeaderExtensionResponseFilter();
+        filter = new CookieResponseFilter();
         filter.sessionManager = sessionManager;
         filter.logger = logger;
 

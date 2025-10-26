@@ -12,7 +12,7 @@ import org.jboss.logging.Logger;
 
 @Provider
 @Priority(Priorities.HEADER_DECORATOR + 1)
-public class HeaderExtensionResponseFilter implements ContainerResponseFilter {
+public class CookieResponseFilter implements ContainerResponseFilter {
 
     @Inject
     SessionManager sessionManager;
