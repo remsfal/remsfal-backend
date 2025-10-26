@@ -1,4 +1,4 @@
-<img src="https://remsfal.de/remsfal-logo.svg" width="60%">
+<img src="https://remsfal.de/remsfal-logo.svg" alt="REMSFAL Logo" width="60%">
 
 ![GitHub Release](https://img.shields.io/github/v/release/remsfal/remsfal-backend?label=latest%20release)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
@@ -25,7 +25,7 @@ The project is structured into multiple modules:
 
 ## Development
 
-This project uses MAVEN to build and test the complete backand microservice architecture.
+This project uses MAVEN to build and test the complete backend microservice architecture.
 Before you change anything, make sure that your development setup meets the requirements as described in [Prerequisites](#prerequisites).
 Afterwards you can build and package the application by running:
 
@@ -61,7 +61,7 @@ mandatory to pass the specified **Quality Gates** before a pull request can be m
 
 ### Start in dev mode
 
-At first you well need to start the db as described in [Prerequisites](#prerequisites).
+At first you will need to start the db as described in [Prerequisites](#prerequisites).
 
 Next run the project using the following command:
 
@@ -94,4 +94,4 @@ Before contributing to REMSFAL, please read our [contributing guidelines](https:
 
 ## License
 
-* [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)tails.
+* [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
