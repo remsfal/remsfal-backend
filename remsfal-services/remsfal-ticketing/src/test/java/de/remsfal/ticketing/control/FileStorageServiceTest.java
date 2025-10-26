@@ -12,7 +12,6 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.ticketing.AbstractTicketingTest;
-import de.remsfal.ticketing.control.FileStorageController;
 import de.remsfal.ticketing.entity.dao.FileStorage;
 
 import static org.junit.Assert.assertFalse;

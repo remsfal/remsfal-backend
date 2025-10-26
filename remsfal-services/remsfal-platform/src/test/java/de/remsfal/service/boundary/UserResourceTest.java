@@ -111,7 +111,6 @@ class UserResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
             .get(BASE_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -134,7 +133,6 @@ class UserResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
             .contentType(ContentType.JSON)
             .body(update)
             .patch(BASE_PATH)
@@ -156,7 +154,6 @@ class UserResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
             .contentType(ContentType.JSON)
             .body(invalidPatch)
             .patch(BASE_PATH)
@@ -171,7 +168,6 @@ class UserResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
             .delete(BASE_PATH)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
@@ -198,7 +194,6 @@ class UserResourceTest extends AbstractResourceTest {
 
         given()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
             .when().get(BASE_PATH)
             .then().statusCode(Status.OK.getStatusCode());
         given()
@@ -217,7 +212,6 @@ class UserResourceTest extends AbstractResourceTest {
             "\"privatePhoneNumber\":\"+4933012345611\"}";
         given()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
             .contentType(ContentType.JSON)
             .body(update)
             .when().patch(BASE_PATH)
@@ -235,7 +229,6 @@ class UserResourceTest extends AbstractResourceTest {
         setupTestUsers();
         given()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofDays(7)))
             .when().delete(BASE_PATH)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
@@ -245,4 +238,5 @@ class UserResourceTest extends AbstractResourceTest {
             .statusCode(200)
             .body(containsString("DeleteUserTimer"));
     }
+
 }
