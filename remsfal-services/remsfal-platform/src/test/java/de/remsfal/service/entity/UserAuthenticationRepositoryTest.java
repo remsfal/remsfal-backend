@@ -1,132 +1,149 @@
 package de.remsfal.service.entity;
 
-import de.remsfal.core.model.UserAuthenticationModel;
-import de.remsfal.core.model.UserModel;
+import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class UserAuthenticationRepositoryTest {
+class UserAuthenticationRepositoryTest extends AbstractServiceTest {
 
-    private UserAuthenticationRepository repository;
-    private EntityManager entityManager;
+    @Inject
+    UserAuthenticationRepository repository;
 
-    @BeforeEach
-    void setUp() {
-        entityManager = mock(EntityManager.class);
-        repository = new UserAuthenticationRepository() {
-            @Override
-            public EntityManager getEntityManager() {
-                return entityManager; // Liefert den gemockten EntityManager
-            }
-        };
+    @Test
+    void testFindByUserId_notFound() {
+        Optional<UserAuthenticationEntity> result = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID)
+        );
 
+        assertFalse(result.isPresent());
     }
 
     @Test
-    void testFindByUserId() {
-        TypedQuery<UserAuthenticationEntity> query = mock(TypedQuery.class);
-        UserAuthenticationEntity expectedEntity = new UserAuthenticationEntity();
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.findByUserId", UserAuthenticationEntity.class))
-            .thenReturn(query);
-        when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
-        when(query.getResultStream()).thenReturn(Stream.of(expectedEntity));
+    void testFindByUserId_found() {
+        UserEntity user = new UserEntity();
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
 
-        Optional<UserAuthenticationEntity> result = repository.findByUserId(TestData.USER_ID);
+        UserAuthenticationEntity entity = new UserAuthenticationEntity();
+        entity.setUser(user);
+        entity.setRefreshTokenId(UUID.randomUUID());
 
-        assertTrue(result.isPresent());
-        assertEquals(expectedEntity, result.get());
-        verify(query).setParameter("userId", TestData.USER_ID);
-    }
+        runInTransaction(() -> {
+            entityManager.persist(user);
+            entityManager.persist(entity);
+        });
 
-    @Test
-    void testFindByUserAuthentication() {
-        UserModel userModel = mock(UserModel.class);
-        when(userModel.getId()).thenReturn(TestData.USER_ID);
-
-        TypedQuery<UserAuthenticationEntity> query = mock(TypedQuery.class);
-        UserAuthenticationEntity expectedEntity = new UserAuthenticationEntity();
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.findByUserId", UserAuthenticationEntity.class))
-            .thenReturn(query);
-        when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
-        when(query.getResultStream()).thenReturn(Stream.of(expectedEntity));
-
-        Optional<UserAuthenticationEntity> result = repository.findByUserId(userModel.getId());
+        Optional<UserAuthenticationEntity> result = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID)
+        );
 
         assertTrue(result.isPresent());
-        assertEquals(expectedEntity, result.get());
-        verify(query).setParameter("userId", TestData.USER_ID);
+        assertEquals(TestData.USER_ID, result.get().getId());
     }
 
     @Test
     void testUpdateRefreshToken() {
-        Query query = mock(Query.class);
+        UserEntity user = new UserEntity();
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
+
+        UserAuthenticationEntity entity = new UserAuthenticationEntity();
+        entity.setUser(user);
+        UUID oldRefreshToken = UUID.randomUUID();
+        entity.setRefreshTokenId(oldRefreshToken);
+
+        runInTransaction(() -> {
+            entityManager.persist(user);
+            entityManager.persist(entity);
+        });
+
         UUID newRefreshToken = UUID.randomUUID();
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.updateRefreshTokenId")).thenReturn(query);
-        when(query.setParameter("refreshTokenId", newRefreshToken)).thenReturn(query);
-        when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
+        runInTransaction(() ->
+            repository.updateRefreshTokenId(TestData.USER_ID, newRefreshToken)
+        );
 
-        repository.updateRefreshTokenId(TestData.USER_ID, newRefreshToken);
+        UserAuthenticationEntity updated = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID).orElse(null)
+        );
 
-        verify(query).executeUpdate();
-    }
-
-    @Test
-    void testDeleteRefreshToken() {
-        Query query = mock(Query.class);
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.deleteByUserId")).thenReturn(query);
-        when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
-
-        repository.deleteByUserId(TestData.USER_ID);
-
-        verify(query).executeUpdate();
+        assertNotNull(updated);
+        assertEquals(newRefreshToken, updated.getRefreshTokenId());
     }
 
     @Test
     void testUpdateRefreshTokenUsingModel() {
+        UserEntity user = new UserEntity();
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
+
+        UserAuthenticationEntity entity = new UserAuthenticationEntity();
+        entity.setUser(user);
+        UUID oldRefreshToken = UUID.randomUUID();
+        entity.setRefreshTokenId(oldRefreshToken);
+
+        runInTransaction(() -> {
+            entityManager.persist(user);
+            entityManager.persist(entity);
+        });
+
         UUID newRefreshToken = UUID.randomUUID();
-        UserAuthenticationModel userAuthenticationModel = mock(UserAuthenticationModel.class);
-        when(userAuthenticationModel.getId()).thenReturn(TestData.USER_ID);
-        when(userAuthenticationModel.getRefreshTokenId()).thenReturn(newRefreshToken);
+        entity.setRefreshTokenId(newRefreshToken);
 
-        Query query = mock(Query.class);
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.updateRefreshTokenId")).thenReturn(query);
-        when(query.setParameter("refreshTokenId", newRefreshToken)).thenReturn(query);
-        when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
+        runInTransaction(() ->
+            repository.updateRefreshTokenId(entity)
+        );
 
-        repository.updateRefreshTokenId(userAuthenticationModel);
+        UserAuthenticationEntity updated = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID).orElse(null)
+        );
 
-        verify(query).executeUpdate();
+        assertNotNull(updated);
+        assertEquals(newRefreshToken, updated.getRefreshTokenId());
     }
 
     @Test
-    void testDeleteRefreshTokenUsingModel() {
-        UserAuthenticationModel userAuthenticationModel = mock(UserAuthenticationModel.class);
-        when(userAuthenticationModel.getId()).thenReturn(TestData.USER_ID);
+    void testDeleteByUserId() {
+        UserEntity user = new UserEntity();
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
 
-        Query query = mock(Query.class);
-        when(entityManager.createNamedQuery("UserAuthenticationEntity.deleteByUserId")).thenReturn(query);
-        when(query.setParameter("userId", TestData.USER_ID)).thenReturn(query);
+        UserAuthenticationEntity entity = new UserAuthenticationEntity();
+        entity.setUser(user);
+        entity.setRefreshTokenId(UUID.randomUUID());
 
-        repository.deleteByUserId(userAuthenticationModel.getId());
+        runInTransaction(() -> {
+            entityManager.persist(user);
+            entityManager.persist(entity);
+        });
 
-        verify(query).executeUpdate();
+        Optional<UserAuthenticationEntity> beforeDelete = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID)
+        );
+        assertTrue(beforeDelete.isPresent());
+
+        runInTransaction(() ->
+            repository.deleteByUserId(TestData.USER_ID)
+        );
+
+        Optional<UserAuthenticationEntity> afterDelete = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID)
+        );
+
+        assertFalse(afterDelete.isPresent());
     }
+
 }

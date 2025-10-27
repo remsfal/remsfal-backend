@@ -110,13 +110,13 @@ class ChatMessageResourceTest extends AbstractResourceTest {
             "(project_id, issue_id, session_id, created_at, participants) " +
             "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatSessionCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1_UUID,
+            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1,
             Instant.now(),
             Map.of(
                 TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
                 TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
         cqlSession.execute(insertChatSessionCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2, TicketingTestData.CHAT_SESSION_ID_2_UUID,
+            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2, TicketingTestData.CHAT_SESSION_ID_2,
             Instant.now(),
             Map.of(
                 TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
@@ -126,18 +126,18 @@ class ChatMessageResourceTest extends AbstractResourceTest {
             "(session_id, message_id, sender_id, content_type, content, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql,
-            TicketingTestData.CHAT_SESSION_ID_1_UUID, TicketingTestData.CHAT_MESSAGE_ID_1_UUID, TicketingTestData.USER_ID_3,
+            TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1, TicketingTestData.USER_ID_3,
             ChatMessageRepository.ContentType.TEXT.name(), "Hello World", Instant.now());
 
         cqlSession.execute(insertChatMessageCql,
-            TicketingTestData.CHAT_SESSION_ID_2_UUID, TicketingTestData.CHAT_MESSAGE_ID_2_UUID, TicketingTestData.USER_ID_4,
+            TicketingTestData.CHAT_SESSION_ID_2, TicketingTestData.CHAT_MESSAGE_ID_2, TicketingTestData.USER_ID_4,
             ChatMessageRepository.ContentType.TEXT.name(), "Hello World", Instant.now());
         
         String insertChatMessageCql3 = "INSERT INTO remsfal.chat_messages " +
             "(session_id, message_id, sender_id, content_type, url, created_at) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql3,
-            TicketingTestData.CHAT_SESSION_ID_1_UUID, TicketingTestData.CHAT_MESSAGE_ID_3_UUID, TicketingTestData.USER_ID_3,
+            TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_3, TicketingTestData.USER_ID_3,
             ChatMessageRepository.ContentType.FILE.name(), TicketingTestData.FILE_PNG_PATH, Instant.now());
     }
 
@@ -224,7 +224,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .body("session_id", equalTo(TicketingTestData.CHAT_SESSION_ID_1))
+            .body("session_id", equalTo(TicketingTestData.CHAT_SESSION_ID_1.toString()))
             .body("issue_id", equalTo(TicketingTestData.ISSUE_ID_1.toString()))
             .body("project_id", equalTo(TicketingTestData.PROJECT_ID_1.toString()))
             .body("messages[1].DATETIME", notNullValue())
@@ -247,8 +247,8 @@ class ChatMessageResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .body("messageId", equalTo(TicketingTestData.CHAT_MESSAGE_ID_1))
-            .body("sessionId", equalTo(TicketingTestData.CHAT_SESSION_ID_1))
+            .body("messageId", equalTo(TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
+            .body("sessionId", equalTo(TicketingTestData.CHAT_SESSION_ID_1.toString()))
             .body("senderId", equalTo(TicketingTestData.USER_ID_3.toString()))
             .body("contentType", equalTo("TEXT"))
             .body("content", equalTo("Hello World"))
@@ -261,8 +261,8 @@ class ChatMessageResourceTest extends AbstractResourceTest {
     void getChatMessage_FILETYPE_SUCCESS(String path) {
         String resolvedPath = path
             .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1)
-            .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_3);
+            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString())
+            .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_3.toString());
 
         given()
             .when()
@@ -304,7 +304,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
     void getChatMessage_FAILURE(String path) {
         String path_project1_session1 = path
             .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1);
+            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString());
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
@@ -321,7 +321,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), Duration.ofMinutes(10)))
             .get(path_project1_session1
-                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1))
+                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -342,8 +342,8 @@ class ChatMessageResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .body("messageId", equalTo(TicketingTestData.CHAT_MESSAGE_ID_1))
-            .body("sessionId", equalTo(TicketingTestData.CHAT_SESSION_ID_1))
+            .body("messageId", equalTo(TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
+            .body("sessionId", equalTo(TicketingTestData.CHAT_SESSION_ID_1.toString()))
             .body("senderId", equalTo(TicketingTestData.USER_ID_3.toString()))
             .body("contentType", equalTo("TEXT"))
             .body("content", equalTo("Updated Hello World"))
@@ -356,11 +356,11 @@ class ChatMessageResourceTest extends AbstractResourceTest {
     void updateChatMessage_FAILURE(String path) {
         String path_project1_session1 = path
             .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1);
+            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString());
         String updatedMessageJsonBlank = "{\"content\":\"\"}";
         String updatedMessageJson = "{\"content\":\"Updated Hello World\"}";
         String put_request = path_project1_session1
-            .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1);
+            .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString());
 
         given()
             .body(updatedMessageJsonBlank)
@@ -416,7 +416,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
     void deleteChatMessage_FAILURE(String path) {
         String path_project1_session1 = path
             .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1);
+            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString());
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
@@ -433,7 +433,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), Duration.ofMinutes(10)))
             .delete(path_project1_session1
-                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1))
+                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
@@ -444,7 +444,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
             .delete(path.replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
                 .replace("{sessionId}", UUID.randomUUID().toString())
-                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1))
+                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -479,7 +479,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
             ChatMessageEntity persistedMessage = chatMessageController.getChatMessage(UUID.fromString(sessionId), UUID.fromString(fileId));
 
             assertNotNull(persistedMessage, "Persisted message should not be null");
-            assertEquals(TicketingTestData.CHAT_SESSION_ID_1, persistedMessage.getSessionId().toString(),
+            assertEquals(TicketingTestData.CHAT_SESSION_ID_1, persistedMessage.getSessionId(),
                 "Chat session ID should match");
             assertEquals(ChatMessageRepository.ContentType.FILE.name(), persistedMessage.getContentType(),
                 "Content type should match");
@@ -566,7 +566,7 @@ class ChatMessageResourceTest extends AbstractResourceTest {
     @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/upload" })
     void uploadFile_ChatSessionClosed_FAILURE(String path) throws Exception {
         logger.info("expected session id: " + TicketingTestData.CHAT_SESSION_ID_1);
-        logger.info("actual session id: " + TicketingTestData.CHAT_SESSION_ID_1_UUID);
+        logger.info("actual session id: " + TicketingTestData.CHAT_SESSION_ID_1);
         Path tempFile = Files.createTempFile("test-file", ".txt");
         try {
             given()

@@ -31,8 +31,7 @@ public class UserAuthenticationRepository extends AbstractRepository<UserAuthent
     }
 
     public void deleteByUserId(final UUID userId) {
-        getEntityManager().createNamedQuery("UserAuthenticationEntity.deleteByUserId")
-            .setParameter(PARAM_USER_ID, userId).executeUpdate();
+        deleteById(userId);
     }
 
 }
