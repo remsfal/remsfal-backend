@@ -115,4 +115,35 @@ class UserAuthenticationRepositoryTest extends AbstractServiceTest {
         assertEquals(newRefreshToken, updated.getRefreshTokenId());
     }
 
+    @Test
+    void testDeleteByUserId() {
+        UserEntity user = new UserEntity();
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
+
+        UserAuthenticationEntity entity = new UserAuthenticationEntity();
+        entity.setUser(user);
+        entity.setRefreshTokenId(UUID.randomUUID());
+
+        runInTransaction(() -> {
+            entityManager.persist(user);
+            entityManager.persist(entity);
+        });
+
+        Optional<UserAuthenticationEntity> beforeDelete = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID)
+        );
+        assertTrue(beforeDelete.isPresent());
+
+        runInTransaction(() ->
+            repository.deleteByUserId(TestData.USER_ID)
+        );
+
+        Optional<UserAuthenticationEntity> afterDelete = runInTransaction(() ->
+            repository.findByUserId(TestData.USER_ID)
+        );
+
+        assertFalse(afterDelete.isPresent());
+    }
+
 }
