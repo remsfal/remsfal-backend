@@ -2,6 +2,7 @@ package de.remsfal.service.boundary.authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -105,9 +106,9 @@ class SessionManagerTest {
         when(controller.requireValidRefreshToken(TestData.USER_ID, refreshId))
             .thenReturn(auth);
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
-        when(controller.getProjectAuthorization(eq(TestData.USER_ID)))
+        when(controller.getProjectAuthorization(TestData.USER_ID))
             .thenReturn(createMemberships("MANAGER", "STAFF"));
-        when(controller.getTenancyAuthorization(eq(TestData.USER_ID)))
+        when(controller.getTenancyAuthorization(TestData.USER_ID))
             .thenReturn(Map.of());
 
         when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyLong()))
@@ -146,13 +147,12 @@ class SessionManagerTest {
         user.setTokenId("active");
 
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
-        when(controller.getProjectAuthorization(eq(TestData.USER_ID)))
+        when(controller.getProjectAuthorization(TestData.USER_ID))
             .thenReturn(createMemberships("MANAGER", "STAFF"));
-        when(controller.getTenancyAuthorization(eq(TestData.USER_ID)))
+        when(controller.getTenancyAuthorization(TestData.USER_ID))
             .thenReturn(Map.of());
 
-        when(jwtManager.createAccessToken(eq(user),
-            anyMap(), anyMap(), anyLong()))
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyLong()))
                 .thenReturn("access.jwt");
 
         // Act
@@ -197,9 +197,9 @@ class SessionManagerTest {
         user.setTokenId("active");
 
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
-        when(controller.getProjectAuthorization(eq(TestData.USER_ID)))
+        when(controller.getProjectAuthorization(TestData.USER_ID))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
-        when(controller.getTenancyAuthorization(eq(TestData.USER_ID)))
+        when(controller.getTenancyAuthorization(TestData.USER_ID))
                 .thenReturn(Map.of());
         when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), eq(300L)))
                 .thenReturn("access.jwt");
@@ -211,7 +211,7 @@ class SessionManagerTest {
         NewCookie refreshCookie = sessionManager.generateRefreshToken(TestData.USER_ID, TestData.USER_EMAIL);
 
         // Assert - paths should be different
-        assertFalse(accessCookie.getPath().equals(refreshCookie.getPath()),
+        assertNotEquals(refreshCookie.getPath(), accessCookie.getPath(),
                 "Access and refresh tokens should have different paths");
         assertTrue(accessCookie.getPath().startsWith("/"),
                 "Access token path should start with /");
@@ -223,7 +223,8 @@ class SessionManagerTest {
     void test_logout_deletesPersistedRefreshToken_whenCookiePresent() throws ParseException {
         String refreshTokenValue = "refresh.jwt";
 
-        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID, "e@x", "r1"));
+        when(jwtParser.parse(refreshTokenValue))
+            .thenReturn(fakeRefreshJwt(TestData.USER_ID, "e@x", "r1"));
 
         sessionManager.logout(Map.of(SessionManager.REFRESH_COOKIE_NAME,
                 new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));

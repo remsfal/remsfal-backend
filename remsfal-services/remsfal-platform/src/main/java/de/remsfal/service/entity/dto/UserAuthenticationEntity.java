@@ -21,9 +21,6 @@ import jakarta.persistence.Table;
 @NamedQuery(name = "UserAuthenticationEntity.updateRefreshTokenId",
     query = "update UserAuthenticationEntity userAuth set userAuth.refreshTokenId = :refreshTokenId " +
         "where userAuth.user.id = :userId")
-@NamedQuery(name = "UserAuthenticationEntity.deleteByUserId",
-    query = "update UserAuthenticationEntity userAuth set userAuth.refreshTokenId = null " +
-        "where userAuth.user.id = :userId")
 @Table(name = "user_authentications")
 public class UserAuthenticationEntity extends MetaDataEntity implements UserAuthenticationModel {
 

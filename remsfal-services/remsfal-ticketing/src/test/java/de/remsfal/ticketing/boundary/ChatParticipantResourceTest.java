@@ -61,13 +61,13 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
             "(project_id, issue_id, session_id, created_at, participants) " +
             "VALUES (?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatSessionCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1_UUID,
+            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1,
             Instant.now(),
             Map.of(
                 TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
                 TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
         cqlSession.execute(insertChatSessionCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2, TicketingTestData.CHAT_SESSION_ID_2_UUID,
+            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2, TicketingTestData.CHAT_SESSION_ID_2,
             Instant.now(),
             Map.of(
                 TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
