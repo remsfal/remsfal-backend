@@ -2,7 +2,7 @@ package de.remsfal.service.boundary;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.service.boundary.authentication.AuthenticationEvent;
+import de.remsfal.service.control.event.AuthenticationEvent;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;

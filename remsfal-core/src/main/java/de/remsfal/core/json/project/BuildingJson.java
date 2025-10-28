@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.Title;
@@ -42,12 +42,12 @@ public abstract class BuildingJson implements BuildingModel {
 
     @Nullable
     @Override
-    public abstract AddressModel getAddress();
+    public abstract AddressJson getAddress();
 
     public static BuildingJson valueOf(final BuildingModel model) {
         return model == null ? null : ImmutableBuildingJson.builder()
             .id(model.getId())
-            .address(model.getAddress())
+            .address(AddressJson.valueOf(model.getAddress()))
             .title(model.getTitle())
             .location(model.getLocation())
             .description(model.getDescription())

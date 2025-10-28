@@ -27,18 +27,22 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
             TestData.ADDRESS_PROVINCE_1, TestData.ADDRESS_ZIP_1, TestData.ADDRESS_COUNTRY_1);
         insertUser(TestData.USER_ID_1, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1,
             TestData.USER_FIRST_NAME_1, TestData.USER_LAST_NAME_1, TestData.ADDRESS_ID_1);
+        insertRefreshToken(TestData.USER_ID_1, UUID.randomUUID());
         insertAddress(TestData.ADDRESS_ID_2, TestData.ADDRESS_STREET_2, TestData.ADDRESS_CITY_2,
             TestData.ADDRESS_PROVINCE_2, TestData.ADDRESS_ZIP_2, TestData.ADDRESS_COUNTRY_2);
         insertUser(TestData.USER_ID_2, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2,
             TestData.USER_FIRST_NAME_2, TestData.USER_LAST_NAME_2, TestData.ADDRESS_ID_2);
+        insertRefreshToken(TestData.USER_ID_2, UUID.randomUUID());
         insertAddress(TestData.ADDRESS_ID_3, TestData.ADDRESS_STREET_3, TestData.ADDRESS_CITY_3,
             TestData.ADDRESS_PROVINCE_3, TestData.ADDRESS_ZIP_3, TestData.ADDRESS_COUNTRY_3);
         insertUser(TestData.USER_ID_3, TestData.USER_TOKEN_3, TestData.USER_EMAIL_3,
             TestData.USER_FIRST_NAME_3, TestData.USER_LAST_NAME_3, TestData.ADDRESS_ID_3);
+        insertRefreshToken(TestData.USER_ID_3, UUID.randomUUID());
         insertAddress(TestData.ADDRESS_ID_4, TestData.ADDRESS_STREET_4, TestData.ADDRESS_CITY_4,
             TestData.ADDRESS_PROVINCE_4, TestData.ADDRESS_ZIP_4, TestData.ADDRESS_COUNTRY_4);
         insertUser(TestData.USER_ID_4, TestData.USER_TOKEN_4, TestData.USER_EMAIL_4,
             TestData.USER_FIRST_NAME_4, TestData.USER_LAST_NAME_4, TestData.ADDRESS_ID_4);
+        insertRefreshToken(TestData.USER_ID_4, UUID.randomUUID());
     }
 
     protected void setupTestProjects() {
@@ -162,6 +166,14 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
                 .setParameter(5, params[4])
                 .setParameter(6, params[5])
                 .executeUpdate());
+    }
+
+    protected void insertRefreshToken(UUID userId, UUID tockenId) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO user_authentications (user_id, refresh_token_id) VALUES (?,?)")
+            .setParameter(1, userId)
+            .setParameter(2, tockenId)
+            .executeUpdate());
     }
 
     protected void insertProject(Object... params) {

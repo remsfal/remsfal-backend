@@ -2,8 +2,11 @@ services:
   minio:
     image: minio/minio
     container_name: minio
+    depends_on:
+      cassandra:
+        condition: service_healthy
     environment:
-      - MINIO_ROOT_USER=remsfaladmin
+      - MINIO_ROOT_USER=remsfalAdmin
       - MINIO_ROOT_PASSWORD=remsfalSecret
     command: server /data --console-address ":9001"
     ports:
@@ -11,6 +14,8 @@ services:
       - "9001:9001"
     volumes:
       - ./data/minio:/data
+    networks:
+      - remsfal
 
   cassandra:
     image: cassandra:4
@@ -19,18 +24,39 @@ services:
       - CASSANDRA_CLUSTER_NAME=remsfal-cassandra-cluster
       - CASSANDRA_NUM_TOKENS=8
       - CASSANDRA_SEEDS=cassandra
-      - CASSANDRA_USER=remsfaladmin
+      - CASSANDRA_USER=remsfalAdmin
       - CASSANDRA_PASSWORD=remsfalSecret
+      - MAX_HEAP_SIZE=1G
+      - HEAP_NEWSIZE=256M
     ports:
       - "9042:9042"
+    mem_limit: 2g              # Docker memory limit
+    memswap_limit: 2g          # Swap deactivation
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe cluster'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    networks:
+      - remsfal
 
   ocr:
     image: ghcr.io/remsfal/remsfal-ocr:latest
     container_name: remsfal-ocr
     depends_on:
-      - kafka-broker
-      - minio
+      kafka-broker:
+        condition: service_healthy
+      minio:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka-broker:29092
       - MINIO_ENDPOINT=minio:9000
       - PYTHONUNBUFFERED=1
+    networks:
+      - remsfal
+
+volumes:
+  cassandra_data:

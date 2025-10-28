@@ -27,7 +27,7 @@ import de.remsfal.ticketing.control.ChatSessionController;
 import de.remsfal.ticketing.control.IssueController;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 
-class ChatSessionResourceAuthTest {
+class TicketingResourceAuthTest {
 
     private static void setField(Object target, Class<?> cls, String name, Object value) throws Exception {
         Field f = cls.getDeclaredField(name);

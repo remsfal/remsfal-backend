@@ -35,6 +35,7 @@ public interface ChatParticipantEndpoint {
     Response getParticipants(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId);
 
     @GET
@@ -48,6 +49,7 @@ public interface ChatParticipantEndpoint {
     Response getParticipant(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "The participant ID", required = true)
         @PathParam("participantId") @NotNull UUID participantId);
@@ -64,6 +66,7 @@ public interface ChatParticipantEndpoint {
     Response changeParticipantRole(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "The participant ID", required = true)
         @PathParam("participantId") @NotNull UUID participantId,
@@ -80,6 +83,7 @@ public interface ChatParticipantEndpoint {
     Response removeParticipant(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "The participant ID to remove", required = true)
         @PathParam("participantId") @NotNull UUID participantId);

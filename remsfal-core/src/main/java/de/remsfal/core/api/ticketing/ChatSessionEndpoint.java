@@ -47,6 +47,7 @@ public interface ChatSessionEndpoint {
     Response getChatSession(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId);
 
     @DELETE
@@ -60,6 +61,7 @@ public interface ChatSessionEndpoint {
     Response deleteChatSession(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId);
 
     @GET

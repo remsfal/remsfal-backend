@@ -1,5 +1,6 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.service.entity.dto.AddressEntity;
@@ -172,7 +173,7 @@ class BuildingControllerTest extends AbstractServiceTest {
 
         BuildingModel model = ImmutableBuildingJson.builder()
                 .id(result.getId())
-                .address(address)
+                .address(AddressJson.valueOf(address))
                 .title(result.getTitle())
                 .description(result.getDescription())
                 .heatingSpace(result.getHeatingSpace())
@@ -214,7 +215,7 @@ class BuildingControllerTest extends AbstractServiceTest {
 
         BuildingModel model = ImmutableBuildingJson.builder()
                 .id(result.getId())
-                .address(address)
+                .address(AddressJson.valueOf(address))
                 .title(result.getTitle())
                 .description(result.getDescription())
                 .heatingSpace(result.getHeatingSpace())

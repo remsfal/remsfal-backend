@@ -158,7 +158,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getTenancies_SUCCESS_noTenanciesAreReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -171,7 +171,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getTenancies_SUCCESS_tenanciesAreReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
             .get(BASE_PATH)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -198,7 +198,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getPropertyTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{tenancyId}/properties/{rentalId}", TestData.TENANCY_ID_3, TestData.PROPERTY_ID_2.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -218,7 +218,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getSiteTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{tenancyId}/sites/{rentalId}", TestData.TENANCY_ID_2.toString(), TestData.SITE_ID_1.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -238,7 +238,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getBuildingTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{tenancyId}/buildings/{rentalId}", TestData.TENANCY_ID_2.toString(), TestData.BUILDING_ID_2.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -258,7 +258,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getApartmentTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{tenancyId}/apartments/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.APARTMENT_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -278,7 +278,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getStorageTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{tenancyId}/storages/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.STORAGE_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
@@ -298,7 +298,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     void getCommercialTenancy_SUCCESS_tenancyIsReturned() {
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{tenancyId}/commercials/{rentalId}", TestData.TENANCY_ID_1.toString(), TestData.COMMERCIAL_ID.toString())
             .then()
             .statusCode(Response.Status.OK.getStatusCode())

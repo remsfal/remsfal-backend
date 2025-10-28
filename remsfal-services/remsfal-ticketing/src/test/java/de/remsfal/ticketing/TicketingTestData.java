@@ -62,14 +62,6 @@ public class TicketingTestData extends TestData {
         + "\\n"
         + "Mit freundlichen Grüßen";
 
-    // Legacy task references for backward compatibility
-    public static final String TASK_TITLE = ISSUE_TITLE;
-    public static final String TASK_DESCRIPTION = ISSUE_DESCRIPTION;
-    public static final String TASK_TITLE_1 = ISSUE_TITLE_1;
-    public static final String TASK_DESCRIPTION_1 = ISSUE_DESCRIPTION_1;
-    public static final String TASK_TITLE_2 = ISSUE_TITLE_2;
-    public static final String TASK_DESCRIPTION_2 = ISSUE_DESCRIPTION_2;
-
     // Test user credentials with project roles for testing
     public static final Map<String, String> MANAGER_PROJECT_ROLES = Map.of(
         PROJECT_ID.toString(), "MANAGER"
@@ -78,5 +70,14 @@ public class TicketingTestData extends TestData {
     public static final Map<String, String> TENANT_PROJECT_ROLES = Map.of(
         TENANCY_ID.toString(), PROJECT_ID.toString()
     );
+
+    // Chat session test data
+    public static final UUID CHAT_SESSION_ID_1 = UUID.fromString("64ab9ef0-25ef-4a1c-81c9-5963f7c7d211");
+    public static final UUID CHAT_SESSION_ID_2 = UUID.fromString("30444d17-56a9-4275-a9a8-e4fb7305359a");
+
+    // Chat message test data
+    public static final UUID CHAT_MESSAGE_ID_1 = UUID.fromString("b9854462-abb8-4213-8b15-be9290a19959");
+    public static final UUID CHAT_MESSAGE_ID_2 = UUID.fromString("3f72a368-48bd-405e-976f-51a5c417a5c2");
+    public static final UUID CHAT_MESSAGE_ID_3 = UUID.fromString("42817454-dc1e-476e-93d5-e073b424f191");
 
 }
