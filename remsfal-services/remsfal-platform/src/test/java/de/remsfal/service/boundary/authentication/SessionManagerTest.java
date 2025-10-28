@@ -2,27 +2,23 @@ package de.remsfal.service.boundary.authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,12 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.service.entity.dao.ProjectRepository;
-import de.remsfal.service.entity.dao.UserAuthenticationRepository;
-import de.remsfal.service.entity.dao.UserRepository;
-import de.remsfal.service.entity.dto.ProjectEntity;
-import de.remsfal.service.entity.dto.ProjectMembershipEntity;
+import de.remsfal.service.control.AuthorizationController;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
@@ -56,13 +47,7 @@ class SessionManagerTest {
     SessionManager sessionManager;
 
     @InjectMock
-    UserAuthenticationRepository userAuthRepository;
-
-    @InjectMock
-    UserRepository userRepository;
-
-    @InjectMock
-    ProjectRepository projectRepository;
+    AuthorizationController controller;
 
     @InjectMock
     JWTManager jwtManager;
@@ -70,38 +55,18 @@ class SessionManagerTest {
     @InjectMock
     JWTParser jwtParser;
 
-    private List<ProjectMembershipEntity> createMemberships(String p1Role, String p2Role) {
-        return List.of(
-                mkMembership(TestData.PROJECT_ID_1, ProjectMemberModel.MemberRole.valueOf(p1Role)),
-                mkMembership(TestData.PROJECT_ID_2, ProjectMemberModel.MemberRole.valueOf(p2Role))
+    private Map<String, String> createMemberships(String p1Role, String p2Role) {
+        return Map.of(
+                TestData.PROJECT_ID_1.toString(), p1Role,
+                TestData.PROJECT_ID_2.toString(), p2Role
         );
-    }
-
-    private ProjectMembershipEntity mkMembership(UUID projectId, ProjectMemberModel.MemberRole role) {
-        ProjectEntity project = new ProjectEntity();
-        setPrivate(project, "id", projectId);
-
-        ProjectMembershipEntity membershipEntity = new ProjectMembershipEntity();
-        membershipEntity.setProject(project);
-        membershipEntity.setRole(role);
-        return membershipEntity;
-    }
-
-    private static void setPrivate(ProjectEntity projectId, String fieldName, UUID value) {
-        try {
-            Field f = projectId.getClass().getSuperclass().getDeclaredField(fieldName);
-            f.setAccessible(true);
-            f.set(projectId, value);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to set field '" + fieldName + "' on " + projectId.getClass(), e);
-        }
     }
 
     private JsonWebToken fakeRefreshJwt(UUID subject, String email, String refreshId) {
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put(Claims.sub.name(), subject.toString());
         claims.put("email", email);
-        claims.put("refreshToken", refreshId);
+        claims.put("refreshTokenId", refreshId);
 
         return new JsonWebToken() {
             @Override public String getSubject() { return subject.toString(); }
@@ -122,10 +87,10 @@ class SessionManagerTest {
     @Test
     void test_renewTokens_returnsNewCookies_whenRefreshCookieValid() throws ParseException {
         String email = "u1@example.com";
-        String refreshId = "r-123";
+        UUID refreshId = UUID.randomUUID();
         String refreshTokenValue = "refresh.jwt.token";
 
-        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID, email, refreshId));
+        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID, email, refreshId.toString()));
 
         UserEntity user = new UserEntity();
         user.setId(TestData.USER_ID);
@@ -136,43 +101,40 @@ class SessionManagerTest {
 
         UserAuthenticationEntity auth = new UserAuthenticationEntity();
         auth.setUser(user);
-        auth.setRefreshToken(refreshId);
+        auth.setRefreshTokenId(refreshId);
 
-        when(userAuthRepository.findByUserId(TestData.USER_ID)).thenReturn(Optional.of(auth));
-        when(userRepository.findByIdOptional(TestData.USER_ID)).thenReturn(Optional.of(user));
-        when(projectRepository.findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt()))
-                .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.requireValidRefreshToken(TestData.USER_ID, refreshId))
+            .thenReturn(auth);
+        when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
+        when(controller.getProjectAuthorization(TestData.USER_ID))
+            .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.getTenancyAuthorization(TestData.USER_ID))
+            .thenReturn(Map.of());
 
-        when(jwtManager.createAccessToken(eq(user),
-                argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
-                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), anyMap(), eq(300L)))
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyLong()))
                 .thenReturn("new-access");
 
         when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L)))
-                .thenReturn("new-refresh");
+                .thenReturn(refreshId.toString());
 
         // Act
         SessionManager.TokenRenewalResponse response =
-                sessionManager.renewTokens(Map.of(SessionManager.REFRESH_COOKIE_NAME,
-                        new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));
+                sessionManager.renewTokens(new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME)
+                    .value(refreshTokenValue).build());
 
         // Assert
         assertEquals("new-access", response.getAccessToken().getValue());
-        assertEquals("new-refresh", response.getRefreshToken().getValue());
+        assertEquals(refreshId.toString(), response.getRefreshToken().getValue());
 
+        verify(controller).requireValidRefreshToken(TestData.USER_ID, refreshId);
         verify(jwtParser).parse(refreshTokenValue);
-        verify(userAuthRepository, times(2)).findByUserId(TestData.USER_ID);
-        verify(userRepository).findByIdOptional(TestData.USER_ID);
-        verify(projectRepository).findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt());
-        verify(jwtManager).createAccessToken(eq(user),
-                argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
-                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))), anyMap(), eq(300L));
+        verify(jwtManager).createAccessToken(eq(user), anyMap(), anyMap(), anyLong());
         verify(jwtManager).createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L));
     }
 
     @Test
     void test_renewTokens_throws_whenCookieMissing() {
-        assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(Map.of()));
+        assertThrows(UnauthorizedException.class, () -> sessionManager.renewTokens(null));
     }
 
     @Test
@@ -184,14 +146,13 @@ class SessionManagerTest {
         user.setLastName("Roe");
         user.setTokenId("active");
 
-        when(userRepository.findByIdOptional(TestData.USER_ID)).thenReturn(Optional.of(user));
-        when(projectRepository.findMembershipByUserId(eq(TestData.USER_ID), anyInt(), anyInt()))
-                .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
+        when(controller.getProjectAuthorization(TestData.USER_ID))
+            .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.getTenancyAuthorization(TestData.USER_ID))
+            .thenReturn(Map.of());
 
-        when(jwtManager.createAccessToken(eq(user),
-                argThat(map -> "MANAGER".equals(map.get(TestData.PROJECT_ID_1.toString()))
-                    && "STAFF".equals(map.get(TestData.PROJECT_ID_2.toString()))),
-                anyMap(), eq(300L)))
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyLong()))
                 .thenReturn("access.jwt");
 
         // Act
@@ -201,16 +162,15 @@ class SessionManagerTest {
         assertEquals("access.jwt", cookie.getValue());
         assertEquals(SessionManager.ACCESS_COOKIE_NAME, cookie.getName());
         assertFalse(cookie.isHttpOnly());
+        assertTrue(cookie.getPath().startsWith("/"));
     }
 
     @Test
     void test_generateRefreshToken_persistsIdAndWrapsCookie() {
-        when(userAuthRepository.findByUserId(TestData.USER_ID)).thenReturn(Optional.empty());
-
         UserEntity user = new UserEntity();
         user.setId(TestData.USER_ID);
 
-        when(userRepository.findByIdOptional(TestData.USER_ID)).thenReturn(Optional.of(user));
+        when(controller.hasUserRefreshToken(TestData.USER_ID)).thenReturn(true);
         when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq("u1@example.com"), anyString(), eq(604800L)))
                 .thenReturn("refresh.jwt");
 
@@ -221,20 +181,55 @@ class SessionManagerTest {
         assertEquals(SessionManager.REFRESH_COOKIE_NAME, cookie.getName());
         assertEquals("refresh.jwt", cookie.getValue());
         assertTrue(cookie.isHttpOnly());
+        assertTrue(cookie.getPath().startsWith("/api"));
 
-        verify(userAuthRepository).persist(any(UserAuthenticationEntity.class));
+        verify(controller).createRefreshToken(eq(TestData.USER_ID), any(UUID.class));
+    }
+
+    @Test
+    void test_cookiePaths_areDifferentForAccessAndRefresh() {
+        // Setup for access token
+        UserEntity user = new UserEntity();
+        user.setId(TestData.USER_ID);
+        user.setEmail(TestData.USER_EMAIL);
+        user.setFirstName("Jane");
+        user.setLastName("Roe");
+        user.setTokenId("active");
+
+        when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
+        when(controller.getProjectAuthorization(TestData.USER_ID))
+                .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.getTenancyAuthorization(TestData.USER_ID))
+                .thenReturn(Map.of());
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), eq(300L)))
+                .thenReturn("access.jwt");
+        when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(TestData.USER_EMAIL), anyString(), eq(604800L)))
+                .thenReturn("refresh.jwt");
+
+        // Act
+        NewCookie accessCookie = sessionManager.generateAccessToken(TestData.USER_ID, TestData.USER_EMAIL);
+        NewCookie refreshCookie = sessionManager.generateRefreshToken(TestData.USER_ID, TestData.USER_EMAIL);
+
+        // Assert - paths should be different
+        assertNotEquals(refreshCookie.getPath(), accessCookie.getPath(),
+                "Access and refresh tokens should have different paths");
+        assertTrue(accessCookie.getPath().startsWith("/"),
+                "Access token path should start with /");
+        assertTrue(refreshCookie.getPath().startsWith("/api"),
+                "Refresh token path should start with /api");
     }
 
     @Test
     void test_logout_deletesPersistedRefreshToken_whenCookiePresent() throws ParseException {
         String refreshTokenValue = "refresh.jwt";
 
-        when(jwtParser.parse(refreshTokenValue)).thenReturn(fakeRefreshJwt(TestData.USER_ID, "e@x", "r1"));
+        when(jwtParser.parse(refreshTokenValue))
+            .thenReturn(fakeRefreshJwt(TestData.USER_ID, "e@x", "r1"));
 
         sessionManager.logout(Map.of(SessionManager.REFRESH_COOKIE_NAME,
                 new Cookie.Builder(SessionManager.REFRESH_COOKIE_NAME).value(refreshTokenValue).build()));
 
-        verify(userAuthRepository).deleteRefreshToken(TestData.USER_ID);
+        verify(controller).deleteRefreshToken(TestData.USER_ID);
     }
 
     @Test
@@ -250,9 +245,52 @@ class SessionManagerTest {
 
     @Test
     void test_generateAccessToken_throws_whenUserMissing() {
-        when(userRepository.findByIdOptional(TestData.USER_ID_4)).thenReturn(Optional.empty());
+        when(controller.getAuthenticatedUser(TestData.USER_ID_4)).thenThrow(UnauthorizedException.class);  
         assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken(TestData.USER_ID_4, "x@x"));
         verify(jwtManager, never()).createAccessToken(any(UserEntity.class), anyMap(), anyMap(), anyLong());
+    }
+
+    @Test
+    void test_needsRenewal_returnsTrueWhenTokenNull() {
+        assertTrue(sessionManager.needsRenewal(null));
+    }
+
+    @Test
+    void test_needsRenewal_returnsTrueWhenTokenExpiresSoon() throws ParseException {
+        // Create a token that expires in 4 minutes (240 seconds)
+        long currentTime = System.currentTimeMillis() / 1000;
+        long expirationTime = currentTime + 240;
+
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getExpirationTime()).thenReturn(expirationTime);
+
+        Cookie accessToken = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("token.jwt").build();
+        when(jwtParser.parse("token.jwt")).thenReturn(mockJwt);
+
+        assertTrue(sessionManager.needsRenewal(accessToken));
+    }
+
+    @Test
+    void test_needsRenewal_returnsFalseWhenTokenStillValid() throws ParseException {
+        // Create a token that expires in 10 minutes (600 seconds)
+        long currentTime = System.currentTimeMillis() / 1000;
+        long expirationTime = currentTime + 600;
+
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getExpirationTime()).thenReturn(expirationTime);
+
+        Cookie accessToken = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("token.jwt").build();
+        when(jwtParser.parse("token.jwt")).thenReturn(mockJwt);
+
+        assertFalse(sessionManager.needsRenewal(accessToken));
+    }
+
+    @Test
+    void test_needsRenewal_returnsTrueWhenTokenInvalid() throws ParseException {
+        Cookie accessToken = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("invalid.jwt").build();
+        when(jwtParser.parse("invalid.jwt")).thenThrow(new ParseException("Invalid token"));
+
+        assertTrue(sessionManager.needsRenewal(accessToken));
     }
 
 }
