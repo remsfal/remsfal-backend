@@ -65,7 +65,7 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
     }
 
     public Locale getCountry() {
-        return new Locale("", country);
+        return country != null ? new Locale("", country) : null;
     }
 
     public void setCountry(final Locale country) {

@@ -21,6 +21,11 @@ public abstract class AbstractResourceTest extends AbstractTicketingTest {
     private static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
 
     protected Cookie buildCookie(final UUID userId, final String userEmail, final String userName,
+        final Map<String, String> projectRoles, final Map<String, String> tenancyProjects) {
+        return buildCookie(userId, userEmail, userName, true, projectRoles, tenancyProjects, Duration.ofMinutes(10));
+    }
+
+    protected Cookie buildCookie(final UUID userId, final String userEmail, final String userName,
         final Boolean active, final Map<String, String> projectRoles, final Map<String, String> tenancyProjects,
         final Duration ttl) {
         long exp = (System.currentTimeMillis() / 1000) + ttl.getSeconds();
