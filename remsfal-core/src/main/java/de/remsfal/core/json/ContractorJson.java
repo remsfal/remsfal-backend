@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -64,7 +63,7 @@ public abstract class ContractorJson implements ContractorModel {
     @Nullable
     @Valid
     @Override
-    public abstract  AddressModel getAddress();
+    public abstract  AddressJson getAddress();
 
     /**
      * Create a JSON representation from a model.
@@ -86,7 +85,7 @@ public abstract class ContractorJson implements ContractorModel {
             .trade(model.getTrade());
 
         if (model.getAddress() != null) {
-            builder.address(model.getAddress());
+            builder.address(AddressJson.valueOf(model.getAddress()));
         }
 
         return builder.build();
