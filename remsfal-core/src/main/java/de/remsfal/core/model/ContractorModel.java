@@ -1,5 +1,6 @@
 package de.remsfal.core.model;
 
+import jakarta.annotation.Nullable;
 import java.util.UUID;
 
 /**
@@ -48,5 +49,13 @@ public interface ContractorModel {
      * @return the trade
      */
     String getTrade();
+
+    /**
+     * Get the address of the contractor.
+     *
+     * @return the address
+     */
+    @Nullable
+    AddressModel getAddress();
 
 }
