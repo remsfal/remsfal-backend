@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.ticketing.boundary;
 
 import de.remsfal.core.json.ticketing.InboxMessageJson;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Dummy resource used only for OpenAPI documentation preview.
- * The actual logic will be implemented in the remsfal-services module (Ticketing).
+ * The actual logic will be implemented in the later stages.
  */
 @ApplicationScoped
 @Path("/api/v1/inbox")
