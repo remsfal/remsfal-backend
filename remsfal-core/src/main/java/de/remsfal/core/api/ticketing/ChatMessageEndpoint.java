@@ -40,6 +40,7 @@ public interface ChatMessageEndpoint {
     Response sendMessage(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "Message content", required = true)
         @Valid @NotNull ChatMessageJson message);
@@ -55,6 +56,7 @@ public interface ChatMessageEndpoint {
     Response getChatMessage(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "The chat message ID", required = true)
         @PathParam("messageId") @NotNull UUID messageId) throws Exception;
@@ -72,6 +74,7 @@ public interface ChatMessageEndpoint {
     Response updateChatMessage(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "The chat message ID", required = true)
         @PathParam("messageId") @NotNull UUID messageId,
@@ -90,6 +93,7 @@ public interface ChatMessageEndpoint {
     Response deleteChatMessage(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "The chat message ID to delete", required = true)
         @PathParam("messageId") @NotNull UUID messageId);
@@ -104,6 +108,7 @@ public interface ChatMessageEndpoint {
     Response getChatMessages(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId);
 
     @POST
@@ -119,6 +124,7 @@ public interface ChatMessageEndpoint {
     Response uploadFile(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
         @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input);
 

@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,7 +50,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .get(BASE_PATH)
                 .then()
                 .statusCode(200)
@@ -73,7 +72,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -100,7 +99,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1, 
-                    TicketingTestData.USER_FIRST_NAME_1, true, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES, Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -139,7 +138,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -157,7 +156,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(json)
                 .post(BASE_PATH)
@@ -177,7 +176,7 @@ class IssueResourceTest extends AbstractResourceTest {
         final Response createResponse = given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(createJson)
                 .post(BASE_PATH)
@@ -191,7 +190,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .get(BASE_PATH + "/" + issueId)
                 .then()
                 .statusCode(200)
@@ -217,7 +216,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .get(BASE_PATH + "/" + UUID.randomUUID())
                 .then()
                 .statusCode(404);
@@ -235,7 +234,7 @@ class IssueResourceTest extends AbstractResourceTest {
         final Response createResponse = given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(createJson)
                 .post(BASE_PATH)
@@ -253,7 +252,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(updateJson)
                 .patch(BASE_PATH + "/" + issueId)
@@ -290,7 +289,7 @@ class IssueResourceTest extends AbstractResourceTest {
         final Response createResponse = given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(createJson)
                 .post(BASE_PATH)
@@ -304,7 +303,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .delete(BASE_PATH + "/" + issueId)
                 .then()
                 .statusCode(204);
@@ -313,7 +312,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .get(BASE_PATH + "/" + issueId)
                 .then()
                 .statusCode(404);
@@ -345,7 +344,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(issue1Json)
                 .post(BASE_PATH);
@@ -354,7 +353,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
                 .body(issue2Json)
                 .post(BASE_PATH);
@@ -363,7 +362,7 @@ class IssueResourceTest extends AbstractResourceTest {
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL, 
-                    TicketingTestData.USER_FIRST_NAME, true, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of(), Duration.ofMinutes(10)))
+                    TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .queryParam("projectId", TicketingTestData.PROJECT_ID.toString())
                 .get(BASE_PATH)
                 .then()

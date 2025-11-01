@@ -68,6 +68,21 @@ openssl genrsa -out private.pem 2048
 openssl rsa -in private.pem -pubout -out public.pem
 ```
 
+#### Cookie Configuration
+
+The platform service uses separate paths for access and refresh token cookies to enhance security:
+
+- **Access Token** (`remsfal_access_token`): Path set to `/api` to allow sharing across microservices
+- **Refresh Token** (`remsfal_refresh_token`): Path set to `/api/v1/authentication` to restrict to platform service only
+
+This configuration prevents refresh tokens from being sent to other microservices running on different ports (e.g., ticketing service on port 8081). Only the platform service can receive and process refresh tokens, while all services can validate access tokens.
+
+Default configuration (can be overridden in application.properties):
+```properties
+de.remsfal.auth.access-token.cookie-path=/api
+de.remsfal.auth.refresh-token.cookie-path=/api/v1/authentication
+```
+
 #### Run
 
 To package and execute the application
