@@ -422,6 +422,34 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .then().statusCode(200)
                 .body(containsString("deleteProjectTimer"));
     }
+    @Test
+    void getSubResources_SUCCESS() {
+        // 1️⃣ Projekt anlegen, um eine gültige ID zu haben
+        String projectId = given()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Project For Subresources\" }")
+                .when()
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        // 2️⃣ Alle Sub-Resource-Pfadnamen in einer Liste
+        List<String> subPaths = List.of("apartments", "commercial", "storage");
+
+        // 3️⃣ Für jeden Pfad eine GET-Anfrage ausführen
+        for (String subPath : subPaths) {
+            given()
+                    .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                    .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+                    .when()
+                    .get(BASE_PATH + "/" + projectId + "/" + subPath)
+                    .then()
+                    .statusCode(Status.OK.getStatusCode());
+        }
+    }
 
 
 }
