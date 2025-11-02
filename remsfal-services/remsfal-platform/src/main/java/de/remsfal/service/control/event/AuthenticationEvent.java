@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary.authentication;
+package de.remsfal.service.control.event;
 
 import java.util.Date;
 

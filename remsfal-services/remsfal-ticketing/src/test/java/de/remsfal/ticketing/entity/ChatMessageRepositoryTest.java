@@ -117,8 +117,13 @@ public class ChatMessageRepositoryTest extends AbstractTicketingTest {
                 "VALUES (?, ?, ?, ?, 'Message to be deleted', null, toTimestamp(now()))";
 
         cqlSession.execute(insertMessageCql, SESSION_ID, messageId, USER_ID_1, ContentType.TEXT.name());
+        assertTrue(chatMessageRepository
+            .findMessageById(SESSION_ID, messageId).isPresent());
 
         chatMessageRepository.deleteChatMessage(SESSION_ID, messageId);
+        assertFalse(chatMessageRepository
+            .findMessageById(SESSION_ID, messageId).isPresent());
+
     }
 
 

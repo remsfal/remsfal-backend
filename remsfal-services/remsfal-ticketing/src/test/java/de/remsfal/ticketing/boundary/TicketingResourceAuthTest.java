@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
@@ -28,7 +27,7 @@ import de.remsfal.ticketing.control.ChatSessionController;
 import de.remsfal.ticketing.control.IssueController;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 
-class ChatSessionResourceAuthTest {
+class TicketingResourceAuthTest {
 
     private static void setField(Object target, Class<?> cls, String name, Object value) throws Exception {
         Field f = cls.getDeclaredField(name);
@@ -70,7 +69,6 @@ class ChatSessionResourceAuthTest {
         setField(resource, AbstractResource.class, "issueController", issueController);
         setField(resource, AbstractResource.class, "principal", principalWithRole(TestData.PROJECT_ID, MemberRole.PROPRIETOR.name()));
         setField(resource, ChatSessionResource.class, "chatSessionController", controller);
-        setField(resource, ChatSessionResource.class, "logger", Logger.getLogger(ChatSessionResource.class));
         UriInfo uriInfo = mock(UriInfo.class);
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri(URI.create("http://localhost")));
         setField(resource, AbstractResource.class, "uri", uriInfo);
@@ -82,7 +80,7 @@ class ChatSessionResourceAuthTest {
 
     @Test
     void testExtractFileNameFromUrl() {
-        ChatSessionResource resource = new ChatSessionResource();
+        ChatMessageResource resource = new ChatMessageResource();
         assertEquals("file.txt", resource.extractFileNameFromUrl("http://localhost/files/file.txt"));
         assertEquals("file.txt", resource.extractFileNameFromUrl("file.txt"));
         assertThrows(IllegalArgumentException.class, () -> resource.extractFileNameFromUrl("http://localhost/files/"));

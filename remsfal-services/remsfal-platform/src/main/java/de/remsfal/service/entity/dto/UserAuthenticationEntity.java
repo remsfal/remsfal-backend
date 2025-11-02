@@ -18,11 +18,8 @@ import jakarta.persistence.Table;
 @Entity
 @NamedQuery(name = "UserAuthenticationEntity.findByUserId",
     query = "select userAuth from UserAuthenticationEntity userAuth where userAuth.user.id = :userId")
-@NamedQuery(name = "UserAuthenticationEntity.updateRefreshToken",
-    query = "update UserAuthenticationEntity userAuth set userAuth.refreshToken = :refreshToken " +
-        "where userAuth.user.id = :userId")
-@NamedQuery(name = "UserAuthenticationEntity.deleteRefreshToken",
-    query = "update UserAuthenticationEntity userAuth set userAuth.refreshToken = null " +
+@NamedQuery(name = "UserAuthenticationEntity.updateRefreshTokenId",
+    query = "update UserAuthenticationEntity userAuth set userAuth.refreshTokenId = :refreshTokenId " +
         "where userAuth.user.id = :userId")
 @Table(name = "user_authentications")
 public class UserAuthenticationEntity extends MetaDataEntity implements UserAuthenticationModel {
@@ -32,8 +29,8 @@ public class UserAuthenticationEntity extends MetaDataEntity implements UserAuth
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, columnDefinition = "uuid")
     private UserEntity user;
 
-    @Column(name = "refresh_token", nullable = true)
-    private String refreshToken;
+    @Column(name = "refresh_token_id")
+    private UUID refreshTokenId;
 
     @Override
     public UUID getId() {
@@ -59,17 +56,17 @@ public class UserAuthenticationEntity extends MetaDataEntity implements UserAuth
         return user;
     }
 
-    public void setUser(UserEntity user) {
+    public void setUser(final UserEntity user) {
         this.user = user;
     }
 
     @Override
-    public String getRefreshToken() {
-        return refreshToken;
+    public UUID getRefreshTokenId() {
+        return refreshTokenId;
     }
 
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
+    public void setRefreshTokenId(final UUID refreshTokenId) {
+        this.refreshTokenId = refreshTokenId;
     }
 
     @Override

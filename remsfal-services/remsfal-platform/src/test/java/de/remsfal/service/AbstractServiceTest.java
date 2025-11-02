@@ -29,6 +29,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
         runInTransaction(() -> {
             entityManager.createQuery("DELETE FROM AddressEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM ProjectEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM UserAuthenticationEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();
         });
     }

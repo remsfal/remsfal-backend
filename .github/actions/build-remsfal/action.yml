@@ -27,8 +27,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.m2/repository
-        key: remsfal-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: remsfal-maven
+        key: maven-${{ inputs.java-version }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: maven-${{ inputs.java-version }}
     - name: Build with Maven (package)
       shell: bash
       run: |

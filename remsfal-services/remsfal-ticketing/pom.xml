@@ -54,6 +54,12 @@
             <groupId>org.liquibase.ext</groupId>
             <artifactId>liquibase-cassandra</artifactId>
             <version>5.0.1</version>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.projectlombok</groupId>
+            		<artifactId>lombok</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <!-- TEST dependencies -->

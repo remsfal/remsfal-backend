@@ -9,7 +9,6 @@ import static de.remsfal.test.TestData.USER_ID_1;
 import static de.remsfal.test.TestData.USER_ID_2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 class ContractorEmployeeKeyTest {

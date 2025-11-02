@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.Map;
@@ -69,6 +70,13 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             .and(ISSUE_ID).eq(issueId)
             .and(SESSION_ID).eq(sessionId)
             .singleResult();
+    }
+
+    public List<ChatSessionEntity> findByIssueId(UUID projectId, UUID issueId) {
+        return template.select(ChatSessionEntity.class)
+            .where(PROJECT_ID).eq(projectId)
+            .and(ISSUE_ID).eq(issueId)
+            .result();
     }
 
     public String findStatusById(UUID projectId, UUID sessionId, UUID issueId) {

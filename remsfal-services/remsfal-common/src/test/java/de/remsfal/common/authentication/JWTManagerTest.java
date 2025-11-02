@@ -88,7 +88,7 @@ class JWTManagerTest extends AbstractTest {
 
         assertEquals(TestData.USER_ID_2.toString(), payload.get("sub"));
         assertEquals("u2@example.com", payload.get("email"));
-        assertEquals("r-123", payload.get("refreshToken"));
+        assertEquals("r-123", payload.get("refreshTokenId"));
     }
 
     @Test

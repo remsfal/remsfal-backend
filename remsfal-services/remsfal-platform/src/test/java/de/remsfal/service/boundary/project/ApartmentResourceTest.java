@@ -45,7 +45,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
@@ -66,7 +66,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
@@ -93,7 +93,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .delete(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
@@ -101,7 +101,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
@@ -115,7 +115,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
@@ -133,7 +133,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookies(buildCookies(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
