@@ -70,6 +70,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     }
 
     @Override
+    @Timed(name = "checksTimerSession", unit = MetricUnits.MILLISECONDS)
     public Response session(final String code, final String state, final String error) {
         if (error != null) {
             throw new UnauthorizedException("Error during Google authentication: " + error);
@@ -106,6 +107,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     }
 
     @Override
+    @Timed(name = "checksTimerJwks")
     public Response jwks() {
         JWKSet jwkSet = new JWKSet(jwtManager.getPublicJwk());
         return Response.ok(jwkSet.toJSONObject()).build();
