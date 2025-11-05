@@ -10,6 +10,13 @@ public interface CustomerModel extends UserModel {
 
     @Override
     default String getName() {
+        final var firstName = this.getFirstName() != null ? this.getFirstName() : "";
+        final var lastName = this.getLastName() != null ? this.getLastName() : "";
+
+        if (firstName.isEmpty() && lastName.isEmpty()) {
+            return null;
+        }
+
         return String.format("%s %s", this.getFirstName(), this.getLastName()).trim();
     }
 

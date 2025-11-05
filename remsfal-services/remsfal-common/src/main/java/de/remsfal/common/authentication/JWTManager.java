@@ -7,6 +7,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import de.remsfal.core.model.UserModel;
 import io.smallrye.jwt.algorithm.SignatureAlgorithm;
 import io.smallrye.jwt.build.Jwt;
+import io.smallrye.jwt.build.JwtClaimsBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Default;
@@ -70,14 +71,20 @@ public class JWTManager {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
-        return Jwt.subject(user.getId().toString())
+
+        JwtClaimsBuilder builder = Jwt.subject(user.getId().toString())
                 .claim("email", user.getEmail())
-                .claim("name", user.getName())
                 .claim("active", user.isActive())
                 .claim("project_roles", projectRoles)
                 .claim("tenancy_projects", tenancyProjects)
                 .issuer(issuer)
-                .expiresAt(exp)
+                .expiresAt(exp);
+
+        if (user.getName() != null) {
+            builder.claim("name", user.getName());
+        }
+
+        return builder
                 .jws()
                 .algorithm(SignatureAlgorithm.RS256)
                 .header("typ", "JWT")
