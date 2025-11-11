@@ -13,6 +13,8 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
+import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -58,6 +60,11 @@ public abstract class ContractorJson implements ContractorModel {
     @Override
     public abstract  String getTrade();
 
+    @Nullable
+    @Valid
+    @Override
+    public abstract  AddressJson getAddress();
+
     /**
      * Create a JSON representation from a model.
      *
@@ -76,6 +83,10 @@ public abstract class ContractorJson implements ContractorModel {
             .phone(model.getPhone())
             .email(model.getEmail())
             .trade(model.getTrade());
+
+        if (model.getAddress() != null) {
+            builder.address(AddressJson.valueOf(model.getAddress()));
+        }
 
         return builder.build();
     }
