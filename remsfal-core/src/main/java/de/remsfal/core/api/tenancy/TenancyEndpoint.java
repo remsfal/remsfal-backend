@@ -29,12 +29,14 @@ public interface TenancyEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all tenancies of a lessee.")
+    @APIResponse(responseCode = "200", description = "List of tenancies successfully returned")
     TenancyListJson getTenancies();
 
     @GET
     @Path("/{tenancyId}/properties/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
+    @APIResponse(responseCode = "200", description = "Property for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getPropertyTenancy(
@@ -48,6 +50,7 @@ public interface TenancyEndpoint {
     @Path("/{tenancyId}/sites/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
+    @APIResponse(responseCode = "200", description = "Site for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getSiteTenancy(
@@ -61,6 +64,7 @@ public interface TenancyEndpoint {
     @Path("/{tenancyId}/buildings/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
+    @APIResponse(responseCode = "200", description = "Building for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getBuildingTenancy(
@@ -74,7 +78,7 @@ public interface TenancyEndpoint {
     @Path("/{tenancyId}/apartments/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
-    @APIResponse(responseCode = "200", description = "The tenancy exists")
+    @APIResponse(responseCode = "200", description = "Apartment for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getApartmentTenancy(
@@ -88,6 +92,7 @@ public interface TenancyEndpoint {
     @Path("/{tenancyId}/storages/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
+    @APIResponse(responseCode = "200", description = "Storage for specified tenancy and rental ID returned.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getStorageTenancy(
@@ -101,6 +106,7 @@ public interface TenancyEndpoint {
     @Path("/{tenancyId}/commercials/{rentalId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a tenancy.")
+    @APIResponse(responseCode = "200", description = "Commercial for specified tenancy and rental ID returned.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
     TenancyJson getCommercialTenancy(
