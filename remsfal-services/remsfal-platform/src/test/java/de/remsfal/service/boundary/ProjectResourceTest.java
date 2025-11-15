@@ -411,4 +411,64 @@ class ProjectResourceTest extends AbstractResourceTest {
             .body(containsString("deleteProjectTimer"));
     }
 
+    @Test
+    void getApartmentResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + projectId + "/apartments")
+            .then()
+            .statusCode(Status.OK.getStatusCode());
+    }
+
+    @Test
+    void getCommercialResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + projectId + "/commercial-units")
+            .then()
+            .statusCode(Status.OK.getStatusCode());
+    }
+
+    @Test
+    void getStorageResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + projectId + "/storage-units")
+            .then()
+            .statusCode(Status.OK.getStatusCode());
+    }
+
 }
