@@ -74,10 +74,10 @@ class ContractorControllerTest extends AbstractServiceTest {
             .email(EMAIL_1)
             .trade(TRADE_1)
             .build();
-
+        
         // Create the contractor
         ContractorModel contractor = contractorController.createContractor(user, projectId, contractorJson);
-
+        
         // Verify the contractor was created
         assertNotNull(contractor);
         assertNotNull(contractor.getId());
@@ -86,39 +86,12 @@ class ContractorControllerTest extends AbstractServiceTest {
         assertEquals(EMAIL_1, contractor.getEmail());
         assertEquals(TRADE_1, contractor.getTrade());
         assertEquals(projectId, contractor.getProjectId());
-
+        
         // Verify the contractor is in the database
         List<ContractorEntity> contractors = contractorController.getContractors(projectId, 0, 10);
         assertEquals(1, contractors.size());
         assertEquals(contractor.getId(), contractors.get(0).getId());
-
-        long count = contractorController.countContractors(user, projectId);
-        assertEquals(1, count);
-    }
-
-    @Test
-    void createContractor_SUCCESS_contractorCreatedWithAddress() {
-        // Create a contractor JSON with address
-        ContractorJson contractorJson = ImmutableContractorJson.builder()
-            .companyName(COMPANY_NAME_1)
-            .phone(PHONE_1)
-            .email(EMAIL_1)
-            .trade(TRADE_1)
-            .address(TestData.addressBuilder().build())
-            .build();
-
-        // Create the contractor
-        ContractorModel contractor = contractorController.createContractor(user, projectId, contractorJson);
-
-        // Verify the contractor was created with address
-        assertNotNull(contractor);
-        assertNotNull(contractor.getId());
-        assertEquals(COMPANY_NAME_1, contractor.getCompanyName());
-        assertNotNull(contractor.getAddress());
-        assertEquals(TestData.ADDRESS_STREET, contractor.getAddress().getStreet());
-        assertEquals(TestData.ADDRESS_CITY, contractor.getAddress().getCity());
-        assertEquals(TestData.ADDRESS_ZIP, contractor.getAddress().getZip());
-
+        
         long count = contractorController.countContractors(user, projectId);
         assertEquals(1, count);
     }
@@ -197,36 +170,9 @@ class ContractorControllerTest extends AbstractServiceTest {
         ContractorJson updateJson = ImmutableContractorJson.builder()
             .companyName(COMPANY_NAME_2)
             .build();
-
-        assertThrows(NotFoundException.class, () ->
+        
+        assertThrows(NotFoundException.class, () -> 
             contractorController.updateContractor(user, projectId, UUID.randomUUID(), updateJson));
-    }
-
-    @Test
-    void updateContractor_SUCCESS_addressUpdated() {
-        // Create a contractor without address
-        ContractorJson contractorJson = ImmutableContractorJson.builder()
-            .companyName(COMPANY_NAME_1)
-            .phone(PHONE_1)
-            .email(EMAIL_1)
-            .trade(TRADE_1)
-            .build();
-
-        ContractorModel createdContractor = contractorController.createContractor(user, projectId, contractorJson);
-
-        // Update the contractor with address
-        ContractorJson updateJson = ImmutableContractorJson.builder()
-            .address(TestData.addressBuilder2().build())
-            .build();
-
-        ContractorModel updatedContractor = contractorController.updateContractor(user, projectId, createdContractor.getId(), updateJson);
-
-        // Verify the address was added
-        assertNotNull(updatedContractor);
-        assertNotNull(updatedContractor.getAddress());
-        assertEquals(TestData.ADDRESS_STREET_2, updatedContractor.getAddress().getStreet());
-        assertEquals(TestData.ADDRESS_CITY_2, updatedContractor.getAddress().getCity());
-        assertEquals(TestData.ADDRESS_ZIP_2, updatedContractor.getAddress().getZip());
     }
 
     @Test

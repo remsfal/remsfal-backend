@@ -30,9 +30,6 @@ public class ContractorController {
     @Inject
     ContractorRepository contractorRepository;
 
-    @Inject
-    AddressController addressController;
-
     public List<ContractorEntity> getOrganizations(final UserModel employeeId) {
         logger.infov("Retrieving all contractors of an employee (employeeId = {0})", employeeId);
         return contractorRepository.findContractorsByEmployee(employeeId.getId());
@@ -101,10 +98,6 @@ public class ContractorController {
         entity.setEmail(contractor.getEmail());
         entity.setTrade(contractor.getTrade());
 
-        if (contractor.getAddress() != null) {
-            entity.setAddress(addressController.updateAddress(contractor.getAddress(), null));
-        }
-
         contractorRepository.persistAndFlush(entity);
         return entity;
     }
@@ -137,9 +130,6 @@ public class ContractorController {
         }
         if (contractor.getTrade() != null) {
             entity.setTrade(contractor.getTrade());
-        }
-        if (contractor.getAddress() != null) {
-            entity.setAddress(addressController.updateAddress(contractor.getAddress(), entity.getAddress()));
         }
 
         return contractorRepository.merge(entity);

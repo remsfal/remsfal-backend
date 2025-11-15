@@ -2,7 +2,6 @@ package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,9 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,10 +39,6 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
 
     @Column(name = "trade")
     private String trade;
-
-    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "address_id", columnDefinition = "uuid")
-    private AddressEntity address;
 
     @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER)
     private Set<ContractorEmployeeEntity> employees;
@@ -97,31 +90,5 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
 
     public void setTrade(String trade) {
         this.trade = trade;
-    }
-
-    @Override
-    public AddressEntity getAddress() {
-        return address;
-    }
-
-    public void setAddress(final AddressEntity address) {
-        this.address = address;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof ContractorEntity e) {
-            return super.equals(e)
-                && Objects.equals(project, e.project)
-                && Objects.equals(companyName, e.companyName)
-                && Objects.equals(phone, e.phone)
-                && Objects.equals(email, e.email)
-                && Objects.equals(trade, e.trade)
-                && Objects.equals(address, e.address);
-        }
-        return false;
     }
 }

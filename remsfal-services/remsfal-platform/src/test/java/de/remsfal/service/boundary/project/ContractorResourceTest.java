@@ -133,45 +133,6 @@ class ContractorResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createContractor_SUCCESS_contractorCreatedWithAddress() {
-        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\", " +
-            "\"address\": { \"street\":\"" + TestData.ADDRESS_STREET + "\", \"city\":\"" + TestData.ADDRESS_CITY + "\", \"province\":\"" + TestData.ADDRESS_PROVINCE + "\", \"zip\":\"" + TestData.ADDRESS_ZIP + "\", \"countryCode\":\"" + TestData.ADDRESS_COUNTRY + "\"}}";
-
-        String contractorId = given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(json)
-            .post(BASE_PATH, TestData.PROJECT_ID_1.toString())
-            .then()
-            .statusCode(Status.CREATED.getStatusCode())
-            .contentType(ContentType.JSON)
-            .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID_1.toString()) + "/"))
-            .and().body("id", Matchers.notNullValue())
-            .and().body("companyName", Matchers.equalTo(COMPANY_NAME_1))
-            .and().body("phone", Matchers.equalTo(PHONE_1))
-            .and().body("email", Matchers.equalTo(EMAIL_1))
-            .and().body("trade", Matchers.equalTo(TRADE_1))
-            .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET))
-            .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY))
-            .and().body("address.zip", Matchers.equalTo(TestData.ADDRESS_ZIP))
-            .extract().path("id");
-
-        // Verify the contractor was created with address
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
-            .get(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), contractorId)
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("address.street", Matchers.equalTo(TestData.ADDRESS_STREET))
-            .and().body("address.city", Matchers.equalTo(TestData.ADDRESS_CITY));
-    }
-
-    @Test
     void getContractors_SUCCESS_emptyList() {
         given()
             .when()
