@@ -27,7 +27,6 @@ public class ECBArchitectureTest {
                 .resideInAnyPackage(
                         "..boundary..",
                         "..control..",
-                        "..entity..",
                         "..dto..",
                         "..model..",
                         "de.remsfal.core..",
