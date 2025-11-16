@@ -410,5 +410,99 @@ class ProjectResourceTest extends AbstractResourceTest {
             .then().statusCode(200)
             .body(containsString("deleteProjectTimer"));
     }
+    @Test
+    void getApartmentResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
 
+        final String buildingId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Building\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Apartment\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/apartments")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode());
+    }
+
+    @Test
+    void getCommercialResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        final String buildingId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Building\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Commercial\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/commercial-units")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode());
+    }
+
+    @Test
+    void getStorageResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        final String buildingId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Building\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Storage\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/storage-units")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode());
+    }
 }
