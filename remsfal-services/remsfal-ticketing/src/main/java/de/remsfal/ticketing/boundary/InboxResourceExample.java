@@ -55,5 +55,8 @@ public class InboxResourceExample {
         // Placeholder — this is not an implementation
         return new InboxMessageJson();
     }
+
+
+    // als gelesen markieren(Patch - gelesen; ungelesen) Statusänderung ; Delete
 }
 

@@ -11,8 +11,8 @@ public class InboxMessageJson {
     public String id;
 
     @Schema(
-            description = "Type of message (Nachricht | Rechnung)",
-            enumeration = {"Nachricht", "Rechnung"}
+            description = "Type of message (Message | Invoice)",
+            enumeration = {"Message", "Invoice"}
     )
     public String type;
 
@@ -30,4 +30,13 @@ public class InboxMessageJson {
 
     @Schema(description = "Date and time when the message was received")
     public OffsetDateTime receivedAt;
+
+    @Schema(description = "Whether the message has been read")
+    public boolean read;
+
+    @Schema(description = "ID of the user who owns the message")
+    public String userId;
+
+    @Schema(description = "URL to the related GitHub issue or external resource")
+    public String issueLink;
 }

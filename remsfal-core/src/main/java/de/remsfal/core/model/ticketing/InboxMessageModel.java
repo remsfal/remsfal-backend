@@ -19,5 +19,11 @@ public interface InboxMessageModel {
     String tenant();
 
     String receivedAt();
+
+    boolean read();
+
+    String userId();
+
+    String issueLink();
 }
 

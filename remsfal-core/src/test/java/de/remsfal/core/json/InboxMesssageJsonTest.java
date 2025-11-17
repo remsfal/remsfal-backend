@@ -19,6 +19,9 @@ public class InboxMesssageJsonTest {
         msg.property = "Wohnung A12";
         msg.tenant = "Max Mustermann";
         msg.receivedAt = OffsetDateTime.now();
+        msg.read = true;
+        msg.userId = "user-789";
+        msg.issueLink = "https://github.com/remsfal/remsfal/issues/42";
 
         assertEquals("123", msg.id);
         assertEquals("Nachricht", msg.type);
@@ -27,5 +30,9 @@ public class InboxMesssageJsonTest {
         assertEquals("Wohnung A12", msg.property);
         assertEquals("Max Mustermann", msg.tenant);
         assertNotNull(msg.receivedAt);
+
+        assertTrue(msg.read);
+        assertEquals("user-789", msg.userId);
+        assertEquals("https://github.com/remsfal/remsfal/issues/42", msg.issueLink);
     }
 }
