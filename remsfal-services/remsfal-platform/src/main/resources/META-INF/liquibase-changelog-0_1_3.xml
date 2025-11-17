@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="add-address-to-contractor" author="alexeyleping">
+        <comment>Add address_id foreign key to contractors table to establish relationship with addresses</comment>
+
+        <addColumn tableName="contractors">
+            <column name="address_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_contractor_address_id"
+                                 baseTableName="contractors" baseColumnNames="address_id"
+                                 referencedTableName="addresses" referencedColumnNames="id"
+                                 onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_contractor_address_fk" tableName="contractors">
+            <column name="address_id" type="uuid" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
