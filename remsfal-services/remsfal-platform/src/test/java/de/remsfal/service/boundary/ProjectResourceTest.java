@@ -28,6 +28,18 @@ class ProjectResourceTest extends AbstractResourceTest {
         super.setupTestUsers();
     }
 
+    private String createProperty(final String projectId) {
+        return given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Property\"}")
+                .post(BASE_PATH + "/" + projectId + "/properties")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+    }
+
     @Test
     void getProjects_FAILED_noAuthentication() {
         given()
@@ -421,13 +433,14 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(Status.CREATED.getStatusCode())
                 .extract().path("id");
+        final String propertyId = createProperty(projectId);
 
         final String buildingId = given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Building\"}")
-                .post(BASE_PATH + "/" + projectId + "/buildings")
+                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
                 .then()
                 .statusCode(Status.CREATED.getStatusCode())
                 .extract().path("id");
@@ -454,12 +467,14 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .statusCode(Status.CREATED.getStatusCode())
                 .extract().path("id");
 
+        final String propertyId = createProperty(projectId);
+
         final String buildingId = given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Building\"}")
-                .post(BASE_PATH + "/" + projectId + "/buildings")
+                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
                 .then()
                 .statusCode(Status.CREATED.getStatusCode())
                 .extract().path("id");
@@ -469,7 +484,7 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Commercial\"}")
-                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/commercial-units")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/commercials")
                 .then()
                 .statusCode(Status.CREATED.getStatusCode());
     }
@@ -486,12 +501,14 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .statusCode(Status.CREATED.getStatusCode())
                 .extract().path("id");
 
+        final String propertyId = createProperty(projectId);
+
         final String buildingId = given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Building\"}")
-                .post(BASE_PATH + "/" + projectId + "/buildings")
+                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
                 .then()
                 .statusCode(Status.CREATED.getStatusCode())
                 .extract().path("id");
@@ -501,7 +518,7 @@ class ProjectResourceTest extends AbstractResourceTest {
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Storage\"}")
-                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/storage-units")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/storages")
                 .then()
                 .statusCode(Status.CREATED.getStatusCode());
     }
