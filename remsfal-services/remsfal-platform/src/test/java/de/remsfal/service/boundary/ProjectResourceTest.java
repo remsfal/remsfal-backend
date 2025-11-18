@@ -423,7 +423,7 @@ class ProjectResourceTest extends AbstractResourceTest {
             .body(containsString("deleteProjectTimer"));
     }
     @Test
-    void getApartmentResource_SUCCESS_resourceIsInitialized() {
+    void createApartmentResource_SUCCESS_resourceIsInitialized() {
         final String projectId = given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -456,7 +456,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getCommercialResource_SUCCESS_resourceIsInitialized() {
+    void createCommercialResource_SUCCESS_resourceIsInitialized() {
         final String projectId = given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -490,7 +490,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getStorageResource_SUCCESS_resourceIsInitialized() {
+    void createStorageResource_SUCCESS_resourceIsInitialized() {
         final String projectId = given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
