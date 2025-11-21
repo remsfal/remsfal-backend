@@ -28,6 +28,18 @@ class ProjectResourceTest extends AbstractResourceTest {
         super.setupTestUsers();
     }
 
+    private String createProperty(final String projectId) {
+        return given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Property\"}")
+                .post(BASE_PATH + "/" + projectId + "/properties")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+    }
+
     @Test
     void getProjects_FAILED_noAuthentication() {
         given()
@@ -410,5 +422,104 @@ class ProjectResourceTest extends AbstractResourceTest {
             .then().statusCode(200)
             .body(containsString("deleteProjectTimer"));
     }
+    @Test
+    void createApartmentResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+        final String propertyId = createProperty(projectId);
 
+        final String buildingId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Building\"}")
+                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Apartment\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/apartments")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode());
+    }
+
+    @Test
+    void createCommercialResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        final String propertyId = createProperty(projectId);
+
+        final String buildingId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Building\"}")
+                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Commercial\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/commercials")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode());
+    }
+
+    @Test
+    void createStorageResource_SUCCESS_resourceIsInitialized() {
+        final String projectId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
+                .post(BASE_PATH)
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        final String propertyId = createProperty(projectId);
+
+        final String buildingId = given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Building\"}")
+                .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode())
+                .extract().path("id");
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"title\":\"Test Storage\"}")
+                .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/storages")
+                .then()
+                .statusCode(Status.CREATED.getStatusCode());
+    }
 }
