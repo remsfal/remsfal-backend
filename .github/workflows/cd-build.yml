@@ -6,25 +6,49 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 permissions:
-  contents: read
   attestations: write
+  contents: read
   id-token: write
   packages: write
 
 jobs:
-  build-and-push-to-registry:
-    name: "Build and push image to registry"
+  build-microservices:
+    name: "Build REMSFAL Microservices"
     runs-on: ubuntu-latest
+    # Only run this workflow for the official REMSFAL repository
+    if: github.repository == 'remsfal/remsfal-backend'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
-      - name: Verify JAR artifact exists
-        run: ls -l remsfal-services/remsfal-platform/target/remsfal-service-runner.jar
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: built-app-artifacts
+          path: |
+            src/main/docker/Dockerfile
+            remsfal-services/*/target/*-runner.jar
+          retention-days: 1
+
+  build-image-and-push-to-registry:
+    name: "Build and Deploy Docker Image (${{ matrix.microservice }})"
+    runs-on: ubuntu-latest
+    needs: [build-microservices]
+    strategy:
+      fail-fast: true
+      matrix:
+        microservice: ["remsfal-platform", "remsfal-ticketing", "remsfal-notification"]
+    steps:
+      - name: Download Artefakts 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: built-app-artifacts
+          path: .
+      - name: Verify ${{ matrix.microservice }} JAR exists
+        run: ls -l remsfal-services/${{ matrix.microservice }}/target/${{ matrix.microservice }}-runner.jar
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -35,7 +59,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.microservice }}
           tags: |
             type=raw,value=latest
             type=sha
@@ -44,15 +68,15 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./remsfal-services/remsfal-platform/src/main/docker/Dockerfile
+          file: ./src/main/docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            SERVICE_NAME=${{ matrix.microservice }}
       - name: Generate artifact attestation
         id: attest
         uses: actions/attest-build-provenance@v3
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.microservice }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-
-

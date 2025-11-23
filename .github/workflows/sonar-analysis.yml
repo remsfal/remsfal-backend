@@ -15,7 +15,7 @@ jobs:
     name: "Sonar Cloud Build"
     runs-on: ubuntu-latest
     # dependabot should not have SONAR_TOKEN
-    if: github.actor != 'dependabot[bot]' && github.repository_owner == 'remsfal' && github.event.workflow_run.conclusion == 'success'
+    if: github.actor != 'dependabot[bot]' && github.repository == 'remsfal/remsfal-backend' && github.event.workflow_run.conclusion == 'success'
 
     steps:
       - name: Checkout at triggering ref (read-only)
