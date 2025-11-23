@@ -48,7 +48,7 @@
     </dependencies>
 
     <build>
-        <finalName>remsfal-chat</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>io.quarkus.platform</groupId>

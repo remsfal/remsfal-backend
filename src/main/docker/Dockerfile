@@ -7,24 +7,43 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/verteilte-anwendungen-jvm .
+# docker build -f src/main/docker/Dockerfile --build-arg SERVICE_NAME=remsfal-platform -t remsfal/remsfal-platform .
+#
+# or
+#
+# docker build -f src/main/docker/Dockerfile --build-arg SERVICE_NAME=remsfal-ticketing -t remsfal/remsfal-ticketing .
+#
+# or
+#
+# docker build -f src/main/docker/Dockerfile --build-arg SERVICE_NAME=remsfal-notification -t remsfal/remsfal-notification .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/verteilte-anwendungen-jvm
+# docker run -i --rm -p 8080:8080 remsfal/remsfal-platform
+#
+# or
+#
+# docker run -i --rm -p 8080:8080 remsfal/remsfal-ticketing
+#
+# or
+#
+# docker run -i --rm -p 8080:8080 remsfal/remsfal-notification
 #
 # If you want to include the debug port into your docker image
-# you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5005
+# you will have to expose the debug port (default 5005 being the default) like this :  EXPOSE 8080 5005.
+# Additionally you will have to set -e JAVA_DEBUG=true and -e JAVA_DEBUG_PORT=*:5005
+# when running the container
 #
-# Then run the container using :
+# Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/verteilte-anwendungen-jvm
+# docker run -i --rm -p 8080:8080 remsfal/remsfal-platform
 #
 # This image uses the `run-java.sh` script to run the application.
 # This scripts computes the command line to execute your Java application, and
 # includes memory/GC tuning.
 # You can configure the behavior using the following environment properties:
-# - JAVA_OPTS: JVM options passed to the `java` command (example: "-verbose:class")
+# - JAVA_OPTS: JVM options passed to the `java` command (example: "-verbose:class") - Be aware that this will override
+# the default JVM options, use `JAVA_OPTS_APPEND` to append options
 # - JAVA_OPTS_APPEND: User specified Java options to be appended to generated options
 #   in JAVA_OPTS (example: "-Dsome.property=foo")
 # - JAVA_MAX_MEM_RATIO: Is used when no `-Xmx` option is given in JAVA_OPTS. This is
@@ -75,20 +94,22 @@
 #   accessed directly. (example: "foo.example.com,bar.example.com")
 #
 ###
-FROM registry.access.redhat.com/ubi8/openjdk-11:1.11
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
 
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
+ARG SERVICE_NAME
+ENV LANGUAGE='de_DE:de'
 
+# use only label confrorm to OCI specifications https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL org.opencontainers.image.authors="REMSFAL maintainers <info@remsfal.de>" \
+      org.opencontainers.image.vendor="REMSFAL Immobiliensoftware GmbH <info@remsfal.online>" \
+      org.opencontainers.image.title="REMSFAL Backend - ${SERVICE_NAME}" \
+      org.opencontainers.image.url="https://github.com/remsfal/remsfal-backend"
 
-# We make four distinct layers so if there are application changes the library layers can be re-used
-COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
-COPY --chown=185 target/quarkus-app/*.jar /deployments/
-COPY --chown=185 target/quarkus-app/app/ /deployments/app/
-COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+COPY remsfal-services/${SERVICE_NAME}/target/${SERVICE_NAME}-runner.jar /deployments/${SERVICE_NAME}-run.jar
 
 EXPOSE 8080
 USER 185
-ENV AB_JOLOKIA_OFF=""
-ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/${SERVICE_NAME}-run.jar"
 
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]

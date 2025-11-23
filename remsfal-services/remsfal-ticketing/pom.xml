@@ -83,7 +83,7 @@
     </dependencies>
 
     <build>
-        <finalName>remsfal-ticketing</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>io.quarkus.platform</groupId>
