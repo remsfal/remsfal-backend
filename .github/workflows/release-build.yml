@@ -39,12 +39,6 @@ jobs:
         with:
           java-version: 21
           distribution: 'temurin'
-          # The 'github' serverId is configured here with the GITHUB_TOKEN as the password.
-          # This is necessary for the maven-deploy-plugin to push to the Registry.
-          server-id: github
-          server-username: "remsfal-bot[bot]"
-          server-password: ${{ steps.generate-token.outputs.token }}
-          # This creates a settings.xml file containing the authentication configuration.
 
       - name: Set Git Identity for Release Commits
         run: |
