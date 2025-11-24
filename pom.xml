@@ -48,8 +48,8 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git@github.com:remsfal/remsfal-backend.git</connection>
-        <developerConnection>scm:git:git@github.com:remsfal/remsfal-backend.git</developerConnection>
+        <connection>scm:git:https://github.com/remsfal/remsfal-backend.git</connection>
+        <developerConnection>scm:git:https://github.com/remsfal/remsfal-backend.git</developerConnection>
         <url>https://github.com/remsfal/remsfal-backend</url>
     </scm>
     
