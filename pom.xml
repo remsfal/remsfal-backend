@@ -16,6 +16,7 @@
 
     <properties>
         <resources-plugin.version>3.3.1</resources-plugin.version>
+        <dependency-plugin.version>3.9.0</dependency-plugin.version>
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,6 +25,10 @@
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <failsafe-plugin.version>3.5.4</failsafe-plugin.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
+        <release-plugin.version>3.2.0</release-plugin.version>
+        <scm-plugin.version>2.2.1</scm-plugin.version>
+        <deploy-plugin.version>3.1.4</deploy-plugin.version>
+        <help-plugin.version>3.5.1</help-plugin.version>
         <jandex-plugin.version>3.5.2</jandex-plugin.version>
         <jacoco-plugin.version>0.8.14</jacoco-plugin.version>
         <sonar-plugin.version>5.3.0.6276</sonar-plugin.version>
@@ -71,6 +76,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${resources-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${dependency-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -140,6 +150,26 @@
                         <failsOnError>true</failsOnError>
                         <linkXRef>false</linkXRef>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${release-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-scm-plugin</artifactId>
+                    <version>${scm-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${deploy-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-help-plugin</artifactId>
+                    <version>${help-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>io.smallrye</groupId>
