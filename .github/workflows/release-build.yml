@@ -21,8 +21,19 @@ jobs:
     name: "Release and Deployment"
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.REMSFAL_BOT_ID }}
+          private-key: ${{ secrets.REMSFAL_BOT_KEY }}
+          owner: remsfal
+          repositories: remsfal-backend
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          fetch-depth: 0
       - name: Configure Maven Settings for GitHub Packages
         uses: actions/setup-java@v4
         with:
@@ -31,14 +42,14 @@ jobs:
           # The 'github' serverId is configured here with the GITHUB_TOKEN as the password.
           # This is necessary for the maven-deploy-plugin to push to the Registry.
           server-id: github
-          server-username: ${{ github.actor }}
-          server-password: ${{ secrets.GITHUB_TOKEN }}
+          server-username: "remsfal-bot[bot]"
+          server-password: ${{ steps.generate-token.outputs.token }}
           # This creates a settings.xml file containing the authentication configuration.
 
       - name: Set Git Identity for Release Commits
         run: |
           git config user.email "info@remsfal.de"
-          git config user.name "remsfal-bot[bot]"
+          git config user.name "REMSFAL Bot"
 
       - name: Cache Maven packages
         uses: actions/cache@v4
