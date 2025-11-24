@@ -19,7 +19,7 @@ jobs:
         java: [17, 21, 25] # LTS-Versions
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Build REMSFAL
@@ -73,7 +73,7 @@ jobs:
     if: github.event_name == 'pull_request' && github.actor != 'remsfal-bot[bot]'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Check PR branches
         run: |
           if [ "${{ github.head_ref }}" == "main" ] && [ "${{ github.base_ref }}" == "main" ]; then

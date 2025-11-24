@@ -30,7 +30,7 @@ jobs:
           owner: remsfal
           repositories: remsfal-backend
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           token: ${{ steps.generate-token.outputs.token }}
           fetch-depth: 0

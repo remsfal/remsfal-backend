@@ -21,7 +21,7 @@ jobs:
     if: github.repository == 'remsfal/remsfal-backend'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
       - name: Upload Artifacts
