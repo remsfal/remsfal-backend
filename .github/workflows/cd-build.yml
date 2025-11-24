@@ -42,7 +42,7 @@ jobs:
       matrix:
         microservice: ["remsfal-platform", "remsfal-ticketing", "remsfal-notification"]
     steps:
-      - name: Download Artefakts 📥
+      - name: Download Artefakts
         uses: actions/download-artifact@v6
         with:
           name: built-app-artifacts
