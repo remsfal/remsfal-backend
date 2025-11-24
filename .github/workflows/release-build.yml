@@ -80,6 +80,7 @@ jobs:
       - name: Run Maven release:prepare
         run: |
           mvn --batch-mode release:prepare ${{ steps.release_goal.outputs.MAVEN_PARAMS }} \
+            -DdeveloperConnectionUrl="scm:git:https://${{ steps.generate_token.outputs.token }}@github.com/${{ github.repository }}.git"
             -Dusername=x-access-token \
             -Dpassword=${{ steps.generate-token.outputs.token }} \
             -DpushChanges=true \
@@ -89,6 +90,7 @@ jobs:
       - name: Run Maven release:perform and Deploy to GitHub Packages
         run: |
           mvn --batch-mode release:perform \
+            -DconnectionUrl="scm:git:https://${{ steps.generate_token.outputs.token }}@github.com/${{ github.repository }}.git"
             -Dusername=x-access-token \
             -Dpassword=${{ steps.generate-token.outputs.token }} \
             -Dgoals=deploy
