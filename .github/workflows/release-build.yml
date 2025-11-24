@@ -80,6 +80,8 @@ jobs:
       - name: Run Maven release:prepare
         run: |
           mvn --batch-mode release:prepare ${{ steps.release_goal.outputs.MAVEN_PARAMS }} \
+            -Dusername=x-access-token \
+            -Dpassword=${{ steps.generate-token.outputs.token }} \
             -DpushChanges=true \
             -DtagBase=v \
             -DautoVersionSubmodules=true
@@ -87,4 +89,6 @@ jobs:
       - name: Run Maven release:perform and Deploy to GitHub Packages
         run: |
           mvn --batch-mode release:perform \
+            -Dusername=x-access-token \
+            -Dpassword=${{ steps.generate-token.outputs.token }} \
             -Dgoals=deploy
