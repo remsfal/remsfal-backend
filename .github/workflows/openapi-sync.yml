@@ -20,7 +20,7 @@ jobs:
     if: github.repository == 'remsfal/remsfal-backend' && github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
         with:
@@ -50,7 +50,7 @@ jobs:
 
       - name: Checkout Frontend at existing PR branch
         if: steps.frontend-selection.outputs.pr-branch != ''
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: remsfal/remsfal-frontend
           ref: ${{ steps.frontend-selection.outputs.pr-branch }}
@@ -58,7 +58,7 @@ jobs:
           path: remsfal-frontend
       - name: Checkout Frontend at main branch
         if: steps.frontend-selection.outputs.pr-branch == ''
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: remsfal/remsfal-frontend
           ref: main
