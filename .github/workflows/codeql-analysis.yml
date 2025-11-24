@@ -2,15 +2,18 @@ name: "CodeQL Analysis"
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: ["main"]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: ["main", "dev"]
+    branches: ["main"]
 
 jobs:
   analyze:
     name: Analyze
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    # Only run this workflow for the official REMSFAL repository
+    # CodeQL analysis is subject to a fee for private repositories
+    if: github.repository == 'remsfal/remsfal-backend'
     permissions:
       # required for all workflows
       security-events: write

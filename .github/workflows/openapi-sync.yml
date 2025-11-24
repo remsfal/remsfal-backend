@@ -37,14 +37,15 @@ jobs:
           repositories: remsfal-backend,remsfal-frontend
       - name: Identify merged PR
         id: backend-merge
-        uses: ./.github/actions/find-merged-pr
+        uses: remsfal/.github/.github/actions/find-merged-pr@main
         with:
           token: ${{ steps.generate-token.outputs.token }}
       - name: Select existing PR on target
         id: frontend-selection
-        uses: ./.github/actions/select-branch
+        uses: remsfal/.github/.github/actions/select-branch@main
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          repository: remsfal/remsfal-frontend
           branch-prefix: ${{ env.BRANCH_PREFIX }}
 
       - name: Checkout Frontend at existing PR branch

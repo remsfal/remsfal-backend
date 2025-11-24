@@ -79,10 +79,30 @@ jobs:
             -DpushChanges=true \
             -DautoVersionSubmodules=true
 
+      - name: Determine Release Tag
+        id: determine_tag
+        run: |
+          # Determines the newest (and thus just created) tag in the repository.
+          RELEASE_TAG=$(git describe --tags --abbrev=0)
+          echo "Determined Release Tag: $RELEASE_TAG"
+          
+          # Save the tag to the output variables for subsequent steps
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_OUTPUT
+
       - name: Run Maven release:perform and Deploy to GitHub Packages
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mvn --batch-mode release:perform \
             -Dgoals=deploy \
             -Dmaven.test.skip=true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
+          # Simple release notes body
+          body: |
+            Release version ${{ steps.determine_tag.outputs.RELEASE_TAG }}
