@@ -39,7 +39,7 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager {
             .withNetworkAliases("kafka-broker")
             .withEnv("KAFKA_NODE_ID", "1")
             .withEnv("KAFKA_PROCESS_ROLES", "broker,controller")
-            .withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", "1@kafka-broker:9093")
+            .withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", "1@localhost:9093")
             .withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER")
             .withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + kafkaInternalPort + ",CONTROLLER://0.0.0.0:9093")
             .withEnv("KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://kafka-broker:" + kafkaInternalPort)
