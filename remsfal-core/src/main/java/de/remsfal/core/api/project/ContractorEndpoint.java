@@ -40,6 +40,7 @@ public interface ContractorEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all contractors of a project.")
+    @APIResponse(responseCode = "200", description = "A list of contractors was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ContractorListJson getContractors(
@@ -73,6 +74,7 @@ public interface ContractorEndpoint {
     @Path("/{contractorId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of a specific contractor.")
+    @APIResponse(responseCode = "200", description = "An existing contractor was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or contractor does not exist")
     ContractorJson getContractor(
@@ -87,6 +89,7 @@ public interface ContractorEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a specific contractor.")
+    @APIResponse(responseCode = "200", description = "An existing contractor was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or contractor does not exist")
     ContractorJson updateContractor(
