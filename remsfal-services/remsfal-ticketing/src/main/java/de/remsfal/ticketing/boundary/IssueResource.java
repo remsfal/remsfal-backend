@@ -21,6 +21,7 @@ import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.ticketing.control.IssueEventProducer;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
 
@@ -36,6 +37,9 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
+
+    @Inject
+    IssueEventProducer issueEventProducer;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
@@ -94,13 +98,17 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
         final IssueJson response;
+        final IssueModel createdIssue;
         if (principalRole == UserRole.MANAGER) {
-            response = IssueJson.valueOf(issueController.createIssue(principal, issue));
+            createdIssue = issueController.createIssue(principal, issue);
+            response = IssueJson.valueOf(createdIssue);
         } else if (principalRole == UserRole.TENANT) {
-            response = IssueJson.valueOfFiltered(issueController.createIssue(principal, issue, Status.PENDING));
+            createdIssue = issueController.createIssue(principal, issue, Status.PENDING);
+            response = IssueJson.valueOfFiltered(createdIssue);
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
+        issueEventProducer.sendIssueCreated(createdIssue, principal);
         final URI location = uri.getAbsolutePathBuilder().path(issue.getProjectId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
@@ -125,7 +133,14 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
-        return IssueJson.valueOf(issueController.updateIssue(entity.getKey(), issue));
+        IssueModel updatedIssue = issueController.updateIssue(entity.getKey(), issue);
+        IssueJson response = IssueJson.valueOf(updatedIssue);
+        if (issue.getOwnerId() != null) {
+            issueEventProducer.sendIssueAssigned(updatedIssue, principal, updatedIssue.getOwnerId());
+        } else {
+            issueEventProducer.sendIssueUpdated(updatedIssue, principal);
+        }
+        return response;
     }
 
     @Override
