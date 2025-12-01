@@ -7,6 +7,10 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.logging.Logger;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.core.json.eventing.EmailEventJson.EmailEventType;
@@ -45,16 +49,33 @@ public class NotificationController {
         notificationEmitter.send(mail);
     }
 
+    @WithSpan("NotificationController.informUserAboutProjectMembership")
     public void informUserAboutProjectMembership(final CustomerModel user, final UUID projectId) {
+        Span span = Span.current();
+        if (span != null) {
+            span.setAttribute("remsfal.notification.type", "PROJECT_ADMISSION");
+            span.setAttribute("remsfal.user.email", user.getEmail());
+            span.setAttribute("remsfal.project.id", projectId.toString());
+        }
         logger.infov("Sending information about new membership (email={0})", user.getEmail());
-        EmailEventJson mail = ImmutableEmailEventJson.builder()
-            .user(UserJson.valueOf(user))
-            .locale(defaultLanguage)
-            .type(EmailEventType.PROJECT_ADMISSION)
-            .link(frontendBaseUrl + frontendProjectsPath + "/" + projectId)
-            .build();
-        logger.info("Test: " + mail.toString());
-        notificationEmitter.send(mail);
-    }
+        try {
+            EmailEventJson mail = ImmutableEmailEventJson.builder()
+                    .user(UserJson.valueOf(user))
+                    .locale(defaultLanguage)
+                    .type(EmailEventType.PROJECT_ADMISSION)
+                    .link(frontendBaseUrl + frontendProjectsPath + "/" + projectId)
+                    .build();
+            logger.info("Test: " + mail.toString());
+            notificationEmitter.send(mail);
 
-}
+            if (span != null) {
+                span.addEvent("EmailEventJson PROJECT_ADMISSION sent to Kafka");
+            }
+        } catch (RuntimeException e) {
+            if (span != null) {
+                span.recordException(e);
+                span.setStatus(StatusCode.ERROR, "Failed to send PROJECT_ADMISSION event");
+            }
+            throw e;
+        }
+    }
