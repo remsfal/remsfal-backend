@@ -40,8 +40,7 @@ public class IssueEventProducer {
     }
 
     public void sendIssueMentioned(final IssueModel issue, final UserModel actor, final UUID mentionedUserId) {
-        sendEvent(IssueEventType.ISSUE_MENTIONED, issue, actor, null,
-                toUserJson(mentionedUserId, null, null));
+        sendEvent(IssueEventType.ISSUE_MENTIONED, issue, actor, null, toUserJson(mentionedUserId, null, null));
     }
 
     private void sendEvent(final IssueEventType type, final IssueModel issue, final UserModel actor,
