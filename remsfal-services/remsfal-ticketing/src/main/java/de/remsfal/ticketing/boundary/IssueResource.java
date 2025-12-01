@@ -64,8 +64,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         UUID tenancyId, UnitType rentalType, UUID rentalId,
         Status status) {
         final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId,
-                status);
+            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
 

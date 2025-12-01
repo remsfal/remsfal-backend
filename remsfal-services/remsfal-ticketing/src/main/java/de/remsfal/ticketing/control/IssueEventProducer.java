@@ -43,7 +43,8 @@ public class IssueEventProducer {
         sendEvent(IssueEventType.ISSUE_MENTIONED, issue, actor, null, toUserJson(mentionedUserId, null, null));
     }
 
-    private void sendEvent(final IssueEventType type, final IssueModel issue, final UserModel actor, final UserJson owner, final UserJson mentionedUser) {
+    private void sendEvent(final IssueEventType type, final IssueModel issue, final UserModel actor,
+        final UserJson owner, final UserJson mentionedUser) {
         if (issue == null) {
             logger.warn("Skipping issue event because issue is null");
             return;
