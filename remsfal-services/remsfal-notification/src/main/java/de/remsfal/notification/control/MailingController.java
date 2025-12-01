@@ -9,6 +9,10 @@ import java.util.ResourceBundle;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+
 import de.remsfal.core.model.UserModel;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -49,14 +53,40 @@ public class MailingController {
         sendWithAlias(mail, "info");
     }
 
+    @WithSpan("MailingController.sendNewMembershipEmail")
     public void sendNewMembershipEmail(final UserModel recipient, final String link, final Locale locale) {
+        Span span = Span.current();
+        if (span != null) {
+            span.setAttribute("remsfal.mail.type", "new-membership");
+            span.setAttribute("remsfal.mail.recipient", recipient.getEmail());
+            span.setAttribute("remsfal.mail.locale", locale.toLanguageTag());
+            if (link != null) {
+                span.setAttribute("remsfal.mail.link", link);
+            }
+        }
         logger.infov("Sending new membership email to {0}", recipient.getEmail());
-        final TemplateInstance instance = newMembership.data("name", recipient.getName()).data("buttonLink", link);
-        final String subject = getSubject("new-membership", locale);
+        try {
+            final TemplateInstance instance = newMembership
+                    .data("name", recipient.getName())
+                    .data("buttonLink", link);
+            final String subject = getSubject("new-membership", locale);
+            if (span != null) {
+                span.addEvent("Rendering new-membership template");
+            }
 
-        String html = setTemplateProperties(instance, locale).render();
-        Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
-        sendWithAlias(mail, "info");
+            String html = setTemplateProperties(instance, locale).render();
+            Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
+            if (span != null) {
+                span.addEvent("Sending email via Mailer");
+            }
+            sendWithAlias(mail, "info");
+        } catch (RuntimeException e) {
+            if (span != null) {
+                span.recordException(e);
+                span.setStatus(StatusCode.ERROR, "Failed to send new membership email");
+            }
+            throw e;
+        }
     }
 
     private TemplateInstance setTemplateProperties(TemplateInstance template, final Locale locale) {
