@@ -35,6 +35,7 @@ public class ECBArchitectureTest {
                         "jakarta..",             // Jakarta EE
                         "org.jboss.logging..",   // Logging Framework
                         "io.quarkus..",          // Quarkus Framework
+                        "io.opentelemetry..",   // OpenTelemetry
                         "org.eclipse.microprofile..",
                         "com.google.api.client..",
                         "com.nimbusds.jose..",
@@ -67,6 +68,7 @@ public class ECBArchitectureTest {
                         "jakarta..",
                         "org.jboss.logging..",
                         "io.quarkus..",
+                        "io.opentelemetry..",
                         "org.eclipse.microprofile..",
                         "io.smallrye.jwt.auth.principal.."
                 );
