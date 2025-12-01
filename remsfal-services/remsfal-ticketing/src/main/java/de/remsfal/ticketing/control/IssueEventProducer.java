@@ -24,20 +24,19 @@ public class IssueEventProducer {
     Logger logger;
 
     @Inject
-    @Channel(IssueEventJson.TOPIC)
+    @Channel(IssueEventJson.TOPIC_BASIC)
     Emitter<IssueEventJson> emitter;
 
     public void sendIssueCreated(final IssueModel issue, final UserModel actor) {
-        sendEvent(IssueEventType.ISSUE_CREATED, issue, actor, null, null);
+        sendEvent(IssueEventType.ISSUE_CREATED, issue, actor, toUserJson(issue.getOwnerId(), null, null), null);
     }
 
     public void sendIssueUpdated(final IssueModel issue, final UserModel actor) {
-        sendEvent(IssueEventType.ISSUE_UPDATED, issue, actor, null, null);
+        sendEvent(IssueEventType.ISSUE_UPDATED, issue, actor, toUserJson(issue.getOwnerId(), null, null), null);
     }
 
     public void sendIssueAssigned(final IssueModel issue, final UserModel actor, final UUID ownerId) {
-        sendEvent(IssueEventType.ISSUE_ASSIGNED, issue, actor, toUserJson(ownerId, ownerDetailsEmail(ownerId, actor),
-                ownerDetailsName(ownerId, actor)), null);
+        sendEvent(IssueEventType.ISSUE_ASSIGNED, issue, actor, toUserJson(ownerId, null, null), null);
     }
 
     public void sendIssueMentioned(final IssueModel issue, final UserModel actor, final UUID mentionedUserId) {
@@ -59,7 +58,7 @@ public class IssueEventProducer {
                 .title(issue.getTitle())
                 .issueType(issue.getType())
                 .status(issue.getStatus())
-                .user(toUserJson(actor))
+                .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName()))
                 .owner(owner)
                 .mentionedUser(mentionedUser)
                 .build();
@@ -79,13 +78,6 @@ public class IssueEventProducer {
         }
     }
 
-    private UserJson toUserJson(final UserModel user) {
-        if (user == null) {
-            return null;
-        }
-        return toUserJson(user.getId(), user.getEmail(), user.getName());
-    }
-
     private UserJson toUserJson(final UUID userId, final String email, final String name) {
         if (userId == null && email == null && name == null) {
             return null;
@@ -101,19 +93,5 @@ public class IssueEventProducer {
             builder.name(name);
         }
         return builder.build();
-    }
-
-    private String ownerDetailsEmail(final UUID ownerId, final UserModel actor) {
-        if (ownerId != null && actor != null && ownerId.equals(actor.getId())) {
-            return actor.getEmail();
-        }
-        return null;
-    }
-
-    private String ownerDetailsName(final UUID ownerId, final UserModel actor) {
-        if (ownerId != null && actor != null && ownerId.equals(actor.getId())) {
-            return actor.getName();
-        }
-        return null;
     }
 }

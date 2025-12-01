@@ -19,7 +19,8 @@ import jakarta.annotation.Nullable;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public interface IssueEventJson {
 
-    String TOPIC = "issue-events";
+    String TOPIC_BASIC = "issue-events-basic";
+    String TOPIC_ENRICHED = "issue-events-enriched";
 
     enum IssueEventType {
         ISSUE_CREATED,
@@ -36,6 +37,12 @@ public interface IssueEventJson {
 
     @Nullable
     String getTitle();
+
+    /**
+     * Frontend link to the issue detail/edit view.
+     */
+    @Nullable
+    String getLink();
 
     @Nullable
     IssueModel.Type getIssueType();

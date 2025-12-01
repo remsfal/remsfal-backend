@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.jboss.logging.Logger;
@@ -133,9 +134,11 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
+        UUID previousOwner = entity.getOwnerId();
         IssueModel updatedIssue = issueController.updateIssue(entity.getKey(), issue);
         IssueJson response = IssueJson.valueOf(updatedIssue);
-        if (issue.getOwnerId() != null) {
+        UUID newOwner = updatedIssue.getOwnerId();
+        if (issue.getOwnerId() != null && !Objects.equals(previousOwner, newOwner)) {
             issueEventProducer.sendIssueAssigned(updatedIssue, principal, updatedIssue.getOwnerId());
         } else {
             issueEventProducer.sendIssueUpdated(updatedIssue, principal);
