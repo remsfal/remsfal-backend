@@ -6,6 +6,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.ProjectMemberModel;
@@ -113,19 +117,39 @@ public class ProjectController {
     }
 
     @Transactional
+    @WithSpan("ProjectController.addProjectMember")
     public ProjectMemberModel addProjectMember(final UserModel user, final UUID projectId,
-        final ProjectMemberModel member) {
-        logger.infov("Adding a project membership (user={0}, project={1}, memberEmail={2}, memberRole={3})",
-            user.getId(), projectId, member.getEmail(), member.getRole());
-        final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
-            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+                                               final ProjectMemberModel member) {
 
-        UserEntity userEntity = userController.findOrCreateUser(member);
-        projectEntity.addMember(userEntity, member.getRole());
-        notificationController.informUserAboutProjectMembership(userEntity, projectId);
-        projectRepository.mergeAndFlush(projectEntity);
-        return projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
-            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        Span span = Span.current();
+        if (span != null) {
+            span.setAttribute("remsfal.project.id", projectId.toString());
+            span.setAttribute("remsfal.actor.user.id", user.getId().toString());
+            if (member.getEmail() != null) {
+                span.setAttribute("remsfal.member.email", member.getEmail());
+            }
+            if (member.getRole() != null) {
+                span.setAttribute("remsfal.member.role", member.getRole().name());
+            }
+        }
+        try {
+            logger.infov("Adding a project membership (user={0}, project={1}, memberEmail={2}, memberRole={3})",
+                    user.getId(), projectId, member.getEmail(), member.getRole());
+            final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
+                    .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+            UserEntity userEntity = userController.findOrCreateUser(member);
+            projectEntity.addMember(userEntity, member.getRole());
+            notificationController.informUserAboutProjectMembership(userEntity, projectId);
+            projectRepository.mergeAndFlush(projectEntity);
+            return projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
+                    .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        } catch (RuntimeException e) {
+            if (span != null) {
+                span.recordException(e);
+                span.setStatus(StatusCode.ERROR, "Failed to add project member");
+            }
+            throw e;
+        }
     }
 
     @Transactional
