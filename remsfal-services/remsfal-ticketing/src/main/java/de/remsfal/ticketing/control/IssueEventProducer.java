@@ -43,24 +43,21 @@ public class IssueEventProducer {
         sendEvent(IssueEventType.ISSUE_MENTIONED, issue, actor, null, toUserJson(mentionedUserId, null, null));
     }
 
-    private void sendEvent(final IssueEventType type, final IssueModel issue, final UserModel actor,
-            final UserJson owner, final UserJson mentionedUser) {
+    private void sendEvent(final IssueEventType type, final IssueModel issue, final UserModel actor, final UserJson owner, final UserJson mentionedUser) {
         if (issue == null) {
             logger.warn("Skipping issue event because issue is null");
             return;
         }
 
         final IssueEventJson event = ImmutableIssueEventJson.builder()
-                .type(type)
-                .issueId(issue.getId())
-                .projectId(issue.getProjectId())
-                .title(issue.getTitle())
-                .issueType(issue.getType())
-                .status(issue.getStatus())
-                .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName()))
-                .owner(owner)
-                .mentionedUser(mentionedUser)
-                .build();
+            .type(type)
+            .issueId(issue.getId())
+            .projectId(issue.getProjectId())
+            .title(issue.getTitle())
+            .issueType(issue.getType())
+            .status(issue.getStatus())
+            .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName())).owner(owner)
+            .mentionedUser(mentionedUser).build();
 
         try {
             logger.infov("Sending issue event: {0}", event);
