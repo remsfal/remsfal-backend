@@ -57,7 +57,7 @@ public class NotificationConsumer {
                     mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
                     break;
             }
-            logger.infov("Email has been send");
+            logger.infov("Email has been sent");
         } catch (RuntimeException e) {
             if (span != null) {
                 span.recordException(e);
