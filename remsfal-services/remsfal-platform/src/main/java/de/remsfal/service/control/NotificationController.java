@@ -41,11 +41,11 @@ public class NotificationController {
     public void informUserAboutRegistration(final CustomerModel user) {
         logger.infov("Sending information about user registration (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
-            .user(UserJson.valueOf(user))
-            .locale(defaultLanguage)
-            .type(EmailEventType.USER_REGISTRATION)
-            .link(frontendBaseUrl)
-            .build();
+                .user(UserJson.valueOf(user))
+                .locale(defaultLanguage)
+                .type(EmailEventType.USER_REGISTRATION)
+                .link(frontendBaseUrl)
+                .build();
         notificationEmitter.send(mail);
     }
 
@@ -79,3 +79,4 @@ public class NotificationController {
             throw e;
         }
     }
+}
