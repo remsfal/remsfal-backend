@@ -3,6 +3,7 @@ package de.remsfal.service.control;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -16,8 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
@@ -26,6 +30,7 @@ import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserEntity;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class IssueEventEnricherTest {
 
     @Mock
@@ -47,6 +52,11 @@ class IssueEventEnricherTest {
         UUID projectId = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
         UUID actorId = UUID.randomUUID();
+        UUID reporterId = UUID.randomUUID();
+        UUID tenancyId = UUID.randomUUID();
+        UUID blockedBy = UUID.randomUUID();
+        UUID relatedTo = UUID.randomUUID();
+        UUID duplicateOf = UUID.randomUUID();
 
         UserEntity ownerEntity = new UserEntity();
         ownerEntity.setId(ownerId);
@@ -63,6 +73,13 @@ class IssueEventEnricherTest {
             .title("Ticket title")
             .issueType(IssueModel.Type.MAINTENANCE)
             .status(IssueModel.Status.OPEN)
+            .reporterId(reporterId)
+            .tenancyId(tenancyId)
+            .ownerId(ownerId)
+            .description("Fixture broken")
+            .blockedBy(blockedBy)
+            .relatedTo(relatedTo)
+            .duplicateOf(duplicateOf)
             .user(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
             .owner(ImmutableUserJson.builder().id(ownerId).build())
             .mentionedUser(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
@@ -78,8 +95,50 @@ class IssueEventEnricherTest {
         assertEquals("Person", enriched.getOwner().getLastName());
         assertEquals(event.getUser(), enriched.getUser());
         assertEquals(event.getMentionedUser(), enriched.getMentionedUser());
+        assertEquals(reporterId, enriched.getReporterId());
+        assertEquals(tenancyId, enriched.getTenancyId());
+        assertEquals(ownerId, enriched.getOwnerId());
+        assertEquals("Fixture broken", enriched.getDescription());
+        assertEquals(blockedBy, enriched.getBlockedBy());
+        assertEquals(relatedTo, enriched.getRelatedTo());
+        assertEquals(duplicateOf, enriched.getDuplicateOf());
 
         verify(userRepository).findByIdOptional(ownerId);
+    }
+
+    @Test
+    void enrich_ownerWithoutId_returnsSameOwnerAndSkipsLookup() {
+        UserJson ownerWithoutId = ImmutableUserJson.builder()
+            .email("no-id@example.com")
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .type(IssueEventType.ISSUE_UPDATED)
+            .issueId(UUID.randomUUID())
+            .projectId(UUID.randomUUID())
+            .title("Owner without id")
+            .owner(ownerWithoutId)
+            .build();
+
+        IssueEventJson enriched = enricher.enrich(event);
+
+        assertEquals(ownerWithoutId, enriched.getOwner());
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void buildIssueLink_returnsBaseUrlWhenIdentifiersMissing() throws Exception {
+        enricher.frontendBaseUrl = "https://frontend.example/base//";
+        IssueEventJson event = mock(IssueEventJson.class);
+        when(event.getIssueId()).thenReturn(null);
+        when(event.getProjectId()).thenReturn(null);
+
+        var buildLink = IssueEventEnricher.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
+        buildLink.setAccessible(true);
+        String link = (String) buildLink.invoke(enricher, event);
+
+        assertEquals("https://frontend.example/base//", link);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
