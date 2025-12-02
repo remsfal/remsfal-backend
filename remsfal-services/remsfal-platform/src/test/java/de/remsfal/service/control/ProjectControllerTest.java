@@ -153,7 +153,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         final UserModel user = userController
             .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
 
-        final ProjectModel project = projectController.createProject(user, 
+        final ProjectModel project = projectController.createProject(user,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
         assertNotNull(project);
 
@@ -178,7 +178,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         final UserModel user2 = userController
             .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
-        final ProjectModel project = projectController.createProject(user1, 
+        final ProjectModel project = projectController.createProject(user1,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
         assertNotNull(project);
 
@@ -192,7 +192,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         final UserModel user = userController
             .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
 
-        final ProjectModel project = projectController.createProject(user, 
+        final ProjectModel project = projectController.createProject(user,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
 
@@ -214,7 +214,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         final UserModel user2 = userController
             .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
-        final ProjectModel project = projectController.createProject(user1, 
+        final ProjectModel project = projectController.createProject(user1,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
         final long enties = entityManager
@@ -229,7 +229,7 @@ class ProjectControllerTest extends AbstractServiceTest {
             .role(MemberRole.MANAGER)
             .build();
         projectController.addProjectMember(user1, project.getId(), member2);
-        
+
         final String userRole = entityManager
             .createNativeQuery(
                 "SELECT MEMBER_ROLE FROM project_memberships WHERE PROJECT_ID = :projectId and USER_ID = :userId")
@@ -250,11 +250,28 @@ class ProjectControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void addProjectMember_FAILED_projectNotFound_triggersErrorPath() {
+        final UserModel user = userController
+                .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        final UUID unknownProjectId = UUID.randomUUID();
+
+        final ProjectMemberModel member = ImmutableProjectMemberJson.builder()
+                .email(TestData.USER_EMAIL_2)
+                .active(true)
+                .role(MemberRole.MANAGER)
+                .build();
+
+        assertThrows(NotFoundException.class,
+                () -> projectController.addProjectMember(user, unknownProjectId, member));
+    }
+
+    @Test
     void getProjectMembers_SUCCESS_multipleUsers() throws InterruptedException {
         final UserModel user = userController
             .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
-        ProjectModel project = projectController.createProject(user, 
+        ProjectModel project = projectController.createProject(user,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
 
@@ -265,7 +282,7 @@ class ProjectControllerTest extends AbstractServiceTest {
             .build();
         member2 = projectController.addProjectMember(user, project.getId(), member2);
         assertNotNull(member2.getId());
-        
+
         ProjectMemberModel member3 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_3)
             .active(true)
@@ -273,7 +290,7 @@ class ProjectControllerTest extends AbstractServiceTest {
             .build();
         member3 = projectController.addProjectMember(user, project.getId(), member3);
         assertEquals(TestData.USER_EMAIL_3, member3.getEmail());
-        
+
         ProjectMemberModel member4 = ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_4)
             .active(false)
@@ -281,7 +298,7 @@ class ProjectControllerTest extends AbstractServiceTest {
             .build();
         member4 = projectController.addProjectMember(user, project.getId(), member4);
         assertEquals(MemberRole.LESSOR, member4.getRole());
-        
+
         final long enties = entityManager
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership where membership.project.id = :projectId", Long.class)
             .setParameter("projectId", project.getId())
@@ -296,7 +313,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         final UserModel user = userController
             .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
-        final ProjectModel project = projectController.createProject(user, 
+        final ProjectModel project = projectController.createProject(user,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
 
@@ -321,7 +338,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         }
         assertEquals(TestData.USER_EMAIL_2, model.getEmail());
         final UserModel user2 = model;
-        
+
         assertNotNull(user2.getId());
 
         assertTrue(projectController.removeProjectMember(project.getId(), user2.getId()));
@@ -352,5 +369,5 @@ class ProjectControllerTest extends AbstractServiceTest {
             .toString();
         assertEquals("LESSOR", userRole);
     }
-    
+
 }
