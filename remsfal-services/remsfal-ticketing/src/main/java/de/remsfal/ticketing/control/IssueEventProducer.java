@@ -57,8 +57,17 @@ public class IssueEventProducer {
             .title(issue.getTitle())
             .issueType(issue.getType())
             .status(issue.getStatus())
-            .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName())).owner(owner)
-            .mentionedUser(mentionedUser).build();
+            .reporterId(issue.getReporterId())
+            .tenancyId(issue.getTenancyId())
+            .ownerId(issue.getOwnerId())
+            .description(issue.getDescription())
+            .blockedBy(issue.getBlockedBy())
+            .relatedTo(issue.getRelatedTo())
+            .duplicateOf(issue.getDuplicateOf())
+            .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName()))
+            .owner(owner)
+            .mentionedUser(mentionedUser)
+            .build();
 
         try {
             logger.infov("Sending issue event: {0}", event);

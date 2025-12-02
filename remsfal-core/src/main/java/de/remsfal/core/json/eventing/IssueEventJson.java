@@ -51,6 +51,27 @@ public interface IssueEventJson {
     IssueModel.Status getStatus();
 
     @Nullable
+    UUID getReporterId();
+
+    @Nullable
+    UUID getTenancyId();
+
+    @Nullable
+    UUID getOwnerId();
+
+    @Nullable
+    String getDescription();
+
+    @Nullable
+    UUID getBlockedBy();
+
+    @Nullable
+    UUID getRelatedTo();
+
+    @Nullable
+    UUID getDuplicateOf();
+
+    @Nullable
     UserJson getUser();
 
     /**
