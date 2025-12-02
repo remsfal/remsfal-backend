@@ -7,15 +7,22 @@ import jakarta.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.test.AbstractTest;
+import de.remsfal.test.TestData;
+import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.model.UserModel;
+import de.remsfal.notification.control.MailingController;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
+import java.lang.reflect.Field;
+import java.util.Locale;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 class MailingResourceTest extends AbstractTest {
@@ -60,5 +67,27 @@ class MailingResourceTest extends AbstractTest {
         assertTrue(actual.getHtml().contains("You have been added to a new project."));
         assertEquals("You’ve been added to a new project", actual.getSubject());
         assertEquals(4, mailbox.getTotalMessagesSent());
+    }
+
+    @Test
+    void sendNewMembershipEmail_failureTriggersErrorPath() throws Exception {
+        MailingController controller = MailingController.class
+                .getDeclaredConstructor()
+                .newInstance();
+        Field loggerField = MailingController.class.getDeclaredField("logger");
+        loggerField.setAccessible(true);
+        loggerField.set(controller, org.jboss.logging.Logger.getLogger(MailingController.class));
+        Field templateField = MailingController.class.getDeclaredField("newMembership");
+        templateField.setAccessible(true);
+        templateField.set(controller, null);
+        UserModel recipient = ImmutableUserJson.builder()
+                .id(TestData.USER_ID)
+                .email(TestData.USER_EMAIL)
+                .build();
+        assertThrows(RuntimeException.class,
+                () -> controller.sendNewMembershipEmail(
+                        recipient,
+                        "https://remsfal.de/projects/" + TestData.PROJECT_ID,
+                        Locale.GERMAN));
     }
 }
