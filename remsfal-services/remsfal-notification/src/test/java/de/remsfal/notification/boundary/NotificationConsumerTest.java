@@ -2,10 +2,18 @@ package de.remsfal.notification.boundary;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
+import java.lang.reflect.Field;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.awaitility.Awaitility;
@@ -16,14 +24,20 @@ import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
+import de.remsfal.core.json.eventing.EmailEventJson.EmailEventType;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.notification.control.MailingController;
+import de.remsfal.notification.boundary.NotificationConsumer;
 import de.remsfal.test.kafka.AbstractKafkaTest;
+import de.remsfal.test.TestData;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.kafka.KafkaCompanionResource;
 import jakarta.inject.Inject;
+
+import org.eclipse.microprofile.reactive.messaging.Message;
 
 @QuarkusTest
 @QuarkusTestResource(KafkaCompanionResource.class)
@@ -97,6 +111,32 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 verify(mailingController, atLeastOnce())
                     .sendNewMembershipEmail(user, "https://remsfal.de", Locale.GERMAN)
                 );
+    }
+
+    @Test
+    void consumeUserNotification_failureTriggersErrorPath() {
+        UserJson user = ImmutableUserJson.builder()
+                .id(TestData.USER_ID)
+                .email(TestData.USER_EMAIL)
+                .build();
+
+        EmailEventJson mail = ImmutableEmailEventJson.builder()
+                .user(user)
+                .locale(Locale.GERMAN.toLanguageTag())
+                .type(EmailEventType.PROJECT_ADMISSION)
+                .link("https://remsfal.de/projects/" + TestData.PROJECT_ID)
+                .build();
+
+        @SuppressWarnings("unchecked")
+        Message<EmailEventJson> msg = mock(Message.class);
+        when(msg.getPayload()).thenReturn(mail);
+
+        doThrow(new RuntimeException("Mail sending failed"))
+                .when(mailingController)
+                .sendNewMembershipEmail(any(), anyString(), any(Locale.class));
+
+        assertThrows(RuntimeException.class,
+                () -> consumer.consumeUserNotification(msg));
     }
 
 }
