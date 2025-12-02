@@ -156,6 +156,52 @@ class UserControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void updateUser_SUCCESS_noLocaleInserted() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        final String email = entityManager
+                .createQuery("SELECT user.email FROM UserEntity user where user.id = :userId", String.class)
+                .setParameter("userId", user.getId())
+                .getSingleResult();
+        assertEquals(TestData.USER_EMAIL, email);
+        assertEquals(user.getEmail(), email);
+
+        final String newUserName = "Dr. " + TestData.USER_LAST_NAME;
+        CustomerModel updatedUser =
+                ImmutableUserJson.builder().id(user.getId()).lastName(newUserName).email(TestData.USER_EMAIL).build();
+        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        assertEquals("de", updatedUser.getLocale());
+
+        final String locale = entityManager
+                .createQuery("SELECT user.locale FROM UserEntity user where user.id = :userId", String.class)
+                .setParameter("userId", user.getId())
+                .getSingleResult();
+        assertEquals("de", locale);
+    }
+
+    @Test
+    void updateUser_SUCCESS_LocaleInserted() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        final String email = entityManager
+                .createQuery("SELECT user.email FROM UserEntity user where user.id = :userId", String.class)
+                .setParameter("userId", user.getId())
+                .getSingleResult();
+        assertEquals(TestData.USER_EMAIL, email);
+        assertEquals(user.getEmail(), email);
+
+        final String insertedLocale = "en";
+        CustomerModel updatedUser =
+                ImmutableUserJson.builder().id(user.getId()).email(TestData.USER_EMAIL).locale(insertedLocale).build();
+        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        assertEquals(insertedLocale, updatedUser.getLocale());
+
+        final String locale = entityManager
+                .createQuery("SELECT user.locale FROM UserEntity user where user.id = :userId", String.class)
+                .setParameter("userId", user.getId())
+                .getSingleResult();
+        assertEquals(insertedLocale, locale);
+    }
+
+    @Test
     void deleteUser_SUCCESS_repeatedRemove() {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
