@@ -12,8 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
-import java.lang.reflect.Field;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.awaitility.Awaitility;
@@ -25,9 +23,7 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
 import de.remsfal.core.json.eventing.EmailEventJson.EmailEventType;
-import de.remsfal.core.model.UserModel;
 import de.remsfal.notification.control.MailingController;
-import de.remsfal.notification.boundary.NotificationConsumer;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import de.remsfal.test.TestData;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
