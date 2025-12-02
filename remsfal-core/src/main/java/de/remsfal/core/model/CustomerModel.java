@@ -36,4 +36,6 @@ public interface CustomerModel extends UserModel {
 
     LocalDateTime getLastLoginDate();
 
+    String getLocale();
+
 }

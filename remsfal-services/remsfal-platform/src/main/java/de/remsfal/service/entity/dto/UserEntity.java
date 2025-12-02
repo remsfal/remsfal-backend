@@ -59,6 +59,9 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Column(name = "private_phone_number")
     private String privatePhoneNumber;
 
+    @Column(name = "locale")
+    private String locale;
+
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
 
@@ -145,6 +148,11 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     public void setPrivatePhoneNumber(String privatePhoneNumber) {
         this.privatePhoneNumber = privatePhoneNumber;
     }
+
+    @Override
+    public String getLocale() {return locale;}
+
+    public void setLocale(String locale) {this.locale = locale;}
 
     public Set<ProjectMembershipEntity> getMemberships() {
         return memberships;

@@ -91,6 +91,11 @@ public abstract class UserJson implements CustomerModel {
     @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getPrivatePhoneNumber();
 
+    @Size(max = 2, message = "Locale must be 2 characters long")
+    @Nullable
+    @Override
+    public abstract String getLocale();
+
     @Nullable
     @Null
     @Override
@@ -112,6 +117,7 @@ public abstract class UserJson implements CustomerModel {
             .mobilePhoneNumber(model.getMobilePhoneNumber())
             .businessPhoneNumber(model.getBusinessPhoneNumber())
             .privatePhoneNumber(model.getPrivatePhoneNumber())
+            .locale(model.getLocale())
             .registeredDate(model.getRegisteredDate())
             .lastLoginDate(model.getLastLoginDate())
             .build();

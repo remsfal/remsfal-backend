@@ -106,6 +106,11 @@ public class UserController {
         if(user.getPrivatePhoneNumber() != null) {
             entity.setPrivatePhoneNumber(user.getPrivatePhoneNumber());
         }
+        if(user.getLocale() != null) {
+            entity.setLocale(user.getLocale());
+        } else{
+            entity.setLocale("de");
+        }
         return repository.merge(entity);
     }
     
