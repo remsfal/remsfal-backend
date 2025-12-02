@@ -27,7 +27,13 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     public Optional<IssueEntity> findByIssueId(final UUID issueId) {
         return template.select(IssueEntity.class)
             .where(ISSUE_ID).eq(issueId)
-            .singleResult();
+                .singleResult();
+    }
+
+    public List<? extends IssueModel> findByCompanyId(UUID companyId) {
+        return template.select(IssueEntity.class)
+                .where("company_id").eq(companyId)
+                .result();
     }
 
     public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID ownerId, UUID tenancyId,
