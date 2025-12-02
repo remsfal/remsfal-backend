@@ -41,11 +41,11 @@ public class NotificationController {
     public void informUserAboutRegistration(final CustomerModel user) {
         logger.infov("Sending information about user registration (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
-                .user(UserJson.valueOf(user))
-                .locale(defaultLanguage)
-                .type(EmailEventType.USER_REGISTRATION)
-                .link(frontendBaseUrl)
-                .build();
+            .user(UserJson.valueOf(user))
+            .locale(defaultLanguage)
+            .type(EmailEventType.USER_REGISTRATION)
+            .link(frontendBaseUrl)
+            .build();
         notificationEmitter.send(mail);
     }
 
@@ -60,11 +60,11 @@ public class NotificationController {
         logger.infov("Sending information about new membership (email={0})", user.getEmail());
         try {
             EmailEventJson mail = ImmutableEmailEventJson.builder()
-                    .user(UserJson.valueOf(user))
-                    .locale(defaultLanguage)
-                    .type(EmailEventType.PROJECT_ADMISSION)
-                    .link(frontendBaseUrl + frontendProjectsPath + "/" + projectId)
-                    .build();
+                .user(UserJson.valueOf(user))
+                .locale(defaultLanguage)
+                .type(EmailEventType.PROJECT_ADMISSION)
+                .link(frontendBaseUrl + frontendProjectsPath + "/" + projectId)
+                .build();
             logger.info("Test: " + mail.toString());
             notificationEmitter.send(mail);
 

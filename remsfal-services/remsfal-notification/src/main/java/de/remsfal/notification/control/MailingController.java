@@ -67,8 +67,8 @@ public class MailingController {
         logger.infov("Sending new membership email to {0}", recipient.getEmail());
         try {
             final TemplateInstance instance = newMembership
-                    .data("name", recipient.getName())
-                    .data("buttonLink", link);
+                .data("name", recipient.getName())
+                .data("buttonLink", link);
             final String subject = getSubject("new-membership", locale);
             if (span != null) {
                 span.addEvent("Rendering new-membership template");
