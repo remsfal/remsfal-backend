@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
-<project
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-        xmlns="http://maven.apache.org/POM/4.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>remsfal-services</artifactId>
     <name>remsfal - Microservices Architecture (pom)</name>
@@ -11,7 +8,7 @@
     <parent>
         <groupId>de.remsfal</groupId>
         <artifactId>remsfal-backend</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.11-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -24,7 +21,7 @@
     </modules>
 
     <properties>
-        <quarkus.version>3.29.3</quarkus.version>
+        <quarkus.version>3.30.1</quarkus.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
     </properties>
@@ -37,6 +34,12 @@
                 <version>${quarkus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>2.0.2</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

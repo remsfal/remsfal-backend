@@ -111,7 +111,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .get(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1.toString(), TicketingTestData.CHAT_SESSION_ID_1, nonExistingParticipantId)
+            .get(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, nonExistingParticipantId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -123,7 +123,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
             .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), Duration.ofMinutes(10)))
-            .get(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1.toString(), TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
+            .get(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -140,7 +140,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .put(CHAT_SESSION_ID_PATH + "/participants/{participantId}/role", TicketingTestData.ISSUE_ID_1.toString(), TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
+            .put(CHAT_SESSION_ID_PATH + "/participants/{participantId}/role", TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
@@ -155,7 +155,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .get(CHAT_PARTICIPANTS_PATH, TicketingTestData.ISSUE_ID_1.toString(), emptySessionId)
+            .get(CHAT_PARTICIPANTS_PATH, TicketingTestData.ISSUE_ID_1, emptySessionId)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
@@ -196,7 +196,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(CHAT_PARTICIPANTS_PATH, TicketingTestData.ISSUE_ID_2.toString(), TicketingTestData.CHAT_SESSION_ID_2)
+            .get(CHAT_PARTICIPANTS_PATH, TicketingTestData.ISSUE_ID_2, TicketingTestData.CHAT_SESSION_ID_2)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("[1].userId", equalTo(TicketingTestData.USER_ID_4.toString()))
@@ -211,7 +211,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
                     nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                     rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .get(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1.toString(), TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
+            .get(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("[0].userId", equalTo(TicketingTestData.USER_ID_4.toString()))
@@ -230,7 +230,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                 nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                 rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .put(CHAT_SESSION_ID_PATH + "/participants/{participantId}/role", TicketingTestData.ISSUE_ID_1.toString(), TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
+            .put(CHAT_SESSION_ID_PATH + "/participants/{participantId}/role", TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_4)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .body("[0].userId", equalTo(TicketingTestData.USER_ID_4.toString()))
@@ -245,7 +245,7 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
                 nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
                 rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
             .contentType(ContentType.JSON)
-            .delete(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1.toString(), TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
+            .delete(CHAT_SESSION_ID_PATH + "/participants/{participantId}", TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.USER_ID_3)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }

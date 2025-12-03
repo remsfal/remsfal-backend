@@ -14,12 +14,13 @@ env:
 
 jobs:
   build-and-sync-openapi:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: "Generate OpenAPI and Synchronize with the Frontend"
     runs-on: ubuntu-latest
+    # Only run this workflow for the official REMSFAL repository
+    if: github.repository == 'remsfal/remsfal-backend' && github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
         with:
@@ -36,19 +37,20 @@ jobs:
           repositories: remsfal-backend,remsfal-frontend
       - name: Identify merged PR
         id: backend-merge
-        uses: ./.github/actions/find-merged-pr
+        uses: remsfal/.github/.github/actions/find-merged-pr@main
         with:
           token: ${{ steps.generate-token.outputs.token }}
       - name: Select existing PR on target
         id: frontend-selection
-        uses: ./.github/actions/select-branch
+        uses: remsfal/.github/.github/actions/select-branch@main
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          repository: remsfal/remsfal-frontend
           branch-prefix: ${{ env.BRANCH_PREFIX }}
 
       - name: Checkout Frontend at existing PR branch
         if: steps.frontend-selection.outputs.pr-branch != ''
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: remsfal/remsfal-frontend
           ref: ${{ steps.frontend-selection.outputs.pr-branch }}
@@ -56,7 +58,7 @@ jobs:
           path: remsfal-frontend
       - name: Checkout Frontend at main branch
         if: steps.frontend-selection.outputs.pr-branch == ''
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: remsfal/remsfal-frontend
           ref: main

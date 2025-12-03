@@ -14,11 +14,11 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.FileStorage;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -108,7 +108,7 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         String fileUrl = fileStorageController.uploadFile(input);
         assertNotNull(fileUrl);
         try (InputStream downloaded = fileStorageController.downloadFile(fileName)) {
-            assertNotNull("Downloaded file input stream should not be null", downloaded);
+            assertNotNull(downloaded, "Downloaded file input stream should not be null");
             byte[] downloadedBytes = downloaded.readAllBytes();
             assertTrue(new String(downloadedBytes).contains("This is some text"));
         }
@@ -141,7 +141,7 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
                 break;
             }
         }
-        assertFalse("Object should have been deleted", found);
+        assertFalse(found, "Object should have been deleted");
     }
 
     private MultipartFormDataInput createMultipartFormDataInput(String fileName, String contentType, byte[] content)

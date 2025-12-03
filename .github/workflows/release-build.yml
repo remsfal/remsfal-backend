@@ -1,78 +1,108 @@
 name: "RELEASE Build"
-permissions:
-  contents: write
-  packages: write
 
 on:
   workflow_dispatch:
     inputs:
-      nextRelease:
-        description: 'Next Release Version (leave empty to automatically patch current version)'
+      release_version:
+        description: 'Optional release version (e.g., 1.0.0, if not provided, will be auto-calculated)'
         required: false
-        default: ''
+        type: string
+      development_version:
+        description: 'Optional next development version (e.g., 1.0.1-SNAPSHOT, if not provided, will be auto-calculated)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
-  build:
-    name: "Build Release (JDK17)"
+  release:
+    name: "Release and Deployment"
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.REMSFAL_BOT_ID }}
+          private-key: ${{ secrets.REMSFAL_BOT_KEY }}
+          owner: remsfal
+          repositories: remsfal-backend
       - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Determine Next Version
-        id: next-version
-        run: |
-          CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "Current project version: $CURRENT_VERSION"
-          if  [ -z "${{ github.event.inputs.nextRelease }}" ]; then
-            # Assumes semantic versioning, increments minor version
-            NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."$3+1}')
-          else
-            NEXT_VERSION="${{ github.event.inputs.nextRelease }}"
-          fi
-          echo "Next version: $NEXT_VERSION"
-          echo "RELEASE_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
-
-      - name: Set up JDK 17
+        uses: actions/checkout@v6
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          fetch-depth: 0
+      - name: Configure Maven Settings for GitHub Packages
         uses: actions/setup-java@v5
         with:
-          java-version: '17'
+          java-version: 21
           distribution: 'temurin'
-          server-id: 'github'
+
+      - name: Set Git Identity for Release Commits
+        run: |
+          git config user.email "info@remsfal.de"
+          git config user.name "REMSFAL Bot"
 
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven  
+          key: maven-21-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-21
 
-      - name: Set project version
-        run: mvn versions:set -DnewVersion=${RELEASE_VERSION}
+      - name: Determine Release Goal Parameters
+        id: release_goal
+        run: |
+          RELEASE_VERSION="${{ github.event.inputs.release_version }}"
+          DEV_VERSION="${{ github.event.inputs.development_version }}"
+          MAVEN_PARAMS=""
+          
+          # Logic: If BOTH versions are specified, use them.
+          if [ -n "$RELEASE_VERSION" ] && [ -n "$DEV_VERSION" ]; then
+            echo "Using custom versions: Release=$RELEASE_VERSION, Dev=$DEV_VERSION"
+            MAVEN_PARAMS="-DreleaseVersion=$RELEASE_VERSION -DdevelopmentVersion=$DEV_VERSION"
+          else
+            # Otherwise: Use the plugin's automatic patch versioning.
+            echo "No versions specified. Maven will automatically determine the next patch version."
+            # No manual logic needed here, as the Release Plugin handles this correctly by default.
+          fi
+          
+          echo "MAVEN_PARAMS=$MAVEN_PARAMS" >> $GITHUB_OUTPUT
 
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Run Maven release:prepare
+        run: |
+          mvn --batch-mode release:prepare ${{ steps.release_goal.outputs.MAVEN_PARAMS }} \
+            -Dusername=x-access-token \
+            -Dpassword=${{ steps.generate-token.outputs.token }} \
+            -DpushChanges=true \
+            -DautoVersionSubmodules=true
 
-      - name: Add & Commit
-        uses: EndBug/add-and-commit@v9.1.4
-        with:
-          add: '["pom.xml", "remsfal-core/pom.xml", "remsfal-service/pom.xml"]'
-          message: "Release version ${{env.RELEASE_VERSION}}"
-          author_name: "Release Bot"
-          author_email: "info@remsfal.de"
-          tag: "v${{env.RELEASE_VERSION}}"
-          push: "--tags --force"
+      - name: Determine Release Tag
+        id: determine_tag
+        run: |
+          # Determines the newest (and thus just created) tag in the repository.
+          RELEASE_TAG=$(git describe --tags --abbrev=0)
+          echo "Determined Release Tag: $RELEASE_TAG"
+          
+          # Save the tag to the output variables for subsequent steps
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Publish to GitHub Packages Apache Maven
-        # Disable tests because they were already run in previous build step
-        run: mvn --batch-mode  deploy -PgithubDeploy -Dmaven.test.skip=true 
+      - name: Run Maven release:perform and Deploy to GitHub Packages
         env:
-          GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn --batch-mode release:perform \
+            -Dgoals=deploy \
+            -Dmaven.test.skip=true
 
-      - name: Create Release
-        uses: ncipollo/release-action@v1.20.0
-        with: 
-          artifacts: "remsfal-service/target/remsfal-service-runner.jar"
-          tag: "v${{env.RELEASE_VERSION}}"
-          body: "Release version ${{env.RELEASE_VERSION}}"
-          allowUpdates: true
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
+          # Simple release notes body
+          body: |
+            Release version ${{ steps.determine_tag.outputs.RELEASE_TAG }}
