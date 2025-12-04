@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2012 sp1 (x64) (http://www.altova.com) by Bernhard Rath (Ing.-Büro B. Rath) -->
+<!-- 
+
+X31-Mengenermittlung
+GAEB_DA_XML_3.2_2013-10  
+======================
+
+2013-11-05 Bearbeiter: Ladislav Ostry, Martin Hubert
+- Namen der Lib auf "GAEB_DA_XML_Lib_3.2_2013-10.xsd" geändert
+
+GAEB_DA_XML 3.2 2012-01
+======================
+
+2013-09-05 Bearbeiter: Bernhard Rath
+Änderungen laut Protokoll Telko 2013.09.02
+- AddText unter GAEB und tgQtyDetermination gelöscht.
+
+
+2011-07-29 Martin Hubert
+- Namespace gelöscht - xs:schema xmlns:ds="http://www.w3.org/2000/09/xmldsig#" 
+- Zeile gelöscht -            <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd"/>
+- Zeile gelöscht -            <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+- Zeile gelöscht     	        <xs:attribute ref="xml:space" default="preserve"/>
+2011-11-24 Stefan Deußen
+- Das Schemata der Datenphase 31 für den Austausch der Mengenermittlung ist nicht kompatibel mit
+  dem bisherigen Schema für die 80er Phasen. Aus diesem Grunde werden die einzelnen Änderungen nicht
+  detailliert aufgeführt sondern nur grob skizziert.
+- Alle geänderten Typen, welche nicht mehr kompatibel mit den ursp. Typen sind z.B. weil einige Elemente 
+  enternt wurden, werden mit einem Suffix "QD" für QuantifyDetermination ausgezeichnet.
+- Das Element "QtyDeterm" wurde neu eingefügt.
+- Die Informationen zur Gliederung des Leistungsverzeichnisses "BoQBkdn" wurde in den Typen "tgBoQQD" aufgenommen.
+
+2012-01-30 Bernhard Rath
+MeasureRow zu QTakeoff und Attribut Row geändert. Hindergrund ist die möglicherweise falsche Interpretation einen Inhaltest von MeasureRow
+MQty zu Qty geändert
+Schema Lib eingefügt: GAEB_DA_XML_00_3.2_2012-01_Lib
+Elemente die hier vorhanden waren und in der Bibliothek vorhanden sind, wurden gestrichen.
+
+2012-02-13 Bernhard Rath
+QDetermList in QDetermItem geändert
+tgQDetermList in tgQDetermItem geändert
+"choice" unter tgQDetermItem in "sequence" geändert
+QDetermItem unter Item auf 0...unendlich gesetzt
+Item unter ItemlistQD auf 0 bis unendlich gesetzt
+überflüssige "choice" unter tgBoQBodyQD entfernt
+
+2012-03-26 Bernhard Rath
+In tgQTakeoffRow die Pattern von " {2,2} {11,11}.{67,67}" auf " {2,2} {9,9}.{69,69}" gesetzt
+
+2012-06-06 Bearbeiter: Bernhard Rath
+tgQDetermItem und tgQTakeoffRow in die Lib übernommen unf hier gelöscht
+tgQtyDeterm umbenannt in tgQtyDetermination wegen Konflikt in Lib
+
+2012-10-04 Bearbeiter: Bernhard Rath
+Ctlg mit  type="tgCtlg" unter tgBoQQD eingefügt.
+
+2012-10-17 Bearbeiter: Bernhard Rath
+tgQtyDetermInfo in die Lib übertragen
+Unter tgItemQD die Elemente Qty und QDetermItem gelöscht
+Unter tgItemQD das Element QtyDeterm mit Typ tgQtyDeterm eingefügt
+Unter tgBoQCtgyQD die Elemente CPVCode, ALNBGroupNo, ALNBSerNo und  Accepted gelöscht
+
+2018-11-24 Bearbeiter: Bernhard Rath
+- Namen der Lib auf "GAEB_DA_XML_Lib_3.3_2018-11.xsd" geändert
+- Schemaname geändert
+- In tgBoQQD und tgItemQD das Atrribut GUID (BIM ) eingefügt.
+
+2019-05-26 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_31_3.3_2019-05.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2019-05.xsd angepasst.
+
+2019-11-15 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_31_3.3_2019-11.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2019-11.xsd angepasst.
+
+2019-11-29 Bearbeiter Bernhard Rath
+Restrictions angepasst.
+
+2019-12-16 Bearbeiter Bernhard Rath
+tgPrjInfoQD mit RefPrjName und tgRefPrjID eingefügt.
+PrjInfo (tgPrjInfoQD) unter tgQtyDetermination eingefügt.
+RefBoQName und RefBoQID unter tgBoQQD eingefügt.
+
+2020-07-14 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_31_3.3_2020-06.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2020-06.xsd angepasst.
+
+2020-07-14 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_31_3.3_2021-05.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2021-05.xsd angepasst.
+
+2023-01-11 Bearbeiter Bernhard Rath
+GAEBInfo für dieses Ausgabe angepasst.
+CtlgAttachment mit Unterelementen eingeügt unter tgBoQQD. Damit können dann unterschiedliche Attachments in der Aufmasszeile referenziert werden.
+
+2023-01-12 Bearbeiter Bernhard Rath
+Referenzierungs Type angepast.
+
+2023-01-20 Bearbeiter Bernhard Rath
+Kommentar unter CtgAttachment.Attachment.Name eingefügt.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.gaeb.de/GAEB_DA_XML/DA31/3.3" targetNamespace="http://www.gaeb.de/GAEB_DA_XML/DA31/3.3" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:redefine schemaLocation="../GAEB_DA_XML_Lib_3.3_2021-05.xsd">
+		<xs:simpleType name="tgDP">
+			<xs:restriction base="tgDP">
+				<xs:enumeration value="31">
+					<xs:annotation>
+						<xs:documentation>Mengenermittlung</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:redefine>
+	<!--=========================================================================================================-->
+	<!--GAEB-->
+	<xs:element name="GAEB" type="tgGAEBQD"/>
+	<!--=========================================================================================================-->
+	<xs:complexType name="tgGAEBQD">
+		<xs:annotation>
+			<xs:documentation>Aufgestellt vom Gemeinsamen Ausschuss Elektronik im Bauwesen (GAEB) © 2002 - 2023 by DIN Deutsches Institut fuer Normung e. V.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="GAEBInfo" type="tgGAEBInfoQD">
+				<xs:annotation>
+					<xs:documentation>Informationen zum GAEB-Datenaustausch</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="QtyDeterm" type="tgQtyDetermination">
+				<xs:annotation>
+					<xs:documentation>Mengenermittlung</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<!-- <xs:attribute ref="xml:space" default="preserve"/> -->
+	</xs:complexType>
+	<!--/ GAEB-->
+	<!--=========================================================================================================-->
+	<xs:complexType name="tgQtyDetermination">
+		<xs:annotation>
+			<xs:documentation>Mengenermittlung</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PrjInfo" type="tgPrjInfoQD" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Verweis auf das Projekt</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="QtyDetermInfo">
+				<xs:annotation>
+					<xs:documentation>Informationen zu Mengenermittlung</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="tgQtyDetermInfo"/>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DP" type="tgDP">
+				<xs:annotation>
+					<xs:documentation>GAEB-Datenaustauschphase</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OWN" type="tgOWN" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Informationen zum Auftraggeber</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CTR" type="tgCTR" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Informationen zum Bieter/Auftragnehmer</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BoQ" type="tgBoQQD">
+				<xs:annotation>
+					<xs:documentation>Leistungsverzeichnis inkl. der Mengenermittlungsansätze</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<!--=============================================================================================-->
+	<xs:complexType name="tgBoQBodyQD">
+		<xs:annotation>
+			<xs:documentation>LV-Hauptteil</xs:documentation>
+		</xs:annotation>
+		<xs:choice minOccurs="0">
+			<xs:element name="BoQCtgy" type="tgBoQCtgyQD" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation> LV-Bereich</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Itemlist" type="tgItemlistQD">
+				<xs:annotation>
+					<xs:documentation>Positionsliste</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<!--=============================================================================================-->
+	<xs:complexType name="tgItemlistQD">
+		<xs:annotation>
+			<xs:documentation>Positionsliste</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Item" type="tgItemQD" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Position</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<!--=============================================================================================-->
+	<xs:complexType name="tgBoQQD">
+		<xs:annotation>
+			<xs:documentation>Leistungsverzeichnis</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="RefBoQName" type="tgNormalizedString20" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Lesbarer Identifikator des LVs</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RefBoQID" type="tgGUID32" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>ID des LVs</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BoQBkdn" type="tgBoQBkdn" maxOccurs="7">
+				<xs:annotation>
+					<xs:documentation>Informationen zur Gliederung des LV</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Ctlg" type="tgCtlg" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Katalog</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BoQBody" type="tgBoQBodyQD">
+				<xs:annotation>
+					<xs:documentation>LV-Hauptteil</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="CtlgAttachment" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Attachment" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Name" type="xs:string">
+										<xs:annotation>
+											<xs:documentation>Die Referenz auf das
+Attachment wird in der
+Textzeile der
+Rechenansatzzeile durch
+Angabe von #Bild Name
+hergestellt.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Text" type="xs:string" minOccurs="0"/>
+									<xs:element name="Descrip" type="xs:string" minOccurs="0"/>
+									<xs:element name="Type">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:enumeration value="jpeg"/>
+												<xs:enumeration value="gif"/>
+												<xs:enumeration value="png"/>
+												<xs:enumeration value="jpg"/>
+												<xs:enumeration value="bmp"/>
+												<xs:enumeration value="pdf"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="Data" type="xs:string"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="ID" type="xs:ID" use="required"/>
+	</xs:complexType>
+	<!--=============================================================================================-->
+	<xs:complexType name="tgBoQCtgyQD">
+		<xs:annotation>
+			<xs:documentation> LV-Bereich</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Katalogzuordnung</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BoQBody" type="tgBoQBodyQD" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>LV-Hauptteil</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="ID" type="xs:ID" use="required"/>
+		<xs:attribute name="RNoPart" type="tgRNoPart" use="required">
+			<xs:annotation>
+				<xs:documentation>Teil-OZ </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<!--=============================================================================================-->
+	<xs:complexType name="tgItemQD">
+		<xs:annotation>
+			<xs:documentation>Position</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="QtyDeterm" type="tgQtyDeterm" minOccurs="0"/>
+			<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="ID" type="xs:ID" use="required"/>
+		<xs:attribute name="RNoPart" type="tgRNoPart" use="required">
+			<xs:annotation>
+				<xs:documentation>Teil-OZ </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RNoIndex" type="tgRNoIndex"/>
+	</xs:complexType>
+	<!--=============================================================================================-->
+	<xs:complexType name="tgPrjInfoQD">
+		<xs:annotation>
+			<xs:documentation>Position</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="RefPrjName" type="tgNormalizedString60" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Lesbarer Identifikator des Projektes</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RefPrjID" type="tgGUID32" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>ID des Projektes</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<!--=============================================================================================-->
+	<xs:simpleType name="tgGAEBVersDate202301">
+		<xs:annotation>
+			<xs:documentation>GAEB Versionsdatum</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:gYearMonth">
+			<xs:enumeration value="2023-01"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="tgGAEBInfoQD">
+		<xs:annotation>
+			<xs:documentation>Informationen zum GAEB-Datenaustausch</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Version" type="tgVersion">
+				<xs:annotation>
+					<xs:documentation>Version des GAEB DA XML</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="VersDate" type="tgGAEBVersDate202301">
+				<xs:annotation>
+					<xs:documentation>Datum der Ausgabe der GAEB-DA-XML  Schnittstellendefinition</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Date" type="tgDate">
+				<xs:annotation>
+					<xs:documentation>Datum</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Time" type="tgTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Erstellungszeit der Datenaustauschdatei</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProgSystem" type="tgNormalizedString60" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Programmsystem</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProgName" type="tgNormalizedString60" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Umsetzprogramm</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Certific" type="tgCertific" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Pruefzertifikat der benutzten Version GAEB DA XML liegt vor</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
