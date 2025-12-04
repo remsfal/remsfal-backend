@@ -1,0 +1,1423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2012 sp1 (x64) (http://www.altova.com) by Bernhard Rath (Ing.-Büro B. Rath) -->
+<!--
+
+2012-02-24 Bearbeiter: Bernhard Rath
+Dateiname des Schemas geändert.
+
+GAEB_DA_XML 3.2_13 Raumbuch_2012-02-15
+2012-02-15 Martin Hubert, Ladislav Ostrý
+- tgUnit mit enumeration hinzugefügt
+- tgUnitCtgy mit enumeration hinzugefügt
+- tgCatalogRef/NumValue/@UnitCtgy - hinzugefügt
+
+GAEB_DA_XML 3.2_13 Raumbuch_2011-10-06
+2011-09-22 Martin Hubert
+- Kommentare ergänzt
+
+GAEB_DA_XML 3.2_13 Raumbuch_2011-09-22
+2011-09-22 Ladislav Ostrý
+- Keyref Regl CatalogAliasRef2 hinzugefügt
+
+2011-09-21 Ladislav Ostrý
+- CatalogType ergänzt mit "SpatialHierarchy"
+
+2011-09-20 Ladislav Ostrý
+- Ergebnisse Beratung in Berlin am 13.9.2011
+- GAEB Kopfdaten hinzugefügt
+- Materialliste als enumeration hinzugefügt
+- GAEB Typen zugeordnet
+- To do: Enumeration für Messgröße und Maßeinheit
+
+2018-11-24 Bearbeiter: Bernhard Rath
+- Namespace geändert
+
+2019-05-26 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_61_3.3_2019-05_Beta.xsd gesetzt.
+GAEBInfo.Version auf 3.3 gesetzt.
+GAEBInfo.VersDate auf 2019-05 gesetzt.
+
+2019-11-15 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_61_3.3_2019-11_Beta.xsd gesetzt.
+GAEBInfo.VersDate auf 2019-11 gesetzt.
+
+2021-06-14 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_61_3.3_2021-05_Beta.xsd gesetzt.
+GAEBInfo.VersDate auf 2021-05 gesetzt.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.gaeb.de/GAEB_DA_XML/DA61/3.3" targetNamespace="http://www.gaeb.de/GAEB_DA_XML/DA61/3.3" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="GAEB">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="GAEBInfo" type="tgGAEBInfo">
+					<xs:annotation>
+						<xs:documentation>Informationen zum GAEB-Datenaustausch</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="PrjInfo" type="tgPrjInfo" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Informationen zum Projekt</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="SpatialHierarchy" type="tgSpatialHierarchy">
+					<xs:annotation>
+						<xs:documentation>Raumbuch</xs:documentation>
+					</xs:annotation>
+					<xs:unique name="UniqueID">
+						<xs:selector xpath=".//*"/>
+						<xs:field xpath="@ID"/>
+					</xs:unique>
+					<xs:key name="CatalogAlias">
+						<xs:selector xpath="SpatialHierarchyInfo/CatalogDescription"/>
+						<xs:field xpath="@Alias"/>
+					</xs:key>
+					<xs:keyref name="CatalogAliasRef1" refer="CatalogAlias">
+						<xs:selector xpath=".//CatalogReference"/>
+						<xs:field xpath="@CatalogAlias"/>
+					</xs:keyref>
+					<xs:keyref name="CatalogAliasRef2" refer="CatalogAlias">
+						<xs:selector xpath=".//Expression"/>
+						<xs:field xpath="@CatalogAlias"/>
+					</xs:keyref>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="tgSpatialHierarchy">
+		<xs:annotation>
+			<xs:documentation>Raumbuch</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SpatialHierarchyInfo">
+				<xs:annotation>
+					<xs:documentation>Kopfdaten zum Raumbuch</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Topology" maxOccurs="10">
+							<xs:annotation>
+								<xs:documentation>Gliederungsebene</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:attribute name="Group" use="required">
+									<xs:simpleType>
+										<xs:restriction base="tgNormalizedString">
+											<xs:enumeration value="Site"/>
+											<xs:enumeration value="Building"/>
+											<xs:enumeration value="BuildingStorey"/>
+											<xs:enumeration value="Space"/>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:attribute>
+								<xs:attribute name="CompositionType" use="required">
+									<xs:simpleType>
+										<xs:restriction base="tgNormalizedString">
+											<xs:enumeration value="Complex"/>
+											<xs:enumeration value="Element"/>
+											<xs:enumeration value="Partial"/>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:attribute>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="CatalogDescription" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Metadaten für Kataloge, auf die in der Raumbuchinstanz (Body) verwiesen werden kann</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence minOccurs="0">
+									<xs:element name="Description" type="tgDescription">
+										<xs:annotation>
+											<xs:documentation>mehrzeilige Bezeichnung des Kataloges</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="Alias" type="tgNormalizedString20" use="required">
+									<xs:annotation>
+										<xs:documentation>Kürzel für Katalog,  innerhalb des Xml Dokumentes</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+								<xs:attribute name="CatalogType" use="required">
+									<xs:annotation>
+										<xs:documentation>Enumeration</xs:documentation>
+									</xs:annotation>
+									<xs:simpleType>
+										<xs:restriction base="tgNormalizedString">
+											<xs:enumeration value="SpatialHierarchy"/>
+											<xs:enumeration value="DBD-KE"/>
+											<xs:enumeration value="DBD-KK"/>
+											<xs:enumeration value="STLB-Bau"/>
+											<xs:enumeration value="DIN 276-1"/>
+											<xs:enumeration value="DIN 277-2"/>
+											<xs:enumeration value="Z-Merkmal"/>
+											<xs:enumeration value="Z-Artikel"/>
+											<xs:enumeration value="UserDefined"/>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:attribute>
+								<xs:attribute name="ID" type="tgNormalizedString" use="required">
+									<xs:annotation>
+										<xs:documentation>Global ID</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+								<xs:attribute name="Code" type="tgNormalizedString20" use="required">
+									<xs:annotation>
+										<xs:documentation>Von Benutzer lesbar</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+								<xs:attribute name="Name" type="tgNormalizedString60" use="required">
+									<xs:annotation>
+										<xs:documentation>Von Benutzer eingegeben, nicht zwingend eindeutig auf Hierarchieebene</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Body">
+				<xs:annotation>
+					<xs:documentation>Instanzdaten zum Raumbuch</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="TopologyElement" type="tgTopologyElement" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Ebene</xs:documentation>
+							</xs:annotation>
+							<xs:unique name="UniqueEbeneCode2">
+								<xs:selector xpath="TopologyElement"/>
+								<xs:field xpath="@Code"/>
+							</xs:unique>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+				<xs:unique name="UniqueEbeneCode1">
+					<xs:selector xpath="TopologyElement"/>
+					<xs:field xpath="@Code"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="tgTopologyElement">
+		<xs:sequence>
+			<xs:element name="Description" type="tgDescription" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>mehrzeilige Bezeichnung der Ebenene entspricht der C: Description in IFC</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BuildingElement" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Bauteil/Ausstatung
+z.b. Wände, Tische, Stutzen, Fenster, Türen, Dosen</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence minOccurs="0">
+						<xs:element name="Description" type="tgDescription" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>IFC: Description</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CatalogReference" type="tgCatalogRef" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Katalogreferenz</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="BuildingElementType" use="required">
+						<xs:annotation>
+							<xs:documentation>IFC Elementbezeichnung, z.B. ifcDoor</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="tgNormalizedString">
+								<xs:enumeration value="IfcBeam"/>
+								<xs:enumeration value="IfcBuildingElementProxy"/>
+								<xs:enumeration value="IfcChimney"/>
+								<xs:enumeration value="IfcColumn"/>
+								<xs:enumeration value="IfcCovering_Flooring"/>
+								<xs:enumeration value="IfcCovering_Ceiling"/>
+								<xs:enumeration value="IfcCovering_Cladding"/>
+								<xs:enumeration value="IfcCovering_Roofing"/>
+								<xs:enumeration value="IfcCurtainWall"/>
+								<xs:enumeration value="IfcDoor"/>
+								<xs:enumeration value="IfcFooting"/>
+								<xs:enumeration value="IfcRailing"/>
+								<xs:enumeration value="IfcRamp"/>
+								<xs:enumeration value="IfcRampFlight"/>
+								<xs:enumeration value="IfcRoof"/>
+								<xs:enumeration value="IfcShadingDevice"/>
+								<xs:enumeration value="IfcSlab_Baseslab"/>
+								<xs:enumeration value="IfcSlab_Floor"/>
+								<xs:enumeration value="IfcSlab_Roof"/>
+								<xs:enumeration value="IfcSlab_Landing"/>
+								<xs:enumeration value="IfcStair"/>
+								<xs:enumeration value="IfcStairFlight"/>
+								<xs:enumeration value="IfcWall"/>
+								<xs:enumeration value="IfcWindow"/>
+								<xs:enumeration value="IfcOpeningElement"/>
+								<xs:enumeration value="IfcFurniture"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery"/>
+								<xs:enumeration value="IfcBoiler"/>
+								<xs:enumeration value="IfcBurner"/>
+								<xs:enumeration value="IfcChiller"/>
+								<xs:enumeration value="IfcCoil"/>
+								<xs:enumeration value="IfcCondenser"/>
+								<xs:enumeration value="IfcCooledBeam"/>
+								<xs:enumeration value="IfcCoolingTower"/>
+								<xs:enumeration value="IfcElectricGenerator"/>
+								<xs:enumeration value="IfcElectricMotor"/>
+								<xs:enumeration value="IfcEngine"/>
+								<xs:enumeration value="IfcEvaporativeCooler"/>
+								<xs:enumeration value="IfcEvaporator"/>
+								<xs:enumeration value="IfcHeatExchanger"/>
+								<xs:enumeration value="IfcHumidifier"/>
+								<xs:enumeration value="IfcMotorConnection"/>
+								<xs:enumeration value="IfcSolarDevice"/>
+								<xs:enumeration value="IfcTransformer"/>
+								<xs:enumeration value="IfcTubeBundle"/>
+								<xs:enumeration value="IfcUnitaryEquipment"/>
+								<xs:enumeration value="IfcAirTerminalBox"/>
+								<xs:enumeration value="IfcDamper"/>
+								<xs:enumeration value="IfcElectricDistributionBoard"/>
+								<xs:enumeration value="IfcElectricTimeControl"/>
+								<xs:enumeration value="IfcFlowMeter"/>
+								<xs:enumeration value="IfcProtectiveDevice"/>
+								<xs:enumeration value="IfcSwitchingDevice"/>
+								<xs:enumeration value="IfcValve"/>
+								<xs:enumeration value="IfcCableCarrierFitting"/>
+								<xs:enumeration value="IfcCableFitting"/>
+								<xs:enumeration value="IfcDuctFitting"/>
+								<xs:enumeration value="IfcJunctionBox"/>
+								<xs:enumeration value="IfcPipeFitting"/>
+								<xs:enumeration value="IfcCompressor"/>
+								<xs:enumeration value="IfcFan"/>
+								<xs:enumeration value="IfcPump"/>
+								<xs:enumeration value="IfcCableCarrierSegment"/>
+								<xs:enumeration value="IfcCableSegment"/>
+								<xs:enumeration value="IfcDuctSegment"/>
+								<xs:enumeration value="IfcPipeSegment"/>
+								<xs:enumeration value="IfcElectricFlowStorageDevice"/>
+								<xs:enumeration value="IfcTank"/>
+								<xs:enumeration value="IfcAirTerminal"/>
+								<xs:enumeration value="IfcAudioVisualAppliance"/>
+								<xs:enumeration value="IfcCommunicationsAppliance"/>
+								<xs:enumeration value="IfcElectricAppliance"/>
+								<xs:enumeration value="IfcFireSuppressionTerminal"/>
+								<xs:enumeration value="IfcLamp"/>
+								<xs:enumeration value="IfcLightFixture"/>
+								<xs:enumeration value="IfcMedicalDevice"/>
+								<xs:enumeration value="IfcOutlet"/>
+								<xs:enumeration value="IfcSanitaryTerminal"/>
+								<xs:enumeration value="IfcSpaceHeater"/>
+								<xs:enumeration value="IfcStackTerminal"/>
+								<xs:enumeration value="IfcWasteTerminal"/>
+								<xs:enumeration value="IfcDuctSilencer"/>
+								<xs:enumeration value="IfcFilter"/>
+								<xs:enumeration value="IfcInterceptor"/>
+								<xs:enumeration value="IfcActuator_Electricactuator"/>
+								<xs:enumeration value="IfcActuator_Handoperatedactuator"/>
+								<xs:enumeration value="IfcActuator_Hydraulicactuator"/>
+								<xs:enumeration value="IfcActuator_Pneumaticactuator"/>
+								<xs:enumeration value="IfcActuator_Thermostaticactuator"/>
+								<xs:enumeration value="IfcActuator_Notdefined"/>
+								<xs:enumeration value="IfcAlarm_Bell"/>
+								<xs:enumeration value="IfcAlarm_Breakglassbutton"/>
+								<xs:enumeration value="IfcAlarm_Light"/>
+								<xs:enumeration value="IfcAlarm_Manualpullbox"/>
+								<xs:enumeration value="IfcAlarm_Siren"/>
+								<xs:enumeration value="IfcAlarm_Whistle"/>
+								<xs:enumeration value="IfcAlarm_Notdefined"/>
+								<xs:enumeration value="IfcController_Floating"/>
+								<xs:enumeration value="IfcController_Programmable"/>
+								<xs:enumeration value="IfcController_Proportional"/>
+								<xs:enumeration value="IfcController_Multiposition"/>
+								<xs:enumeration value="IfcController_Twoposition"/>
+								<xs:enumeration value="IfcController_Notdefined"/>
+								<xs:enumeration value="IfcFlowInstrument_Pressuregauge"/>
+								<xs:enumeration value="IfcFlowInstrument_Thermometer"/>
+								<xs:enumeration value="IfcFlowInstrument_Ammeter"/>
+								<xs:enumeration value="IfcFlowInstrument_Frequencymeter"/>
+								<xs:enumeration value="IfcFlowInstrument_Powerfactormeter"/>
+								<xs:enumeration value="IfcFlowInstrument_Phaseanglemeter"/>
+								<xs:enumeration value="IfcFlowInstrument_Voltmeter_Peak"/>
+								<xs:enumeration value="IfcFlowInstrument_Voltmeter_Rms"/>
+								<xs:enumeration value="IfcFlowInstrument_Notdefined"/>
+								<xs:enumeration value="IfcProtectiveDeviceTrippingUnit_Electronic"/>
+								<xs:enumeration value="IfcProtectiveDeviceTrippingUnit_Electromagnetic"/>
+								<xs:enumeration value="IfcProtectiveDeviceTrippingUnit_Residualcurrent"/>
+								<xs:enumeration value="IfcProtectiveDeviceTrippingUnit_Thermal"/>
+								<xs:enumeration value="IfcProtectiveDeviceTrippingUnit_Notdefined"/>
+								<xs:enumeration value="IfcSensor_Conductancesensor"/>
+								<xs:enumeration value="IfcSensor_Contactsensor"/>
+								<xs:enumeration value="IfcSensor_Firesensor"/>
+								<xs:enumeration value="IfcSensor_Flowsensor"/>
+								<xs:enumeration value="IfcSensor_Gassensor"/>
+								<xs:enumeration value="IfcSensor_Heatsensor"/>
+								<xs:enumeration value="IfcSensor_Humiditysensor"/>
+								<xs:enumeration value="IfcSensor_Ionconcentrationsensor"/>
+								<xs:enumeration value="IfcSensor_Levelsensor"/>
+								<xs:enumeration value="IfcSensor_Lightsensor"/>
+								<xs:enumeration value="IfcSensor_Moisturesensor"/>
+								<xs:enumeration value="IfcSensor_Movementsensor"/>
+								<xs:enumeration value="IfcSensor_Phsensor"/>
+								<xs:enumeration value="IfcSensor_Pressuresensor"/>
+								<xs:enumeration value="IfcSensor_Radiationsensor"/>
+								<xs:enumeration value="IfcSensor_Radioactivitysensor"/>
+								<xs:enumeration value="IfcSensor_Smokesensor"/>
+								<xs:enumeration value="IfcSensor_Soundsensor"/>
+								<xs:enumeration value="IfcSensor_Temperaturesensor"/>
+								<xs:enumeration value="IfcSensor_Windsensor"/>
+								<xs:enumeration value="IfcSensor_Notdefined"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Alarmpanel"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Controlpanel"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Gasdetectionpanel"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Indicatorpanel"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Mimicpanel"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Humidistat"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Thermostat"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Weatherstation"/>
+								<xs:enumeration value="IfcUnitaryControlElement_Notdefined"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Formedduct"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Inspectionchamber"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Inspectionpit"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Manhole"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Meterchamber"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Sump"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Trench"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Valvechamber"/>
+								<xs:enumeration value="IfcDistributionChamberElement_Notdefined"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Fixedplatecounterflowexchanger"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Fixedplatecrossflowexchanger"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Fixedplateparallelflowexchanger"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Rotarywheel"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Runaroundcoilloop"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Heatpipe"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Twintowerenthalpyrecoveryloops"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Thermosiphonsealedtubeheatexchangers"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Thermosiphoncoiltypeheatexchangers"/>
+								<xs:enumeration value="IfcAirToAirHeatRecovery_Notdefined"/>
+								<xs:enumeration value="IfcBoiler_Water"/>
+								<xs:enumeration value="IfcBoiler_Steam"/>
+								<xs:enumeration value="IfcBoiler_Notdefined"/>
+								<xs:enumeration value="IfcBurner_Notdefined"/>
+								<xs:enumeration value="IfcChiller_Aircooled"/>
+								<xs:enumeration value="IfcChiller_Watercooled"/>
+								<xs:enumeration value="IfcChiller_Heatrecovery"/>
+								<xs:enumeration value="IfcChiller_Notdefined"/>
+								<xs:enumeration value="IfcCoil_Dxcoolingcoil"/>
+								<xs:enumeration value="IfcCoil_Watercoolingcoil"/>
+								<xs:enumeration value="IfcCoil_Steamheatingcoil"/>
+								<xs:enumeration value="IfcCoil_Waterheatingcoil"/>
+								<xs:enumeration value="IfcCoil_Electricheatingcoil"/>
+								<xs:enumeration value="IfcCoil_Gasheatingcoil"/>
+								<xs:enumeration value="IfcCoil_Notdefined"/>
+								<xs:enumeration value="IfcCoil_Hydroniccoil"/>
+								<xs:enumeration value="IfcCondenser_Aircooled"/>
+								<xs:enumeration value="IfcCondenser_Evaporativecooled"/>
+								<xs:enumeration value="IfcCondenser_Watercooled"/>
+								<xs:enumeration value="IfcCondenser_Watercooledbrazedplate"/>
+								<xs:enumeration value="IfcCondenser_Watercooledshellcoil"/>
+								<xs:enumeration value="IfcCondenser_Watercooledshelltube"/>
+								<xs:enumeration value="IfcCondenser_Watercooledtubeintube"/>
+								<xs:enumeration value="IfcCondenser_Notdefined"/>
+								<xs:enumeration value="IfcCooledBeam_Active"/>
+								<xs:enumeration value="IfcCooledBeam_Passive"/>
+								<xs:enumeration value="IfcCooledBeam_Notdefined"/>
+								<xs:enumeration value="IfcCoolingTower_Naturaldraft"/>
+								<xs:enumeration value="IfcCoolingTower_Mechanicalinduceddraft"/>
+								<xs:enumeration value="IfcCoolingTower_Mechanicalforceddraft"/>
+								<xs:enumeration value="IfcCoolingTower_Notdefined"/>
+								<xs:enumeration value="IfcElectricGenerator_Chp"/>
+								<xs:enumeration value="IfcElectricGenerator_Enginegenerator"/>
+								<xs:enumeration value="IfcElectricGenerator_Standalone"/>
+								<xs:enumeration value="IfcElectricGenerator_Notdefined"/>
+								<xs:enumeration value="IfcElectricMotor_Dc"/>
+								<xs:enumeration value="IfcElectricMotor_Induction"/>
+								<xs:enumeration value="IfcElectricMotor_Polyphase"/>
+								<xs:enumeration value="IfcElectricMotor_Reluctancesynchronous"/>
+								<xs:enumeration value="IfcElectricMotor_Synchronous"/>
+								<xs:enumeration value="IfcElectricMotor_Notdefined"/>
+								<xs:enumeration value="IfcEngine_Externalcombustion"/>
+								<xs:enumeration value="IfcEngine_Internalcombustion"/>
+								<xs:enumeration value="IfcEngine_Notdefined"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Directevaporativerandommediaaircooler"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Directevaporativerigidmediaaircooler"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Directevaporativeslingerspackagedaircooler"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Directevaporativepackagedrotaryaircooler"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Directevaporativeairwasher"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Indirectevaporativepackageaircooler"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Indirectevaporativewetcoil"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Indirectevaporativecoolingtowerorcoilcooler"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Indirectdirectcombination"/>
+								<xs:enumeration value="IfcEvaporativeCooler_Notdefined"/>
+								<xs:enumeration value="IfcEvaporator_Directexpansion"/>
+								<xs:enumeration value="IfcEvaporator_Directexpansionshellandtube"/>
+								<xs:enumeration value="IfcEvaporator_Directexpansiontubeintube"/>
+								<xs:enumeration value="IfcEvaporator_Directexpansionbrazedplate"/>
+								<xs:enumeration value="IfcEvaporator_Floodedshellandtube"/>
+								<xs:enumeration value="IfcEvaporator_Shellandcoil"/>
+								<xs:enumeration value="IfcEvaporator_Notdefined"/>
+								<xs:enumeration value="IfcHeatExchanger_Plate"/>
+								<xs:enumeration value="IfcHeatExchanger_Shellandtube"/>
+								<xs:enumeration value="IfcHeatExchanger_Notdefined"/>
+								<xs:enumeration value="IfcHumidifier_Steaminjection"/>
+								<xs:enumeration value="IfcHumidifier_Adiabaticairwasher"/>
+								<xs:enumeration value="IfcHumidifier_Adiabaticpan"/>
+								<xs:enumeration value="IfcHumidifier_Adiabaticwettedelement"/>
+								<xs:enumeration value="IfcHumidifier_Adiabaticatomizing"/>
+								<xs:enumeration value="IfcHumidifier_Adiabaticultrasonic"/>
+								<xs:enumeration value="IfcHumidifier_Adiabaticrigidmedia"/>
+								<xs:enumeration value="IfcHumidifier_Adiabaticcompressedairnozzle"/>
+								<xs:enumeration value="IfcHumidifier_Assistedelectric"/>
+								<xs:enumeration value="IfcHumidifier_Assistednaturalgas"/>
+								<xs:enumeration value="IfcHumidifier_Assistedpropane"/>
+								<xs:enumeration value="IfcHumidifier_Assistedbutane"/>
+								<xs:enumeration value="IfcHumidifier_Assistedsteam"/>
+								<xs:enumeration value="IfcHumidifier_Notdefined"/>
+								<xs:enumeration value="IfcMotorConnection_Beltdrive"/>
+								<xs:enumeration value="IfcMotorConnection_Coupling"/>
+								<xs:enumeration value="IfcMotorConnection_Directdrive"/>
+								<xs:enumeration value="IfcMotorConnection_Notdefined"/>
+								<xs:enumeration value="IfcSolarDevice_Solarcollector"/>
+								<xs:enumeration value="IfcSolarDevice_Solarpanel"/>
+								<xs:enumeration value="IfcSolarDevice_Notdefined"/>
+								<xs:enumeration value="IfcTransformer_Current"/>
+								<xs:enumeration value="IfcTransformer_Frequency"/>
+								<xs:enumeration value="IfcTransformer_Inverter"/>
+								<xs:enumeration value="IfcTransformer_Rectifier"/>
+								<xs:enumeration value="IfcTransformer_Voltage"/>
+								<xs:enumeration value="IfcTransformer_Notdefined"/>
+								<xs:enumeration value="IfcTubeBundle_Finned"/>
+								<xs:enumeration value="IfcTubeBundle_Notdefined"/>
+								<xs:enumeration value="IfcUnitaryEquipment_Airhandler"/>
+								<xs:enumeration value="IfcUnitaryEquipment_Airconditioningunit"/>
+								<xs:enumeration value="IfcUnitaryEquipment_Dehumidifier"/>
+								<xs:enumeration value="IfcUnitaryEquipment_Splitsystem"/>
+								<xs:enumeration value="IfcUnitaryEquipment_Rooftopunit"/>
+								<xs:enumeration value="IfcUnitaryEquipment_Notdefined"/>
+								<xs:enumeration value="IfcAirTerminalBox_Constantflow"/>
+								<xs:enumeration value="IfcAirTerminalBox_Variableflowpressuredependant"/>
+								<xs:enumeration value="IfcAirTerminalBox_Variableflowpressureindependant"/>
+								<xs:enumeration value="IfcAirTerminalBox_Notdefined"/>
+								<xs:enumeration value="IfcDamper_Backdraftdamper"/>
+								<xs:enumeration value="IfcDamper_Balancingdamper"/>
+								<xs:enumeration value="IfcDamper_Blastdamper"/>
+								<xs:enumeration value="IfcDamper_Controldamper"/>
+								<xs:enumeration value="IfcDamper_Firedamper"/>
+								<xs:enumeration value="IfcDamper_Firesmokedamper"/>
+								<xs:enumeration value="IfcDamper_Fumehoodexhaust"/>
+								<xs:enumeration value="IfcDamper_Gravitydamper"/>
+								<xs:enumeration value="IfcDamper_Gravityreliefdamper"/>
+								<xs:enumeration value="IfcDamper_Reliefdamper"/>
+								<xs:enumeration value="IfcDamper_Smokedamper"/>
+								<xs:enumeration value="IfcDamper_Notdefined"/>
+								<xs:enumeration value="IfcElectricDistributionBoard_Consumerunit"/>
+								<xs:enumeration value="IfcElectricDistributionBoard_Distributionboard"/>
+								<xs:enumeration value="IfcElectricDistributionBoard_Motorcontrolcentre"/>
+								<xs:enumeration value="IfcElectricDistributionBoard_Switchboard"/>
+								<xs:enumeration value="IfcElectricDistributionBoard_Notdefined"/>
+								<xs:enumeration value="IfcElectricTimeControl_Timeclock"/>
+								<xs:enumeration value="IfcElectricTimeControl_Timedelay"/>
+								<xs:enumeration value="IfcElectricTimeControl_Relay"/>
+								<xs:enumeration value="IfcElectricTimeControl_Notdefined"/>
+								<xs:enumeration value="IfcFlowMeter_Energymeter"/>
+								<xs:enumeration value="IfcFlowMeter_Gasmeter"/>
+								<xs:enumeration value="IfcFlowMeter_Oilmeter"/>
+								<xs:enumeration value="IfcFlowMeter_Watermeter"/>
+								<xs:enumeration value="IfcFlowMeter_Notdefined"/>
+								<xs:enumeration value="IfcProtectiveDevice_Circuitbreaker"/>
+								<xs:enumeration value="IfcProtectiveDevice_Earthleakagecircuitbreaker"/>
+								<xs:enumeration value="IfcProtectiveDevice_Earthingswitch"/>
+								<xs:enumeration value="IfcProtectiveDevice_Fusedisconnector"/>
+								<xs:enumeration value="IfcProtectiveDevice_Residualcurrentcircuitbreaker"/>
+								<xs:enumeration value="IfcProtectiveDevice_Residualcurrentswitch"/>
+								<xs:enumeration value="IfcProtectiveDevice_Varistor"/>
+								<xs:enumeration value="IfcProtectiveDevice_Notdefined"/>
+								<xs:enumeration value="IfcSwitchingDevice_Contactor"/>
+								<xs:enumeration value="IfcSwitchingDevice_Dimmerswitch"/>
+								<xs:enumeration value="IfcSwitchingDevice_Emergencystop"/>
+								<xs:enumeration value="IfcSwitchingDevice_Keypad"/>
+								<xs:enumeration value="IfcSwitchingDevice_Momentaryswitch"/>
+								<xs:enumeration value="IfcSwitchingDevice_Selectorswitch"/>
+								<xs:enumeration value="IfcSwitchingDevice_Starter"/>
+								<xs:enumeration value="IfcSwitchingDevice_Switchdisconnector"/>
+								<xs:enumeration value="IfcSwitchingDevice_Toggleswitch"/>
+								<xs:enumeration value="IfcSwitchingDevice_Notdefined"/>
+								<xs:enumeration value="IfcValve_Airrelease"/>
+								<xs:enumeration value="IfcValve_Antivacuum"/>
+								<xs:enumeration value="IfcValve_Changeover"/>
+								<xs:enumeration value="IfcValve_Check"/>
+								<xs:enumeration value="IfcValve_Commissioning"/>
+								<xs:enumeration value="IfcValve_Diverting"/>
+								<xs:enumeration value="IfcValve_Drawoffcock"/>
+								<xs:enumeration value="IfcValve_Doublecheck"/>
+								<xs:enumeration value="IfcValve_Doubleregulating"/>
+								<xs:enumeration value="IfcValve_Faucet"/>
+								<xs:enumeration value="IfcValve_Flushing"/>
+								<xs:enumeration value="IfcValve_Gascock"/>
+								<xs:enumeration value="IfcValve_Gastap"/>
+								<xs:enumeration value="IfcValve_Isolating"/>
+								<xs:enumeration value="IfcValve_Mixing"/>
+								<xs:enumeration value="IfcValve_Pressurereducing"/>
+								<xs:enumeration value="IfcValve_Pressurerelief"/>
+								<xs:enumeration value="IfcValve_Regulating"/>
+								<xs:enumeration value="IfcValve_Safetycutoff"/>
+								<xs:enumeration value="IfcValve_Steamtrap"/>
+								<xs:enumeration value="IfcValve_Stopcock"/>
+								<xs:enumeration value="IfcValve_Notdefined"/>
+								<xs:enumeration value="IfcCableCarrierFitting_Bend"/>
+								<xs:enumeration value="IfcCableCarrierFitting_Cross"/>
+								<xs:enumeration value="IfcCableCarrierFitting_Reducer"/>
+								<xs:enumeration value="IfcCableCarrierFitting_Tee"/>
+								<xs:enumeration value="IfcCableCarrierFitting_Notdefined"/>
+								<xs:enumeration value="IfcCableFitting_Connector"/>
+								<xs:enumeration value="IfcCableFitting_Entry"/>
+								<xs:enumeration value="IfcCableFitting_Exit"/>
+								<xs:enumeration value="IfcCableFitting_Junction"/>
+								<xs:enumeration value="IfcCableFitting_Transition"/>
+								<xs:enumeration value="IfcCableFitting_Notdefined"/>
+								<xs:enumeration value="IfcDuctFitting_Bend"/>
+								<xs:enumeration value="IfcDuctFitting_Connector"/>
+								<xs:enumeration value="IfcDuctFitting_Entry"/>
+								<xs:enumeration value="IfcDuctFitting_Exit"/>
+								<xs:enumeration value="IfcDuctFitting_Junction"/>
+								<xs:enumeration value="IfcDuctFitting_Obstruction"/>
+								<xs:enumeration value="IfcDuctFitting_Transition"/>
+								<xs:enumeration value="IfcDuctFitting_Notdefined"/>
+								<xs:enumeration value="IfcJunctionBox_Data"/>
+								<xs:enumeration value="IfcJunctionBox_Power"/>
+								<xs:enumeration value="IfcJunctionBox_Notdefined"/>
+								<xs:enumeration value="IfcPipeFitting_Bend"/>
+								<xs:enumeration value="IfcPipeFitting_Connector"/>
+								<xs:enumeration value="IfcPipeFitting_Entry"/>
+								<xs:enumeration value="IfcPipeFitting_Exit"/>
+								<xs:enumeration value="IfcPipeFitting_Junction"/>
+								<xs:enumeration value="IfcPipeFitting_Obstruction"/>
+								<xs:enumeration value="IfcPipeFitting_Transition"/>
+								<xs:enumeration value="IfcPipeFitting_Notdefined"/>
+								<xs:enumeration value="IfcCompressor_Dynamic"/>
+								<xs:enumeration value="IfcCompressor_Reciprocating"/>
+								<xs:enumeration value="IfcCompressor_Rotary"/>
+								<xs:enumeration value="IfcCompressor_Scroll"/>
+								<xs:enumeration value="IfcCompressor_Trochoidal"/>
+								<xs:enumeration value="IfcCompressor_Singlestage"/>
+								<xs:enumeration value="IfcCompressor_Booster"/>
+								<xs:enumeration value="IfcCompressor_Opentype"/>
+								<xs:enumeration value="IfcCompressor_Hermetic"/>
+								<xs:enumeration value="IfcCompressor_Semihermetic"/>
+								<xs:enumeration value="IfcCompressor_Weldedshellhermetic"/>
+								<xs:enumeration value="IfcCompressor_Rollingpiston"/>
+								<xs:enumeration value="IfcCompressor_Rotaryvane"/>
+								<xs:enumeration value="IfcCompressor_Singlescrew"/>
+								<xs:enumeration value="IfcCompressor_Twinscrew"/>
+								<xs:enumeration value="IfcCompressor_Notdefined"/>
+								<xs:enumeration value="IfcFan_Centrifugalforwardcurved"/>
+								<xs:enumeration value="IfcFan_Centrifugalradial"/>
+								<xs:enumeration value="IfcFan_Centrifugalbackwardinclinedcurved"/>
+								<xs:enumeration value="IfcFan_Centrifugalairfoil"/>
+								<xs:enumeration value="IfcFan_Tubeaxial"/>
+								<xs:enumeration value="IfcFan_Vaneaxial"/>
+								<xs:enumeration value="IfcFan_Propelloraxial"/>
+								<xs:enumeration value="IfcFan_Notdefined"/>
+								<xs:enumeration value="IfcPump_Circulator"/>
+								<xs:enumeration value="IfcPump_Endsuction"/>
+								<xs:enumeration value="IfcPump_Splitcase"/>
+								<xs:enumeration value="IfcPump_Submersiblepump"/>
+								<xs:enumeration value="IfcPump_Sumppump"/>
+								<xs:enumeration value="IfcPump_Verticalinline"/>
+								<xs:enumeration value="IfcPump_Verticalturbine"/>
+								<xs:enumeration value="IfcPump_Notdefined"/>
+								<xs:enumeration value="IfcCableCarrierSegment_Cableladdersegment"/>
+								<xs:enumeration value="IfcCableCarrierSegment_Cabletraysegment"/>
+								<xs:enumeration value="IfcCableCarrierSegment_Cabletrunkingsegment"/>
+								<xs:enumeration value="IfcCableCarrierSegment_Conduitsegment"/>
+								<xs:enumeration value="IfcCableCarrierSegment_Notdefined"/>
+								<xs:enumeration value="IfcCableSegment_Busbarsegment"/>
+								<xs:enumeration value="IfcCableSegment_Cablesegment"/>
+								<xs:enumeration value="IfcCableSegment_Conductorsegment"/>
+								<xs:enumeration value="IfcCableSegment_Coresegment"/>
+								<xs:enumeration value="IfcCableSegment_Notdefined"/>
+								<xs:enumeration value="IfcDuctSegment_Rigidsegment"/>
+								<xs:enumeration value="IfcDuctSegment_Flexiblesegment"/>
+								<xs:enumeration value="IfcDuctSegment_Notdefined"/>
+								<xs:enumeration value="IfcPipeSegment_Culvert"/>
+								<xs:enumeration value="IfcPipeSegment_Flexiblesegment"/>
+								<xs:enumeration value="IfcPipeSegment_Rigidsegment"/>
+								<xs:enumeration value="IfcPipeSegment_Gutter"/>
+								<xs:enumeration value="IfcPipeSegment_Spool"/>
+								<xs:enumeration value="IfcPipeSegment_Notdefined"/>
+								<xs:enumeration value="IfcElectricFlowStorageDevice_Battery"/>
+								<xs:enumeration value="IfcElectricFlowStorageDevice_Capacitorbank"/>
+								<xs:enumeration value="IfcElectricFlowStorageDevice_Harmonicfilter"/>
+								<xs:enumeration value="IfcElectricFlowStorageDevice_Inductorbank"/>
+								<xs:enumeration value="IfcElectricFlowStorageDevice_Ups"/>
+								<xs:enumeration value="IfcElectricFlowStorageDevice_Notdefined"/>
+								<xs:enumeration value="IfcTank_Basin"/>
+								<xs:enumeration value="IfcTank_Breakpressure"/>
+								<xs:enumeration value="IfcTank_Expansion"/>
+								<xs:enumeration value="IfcTank_Feedandexpansion"/>
+								<xs:enumeration value="IfcTank_Pressurevessel"/>
+								<xs:enumeration value="IfcTank_Storage"/>
+								<xs:enumeration value="IfcTank_Vessel"/>
+								<xs:enumeration value="IfcTank_Notdefined"/>
+								<xs:enumeration value="IfcAirTerminal_Diffuser"/>
+								<xs:enumeration value="IfcAirTerminal_Grille"/>
+								<xs:enumeration value="IfcAirTerminal_Louvre"/>
+								<xs:enumeration value="IfcAirTerminal_Register"/>
+								<xs:enumeration value="IfcAirTerminal_Notdefined"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Amplifier"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Camera"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Display"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Microphone"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Player"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Projector"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Receiver"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Speaker"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Switcher"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Telephone"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Tuner"/>
+								<xs:enumeration value="IfcAudioVisualAppliance_Notdefined"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Antenna"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Computer"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Fax"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Gateway"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Modem"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Networkappliance"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Networkbridge"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Networkhub"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Printer"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Repeater"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Router"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Scanner"/>
+								<xs:enumeration value="IfcCommunicationsAppliance_Notdefined"/>
+								<xs:enumeration value="IfcElectricAppliance_Dishwasher"/>
+								<xs:enumeration value="IfcElectricAppliance_Electriccooker"/>
+								<xs:enumeration value="IfcElectricAppliance_Freestandingelectricheater"/>
+								<xs:enumeration value="IfcElectricAppliance_Freestandingfan"/>
+								<xs:enumeration value="IfcElectricAppliance_Freestandingwaterheater"/>
+								<xs:enumeration value="IfcElectricAppliance_Freestandingwatercooler"/>
+								<xs:enumeration value="IfcElectricAppliance_Freezer"/>
+								<xs:enumeration value="IfcElectricAppliance_Fridge_Freezer"/>
+								<xs:enumeration value="IfcElectricAppliance_Handdryer"/>
+								<xs:enumeration value="IfcElectricAppliance_Kitchenmachine"/>
+								<xs:enumeration value="IfcElectricAppliance_Microwave"/>
+								<xs:enumeration value="IfcElectricAppliance_Photocopier"/>
+								<xs:enumeration value="IfcElectricAppliance_Refrigerator"/>
+								<xs:enumeration value="IfcElectricAppliance_Tumbledryer"/>
+								<xs:enumeration value="IfcElectricAppliance_Vendingmachine"/>
+								<xs:enumeration value="IfcElectricAppliance_Washingmachine"/>
+								<xs:enumeration value="IfcElectricAppliance_Notdefined"/>
+								<xs:enumeration value="IfcFireSuppressionTerminal_Breechinginlet"/>
+								<xs:enumeration value="IfcFireSuppressionTerminal_Firehydrant"/>
+								<xs:enumeration value="IfcFireSuppressionTerminal_Hosereel"/>
+								<xs:enumeration value="IfcFireSuppressionTerminal_Sprinkler"/>
+								<xs:enumeration value="IfcFireSuppressionTerminal_Sprinklerdeflector"/>
+								<xs:enumeration value="IfcFireSuppressionTerminal_Notdefined"/>
+								<xs:enumeration value="IfcLamp_Compactfluorescent"/>
+								<xs:enumeration value="IfcLamp_Fluorescent"/>
+								<xs:enumeration value="IfcLamp_Halogen"/>
+								<xs:enumeration value="IfcLamp_Highpressuremercury"/>
+								<xs:enumeration value="IfcLamp_Highpressuresodium"/>
+								<xs:enumeration value="IfcLamp_Led"/>
+								<xs:enumeration value="IfcLamp_Metalhalide"/>
+								<xs:enumeration value="IfcLamp_Oled"/>
+								<xs:enumeration value="IfcLamp_Tungstenfilament"/>
+								<xs:enumeration value="IfcLamp_Notdefined"/>
+								<xs:enumeration value="IfcLightFixture_Pointsource"/>
+								<xs:enumeration value="IfcLightFixture_Directionsource"/>
+								<xs:enumeration value="IfcLightFixture_Securitylighting"/>
+								<xs:enumeration value="IfcLightFixture_Notdefined"/>
+								<xs:enumeration value="IfcMedicalDevice_Airstation"/>
+								<xs:enumeration value="IfcMedicalDevice_Feedairunit"/>
+								<xs:enumeration value="IfcMedicalDevice_Oxygengenerator"/>
+								<xs:enumeration value="IfcMedicalDevice_Oxygenplant"/>
+								<xs:enumeration value="IfcMedicalDevice_Vacuumstation"/>
+								<xs:enumeration value="IfcMedicalDevice_Notdefined"/>
+								<xs:enumeration value="IfcOutlet_Audiovisualoutlet"/>
+								<xs:enumeration value="IfcOutlet_Communicationsoutlet"/>
+								<xs:enumeration value="IfcOutlet_Poweroutlet"/>
+								<xs:enumeration value="IfcOutlet_Dataoutlet"/>
+								<xs:enumeration value="IfcOutlet_Telephoneoutlet"/>
+								<xs:enumeration value="IfcOutlet_Notdefined"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Bath"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Bidet"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Cistern"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Shower"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Sink"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Sanitaryfountain"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Toiletpan"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Urinal"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Washhandbasin"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Wcseat"/>
+								<xs:enumeration value="IfcSanitaryTerminal_Notdefined"/>
+								<xs:enumeration value="IfcSpaceHeater_Convector"/>
+								<xs:enumeration value="IfcSpaceHeater_Radiator"/>
+								<xs:enumeration value="IfcSpaceHeater_Notdefined"/>
+								<xs:enumeration value="IfcStackTerminal_Birdcage"/>
+								<xs:enumeration value="IfcStackTerminal_Cowl"/>
+								<xs:enumeration value="IfcStackTerminal_Rainwaterhopper"/>
+								<xs:enumeration value="IfcStackTerminal_Notdefined"/>
+								<xs:enumeration value="IfcWasteTerminal_Floortrap"/>
+								<xs:enumeration value="IfcWasteTerminal_Floorwaste"/>
+								<xs:enumeration value="IfcWasteTerminal_Gullysump"/>
+								<xs:enumeration value="IfcWasteTerminal_Gullytrap"/>
+								<xs:enumeration value="IfcWasteTerminal_Roofdrain"/>
+								<xs:enumeration value="IfcWasteTerminal_Wastedisposalunit"/>
+								<xs:enumeration value="IfcWasteTerminal_Wastetrap"/>
+								<xs:enumeration value="IfcWasteTerminal_Notdefined"/>
+								<xs:enumeration value="IfcDuctSilencer_Flatoval"/>
+								<xs:enumeration value="IfcDuctSilencer_Rectangular"/>
+								<xs:enumeration value="IfcDuctSilencer_Round"/>
+								<xs:enumeration value="IfcDuctSilencer_Notdefined"/>
+								<xs:enumeration value="IfcFilter_Airparticlefilter"/>
+								<xs:enumeration value="IfcFilter_Compressedairfilter"/>
+								<xs:enumeration value="IfcFilter_Odorfilter"/>
+								<xs:enumeration value="IfcFilter_Oilfilter"/>
+								<xs:enumeration value="IfcFilter_Strainer"/>
+								<xs:enumeration value="IfcFilter_Waterfilter"/>
+								<xs:enumeration value="IfcFilter_Notdefined"/>
+								<xs:enumeration value="IfcInterceptor_Cyclonic"/>
+								<xs:enumeration value="IfcInterceptor_Grease"/>
+								<xs:enumeration value="IfcInterceptor_Oil"/>
+								<xs:enumeration value="IfcInterceptor_Petrol"/>
+								<xs:enumeration value="IfcInterceptor_Notdefined"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="ID" type="tgNormalizedString" use="required">
+						<xs:annotation>
+							<xs:documentation>Global ID
+IFC: GlobalId </xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Name" type="tgNormalizedString60" use="required">
+						<xs:annotation>
+							<xs:documentation>Von Benutzer eingegeben, 
+IFC: Name (255)</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Material">
+						<xs:simpleType>
+							<xs:restriction base="tgNormalizedString">
+								<xs:enumeration value="Aluminium"/>
+								<xs:enumeration value="Betonfertigteil"/>
+								<xs:enumeration value="Betonstein"/>
+								<xs:enumeration value="Betonwerkstein"/>
+								<xs:enumeration value="dekorative Mineralwolleplatte"/>
+								<xs:enumeration value="Farbbeschichtung"/>
+								<xs:enumeration value="Faserzement"/>
+								<xs:enumeration value="Fliesen/Platten"/>
+								<xs:enumeration value="Gips"/>
+								<xs:enumeration value="Glas"/>
+								<xs:enumeration value="Glasstein"/>
+								<xs:enumeration value="Holz"/>
+								<xs:enumeration value="Holz-Metall"/>
+								<xs:enumeration value="Holzrahmenbau"/>
+								<xs:enumeration value="Holzwerkstoff"/>
+								<xs:enumeration value="Kalksandstein"/>
+								<xs:enumeration value="Kunststoff"/>
+								<xs:enumeration value="Mauerwerksfertigteil"/>
+								<xs:enumeration value="Metall"/>
+								<xs:enumeration value="Naturstein"/>
+								<xs:enumeration value="Naturwerkstein"/>
+								<xs:enumeration value="Ortbeton bewehrt"/>
+								<xs:enumeration value="Ortbeton unbewehrt"/>
+								<xs:enumeration value="Porenbeton"/>
+								<xs:enumeration value="Putz"/>
+								<xs:enumeration value="Schiefer"/>
+								<xs:enumeration value="Stahl"/>
+								<xs:enumeration value="Tapete"/>
+								<xs:enumeration value="Trockenbau"/>
+								<xs:enumeration value="Vollholz"/>
+								<xs:enumeration value="Ziegel"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="CatalogReference" type="tgCatalogRef" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Katalogverweis</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TopologyElement" type="tgTopologyElement" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>untergeordnete Ebene</xs:documentation>
+				</xs:annotation>
+				<xs:unique name="UniqueEbeneCode3">
+					<xs:selector xpath="TopologyElement"/>
+					<xs:field xpath="@Code"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="ID" type="tgNormalizedString" use="required">
+			<xs:annotation>
+				<xs:documentation>Global ID
+IFC: GlobalId </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Code" type="tgNormalizedString20" use="required">
+			<xs:annotation>
+				<xs:documentation>Von Benutzer eingegeben, eindeutig auf Hierarchieebene
+IFC: Name (255)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Name" type="tgNormalizedString60" use="required">
+			<xs:annotation>
+				<xs:documentation>Von Benutzer eingegeben, nicht zwingend eindeutig auf Hierarchieebene
+IFC: LongName (255)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="tgCatalogRef">
+		<xs:choice maxOccurs="1">
+			<xs:element name="TextValue" type="tgNormalizedString">
+				<xs:annotation>
+					<xs:documentation>z.b. DIN277 "Wohnräume	</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NumValue">
+				<xs:complexType>
+					<xs:choice minOccurs="0">
+						<xs:element name="CatalogReference">
+							<xs:complexType>
+								<xs:attribute name="CatalogAlias" type="tgNormalizedString20"/>
+								<xs:attribute name="IDRef" type="tgNormalizedString" use="required"/>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="Expression">
+							<xs:annotation>
+								<xs:documentation>Formel</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Line" type="tgNormalizedString" maxOccurs="unbounded"/>
+								</xs:sequence>
+								<xs:attribute name="CatalogAlias" type="tgNormalizedString20"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:choice>
+					<xs:attribute name="Value" type="tgDecimal" use="required"/>
+					<xs:attribute name="UnitCtgy" type="tgUnitCtgy" use="required">
+						<xs:annotation>
+							<xs:documentation>Messgröße</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Unit" type="tgUnit" use="required">
+						<xs:annotation>
+							<xs:documentation>Maßeinheit</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DateValue" type="tgDate"/>
+		</xs:choice>
+		<xs:attribute name="CatalogAlias" type="tgNormalizedString20" use="required"/>
+		<xs:attribute name="IDRef" type="tgNormalizedString" use="required">
+			<xs:annotation>
+				<xs:documentation>z.b. DIN277: "1.1"
+Z-Merkmal: ZR.14.2.102
+Z-Artikel: Z.G3.34.5.23.101</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Name" type="tgNormalizedString">
+			<xs:annotation>
+				<xs:documentation>z.b.
+Z-Merkmal: Rahmenreinigungsfläche Fenster
+Z-Artikel: Drehkippfenster aus Kunststoff Standard</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="SetID" type="tgNormalizedString">
+			<xs:annotation>
+				<xs:documentation>Zum Gruppieren von Katalogreferenzen</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="tgDescription">
+		<xs:sequence>
+			<xs:element name="Line" type="tgNormalizedString" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Zeile der mehrzeiligen Bezeichnung</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="tgGAEBInfo">
+		<xs:annotation>
+			<xs:documentation>Informationen zum GAEB-Datenaustausch</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="DP">
+				<xs:annotation>
+					<xs:documentation>GAEB-Datenaustauschphase</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="tgNormalizedString">
+						<xs:enumeration value="61">
+							<xs:annotation>
+								<xs:documentation>Nachtrag</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Version">
+				<xs:annotation>
+					<xs:documentation>Version des GAEB DA XML</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="tgNormalizedString">
+						<xs:enumeration value="3.3"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="VersDate">
+				<xs:annotation>
+					<xs:documentation>Datum der Ausgabe der GAEB-DA-XML  Schnittstellendefinition</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="tgNormalizedString">
+						<xs:enumeration value="2021-05"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Date" type="tgDate">
+				<xs:annotation>
+					<xs:documentation>Datum</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Time" type="tgTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Erstellungszeit der Datenaustauschdatei</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProgSystem" type="tgNormalizedString60" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Programmsystem</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProgName" type="tgNormalizedString60" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Umsetzprogramm</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Certific" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Pruefzertifikat der benutzten Version GAEB DA XML liegt vor</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="tgNormalizedString">
+						<xs:enumeration value="Available"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="tgPrjInfo">
+		<xs:annotation>
+			<xs:documentation>Informationen zum Projekt</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="NamePrj" type="tgNormalizedString60">
+				<xs:annotation>
+					<xs:documentation>Projektname</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PrjID" type="tgNormalizedString" minOccurs="0"/>
+			<xs:element name="LblPrj" type="tgNormalizedString100" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>einzeilige Bezeichnung des Projektes</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Description" type="tgDescription">
+				<xs:annotation>
+					<xs:documentation>mehrzeilige Bezeichnung des Projektes</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="tgDate">
+		<xs:annotation>
+			<xs:documentation>Datum</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:date"/>
+	</xs:simpleType>
+	<xs:simpleType name="tgTime">
+		<xs:annotation>
+			<xs:documentation>Zeit</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:time"/>
+	</xs:simpleType>
+	<xs:simpleType name="tgNormalizedString">
+		<xs:annotation>
+			<xs:documentation>Einzeilige Zeichenkette ohne Längenbegrenzung</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:normalizedString"/>
+	</xs:simpleType>
+	<xs:simpleType name="tgNormalizedString20">
+		<xs:annotation>
+			<xs:documentation>Einzeilige Zeichenkette der max. Länge 20</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="tgNormalizedString">
+			<xs:maxLength value="20"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tgNormalizedString60">
+		<xs:annotation>
+			<xs:documentation>Einzeilige Zeichenkette der max. Länge 60</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="tgNormalizedString">
+			<xs:maxLength value="60"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tgNormalizedString100">
+		<xs:annotation>
+			<xs:documentation>Einzeilige Zeichenkette der max. Länge 100</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="tgNormalizedString">
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tgDecimal">
+		<xs:restriction base="xs:decimal"/>
+	</xs:simpleType>
+	<xs:simpleType name="tgUnitCtgy">
+		<xs:restriction base="tgNormalizedString">
+			<xs:enumeration value="A">
+				<xs:annotation>
+					<xs:documentation>Flächen</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="E">
+				<xs:annotation>
+					<xs:documentation>Arbeit</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="L">
+				<xs:annotation>
+					<xs:documentation>Längen</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="M">
+				<xs:annotation>
+					<xs:documentation>Massen</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Mng">
+				<xs:annotation>
+					<xs:documentation>Mengen</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="P">
+				<xs:annotation>
+					<xs:documentation>Leistung</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="T">
+				<xs:annotation>
+					<xs:documentation>Zeiten</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="V">
+				<xs:annotation>
+					<xs:documentation>Volumen</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="W">
+				<xs:annotation>
+					<xs:documentation>Währung</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="oE">
+				<xs:annotation>
+					<xs:documentation>ohne Einheit</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tgUnit">
+		<xs:restriction base="tgNormalizedString">
+			<xs:enumeration value="cm2">
+				<xs:annotation>
+					<xs:documentation>cm2</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="dm2">
+				<xs:annotation>
+					<xs:documentation>dm2</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="ha">
+				<xs:annotation>
+					<xs:documentation>Hektar</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="km2">
+				<xs:annotation>
+					<xs:documentation>km2</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="m2">
+				<xs:annotation>
+					<xs:documentation>m2</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mm2">
+				<xs:annotation>
+					<xs:documentation>mm2</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="sq ft">
+				<xs:annotation>
+					<xs:documentation>square feet</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="sq in">
+				<xs:annotation>
+					<xs:documentation>square inches</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="sq mi">
+				<xs:annotation>
+					<xs:documentation>square miles</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="sq ya">
+				<xs:annotation>
+					<xs:documentation>square yards</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Btu">
+				<xs:annotation>
+					<xs:documentation>British thermal unit</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="J">
+				<xs:annotation>
+					<xs:documentation>Joule</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="kgm2/s2">
+				<xs:annotation>
+					<xs:documentation>kgm2/s2</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="kJ">
+				<xs:annotation>
+					<xs:documentation>kJoule</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="kWh">
+				<xs:annotation>
+					<xs:documentation>Kilowattstunde</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Nm">
+				<xs:annotation>
+					<xs:documentation>Newton * Meter</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Ws">
+				<xs:annotation>
+					<xs:documentation>Watt * Sekunde</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="cm">
+				<xs:annotation>
+					<xs:documentation>cm</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="dm">
+				<xs:annotation>
+					<xs:documentation>Dezimeter</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="ft">
+				<xs:annotation>
+					<xs:documentation>foot</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="in">
+				<xs:annotation>
+					<xs:documentation>inch</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="km">
+				<xs:annotation>
+					<xs:documentation>km</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="m">
+				<xs:annotation>
+					<xs:documentation>m</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mile">
+				<xs:annotation>
+					<xs:documentation>Meile</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mm">
+				<xs:annotation>
+					<xs:documentation>mm</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="sm">
+				<xs:annotation>
+					<xs:documentation>Seemeile</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="yd">
+				<xs:annotation>
+					<xs:documentation>yard</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Zoll">
+				<xs:annotation>
+					<xs:documentation>Zoll</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="g">
+				<xs:annotation>
+					<xs:documentation>g</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="kg">
+				<xs:annotation>
+					<xs:documentation>kg</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="t">
+				<xs:annotation>
+					<xs:documentation>t</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Dtzd">
+				<xs:annotation>
+					<xs:documentation>Dutzend</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="St">
+				<xs:annotation>
+					<xs:documentation>Stück</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="C">
+				<xs:annotation>
+					<xs:documentation>Coulomb</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="J/s">
+				<xs:annotation>
+					<xs:documentation>Joule/Sek.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Nm/s">
+				<xs:annotation>
+					<xs:documentation>Newton * Meter/Sek.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="PS">
+				<xs:annotation>
+					<xs:documentation>PS</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="VA">
+				<xs:annotation>
+					<xs:documentation>Volt * Ampere</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="W">
+				<xs:annotation>
+					<xs:documentation>Watt</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="kW">
+				<xs:annotation>
+					<xs:documentation>Kilowatt</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="kgm2/s3">
+				<xs:annotation>
+					<xs:documentation>Leistung</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="a">
+				<xs:annotation>
+					<xs:documentation>a</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="d">
+				<xs:annotation>
+					<xs:documentation>d</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="h">
+				<xs:annotation>
+					<xs:documentation>h</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Mt">
+				<xs:annotation>
+					<xs:documentation>Monat</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="min">
+				<xs:annotation>
+					<xs:documentation>min</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="s">
+				<xs:annotation>
+					<xs:documentation>s</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="Wo">
+				<xs:annotation>
+					<xs:documentation>Woche</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="cm3">
+				<xs:annotation>
+					<xs:documentation>cm3</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="l">
+				<xs:annotation>
+					<xs:documentation>Liter</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="m3">
+				<xs:annotation>
+					<xs:documentation>m3</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mm3">
+				<xs:annotation>
+					<xs:documentation>mm3</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="CENT">
+				<xs:annotation>
+					<xs:documentation>CENT</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="EUR">
+				<xs:annotation>
+					<xs:documentation>Euro</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="oE">
+				<xs:annotation>
+					<xs:documentation>ohne Einheit</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="psch">
+				<xs:annotation>
+					<xs:documentation>pauschal</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

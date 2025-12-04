@@ -10,6 +10,7 @@
 
     <modules>
         <module>remsfal-core</module>
+        <module>remsfal-gaeb</module>
         <module>remsfal-services</module>
         <module>wrap-up</module>
     </modules>

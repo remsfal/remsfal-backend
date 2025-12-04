@@ -37,6 +37,9 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     @ConfigProperty(name = "quarkus.http.proxy.enable-forwarded-host", defaultValue = "false")
     public boolean enableForwardedHost;
 
+    @ConfigProperty(name = "de.remsfal.auth.devservices.enabled", defaultValue = "false")
+    public boolean devServicesEnabled;
+
     @Context
     UriInfo uri;
 
@@ -92,6 +95,21 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
         final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
         return redirect(redirectUri).cookie(accessToken, refreshToken).build();
+    }
+
+    @Override
+    public Response token(final String appId, final String appToken, final Boolean devService) {
+        if(devServicesEnabled && devService) {
+            logger.warn("Dev Services for Authentication are enabled!");
+            final String devToken = "dev-token";
+            final String devEmail = "dev@remsfal.de";
+            final UserModel user = controller.authenticateUser(devToken, devEmail);
+            final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
+            final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
+            return Response.noContent().cookie(accessToken, refreshToken).build();
+        } else {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+        }
     }
 
     @Timed(name = "checksTimerLogout", unit = MetricUnits.MILLISECONDS)
