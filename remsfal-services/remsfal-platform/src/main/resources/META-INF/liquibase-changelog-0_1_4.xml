@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: Miroslaw Keil [miroslaw.keil@Student.htw-berlin.de]
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-0.1.4-organization" author="miroslaw.keil@Student.htw-berlin.de">
+        <createTable tableName="organization">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="varchar(15)" remarks="According to E.164">
+                <constraints nullable="true" />
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="trade" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="organization_employees">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="employee_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="organization_employees" constraintName="pk_organization_employees"
+                       columnNames="organization_id,employee_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_organization_employees_organization_id"
+                                 baseTableName="organization_employees" baseColumnNames="organization_id"
+                                 referencedTableName="organizations" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_organization_employees_employee_id"
+                                 baseTableName="organization_employees" baseColumnNames="employee_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+    </changeSet>
+</databaseChangeLog>
