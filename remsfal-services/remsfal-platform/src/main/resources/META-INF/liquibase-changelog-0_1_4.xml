@@ -53,12 +53,25 @@
 
         <addForeignKeyConstraint constraintName="fk_organization_employees_organization_id"
                                  baseTableName="organization_employees" baseColumnNames="organization_id"
-                                 referencedTableName="organizations" referencedColumnNames="id"
+                                 referencedTableName="organization" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_organization_employees_employee_id"
                                  baseTableName="organization_employees" baseColumnNames="employee_id"
                                  referencedTableName="users" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
+    </changeSet>
+
+    <changeSet id="add-address_id-to-organization" author="miroslaw.keil@Student.htw-berlin.de">
+        <addColumn tableName="organization">
+            <column name="address_id" type="uuid">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_organization_address_id"
+                                 baseTableName="organization" baseColumnNames="address_id"
+                                 referencedTableName="addresses" referencedColumnNames="id"
+                                 onDelete="SET NULL" onUpdate="RESTRICT" />
     </changeSet>
 </databaseChangeLog>
