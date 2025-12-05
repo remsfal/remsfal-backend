@@ -3,12 +3,11 @@ package de.remsfal.service.entity.dto;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.*;
-
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name = "organization")
+@NamedQuery(name = "findAll", query = "select o from OrganizationEntity o")
 public class OrganizationEntity extends AbstractEntity implements OrganizationModel {
 
     @Column(name = "id")
