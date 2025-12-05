@@ -30,9 +30,9 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
                 .singleResult();
     }
 
-    public List<? extends IssueModel> findByCompanyId(UUID companyId) {
+    public List<? extends IssueModel> findByContractorId(UUID contractorId) {
         return template.select(IssueEntity.class)
-                .where("company_id").eq(companyId)
+                .where("contractor_id").eq(contractorId)
                 .result();
     }
 

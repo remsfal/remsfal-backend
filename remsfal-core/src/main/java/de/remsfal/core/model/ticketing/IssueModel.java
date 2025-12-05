@@ -46,6 +46,6 @@ public interface IssueModel {
 
     UUID getDuplicateOf();
 
-    UUID getCompanyId();
+    UUID getContractorId();
 
 }

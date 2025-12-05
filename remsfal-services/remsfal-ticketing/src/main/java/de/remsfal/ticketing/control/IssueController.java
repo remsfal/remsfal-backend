@@ -42,7 +42,7 @@ public class IssueController {
         entity.setTitle(issue.getTitle());
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
-        entity.setCompanyId(issue.getCompanyId());
+        entity.setContractorId(issue.getContractorId());
         return repository.insert(entity);
     }
 
@@ -50,11 +50,6 @@ public class IssueController {
         logger.infov("Retrieving issue (issueId={0})", issueId);
         return repository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException("Issue not found"));
-    }
-
-    public List<? extends IssueModel> getIssueByCompanyId(final UUID companyId) {
-        logger.infov("Retrieving issue (companyId={0})", companyId);
-        return repository.findByCompanyId(companyId);
     }
 
     public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
@@ -68,6 +63,11 @@ public class IssueController {
 
     public List<? extends IssueModel> getIssuesOfTenancies(Set<UUID> keySet) {
         return repository.findByTenancyIds(keySet);
+    }
+
+    public List<? extends IssueModel> getIssueByContractorId(final UUID contractorId) {
+        logger.infov("Retrieving issue (contractorId={0})", contractorId);
+        return repository.findByContractorId(contractorId);
     }
 
     public IssueModel updateIssue(final IssueKey key, final IssueModel issue) {
