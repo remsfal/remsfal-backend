@@ -39,7 +39,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
+        UnitType rentalType, UUID rentalId, Status status, UUID contractorId) {
         logger.info("Yes i was called");
         List<UUID> projectFilter = null;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
@@ -51,15 +51,15 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (projectFilter.isEmpty()) {
             return getTenancyIssues(offset, limit, tenancyId, status);
         } else {
-            return getProjectIssues(offset, limit, projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+            return getProjectIssues(offset, limit, projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId, status);
         }
     }
 
     private IssueListJson getProjectIssues(Integer offset, Integer limit, List<UUID> projectFilter, UUID ownerId,
-        UUID tenancyId, UnitType rentalType, UUID rentalId,
+        UUID tenancyId, UnitType rentalType, UUID rentalId,  UUID contractorId,
         Status status) {
         final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId,
+            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId,
                 status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }

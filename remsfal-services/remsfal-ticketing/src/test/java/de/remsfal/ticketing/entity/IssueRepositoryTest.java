@@ -42,7 +42,7 @@ class IssueRepositoryTest {
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            List.of(projectId), null, null, null, null, Status.OPEN
+            List.of(projectId), null, null, null, null, null, Status.OPEN
         );
 
         // Verify: Should return 2 OPEN issues
@@ -77,7 +77,7 @@ class IssueRepositoryTest {
 
         // Test: Filter by ownerId1
         List<? extends IssueModel> ownerIssues = repository.findByQuery(
-            List.of(projectId), ownerId1, null, null, null, null
+            List.of(projectId), ownerId1, null, null, null, null, null
         );
 
         // Verify: Should return 2 issues owned by ownerId1

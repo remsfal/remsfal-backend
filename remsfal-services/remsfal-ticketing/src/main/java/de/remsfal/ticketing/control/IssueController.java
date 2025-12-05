@@ -53,8 +53,8 @@ public class IssueController {
     }
 
     public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
-        return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+        UnitType rentalType, UUID rentalId, UUID contractorId, Status status) {
+        return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId, status);
     }
 
     public List<? extends IssueModel> getIssuesOfTenancy(UUID tenancyId) {
@@ -63,11 +63,6 @@ public class IssueController {
 
     public List<? extends IssueModel> getIssuesOfTenancies(Set<UUID> keySet) {
         return repository.findByTenancyIds(keySet);
-    }
-
-    public List<? extends IssueModel> getIssueByContractorId(final UUID contractorId) {
-        logger.infov("Retrieving issue (contractorId={0})", contractorId);
-        return repository.findByContractorId(contractorId);
     }
 
     public IssueModel updateIssue(final IssueKey key, final IssueModel issue) {
