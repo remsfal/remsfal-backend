@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary.project;
+package de.remsfal.service.boundary;
 
 import de.remsfal.core.api.project.OrganizationEndpoint;
 import de.remsfal.core.json.OrganizationJson;

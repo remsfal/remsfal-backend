@@ -74,4 +74,14 @@
                                  referencedTableName="addresses" referencedColumnNames="id"
                                  onDelete="SET NULL" onUpdate="RESTRICT" />
     </changeSet>
+
+    <changeSet id="add-employee_role-to-organization_employees" author="miroslaw.keil@student.htw-berlin.de">
+        <addColumn tableName="organization_employees">
+            <column name="employee_role">
+                <constraints nullable="false" checkConstraint="member_role IN ('OWNER', 'MANAGER', 'STAFF')"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+
 </databaseChangeLog>
