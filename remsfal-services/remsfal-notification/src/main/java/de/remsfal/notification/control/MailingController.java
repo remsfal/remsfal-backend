@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 import de.remsfal.core.model.UserModel;
 import io.quarkus.mailer.Mail;
@@ -39,6 +40,7 @@ public class MailingController {
     @Location("new-membership.html")
     Template newMembership;
 
+    @WithSpan("MailingController.sendWelcomeEmail")
     public void sendWelcomeEmail(final UserModel recipient, final String link, final Locale locale) {
         logger.infov("Sending welcome email to {0}", recipient.getEmail());
         final TemplateInstance instance = welcome.data("name", recipient.getName()).data("buttonLink", link);
@@ -49,6 +51,7 @@ public class MailingController {
         sendWithAlias(mail, "info");
     }
 
+    @WithSpan("MailingController.sendNewMembershipEmail")
     public void sendNewMembershipEmail(final UserModel recipient, final String link, final Locale locale) {
         logger.infov("Sending new membership email to {0}", recipient.getEmail());
         final TemplateInstance instance = newMembership.data("name", recipient.getName()).data("buttonLink", link);
