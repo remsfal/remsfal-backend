@@ -7,6 +7,7 @@ import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.service.control.ProjectController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 import java.util.Set;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
     @Inject
     ProjectController controller;
 
+    @WithSpan("MemberResource.getProjectMembers")
     @Override
     public ProjectMemberListJson getProjectMembers(final UUID projectId) {
         checkReadPermissions(projectId);
@@ -27,6 +29,7 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
         return ProjectMemberListJson.valueOfSet(model);
     }
 
+    @WithSpan("MemberResource.addProjectMember")
     @Override
     public ProjectMemberJson addProjectMember(final UUID projectId, final ProjectMemberJson member) {
         checkWritePermissions(projectId);
@@ -34,6 +37,7 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
         return ProjectMemberJson.valueOf(model);
     }
 
+    @WithSpan("MemberResource.updateProjectMember")
     @Override
     public ProjectMemberJson updateProjectMember(final UUID projectId, final UUID memberId,
             final ProjectMemberJson member) {
@@ -43,6 +47,7 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
         return ProjectMemberJson.valueOf(model);
     }
 
+    @WithSpan("MemberResource.deleteProjectMember")
     @Override
     public void deleteProjectMember(final UUID projectId, final UUID memberId) {
         checkOwnerPermissions(projectId);

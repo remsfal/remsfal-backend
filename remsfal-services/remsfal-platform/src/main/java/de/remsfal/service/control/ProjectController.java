@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.ProjectMemberModel;
@@ -40,6 +41,7 @@ public class ProjectController {
     @Inject
     NotificationController notificationController;
 
+    @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(),
             offset, limit);
@@ -50,10 +52,12 @@ public class ProjectController {
         return projects;
     }
 
+    @WithSpan("ProjectController.countProjects")
     public long countProjects(final UserModel user) {
         return projectRepository.countMembershipByUserId(user.getId());
     }
 
+    @WithSpan("ProjectController.createProject")
     @Transactional
     public ProjectModel createProject(final UserModel user, final ProjectModel project) {
         logger.infov("Creating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
@@ -67,12 +71,14 @@ public class ProjectController {
         return entity;
     }
 
+    @WithSpan("ProjectController.getProject")
     public ProjectModel getProject(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
         return projectRepository.findProjectByUserId(user.getId(), projectId)
-                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+                .orElseThrow(() -> new NotFoundException("Project does not exist or user has no membership"));
     }
 
+    @WithSpan("ProjectController.updateProject")
     @Transactional
     public ProjectModel updateProject(final UserModel user, final UUID projectId, final ProjectModel project) {
         logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
@@ -85,6 +91,7 @@ public class ProjectController {
         // return entity;
     }
 
+    @WithSpan("ProjectController.deleteProject")
     @Transactional
     public boolean deleteProject(final UserModel user, final UUID projectId) {
         logger.infov("Deleting a project (id = {0})", projectId);
@@ -98,6 +105,7 @@ public class ProjectController {
         }
     }
 
+    @WithSpan("ProjectController.getProjectMemberRole")
     public MemberRole getProjectMemberRole(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving project member role (user={0}, project={1})", user.getId(), projectId);
         return projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId)
@@ -105,6 +113,7 @@ public class ProjectController {
             .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
     }
 
+    @WithSpan("ProjectController.getProjectMembers")
     public Set<? extends ProjectMemberModel> getProjectMembers(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving project membership (user={0}, project={1})", user.getId(), projectId);
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
@@ -112,6 +121,7 @@ public class ProjectController {
         return entity.getMembers();
     }
 
+    @WithSpan("ProjectController.addProjectMember")
     @Transactional
     public ProjectMemberModel addProjectMember(final UserModel user, final UUID projectId,
         final ProjectMemberModel member) {
@@ -128,6 +138,7 @@ public class ProjectController {
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
     }
 
+    @WithSpan("ProjectController.changeProjectMemberRole")
     @Transactional
     public ProjectMemberModel changeProjectMemberRole(final UUID projectId, final UUID memberId,
         final MemberRole memberRole) {
@@ -139,6 +150,7 @@ public class ProjectController {
         return projectRepository.merge(entity);
     }
 
+    @WithSpan("ProjectController.removeProjectMember")
     @Transactional
     public boolean removeProjectMember(final UUID projectId, final UUID memberId) {
         logger.infov("Removing a project membership (projectId={0}, memberId={1})",
