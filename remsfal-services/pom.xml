@@ -24,6 +24,7 @@
         <quarkus.version>3.30.1</quarkus.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
+        <version.archunit>1.3.0</version.archunit>
     </properties>
 
     <dependencyManagement>
@@ -81,5 +82,13 @@
             <artifactId>quarkus-jacoco</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5-engine</artifactId>
+            <version>${version.archunit}</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 </project>
