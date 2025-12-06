@@ -1,9 +1,12 @@
 package de.remsfal.service.entity.dto;
 
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationModel;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.*;
-import java.util.UUID;
+
+import java.util.*;
 
 @Entity
 @Table(name = "organization")
@@ -28,6 +31,9 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
+
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<OrganizationEmployeeEntity> employees;
 
     //Getter and Setter
     public String getName() {
@@ -63,5 +69,47 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     }
     public void setAddress(AddressEntity address) {
         this.address = address;
+    }
+
+    public Set<OrganizationEmployeeEntity> getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(Set<OrganizationEmployeeEntity> employees) {
+        this.employees = employees;
+    }
+
+    public void addEmployee(UserEntity user, EmployeeRole role) {
+        if (this.employees == null) {
+            this.employees = new HashSet<>();
+        }
+        OrganizationEmployeeEntity organizationEmployeeEntity = new OrganizationEmployeeEntity();
+        organizationEmployeeEntity.setUser(user);
+        organizationEmployeeEntity.setRole(role);
+        organizationEmployeeEntity.setOrganization(this);
+
+        this.employees.add(organizationEmployeeEntity);
+    }
+
+    public boolean isEmployee(final UserModel  user) {
+        for (OrganizationEmployeeEntity employee : employees) {
+            if (employee.getUser().getId().equals(user.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof OrganizationEntity e) {
+            return super.equals(e)
+                    && Objects.equals(name, e.name)
+                    && Objects.equals(employees, e.employees);
+        }
+        return false;
     }
 }

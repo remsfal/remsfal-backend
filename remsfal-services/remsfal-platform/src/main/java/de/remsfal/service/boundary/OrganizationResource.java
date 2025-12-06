@@ -72,4 +72,6 @@ public class OrganizationResource implements OrganizationEndpoint {
             throw new NotFoundException("Organization not found");
         }
     }
+
+    //TODO: Sub-Ressource OrganizationEmployee implementieren
 }

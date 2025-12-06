@@ -11,6 +11,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
+@NamedQuery(name = "OrganizationEmployeeEntity.findByUserId", query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.user.id = :userId")
+@NamedQuery(name = "OrganizationEmployeeEntity.findByOrganizationId", query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.organization.id = :organizationId")
+@NamedQuery(name = "OrganizationEmployeeEntity.findByOrganizationIdAndUserId", query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.organization.id = :organizationId AND o.user.id = :userId")
+@NamedQuery(name = "OrganizationEmployeeEntity.removeByOrganizationIdAndUserId", query = "DELETE FROM OrganizationEmployeeEntity o WHERE o.organization.id = :organizationId AND o.user.id = :userId")
 @Table(name = "organization_employees")
 public class OrganizationEmployeeEntity extends MetaDataEntity implements OrganizationEmployeeModel {
 
