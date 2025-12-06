@@ -74,6 +74,10 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-kafka-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-opentelemetry</artifactId>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
