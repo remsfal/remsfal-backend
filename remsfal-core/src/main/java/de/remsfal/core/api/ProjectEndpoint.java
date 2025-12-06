@@ -36,6 +36,7 @@ import de.remsfal.core.api.project.ContractorEndpoint;
 import de.remsfal.core.api.project.MemberEndpoint;
 import de.remsfal.core.api.project.PropertyEndpoint;
 import de.remsfal.core.api.project.SiteEndpoint;
+import de.remsfal.core.api.tenancy.TenancyEndpoint;
 
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
@@ -145,4 +146,6 @@ public interface ProjectEndpoint {
     @Path("/{projectId}/" + ContractorEndpoint.SERVICE)
     ContractorEndpoint getContractorResource();
 
+    @Path("/{projectId}/" + TenancyEndpoint.SERVICE)
+    TenancyEndpoint getTenancyResource();
 }
