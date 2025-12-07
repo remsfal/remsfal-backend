@@ -148,23 +148,23 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     }
 
     @Override
-    public QuotationRequestListJson createQuotationRequest(final UUID issueId, 
-                                                           final CreateQuotationRequestJson request) {
+    public QuotationRequestListJson createQuotationRequest(final UUID issueId,
+        final CreateQuotationRequestJson request) {
         IssueEntity issue = issueController.getIssue(issueId);
         UserRole principalRole = getPrincipalRole(issue.getProjectId());
-        
+
         if (principalRole != UserRole.MANAGER) {
             throw new ForbiddenException("Only managers can create quotation requests");
         }
-        
-        List<? extends QuotationRequestModel> quotationRequests = 
+
+        List<? extends QuotationRequestModel> quotationRequests =
             quotationRequestController.createQuotationRequests(
-                principal, 
-                issueId, 
+                principal,
+                issueId,
                 issue.getProjectId(),
                 request.getContractorIds(),
                 request.getDescription());
-        
+
         return QuotationRequestListJson.valueOf(quotationRequests);
     }
 

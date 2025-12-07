@@ -22,16 +22,16 @@ public class QuotationRequestController {
     QuotationRequestRepository repository;
 
     public List<? extends QuotationRequestModel> createQuotationRequests(
-            final UserModel user,
-            final UUID issueId,
-            final UUID projectId,
-            final List<UUID> contractorIds,
-            final String description) {
-        logger.infov("Creating quotation requests (issueId={0}, projectId={1}, contractors={2})", 
+        final UserModel user,
+        final UUID issueId,
+        final UUID projectId,
+        final List<UUID> contractorIds,
+        final String description) {
+        logger.infov("Creating quotation requests (issueId={0}, projectId={1}, contractors={2})",
             issueId, projectId, contractorIds.size());
-        
+
         List<QuotationRequestEntity> requests = new ArrayList<>();
-        
+
         for (UUID contractorId : contractorIds) {
             QuotationRequestEntity entity = new QuotationRequestEntity();
             entity.generateId();
@@ -41,10 +41,10 @@ public class QuotationRequestController {
             entity.setTriggeredBy(user.getId());
             entity.setDescription(description);
             entity.setStatus(QuotationRequestModel.Status.VALID);
-            
+
             requests.add(repository.insert(entity));
         }
-        
+
         return requests;
     }
 

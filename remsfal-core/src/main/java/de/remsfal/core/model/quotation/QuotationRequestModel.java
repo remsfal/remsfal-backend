@@ -4,7 +4,7 @@ import java.util.UUID;
 
 /**
  * Model interface for a quotation request.
- * 
+ *
  * @author GitHub Copilot
  */
 public interface QuotationRequestModel {

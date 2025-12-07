@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * JSON representation of a list of quotation requests.
- * 
+ *
  * @author GitHub Copilot
  */
 @Immutable

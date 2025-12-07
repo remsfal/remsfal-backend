@@ -13,7 +13,7 @@ import java.util.UUID;
 
 /**
  * JSON representation of a quotation request.
- * 
+ *
  * @author GitHub Copilot
  */
 @Immutable
