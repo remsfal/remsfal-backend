@@ -42,6 +42,7 @@ public class IssueController {
 
         entity = repository.insert(entity);
 
+        //Überprüfung ob schon relationen bei der Erstellung mit angelegt werden
         boolean hasRelations =
                 (issue.getBlocks() != null && !issue.getBlocks().isEmpty()) ||
                         (issue.getBlockedBy() != null && !issue.getBlockedBy().isEmpty()) ||
@@ -93,7 +94,7 @@ public class IssueController {
         if (issue.getDescription() != null) {
             entity.setDescription(issue.getDescription());
         }
-
+        //Die Logik für das einfügen der Bidrekttionalen Beziehungen
         updateRelations(entity, issue);
 
         return repository.update(entity);
