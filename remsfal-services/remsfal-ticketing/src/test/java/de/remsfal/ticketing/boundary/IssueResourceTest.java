@@ -10,6 +10,8 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.Map;
 import java.util.UUID;
 
+import de.remsfal.ticketing.entity.dto.IssueEntity;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
@@ -23,6 +25,9 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
+import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.core.model.ticketing.IssueModel.Status;
+
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -1859,6 +1864,58 @@ class IssueResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(200)
                 .body("blocks", hasSize(0));
+    }
+
+    //Tests nur für sonar Cloud teste hier nicht mehr meinen erstellten Code
+    @Test
+    void closeIssue_SUCCESS_issueStatusIsClosed() {
+        // Issue über REST erzeugen
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Issue to be closed\","
+                + "\"description\":\"Some description\","
+                + "\"type\":\"TASK\""
+                + "}";
+
+        final Response createResponse = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(createJson)
+                .post(BASE_PATH)
+                .thenReturn();
+
+        final String issueIdString = createResponse.then()
+                .statusCode(201)
+                .extract().path("id");
+
+        UUID issueId = UUID.fromString(issueIdString);
+
+        // IssueKey aufbauen
+        IssueKey key = new IssueKey();
+        key.setProjectId(TicketingTestData.PROJECT_ID);
+        key.setIssueId(issueId);
+
+        // closeIssue direkt aufrufen
+        issueController.closeIssue(key);
+
+        // DB laden und prüfen
+        IssueEntity reloaded = issueRepository.find(key)
+                .orElseThrow(() -> new AssertionError("Issue was not found after closeIssue"));
+
+        Assertions.assertEquals(Status.CLOSED, reloaded.getStatus());
+    }
+
+    @Test
+    void closeIssue_NOOP_whenIssueDoesNotExist() {
+        // Random IssueKey, der sicher nicht existiert
+        IssueKey key = new IssueKey();
+        key.setProjectId(TicketingTestData.PROJECT_ID);
+        key.setIssueId(UUID.randomUUID());
+
+        issueController.closeIssue(key);
+        // Optional: assert, dass find weiterhin leer ist (nur zur Sicherheit)
+        org.junit.jupiter.api.Assertions.assertTrue(issueRepository.find(key).isEmpty());
     }
 
 

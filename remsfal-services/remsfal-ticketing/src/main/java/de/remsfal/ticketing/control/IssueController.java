@@ -46,13 +46,14 @@ public class IssueController {
         entity = repository.insert(entity);
 
         //Überprüfung ob schon relationen bei der Erstellung mit angelegt werden
-        boolean hasRelations =
-            (issue.getBlocks() != null && !issue.getBlocks().isEmpty()) ||
-            (issue.getBlockedBy() != null && !issue.getBlockedBy().isEmpty()) ||
-            (issue.getRelatedTo() != null && !issue.getRelatedTo().isEmpty()) ||
-            (issue.getDuplicateOf() != null && !issue.getDuplicateOf().isEmpty()) ||
-            (issue.getParentOf() != null && !issue.getParentOf().isEmpty()) ||
-            (issue.getChildOf() != null && !issue.getChildOf().isEmpty());
+        boolean hasRelations = java.util.stream.Stream.of(
+                issue.getBlocks(),
+                issue.getBlockedBy(),
+                issue.getRelatedTo(),
+                issue.getDuplicateOf(),
+                issue.getParentOf(),
+                issue.getChildOf()
+        ).anyMatch(set -> set != null && !set.isEmpty());
 
         if (hasRelations) {
             updateRelations(entity, issue);   // nutzt die gleiche Logik wie PATCH
