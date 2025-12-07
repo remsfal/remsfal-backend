@@ -3,6 +3,7 @@ package de.remsfal.service.entity.dto.embeddable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
  * @author Miroslaw Keil [miroslaw.keil@student.htw-berlin.de]
  */
 @Embeddable
-public class OrganizationEmployeeKey {
+public class OrganizationEmployeeKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
