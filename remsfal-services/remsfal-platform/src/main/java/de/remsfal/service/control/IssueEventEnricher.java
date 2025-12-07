@@ -2,7 +2,6 @@ package de.remsfal.service.control;
 
 import java.util.Optional;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.jboss.logging.Logger;
@@ -21,11 +20,10 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class IssueEventEnricher {
 
+    private static final String FRONTEND_BASE_URL = "https://remsfal.de";
+
     @Inject
     Logger logger;
-
-    @ConfigProperty(name = "de.remsfal.frontend.url.base", defaultValue = "http://localhost:5173")
-    String frontendBaseUrl;
 
     @Inject
     UserRepository userRepository;
@@ -78,9 +76,8 @@ public class IssueEventEnricher {
 
     private String buildIssueLink(final IssueEventJson event) {
         if (event == null || event.getIssueId() == null || event.getProjectId() == null) {
-            return frontendBaseUrl;
+            return FRONTEND_BASE_URL;
         }
-        String base = frontendBaseUrl != null ? frontendBaseUrl.replaceAll("/+$", "") : "http://localhost:5173";
-        return base + "/projects/" + event.getProjectId() + "/issueedit/" + event.getIssueId();
+        return FRONTEND_BASE_URL + "/projects/" + event.getProjectId() + "/issueedit/" + event.getIssueId();
     }
 }

@@ -11,14 +11,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.jboss.logging.Logger;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
@@ -28,23 +21,18 @@ import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserEntity;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+@QuarkusTest
 class IssueEventEnricherTest {
 
-    @Mock
+    @InjectMock
     UserRepository userRepository;
 
+    @Inject
     IssueEventEnricher enricher;
-
-    @BeforeEach
-    void setUp() {
-        enricher = new IssueEventEnricher();
-        enricher.logger = Logger.getLogger(IssueEventEnricher.class);
-        enricher.userRepository = userRepository;
-        enricher.frontendBaseUrl = "https://frontend.example/app/";
-    }
 
     @Test
     void enrich_enrichesOwnerDetailsAndBuildsLink() {
@@ -87,7 +75,7 @@ class IssueEventEnricherTest {
 
         IssueEventJson enriched = enricher.enrich(event);
 
-        assertEquals("https://frontend.example/app/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
+        assertEquals("https://remsfal.de/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         assertNotNull(enriched.getOwner());
         assertEquals(ownerId, enriched.getOwner().getId());
         assertEquals("owner@example.com", enriched.getOwner().getEmail());
@@ -128,7 +116,6 @@ class IssueEventEnricherTest {
 
     @Test
     void buildIssueLink_returnsBaseUrlWhenIdentifiersMissing() throws Exception {
-        enricher.frontendBaseUrl = "https://frontend.example/base//";
         IssueEventJson event = mock(IssueEventJson.class);
         when(event.getIssueId()).thenReturn(null);
         when(event.getProjectId()).thenReturn(null);
@@ -137,14 +124,12 @@ class IssueEventEnricherTest {
         buildLink.setAccessible(true);
         String link = (String) buildLink.invoke(enricher, event);
 
-        assertEquals("https://frontend.example/base//", link);
+        assertEquals("https://remsfal.de", link);
         verifyNoInteractions(userRepository);
     }
 
     @Test
-    void enrich_keepsOwnerWhenMissingAndUsesDefaultFrontendUrl() {
-        enricher.frontendBaseUrl = null;
-
+    void enrich_keepsOwnerWhenMissingAndBuildsLinkFromConfig() {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         IssueEventJson event = ImmutableIssueEventJson.builder()
@@ -160,7 +145,7 @@ class IssueEventEnricherTest {
         IssueEventJson enriched = enricher.enrich(event);
 
         assertNull(enriched.getOwner());
-        assertEquals("http://localhost:5173/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
+        assertEquals("https://remsfal.de/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         verifyNoInteractions(userRepository);
     }
 
@@ -188,5 +173,16 @@ class IssueEventEnricherTest {
         assertEquals(ownerId, enriched.getOwner().getId());
         assertNull(enriched.getOwner().getEmail());
         verify(userRepository).findByIdOptional(ownerId);
+    }
+
+    @Test
+    void buildIssueLink_withNullEvent_usesFrontendBaseUrl() throws Exception {
+        var buildLink = IssueEventEnricher.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
+        buildLink.setAccessible(true);
+
+        String link = (String) buildLink.invoke(enricher, new Object[] { null });
+
+        assertEquals("https://remsfal.de", link);
+        verifyNoInteractions(userRepository);
     }
 }
