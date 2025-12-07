@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+               xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               version="3.0">
+
+    <!-- Global bindings -->
+    <jaxb:globalBindings
+        generateElementProperty="false"
+        localScoping="toplevel"/>
+
+    <!-- Bindings for Handel schemas -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_93_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da93"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_94_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da94"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_96_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da96"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_97_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da97"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <!-- Bindings for Leistungsverzeichnis schemas -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_80_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da80"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_81_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da81"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_82_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da82"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_83_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da83"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_84_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da84"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_85_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da85"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_86_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da86"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_87_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da87"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <!-- Bindings for Kosten und Kalkulation schemas -->
+    <!-- Note: Multiple schemas share the same targetNamespace but define different GAEB root elements -->
+    <!-- For schemas sharing a namespace, only ONE can have <schemaBindings> -->
+    <!-- DA50 namespace (http://www.gaeb.de/GAEB_DA_XML/DA50/3.3): schemas 50, 50.1, 50.2 -->
+    <!-- DA51 namespace (http://www.gaeb.de/GAEB_DA_XML/DA51/3.3): schemas 51, 51.1, 51.2 -->
+
+    <!-- DA50 namespace - only the first schema gets schemaBindings -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_50_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da50">
+                <jaxb:javadoc>Generated from GAEB DA XML 50 schemas</jaxb:javadoc>
+            </jaxb:package>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <!-- DA50.1 - no schemaBindings, only element customization -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_50.1_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:bindings node="//xs:element[@name='GAEB']">
+            <jaxb:class name="GAEB50_1"/>
+            <jaxb:factoryMethod name="createGAEBDA50_1"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+    <!-- DA51 namespace - only the first schema gets schemaBindings -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_51_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da51">
+                <jaxb:javadoc>Generated from GAEB DA XML 51 schemas</jaxb:javadoc>
+            </jaxb:package>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <!-- DA51.1 - no schemaBindings, only element customization -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_51.1_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:bindings node="//xs:element[@name='GAEB']">
+            <jaxb:class name="GAEB51_1"/>
+            <jaxb:factoryMethod name="createGAEBDA51_1"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_52_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da52">
+                <jaxb:javadoc>Generated from GAEB DA XML 52 schema</jaxb:javadoc>
+            </jaxb:package>
+        </jaxb:schemaBindings>
+        <jaxb:bindings node="//xs:element[@name='GAEB']">
+            <jaxb:class name="GAEB52"/>
+            <jaxb:factoryMethod name="createGAEBDA52"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+    <!-- Bindings for Zeitvertrag schemas -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_83Z_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da83z"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_84Z_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da84z"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_86ZE_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da86ze"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_86ZR_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da86zr"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <!-- Bindings for Rechnung schemas -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Rechnung/GAEB_DA_XML_89_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da89"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Rechnung/GAEB_DA_XML_89B_3.3_2021-05.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da89b"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <!-- Bindings for Preisspiegel und Raumbuch schemas -->
+    <!--   jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_61_3.3_2021-05_Beta.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da61"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_84P_3.3_2021-05_Beta.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da84p"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_98_3.3_2021-05_Beta.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da98"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_99_3.3_2021-05_Beta.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da99"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings -->
+
+    <!-- Bindings for Mengenermittlung schema -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/2023-01_Mengenermittlung/GAEB_DA_XML_31_3.3_2023-01.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="de.remsfal.gaeb.da31"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <!-- Bindings for the shared Lib XSD -->
+    <!-- The Lib schema has no targetNamespace and is included via redefine in various schemas -->
+    <!-- We ONLY customize property names for conflicting elements -->
+    <jaxb:bindings schemaLocation="../xsd/gaeb_da_xml/3_3/GAEB_DA_XML_Lib_3.3_2021-05.xsd">
+        <!-- tgOutlTxt complexType - line 2180 -->
+        <jaxb:bindings node="//xs:complexType[@name='tgOutlTxt']">
+            <jaxb:bindings node=".//xs:element[@name='Style']">
+                <jaxb:property name="styleElement"/>
+            </jaxb:bindings>
+            <jaxb:bindings node=".//xs:attribute[@name='style']">
+                <jaxb:property name="styleAttribute"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <!-- tgBoQText complexType - line 3164 -->
+        <jaxb:bindings node="//xs:complexType[@name='tgBoQText']">
+            <jaxb:bindings node=".//xs:element[@name='Style']">
+                <jaxb:property name="styleElement"/>
+            </jaxb:bindings>
+            <jaxb:bindings node=".//xs:attribute[@name='style']">
+                <jaxb:property name="styleAttribute"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>
