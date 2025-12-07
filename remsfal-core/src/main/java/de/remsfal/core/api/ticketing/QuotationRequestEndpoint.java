@@ -23,7 +23,7 @@ import de.remsfal.core.json.quotation.CreateQuotationRequestJson;
 import de.remsfal.core.json.quotation.QuotationRequestListJson;
 
 /**
- * @author GitHub Copilot
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Path(QuotationRequestEndpoint.CONTEXT + "/" + QuotationRequestEndpoint.VERSION + "/"
     + QuotationRequestEndpoint.SERVICE)

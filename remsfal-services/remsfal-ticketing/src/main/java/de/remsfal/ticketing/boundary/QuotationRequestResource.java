@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @author GitHub Copilot
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Authenticated
 @RequestScoped
@@ -66,7 +66,8 @@ public class QuotationRequestResource extends AbstractResource implements Quotat
         } else if (projectId != null) {
             // Check if user has access to the project
             if (!principal.getProjectRoles().containsKey(projectId)) {
-                throw new ForbiddenException("User does not have permission to view quotation requests for this project");
+                throw new ForbiddenException(
+                    "User does not have permission to view quotation requests for this project");
             }
             allRequests.addAll(quotationRequestController.getQuotationRequestsByProjectId(projectId));
         } else {
