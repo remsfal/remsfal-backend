@@ -13,8 +13,11 @@ import de.remsfal.core.model.ticketing.IssueModel.Status;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
-
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @ApplicationScoped
 public class IssueController {
@@ -44,12 +47,12 @@ public class IssueController {
 
         //Überprüfung ob schon relationen bei der Erstellung mit angelegt werden
         boolean hasRelations =
-                (issue.getBlocks() != null && !issue.getBlocks().isEmpty()) ||
-                        (issue.getBlockedBy() != null && !issue.getBlockedBy().isEmpty()) ||
-                        (issue.getRelatedTo() != null && !issue.getRelatedTo().isEmpty()) ||
-                        (issue.getDuplicateOf() != null && !issue.getDuplicateOf().isEmpty()) ||
-                        (issue.getParentOf() != null && !issue.getParentOf().isEmpty()) ||
-                        (issue.getChildOf() != null && !issue.getChildOf().isEmpty());
+            (issue.getBlocks() != null && !issue.getBlocks().isEmpty()) ||
+            (issue.getBlockedBy() != null && !issue.getBlockedBy().isEmpty()) ||
+            (issue.getRelatedTo() != null && !issue.getRelatedTo().isEmpty()) ||
+            (issue.getDuplicateOf() != null && !issue.getDuplicateOf().isEmpty()) ||
+            (issue.getParentOf() != null && !issue.getParentOf().isEmpty()) ||
+            (issue.getChildOf() != null && !issue.getChildOf().isEmpty());
 
         if (hasRelations) {
             updateRelations(entity, issue);   // nutzt die gleiche Logik wie PATCH
@@ -104,7 +107,7 @@ public class IssueController {
     public void deleteIssue(final IssueKey key) {
         logger.infov("Deleting issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
         IssueEntity entity = repository.find(key)
-                .orElseThrow(() -> new NotFoundException("Issue not found"));
+            .orElseThrow(() -> new NotFoundException("Issue not found"));
 
         // 1. alle Referenzen auf dieses Issue bereinigen
         removeRelationsForIssue(entity);
