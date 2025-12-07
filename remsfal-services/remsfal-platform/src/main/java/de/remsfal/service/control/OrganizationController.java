@@ -140,13 +140,18 @@ public class OrganizationController {
                 .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
     }
 
+    public OrganizationEmployeeModel getOrganizationEmployee(final UUID organizationId, final UserModel user) {
+        return organizationRepository.findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, user.getId())
+                .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+    }
+
     public List<? extends OrganizationEmployeeModel> getEmployeesByOrganization(final UUID organizationId) {
         return organizationRepository.findOrganizationEmployeesByOrganizationId(organizationId);
 
     }
 
-    public OrganizationEmployeeEntity addEmployee(final UUID organizationId, final UserModel user, final OrganizationEmployeeModel employee) {
-        logger.infov("Adding a project membership (user={0}, project={1}, memberEmail={2}, memberRole={3})",
+    public OrganizationEmployeeModel addEmployee(final UUID organizationId, final UserModel user, final OrganizationEmployeeModel employee) {
+        logger.infov("Adding a organization employee (user={0}, project={1}, memberEmail={2}, memberRole={3})",
                 user.getId(), organizationId, employee.getEmail(), employee.getEmployeeRole());
         final OrganizationEntity organization = organizationRepository.findOrganizationByUserId(user.getId(), organizationId)
                 .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
@@ -158,5 +163,18 @@ public class OrganizationController {
                 .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
     }
 
-    //TODO: Change und Delete implementieren
+    @Transactional
+    public OrganizationEmployeeModel updateEmployeeRole(final UUID organizationId, final UUID employeeId, final EmployeeRole role) {
+        OrganizationEmployeeEntity entity = organizationRepository.findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId)
+                .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+
+        entity.setRole(role);
+
+        return organizationRepository.merge(entity);
+    }
+
+    @Transactional
+    public boolean removeEmployee(final UUID organizationId, final UUID employeeId) {
+        return organizationRepository.deleteOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId);
+    }
 }

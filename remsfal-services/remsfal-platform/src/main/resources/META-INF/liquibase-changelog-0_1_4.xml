@@ -75,9 +75,9 @@
                                  onDelete="SET NULL" onUpdate="RESTRICT" />
     </changeSet>
 
-    <changeSet id="add-employee_role-to-organization_employees" author="miroslaw.keil@student.htw-berlin.de">
+    <changeSet id="add-employee_role-to-organization_employees" author="miroslaw.keil@Student.htw-berlin.de">
         <addColumn tableName="organization_employees">
-            <column name="employee_role">
+            <column name="employee_role" type="varchar(255)">
                 <constraints nullable="false" checkConstraint="member_role IN ('OWNER', 'MANAGER', 'STAFF')"/>
             </column>
         </addColumn>
