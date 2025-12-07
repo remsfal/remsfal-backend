@@ -2,6 +2,7 @@ package de.remsfal.core.api;
 
 import de.remsfal.core.json.OrganizationEmployeeJson;
 import de.remsfal.core.json.OrganizationEmployeeListJson;
+import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -56,7 +57,7 @@ public interface EmployeeEndpoint {
             @Parameter(description = "employeeId", required = true)
             @PathParam("employeeId") @NotNull UUID employeeId,
             @Parameter(description = "employee information", required = true)
-            @Valid @ConvertGroup(to = PostValidation.class) final OrganizationEmployeeJson employee
+            @Valid @ConvertGroup(to = PatchValidation.class) final OrganizationEmployeeJson employee
     );
 
     @DELETE

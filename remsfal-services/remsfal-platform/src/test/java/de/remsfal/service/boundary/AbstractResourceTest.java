@@ -136,6 +136,18 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
             TestData.STORAGE_USABLE_SPACE_2);
     }
 
+    protected void setupTestOrganizations() {
+        insertOrganization(TestData.ORGANIZATION_ID, TestData.ORGANIZATION_NAME, TestData.ORGANIZATION_PHONE,
+                TestData.ORGANIZATION_EMAIL, TestData.ORGANIZATION_TRADE);
+        insertEmployee(TestData.ORGANIZATION_ID, TestData.USER_ID, "OWNER");
+        insertOrganization(TestData.ORGANIZATION_ID_2, TestData.ORGANIZATION_NAME_2, TestData.ORGANIZATION_PHONE_2,
+                TestData.ORGANIZATION_EMAIL_2, TestData.ORGANIZATION_TRADE_2);
+        insertEmployee(TestData.ORGANIZATION_ID_2, TestData.USER_ID, "OWNER");
+        insertOrganization(TestData.ORGANIZATION_ID_3, TestData.ORGANIZATION_NAME_3, TestData.ORGANIZATION_PHONE_3,
+                TestData.ORGANIZATION_EMAIL_3, TestData.ORGANIZATION_TRADE_3);
+        insertEmployee(TestData.ORGANIZATION_ID_3, TestData.USER_ID, "OWNER");
+    }
+
     protected void setupAllTestData() {
         setupTestUsers();
         setupTestProjects();
@@ -292,6 +304,26 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
                 .setParameter(10, params[9])
                 .setParameter(11, params[10])
                 .executeUpdate());
+    }
+
+    protected void insertOrganization(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO organization (id, name, phone, email, trade) VALUES (?,?,?,?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .setParameter(3, params[2])
+                .setParameter(4, params[3])
+                .setParameter(5, params[4])
+                .executeUpdate());
+    }
+
+    protected void insertEmployee(Object... params) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO organization_employees (organization_id, employee_id, employee_role) VALUES (?,?,?)")
+            .setParameter(1, params[0])
+            .setParameter(2, params[1])
+            .setParameter(3, params[2])
+            .executeUpdate());
     }
 
     protected Cookie buildAccessTokenCookie(final UUID userId, final String userEmail, final Duration ttl) {

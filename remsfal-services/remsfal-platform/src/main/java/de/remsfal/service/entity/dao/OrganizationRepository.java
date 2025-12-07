@@ -48,6 +48,8 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
     public boolean deleteOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId, UUID userId) {
         return getEntityManager()
                 .createNamedQuery("OrganizationEmployeeEntity.removeByOrganizationIdAndUserId")
+                .setParameter("organizationId", organizationId)
+                .setParameter("userId", userId)
                 .executeUpdate() > 0;
     }
 
