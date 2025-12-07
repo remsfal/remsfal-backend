@@ -1652,31 +1652,48 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Test
     void deleteRelation_FAILED_unknownRelationType() {
-        // Einfach ein Issue anlegen
-        String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+        // Source-Issue
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Issue for unknown relation type\","
                 + "\"type\":\"TASK\" }";
 
-        String issueId = given()
+        String sourceId = given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                         TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
                 .contentType(ContentType.JSON)
-                .body(json)
+                .body(sourceJson)
                 .post(BASE_PATH)
                 .then()
                 .statusCode(201)
                 .extract().path("id");
 
-        // Unbekannter Relationstyp -> IllegalArgumentException -> typischerweise 500
+        // Target-Issue, damit relatedId EXISTIERT
+        String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Target for unknown relation type\","
+                + "\"type\":\"TASK\" }";
+
+        String targetId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(targetJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Jetzt unknown_type mit EXISTIERENDEM targetId -> trifft den default-Case
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                         TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
-                .delete(BASE_PATH + "/" + issueId + "/relations/unknown_type/" + UUID.randomUUID())
+                .delete(BASE_PATH + "/" + sourceId + "/relations/unknown_type/" + targetId)
                 .then()
-                .statusCode(500);
+                .statusCode(500);   // falls Quarkus IllegalArgumentException als 500 mapped
     }
+
 
     @Test
     void deleteRelation_FAILED_issueNotFound() {
