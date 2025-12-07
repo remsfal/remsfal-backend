@@ -39,6 +39,29 @@ public class TenancyController {
             .orElseThrow(() -> new NotFoundException("Tenancy not exist"));
     }
 
+    public List<TenancyEntity> getTenanciesByProject(final UUID projectId) {
+        logger.infov("Retrieving all tenancies (projectId = {0})", projectId);
+        return tenancyRepository.findTenancyByProject(projectId);
+    }
+
+    public TenancyEntity getTenancyByProject(final UUID projectId, final UUID tenancyId) {
+        logger.infov("Retrieving a tenancy (projectId = {0}, tenancyId = {1})", projectId, tenancyId);
+        return tenancyRepository.findTenancyByProject(projectId, tenancyId)
+            .orElseThrow(() -> new NotFoundException("Tenancy not exist"));
+    }
+
+    @Transactional
+    public TenancyEntity createTenancy(final UUID projectId, final TenancyModel tenancy) {
+        logger.infov("Creating a tenancy (project={0}", projectId);
+        TenancyEntity entity = new TenancyEntity();
+        entity.generateId();
+        entity.setProjectId(projectId);
+        entity.setStartOfRental(tenancy.getStartOfRental());
+        entity.setEndOfRental(tenancy.getEndOfRental());
+        tenancyRepository.persistAndFlush(entity);
+        return entity;
+    }
+
     @Transactional(TxType.MANDATORY)
     public TenancyEntity updateTenancy(final UUID projectId, TenancyEntity entity, final TenancyModel tenancy) {
         if(entity == null) {
