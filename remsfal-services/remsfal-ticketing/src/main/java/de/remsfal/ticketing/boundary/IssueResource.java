@@ -16,11 +16,15 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.json.UserJson.UserRole;
+import de.remsfal.core.json.quotation.CreateQuotationRequestJson;
+import de.remsfal.core.json.quotation.QuotationRequestListJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
+import de.remsfal.core.model.quotation.QuotationRequestModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.ticketing.control.QuotationRequestController;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
 
@@ -36,6 +40,9 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
+
+    @Inject
+    QuotationRequestController quotationRequestController;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
@@ -138,6 +145,27 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         } else {
             throw new ForbiddenException("User does not have permission to delete this issue");
         }
+    }
+
+    @Override
+    public QuotationRequestListJson createQuotationRequest(final UUID issueId, 
+                                                           final CreateQuotationRequestJson request) {
+        IssueEntity issue = issueController.getIssue(issueId);
+        UserRole principalRole = getPrincipalRole(issue.getProjectId());
+        
+        if (principalRole != UserRole.MANAGER) {
+            throw new ForbiddenException("Only managers can create quotation requests");
+        }
+        
+        List<? extends QuotationRequestModel> quotationRequests = 
+            quotationRequestController.createQuotationRequests(
+                principal, 
+                issueId, 
+                issue.getProjectId(),
+                request.getContractorIds(),
+                request.getDescription());
+        
+        return QuotationRequestListJson.valueOf(quotationRequests);
     }
 
     @Override

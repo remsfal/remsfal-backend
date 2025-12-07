@@ -26,6 +26,8 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.json.quotation.CreateQuotationRequestJson;
+import de.remsfal.core.json.quotation.QuotationRequestListJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
@@ -106,6 +108,21 @@ public interface IssueEndpoint {
     void deleteIssue(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId);
+
+    @POST
+    @Path("/{issueId}/quotation-request")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Create quotation requests for an issue.")
+    @APIResponse(responseCode = "201", description = "Quotation requests created successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to create quotation requests")
+    @APIResponse(responseCode = "404", description = "The issue does not exist")
+    QuotationRequestListJson createQuotationRequest(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Quotation request information", required = true)
+        @Valid CreateQuotationRequestJson request);
 
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
