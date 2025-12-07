@@ -12,6 +12,7 @@ import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 import java.util.List;
@@ -150,16 +151,17 @@ public class OrganizationController {
 
     }
 
+    @Transactional
     public OrganizationEmployeeModel addEmployee(final UUID organizationId, final UserModel user, final OrganizationEmployeeModel employee) {
-        logger.infov("Adding a organization employee (user={0}, project={1}, memberEmail={2}, memberRole={3})",
-                user.getId(), organizationId, employee.getEmail(), employee.getEmployeeRole());
+        logger.infov("Adding a organization employee (user={0}, organization={1}, employeeId={2}, employeeEmail={3}, employeeRole={4})",
+                user.getId(), organizationId, employee.getId(), employee.getEmail(), employee.getEmployeeRole());
         final OrganizationEntity organization = organizationRepository.findOrganizationByUserId(user.getId(), organizationId)
                 .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
 
         UserEntity userEntity = userController.findOrCreateUser(employee);
         organization.addEmployee(userEntity, employee.getEmployeeRole());
         organizationRepository.mergeAndFlush(organization);
-        return organizationRepository.findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, user.getId())
+        return organizationRepository.findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, userEntity.getId())
                 .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
     }
 

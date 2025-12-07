@@ -19,7 +19,7 @@ import java.util.UUID;
 public class OrganizationEmployeeEntity extends MetaDataEntity implements OrganizationEmployeeModel {
 
     @EmbeddedId
-    OrganizationEmployeeKey id;
+    OrganizationEmployeeKey id = new OrganizationEmployeeKey();
 
     @ManyToOne
     @MapsId("organizationId")

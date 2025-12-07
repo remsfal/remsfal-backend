@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.organization;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.api.EmployeeEndpoint;
@@ -27,7 +27,6 @@ public class EmployeeResource implements EmployeeEndpoint {
 
     @Override
     public OrganizationEmployeeJson addEmployee(UUID organizationId, OrganizationEmployeeJson employee) {
-        System.out.println(principal.getName());
         return OrganizationEmployeeJson.valueOf(controller.addEmployee(organizationId, principal, employee));
     }
 

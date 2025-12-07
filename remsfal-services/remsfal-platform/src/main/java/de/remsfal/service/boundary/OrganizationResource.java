@@ -1,10 +1,10 @@
 package de.remsfal.service.boundary;
 
-import de.remsfal.core.api.EmployeeEndpoint;
 import de.remsfal.core.api.OrganizationEndpoint;
 import de.remsfal.core.json.OrganizationJson;
 import de.remsfal.core.json.OrganizationListJson;
 import de.remsfal.core.model.OrganizationModel;
+import de.remsfal.service.boundary.organization.EmployeeResource;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import jakarta.enterprise.context.RequestScoped;
