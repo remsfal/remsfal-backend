@@ -1651,6 +1651,34 @@ class IssueResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void deleteRelation_FAILED_unknownRelationType() {
+        // Einfach ein Issue anlegen
+        String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Issue for unknown relation type\","
+                + "\"type\":\"TASK\" }";
+
+        String issueId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Unbekannter Relationstyp -> IllegalArgumentException -> typischerweise 500
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + issueId + "/relations/unknown_type/" + UUID.randomUUID())
+                .then()
+                .statusCode(500);
+    }
+
+    @Test
     void deleteRelation_FAILED_issueNotFound() {
         UUID randomIssueId = UUID.randomUUID();
         UUID randomRelatedId = UUID.randomUUID();
@@ -1718,5 +1746,103 @@ class IssueResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(403);
     }
+
+    @Test
+    void deleteRelation_SUCCESS_blockedByRelationRemovedBidirectional() {
+        // 1) Source-Issue (wird geblockt)
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Blocked source for delete blocked_by\","
+                + "\"type\":\"TASK\" }";
+
+        String sourceId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(sourceJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // 2) Target-Issue (blockt das Source-Issue)
+        String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Blocking target for delete blocked_by\","
+                + "\"type\":\"TASK\" }";
+
+        String targetId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(targetJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // 3) Relation per PATCH: source.blockedBy = [target]
+        String patchJson = "{ \"blockedBy\":[\"" + targetId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200);
+
+        // Sicherheitscheck: source.blockedBy enthält target, target.blocks enthält source
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200)
+                .body("blockedBy", hasSize(1))
+                .body("blockedBy[0]", equalTo(targetId));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + targetId)
+                .then()
+                .statusCode(200)
+                .body("blocks", hasSize(1))
+                .body("blocks[0]", equalTo(sourceId));
+
+        // 4) Relation über blocked_by-Endpunkt löschen
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + sourceId + "/relations/blocked_by/" + targetId)
+                .then()
+                .statusCode(204);
+
+        // 5) Prüfen, dass beide Seiten keine Relation mehr haben
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200)
+                .body("blockedBy", hasSize(0));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + targetId)
+                .then()
+                .statusCode(200)
+                .body("blocks", hasSize(0));
+    }
+
 
 }
