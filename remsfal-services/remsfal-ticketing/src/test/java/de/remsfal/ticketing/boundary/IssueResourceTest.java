@@ -436,6 +436,68 @@ class IssueResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void relation_blockedBy_bidirectional_viaBlockedByPatch() {
+        // Source-Issue (wird geblockt)
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Blocked source\","
+                + "\"type\":\"TASK\" }";
+
+        String sourceId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(sourceJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Target-Issue (blockt das Source-Issue)
+        String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Blocking target\","
+                + "\"type\":\"TASK\" }";
+
+        String targetId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(targetJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Patch: source.blockedBy = [target]
+        String patchJson = "{ \"blockedBy\":[\"" + targetId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200)
+                .body("blockedBy", hasSize(1))
+                .body("blockedBy[0]", equalTo(targetId));
+
+        // Target muss blocks = [source] enthalten (Spiegellogik)
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + targetId)
+                .then()
+                .statusCode(200)
+                .body("blocks", hasSize(1))
+                .body("blocks[0]", equalTo(sourceId));
+    }
+
+
+    @Test
     void relation_relatedTo_bidirectional() {
         String issue1Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Issue 1 related\","
@@ -613,6 +675,68 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body("childOf", hasSize(1))
                 .body("childOf[0]", equalTo(parentId));
     }
+
+    @Test
+    void relation_childOf_bidirectional_viaChildOfPatch() {
+        // Parent-Issue
+        String parentJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Parent via childOf\","
+                + "\"type\":\"TASK\" }";
+
+        String parentId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(parentJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Child-Issue
+        String childJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Child via childOf\","
+                + "\"type\":\"TASK\" }";
+
+        String childId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(childJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Patch: child.childOf = [parent]
+        String patchJson = "{ \"childOf\":[\"" + parentId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + childId)
+                .then()
+                .statusCode(200)
+                .body("childOf", hasSize(1))
+                .body("childOf[0]", equalTo(parentId));
+
+        // Parent muss parentOf = [child] enthalten
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + parentId)
+                .then()
+                .statusCode(200)
+                .body("parentOf", hasSize(1))
+                .body("parentOf[0]", equalTo(childId));
+    }
+
 
     // Testen der Funktionalität gleich beim erstellen eines Issues die Relationen mit zu erstellen
     @Test
@@ -937,6 +1061,428 @@ class IssueResourceTest extends AbstractResourceTest {
                 .statusCode(200)
                 .body("relatedTo", hasSize(0));
     }
+
+    @Test
+    void deleteRelation_SUCCESS_relatedToAndDuplicateOfRemovedBidirectional() {
+        // related_to: R1 <-> R2
+        String r1Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"R1\","
+                + "\"type\":\"TASK\" }";
+        String r2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"R2\","
+                + "\"type\":\"TASK\" }";
+
+        String r1Id = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(r1Json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        String r2Id = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(r2Json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Relation hinzufügen: r1.relatedTo = [r2]
+        String relatedPatch = "{ \"relatedTo\":[\"" + r2Id + "\"] }";
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(relatedPatch)
+                .patch(BASE_PATH + "/" + r1Id)
+                .then()
+                .statusCode(200);
+
+        // Sicherstellen, dass beide Seiten gesetzt sind
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + r1Id)
+                .then()
+                .statusCode(200)
+                .body("relatedTo", hasSize(1))
+                .body("relatedTo[0]", equalTo(r2Id));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + r2Id)
+                .then()
+                .statusCode(200)
+                .body("relatedTo", hasSize(1))
+                .body("relatedTo[0]", equalTo(r1Id));
+
+        // DELETE /relations/related_to
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + r1Id + "/relations/related_to/" + r2Id)
+                .then()
+                .statusCode(204);
+
+        // Beide Seiten müssen leer sein
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + r1Id)
+                .then()
+                .statusCode(200)
+                .body("relatedTo", hasSize(0));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + r2Id)
+                .then()
+                .statusCode(200)
+                .body("relatedTo", hasSize(0));
+
+        // duplicate_of: D1 <-> D2
+        String d1Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"D1\","
+                + "\"type\":\"TASK\" }";
+        String d2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"D2\","
+                + "\"type\":\"TASK\" }";
+
+        String d1Id = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(d1Json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        String d2Id = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(d2Json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        String duplicatePatch = "{ \"duplicateOf\":[\"" + d2Id + "\"] }";
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(duplicatePatch)
+                .patch(BASE_PATH + "/" + d1Id)
+                .then()
+                .statusCode(200);
+
+        // DELETE /relations/duplicate_of
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + d1Id + "/relations/duplicate_of/" + d2Id)
+                .then()
+                .statusCode(204);
+
+        // Nach dem Löschen: beide Seiten ohne duplicateOf
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + d1Id)
+                .then()
+                .statusCode(200)
+                .body("duplicateOf", hasSize(0));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + d2Id)
+                .then()
+                .statusCode(200)
+                .body("duplicateOf", hasSize(0));
+    }
+
+    @Test
+    void deleteRelation_SUCCESS_parentOfAndChildOfRemovedBidirectional() {
+        // parent_of: P -> C
+        String pJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Parent P\","
+                + "\"type\":\"TASK\" }";
+        String cJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Child C\","
+                + "\"type\":\"TASK\" }";
+
+        String pId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(pJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        String cId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(cJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // parentOf-Beziehung setzen
+        String parentPatch = "{ \"parentOf\":[\"" + cId + "\"] }";
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(parentPatch)
+                .patch(BASE_PATH + "/" + pId)
+                .then()
+                .statusCode(200);
+
+        // DELETE /relations/parent_of
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + pId + "/relations/parent_of/" + cId)
+                .then()
+                .statusCode(204);
+
+        // Beide Seiten ohne Relation
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + pId)
+                .then()
+                .statusCode(200)
+                .body("parentOf", hasSize(0));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + cId)
+                .then()
+                .statusCode(200)
+                .body("childOf", hasSize(0));
+
+        // child_of: C2 -> P2 (inverse Richtung)
+        String p2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Parent P2\","
+                + "\"type\":\"TASK\" }";
+        String c2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Child C2\","
+                + "\"type\":\"TASK\" }";
+
+        String p2Id = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(p2Json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        String c2Id = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(c2Json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        String childPatch = "{ \"childOf\":[\"" + p2Id + "\"] }";
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(childPatch)
+                .patch(BASE_PATH + "/" + c2Id)
+                .then()
+                .statusCode(200);
+
+        // DELETE /relations/child_of
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + c2Id + "/relations/child_of/" + p2Id)
+                .then()
+                .statusCode(204);
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + c2Id)
+                .then()
+                .statusCode(200)
+                .body("childOf", hasSize(0));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + p2Id)
+                .then()
+                .statusCode(200)
+                .body("parentOf", hasSize(0));
+    }
+
+    @Test
+    void deleteIssue_SUCCESS_duplicateOfAndChildOfRelationsCleanedUp() {
+        // X: anderes Issue für duplicateOf
+        String xJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Issue X for duplicate\","
+                + "\"type\":\"TASK\" }";
+
+        String xId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(xJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // P: Parent-Issue
+        String pJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Parent P for childOf\","
+                + "\"type\":\"TASK\" }";
+
+        String pId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(pJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // D: zu löschendes Issue
+        String dJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Issue D duplicate & child\","
+                + "\"type\":\"TASK\" }";
+
+        String dId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(dJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // D.duplicateOf = [X], D.childOf = [P]
+        String patchJson = "{"
+                + "\"duplicateOf\":[\"" + xId + "\"],"
+                + "\"childOf\":[\"" + pId + "\"]"
+                + "}";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + dId)
+                .then()
+                .statusCode(200);
+
+        // Sicherheitscheck: X und P haben D verlinkt
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + xId)
+                .then()
+                .statusCode(200)
+                .body("duplicateOf", hasSize(1))
+                .body("duplicateOf[0]", equalTo(dId));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + pId)
+                .then()
+                .statusCode(200)
+                .body("parentOf", hasSize(1))
+                .body("parentOf[0]", equalTo(dId));
+
+        // D löschen -> triggert removeRelationsForIssue
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + dId)
+                .then()
+                .statusCode(204);
+
+        // X hat kein duplicateOf mehr
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + xId)
+                .then()
+                .statusCode(200)
+                .body("duplicateOf", hasSize(0));
+
+        // P hat kein parentOf mehr
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + pId)
+                .then()
+                .statusCode(200)
+                .body("parentOf", hasSize(0));
+    }
+
 
     @Test
     void deleteIssue_SUCCESS_multipleRelationTypesCleanedUp() {
