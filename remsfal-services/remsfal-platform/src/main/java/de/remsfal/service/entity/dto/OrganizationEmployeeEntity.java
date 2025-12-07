@@ -28,7 +28,7 @@ public class OrganizationEmployeeEntity extends MetaDataEntity implements Organi
 
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "user_id", columnDefinition = "UUID")
+    @JoinColumn(name = "employee_id", columnDefinition = "UUID")
     private UserEntity user;
 
     @Column(name = "employee_role")
