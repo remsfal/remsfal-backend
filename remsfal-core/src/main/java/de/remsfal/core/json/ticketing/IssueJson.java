@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -19,6 +20,7 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
+import org.immutables.value.internal.$processor$.meta.$OkJsonMirrors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -66,20 +68,29 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract String getDescription();
 
-    @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getBlockedBy();
+    public abstract Set<UUID> getBlockedBy();
 
-    @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getRelatedTo();
+    public abstract Set<UUID> getRelatedTo();
 
-    @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getDuplicateOf();
+    public abstract Set<UUID> getDuplicateOf();
+
+    @Nullable
+    @Override
+    public abstract Set<UUID> getBlocks();
+
+    @Nullable
+    @Override
+    public abstract Set<UUID> getParentOf();
+
+    @Nullable
+    @Override
+    public abstract Set<UUID> getChildOf();
 
     /**
      * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
@@ -102,6 +113,9 @@ public abstract class IssueJson implements IssueModel {
                 .blockedBy(model.getBlockedBy())
                 .relatedTo(model.getRelatedTo())
                 .duplicateOf(model.getDuplicateOf())
+                .blocks(model.getBlocks())
+                .parentOf(model.getParentOf())
+                .childOf(model.getChildOf())
                 .build();
     }
 
