@@ -53,4 +53,32 @@ public class QuotationRequestController {
         return repository.findByIssueId(issueId);
     }
 
+    public List<? extends QuotationRequestModel> getQuotationRequestsByContractorId(final UUID contractorId) {
+        logger.infov("Retrieving quotation requests for contractor (contractorId={0})", contractorId);
+        return repository.findByContractorId(contractorId);
+    }
+
+    public List<? extends QuotationRequestModel> getQuotationRequestsByProjectId(final UUID projectId) {
+        logger.infov("Retrieving quotation requests for project (projectId={0})", projectId);
+        return repository.findByProjectId(projectId);
+    }
+
+    public List<? extends QuotationRequestModel> getAllQuotationRequests() {
+        logger.info("Retrieving all quotation requests");
+        return repository.findAll();
+    }
+
+    public QuotationRequestEntity getQuotationRequest(final UUID requestId) {
+        logger.infov("Retrieving quotation request (requestId={0})", requestId);
+        return repository.findByRequestId(requestId)
+            .orElseThrow(() -> new jakarta.ws.rs.NotFoundException("Quotation request not found"));
+    }
+
+    public void invalidateQuotationRequest(final UUID requestId) {
+        logger.infov("Invalidating quotation request (requestId={0})", requestId);
+        QuotationRequestEntity entity = getQuotationRequest(requestId);
+        entity.setStatus(QuotationRequestModel.Status.INVALID);
+        repository.update(entity);
+    }
+
 }

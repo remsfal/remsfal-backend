@@ -35,6 +35,23 @@ public class QuotationRequestRepository extends AbstractRepository<QuotationRequ
             .result();
     }
 
+    public Optional<QuotationRequestEntity> findByRequestId(final UUID requestId) {
+        return template.select(QuotationRequestEntity.class)
+            .where(REQUEST_ID).eq(requestId)
+            .singleResult();
+    }
+
+    public List<? extends QuotationRequestModel> findByProjectId(final UUID projectId) {
+        return template.select(QuotationRequestEntity.class)
+            .where(PROJECT_ID).eq(projectId)
+            .result();
+    }
+
+    public List<? extends QuotationRequestModel> findAll() {
+        return template.select(QuotationRequestEntity.class)
+            .result();
+    }
+
     public QuotationRequestEntity insert(final QuotationRequestEntity entity) {
         Instant now = Instant.now();
         entity.setModifiedAt(now);
