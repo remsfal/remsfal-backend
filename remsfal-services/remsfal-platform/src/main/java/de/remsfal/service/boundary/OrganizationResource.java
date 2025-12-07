@@ -1,14 +1,17 @@
 package de.remsfal.service.boundary;
 
-import de.remsfal.core.api.project.OrganizationEndpoint;
+import de.remsfal.core.api.EmployeeEndpoint;
+import de.remsfal.core.api.OrganizationEndpoint;
 import de.remsfal.core.json.OrganizationJson;
 import de.remsfal.core.json.OrganizationListJson;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -26,6 +29,11 @@ public class OrganizationResource implements OrganizationEndpoint {
 
     @Context
     protected UriInfo uri;
+
+    @Inject
+    Instance<EmployeeResource> employeeResource;
+    @Inject
+    ResourceContext resourceContext;
 
     //TODO: Implement permission checker
 
@@ -73,5 +81,8 @@ public class OrganizationResource implements OrganizationEndpoint {
         }
     }
 
-    //TODO: Sub-Ressource OrganizationEmployee implementieren
+    @Override
+    public EmployeeResource getEmployeeEndpoint() {
+        return resourceContext.initResource(employeeResource.get());
+    }
 }

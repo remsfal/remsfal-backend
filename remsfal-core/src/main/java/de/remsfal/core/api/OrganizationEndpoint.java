@@ -1,6 +1,5 @@
-package de.remsfal.core.api.project;
+package de.remsfal.core.api;
 
-import de.remsfal.core.api.UserEndpoint;
 import de.remsfal.core.json.OrganizationJson;
 import de.remsfal.core.json.OrganizationListJson;
 import de.remsfal.core.validation.PatchValidation;
@@ -88,5 +87,9 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "404", description = "The organization does not exist")
     void deleteOrganization(
             @Parameter(description = "ID of the organization")
-            @PathParam("organizationId") UUID organizationId);
+            @PathParam("organizationId") UUID organizationId
+    );
+
+    @Path("{organizationId}/" + EmployeeEndpoint.SERVICE)
+    EmployeeEndpoint getEmployeeEndpoint();
 }
