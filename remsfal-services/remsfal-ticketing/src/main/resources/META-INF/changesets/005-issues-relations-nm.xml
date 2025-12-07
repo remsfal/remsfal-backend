@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.5-issues-relations-nm" author="max.büning@htw-berlin.de">
+        <comment>
+            Migrate issue relations to N:M:
+            - Drop old 1:1 relation columns (blocked_by, related_to, duplicate_of)
+            - Add new SET&lt;UUID&gt;-based relation columns:
+            blocks, blocked_by_set, related_to_set, duplicate_of_set, parent_of, child_of
+        </comment>
+
+        <!-- 1) Alte 1:1-Spalten entfernen -->
+        <sql>
+            ALTER TABLE REMSFAL.issues DROP blocked_by;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues DROP related_to;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues DROP duplicate_of;
+        </sql>
+
+        <!-- 2) Neue N:M-Spalten hinzufügen (mit neuen Namen, keine Typ-Kollision) -->
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD blocks set&lt;uuid&gt;;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD blocked_by_set set&lt;uuid&gt;;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD related_to_set set&lt;uuid&gt;;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD duplicate_of_set set&lt;uuid&gt;;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD parent_of set&lt;uuid&gt;;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD child_of set&lt;uuid&gt;;
+        </sql>
+
+        <rollback>
+            <!-- 1) Neue N:M-Spalten wieder entfernen -->
+            <sql>ALTER TABLE REMSFAL.issues DROP blocks;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP blocked_by_set;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP related_to_set;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP duplicate_of_set;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP parent_of;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP child_of;</sql>
+
+            <!-- 2) Alte 1:1-Spalten im ursprünglichen Typ (uuid) wieder herstellen -->
+            <sql>ALTER TABLE REMSFAL.issues ADD blocked_by uuid;</sql>
+            <sql>ALTER TABLE REMSFAL.issues ADD related_to uuid;</sql>
+            <sql>ALTER TABLE REMSFAL.issues ADD duplicate_of uuid;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
