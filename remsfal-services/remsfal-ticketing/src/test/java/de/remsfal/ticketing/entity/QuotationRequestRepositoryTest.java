@@ -89,18 +89,19 @@ class QuotationRequestRepositoryTest {
     void testFindByContractorId() {
         // Setup: Create quotation requests for different contractors
         UUID projectId = UUID.randomUUID();
-        UUID issueId = UUID.randomUUID();
+        UUID issueId1 = UUID.randomUUID();
+        UUID issueId2 = UUID.randomUUID();
         UUID contractorId1 = UUID.randomUUID();
         UUID contractorId2 = UUID.randomUUID();
         UUID triggeredBy = UUID.randomUUID();
-        
-        QuotationRequestEntity entity1 = createQuotationRequest(projectId, issueId, contractorId1, triggeredBy);
+
+        QuotationRequestEntity entity1 = createQuotationRequest(projectId, issueId1, contractorId1, triggeredBy);
         repository.insert(entity1);
-        
-        QuotationRequestEntity entity2 = createQuotationRequest(projectId, issueId, contractorId1, triggeredBy);
+
+        QuotationRequestEntity entity2 = createQuotationRequest(projectId, issueId2, contractorId1, triggeredBy);
         repository.insert(entity2);
-        
-        QuotationRequestEntity entity3 = createQuotationRequest(projectId, issueId, contractorId2, triggeredBy);
+
+        QuotationRequestEntity entity3 = createQuotationRequest(projectId, issueId1, contractorId2, triggeredBy);
         repository.insert(entity3);
 
         // Test: Find by contractorId1
@@ -110,7 +111,7 @@ class QuotationRequestRepositoryTest {
         assertNotNull(requests);
         assertEquals(2, requests.size());
         requests.forEach(request -> assertEquals(contractorId1, request.getContractorId()));
-        
+
         // Cleanup
         repository.delete(entity1.getKey());
         repository.delete(entity2.getKey());

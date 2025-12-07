@@ -123,4 +123,12 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
         return Objects.hash(key);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        QuotationRequestEntity that = (QuotationRequestEntity) o;
+        return Objects.equals(key, that.key);
+    }
+
 }
