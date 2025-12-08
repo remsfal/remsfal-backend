@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.boundary;
 
+
 import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;

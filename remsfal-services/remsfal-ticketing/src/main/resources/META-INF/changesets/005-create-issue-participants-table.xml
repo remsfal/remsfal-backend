@@ -20,6 +20,7 @@
                                                                       session_id UUID,
                                                                       role TEXT,
                                                                       created_at TIMESTAMP,
+                                                                      modified_at TIMESTAMP,
                                                                       PRIMARY KEY (user_id, issue_id, session_id)
                 ) WITH CLUSTERING ORDER BY (issue_id ASC, session_id ASC);
         </sql>
@@ -35,6 +36,5 @@
         </rollback>
 
     </changeSet>
-
 
 </databaseChangeLog>
