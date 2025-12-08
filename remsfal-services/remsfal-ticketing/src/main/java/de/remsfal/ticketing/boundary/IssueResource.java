@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.*;
 
+
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
@@ -43,7 +44,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
+                                   UnitType rentalType, UUID rentalId, Status status) {
         logger.info("Yes i was called");
         List<UUID> projectFilter = null;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
