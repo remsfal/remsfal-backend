@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2012 sp1 (x64) (http://www.altova.com) by Bernhard Rath (Ing.-Büro B. Rath) -->
+<!-- 
+GAEB_DA_XML_3.2_2014-03
+======================
+2014-03-24 Bearbeiter: Ladislav Ostry, Martin Hubert
+- Namen der Lib auf "GAEB_DA_XML_Lib_3.2_2014-03.xsd" geändert
+
+======================
+2013-09-05 Bearbeiter: Bernhard Rath
+Änderungen laut Protokoll Telko 2013.09.02
+- Datentypenänderung in LIB angepasst.
+
+2013-05-24 Bearbeiter: Ladislav Ostry, Martin Hubert
+- tgSubDescr - QtySpec entfernt
+
+2013-05-23 Bearbeiter: Ladislav Ostry, Martin Hubert
+- tgSubDescr - angepasst auf Lib Änderungen
+
+2013-05-22 Bearbeiter: Ladislav Ostry, Martin Hubert
+- tgCat - Schreibfehler behoben SelecetCallPostOpen -> SelectCallPostOpen
+
+GAEB_DA_XML 3.2 2012-01
+2013-05-07 Bearbeiter: Ladislav Ostry, Martin Hubert
+- tgBoQText - angepasst auf Lib
+- tgOutlTxt - hinzugefügt, TextComplement ist jetzt verboten
+- tgdivTC - hinzugefügt, TextComplement entfernt
+- tgp umbennant zu tgpTC, tgFText zu tgFTextTC (wie in der Lib)
+- tgAttKind - hinzugefügt, nur Owner Textergänzungen zugelassen
+
+
+2013-04-22 Bearbeiter: Ladislav Ostry, Martin Hubert
+tgBoQBkdn - hinzugefügt wie in 83Z, dadurch Alignment entfällt und Num="Yes"
+tgMastAgrInfo - MastAgrEnd eine überflüssige Choice hinzugefügt für bessere Optik im XmlSpy
+
+2013-04-04 Bearbeiter: Ladislav Ostry, Martin Hubert
+- tgItem - SumDescr, SubDescr entfällt (wie in der x83Z)
+
+2013-02-27 Bearbeiter: Ladislav Ostry, Martin Hubert
+Erstellt
+
+2019-03-08 Bearbeiter: Bernhard Rath
+Lib 3.3 angepasst.
+
+2019-05-26 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_86ZR_3.3_2019-05.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2019-05.xsd angepasst.
+
+2019-11-15 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_86ZR_3.3_2019-11.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2019-11.xsd angepasst.
+
+2019-11-29 Bearbeiter Bernhard Rath
+Restrictions angepasst.
+
+2020-07-14 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_86ZR_3.3_2020-06.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2020-06.xsd angepasst.
+
+2021-06-14 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_86ZR_3.3_2021-05.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib_3.3_2021-05.xsd angepasst.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.gaeb.de/GAEB_DA_XML/DA86ZR/3.3" targetNamespace="http://www.gaeb.de/GAEB_DA_XML/DA86ZR/3.3" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:redefine schemaLocation="../GAEB_DA_XML_Lib_3.3_2021-05.xsd">
+		<xs:simpleType name="tgAttKind">
+			<xs:restriction base="tgAttKind">
+				<xs:enumeration value="Owner"/>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="tgBoQBkdnType">
+			<xs:restriction base="tgBoQBkdnType">
+				<xs:enumeration value="BoQLevel"/>
+				<xs:enumeration value="Item"/>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="tgCat">
+			<xs:restriction base="tgCat">
+				<xs:enumeration value="OpenCall">
+					<xs:annotation>
+						<xs:documentation/>
+						<xs:documentation>Oeffentliche Ausschreibung</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+				<xs:enumeration value="SelectCall">
+					<xs:annotation>
+						<xs:documentation>Beschraenkte Ausschreibung</xs:documentation>
+						<xs:documentation>Neu: Beschränkte Ausschreibung ohne öffentlichen Teilnahmewettbewerb</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+				<xs:enumeration value="NegCont">
+					<xs:annotation>
+						<xs:documentation>Freihaendige Vergabe</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+				<xs:enumeration value="SelectCallPostOpen">
+					<xs:annotation>
+						<xs:documentation>Beschränkte Ausschreibung nach öffentlichen Teilnahmewettbewerb</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="tgCur">
+			<xs:restriction base="tgCur">
+				<xs:maxLength value="4"/>
+				<xs:enumeration value="EUR"/>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="tgDP">
+			<xs:restriction base="tgDP">
+				<xs:enumeration value="86ZR">
+					<xs:annotation>
+						<xs:documentation>LV Katalog</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:complexType name="tgAward">
+			<xs:complexContent>
+				<xs:restriction base="tgAward">
+					<xs:sequence>
+						<xs:element name="DP" type="tgDP">
+							<xs:annotation>
+								<xs:documentation>GAEB-Datenaustauschphase</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AwardInfo" type="tgAwardInfo">
+							<xs:annotation>
+								<xs:documentation>Informationen zur Vergabe</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="OWN" type="tgOWN">
+							<xs:annotation>
+								<xs:documentation>Informationen zum Auftraggeber</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CTR" type="tgCTR">
+							<xs:annotation>
+								<xs:documentation>Informationen zum Bieter/Auftragnehmer</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:sequence minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="CnstSite" type="tgCnstSite">
+								<xs:annotation>
+									<xs:documentation>Informationen zum Ausfuehrungsort</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+						<xs:element name="BoQ" type="tgBoQ">
+							<xs:annotation>
+								<xs:documentation>Leistungsverzeichnis</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgAwardInfo">
+			<xs:complexContent>
+				<xs:restriction base="tgAwardInfo">
+					<xs:sequence>
+						<xs:element name="Cat" type="tgCat">
+							<xs:annotation>
+								<xs:documentation>Vergabeart</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:sequence>
+							<xs:element name="Cur" type="tgCur">
+								<xs:annotation>
+									<xs:documentation>Waehrung</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+						<xs:element name="BidDate" type="tgDate">
+							<xs:annotation>
+								<xs:documentation>Angebotsdatum</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MastAgrInfo" type="tgMastAgrInfo">
+							<xs:annotation>
+								<xs:documentation>Nur bei Rahmenvertrag: Informationen zum Rahmenvertrag</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgBoQ">
+			<xs:complexContent>
+				<xs:restriction base="tgBoQ">
+					<xs:sequence>
+						<xs:element name="BoQInfo" type="tgBoQInfo">
+							<xs:annotation>
+								<xs:documentation>Informationen zum LV</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="BoQBody" type="tgBoQBody">
+							<xs:annotation>
+								<xs:documentation>LV-Hauptteil</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgBoQBkdn">
+			<xs:complexContent>
+				<xs:restriction base="tgBoQBkdn">
+					<xs:sequence>
+						<xs:element name="Type" type="tgBoQBkdnType">
+							<xs:annotation>
+								<xs:documentation>Ebene des Teilschluessels</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="LblBoQBkdn" type="tgNormalizedString40" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung der LVStufe</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Length" type="tgBoQBkdnLength">
+							<xs:annotation>
+								<xs:documentation>Laenge des Teilschluessels</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Num" type="tgYes">
+							<xs:annotation>
+								<xs:documentation>Dieses Element sollte immer vorhanden sein. Ist dieses Element "Yes", dann ist die TeilOZ in dieser Ebene als numerische OZ zu interpretieren. In der TeilOZ sind dann nur Ziffern erlaubt. Fuehrende Nullen sind dann fuer die Interpretation nicht relevant. Ist dieses Attribut "No", dann ist die TeilOZ in dieser Ebene als alphanumerisch zu interpretieren. In der TeilOZ sind dann Ziffern und Buchstaben in beliebiger Reihenfolge erlaubt. Alle Stellen sind relevant. </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgBoQBody">
+			<xs:complexContent>
+				<xs:restriction base="tgBoQBody">
+					<xs:choice minOccurs="0">
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="Remark" type="tgRemark">
+								<xs:annotation>
+									<xs:documentation>Hinweistext</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="BoQCtgy" type="tgBoQCtgy">
+								<xs:annotation>
+									<xs:documentation> LV-Bereich</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+						<xs:element name="Itemlist" type="tgItemlist">
+							<xs:annotation>
+								<xs:documentation>Positionsliste</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgBoQCtgy">
+			<xs:complexContent>
+				<xs:restriction base="tgBoQCtgy">
+					<xs:sequence>
+						<xs:element name="LblTx" type="tgMLText">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung des LV-Bereichs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Katalogzuordnung</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="BoQBody" type="tgBoQBody" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>LV-Hauptteil</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:choice minOccurs="0">
+							<xs:element name="BidUpDownPct" type="tgBidUpDownPct">
+								<xs:annotation>
+									<xs:documentation>Auf- oder Abgebot (in %)</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgBoQInfo">
+			<xs:complexContent>
+				<xs:restriction base="tgBoQInfo">
+					<xs:sequence>
+						<xs:element name="Name" type="tgNormalizedString20">
+							<xs:annotation>
+								<xs:documentation>Name des Leistungsverzeichnisses</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="LblBoQ" type="tgNormalizedString60" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung des Leistungsverzeichnisses</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="BoQBkdn" type="tgBoQBkdn" maxOccurs="7">
+							<xs:annotation>
+								<xs:documentation>Informationen zur Gliederung des LV</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Katalogzuordnung</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Ctlg" type="tgCtlg" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Katalog</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgBoQText">
+			<xs:complexContent>
+				<xs:restriction base="tgBoQText">
+					<xs:sequence>
+						<xs:element name="Style" type="tgStyle" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Definitionen für styles</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="Text" type="tgFTextTC" minOccurs="0" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:documentation>Textbeschreibung ohne Einschraenkungen</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgCnstSite">
+			<xs:complexContent>
+				<xs:restriction base="tgCnstSite">
+					<xs:sequence>
+						<xs:element name="Address" type="tgAddress">
+							<xs:annotation>
+								<xs:documentation>Informationen zur Adresse des Ausfuehrungsortes</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CnstSiteIDNo" type="tgNormalizedString20" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Identifizierungs-Nummer Ausfuehrungsort</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CnstSiteName" type="tgNormalizedString60" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Name Ausfuehrungsort (LiegenschaftsVerzeichnis) </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgCompleteText">
+			<xs:complexContent>
+				<xs:restriction base="tgCompleteText">
+					<xs:sequence>
+						<xs:element name="ComplTSA" type="tgYesNo" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Kennzeichen Textergaenzung des Ausschreibenden im Langtext  </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="DetailTxt" type="tgBoQText">
+							<xs:annotation>
+								<xs:documentation>Langtext </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="OutlineText" type="tgOutlineText">
+							<xs:annotation>
+								<xs:documentation>Kurztext</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgCTR">
+			<xs:complexContent>
+				<xs:restriction base="tgCTR">
+					<xs:sequence>
+						<xs:element name="Address" type="tgAddress">
+							<xs:annotation>
+								<xs:documentation>Informationen zur Adresse des Bieters/AN</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgDescription">
+			<xs:complexContent>
+				<xs:restriction base="tgDescription">
+					<xs:sequence>
+						<xs:choice minOccurs="0">
+							<xs:element name="STLBBau" type="tgSTLBBau">
+								<xs:annotation>
+									<xs:documentation>Schluessel STLB-Bau</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="StLNo" type="tgStLNo">
+								<xs:annotation>
+									<xs:documentation>Standardleistungsnummer (StLB/STLK)</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+						<xs:choice>
+							<xs:element name="CompleteText" type="tgCompleteText">
+								<xs:annotation>
+									<xs:documentation>Kurz- und Langtext</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+					<xs:attribute name="ID" type="xs:NCName" use="prohibited">
+						<xs:annotation>
+							<xs:documentation>Die ID muss in 83 - > 84 Austausch erhalten bleiben. Damit können Descriptions eindeutig Identifiziert werden.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgdivTC">
+			<xs:complexContent>
+				<xs:restriction base="tgdivTC">
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="span" type="tgspan">
+							<xs:annotation>
+								<xs:documentation>Teilabschnitt in formatiertem Text</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="br" type="tgbr">
+							<xs:annotation>
+								<xs:documentation>Zeilenumbruch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgFTextTC">
+			<xs:complexContent>
+				<xs:restriction base="tgFTextTC">
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="p" type="tgpTC">
+							<xs:annotation>
+								<xs:documentation>Absatz in formatiertem Text</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="div" type="tgdivTC">
+							<xs:annotation>
+								<xs:documentation>Abschnitt in formatiertem Text</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="span" type="tgspan">
+							<xs:annotation>
+								<xs:documentation>Teilabschnitt in formatiertem Text</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="br" type="tgbr">
+							<xs:annotation>
+								<xs:documentation>Zeilenumbruch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="TextComplement" type="tgTextComplement">
+							<xs:annotation>
+								<xs:documentation>Textergänzung</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgGAEB">
+			<xs:annotation>
+				<xs:documentation>Aufgestellt vom Gemeinsamen Ausschuss Elektronik im Bauwesen (GAEB) © 2002 - 2019 by DIN Deutsches Institut fuer Normung e. V.</xs:documentation>
+			</xs:annotation>
+			<xs:complexContent>
+				<xs:restriction base="tgGAEB">
+					<xs:sequence>
+						<xs:element name="GAEBInfo" type="tgGAEBInfo">
+							<xs:annotation>
+								<xs:documentation>Informationen zum GAEB-Datenaustausch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Award" type="tgAward">
+							<xs:annotation>
+								<xs:documentation>Vergabe
+In diesem Objekt werden die Informationen des Vergabeverfahrens abgelegt. 
+Das Objekt kann in den Datenaustauschphasen D81-D88 verwendet werden.</xs:documentation>
+							</xs:annotation>
+							<!--
+					<xs:unique name="Constraint_Description_ID">
+						<xs:selector xpath=".//Description | PreBoQText | PostBoQText"/>
+						<xs:field xpath="@ID"/>
+					</xs:unique>
+					-->
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgGAEBInfo">
+			<xs:complexContent>
+				<xs:restriction base="tgGAEBInfo">
+					<xs:sequence>
+						<xs:element name="Version" type="tgVersion">
+							<xs:annotation>
+								<xs:documentation>Version des GAEB DA XML</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="VersDate" type="tgGAEBVersDate">
+							<xs:annotation>
+								<xs:documentation>Datum der Ausgabe der GAEB-DA-XML  Schnittstellendefinition</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Date" type="tgDate">
+							<xs:annotation>
+								<xs:documentation>Datum</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Time" type="tgTime">
+							<xs:annotation>
+								<xs:documentation>Erstellungszeit der Datenaustauschdatei</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ProgSystem" type="tgNormalizedString60">
+							<xs:annotation>
+								<xs:documentation>Programmsystem</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ProgName" type="tgNormalizedString60">
+							<xs:annotation>
+								<xs:documentation>Umsetzprogramm</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Certific" type="tgCertific" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Pruefzertifikat der benutzten Version GAEB DA XML liegt vor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgHourItem">
+			<xs:complexContent>
+				<xs:restriction base="tgHourItem">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="PredQty" type="tgDecimal_11_3">
+								<xs:annotation>
+									<xs:documentation>Voraussichtliche Menge (Prognose)</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+						<xs:element name="QU" type="tgQUHour">
+							<xs:annotation>
+								<xs:documentation>Mengeneinheit</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="UP" type="tgDecimal_13_3">
+							<xs:annotation>
+								<xs:documentation>Einheitspreis</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Description" type="tgDescription">
+							<xs:annotation>
+								<xs:documentation>Textorganisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgItem">
+			<xs:complexContent>
+				<xs:restriction base="tgItem">
+					<xs:sequence>
+						<xs:element name="QU" type="tgNormalizedString4">
+							<xs:annotation>
+								<xs:documentation>Mengeneinheit</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Katalogzuordnung</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:sequence>
+							<xs:element name="UP" type="tgDecimal_13_3">
+								<xs:annotation>
+									<xs:documentation>Einheitspreis</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+						<xs:element name="Description" type="tgDescription">
+							<xs:annotation>
+								<xs:documentation>Textorganisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:choice minOccurs="0">
+							<xs:element name="BidUpDownPct" type="tgBidUpDownPct">
+								<xs:annotation>
+									<xs:documentation>Auf- oder Abgebot (in %)</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgItemlist">
+			<xs:complexContent>
+				<xs:restriction base="tgItemlist">
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="Remark" type="tgRemark">
+							<xs:annotation>
+								<xs:documentation>Hinweistext</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Item" type="tgItem">
+							<xs:annotation>
+								<xs:documentation>Position</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MastAgrItems" type="tgMastAgrItems"/>
+					</xs:choice>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgMarkupItemCTR">
+			<xs:complexContent>
+				<xs:restriction base="tgMarkupItemCTR">
+					<xs:sequence>
+						<xs:element name="Markup" type="tgDecimal_9_6">
+							<xs:annotation>
+								<xs:documentation>Zuschlagsprozentsatz</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Description" type="tgDescription">
+							<xs:annotation>
+								<xs:documentation>Textorganisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Katalogzuordnung</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgMarkupItemOWN">
+			<xs:complexContent>
+				<xs:restriction base="tgMarkupItemOWN">
+					<xs:sequence>
+						<xs:element name="Markup" type="tgDecimal_9_6">
+							<xs:annotation>
+								<xs:documentation>Zuschlagsprozentsatz</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Description" type="tgDescription">
+							<xs:annotation>
+								<xs:documentation>Textorganisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Katalogzuordnung</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgMastAgrInfo">
+			<xs:complexContent>
+				<xs:restriction base="tgMastAgrInfo">
+					<xs:sequence>
+						<xs:element name="BidUpDown" type="tgYes">
+							<xs:annotation>
+								<xs:documentation>Auf- und Abgebotsverfahren</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MastAgrLbl" type="tgMLText">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung der Bauleistung (Bereich, in welchem die ZV-Arbeiten anfallen)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MastAgrNo" type="tgNormalizedString60" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Maßnahmennummer</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Descrip" type="tgFText">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung der Leistungsbereiche (n-fach)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MastAgrBeg" type="tgDate">
+							<xs:annotation>
+								<xs:documentation>Rahmenvertragsbeginn</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:choice>
+							<xs:element name="MastAgrEnd" type="tgDate">
+								<xs:annotation>
+									<xs:documentation>Datum Vertragsende</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+						<xs:element name="MastAgrDate" type="tgDate">
+							<xs:annotation>
+								<xs:documentation>Datum Vertragsabschluss </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MinContrVal" type="tgDecimal_13_2" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>AuftragsMinWert (Wertgrenze fuer Kleinstauftraege)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MinContrAwd" type="tgDecimal_5_2" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>AuftragsMinZuschlag (fuer Kleinstauftraege) </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AwardAgencyAdr" type="tgAddress" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Adresse der Vergabestelle</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CostResponsible" type="tgMLText" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Bedarfsträger</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgMaterialItem">
+			<xs:complexContent>
+				<xs:restriction base="tgMaterialItem">
+					<xs:sequence>
+						<xs:element name="PredIT" type="tgDecimal_13_2">
+							<xs:annotation>
+								<xs:documentation>Gesamtbetrag incl. Nachlass</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Description" type="tgDescription">
+							<xs:annotation>
+								<xs:documentation>Textorganisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="BidUpDownPct" type="tgBidUpDownPct">
+							<xs:annotation>
+								<xs:documentation>Auf- oder Abgebot (in %)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgOutlTxt">
+			<xs:complexContent>
+				<xs:restriction base="tgOutlTxt">
+					<xs:sequence>
+						<xs:element name="Style" type="tgStyle" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Definitionen für styles</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="TextOutlTxt" type="tgMLText" minOccurs="0" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:documentation>Textbeschreibung mit Einschraenkungen</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgOWN">
+			<xs:complexContent>
+				<xs:restriction base="tgOWN">
+					<xs:sequence>
+						<xs:element name="Address" type="tgAddress">
+							<xs:annotation>
+								<xs:documentation>Informationen zur Adresse des AG</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AwardNo" type="tgNormalizedString60">
+							<xs:annotation>
+								<xs:documentation>Vergabenummer</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AcctRecNo" type="tgNormalizedString20" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Debitoren-Nummer</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgpTC">
+			<xs:complexContent>
+				<xs:restriction base="tgpTC">
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="span" type="tgspan">
+							<xs:annotation>
+								<xs:documentation>Teilabschnitt in formatiertem Text</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="br" type="tgbr">
+							<xs:annotation>
+								<xs:documentation>Zeilenumbruch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgRemark">
+			<xs:complexContent>
+				<xs:restriction base="tgRemark">
+					<xs:sequence>
+						<xs:element name="Description" type="tgDescription">
+							<xs:annotation>
+								<xs:documentation>Textorganisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="tgSubDescr">
+			<xs:complexContent>
+				<xs:restriction base="tgSubDescr">
+					<xs:sequence>
+						<xs:element name="SubDNo" type="tgSubDNo">
+							<xs:annotation>
+								<xs:documentation>Nummer der Unterbeschreibung</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Description" type="tgDescription" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Textorganisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:sequence minOccurs="0">
+							<xs:element name="Qty" type="tgDecimal_11_3">
+								<xs:annotation>
+									<xs:documentation>Menge</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="QU" type="tgNormalizedString4" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Mengeneinheit</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+						<xs:element name="UPSpec" type="tgYesNo" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Angabe des Einheitspreises erforderlich</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:sequence minOccurs="0">
+							<xs:element name="UP" type="tgDecimal_13_3">
+								<xs:annotation>
+									<xs:documentation>Einheitspreis</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+						<xs:element name="CtlgAssign" type="tgCtlgAssign" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:redefine>
+	<!--GAEB-->
+	<xs:element name="GAEB" type="tgGAEB"/>
+	<!--=========================================================================================================-->
+</xs:schema>
