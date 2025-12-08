@@ -25,7 +25,23 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
   protected void setupTestProperties() {
     super.setupTestUsers();
     super.setupTestProjects();
+    this.setupTestTenancies();
     super.setupTestProperties();
+  }
+
+  private void setupTestTenancies() {
+    insertTenancy(TestData.TENANCY_ID, TestData.PROJECT_ID, java.time.LocalDate.parse("2021-01-01"), null);
+  }
+
+  private void insertTenancy(java.util.UUID id, java.util.UUID projectId, java.time.LocalDate start,
+      java.time.LocalDate end) {
+    runInTransaction(() -> entityManager
+        .createNativeQuery("INSERT INTO tenancies (id, project_id, start_of_rental, end_of_rental) VALUES (?,?,?,?)")
+        .setParameter(1, id)
+        .setParameter(2, projectId)
+        .setParameter(3, start)
+        .setParameter(4, end)
+        .executeUpdate());
   }
 
   @Test
@@ -44,12 +60,8 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
   @Test
   void createTenancy_SUCCESS_newTenancyReturned() {
     String json = "{" +
-        "\"description\":\"New Tenancy\"," +
         "\"startOfRental\":\"2023-01-01\"," +
-        "\"endOfRental\":\"2023-12-31\"," +
-        "\"rent\":1000.00," +
-        "\"currency\":\"EUR\"," +
-        "\"paymentCycle\":\"MONTHLY\"" +
+        "\"endOfRental\":\"2023-12-31\"" +
         "}";
 
     given()
