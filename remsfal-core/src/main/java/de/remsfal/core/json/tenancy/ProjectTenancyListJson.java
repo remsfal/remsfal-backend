@@ -23,14 +23,14 @@ import de.remsfal.core.model.project.TenancyModel;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ProjectTenancyListJson {
 
-  public abstract List<TenancyInfoJson> getTenancies();
+    public abstract List<TenancyInfoJson> getTenancies();
 
-  public static ProjectTenancyListJson valueOf(final List<? extends TenancyModel> tenancies) {
-    return ImmutableProjectTenancyListJson.builder()
-        .tenancies(tenancies.stream()
-            .map(TenancyInfoJson::valueOf)
-            .collect(Collectors.toList()))
-        .build();
-  }
+    public static ProjectTenancyListJson valueOf(final List<? extends TenancyModel> tenancies) {
+        return ImmutableProjectTenancyListJson.builder()
+            .tenancies(tenancies.stream()
+                .map(TenancyInfoJson::valueOf)
+                .collect(Collectors.toList()))
+            .build();
+    }
 
 }

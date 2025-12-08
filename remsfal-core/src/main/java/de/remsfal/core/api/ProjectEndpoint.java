@@ -1,6 +1,6 @@
 package de.remsfal.core.api;
 
-import de.remsfal.core.api.project.*;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -29,7 +29,15 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.api.tenancy.TenancyEndpoint;
+import de.remsfal.core.api.project.ApartmentEndpoint;
+import de.remsfal.core.api.project.BuildingEndpoint;
+import de.remsfal.core.api.project.CommercialEndpoint;
+import de.remsfal.core.api.project.ContractorEndpoint;
+import de.remsfal.core.api.project.MemberEndpoint;
+import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.api.project.SiteEndpoint;
+import de.remsfal.core.api.project.StorageEndpoint;
+import de.remsfal.core.api.project.ProjectTenancyEndpoint;
 
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;

@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.tenancy;
 
-import de.remsfal.core.json.tenancy.*;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
@@ -20,6 +19,11 @@ import de.remsfal.service.entity.dto.PropertyRentEntity;
 import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenancyEntity;
+
+import de.remsfal.core.json.tenancy.ImmutableTenancyListJson;
+import de.remsfal.core.json.tenancy.TenancyItemJson;
+import de.remsfal.core.json.tenancy.TenancyJson;
+import de.remsfal.core.json.tenancy.TenancyListJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
