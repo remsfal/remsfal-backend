@@ -7,6 +7,7 @@ import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.service.boundary.organization.EmployeeResource;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.service.entity.dto.OrganizationEntity;
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -21,7 +22,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-@RequestScoped
+@Authenticated
 public class OrganizationResource implements OrganizationEndpoint {
 
     @Inject
