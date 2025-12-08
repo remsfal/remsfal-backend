@@ -131,6 +131,7 @@ public class UserController {
 
         List<String> newEmails = newEmailsRaw.stream()
                 .filter(s -> !s.isEmpty())
+                .map(String::toLowerCase)
                 .distinct()
                 .toList();
 
@@ -143,7 +144,6 @@ public class UserController {
                 additionalEmailRepository.remove(ae.getId());
             }
         }
-
 
         for (String email : newEmails) {
 
@@ -165,7 +165,7 @@ public class UserController {
             }
         }
 
-        user.setAdditionalEmailEntities(
+        user.setAdditionalEmails(
                 new HashSet<>(additionalEmailRepository.findByUserId(user.getId()))
         );
     }

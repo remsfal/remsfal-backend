@@ -45,7 +45,7 @@ public class AdditionalEmailEntity extends AbstractEntity {
         this.email = email;
     }
 
-    public boolean isVerified() {
+    public boolean getVerified() {
         return verified;
     }
 

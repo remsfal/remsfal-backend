@@ -165,12 +165,8 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         return memberships;
     }
 
-    public Set<AdditionalEmailEntity> getAdditionalEmailEntities() {
-        return additionalEmails;
-    }
-
-    public void setAdditionalEmailEntities(Set<AdditionalEmailEntity> additionalEmails) {
-        this.additionalEmails = additionalEmails;
+    public void setMemberships(final Set<ProjectMembershipEntity> memberships) {
+        this.memberships = memberships;
     }
 
     @Override
@@ -181,6 +177,10 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Override
     public LocalDateTime getLastLoginDate() {
         return authenticatedAt;
+    }
+
+    public void setAdditionalEmails(Set<AdditionalEmailEntity> additionalEmails) {
+        this.additionalEmails = additionalEmails;
     }
 
     @Override
