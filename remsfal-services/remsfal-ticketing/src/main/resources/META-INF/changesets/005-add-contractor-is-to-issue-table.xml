@@ -5,12 +5,16 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-ticketing-0.0.2-add-contractor-id" author="s0595830@htw-berlin.de">
-        <comment>Add contractor_id to issues table</comment>
+        <comment>Add contractor_id and index to issues table</comment>
         <sql>
             ALTER TABLE REMSFAL.issues ADD contractor_id UUID;
         </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS issues_contractor_id_idx ON REMSFAL.issues (contractor_id);
+        </sql>
         <rollback>
             <sql>ALTER TABLE REMSFAL.issues DROP contractor_id;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_contractor_id_idx;</sql>
         </rollback>
     </changeSet>
 
