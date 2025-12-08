@@ -1,8 +1,10 @@
 package de.remsfal.core.api;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -39,6 +41,15 @@ public interface AuthenticationEndpoint {
     Response session(@QueryParam("code") String code,
         @DefaultValue("/") @QueryParam("state") String state,
         @QueryParam("error") String error);
+
+    @POST
+    @Path("/token")
+    @Operation(summary = "Login user via app token directly.")
+    @APIResponse(responseCode = "204", description = "Tokens are set as cookies")
+    @APIResponse(responseCode = "401", description = "Unauthorized - Invalid token")
+    Response token(@FormParam("app_id") @NotNull String appId,
+        @FormParam("app_token") String appToken,
+        @FormParam("dev_services") @DefaultValue("false") Boolean devService);
 
     @GET
     @Path("/logout")
