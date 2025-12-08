@@ -1,6 +1,5 @@
 package de.remsfal.service.entity.dao;
 
-import de.remsfal.service.entity.dto.TenancyEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,24 +10,21 @@ import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
-public class TenantRepository extends AbstractRepository<TenancyEntity> {
+public class TenantRepository extends AbstractRepository<UserEntity> {
 
     public List<UserEntity> findTenantsByProjectId(final UUID projectId) {
-        TenancyEntity tenancy = find("projectId", projectId).firstResult();
-        if (tenancy != null) {
-            return tenancy.getTenants();
-        }
-        return List.of();
+        return find("SELECT u FROM UserEntity u JOIN TenancyEntity t " +
+                        "WHERE u MEMBER OF t.tenants AND t.projectId = :projectId",
+                Parameters.with("projectId", projectId))
+                .list();
     }
 
+
     public Optional<UserEntity> findTenantByProjectId(final UUID projectId, final UUID tenantId) {
-        TenancyEntity tenancy = find("projectId", projectId).firstResult();
-        if (tenancy != null) {
-            return tenancy.getTenants().stream()
-                    .filter(u -> u.getId().equals(tenantId))
-                    .findFirst();
-        }
-        return Optional.empty();
+        return find("SELECT u FROM UserEntity u JOIN TenancyEntity t" +
+                     " WHERE u MEMBER OF t.tenants AND t.projectId = :projectId AND u.id = :tenantId",
+                Parameters.with("projectId", projectId).and("tenantId", tenantId))
+                .firstResultOptional();
     }
 
     @Transactional
