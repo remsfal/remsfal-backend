@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2012 sp1 (x64) (http://www.altova.com) by Bernhard Rath (Ing.-Büro B. Rath) -->
+<!-- Mit XMLSpy v2012 sp1 (x64) (http://www.altova.com) von Bernhard Rath (Ing.-Büro B. Rath) bearbeitet -->
+<!-- 
+
+Objektneutraler Baukostenkatalog
+
+Bearbeiter: Bernhard Rath
+2017-10-05
+Lib5x eingeführt
+
+2018-11-24 Bearbeiter: Bernhard Rath
+- Namen der Lib auf "GAEB_DA_XML_Lib5x_3.3_2018-11.xsd" geändert
+- Schemaname geändert
+
+2019-05-26 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_50_3.3_2019-05.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib5x_3.3_2019-05.xsd angepasst.
+
+2019-11-15 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_50_3.3_2019-11.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib5x_3.3_2019-11.xsd angepasst.
+
+2020-07-14 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_50_3.3_2020-06.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib5x_3.3_2020-06.xsd angepasst.
+
+2021-01-20 Bearbeiter Ladislav Ostrý 
+Element GAEB nach 50.1 und 50.2 verschoben. 
+
+2021-06-14 Bearbeiter Bernhard Rath
+Name dieses Schema auf GAEB_DA_XML_50_3.3_2021-05.xsd gesetzt.
+Verweis auf GAEB_DA_XML_Lib5x_3.3_2021-05.xsd angepasst.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.gaeb.de/GAEB_DA_XML/DA50/3.3" targetNamespace="http://www.gaeb.de/GAEB_DA_XML/DA50/3.3" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:redefine schemaLocation="../GAEB_DA_XML_Lib5x_3.3_2021-05.xsd">
+		<xs:simpleType name="tgDP">
+			<xs:restriction base="tgDP">
+				<xs:enumeration value="50.1">
+					<xs:annotation>
+						<xs:documentation>Objektneutraler Baukostenkatalog</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+				<xs:enumeration value="50.2"/>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:complexType name="tgRefGroup">
+			<xs:complexContent>
+				<xs:restriction base="tgRefGroup">
+					<xs:sequence>
+						<xs:element name="Title" type="tgNormalizedString40" minOccurs="0"/>
+						<xs:choice minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="BoQItemRef" type="tgBoQItemRef" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Referenz zur LV Position</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="BoQCtgyRef" type="tgBoQCtgyRef" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Referenz zum Gewerk / Leistungsbereich für Budgetierung</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="CostElementRef" type="tgCostElementRef" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Referenz zum Kostenelement</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="CategoryElementRef" type="tgCategoryElementRef" minOccurs="0"/>
+							<xs:element name="DimensionElementRef" type="tgDimensionElementRef" minOccurs="0"/>
+							<xs:element name="ConsortiumMemberRef" type="tgConsortiumMemberRef" minOccurs="0" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:documentation>Referenz zu ARGE Mitgliedern oder  Einzelunternehmen </xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:redefine>
+</xs:schema>
