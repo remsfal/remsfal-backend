@@ -92,40 +92,7 @@ class IssueRepositoryTest {
     }
 
     @Test
-    void testFindByTenancyId() {
-        // Setup: Create issues with different tenancies
-        UUID projectId = UUID.randomUUID();
-        UUID tenancyId1 = UUID.randomUUID();
-        UUID tenancyId2 = UUID.randomUUID();
-        
-        IssueEntity issue1 = createIssue(projectId, "Issue 1", Status.OPEN);
-        issue1.setTenancyId(tenancyId1);
-        repository.insert(issue1);
-        
-        IssueEntity issue2 = createIssue(projectId, "Issue 2", Status.OPEN);
-        issue2.setTenancyId(tenancyId2);
-        repository.insert(issue2);
-        
-        IssueEntity issue3 = createIssue(projectId, "Issue 3", Status.OPEN);
-        issue3.setTenancyId(tenancyId1);
-        repository.insert(issue3);
-
-        // Test: Filter by tenancyId1
-        List<? extends IssueModel> tenancyIssues = repository.findByTenancyId(tenancyId1);
-
-        // Verify: Should return 2 issues for tenancyId1
-        assertNotNull(tenancyIssues);
-        assertEquals(2, tenancyIssues.size());
-        tenancyIssues.forEach(issue -> assertEquals(tenancyId1, issue.getTenancyId()));
-        
-        // Cleanup
-        repository.delete(issue1.getKey());
-        repository.delete(issue2.getKey());
-        repository.delete(issue3.getKey());
-    }
-
-    @Test
-    void testFindByContractorId() {
+    void testFindByQuery_filterByContractorId() {
         // Setup: Create issues with different contractors
         UUID projectId = UUID.randomUUID();
         UUID contractorId1 = UUID.randomUUID();
@@ -159,6 +126,38 @@ class IssueRepositoryTest {
         repository.delete(issue3.getKey());
     }
 
+    @Test
+    void testFindByTenancyId() {
+        // Setup: Create issues with different tenancies
+        UUID projectId = UUID.randomUUID();
+        UUID tenancyId1 = UUID.randomUUID();
+        UUID tenancyId2 = UUID.randomUUID();
+        
+        IssueEntity issue1 = createIssue(projectId, "Issue 1", Status.OPEN);
+        issue1.setTenancyId(tenancyId1);
+        repository.insert(issue1);
+        
+        IssueEntity issue2 = createIssue(projectId, "Issue 2", Status.OPEN);
+        issue2.setTenancyId(tenancyId2);
+        repository.insert(issue2);
+        
+        IssueEntity issue3 = createIssue(projectId, "Issue 3", Status.OPEN);
+        issue3.setTenancyId(tenancyId1);
+        repository.insert(issue3);
+
+        // Test: Filter by tenancyId1
+        List<? extends IssueModel> tenancyIssues = repository.findByTenancyId(tenancyId1);
+
+        // Verify: Should return 2 issues for tenancyId1
+        assertNotNull(tenancyIssues);
+        assertEquals(2, tenancyIssues.size());
+        tenancyIssues.forEach(issue -> assertEquals(tenancyId1, issue.getTenancyId()));
+        
+        // Cleanup
+        repository.delete(issue1.getKey());
+        repository.delete(issue2.getKey());
+        repository.delete(issue3.getKey());
+    }
 
     private IssueEntity createIssue(UUID projectId, String title, Status status) {
         IssueEntity entity = new IssueEntity();
