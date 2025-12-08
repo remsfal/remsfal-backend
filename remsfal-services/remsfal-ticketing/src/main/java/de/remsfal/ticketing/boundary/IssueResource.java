@@ -51,7 +51,8 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (projectFilter.isEmpty()) {
             return getTenancyIssues(offset, limit, tenancyId, status);
         } else {
-            return getProjectIssues(offset, limit, projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId, status);
+            return getProjectIssues(
+                    offset, limit, projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId, status);
         }
     }
 
@@ -59,8 +60,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         UUID tenancyId, UnitType rentalType, UUID rentalId,  UUID contractorId,
         Status status) {
         final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId,
-                status);
+            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
 
