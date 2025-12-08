@@ -39,7 +39,13 @@ public class OrganizationResourceTest extends AbstractResourceTest {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
-                "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\"\n" +
+                "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\",\n" +
+                " \"address\": { " +
+                    "\"street\":\"" + TestData.ADDRESS_STREET + "\",\n" +
+                    "\"city\":\"" + TestData.ADDRESS_CITY + "\",\n" +
+                    "\"province\":\"" + TestData.ADDRESS_PROVINCE + "\",\n" +
+                    "\"zip\":\"" + TestData.ADDRESS_ZIP + "\",\n" +
+                    "\"countryCode\":\"" + TestData.ADDRESS_COUNTRY + "\"}" +
                 "}";
         final String organizationId = given()
             .when()
