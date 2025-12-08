@@ -15,24 +15,24 @@ import io.quarkus.panache.common.Parameters;
 @ApplicationScoped
 public class TenancyRepository extends AbstractRepository<TenancyEntity> {
 
-    public List<TenancyEntity> findTenanciesByTenant(final UUID tenantId) {
-        return find("SELECT t FROM TenancyEntity t JOIN t.tenants tenant WHERE tenant.id = :userId",
-            Parameters.with(PARAM_USER_ID, tenantId)).list();
-    }
+  public List<TenancyEntity> findTenanciesByTenant(final UUID tenantId) {
+    return find("SELECT t FROM TenancyEntity t JOIN t.tenants tenant WHERE tenant.id = :userId",
+        Parameters.with(PARAM_USER_ID, tenantId)).list();
+  }
 
-    public Optional<TenancyEntity> findTenancyByTenant(final UUID tenantId, final UUID tenancyId) {
-        return find("SELECT t FROM TenancyEntity t JOIN t.tenants tenant WHERE t.id = :id and tenant.id = :userId",
-            Parameters.with(PARAM_ID, tenancyId).and(PARAM_USER_ID, tenantId))
-            .singleResultOptional();
-    }
+  public Optional<TenancyEntity> findTenancyByTenant(final UUID tenantId, final UUID tenancyId) {
+    return find("SELECT t FROM TenancyEntity t JOIN t.tenants tenant WHERE t.id = :id and tenant.id = :userId",
+        Parameters.with(PARAM_ID, tenancyId).and(PARAM_USER_ID, tenantId))
+        .singleResultOptional();
+  }
 
-    public List<TenancyEntity> findTenancyByProject(final UUID projectId) {
-        return find("projectId", projectId).list();
-    }
+  public List<TenancyEntity> findTenancyByProject(final UUID projectId) {
+    return find("projectId", projectId).list();
+  }
 
-    public Optional<TenancyEntity> findTenancyByProject(final UUID projectId, final UUID tenancyId) {
-        return find("id = :id and project = :projectId",
-                Parameters.with(PARAM_ID, tenancyId).and(PARAM_PROJECT_ID, projectId))
-                .singleResultOptional();
-    }
+  public Optional<TenancyEntity> findTenancyByProject(final UUID projectId, final UUID tenancyId) {
+    return find("id = :id and projectId = :projectId",
+        Parameters.with(PARAM_ID, tenancyId).and(PARAM_PROJECT_ID, projectId))
+        .singleResultOptional();
+  }
 }
