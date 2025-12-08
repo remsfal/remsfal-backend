@@ -158,5 +158,27 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
         assertEquals(0L, countAfterDelete);
     }
 
+    @Test
+    void equals_SUCCESS_additionalEmailEntity() {
+        UserEntity user = new UserEntity();
+        user.generateId();
+        user.setTokenId(TestData.USER_TOKEN);
+        user.setEmail(TestData.USER_EMAIL);
+
+        AdditionalEmailEntity entity = new AdditionalEmailEntity();
+        entity.generateId();
+        entity.setUser(user);
+        entity.setEmail("alt@example.com");
+        entity.setVerified(false);
+
+        AdditionalEmailEntity copy = new AdditionalEmailEntity();
+        copy.setId(entity.getId());
+        copy.setUser(user);
+        copy.setEmail("alt@example.com");
+        copy.setVerified(false);
+
+        assertEquals(entity, copy);
+    }
+
 }
 

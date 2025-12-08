@@ -21,13 +21,4 @@ public class AdditionalEmailRepository extends AbstractRepository<AdditionalEmai
                 .executeUpdate();
     }
 
-    @Transactional
-    public boolean verify(UUID id) {
-        return getEntityManager()
-                .createNamedQuery("AdditionalEmailEntity.verifyById")
-                .setParameter("id", id)
-                .executeUpdate() > 0;
-    }
-
-
 }

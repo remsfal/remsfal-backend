@@ -13,10 +13,6 @@ import jakarta.validation.constraints.Email;
 import java.util.Objects;
 
 @NamedQuery(
-        name = "AdditionalEmailEntity.verifyById",
-        query = "update AdditionalEmailEntity ae set ae.verified = true where ae.id = :id"
-)
-@NamedQuery(
         name = "AdditionalEmailEntity.deleteById",
         query = "delete from AdditionalEmailEntity ae where ae.id = :id"
 )
