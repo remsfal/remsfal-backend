@@ -13,6 +13,8 @@ import de.remsfal.core.json.tenancy.*;
 import de.remsfal.service.control.*;
 import de.remsfal.service.entity.dto.TenancyEntity;
 
+import java.util.List;
+
 @RequestScoped
 public class ProjectTenancyResource extends ProjectSubResource implements ProjectTenancyEndpoint {
 
@@ -23,6 +25,12 @@ public class ProjectTenancyResource extends ProjectSubResource implements Projec
   public TenancyInfoJson getTenancy(final UUID projectId, final UUID tenancyId) {
     final TenancyEntity tenancy = tenancyController.getTenancyByProject(projectId, tenancyId);
     return TenancyInfoJson.valueOf(tenancy);
+  }
+
+  @Override
+  public ProjectTenancyListJson getTenancies(final UUID projectId) {
+    final List<TenancyEntity> tenancies = tenancyController.getTenanciesByProject(projectId);
+    return ProjectTenancyListJson.valueOf(tenancies);
   }
 
   @Override
