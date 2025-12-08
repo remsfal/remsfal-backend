@@ -1,16 +1,11 @@
 package de.remsfal.core.api.tenancy;
 
-import de.remsfal.core.json.tenancy.TenancyInfoJson;
-import de.remsfal.core.validation.PostValidation;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 import java.util.UUID;
 
-import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -33,48 +28,6 @@ public interface TenancyEndpoint {
     @Operation(summary = "Retrieve information for all tenancies of a lessee.")
     @APIResponse(responseCode = "200", description = "List of tenancies successfully returned")
     TenancyListJson getTenancies();
-
-    @GET
-    @Path("/{tenancyId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve Information of a tenancy.")
-    @APIResponse(responseCode = "200", description = "The requested tenancy was successfully returned")
-    @APIResponse(responseCode = "401", description = "No user authentication provided session cookie")
-    @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyInfoJson getTenancy(
-      @Parameter(description = "ID of the tenancy", required = true)
-      @PathParam("tenancyId")
-      @NotNull UUID tenancyId
-    );
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new tenancy")
-    @APIResponse(responseCode = "201", description = "Tenancy created successfully")
-    @APIResponse(responseCode = "400", description = "Invalid request message")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createTenancy(
-      @Parameter(description = "Tenancy Information", required = true)
-      @Valid
-      @ConvertGroup(to = PostValidation.class)
-      TenancyInfoJson tenancy
-    );
-
-    @PATCH
-    @Path("/{tenancyId}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a tenancy")
-    @APIResponse(responseCode = "200", description = "The tenancy was successfully updated")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyInfoJson updateTenancy(
-      @Parameter(description = "ID of the tenancy", required = true)
-      @PathParam("tenancyId")
-      @NotNull UUID tenancyId,
-      @Parameter(description = "Tenancy information", required = true)
-      @Valid @NotNull TenancyInfoJson tenancy
-    );
 
     @GET
     @Path("/{tenancyId}/properties/{rentalId}")

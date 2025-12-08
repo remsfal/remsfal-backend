@@ -2,7 +2,6 @@ package de.remsfal.service.boundary.tenancy;
 
 import de.remsfal.core.json.tenancy.*;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.UUID;
@@ -21,7 +20,6 @@ import de.remsfal.service.entity.dto.PropertyRentEntity;
 import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenancyEntity;
-import jakarta.ws.rs.core.Response;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -88,22 +86,6 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
                 .toList());
         }
         return rentBuilder.build();
-    }
-
-    @Override
-    public TenancyInfoJson getTenancy(final UUID tenancyId) {
-        final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
-        return TenancyInfoJson.valueOf(tenancy);
-    }
-
-    @Override
-    public Response createTenancy(final TenancyInfoJson tenancy) {
-        throw new ForbiddenException("Tenant is not allowed to create tenancies");
-    }
-
-    @Override
-    public TenancyInfoJson updateTenancy(final UUID tenancyId, final TenancyInfoJson tenancy) {
-        throw new ForbiddenException("Tenant is not allowed to update tenancies");
     }
 
     @Override
