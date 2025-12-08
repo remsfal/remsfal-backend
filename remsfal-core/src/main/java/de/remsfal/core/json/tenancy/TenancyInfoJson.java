@@ -34,33 +34,33 @@ import de.remsfal.core.validation.PostValidation;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TenancyInfoJson implements TenancyModel {
 
-  @Null(groups = PostValidation.class)
-  @Nullable
-  @Override
-  public abstract UUID getId();
+    @Null(groups = PostValidation.class)
+    @Nullable
+    @Override
+    public abstract UUID getId();
 
-  @Override
-  public abstract LocalDate getStartOfRental();
+    @Override
+    public abstract LocalDate getStartOfRental();
 
-  @Nullable
-  @Override
-  public abstract LocalDate getEndOfRental();
+    @Nullable
+    @Override
+    public abstract LocalDate getEndOfRental();
 
-  @Valid
-  @ConvertGroup(from = PostValidation.class, to = PostValidation.class)
-  @ConvertGroup(from = PatchValidation.class, to = PatchValidation.class)
-  @Nullable
-  @Override
-  public abstract List<UserJson> getTenants();
+    @Valid
+    @ConvertGroup(from = PostValidation.class, to = PostValidation.class)
+    @ConvertGroup(from = PatchValidation.class, to = PatchValidation.class)
+    @Nullable
+    @Override
+    public abstract List<UserJson> getTenants();
 
-  public static TenancyInfoJson valueOf(TenancyModel model) {
-    return ImmutableTenancyInfoJson.builder()
-        .id(model.getId())
-        .startOfRental(model.getStartOfRental())
-        .endOfRental(model.getEndOfRental())
-        .tenants(model.getTenants() != null ? model.getTenants().stream()
-            .map(UserJson::valueOf)
-            .toList() : null)
-        .build();
-  }
+    public static TenancyInfoJson valueOf(TenancyModel model) {
+        return ImmutableTenancyInfoJson.builder()
+            .id(model.getId())
+            .startOfRental(model.getStartOfRental())
+            .endOfRental(model.getEndOfRental())
+            .tenants(model.getTenants() != null ? model.getTenants().stream()
+                .map(UserJson::valueOf)
+                .toList() : null)
+            .build();
+    }
 }
