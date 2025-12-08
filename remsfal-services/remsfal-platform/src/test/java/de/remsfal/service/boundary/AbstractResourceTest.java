@@ -138,14 +138,14 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void setupTestOrganizations() {
         insertOrganization(TestData.ORGANIZATION_ID, TestData.ORGANIZATION_NAME, TestData.ORGANIZATION_PHONE,
-                TestData.ORGANIZATION_EMAIL, TestData.ORGANIZATION_TRADE);
-        insertEmployee(TestData.ORGANIZATION_ID, TestData.USER_ID, "OWNER");
+                TestData.ORGANIZATION_EMAIL, TestData.ORGANIZATION_TRADE, TestData.ADDRESS_ID);
+        insertEmployee(TestData.ORGANIZATION_ID, TestData.USER_ID_1, "OWNER");
         insertOrganization(TestData.ORGANIZATION_ID_2, TestData.ORGANIZATION_NAME_2, TestData.ORGANIZATION_PHONE_2,
-                TestData.ORGANIZATION_EMAIL_2, TestData.ORGANIZATION_TRADE_2);
-        insertEmployee(TestData.ORGANIZATION_ID_2, TestData.USER_ID, "OWNER");
+                TestData.ORGANIZATION_EMAIL_2, TestData.ORGANIZATION_TRADE_2, TestData.ADDRESS_ID_1);
+        insertEmployee(TestData.ORGANIZATION_ID_2, TestData.USER_ID_1, "OWNER");
         insertOrganization(TestData.ORGANIZATION_ID_3, TestData.ORGANIZATION_NAME_3, TestData.ORGANIZATION_PHONE_3,
-                TestData.ORGANIZATION_EMAIL_3, TestData.ORGANIZATION_TRADE_3);
-        insertEmployee(TestData.ORGANIZATION_ID_3, TestData.USER_ID, "OWNER");
+                TestData.ORGANIZATION_EMAIL_3, TestData.ORGANIZATION_TRADE_3, TestData.ADDRESS_ID_2);
+        insertEmployee(TestData.ORGANIZATION_ID_3, TestData.USER_ID_1, "OWNER");
     }
 
     protected void setupAllTestData() {
@@ -308,12 +308,13 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertOrganization(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO organization (id, name, phone, email, trade) VALUES (?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO organization (id, name, phone, email, trade, address_id) VALUES (?,?,?,?,?, ?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
                 .setParameter(4, params[3])
                 .setParameter(5, params[4])
+                .setParameter(6, params[5])
                 .executeUpdate());
     }
 

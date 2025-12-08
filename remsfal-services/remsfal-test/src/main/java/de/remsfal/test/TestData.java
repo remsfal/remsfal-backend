@@ -773,7 +773,7 @@ public class TestData {
     public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
 
     // Test organization 1
-    public static final UUID ORGANIZATION_ID = UUID.fromString("6899eBB3-A1bA-8235-e751-a2Dcac9D78De");
+    public static final UUID ORGANIZATION_ID = UUID.fromString("00000000-A1bA-8235-e751-a2Dcac9D78De");
     public static final String ORGANIZATION_NAME = "Test";
     public static final String ORGANIZATION_PHONE = "+57752788714093";
     public static final String ORGANIZATION_EMAIL = "test@test.de";
