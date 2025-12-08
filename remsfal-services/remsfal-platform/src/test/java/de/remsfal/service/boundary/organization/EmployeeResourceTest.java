@@ -1,13 +1,14 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.organization;
 
+import de.remsfal.service.boundary.AbstractResourceTest;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.time.Duration;
 
@@ -19,11 +20,16 @@ public class EmployeeResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/organization/{organizationId}/employees";
     static final String EMPLOYEE_PATH = BASE_PATH + "/{employeeId}";
 
-    @Override
     @BeforeEach
-    protected void setupTestProperties() {
+    protected void setupTestDate() {
         super.setupTestUsers();
         super.setupTestOrganizations();
+    }
+
+    @AfterEach
+    @Transactional
+    protected void cleanupTestDate() {
+        entityManager.createNativeQuery("DELETE FROM organization").executeUpdate();
     }
 
     @Test
@@ -61,7 +67,7 @@ public class EmployeeResourceTest extends AbstractResourceTest {
     void updateProjectMember_FAILED_notMember() {
         final String json = "{\"id\": " + null + ",\n" +
                 "  \"name\": " + null + ",\n" +
-                "  \"email\": \"" + TestData.EMPLOYEE_EMAIL + "\",\n" +
+                "  \"email\": " + null + ",\n" +
                 "  \"active\": " + TestData.EMPLOYEE_ACTIVE + ",\n" +
                 "  \"employeeRole\": \"STAFF\"\n" +
                 "}";
