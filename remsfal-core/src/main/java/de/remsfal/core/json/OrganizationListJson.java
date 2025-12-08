@@ -37,7 +37,8 @@ public class OrganizationListJson {
         this.total = total;
     }
 
-    public static OrganizationListJson valueOf(List<? extends OrganizationModel> organizations, Integer offset, Long total) {
+    public static OrganizationListJson valueOf(List<? extends OrganizationModel> organizations, Integer offset,
+        Long total) {
         OrganizationListJson organizationListJson = new OrganizationListJson();
 
         organizationListJson.setOffset(offset);

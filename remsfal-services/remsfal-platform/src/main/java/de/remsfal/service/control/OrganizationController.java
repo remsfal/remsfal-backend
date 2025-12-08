@@ -4,21 +4,22 @@ import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.model.UserModel;
+
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
-import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
-import org.jboss.logging.Logger;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
+import org.jboss.logging.Logger;
+
+import java.util.List;
+import java.util.UUID;
 
 @RequestScoped
 public class OrganizationController {
@@ -45,7 +46,8 @@ public class OrganizationController {
      */
     public OrganizationEntity getOrganizationById(final UUID id) {
         logger.infov("Retrieve Organization by id {0}", id);
-        return organizationRepository.findByIdOptional(id).orElseThrow(() -> new  NotFoundException("Organization not found"));
+        return organizationRepository.findByIdOptional(id)
+                .orElseThrow(() -> new  NotFoundException("Organization not found"));
     }
 
     /**
@@ -92,7 +94,8 @@ public class OrganizationController {
     @Transactional
     public OrganizationEntity updateOrganization(final UUID organizationId, final OrganizationModel organization) {
 
-        OrganizationEntity organizationEntity = organizationRepository.findByIdOptional(organizationId).orElseThrow(() -> new NotFoundException("Organization id not found"));
+        OrganizationEntity organizationEntity = organizationRepository.findByIdOptional(organizationId)
+            .orElseThrow(() -> new NotFoundException("Organization id not found"));
 
         if (organization.getName() != null) {
             organizationEntity.setName(organization.getName());
@@ -125,7 +128,8 @@ public class OrganizationController {
      */
     @Transactional
     public boolean deleteOrganization(final UUID id) {
-        OrganizationEntity organization = organizationRepository.findByIdOptional(id).orElseThrow(() -> new NotFoundException("Organization not found"));
+        OrganizationEntity organization = organizationRepository.findByIdOptional(id)
+            .orElseThrow(() -> new NotFoundException("Organization not found"));
         return organizationRepository.deleteById(organization.getId());
     }
 
@@ -138,7 +142,7 @@ public class OrganizationController {
     public EmployeeRole getEmployeeRole(final UUID organizationId, final UserModel user) {
         return organizationRepository.findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, user.getId())
                 .map(OrganizationEmployeeEntity::getRole)
-                .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+                .orElseThrow(() -> new ForbiddenException("Organization not exist or user is not an employee"));
     }
 
     public OrganizationEmployeeModel getOrganizationEmployee(final UUID organizationId, final UserModel user) {
@@ -152,23 +156,29 @@ public class OrganizationController {
     }
 
     @Transactional
-    public OrganizationEmployeeModel addEmployee(final UUID organizationId, final UserModel user, final OrganizationEmployeeModel employee) {
-        logger.infov("Adding a organization employee (user={0}, organization={1}, employeeId={2}, employeeEmail={3}, employeeRole={4})",
-                user.getId(), organizationId, employee.getId(), employee.getEmail(), employee.getEmployeeRole());
-        final OrganizationEntity organization = organizationRepository.findOrganizationByUserId(user.getId(), organizationId)
-                .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+    public OrganizationEmployeeModel addEmployee(final UUID organizationId, final UserModel user,
+        final OrganizationEmployeeModel employee) {
+        logger.infov("Adding a organization employee (user={0}, organization={1}, employeeId={2}, " +
+            "employeeEmail={3}, employeeRole={4})",
+            user.getId(), organizationId, employee.getId(), employee.getEmail(), employee.getEmployeeRole());
+        final OrganizationEntity organization = organizationRepository
+            .findOrganizationByUserId(user.getId(), organizationId)
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
 
         UserEntity userEntity = userController.findOrCreateUser(employee);
         organization.addEmployee(userEntity, employee.getEmployeeRole());
         organizationRepository.mergeAndFlush(organization);
-        return organizationRepository.findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, userEntity.getId())
-                .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+        return organizationRepository
+            .findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, userEntity.getId())
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
     }
 
     @Transactional
-    public OrganizationEmployeeModel updateEmployeeRole(final UUID organizationId, final UUID employeeId, final EmployeeRole role) {
-        OrganizationEmployeeEntity entity = organizationRepository.findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId)
-                .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+    public OrganizationEmployeeModel updateEmployeeRole(final UUID organizationId, final UUID employeeId,
+        final EmployeeRole role) {
+        OrganizationEmployeeEntity entity = organizationRepository
+            .findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId)
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
 
         entity.setRole(role);
 

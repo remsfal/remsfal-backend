@@ -16,25 +16,32 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
 
     public List<OrganizationEmployeeEntity> findOrganizationEmployeesByOrganizationId(UUID organizationId) {
         return getEntityManager()
-                .createNamedQuery("OrganizationEmployeeEntity.findByOrganizationId",  OrganizationEmployeeEntity.class)
-                .setParameter("organizationId", organizationId)
-                .getResultList();
+            .createNamedQuery(
+                    "OrganizationEmployeeEntity.findByOrganizationId",
+                    OrganizationEmployeeEntity.class
+            )
+            .setParameter("organizationId", organizationId)
+            .getResultList();
     }
 
     public List<OrganizationEmployeeEntity> findOrganizationEmployeesByUserId(UUID userId) {
         return getEntityManager()
-                .createNamedQuery("OrganizationEmployeeEntity.findByUserId", OrganizationEmployeeEntity.class)
-                .setParameter("userId", userId)
-                .getResultList();
+            .createNamedQuery("OrganizationEmployeeEntity.findByUserId", OrganizationEmployeeEntity.class)
+            .setParameter("userId", userId)
+            .getResultList();
     }
 
-    public Optional<OrganizationEmployeeEntity> findOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId, UUID userId) {
+    public Optional<OrganizationEmployeeEntity> findOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId,
+        UUID userId) {
         try {
             return Optional.of(getEntityManager()
-                    .createNamedQuery("OrganizationEmployeeEntity.findByOrganizationIdAndUserId", OrganizationEmployeeEntity.class)
-                    .setParameter("organizationId", organizationId)
-                    .setParameter("userId", userId)
-                    .getSingleResult());
+                .createNamedQuery(
+                        "OrganizationEmployeeEntity.findByOrganizationIdAndUserId",
+                        OrganizationEmployeeEntity.class
+                )
+                .setParameter("organizationId", organizationId)
+                .setParameter("userId", userId)
+                .getSingleResult());
         }
         catch (NoResultException e) {
             return Optional.empty();
@@ -42,7 +49,8 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
     }
 
     public Optional<OrganizationEntity> findOrganizationByUserId(final UUID userId, final UUID organizationId) {
-        return findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, userId).map(OrganizationEmployeeEntity::getOrganization);
+        return findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, userId)
+                .map(OrganizationEmployeeEntity::getOrganization);
     }
 
     public boolean deleteOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId, UUID userId) {
