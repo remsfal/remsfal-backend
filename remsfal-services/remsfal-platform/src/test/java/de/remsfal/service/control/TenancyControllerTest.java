@@ -26,210 +26,196 @@ class TenancyControllerTest extends AbstractServiceTest {
   @Inject
   TenancyController controller;
 
-  @BeforeEach
-  void setupTestProjects() {
-    // Setup users for tenant tests
-    runInTransaction(() -> entityManager
-        .createNativeQuery("INSERT INTO users (id, first_name, last_name, email) VALUES (?,?,?,?)")
-        .setParameter(1, TestData.USER_ID_1)
-        .setParameter(2, TestData.USER_FIRST_NAME_1)
-        .setParameter(3, TestData.USER_LAST_NAME_1)
-        .setParameter(4, TestData.USER_EMAIL_1)
-        .executeUpdate());
-    runInTransaction(() -> entityManager
-        .createNativeQuery("INSERT INTO users (id, first_name, last_name, email) VALUES (?,?,?,?)")
-        .setParameter(1, TestData.USER_ID_2)
-        .setParameter(2, TestData.USER_FIRST_NAME_2)
-        .setParameter(3, TestData.USER_LAST_NAME_2)
-        .setParameter(4, TestData.USER_EMAIL_2)
-        .executeUpdate());
+    @BeforeEach
+    void setupTestProjects() {
+        // Setup users for tenant tests
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO users (id, first_name, last_name, email) VALUES (?,?,?,?)")
+            .setParameter(1, TestData.USER_ID_1)
+            .setParameter(2, TestData.USER_FIRST_NAME_1)
+            .setParameter(3, TestData.USER_LAST_NAME_1)
+            .setParameter(4, TestData.USER_EMAIL_1)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO users (id, first_name, last_name, email) VALUES (?,?,?,?)")
+            .setParameter(1, TestData.USER_ID_2)
+            .setParameter(2, TestData.USER_FIRST_NAME_2)
+            .setParameter(3, TestData.USER_LAST_NAME_2)
+            .setParameter(4, TestData.USER_EMAIL_2)
+            .executeUpdate());
 
-    runInTransaction(() -> entityManager
-        .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
-        .setParameter(1, TestData.PROJECT_ID_1)
-        .setParameter(2, TestData.PROJECT_TITLE_1)
-        .executeUpdate());
-    runInTransaction(() -> entityManager
-        .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
-        .setParameter(1, TestData.PROJECT_ID_2)
-        .setParameter(2, TestData.PROJECT_TITLE_2)
-        .executeUpdate());
-    runInTransaction(() -> entityManager
-        .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
-        .setParameter(1, TestData.PROJECT_ID_3)
-        .setParameter(2, TestData.PROJECT_TITLE_3)
-        .executeUpdate());
-    runInTransaction(() -> entityManager
-        .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
-        .setParameter(1, TestData.PROJECT_ID_4)
-        .setParameter(2, TestData.PROJECT_TITLE_4)
-        .executeUpdate());
-    runInTransaction(() -> entityManager
-        .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
-        .setParameter(1, TestData.PROJECT_ID_5)
-        .setParameter(2, TestData.PROJECT_TITLE_5)
-        .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_1)
+            .setParameter(2, TestData.PROJECT_TITLE_1)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_2)
+            .setParameter(2, TestData.PROJECT_TITLE_2)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_3)
+            .setParameter(2, TestData.PROJECT_TITLE_3)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_4)
+            .setParameter(2, TestData.PROJECT_TITLE_4)
+            .executeUpdate());
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
+            .setParameter(1, TestData.PROJECT_ID_5)
+            .setParameter(2, TestData.PROJECT_TITLE_5)
+            .executeUpdate());
   }
 
-  @Test
-  void createTenancy_FAILED_noProject() {
-    final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .build();
-    assertThrows(NotFoundException.class,
-        () -> controller.createTenancy(UUID.randomUUID(), tenancy));
-  }
+    @Test
+    void createTenancy_FAILED_noProject() {
+        final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+            .startOfRental(LocalDate.now())
+            .build();
+        final UUID projectId = UUID.randomUUID();
 
-  @Test
-  void createTenancy_Success_idGenerated() {
-    final UUID projectId = TestData.PROJECT_ID_1;
-    final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .build();
+        assertThrows(NotFoundException.class,
+            () -> controller.createTenancy(projectId, tenancy));
+    }
 
-    TenancyEntity result = controller.createTenancy(projectId, tenancy);
+    @Test
+    void createTenancy_Success_idGenerated() {
+        final UUID projectId = TestData.PROJECT_ID_1;
+        final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+            .startOfRental(LocalDate.now())
+            .build();
 
-    assertNotNull(result.getId());
-    assertEquals(projectId, result.getProjectId());
-    assertEquals(tenancy.getStartOfRental(), result.getStartOfRental());
+        TenancyEntity result = controller.createTenancy(projectId, tenancy);
 
-    TenancyEntity entity = entityManager.find(TenancyEntity.class, result.getId());
-    assertTenancy(result, entity);
-  }
+        assertNotNull(result.getId());
+        assertEquals(projectId, result.getProjectId());
+        assertEquals(tenancy.getStartOfRental(), result.getStartOfRental());
 
-  @Test
-  void getTenancy_SUCCESS_tenancyRetrieved() {
-    final UUID projectId = TestData.PROJECT_ID_1;
-    final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .build();
-    TenancyEntity created = controller.createTenancy(projectId, tenancy);
+        TenancyEntity entity = entityManager.find(TenancyEntity.class, result.getId());
+        assertTenancy(result, entity);
+    }
 
-    TenancyEntity retrieved = controller.getTenancyByProject(projectId, created.getId());
+    @Test
+    void getTenancy_SUCCESS_tenancyRetrieved() {
+        final UUID projectId = TestData.PROJECT_ID_1;
+        final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+            .startOfRental(LocalDate.now())
+            .build();
+        TenancyEntity created = controller.createTenancy(projectId, tenancy);
 
-    assertEquals(created.getId(), retrieved.getId());
-    assertTenancy(created, retrieved);
-  }
+        TenancyEntity retrieved = controller.getTenancyByProject(projectId, created.getId());
 
-  @Test
-  void getTenancy_FAILED_tenancyNotFound() {
-    final UUID projectId = TestData.PROJECT_ID_1;
-    assertThrows(NotFoundException.class,
-        () -> controller.getTenancyByProject(projectId, UUID.randomUUID()));
-  }
+        assertEquals(created.getId(), retrieved.getId());
+        assertTenancy(created, retrieved);
+    }
 
-  @Test
-  void updateTenancy_SUCCESS_correctlyUpdated() {
-    final UUID projectId = TestData.PROJECT_ID_1;
-    final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .build();
-    TenancyEntity created = controller.createTenancy(projectId, tenancy);
+    @Test
+    void getTenancy_FAILED_tenancyNotFound() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final UUID tenancyId = UUID.randomUUID();
 
-    TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.of(2025, 1, 1))
-        .endOfRental(LocalDate.of(2026, 1, 1))
-        .build();
+      assertThrows(NotFoundException.class,
+          () -> controller.getTenancyByProject(projectId, tenancyId));
+    }
 
-    TenancyEntity updated = controller.updateTenancy(projectId, created.getId(), updateJson);
+    @Test
+    void updateTenancy_SUCCESS_correctlyUpdated() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+          .startOfRental(LocalDate.now())
+          .build();
+      TenancyEntity created = controller.createTenancy(projectId, tenancy);
 
-    assertEquals(created.getId(), updated.getId());
-    assertEquals(tenancy.getStartOfRental(), created.getStartOfRental()); // Helper check on original
-    assertEquals(updateJson.getStartOfRental(), updated.getStartOfRental());
-    assertEquals(updateJson.getEndOfRental(), updated.getEndOfRental());
+      TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .endOfRental(LocalDate.of(2026, 1, 1))
+          .build();
 
-    TenancyEntity entity = entityManager.find(TenancyEntity.class, updated.getId());
-    assertTenancy(updated, entity);
-  }
+      TenancyEntity updated = controller.updateTenancy(projectId, created.getId(), updateJson);
 
-  @Test
-  void createTenancy_SUCCESS_withTenants() {
-    final UUID projectId = TestData.PROJECT_ID_1;
-    final UserJson tenantUser = ImmutableUserJson.builder()
-        .id(TestData.USER_ID_1)
-        .email(TestData.USER_EMAIL_1)
-        .firstName(TestData.USER_FIRST_NAME_1)
-        .lastName(TestData.USER_LAST_NAME_1)
-        .build();
+      assertEquals(created.getId(), updated.getId());
+      assertEquals(tenancy.getStartOfRental(), created.getStartOfRental()); // Helper check on original
+      assertEquals(updateJson.getStartOfRental(), updated.getStartOfRental());
+      assertEquals(updateJson.getEndOfRental(), updated.getEndOfRental());
 
-    final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .addTenants(tenantUser)
-        .build();
+      TenancyEntity entity = entityManager.find(TenancyEntity.class, updated.getId());
+      assertTenancy(updated, entity);
+    }
 
-    TenancyEntity result = controller.createTenancy(projectId, tenancy);
+    @Test
+    void createTenancy_SUCCESS_withTenants() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final UserJson tenantUser = ImmutableUserJson.builder()
+          .id(TestData.USER_ID_1)
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
 
-    assertNotNull(result.getId());
-    assertEquals(1, result.getTenants().size());
-    assertEquals(TestData.USER_ID_1, result.getTenants().get(0).getId());
+      final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+          .startOfRental(LocalDate.now())
+          .addTenants(tenantUser)
+          .build();
 
-    // Verify in DB
-    TenancyEntity entity = entityManager.find(TenancyEntity.class, result.getId());
-    assertTenancy(result, entity);
-  }
+      TenancyEntity result = controller.createTenancy(projectId, tenancy);
 
-  @Test
-  void updateTenancy_SUCCESS_tenantsUpdated() {
-    final UUID projectId = TestData.PROJECT_ID_1;
-    final TenancyInfoJson startTenancy = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .build();
-    TenancyEntity created = controller.createTenancy(projectId, startTenancy);
+      assertNotNull(result.getId());
+      assertEquals(1, result.getTenants().size());
+      assertEquals(TestData.USER_ID_1, result.getTenants().get(0).getId());
 
-    final UserJson tenantUser = ImmutableUserJson.builder()
-        .id(TestData.USER_ID_1)
-        .email(TestData.USER_EMAIL_1)
-        .firstName(TestData.USER_FIRST_NAME_1)
-        .lastName(TestData.USER_LAST_NAME_1)
-        .build();
-    TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .addTenants(tenantUser)
-        .build();
+      // Verify in DB
+      TenancyEntity entity = entityManager.find(TenancyEntity.class, result.getId());
+      assertTenancy(result, entity);
+    }
 
-    TenancyEntity updated = controller.updateTenancy(projectId, created.getId(), updateJson);
+    @Test
+    void updateTenancy_SUCCESS_tenantsUpdated() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenancyInfoJson startTenancy = ImmutableTenancyInfoJson.builder()
+          .startOfRental(LocalDate.now())
+          .build();
+      TenancyEntity created = controller.createTenancy(projectId, startTenancy);
 
-    assertEquals(1, updated.getTenants().size());
-    assertEquals(TestData.USER_ID_1, updated.getTenants().get(0).getId());
+      final UserJson tenantUser = ImmutableUserJson.builder()
+          .id(TestData.USER_ID_1)
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+      TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
+          .startOfRental(LocalDate.now())
+          .addTenants(tenantUser)
+          .build();
 
-    TenancyEntity entity = entityManager.find(TenancyEntity.class, updated.getId());
-    assertTenancy(updated, entity);
-  }
+      TenancyEntity updated = controller.updateTenancy(projectId, created.getId(), updateJson);
 
-  @Test
-  void updateTenancy_FAILED_tenancyNotFound() {
-    final UUID projectId = TestData.PROJECT_ID_1;
-    final TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
-        .startOfRental(LocalDate.now())
-        .build();
+      assertEquals(1, updated.getTenants().size());
+      assertEquals(TestData.USER_ID_1, updated.getTenants().get(0).getId());
 
-    assertThrows(NotFoundException.class,
-        () -> controller.updateTenancy(projectId, UUID.randomUUID(), updateJson));
-  }
+      TenancyEntity entity = entityManager.find(TenancyEntity.class, updated.getId());
+      assertTenancy(updated, entity);
+    }
 
-  @Test
-  void convertBigDecimal_SUCCESS_noLoss() {
-    /*
-     * final RentEntity rent = new RentEntity(); rent.generateId();
-     * rent.setBillingCycle(BillingCycle.MONTHLY);
-     * rent.setFirstPaymentDate(LocalDate.parse("2008-08-02"));
-     * rent.setLastPaymentDate(LocalDate.now());
-     * rent.setBasicRent(5294.89f); rent.setOperatingCostsPrepayment(4733.3f);
-     * rent.setHeatingCostsPrepayment(18237.8231f);
-     * 
-     * assertNotNull(rent.getId());
-     * assertEquals(BillingCycle.MONTHLY,rent.getBillingCycle());
-     * assertEquals("2008-08-02",rent.getFirstPaymentDate().toString());
-     * assertEquals(5294.89f,rent.getBasicRent());
-     * assertEquals(4733.3f,rent.getOperatingCostsPrepayment());
-     * assertEquals(18237.82f,rent.getHeatingCostsPrepayment());
-     */
-  }
+    @Test
+    void updateTenancy_FAILED_tenancyNotFound() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
+          .startOfRental(LocalDate.now())
+          .build();
+      final UUID tenancyId = UUID.randomUUID();
 
-  private void assertTenancy(TenancyEntity expected, TenancyEntity actual) {
-    assertEquals(expected.getId(), actual.getId());
-    assertEquals(expected.getProjectId(), actual.getProjectId());
-    assertEquals(expected.getStartOfRental(), actual.getStartOfRental());
-    assertEquals(expected.getEndOfRental(), actual.getEndOfRental());
-  }
+      assertThrows(NotFoundException.class,
+          () -> controller.updateTenancy(projectId, tenancyId, updateJson));
+    }
+
+    private void assertTenancy(TenancyEntity expected, TenancyEntity actual) {
+      assertEquals(expected.getId(), actual.getId());
+      assertEquals(expected.getProjectId(), actual.getProjectId());
+      assertEquals(expected.getStartOfRental(), actual.getStartOfRental());
+      assertEquals(expected.getEndOfRental(), actual.getEndOfRental());
+    }
 }
