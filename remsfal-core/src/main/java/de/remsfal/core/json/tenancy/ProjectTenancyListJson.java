@@ -1,7 +1,6 @@
 package de.remsfal.core.json.tenancy;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -29,7 +28,7 @@ public abstract class ProjectTenancyListJson {
         return ImmutableProjectTenancyListJson.builder()
             .tenancies(tenancies.stream()
                 .map(TenancyInfoJson::valueOf)
-                .collect(Collectors.toList()))
+                .toList())
             .build();
     }
 

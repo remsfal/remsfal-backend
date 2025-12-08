@@ -55,12 +55,12 @@ public abstract class TenancyInfoJson implements TenancyModel {
 
     public static TenancyInfoJson valueOf(TenancyModel model) {
         return ImmutableTenancyInfoJson.builder()
-            .id(model.getId())
-            .startOfRental(model.getStartOfRental())
-            .endOfRental(model.getEndOfRental())
-            .tenants(model.getTenants() != null ? model.getTenants().stream()
-                .map(UserJson::valueOf)
-                .toList() : null)
-            .build();
+                .id(model.getId())
+                .startOfRental(model.getStartOfRental())
+                .endOfRental(model.getEndOfRental())
+                .tenants(model.getTenants() != null ? model.getTenants().stream()
+                        .map(UserJson::valueOf)
+                        .toList() : null)
+                .build();
     }
 }

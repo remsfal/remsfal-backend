@@ -79,4 +79,4 @@ public interface ProjectTenancyEndpoint {
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "Tenancy information", required = true)
         @Valid @NotNull TenancyInfoJson tenancy);
-    }
+}
