@@ -1,7 +1,13 @@
 package de.remsfal.service.entity.dto;
 
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Column;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 
 import java.util.Objects;

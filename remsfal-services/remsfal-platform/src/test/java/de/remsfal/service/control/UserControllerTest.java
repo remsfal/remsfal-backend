@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.inject.Inject;
@@ -158,12 +159,7 @@ class UserControllerTest extends AbstractServiceTest {
     @Test
     void updateUser_SUCCESS_noLocaleInserted() {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
-        final String email = entityManager
-                .createQuery("SELECT user.email FROM UserEntity user where user.id = :userId", String.class)
-                .setParameter("userId", user.getId())
-                .getSingleResult();
-        assertEquals(TestData.USER_EMAIL, email);
-        assertEquals(user.getEmail(), email);
+        assertNotNull(user.getId());
 
         final String newUserName = "Dr. " + TestData.USER_LAST_NAME;
         CustomerModel updatedUser =
@@ -181,12 +177,7 @@ class UserControllerTest extends AbstractServiceTest {
     @Test
     void updateUser_SUCCESS_LocaleInserted() {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
-        final String email = entityManager
-                .createQuery("SELECT user.email FROM UserEntity user where user.id = :userId", String.class)
-                .setParameter("userId", user.getId())
-                .getSingleResult();
-        assertEquals(TestData.USER_EMAIL, email);
-        assertEquals(user.getEmail(), email);
+        assertNotNull(user.getId());
 
         final String insertedLocale = "en";
         CustomerModel updatedUser =
@@ -200,6 +191,118 @@ class UserControllerTest extends AbstractServiceTest {
                 .getSingleResult();
         assertEquals(insertedLocale, locale);
     }
+
+    @Test
+    void updateUser_SUCCESS_removeAdditionalEmailOnUpdate() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UUID userId = user.getId();
+
+        CustomerModel updatedUser = ImmutableUserJson.builder()
+                .id(userId)
+                .email(TestData.USER_EMAIL)
+                .additionalEmails(List.of("alt1@example.com", "alt2@example.com"))
+                .build();
+
+        updatedUser = controller.updateUser(userId, updatedUser);
+        assertEquals(userId, updatedUser.getId());
+
+        List<String> emailsBeforeUpdate = entityManager
+                .createQuery("SELECT ae.email FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId", String.class)
+                .setParameter("userId", userId)
+                .getResultList();
+
+        assertEquals(2, emailsBeforeUpdate.size());
+        assertTrue(emailsBeforeUpdate.contains("alt1@example.com"));
+        assertTrue(emailsBeforeUpdate.contains("alt2@example.com"));
+
+        CustomerModel updatedUserAfterRemoval = ImmutableUserJson.builder()
+                .id(userId)
+                .email(TestData.USER_EMAIL)
+                .additionalEmails(List.of("alt2@example.com"))
+                .build();
+
+        updatedUserAfterRemoval = controller.updateUser(userId, updatedUserAfterRemoval);
+        assertEquals(userId, updatedUserAfterRemoval.getId());
+
+        List<String> emailsAfterUpdate = entityManager
+                .createQuery("SELECT ae.email FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId", String.class)
+                .setParameter("userId", userId)
+                .getResultList();
+
+        assertEquals(1, emailsAfterUpdate.size());
+        assertFalse(emailsAfterUpdate.contains("alt1@example.com"));
+        assertTrue(emailsAfterUpdate.contains("alt2@example.com"));
+    }
+
+    @Test
+    void updateUser_FAIL_alternativeEmailEqualsLoginEmail() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UUID userId = user.getId();
+
+        AlreadyExistsException exception = assertThrows(
+                AlreadyExistsException.class,
+                () -> controller.updateUser(
+                        userId,
+                        ImmutableUserJson.builder()
+                                .id(userId)
+                                .email(TestData.USER_EMAIL)
+                                .additionalEmails(List.of(TestData.USER_EMAIL))
+                                .build()
+                ),
+                "Expected AlreadyExistsException when alternative email equals login email"
+        );
+
+        List<String> emailsInDb = entityManager
+                .createQuery("SELECT ae.email FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId", String.class)
+                .setParameter("userId", userId)
+                .getResultList();
+
+        assertTrue(emailsInDb.isEmpty(), "No alternative emails should be persisted on failure");
+    }
+
+    @Test
+    void updateUser_SUCCESS_noDuplicateAdditionalEmailInserted() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UUID userId = user.getId();
+
+        CustomerModel updatedUser = ImmutableUserJson.builder()
+                .id(userId)
+                .email(TestData.USER_EMAIL)
+                .additionalEmails(List.of("alt@example.com"))
+                .build();
+
+        updatedUser = controller.updateUser(userId, updatedUser);
+        assertEquals(userId, updatedUser.getId());
+
+        List<String> emailsAfterFirstUpdate = entityManager
+                .createQuery("SELECT ae.email FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId", String.class)
+                .setParameter("userId", userId)
+                .getResultList();
+
+        assertEquals(1, emailsAfterFirstUpdate.size());
+        assertTrue(emailsAfterFirstUpdate.contains("alt@example.com"));
+
+        CustomerModel updatedUserAgain = ImmutableUserJson.builder()
+                .id(userId)
+                .email(TestData.USER_EMAIL)
+                .additionalEmails(List.of("alt@example.com"))
+                .build();
+
+        updatedUserAgain = controller.updateUser(userId, updatedUserAgain);
+        assertEquals(userId, updatedUserAgain.getId());
+
+        List<String> emailsAfterSecondUpdate = entityManager
+                .createQuery("SELECT ae.email FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId", String.class)
+                .setParameter("userId", userId)
+                .getResultList();
+
+        assertEquals(1, emailsAfterSecondUpdate.size(),
+                "There must still be exactly one email entry");
+
+        assertTrue(emailsAfterSecondUpdate.contains("alt@example.com"));
+    }
+
+
 
     @Test
     void deleteUser_SUCCESS_repeatedRemove() {

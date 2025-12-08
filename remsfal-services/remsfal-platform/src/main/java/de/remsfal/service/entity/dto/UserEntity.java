@@ -2,7 +2,12 @@ package de.remsfal.service.entity.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+
+import java.util.Objects;
+import java.util.Collections;
+import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
