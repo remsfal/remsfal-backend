@@ -1866,6 +1866,41 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body("blocks", hasSize(0));
     }
 
+    @Test
+    void createIssueWithEmptyRelations_NO_bidirectionalRelationsCreated() {
+        // Issue mit allen Relationen als leere Arrays
+        final String json = "{"
+                + "\"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Issue with empty relations\","
+                + "\"type\":\"TASK\","
+                + "\"blocks\":[],"
+                + "\"blockedBy\":[],"
+                + "\"relatedTo\":[],"
+                + "\"duplicateOf\":[],"
+                + "\"parentOf\":[],"
+                + "\"childOf\":[]"
+                + "}";
+
+        given()
+                .when()
+                .cookie(buildCookie(
+                        TicketingTestData.USER_ID,
+                        TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES,
+                        Map.of()
+                ))
+                .contentType(ContentType.JSON)
+                .body(json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .contentType(ContentType.JSON)
+                .body("id", notNullValue());
+    }
+
+
+
     //Tests nur für sonar Cloud teste hier nicht mehr meinen erstellten Code
     @Test
     void closeIssue_SUCCESS_issueStatusIsClosed() {
