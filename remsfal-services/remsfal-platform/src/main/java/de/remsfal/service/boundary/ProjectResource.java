@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import de.remsfal.core.api.project.TenantEndpoint;
+import de.remsfal.service.boundary.project.*;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -21,14 +23,6 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
 import de.remsfal.core.model.ProjectModel;
-import de.remsfal.service.boundary.project.ApartmentResource;
-import de.remsfal.service.boundary.project.BuildingResource;
-import de.remsfal.service.boundary.project.CommercialResource;
-import de.remsfal.service.boundary.project.ContractorResource;
-import de.remsfal.service.boundary.project.StorageResource;
-import de.remsfal.service.boundary.project.MemberResource;
-import de.remsfal.service.boundary.project.PropertyResource;
-import de.remsfal.service.boundary.project.SiteResource;
 
 import de.remsfal.service.control.ProjectController;
 
@@ -77,6 +71,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<ContractorResource> contractorResource;
+
+    @Inject
+    Instance<TenantResource> tenantResource;
 
     @Override
     @Timed(name = "GetProjectsListTimer", unit = MetricUnits.MILLISECONDS)
@@ -155,5 +152,8 @@ public class ProjectResource implements ProjectEndpoint {
     public ContractorResource getContractorResource() {
         return resourceContext.initResource(contractorResource.get());
     }
+
+    @Override
+    public TenantEndpoint getTenantResource() { return resourceContext.initResource(tenantResource.get()); }
 
 }
