@@ -3,13 +3,21 @@ package de.remsfal.core.json;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
+
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 import java.util.UUID;
@@ -65,11 +73,11 @@ public abstract class OrganizationJson implements OrganizationModel {
         }
 
         final ImmutableOrganizationJson.Builder builder = ImmutableOrganizationJson.builder()
-                .id(model.getId())
-                .name(model.getName())
-                .phone(model.getPhone())
-                .email(model.getEmail())
-                .trade(model.getTrade());
+            .id(model.getId())
+            .name(model.getName())
+            .phone(model.getPhone())
+            .email(model.getEmail())
+            .trade(model.getTrade());
 
         if (model.getAddress() != null) {
             builder.address(AddressJson.valueOf(model.getAddress()));
