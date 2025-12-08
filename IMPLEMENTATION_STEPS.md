@@ -139,3 +139,4 @@ private boolean isParticipantInIssue(UUID issueId) {
 - **Datenkonsistenz:** `chat_sessions` und `issue_participants` müssen synchron bleiben
 - **Performance:** Neue Tabelle ermöglicht O(1) Lookups statt O(n) Scans
 
+
