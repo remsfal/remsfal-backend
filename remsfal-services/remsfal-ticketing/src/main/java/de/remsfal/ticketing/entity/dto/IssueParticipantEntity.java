@@ -20,8 +20,6 @@ public class IssueParticipantEntity extends AbstractEntity {
     @Column("role")
     private String role;
 
-    @Column("created_at")
-    private Instant createdAt;
 
     public IssueParticipantKey getKey() {
         return key;
@@ -59,11 +57,5 @@ public class IssueParticipantEntity extends AbstractEntity {
         this.role = role;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
 }

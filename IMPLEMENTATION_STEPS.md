@@ -140,3 +140,4 @@ private boolean isParticipantInIssue(UUID issueId) {
 - **Performance:** Neue Tabelle ermöglicht O(1) Lookups statt O(n) Scans
 
 
+
