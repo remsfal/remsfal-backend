@@ -2,6 +2,7 @@ package de.remsfal.core.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -38,4 +39,5 @@ public interface CustomerModel extends UserModel {
 
     String getLocale();
 
+    List<String> getAdditionalEmails();
 }

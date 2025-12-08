@@ -2,8 +2,7 @@ package de.remsfal.service.entity.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -64,6 +63,10 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<AdditionalEmailEntity> additionalEmails = new HashSet<>();
+
 
     public String getTokenId() {
         return tokenId;
@@ -150,16 +153,24 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     @Override
-    public String getLocale() {return locale;}
+    public String getLocale() {
+        return locale;
+    }
 
-    public void setLocale(String locale) {this.locale = locale;}
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
 
     public Set<ProjectMembershipEntity> getMemberships() {
         return memberships;
     }
 
-    public void setMemberships(final Set<ProjectMembershipEntity> memberships) {
-        this.memberships = memberships;
+    public Set<AdditionalEmailEntity> getAdditionalEmailEntities() {
+        return additionalEmails;
+    }
+
+    public void setAdditionalEmailEntities(Set<AdditionalEmailEntity> additionalEmails) {
+        this.additionalEmails = additionalEmails;
     }
 
     @Override
@@ -170,6 +181,16 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Override
     public LocalDateTime getLastLoginDate() {
         return authenticatedAt;
+    }
+
+    @Override
+    public List<String> getAdditionalEmails() {
+        if (additionalEmails == null || additionalEmails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return additionalEmails.stream()
+                .map(AdditionalEmailEntity::getEmail)
+                .toList();
     }
 
     @Override
