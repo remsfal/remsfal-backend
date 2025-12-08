@@ -1,4 +1,4 @@
-package de.remsfal.service;
+package de.remsfal.test.architecture;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
@@ -92,3 +92,4 @@ public class ECBArchitectureTest {
         rule.check(importedClasses);
     }
 }
+
