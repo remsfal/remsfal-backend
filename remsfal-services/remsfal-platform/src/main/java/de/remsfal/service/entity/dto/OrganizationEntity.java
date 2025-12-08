@@ -4,9 +4,21 @@ import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
-import jakarta.persistence.*;
 
-import java.util.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Column;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.CascadeType;
+
+import java.util.UUID;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Objects;
 
 @Entity
 @Table(name = "organization")

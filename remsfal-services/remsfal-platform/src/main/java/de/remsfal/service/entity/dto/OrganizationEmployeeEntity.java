@@ -1,20 +1,34 @@
 package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.OrganizationEmployeeModel;
-import de.remsfal.core.model.OrganizationEmployeeModel.*;
-import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.service.entity.dto.embeddable.OrganizationEmployeeKey;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@NamedQuery(name = "OrganizationEmployeeEntity.findByUserId", query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.user.id = :userId")
-@NamedQuery(name = "OrganizationEmployeeEntity.findByOrganizationId", query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.organization.id = :organizationId")
-@NamedQuery(name = "OrganizationEmployeeEntity.findByOrganizationIdAndUserId", query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.organization.id = :organizationId AND o.user.id = :userId")
-@NamedQuery(name = "OrganizationEmployeeEntity.removeByOrganizationIdAndUserId", query = "DELETE FROM OrganizationEmployeeEntity o WHERE o.organization.id = :organizationId AND o.user.id = :userId")
+@NamedQuery(name = "OrganizationEmployeeEntity.findByUserId",
+    query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.user.id = :userId")
+@NamedQuery(name = "OrganizationEmployeeEntity.findByOrganizationId",
+    query = "SELECT o FROM OrganizationEmployeeEntity o WHERE o.organization.id = :organizationId")
+@NamedQuery(name = "OrganizationEmployeeEntity.findByOrganizationIdAndUserId",
+    query = "SELECT o FROM OrganizationEmployeeEntity o " +
+    "WHERE o.organization.id = :organizationId AND o.user.id = :userId")
+@NamedQuery(name = "OrganizationEmployeeEntity.removeByOrganizationIdAndUserId",
+    query = "DELETE FROM OrganizationEmployeeEntity o " +
+    "WHERE o.organization.id = :organizationId AND o.user.id = :userId")
 @Table(name = "organization_employees")
 public class OrganizationEmployeeEntity extends MetaDataEntity implements OrganizationEmployeeModel {
 
