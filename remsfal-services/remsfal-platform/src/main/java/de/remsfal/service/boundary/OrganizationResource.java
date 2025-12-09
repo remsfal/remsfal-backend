@@ -4,11 +4,14 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.api.OrganizationEndpoint;
 import de.remsfal.core.json.OrganizationJson;
 import de.remsfal.core.json.OrganizationListJson;
+import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.service.boundary.organization.EmployeeResource;
 import de.remsfal.service.boundary.organization.OrganizationSubResource;
 import de.remsfal.service.control.OrganizationController;
+import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -40,19 +43,17 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     @Inject
     RemsfalPrincipal principal;
 
-    //TODO: Implement permission checker
 
     @Override
     public OrganizationJson getOrganization(UUID organizationId) {
-        try {
-            return OrganizationJson.valueOf(controller.getOrganizationById(organizationId));
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Organization not found");
-        }
+        checkReadPermissions(organizationId);
+        return OrganizationJson.valueOf(controller.getOrganizationById(organizationId));
     }
 
-
-    //TODO: Implement permission checker
+    @Override
+    public OrganizationListJson getOrganizationsOfUser() {
+        return OrganizationListJson.valueOf(controller.getEmployeesByUser(principal));
+    }
 
     @Override
     public OrganizationListJson getOrganizations(Integer offset, Integer limit) {
@@ -62,7 +63,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
 
     @Override
     public Response createOrganization(OrganizationJson organization) {
-        OrganizationModel organizationModel = controller.createOrganization(organization);
+        OrganizationModel organizationModel = controller.createOrganization(organization, principal);
         URI location = uri.getAbsolutePathBuilder().path(organizationModel.getId().toString()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)
@@ -70,15 +71,11 @@ public class OrganizationResource extends OrganizationSubResource implements Org
                 .build();
     }
 
-    //TODO: Implement permission checker
-
     @Override
     public OrganizationJson updateOrganization(UUID organizationId, OrganizationJson organization) {
         checkWritePermissions(organizationId);
         return OrganizationJson.valueOf(controller.updateOrganization(principal, organizationId, organization));
     }
-
-    //TODO: Implement permission checker
 
     @Override
     public void deleteOrganization(UUID organizationId) {
