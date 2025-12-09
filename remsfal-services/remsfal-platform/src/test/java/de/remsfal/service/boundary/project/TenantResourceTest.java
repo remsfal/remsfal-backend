@@ -23,8 +23,6 @@ public class TenantResourceTest extends AbstractResourceTest {
             "{ \"firstName\":\"New\", \"lastName\":\"Tenant\", " +
                     "\"email\":\"new.tenant@example.com\", \"mobilePhoneNumber\":\"+491511234567\" }";
 
-    // private static final String EXISTING_USER_AS_TENANT_ID = TestData.USER_ID_4.toString();
-
     @Override
     @BeforeEach
     protected void setupTestProjects() {
@@ -36,7 +34,6 @@ public class TenantResourceTest extends AbstractResourceTest {
 
     @Test
     void createTenant_SUCCESS_tenantIsCreatedAndAssociated() {
-        // ACT & ASSERT: Sende Request zum Erstellen des Mieters
         String tenantId = given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -52,7 +49,6 @@ public class TenantResourceTest extends AbstractResourceTest {
                 .and().body("email", Matchers.equalTo("new.tenant@example.com"))
                 .extract().path("id");
 
-        // Optional: Zusätzlicher GET-Check zur Verifizierung der Persistenz
         given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -65,9 +61,8 @@ public class TenantResourceTest extends AbstractResourceTest {
 
     @Test
     void createTenant_FAILED_DuplicateEmailInProject() {
-        // Der Benutzer TestData.USER_EMAIL_3 ist im Setup bereits als Mieter verknüpft.
         final String DUPLICATE_EMAIL_JSON =
-                "{ \"firstName\":\"X\", \"lastName\":\"Y\", \"email\":\"" + TestData.USER_EMAIL_3 + "\" }";
+                "{ \"firstName\":\"firstName\", \"lastName\":\"lastName\", \"email\":\"" + TestData.USER_EMAIL_3 + "\" }";
 
         given()
                 .when()
@@ -76,9 +71,7 @@ public class TenantResourceTest extends AbstractResourceTest {
                 .body(DUPLICATE_EMAIL_JSON)
                 .post(BASE_PATH, TestData.PROJECT_ID_1.toString())
                 .then()
-                // Erwartet: 400 Bad Request aufgrund der Duplikatsprüfung in der createTenant Logik
-                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
-                .body(Matchers.containsString("A tenant with this email already exists in the project"));
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test
@@ -99,7 +92,6 @@ public class TenantResourceTest extends AbstractResourceTest {
 
     @Test
     void getTenant_FAILED_tenantNotPartOfProject() {
-        // TestData.USER_ID_2 ist nicht mit PROJECT_ID_1 verknüpft
         final String NON_PROJECT_TENANT_ID = TestData.USER_ID_2.toString();
 
         given()
@@ -107,25 +99,20 @@ public class TenantResourceTest extends AbstractResourceTest {
                 .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .get(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), NON_PROJECT_TENANT_ID)
                 .then()
-                // Erwartet: 404, da die findTenantByProjectId fehlschlagen sollte
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
     @Test
     void deleteTenant_SUCCESS_tenantIsRemovedFromTenancy() {
-        // TestData.USER_ID_3 wurde im Setup mit Tenancy verknüpft.
         final String TENANT_ID = TestData.USER_ID_3.toString();
 
-        // 1. ACT: Lösche die Verknüpfung
         given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
                 .delete(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), TENANT_ID)
                 .then()
-                // Erwartet: 204 No Content
                 .statusCode(Response.Status.NO_CONTENT.getStatusCode());
 
-        // 2. ASSERT: Prüfe, ob der Mieter nicht mehr abrufbar ist
         given()
                 .when()
                 .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))

@@ -56,8 +56,9 @@ public class TenantResource extends ProjectSubResource implements TenantEndpoint
     }
 
     @Override
-    public void deleteTenant(UUID projectId, UUID tenantId) {
+    public Response deleteTenant(UUID projectId, UUID tenantId) {
         checkWritePermissions(projectId);
         controller.deleteTenant(projectId, tenantId);
+        return Response.noContent().build();
     }
 }
