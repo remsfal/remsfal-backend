@@ -62,6 +62,10 @@ public class UserCleanupController {
         for (IssueEntity issue : issues) {
             issue.setRelatedTo(null);
             issueRepository.update(issue);
+            if (issue.getStatus() == Status.IN_PROGRESS || issue.getStatus() == Status.PENDING) {
+                issue.setStatus(Status.OPEN);
+                issueRepository.update(issue);
+            }
         }
         return issues.size();
     }
