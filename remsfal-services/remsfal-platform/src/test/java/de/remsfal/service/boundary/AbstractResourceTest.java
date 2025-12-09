@@ -168,6 +168,22 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
                 .executeUpdate());
     }
 
+    protected void insertTestTenancy(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO tenancies (id, project_id) VALUES (?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .executeUpdate());
+    }
+
+    protected void insertTenant(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO tenants (tenancy_id, user_id) VALUES (?,?)")
+                .setParameter(1, params[0])
+                .setParameter(2, params[1])
+                .executeUpdate());
+    }
+
     protected void insertRefreshToken(UUID userId, UUID tockenId) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO user_authentications (user_id, refresh_token_id) VALUES (?,?)")
