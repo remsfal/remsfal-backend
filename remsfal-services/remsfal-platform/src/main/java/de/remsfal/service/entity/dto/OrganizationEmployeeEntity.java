@@ -115,13 +115,4 @@ public class OrganizationEmployeeEntity extends MetaDataEntity implements Organi
                 Objects.equals(user, entity.user) &&
                 Objects.equals(role, entity.role);
     }
-
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("OrganizationEmployeeEntity: {");
-        sb.append("id=").append(getId()).append(", ");
-        sb.append("email=").append(getEmail()).append(", ");
-        sb.append("name=").append(getName()).append(", ");
-        sb.append("role=").append(getRole());
-        return sb.append("}").toString();
-    }
 }
