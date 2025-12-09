@@ -1,58 +1,47 @@
 package de.remsfal.test.architecture;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
-import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.junit.ArchTests;
 
-import jakarta.ws.rs.Path;
-
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
-
+/**
+ * Aggregates ArchUnit rules that enforce layer-specific naming conventions
+ * across different modules of the application.
+ * *
+ * This test class does not declare rules itself. Instead, it imports
+ * rule sets from module-specific classes that define how classes in
+ * certain layers (e.g. boundary, control, entity) have to be named.
+ * *
+ * Only production classes located under {@code de.remsfal} are analyzed.
+ * Test classes are explicitly excluded from the analysis.
+ */
 @AnalyzeClasses(
         packages = "de.remsfal",
         importOptions = {
-                com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests.class
+                ImportOption.DoNotIncludeTests.class
         }
 )
 class LayerNamingConventionsTests {
 
     /**
-     * Alle REST-Ressourcen im service- und notification-Modul heißen ...Resource.
+     * Executes layer naming convention rules defined for the platform/service module.
      */
     @ArchTest
-    static final ArchRule resources_should_be_named_Resource =
-            classes()
-                    .that().resideInAnyPackage(
-                            "de.remsfal.service.boundary..",
-                            "de.remsfal.notification.boundary.."
-                    )
-                    .and().areTopLevelClasses()
-                    .and().areAnnotatedWith(Path.class)
-                    .should().haveSimpleNameEndingWith("Resource");
+    static final ArchTests SERVICE_NAMING_RULES =
+            ArchTests.in(de.remsfal.test.plattform.architecture.PlattformLayerNamingRules.class);
 
     /**
-     * Alle JPA-Entities im service-Modul liegen unter dto.superclass
-     * und heißen ...Entity.
+     * Executes layer naming convention rules defined for the ticketing module.
      */
     @ArchTest
-    static final ArchRule entities_should_be_named_Entity =
-            classes()
-                    .that().resideInAnyPackage(
-                            "de.remsfal.service.entity.dto.superclass.."
-                    )
-                    .and().areTopLevelClasses()
-                    .should().haveSimpleNameEndingWith("Entity");
+    static final ArchTests TICKETING_NAMING_RULES =
+            ArchTests.in(de.remsfal.test.ticketing.architecture.TicketingLayerNamingRules.class);
 
     /**
-     * Alle Repositories im service-Modul liegen unter entity.dao
-     * und heißen ...Repository.
+     * Executes layer naming convention rules defined for the notification module.
      */
     @ArchTest
-    static final ArchRule repositories_should_be_named_Repository =
-            classes()
-                    .that().resideInAnyPackage(
-                            "de.remsfal.service.entity.dao.."
-                    )
-                    .and().areTopLevelClasses()
-                    .should().haveSimpleNameEndingWith("Repository");
+    static final ArchTests NOTIFICATION_NAMING_RULES =
+            ArchTests.in(de.remsfal.test.notification.architecture.NotificationLayerNamingRules.class);
 }

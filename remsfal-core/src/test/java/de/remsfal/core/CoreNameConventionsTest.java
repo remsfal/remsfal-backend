@@ -7,12 +7,27 @@ import com.tngtech.archunit.lang.ArchRule;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
+/**
+ * Enforces naming and structural conventions for the core module.
+ * *
+ * The core module represents stable, implementation-independent
+ * contracts and models that are shared across multiple modules.
+ * *
+ * These rules ensure that naming conventions and package responsibilities
+ * are consistently applied.
+ */
 @AnalyzeClasses(
         packages = "de.remsfal.core",
         importOptions = ImportOption.DoNotIncludeTests.class
 )
 public class CoreNameConventionsTest {
 
+    /**
+     * Ensures that JSON representation classes are named consistently.
+     * *
+     * All top-level classes located in {@code de.remsfal.core.json..}
+     * must have a simple class name ending with {@code Json}.
+     */
     @ArchTest
     static final ArchRule json_classes_should_end_with_Json =
             classes()
@@ -20,6 +35,12 @@ public class CoreNameConventionsTest {
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Json");
 
+    /**
+     * Ensures that API contract interfaces are named consistently.
+     * *
+     * All interfaces located in {@code de.remsfal.core.api..}
+     * must have a simple name ending with {@code Endpoint}.
+     */
     @ArchTest
     static final ArchRule api_interfaces_should_end_with_Endpoint =
             classes()
@@ -27,6 +48,12 @@ public class CoreNameConventionsTest {
                     .and().areInterfaces()
                     .should().haveSimpleNameEndingWith("Endpoint");
 
+    /**
+     * Ensures that model interfaces follow a consistent naming convention.
+     * *
+     * All interfaces located in {@code de.remsfal.core.model..}
+     * must have a simple name ending with {@code Model}.
+     */
     @ArchTest
     static final ArchRule model_interfaces_should_end_with_Model =
             classes()
@@ -34,6 +61,12 @@ public class CoreNameConventionsTest {
                     .and().areInterfaces()
                     .should().haveSimpleNameEndingWith("Model");
 
+    /**
+     * Ensures that the core model package contains only interfaces.
+     * *
+     * This prevents concrete implementations from leaking into
+     * the core module and keeps the model purely abstract.
+     */
     @ArchTest
     static final ArchRule model_package_should_only_contain_interfaces =
             classes()
