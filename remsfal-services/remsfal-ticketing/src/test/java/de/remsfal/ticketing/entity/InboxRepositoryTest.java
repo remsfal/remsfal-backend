@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-class InboxMessageRepositoryTest {
+class InboxRepositoryTest {
 
     @Inject
     InboxMessageRepository repository;
@@ -30,11 +30,17 @@ class InboxMessageRepositoryTest {
     void setup() throws Exception {
         sessionMock = mock(CqlSession.class);
 
-        Field sessionField = repository.getClass().getSuperclass().getDeclaredField("cqlSession");
+        Class<?> proxyClass = repository.getClass();
+
+        Class<?> inboxRepoClass = proxyClass.getSuperclass();
+
+        Class<?> abstractRepoClass = inboxRepoClass.getSuperclass();
+
+        Field sessionField = abstractRepoClass.getDeclaredField("cqlSession");
         sessionField.setAccessible(true);
         sessionField.set(repository, sessionMock);
 
-        Field keyspaceField = repository.getClass().getDeclaredField("keyspace");
+        Field keyspaceField = inboxRepoClass.getDeclaredField("keyspace");
         keyspaceField.setAccessible(true);
         keyspaceField.set(repository, "testspace");
     }
