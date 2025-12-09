@@ -25,7 +25,13 @@
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
         </dependency>
-
+        <!-- TEST dependencies -->
+        <dependency>
+            <groupId>de.remsfal</groupId>
+            <artifactId>remsfal-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
