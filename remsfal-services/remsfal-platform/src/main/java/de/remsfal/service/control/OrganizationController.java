@@ -188,7 +188,7 @@ public class OrganizationController {
     }
 
     @Transactional
-    public boolean removeEmployee(final UUID organizationId, final UUID employeeId) {
-        return organizationRepository.deleteOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId);
+    public void removeEmployee(final UUID organizationId, final UUID employeeId) {
+        organizationRepository.deleteOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId);
     }
 }
