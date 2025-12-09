@@ -45,7 +45,7 @@ public class TenantController {
 
         List<UserEntity> existingTenants = tenantRepository.findTenantsByProjectId(projectId);
         boolean duplicate = existingTenants.stream()
-                .anyMatch(t -> t.getEmail().equalsIgnoreCase(tenantJson.getEmail()));
+            .anyMatch(t -> t.getEmail().equalsIgnoreCase(tenantJson.getEmail()));
         if (duplicate) {
             throw new BadRequestException("A tenant with this email already exists in the project");
         }
@@ -72,7 +72,7 @@ public class TenantController {
 
     public CustomerModel getTenant(final UUID projectId, final UUID tenantId) {
         logger.infov("Retrieving a tenant (projectId={0}, tenantId={1})",
-                projectId, tenantId);
+            projectId, tenantId);
         return tenantRepository.findTenantByProjectId (projectId, tenantId)
                 .orElseThrow(() -> new NotFoundException("Tenant not found"));
     }
@@ -82,7 +82,7 @@ public class TenantController {
         logger.infov("Updating tenant (projectId={0}, tenantId={1})", projectId, tenantId);
 
         UserEntity entity = tenantRepository.findTenantByProjectId(projectId, tenantId)
-                .orElseThrow(() -> new NotFoundException("Tenant not found"));
+            .orElseThrow(() -> new NotFoundException("Tenant not found"));
 
         updateTenant(tenantJson, entity);
 
@@ -103,10 +103,10 @@ public class TenantController {
     @Transactional
     public void deleteTenant(final UUID projectId, final UUID tenantIdToRemove) {
         TenancyEntity tenancy = tenancyRepository.findTenancyByProjectId(projectId)
-                .orElseThrow(() -> new NotFoundException("Tenancy not found for project"));
+            .orElseThrow(() -> new NotFoundException("Tenancy not found for project"));
 
         boolean removed = tenancy.getTenants()
-                .removeIf(tenant -> tenant.getId().equals(tenantIdToRemove));
+            .removeIf(tenant -> tenant.getId().equals(tenantIdToRemove));
 
         if (!removed) {
             throw new NotFoundException("Tenant not found in this tenancy.");

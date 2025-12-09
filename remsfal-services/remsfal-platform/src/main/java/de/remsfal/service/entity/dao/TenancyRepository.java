@@ -1,6 +1,5 @@
 package de.remsfal.service.entity.dao;
 
-import com.sun.tools.xjc.reader.xmlschema.bindinfo.OptionalPropertyMode;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;

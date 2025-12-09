@@ -29,9 +29,6 @@ public class TenantControllerTest extends AbstractServiceTest {
     @Inject
     TenancyRepository tenancyRepository;
 
-    // --- Testdaten ---
-    private static final UUID TEST_TENANCY_ID = UUID.randomUUID();
-
     @BeforeEach
     void setupTestData() {
         // 1. Projekt erstellen (Kontext für die Tenancy)
