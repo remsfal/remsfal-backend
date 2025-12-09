@@ -133,13 +133,12 @@ public class UserController {
     private void syncAdditionalEmails(final UserEntity user, final List<String> newEmailsRaw) {
 
         List<String> newEmails = newEmailsRaw.stream()
-           .filter(s -> !s.isEmpty())
-           .map(String::toLowerCase)
-           .distinct()
-           .toList();
+            .filter(s -> !s.isEmpty())
+            .map(String::toLowerCase)
+            .distinct()
+            .toList();
 
-        List<AdditionalEmailEntity> currentEmails =
-                additionalEmailRepository.findByUserId(user.getId());
+        List<AdditionalEmailEntity> currentEmails = additionalEmailRepository.findByUserId(user.getId());
 
         for (AdditionalEmailEntity ae : currentEmails) {
             final String email = ae.getEmail();
@@ -168,9 +167,7 @@ public class UserController {
             }
         }
 
-        user.setAdditionalEmails(
-             new HashSet<>(additionalEmailRepository.findByUserId(user.getId()))
-        );
+        user.setAdditionalEmails(new HashSet<>(additionalEmailRepository.findByUserId(user.getId())));
     }
 
 

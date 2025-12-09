@@ -100,9 +100,9 @@ public abstract class UserJson implements CustomerModel {
     @Nullable
     @Override
     public abstract List<
-       @Email
-       @Size(max = 255, message = "Each email cannot be longer than 255 characters")
-       String> getAdditionalEmails();
+        @Email
+        @Size(max = 255, message = "Each email cannot be longer than 255 characters")
+        String> getAdditionalEmails();
 
     @Nullable
     @Null
