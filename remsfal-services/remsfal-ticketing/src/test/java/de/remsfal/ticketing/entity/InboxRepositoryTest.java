@@ -30,14 +30,15 @@ class InboxMessageRepositoryTest {
     void setup() throws Exception {
         sessionMock = mock(CqlSession.class);
 
-        Field sessionField = InboxMessageRepository.class.getDeclaredField("cqlSession");
+        Field sessionField = repository.getClass().getSuperclass().getDeclaredField("cqlSession");
         sessionField.setAccessible(true);
         sessionField.set(repository, sessionMock);
 
-        Field keyspaceField = InboxMessageRepository.class.getDeclaredField("keyspace");
+        Field keyspaceField = repository.getClass().getDeclaredField("keyspace");
         keyspaceField.setAccessible(true);
         keyspaceField.set(repository, "testspace");
     }
+
 
     @Test
     void testUpdateReadStatus_shouldExecuteStatement() {
