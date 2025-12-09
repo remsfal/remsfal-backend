@@ -66,7 +66,7 @@ public class TenantController {
         logger.infov("Retrieving tenants for project {0}", projectId);
         List<UserEntity> entities = tenantRepository.findTenantsByProjectId(projectId);
         return entities.stream()
-                .map(entity -> (CustomerModel) entity)
+                .map(CustomerModel.class::cast)
                 .collect(Collectors.toList());
     }
 
