@@ -146,6 +146,8 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
         insertOrganization(TestData.ORGANIZATION_ID_3, TestData.ORGANIZATION_NAME_3, TestData.ORGANIZATION_PHONE_3,
                 TestData.ORGANIZATION_EMAIL_3, TestData.ORGANIZATION_TRADE_3, TestData.ADDRESS_ID_2);
         insertEmployee(TestData.ORGANIZATION_ID_3, TestData.USER_ID_1, "OWNER");
+        insertEmployee(TestData.ORGANIZATION_ID_3, TestData.USER_ID_2, "MANAGER");
+        insertEmployee(TestData.ORGANIZATION_ID_3, TestData.USER_ID_3, "STAFF");
     }
 
     protected void setupAllTestData() {

@@ -3,9 +3,11 @@ package de.remsfal.service.boundary;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +25,13 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     @BeforeEach
     protected void setupTestUsers() {
         super.setupTestUsers();
+        super.setupTestOrganizations();
+    }
+
+    @AfterEach
+    @Transactional
+    protected void cleanupTestData() {
+        entityManager.createNativeQuery("DELETE FROM organization").executeUpdate();
     }
 
     @Test
@@ -167,77 +176,72 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateProject_SUCCESS_changedTitle() {
-        final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
+    void updateOrganization_SUCCESS_changedName() {
+        final String json_updated = "{\"id\":\"" + TestData.ORGANIZATION_ID + "\",\n" +
+                "\"name\": \"" + "New Name" + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\"\n" +
                 "}";
 
-        final String organizationId = given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(json)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(Response.Status.CREATED.getStatusCode())
-            .extract().path("id");
-
-        final String json_updated = "{\"id\": \"" + organizationId + "\",\n" +
-                "  \"name\": \"" + TestData.ORGANIZATION_NAME_2 + "\",\n" +
-                "  \"phone\": \"" + TestData.ORGANIZATION_PHONE_2 + "\",\n" +
-                "  \"email\": \"" + TestData.ORGANIZATION_EMAIL_2 + "\",\n" +
-                "  \"trade\": \"" + TestData.ORGANIZATION_TRADE_2 + "\"\n" +
-                "}";
-
         given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(json_updated)
-            .patch(BASE_PATH + "/" + organizationId)
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(organizationId))
-            .and().body("name", Matchers.equalTo(TestData.ORGANIZATION_NAME_2))
-            .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE_2))
-            .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL_2))
-            .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE_2));
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json_updated)
+                .patch(BASE_PATH + "/" + TestData.ORGANIZATION_ID)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()))
+                .and().body("name", Matchers.equalTo("New Name"))
+                .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE))
+                .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
+                .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE));
     }
 
     @Test
     void deleteProject_SUCCESS_singleProject() {
-        final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
-                "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
-                "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
-                "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\"\n" +
-                "}";
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(BASE_PATH + "/" + TestData.ORGANIZATION_ID)
+            .then()
+            .statusCode(Response.Status.NO_CONTENT.getStatusCode());
 
-        final String organizationId = given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(json)
-                .post(BASE_PATH)
-                .then()
-                .statusCode(Response.Status.CREATED.getStatusCode())
-                .extract().path("id");
+        long entities = entityManager
+                .createQuery("SELECT count(organization) FROM OrganizationEntity organization where organization.id = :id", Long.class)
+                .setParameter("id", TestData.ORGANIZATION_ID)
+                .getSingleResult();
+        assertEquals(0, entities);
+    }
+
+    @Test
+    void updatedOrganization_FAILED_noPermission() {
+        final String json = "{\"id\": \"" + TestData.ORGANIZATION_ID_3 + "\",\n" +
+            "  \"name\": \"" + "New Name" + "\",\n" +
+            "  \"phone\": \"" + TestData.ORGANIZATION_PHONE_3 + "\",\n" +
+            "  \"email\": \"" + TestData.ORGANIZATION_EMAIL_3 + "\",\n" +
+            "  \"trade\": \"" + TestData.ORGANIZATION_TRADE_3 + "\"\n" +
+            "}";
 
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .delete(BASE_PATH + "/" + organizationId)
-                .then()
-                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3)
+            .then()
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
 
-        long enties = entityManager
-                .createQuery("SELECT count(organization) FROM OrganizationEntity organization where organization.id = :id", Long.class)
-                .setParameter("id", UUID.fromString(organizationId))
-                .getSingleResult();
-        assertEquals(0, enties);
+    @Test
+    void deleteOrganization_FAILED_noPermission() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .delete(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3)
+            .then()
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 }
