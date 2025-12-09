@@ -3,13 +3,35 @@
 {#include base}
   {#title}{issue-assigned_title}{/title}
   {#introduction}
-    {issue-assigned_introduction}
-    <br><br>
-    <strong>{issue_id_label}:</strong> {issueId}<br>
-    <strong>{issue_title_label}:</strong> {issueTitle}<br>
-    <strong>{issue_type_label}:</strong> {issueType}<br>
-    <strong>{issue_status_label}:</strong> {status}<br>
-    <strong>{issue_owner_label}:</strong> {ownerName} ({ownerEmail})<br>
-    <strong>{issue_actor_label}:</strong> {actorName} ({actorEmail})
+    <div style="margin-bottom: 12px;">{issue-assigned_introduction}</div>
+
+    <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: collapse; width: 100%; max-width: 520px; background-color: #f7f8f9; border: 1px solid #e5e7ea; border-radius: 8px;">
+      <tbody>
+        <tr>
+          <td style="padding: 10px 12px; font-weight: bold;">{issue_id_label}</td>
+          <td style="padding: 10px 12px; word-break: break-all;">{issueId}</td>
+        </tr>
+        <tr style="background-color: #ffffff;">
+          <td style="padding: 10px 12px; font-weight: bold;">{issue_title_label}</td>
+          <td style="padding: 10px 12px;">{issueTitle}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 12px; font-weight: bold;">{issue_type_label}</td>
+          <td style="padding: 10px 12px;">{issueType}</td>
+        </tr>
+        <tr style="background-color: #ffffff;">
+          <td style="padding: 10px 12px; font-weight: bold;">{issue_status_label}</td>
+          <td style="padding: 10px 12px;">{status}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 12px; font-weight: bold;">{issue_owner_label}</td>
+          <td style="padding: 10px 12px;">{ownerName} ({ownerEmail})</td>
+        </tr>
+        <tr style="background-color: #ffffff;">
+          <td style="padding: 10px 12px; font-weight: bold;">{issue_actor_label}</td>
+          <td style="padding: 10px 12px;">{actorName} ({actorEmail})</td>
+        </tr>
+      </tbody>
+    </table>
   {/introduction}
 {/include}
