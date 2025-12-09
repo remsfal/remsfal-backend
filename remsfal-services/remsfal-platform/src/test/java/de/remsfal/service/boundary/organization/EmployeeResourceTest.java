@@ -28,7 +28,7 @@ public class EmployeeResourceTest extends AbstractResourceTest {
 
     @AfterEach
     @Transactional
-    protected void cleanupTestDate() {
+    protected void cleanupTestData() {
         entityManager.createNativeQuery("DELETE FROM organization").executeUpdate();
     }
 
