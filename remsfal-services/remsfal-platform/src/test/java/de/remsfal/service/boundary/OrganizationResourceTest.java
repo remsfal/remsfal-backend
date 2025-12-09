@@ -35,6 +35,16 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void getOrganization_FAILED_notFound() {
+        given()
+            .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/" + UUID.randomUUID())
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
     void getOrganizations_FAILED_noAuthentication() {
         given()
             .when()
@@ -75,14 +85,14 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .extract().path("id");
 
         long entities = entityManager
-                .createQuery("SELECT count(organization) FROM OrganizationEntity organization where organization.id = :organizationId", Long.class)
+                .createQuery("SELECT count(organization) FROM OrganizationEntity organization WHERE organization.id = :organizationId", Long.class)
                 .setParameter("organizationId", UUID.fromString(organizationId))
                 .getSingleResult();
         assertEquals(1, entities);
     }
 
     @Test
-    void createProject_FAILED_idIsProvided() {
+    void createOrganization_FAILED_idIsProvided() {
         final String json = "{ \"id\": " + TestData.ORGANIZATION_ID + ",\n" +
                 "  \"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
@@ -101,7 +111,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createProject_FAILED_noAuthentication() {
+    void createOrganization_FAILED_noAuthentication() {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
@@ -118,7 +128,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createProject_FAILED_noTitle() {
+    void createOrganization_FAILED_noName() {
         final String json = "{\"name\": \" \",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
@@ -136,7 +146,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getProject_SUCCESS_sameProjectIsReturned() {
+    void getOrganization_SUCCESS_sameOrganizationIsReturned() {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
@@ -176,12 +186,54 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void getAllOrganizations_SUCCESS_organizationListIsReturned() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("organizations.size()", Matchers.equalTo(3))
+            .and().body("total", Matchers.equalTo(3));
+    }
+
+    @Test
+    void getOrganizationsOfUser_SUCCESS_organizationListIsReturned() {
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/my")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("organizations.size()", Matchers.equalTo(3))
+                .and().body("total", Matchers.equalTo(3));
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/my")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("organizations.size()", Matchers.equalTo(1))
+                .and().body("total", Matchers.equalTo(1));
+    }
+
+    @Test
     void updateOrganization_SUCCESS_changedName() {
         final String json_updated = "{\"id\":\"" + TestData.ORGANIZATION_ID + "\",\n" +
                 "\"name\": \"" + "New Name" + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
-                "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\"\n" +
+                "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\",\n" +
+                " \"address\": { " +
+                    "\"street\":\"" + TestData.ADDRESS_STREET + "\",\n" +
+                    "\"city\":\"" + TestData.ADDRESS_CITY + "\",\n" +
+                    "\"province\":\"" + TestData.ADDRESS_PROVINCE + "\",\n" +
+                    "\"zip\":\"" + TestData.ADDRESS_ZIP + "\",\n" +
+                    "\"countryCode\":\"" + TestData.ADDRESS_COUNTRY + "\"}" +
                 "}";
 
         given()
@@ -201,7 +253,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void deleteProject_SUCCESS_singleProject() {
+    void deleteOrganization_SUCCESS_singleOrganization() {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -214,6 +266,16 @@ public class OrganizationResourceTest extends AbstractResourceTest {
                 .setParameter("id", TestData.ORGANIZATION_ID)
                 .getSingleResult();
         assertEquals(0, entities);
+    }
+
+    @Test
+    void deleteOrganization_FAILED_notFound() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .delete(BASE_PATH + "/" + UUID.randomUUID())
+            .then()
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
