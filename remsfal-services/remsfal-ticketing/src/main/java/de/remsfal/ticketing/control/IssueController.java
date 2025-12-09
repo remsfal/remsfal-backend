@@ -32,6 +32,8 @@ public class IssueController {
     @Inject
     IssueRepository repository;
 
+    private static final String ISSUE_NOT_FOUND = "Issue not found";
+
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
         return createIssue(user, issue, Status.OPEN);
     }
@@ -51,12 +53,12 @@ public class IssueController {
 
         //Überprüfung ob schon relationen bei der Erstellung mit angelegt werden
         boolean hasRelations = java.util.stream.Stream.of(
-                issue.getBlocks(),
-                issue.getBlockedBy(),
-                issue.getRelatedTo(),
-                issue.getDuplicateOf(),
-                issue.getParentOf(),
-                issue.getChildOf()
+            issue.getBlocks(),
+            issue.getBlockedBy(),
+            issue.getRelatedTo(),
+            issue.getDuplicateOf(),
+            issue.getParentOf(),
+            issue.getChildOf()
         ).anyMatch(set -> set != null && !set.isEmpty());
 
         if (hasRelations) {
@@ -69,7 +71,7 @@ public class IssueController {
     public IssueEntity getIssue(final UUID issueId) {
         logger.infov("Retrieving issue (issueId={0})", issueId);
         return repository.findByIssueId(issueId)
-            .orElseThrow(() -> new NotFoundException("Issue not found"));
+            .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
     public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
@@ -88,7 +90,7 @@ public class IssueController {
     public IssueModel updateIssue(final IssueKey key, final IssueModel issue) {
         logger.infov("Updating issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
         final IssueEntity entity = repository.find(key)
-            .orElseThrow(() -> new NotFoundException("Issue not found"));
+            .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         if (issue.getTitle() != null) {
             entity.setTitle(issue.getTitle());
@@ -112,7 +114,7 @@ public class IssueController {
     public void deleteIssue(final IssueKey key) {
         logger.infov("Deleting issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
         IssueEntity entity = repository.find(key)
-            .orElseThrow(() -> new NotFoundException("Issue not found"));
+            .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         // 1. alle Referenzen auf dieses Issue bereinigen
         removeRelationsForIssue(entity);
@@ -135,62 +137,62 @@ public class IssueController {
     private void updateRelations(IssueEntity entity, IssueModel patch) {
         // blocks -> target.blockedBy
         addRelation(
-                entity,
-                patch.getBlocks(),
-                IssueEntity::getBlocks,
-                IssueEntity::setBlocks,
-                IssueEntity::getBlockedBy,
-                IssueEntity::setBlockedBy
+            entity,
+            patch.getBlocks(),
+            IssueEntity::getBlocks,
+            IssueEntity::setBlocks,
+            IssueEntity::getBlockedBy,
+            IssueEntity::setBlockedBy
         );
 
         // blockedBy -> target.blocks
         addRelation(
-                entity,
-                patch.getBlockedBy(),
-                IssueEntity::getBlockedBy,
-                IssueEntity::setBlockedBy,
-                IssueEntity::getBlocks,
-                IssueEntity::setBlocks
+            entity,
+            patch.getBlockedBy(),
+            IssueEntity::getBlockedBy,
+            IssueEntity::setBlockedBy,
+            IssueEntity::getBlocks,
+            IssueEntity::setBlocks
         );
 
         // relatedTo (symmetrisch)
         addRelation(
-                entity,
-                patch.getRelatedTo(),
-                IssueEntity::getRelatedTo,
-                IssueEntity::setRelatedTo,
-                IssueEntity::getRelatedTo,
-                IssueEntity::setRelatedTo
+            entity,
+            patch.getRelatedTo(),
+            IssueEntity::getRelatedTo,
+            IssueEntity::setRelatedTo,
+            IssueEntity::getRelatedTo,
+            IssueEntity::setRelatedTo
         );
 
         // duplicateOf (symmetrisch)
         addRelation(
-                entity,
-                patch.getDuplicateOf(),
-                IssueEntity::getDuplicateOf,
-                IssueEntity::setDuplicateOf,
-                IssueEntity::getDuplicateOf,
-                IssueEntity::setDuplicateOf
+            entity,
+            patch.getDuplicateOf(),
+            IssueEntity::getDuplicateOf,
+            IssueEntity::setDuplicateOf,
+            IssueEntity::getDuplicateOf,
+            IssueEntity::setDuplicateOf
         );
 
         // parentOf -> child.childOf
         addRelation(
-                entity,
-                patch.getParentOf(),
-                IssueEntity::getParentOf,
-                IssueEntity::setParentOf,
-                IssueEntity::getChildOf,
-                IssueEntity::setChildOf
+            entity,
+            patch.getParentOf(),
+            IssueEntity::getParentOf,
+            IssueEntity::setParentOf,
+            IssueEntity::getChildOf,
+            IssueEntity::setChildOf
         );
 
         // childOf -> parent.parentOf
         addRelation(
-                entity,
-                patch.getChildOf(),
-                IssueEntity::getChildOf,
-                IssueEntity::setChildOf,
-                IssueEntity::getParentOf,
-                IssueEntity::setParentOf
+            entity,
+            patch.getChildOf(),
+            IssueEntity::getChildOf,
+            IssueEntity::setChildOf,
+            IssueEntity::getParentOf,
+            IssueEntity::setParentOf
         );
     }
 
@@ -204,49 +206,49 @@ public class IssueController {
             case "blocks" -> {
                 // source.blocks – target.blockedBy
                 removeSingleRelation(
-                        source, target, relatedId,
-                        IssueEntity::getBlocks, IssueEntity::setBlocks,
-                        IssueEntity::getBlockedBy, IssueEntity::setBlockedBy
+                    source, target, relatedId,
+                    IssueEntity::getBlocks, IssueEntity::setBlocks,
+                    IssueEntity::getBlockedBy, IssueEntity::setBlockedBy
                 );
             }
             case "blocked_by" -> {
                 // source.blockedBy – target.blocks
                 removeSingleRelation(
-                        source, target, relatedId,
-                        IssueEntity::getBlockedBy, IssueEntity::setBlockedBy,
-                        IssueEntity::getBlocks, IssueEntity::setBlocks
+                    source, target, relatedId,
+                    IssueEntity::getBlockedBy, IssueEntity::setBlockedBy,
+                    IssueEntity::getBlocks, IssueEntity::setBlocks
                 );
             }
             case "related_to" -> {
                 // symmetrisch
                 removeSingleRelation(
-                        source, target, relatedId,
-                        IssueEntity::getRelatedTo, IssueEntity::setRelatedTo,
-                        IssueEntity::getRelatedTo, IssueEntity::setRelatedTo
+                    source, target, relatedId,
+                    IssueEntity::getRelatedTo, IssueEntity::setRelatedTo,
+                    IssueEntity::getRelatedTo, IssueEntity::setRelatedTo
                 );
             }
             case "duplicate_of" -> {
                 // symmetrisch
                 removeSingleRelation(
-                        source, target, relatedId,
-                        IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf,
-                        IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf
+                    source, target, relatedId,
+                    IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf,
+                    IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf
                 );
             }
             case "parent_of" -> {
                 // source.parentOf – target.childOf
                 removeSingleRelation(
-                        source, target, relatedId,
-                        IssueEntity::getParentOf, IssueEntity::setParentOf,
-                        IssueEntity::getChildOf, IssueEntity::setChildOf
+                    source, target, relatedId,
+                    IssueEntity::getParentOf, IssueEntity::setParentOf,
+                    IssueEntity::getChildOf, IssueEntity::setChildOf
                 );
             }
             case "child_of" -> {
                 // source.childOf – target.parentOf
                 removeSingleRelation(
-                        source, target, relatedId,
-                        IssueEntity::getChildOf, IssueEntity::setChildOf,
-                        IssueEntity::getParentOf, IssueEntity::setParentOf
+                    source, target, relatedId,
+                    IssueEntity::getChildOf, IssueEntity::setChildOf,
+                    IssueEntity::getParentOf, IssueEntity::setParentOf
                 );
             }
             default -> throw new BadRequestException("Missing or wrong Relation type");
@@ -261,44 +263,44 @@ public class IssueController {
     private void removeRelationsForIssue(IssueEntity entity) {
         // blocks: dieses Issue blockt andere → aus deren blockedBy entfernen
         removeAllRelationsOfType(
-                entity,
-                IssueEntity::getBlocks, IssueEntity::setBlocks,
-                IssueEntity::getBlockedBy, IssueEntity::setBlockedBy
+            entity,
+            IssueEntity::getBlocks, IssueEntity::setBlocks,
+            IssueEntity::getBlockedBy, IssueEntity::setBlockedBy
         );
 
         // blockedBy: dieses Issue wird von anderen geblockt → aus deren blocks entfernen
         removeAllRelationsOfType(
-                entity,
-                IssueEntity::getBlockedBy, IssueEntity::setBlockedBy,
-                IssueEntity::getBlocks, IssueEntity::setBlocks
+            entity,
+            IssueEntity::getBlockedBy, IssueEntity::setBlockedBy,
+            IssueEntity::getBlocks, IssueEntity::setBlocks
         );
 
         // relatedTo: symmetrisch
         removeAllRelationsOfType(
-                entity,
-                IssueEntity::getRelatedTo, IssueEntity::setRelatedTo,
-                IssueEntity::getRelatedTo, IssueEntity::setRelatedTo
+            entity,
+            IssueEntity::getRelatedTo, IssueEntity::setRelatedTo,
+            IssueEntity::getRelatedTo, IssueEntity::setRelatedTo
         );
 
         // duplicateOf: symmetrisch
         removeAllRelationsOfType(
-                entity,
-                IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf,
-                IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf
+            entity,
+            IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf,
+            IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf
         );
 
         // parentOf: dieses Issue ist Parent → aus child.childOf entfernen
         removeAllRelationsOfType(
-                entity,
-                IssueEntity::getParentOf, IssueEntity::setParentOf,
-                IssueEntity::getChildOf, IssueEntity::setChildOf
+            entity,
+            IssueEntity::getParentOf, IssueEntity::setParentOf,
+            IssueEntity::getChildOf, IssueEntity::setChildOf
         );
 
         // childOf: dieses Issue ist Child → aus parent.parentOf entfernen
         removeAllRelationsOfType(
-                entity,
-                IssueEntity::getChildOf, IssueEntity::setChildOf,
-                IssueEntity::getParentOf, IssueEntity::setParentOf
+            entity,
+            IssueEntity::getChildOf, IssueEntity::setChildOf,
+            IssueEntity::getParentOf, IssueEntity::setParentOf
         );
     }
 
@@ -307,9 +309,9 @@ public class IssueController {
 
     // Stellt sicher, dass ein Set existiert und am Entity gesetzt ist
     private Set<UUID> getOrCreate(
-            IssueEntity entity,
-            Function<IssueEntity, Set<UUID>> getter,
-            BiConsumer<IssueEntity, Set<UUID>> setter) {
+        IssueEntity entity,
+        Function<IssueEntity, Set<UUID>> getter,
+        BiConsumer<IssueEntity, Set<UUID>> setter) {
 
         Set<UUID> set = getter.apply(entity);
         if (set == null) {
@@ -330,12 +332,12 @@ public class IssueController {
      * @param targetSetter Setter für das gespiegelte Set auf der Gegenseite
      */
     private void addRelation(
-            IssueEntity source,
-            Set<UUID> newTargets,
-            Function<IssueEntity, Set<UUID>> sourceGetter,
-            BiConsumer<IssueEntity, Set<UUID>> sourceSetter,
-            Function<IssueEntity, Set<UUID>> targetGetter,
-            BiConsumer<IssueEntity, Set<UUID>> targetSetter) {
+        IssueEntity source,
+        Set<UUID> newTargets,
+        Function<IssueEntity, Set<UUID>> sourceGetter,
+        BiConsumer<IssueEntity, Set<UUID>> sourceSetter,
+        Function<IssueEntity, Set<UUID>> targetGetter,
+        BiConsumer<IssueEntity, Set<UUID>> targetSetter) {
 
         if (newTargets == null || newTargets.isEmpty()) {
             return;
@@ -368,13 +370,13 @@ public class IssueController {
      * (auf beiden Seiten).
      */
     private void removeSingleRelation(
-            IssueEntity source,
-            IssueEntity target,
-            UUID relatedId,
-            Function<IssueEntity, Set<UUID>> sourceGetter,
-            BiConsumer<IssueEntity, Set<UUID>> sourceSetter,
-            Function<IssueEntity, Set<UUID>> targetGetter,
-            BiConsumer<IssueEntity, Set<UUID>> targetSetter) {
+        IssueEntity source,
+        IssueEntity target,
+        UUID relatedId,
+        Function<IssueEntity, Set<UUID>> sourceGetter,
+        BiConsumer<IssueEntity, Set<UUID>> sourceSetter,
+        Function<IssueEntity, Set<UUID>> targetGetter,
+        BiConsumer<IssueEntity, Set<UUID>> targetSetter) {
 
         UUID sourceId = source.getId();
 
@@ -393,11 +395,11 @@ public class IssueController {
     }
 
     private void removeAllRelationsOfType(
-            IssueEntity entity,
-            Function<IssueEntity, Set<UUID>> sourceGetter,
-            BiConsumer<IssueEntity, Set<UUID>> sourceSetter,
-            Function<IssueEntity, Set<UUID>> targetGetter,
-            BiConsumer<IssueEntity, Set<UUID>> targetSetter) {
+        IssueEntity entity,
+        Function<IssueEntity, Set<UUID>> sourceGetter,
+        BiConsumer<IssueEntity, Set<UUID>> sourceSetter,
+        Function<IssueEntity, Set<UUID>> targetGetter,
+        BiConsumer<IssueEntity, Set<UUID>> targetSetter) {
 
         Set<UUID> ids = sourceGetter.apply(entity);
         if (ids == null || ids.isEmpty()) {
@@ -410,9 +412,9 @@ public class IssueController {
             IssueEntity other = getIssue(otherId);
 
             removeSingleRelation(
-                    entity, other, otherId,
-                    sourceGetter, sourceSetter,
-                    targetGetter, targetSetter
+                entity, other, otherId,
+                sourceGetter, sourceSetter,
+                targetGetter, targetSetter
             );
         }
     }
