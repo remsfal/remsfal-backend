@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.5-requests-for-quotation" author="github.copilot@microsoft.com">
+        <comment>Create requests_for_quotation table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.requests_for_quotation (
+                project_id UUID,
+                request_id UUID,
+                issue_id UUID,
+                contractor_id UUID,
+                triggered_by UUID,
+                description TEXT,
+                status TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY (project_id, request_id)
+            ) WITH CLUSTERING ORDER BY (request_id ASC);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS rfq_issue_id_idx ON REMSFAL.requests_for_quotation (issue_id);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS rfq_contractor_id_idx ON REMSFAL.requests_for_quotation (contractor_id);
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS rfq_issue_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS rfq_contractor_id_idx;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.requests_for_quotation;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
