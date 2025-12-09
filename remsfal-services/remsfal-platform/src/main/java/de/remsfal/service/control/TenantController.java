@@ -32,16 +32,17 @@ public class TenantController {
     public CustomerModel createTenant(final UUID projectId, final UserJson tenantJson) {
         logger.infov("Creating a new tenant for project {0}", projectId);
 
-        // Find or create the TenancyEntity for the project
         TenancyEntity tenancy = tenancyRepository.find("projectId", projectId).firstResult();
         if (tenancy == null) {
             tenancy = new TenancyEntity();
             tenancy.generateId();
             tenancy.setProjectId(projectId);
-            tenancyRepository.persist(tenancy); // Persist early to ensure ID
+            tenancy.setTenants(new java.util.ArrayList<>());
+            tenancyRepository.persist(tenancy);
+        } else if (tenancy.getTenants() == null) {
+            tenancy.setTenants(new java.util.ArrayList<>());
         }
 
-        // Project-specific duplicate check
         List<UserEntity> existingTenants = tenantRepository.findTenantsByProjectId(projectId);
         boolean duplicate = existingTenants.stream()
                 .anyMatch(t -> t.getEmail().equalsIgnoreCase(tenantJson.getEmail()));
@@ -49,27 +50,23 @@ public class TenantController {
             throw new BadRequestException("A tenant with this email already exists in the project");
         }
 
-        // Create and update the new UserEntity (mirroring updateStorage)
         UserEntity entity = updateTenant(tenantJson, new UserEntity());
         entity.generateId();
-        // No direct projectId or buildingId equivalent; association is via tenancy list
 
-        // Add to tenancy (key adaptation for relationship)
         tenancy.getTenants().add(entity);
 
-        // Persist, flush, and refresh (direct from pattern)
-        tenantRepository.persistAndFlush(entity);
-        tenantRepository.getEntityManager().refresh(entity);
+        tenancyRepository.mergeAndFlush(tenancy);
 
-        // Return via getter (mirroring getStorage)
-        return getTenant(projectId, entity.getId());
+        UserEntity managedUser = tenantRepository.findById(entity.getId());
+
+        return getTenant(projectId, managedUser.getId());
     }
 
     public List<CustomerModel> getTenants(final UUID projectId) {
         logger.infov("Retrieving tenants for project {0}", projectId);
         List<UserEntity> entities = tenantRepository.findTenantsByProjectId(projectId);
         return entities.stream()
-                .map(entity -> (CustomerModel) entity) // Cast is safe due to implements
+                .map(entity -> (CustomerModel) entity)
                 .collect(Collectors.toList());
     }
 
@@ -79,27 +76,22 @@ public class TenantController {
         return tenantRepository.findTenantByProjectId (projectId, tenantId)
                 .orElseThrow(() -> new NotFoundException("Tenant not found"));
     }
+
     @Transactional
     public CustomerModel updateTenant(final UUID projectId, final UUID tenantId, final UserJson tenantJson) {
         logger.infov("Updating tenant (projectId={0}, tenantId={1})", projectId, tenantId);
 
-        // Find the existing tenant (UserEntity)
         UserEntity entity = tenantRepository.findTenantByProjectId(projectId, tenantId)
                 .orElseThrow(() -> new NotFoundException("Tenant not found"));
 
-        // Update fields using the private helper
         updateTenant(tenantJson, entity);
 
-        // Persist changes (flush and refresh for fresh data)
         tenantRepository.persistAndFlush(entity);
         tenantRepository.getEntityManager().refresh(entity);
 
-        // Return updated model (via getter for consistency)
         return getTenant(projectId, tenantId);
     }
 
-
-    // Helper method (new, mirroring updateStorage for mapping JSON to entity)
     private UserEntity updateTenant(final UserJson json, final UserEntity entity) {
         entity.setEmail(json.getEmail());
         entity.setFirstName(json.getFirstName());
@@ -109,8 +101,17 @@ public class TenantController {
     }
 
     @Transactional
-    public boolean deleteTenant (final UUID projectId, final UUID tenantId) {
-        logger.infov("Deleting a site (projectId={0}, tenantId={1})", projectId, tenantId);
-        return tenantRepository.removeTenantFromProject(projectId, tenantId) > 0;
+    public void deleteTenant(final UUID projectId, final UUID tenantIdToRemove) {
+        TenancyEntity tenancy = tenancyRepository.findTenancyByProjectId(projectId)
+                .orElseThrow(() -> new NotFoundException("Tenancy not found for project"));
+
+        boolean removed = tenancy.getTenants()
+                .removeIf(tenant -> tenant.getId().equals(tenantIdToRemove));
+
+        if (!removed) {
+            throw new NotFoundException("Tenant not found in this tenancy.");
+        }
+
+        tenancyRepository.mergeAndFlush(tenancy);
     }
 }
