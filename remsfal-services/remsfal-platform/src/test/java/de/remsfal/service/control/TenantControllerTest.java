@@ -88,9 +88,8 @@ public class TenantControllerTest extends AbstractServiceTest {
 
        assertThrows(BadRequestException.class,
                () -> tenantController.createTenant(TestData.PROJECT_ID_1, duplicateAttemptJson),
-               "Sollte fehlschlagen, da die E-Mail bereits im Projekt existiert.");
+               "Should fail because the e-mail already exists in project.");
    }
-
 
     @Test
     void getTenants_SUCCESS_ListReturned() {
@@ -99,10 +98,22 @@ public class TenantControllerTest extends AbstractServiceTest {
 
         final List<CustomerModel> result = tenantController.getTenants(TestData.PROJECT_ID_1);
 
-        assertFalse(result.isEmpty(), "Die Liste sollte nicht leer sein.");
-        assertEquals(2, result.size(), "Es sollten genau 2 Mieter zurückgegeben werden.");
+        assertFalse(result.isEmpty(), "List should not be empty.");
+        assertEquals(2, result.size(), "Exactly 2 Mieter tenants should be returned.");
         assertTrue(result.stream().anyMatch(t -> t.getId().equals(tenant1.getId())));
         assertTrue(result.stream().anyMatch(t -> t.getId().equals(tenant2.getId())));
+    }
+
+    @Test
+    void updateTenant_FAILED_TenantNotFound() {
+        final UUID NON_PROJECT_TENANT_ID = TestData.USER_ID_2;
+        final UUID PROJECT_ID = TestData.PROJECT_ID_1;
+
+        UserJson dummyJson = TestData.userBuilder().build();
+
+        assertThrows(NotFoundException.class,
+                () -> tenantController.updateTenant(PROJECT_ID, NON_PROJECT_TENANT_ID, dummyJson),
+                "Should fail because the tenant is not part of the project's tenancy.");
     }
 
     @Test
@@ -114,10 +125,10 @@ public class TenantControllerTest extends AbstractServiceTest {
 
         assertThrows(NotFoundException.class,
                 () -> tenantController.getTenant(TestData.PROJECT_ID_1, tenantId),
-                "Mieter sollte nach dem Löschen nicht mehr im Projekt existieren.");
+                "Tenant should no longer exist within the project after deletion.");
 
         UserEntity userAfterDelete = entityManager.find(UserEntity.class, tenantId);
-        assertNotNull(userAfterDelete, "Der Benutzer selbst darf nicht gelöscht werden.");
+        assertNotNull(userAfterDelete, "The user entity itself must not be deleted from the database.");
     }
 
     @Test
@@ -125,6 +136,6 @@ public class TenantControllerTest extends AbstractServiceTest {
 
         assertThrows(NotFoundException.class,
                 () -> tenantController.deleteTenant(TestData.PROJECT_ID_1, TestData.USER_ID_2),
-                "Sollte fehlschlagen, da der Benutzer kein Mieter dieses Projekts ist.");
+                "Should fail because the user is not a tenant of this project.");
     }
 }

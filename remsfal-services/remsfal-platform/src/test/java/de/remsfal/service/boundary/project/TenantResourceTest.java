@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.wildfly.common.Assert.assertNotNull;
@@ -62,7 +63,8 @@ public class TenantResourceTest extends AbstractResourceTest {
     @Test
     void createTenant_FAILED_DuplicateEmailInProject() {
         final String DUPLICATE_EMAIL_JSON =
-                "{ \"firstName\":\"firstName\", \"lastName\":\"lastName\", \"email\":\"" + TestData.USER_EMAIL_3 + "\" }";
+                "{ \"firstName\":\"firstName\", \"lastName\":\"lastName\", \"email\":\""
+                        + TestData.USER_EMAIL_3 + "\" }";
 
         given()
                 .when()
@@ -100,6 +102,51 @@ public class TenantResourceTest extends AbstractResourceTest {
                 .get(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), NON_PROJECT_TENANT_ID)
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void getTenants_FAILED_NoAuthentication() {
+        given()
+                .when()
+                .get(BASE_PATH, TestData.PROJECT_ID_1.toString())
+                .then()
+                .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void updateTenant_SUCCESS_tenantIsUpdated() {
+        final String TENANT_ID = TestData.USER_ID_3.toString();
+        final String NEW_FIRST_NAME = TestData.USER_FIRST_NAME_4;
+        final String NEW_LAST_NAME = TestData.USER_LAST_NAME_4;
+        final String NEW_MOBILE_PHONE = "+491701112233";
+
+        final String EMAIL_TO_KEEP = TestData.USER_EMAIL_3;
+
+        final String UPDATED_TENANT_JSON =
+                "{ \"firstName\":\"" + NEW_FIRST_NAME + "\", \"lastName\":\"" + NEW_LAST_NAME + "\", " +
+                        "\"email\":\"" + EMAIL_TO_KEEP + "\", \"mobilePhoneNumber\": \"" + NEW_MOBILE_PHONE + "\" }";
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(UPDATED_TENANT_JSON)
+                .patch(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), TENANT_ID)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .and().body("id", Matchers.equalTo(TENANT_ID))
+                .and().body("firstName", Matchers.equalTo(NEW_FIRST_NAME))
+                .and().body("lastName", Matchers.equalTo(NEW_LAST_NAME))
+                .and().body("mobilePhoneNumber", Matchers.equalTo(NEW_MOBILE_PHONE));
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .get(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), TENANT_ID)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("firstName", Matchers.equalTo(NEW_FIRST_NAME));
     }
 
     @Test

@@ -97,6 +97,9 @@ public class TenantController {
         entity.setFirstName(json.getFirstName());
         entity.setLastName(json.getLastName());
 
+        if (json.getMobilePhoneNumber() != null) {
+            entity.setMobilePhoneNumber(json.getMobilePhoneNumber());
+        }
         return entity;
     }
 
