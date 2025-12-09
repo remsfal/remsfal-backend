@@ -33,7 +33,6 @@ import jakarta.inject.Inject;
 class QuotationResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/ticketing/v1/issues";
-    static final String QUOTATION_TEXT = "Dear Sir/Madam, we hereby submit our quotation for the requested work. The total cost is 1500 EUR. Best regards";
 
     @Inject
     IssueController issueController;
@@ -66,7 +65,7 @@ class QuotationResourceTest extends AbstractResourceTest {
     @Test
     void createQuotation_FAILED_noAuthentication() {
         UUID issueId = createTestIssue();
-        final String json = "{ \"text\":\"" + QUOTATION_TEXT + "\" }";
+        final String json = "{ \"text\":\"" + TicketingTestData.QUOTATION_TEXT + "\" }";
 
         given()
             .when()
@@ -80,7 +79,7 @@ class QuotationResourceTest extends AbstractResourceTest {
     @Test
     void createQuotation_SUCCESS_quotationIsCreated() {
         UUID issueId = createTestIssue();
-        final String json = "{ \"text\":\"" + QUOTATION_TEXT + "\" }";
+        final String json = "{ \"text\":\"" + TicketingTestData.QUOTATION_TEXT + "\" }";
 
         given()
             .when()
@@ -98,7 +97,7 @@ class QuotationResourceTest extends AbstractResourceTest {
             .body("issueId", equalTo(issueId.toString()))
             .body("contractorId", equalTo(TicketingTestData.USER_ID_1.toString()))
             .body("requesterId", equalTo(TicketingTestData.USER_ID.toString()))
-            .body("text", equalTo(QUOTATION_TEXT))
+            .body("text", equalTo(TicketingTestData.QUOTATION_TEXT))
             .body("status", equalTo("VALID"))
             .body("createdAt", notNullValue());
     }
@@ -121,7 +120,7 @@ class QuotationResourceTest extends AbstractResourceTest {
 
     @Test
     void createQuotation_FAILED_issueDoesNotExist() {
-        final String json = "{ \"text\":\"" + QUOTATION_TEXT + "\" }";
+        final String json = "{ \"text\":\"" + TicketingTestData.QUOTATION_TEXT + "\" }";
         UUID nonExistentIssueId = UUID.randomUUID();
 
         given()

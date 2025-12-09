@@ -96,7 +96,10 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         this.status = status != null ? status.name() : null;
     }
 
-    // Setter for string status for Cassandra mapping
+    /**
+     * Setter for string status used by Cassandra during deserialization.
+     * Cassandra stores the status as a string in the database.
+     */
     public void setStatus(String status) {
         this.status = status;
     }

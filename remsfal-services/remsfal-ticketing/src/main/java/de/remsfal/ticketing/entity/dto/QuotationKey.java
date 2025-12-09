@@ -3,6 +3,7 @@ package de.remsfal.ticketing.entity.dto;
 import jakarta.nosql.Column;
 import jakarta.nosql.Embeddable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -44,6 +45,21 @@ public class QuotationKey {
 
     public void setQuotationId(UUID quotationId) {
         this.quotationId = quotationId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        QuotationKey that = (QuotationKey) o;
+        return Objects.equals(projectId, that.projectId) &&
+               Objects.equals(issueId, that.issueId) &&
+               Objects.equals(quotationId, that.quotationId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(projectId, issueId, quotationId);
     }
 
 }

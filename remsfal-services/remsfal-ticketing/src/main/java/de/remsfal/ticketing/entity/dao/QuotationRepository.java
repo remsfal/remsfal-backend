@@ -18,8 +18,6 @@ import java.util.UUID;
 @ApplicationScoped
 public class QuotationRepository extends AbstractRepository<QuotationEntity, QuotationKey> {
 
-    public static final String QUOTATION_ID = "quotation_id";
-
     public Optional<QuotationEntity> find(final QuotationKey key) {
         return template.select(QuotationEntity.class)
             .where(PROJECT_ID).eq(key.getProjectId())
