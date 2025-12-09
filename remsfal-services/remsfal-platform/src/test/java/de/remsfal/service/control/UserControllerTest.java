@@ -239,17 +239,15 @@ class UserControllerTest extends AbstractServiceTest {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
-        AlreadyExistsException exception = assertThrows(
-                AlreadyExistsException.class,
-                () -> controller.updateUser(
-                        userId,
-                        ImmutableUserJson.builder()
-                                .id(userId)
-                                .email(TestData.USER_EMAIL)
-                                .additionalEmails(List.of(TestData.USER_EMAIL))
-                                .build()
-                ),
-                "Expected AlreadyExistsException when alternative email equals login email"
+        ImmutableUserJson update = ImmutableUserJson.builder()
+           .id(userId)
+           .email(TestData.USER_EMAIL)
+           .additionalEmails(List.of(TestData.USER_EMAIL))
+           .build();
+
+        assertThrows(
+           AlreadyExistsException.class, () -> controller.updateUser(userId, update),
+           "Expected AlreadyExistsException when alternative email equals login email"
         );
 
         List<String> emailsInDb = entityManager

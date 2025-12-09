@@ -13,8 +13,8 @@ import jakarta.validation.constraints.Email;
 import java.util.Objects;
 
 @NamedQuery(
-        name = "AdditionalEmailEntity.deleteById",
-        query = "delete from AdditionalEmailEntity ae where ae.id = :id"
+    name = "AdditionalEmailEntity.deleteById",
+    query = "delete from AdditionalEmailEntity ae where ae.id = :id"
 )
 @Entity
 @Table(name = "user_additional_email")

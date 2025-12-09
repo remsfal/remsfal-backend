@@ -2,7 +2,6 @@ package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.AdditionalEmailEntity;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 import java.util.List;

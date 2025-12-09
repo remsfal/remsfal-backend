@@ -16,7 +16,10 @@ import java.util.UUID;
 
 import de.remsfal.service.AbstractServiceTest;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 class AdditionalEmailRepositoryTest extends AbstractServiceTest {
@@ -52,9 +55,6 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
         assertEquals(1, result.size());
         assertEquals("alt1@example.com", result.get(0).getEmail());
         assertEquals(user.getId(), result.get(0).getUser().getId());
-    }
-
-    private void assertNotNull(List<AdditionalEmailEntity> result) {
     }
 
     @Test
@@ -137,8 +137,6 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
         emailEntity.setEmail("alt@example.com");
         emailEntity.setVerified(false);
         additionalEmailRepository.persist(emailEntity);
-
-        UUID emailId = emailEntity.getId();
 
         Long countBeforeDelete = entityManager
                 .createQuery("SELECT COUNT(ae) FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId", Long.class)
