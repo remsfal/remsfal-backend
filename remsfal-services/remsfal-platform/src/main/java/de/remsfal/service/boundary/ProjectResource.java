@@ -5,7 +5,15 @@ import java.util.List;
 import java.util.UUID;
 
 import de.remsfal.core.api.project.TenantEndpoint;
-import de.remsfal.service.boundary.project.*;
+import de.remsfal.service.boundary.project.MemberResource;
+import de.remsfal.service.boundary.project.PropertyResource;
+import de.remsfal.service.boundary.project.SiteResource;
+import de.remsfal.service.boundary.project.BuildingResource;
+import de.remsfal.service.boundary.project.ApartmentResource;
+import de.remsfal.service.boundary.project.CommercialResource;
+import de.remsfal.service.boundary.project.StorageResource;
+import de.remsfal.service.boundary.project.ContractorResource;
+import de.remsfal.service.boundary.project.TenantResource;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;

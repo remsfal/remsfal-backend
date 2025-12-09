@@ -1,6 +1,15 @@
 package de.remsfal.core.api;
 
-import de.remsfal.core.api.project.*;
+import de.remsfal.core.api.project.MemberEndpoint;
+import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.api.project.SiteEndpoint;
+import de.remsfal.core.api.project.BuildingEndpoint;
+import de.remsfal.core.api.project.ApartmentEndpoint;
+import de.remsfal.core.api.project.CommercialEndpoint;
+import de.remsfal.core.api.project.StorageEndpoint;
+import de.remsfal.core.api.project.ContractorEndpoint;
+import de.remsfal.core.api.project.TenantEndpoint;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -140,3 +149,6 @@ public interface ProjectEndpoint {
     @Path("/{projectId}/" + TenantEndpoint.SERVICE)
     TenantEndpoint getTenantResource();
 }
+
+
+
