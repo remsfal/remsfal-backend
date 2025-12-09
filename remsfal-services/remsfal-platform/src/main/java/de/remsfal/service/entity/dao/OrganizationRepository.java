@@ -2,8 +2,6 @@ package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
-import de.remsfal.service.entity.dto.ProjectEntity;
-import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.NoResultException;
 
@@ -31,7 +29,7 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
             .getResultList();
     }
 
-    public Optional<OrganizationEmployeeEntity> findOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId,
+    public Optional<OrganizationEmployeeEntity> findOrganizationEmployeeByOrganizationIdAndUserId(UUID organizationId,
         UUID userId) {
         try {
             return Optional.of(getEntityManager()
@@ -49,16 +47,16 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
     }
 
     public Optional<OrganizationEntity> findOrganizationByUserId(final UUID userId, final UUID organizationId) {
-        return findOrganizationEmployeesByOrganizationIdAndUserId(organizationId, userId)
+        return findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, userId)
                 .map(OrganizationEmployeeEntity::getOrganization);
     }
 
-    public boolean deleteOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId, UUID userId) {
-        return getEntityManager()
-                .createNamedQuery("OrganizationEmployeeEntity.removeByOrganizationIdAndUserId")
-                .setParameter("organizationId", organizationId)
-                .setParameter("userId", userId)
-                .executeUpdate() > 0;
+    public void deleteOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId, UUID userId) {
+        getEntityManager()
+            .createNamedQuery("OrganizationEmployeeEntity.removeByOrganizationIdAndUserId")
+            .setParameter("organizationId", organizationId)
+            .setParameter("userId", userId)
+            .executeUpdate();
     }
 
     public OrganizationEmployeeEntity merge(OrganizationEmployeeEntity entity) {

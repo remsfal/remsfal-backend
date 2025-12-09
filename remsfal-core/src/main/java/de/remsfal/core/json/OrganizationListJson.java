@@ -52,4 +52,19 @@ public class OrganizationListJson {
 
         return organizationListJson;
     }
+
+    public static OrganizationListJson valueOf(List<? extends OrganizationModel> organizations) {
+        OrganizationListJson organizationListJson = new OrganizationListJson();
+
+        organizationListJson.setOffset(0);
+        organizationListJson.setTotal((long) organizations.size());
+
+        List<OrganizationJson> organizationList = new ArrayList<>();
+        for (OrganizationModel organization : organizations) {
+            organizationList.add(OrganizationJson.valueOf(organization));
+        }
+        organizationListJson.setOrganizations(organizationList);
+
+        return organizationListJson;
+    }
 }
