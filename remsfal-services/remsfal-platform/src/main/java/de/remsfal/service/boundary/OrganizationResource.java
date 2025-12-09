@@ -1,10 +1,12 @@
 package de.remsfal.service.boundary;
 
+import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.api.OrganizationEndpoint;
 import de.remsfal.core.json.OrganizationJson;
 import de.remsfal.core.json.OrganizationListJson;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.service.boundary.organization.EmployeeResource;
+import de.remsfal.service.boundary.organization.OrganizationSubResource;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import io.quarkus.security.Authenticated;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Authenticated
-public class OrganizationResource implements OrganizationEndpoint {
+public class OrganizationResource extends OrganizationSubResource implements OrganizationEndpoint {
 
     @Inject
     OrganizationController controller;
@@ -35,6 +37,9 @@ public class OrganizationResource implements OrganizationEndpoint {
     Instance<EmployeeResource> employeeResource;
     @Inject
     ResourceContext resourceContext;
+
+    @Inject
+    RemsfalPrincipal principal;
 
     //TODO: Implement permission checker
 
@@ -70,13 +75,15 @@ public class OrganizationResource implements OrganizationEndpoint {
 
     @Override
     public OrganizationJson updateOrganization(UUID organizationId, OrganizationJson organization) {
-        return OrganizationJson.valueOf(controller.updateOrganization(organizationId, organization));
+        checkWritePermissions(organizationId);
+        return OrganizationJson.valueOf(controller.updateOrganization(principal, organizationId, organization));
     }
 
     //TODO: Implement permission checker
 
     @Override
     public void deleteOrganization(UUID organizationId) {
+        checkOwnerPermissions(organizationId);
         if (!controller.deleteOrganization(organizationId)) {
             throw new NotFoundException("Organization not found");
         }

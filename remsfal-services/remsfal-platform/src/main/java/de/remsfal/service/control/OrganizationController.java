@@ -92,10 +92,10 @@ public class OrganizationController {
      * @return The updated organization
      */
     @Transactional
-    public OrganizationEntity updateOrganization(final UUID organizationId, final OrganizationModel organization) {
+    public OrganizationEntity updateOrganization(final UserModel user, final UUID organizationId, final OrganizationModel organization) {
 
-        OrganizationEntity organizationEntity = organizationRepository.findByIdOptional(organizationId)
-            .orElseThrow(() -> new NotFoundException("Organization id not found"));
+        OrganizationEntity organizationEntity = organizationRepository.findOrganizationByUserId(user.getId(), organizationId)
+                .orElseThrow(() -> new ForbiddenException("Organization not found"));
 
         if (organization.getName() != null) {
             organizationEntity.setName(organization.getName());
