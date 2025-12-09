@@ -9,6 +9,8 @@ import java.util.ResourceBundle;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.model.UserModel;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -38,6 +40,18 @@ public class MailingController {
     @Inject
     @Location("new-membership.html")
     Template newMembership;
+
+    @Inject
+    @Location("issue-created.html")
+    Template issueCreated;
+
+    @Inject
+    @Location("issue-updated.html")
+    Template issueUpdated;
+
+    @Inject
+    @Location("issue-assigned.html")
+    Template issueAssigned;
 
     public void sendWelcomeEmail(final UserModel recipient, final String link, final Locale locale) {
         logger.infov("Sending welcome email to {0}", recipient.getEmail());
@@ -82,4 +96,46 @@ public class MailingController {
         mailer.send(mail);
     }
 
+    // Issue event email methods
+
+    public void sendIssueCreatedEmail(IssueEventJson event, UserJson recipient) {
+        logger.infov("Sending issue-created email to {0}", recipient.getEmail());
+        TemplateInstance instance = createIssueTemplateInstance(issueCreated, event, recipient);
+        String subject = "[Issue Created] " + event.getTitle();
+        sendIssueEmail(recipient.getEmail(), subject, instance);
+    }
+
+    public void sendIssueUpdatedEmail(IssueEventJson event, UserJson recipient) {
+        logger.infov("Sending issue-updated email to {0}", recipient.getEmail());
+        TemplateInstance instance = createIssueTemplateInstance(issueUpdated, event, recipient);
+        String subject = "[Issue Updated] " + event.getTitle();
+        sendIssueEmail(recipient.getEmail(), subject, instance);
+    }
+
+    public void sendIssueAssignedEmail(IssueEventJson event, UserJson recipient) {
+        logger.infov("Sending issue-assigned email to {0}", recipient.getEmail());
+        TemplateInstance instance = createIssueTemplateInstance(issueAssigned, event, recipient);
+        String subject = "[Issue Assigned] " + event.getTitle();
+        sendIssueEmail(recipient.getEmail(), subject, instance);
+    }
+
+    private TemplateInstance createIssueTemplateInstance(Template template, IssueEventJson event, UserJson recipient) {
+        return template
+            .data("name", recipient.getName())
+            .data("issueTitle", event.getTitle())
+            .data("issueId", event.getIssueId().toString())
+            .data("issueType", event.getIssueType() != null ? event.getIssueType().name() : "N/A")
+            .data("status", event.getStatus() != null ? event.getStatus().name() : "N/A")
+            .data("ownerName", event.getOwner() != null ? event.getOwner().getName() : "N/A")
+            .data("ownerEmail", event.getOwner() != null ? event.getOwner().getEmail() : "N/A")
+            .data("actorName", event.getUser() != null ? event.getUser().getName() : "N/A")
+            .data("actorEmail", event.getUser() != null ? event.getUser().getEmail() : "N/A")
+            .data("buttonLink", event.getLink());
+    }
+
+    private void sendIssueEmail(String to, String subject, TemplateInstance instance) {
+        String html = setTemplateProperties(instance, Locale.GERMAN).render();
+        Mail mail = Mail.withHtml(to, subject, html);
+        sendWithAlias(mail, "issues");
+    }
 }

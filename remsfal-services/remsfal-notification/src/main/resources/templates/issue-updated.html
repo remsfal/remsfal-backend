@@ -1,0 +1,15 @@
+{#let showButton?=true}
+{#let buttonText?=issue_button}
+{#include base}
+  {#title}{issue-updated_title}{/title}
+  {#introduction}
+    {issue-updated_introduction}
+    <br><br>
+    <strong>{issue_id_label}:</strong> {issueId}<br>
+    <strong>{issue_title_label}:</strong> {issueTitle}<br>
+    <strong>{issue_type_label}:</strong> {issueType}<br>
+    <strong>{issue_status_label}:</strong> {status}<br>
+    <strong>{issue_owner_label}:</strong> {ownerName} ({ownerEmail})<br>
+    <strong>{issue_actor_label}:</strong> {actorName} ({actorEmail})
+  {/introduction}
+{/include}
