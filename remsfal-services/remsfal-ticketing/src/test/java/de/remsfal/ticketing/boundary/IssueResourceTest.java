@@ -15,8 +15,6 @@ import static org.hamcrest.Matchers.hasItem;
 import java.util.Map;
 import java.util.UUID;
 
-import de.remsfal.ticketing.entity.dto.IssueEntity;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
@@ -30,8 +28,6 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
-import de.remsfal.ticketing.entity.dto.IssueKey;
-import de.remsfal.core.model.ticketing.IssueModel.Status;
 
 
 @QuarkusTest
@@ -802,5 +798,446 @@ class IssueResourceTest extends AbstractResourceTest {
         assertNoRelationsContain(targetId, sourceId);
     }
 
+    @Test
+    void deleteRelation_FAILED_forbiddenWhenNoProjectRole() {
+        // Issue als Manager anlegen, damit es ein valides Project hat
+        String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Relation Test\","
+                + "\"type\":\"TASK\" }";
+
+        String issueId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(json)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Anderer User, der KEINE projectRole für dieses Projekt hat (z.B. Tenant)
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                        TicketingTestData.USER_FIRST_NAME_1,
+                        Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+                .delete(BASE_PATH + "/" + issueId + "/relations/blocks/" + UUID.randomUUID())
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void createIssue_SUCCESS_withBlocksRelation_bidirectionalOnCreate() {
+        // Target-Issue zuerst anlegen
+        String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Target\","
+                + "\"type\":\"TASK\" }";
+
+        String targetId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(targetJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // Source direkt mit blocks-Relation erstellen
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Source with Relation\","
+                + "\"type\":\"TASK\","
+                + "\"blocks\":[\"" + targetId + "\"] }";
+
+        String sourceId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(sourceJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .body("blocks", hasSize(1))
+                .body("blocks[0]", equalTo(targetId))
+                .extract().path("id");
+
+        // Target muss blockedBy = Source haben (Spiegelung)
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + targetId)
+                .then()
+                .statusCode(200)
+                .body("blockedBy", hasSize(1))
+                .body("blockedBy[0]", equalTo(sourceId));
+    }
+
+    @Test
+    void relation_blocks_ignoresNullEntries() {
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Source\","
+                + "\"type\":\"TASK\" }";
+
+        String sourceId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(sourceJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // blocks = [null] → darf nichts tun
+        String patchJson = "{ \"blocks\":[null] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200);
+
+        // prüfen: keine blocks gesetzt
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200)
+                .body("blocks", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void relation_blocks_ignoresSelfRelation() {
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Self\","
+                + "\"type\":\"TASK\" }";
+
+        String sourceId = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(sourceJson)
+                .post(BASE_PATH)
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+
+        // blocks = [sourceId] → soll ignoriert werden
+        String patchJson = "{ \"blocks\":[\"" + sourceId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200);
+
+        // keine Self-Relation entstanden
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200)
+                .body("blocks", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void deleteRelation_blockedBy_updatesBothSides() {
+        String sourceId = createSimpleIssue("Blocked");
+        String targetId = createSimpleIssue("Blocker");
+
+        // blockedBy setzen → target.blocks wird gespiegelt
+        String patchJson = "{ \"blockedBy\":[\"" + targetId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200);
+
+        // Relation löschen
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + sourceId + "/relations/blocked_by/" + targetId)
+                .then()
+                .statusCode(204);
+
+        // Prüfen: beide Seiten leer
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + sourceId)
+                .then()
+                .statusCode(200)
+                .body("blockedBy", anyOf(nullValue(), hasSize(0)));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + targetId)
+                .then()
+                .statusCode(200)
+                .body("blocks", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void deleteRelation_relatedTo_updatesBothSides() {
+        String aId = createSimpleIssue("A");
+        String bId = createSimpleIssue("B");
+
+        String patchJson = "{ \"relatedTo\":[\"" + bId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + aId)
+                .then()
+                .statusCode(200);
+
+        // Löschen
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + aId + "/relations/related_to/" + bId)
+                .then()
+                .statusCode(204);
+
+        // A und B haben keine relatedTo mehr
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + aId)
+                .then()
+                .statusCode(200)
+                .body("relatedTo", anyOf(nullValue(), hasSize(0)));
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + bId)
+                .then()
+                .statusCode(200)
+                .body("relatedTo", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void deleteRelation_FAILED_unknownType_returnsBadRequest() {
+        String sourceId = createSimpleIssue("Source");
+        String targetId = createSimpleIssue("Target");
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + sourceId + "/relations/unknown_type/" + targetId)
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void deleteRelation_duplicateOf_updatesBothSides() {
+        String originalId = createSimpleIssue("Original");
+        String duplicateId = createSimpleIssue("Duplicate");
+
+        // duplicateOf setzen: Original -> Duplicate
+        String patchJson = "{ \"duplicateOf\":[\"" + duplicateId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + originalId)
+                .then()
+                .statusCode(200);
+
+        // Relation löschen: duplicate_of
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + originalId + "/relations/duplicate_of/" + duplicateId)
+                .then()
+                .statusCode(204);
+
+        // Original darf keine duplicateOf mehr haben
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + originalId)
+                .then()
+                .statusCode(200)
+                .body("duplicateOf", anyOf(nullValue(), hasSize(0)));
+
+        // Duplicate darf keine duplicateOf mehr auf Original haben
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + duplicateId)
+                .then()
+                .statusCode(200)
+                .body("duplicateOf", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void deleteRelation_parentOf_updatesBothSides() {
+        String parentId = createSimpleIssue("Parent");
+        String childId = createSimpleIssue("Child");
+
+        // parentOf setzen: Parent -> Child
+        String patchJson = "{ \"parentOf\":[\"" + childId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + parentId)
+                .then()
+                .statusCode(200);
+
+        // Relation löschen: parent_of
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + parentId + "/relations/parent_of/" + childId)
+                .then()
+                .statusCode(204);
+
+        // Parent darf keine parentOf mehr haben
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + parentId)
+                .then()
+                .statusCode(200)
+                .body("parentOf", anyOf(nullValue(), hasSize(0)));
+
+        // Child darf keine childOf mehr haben
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + childId)
+                .then()
+                .statusCode(200)
+                .body("childOf", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void deleteRelation_childOf_updatesBothSides() {
+        String parentId = createSimpleIssue("Parent 2");
+        String childId = createSimpleIssue("Child 2");
+
+        // childOf setzen: Child -> Parent
+        String patchJson = "{ \"childOf\":[\"" + parentId + "\"] }";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(patchJson)
+                .patch(BASE_PATH + "/" + childId)
+                .then()
+                .statusCode(200);
+
+        // Relation löschen: child_of
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .delete(BASE_PATH + "/" + childId + "/relations/child_of/" + parentId)
+                .then()
+                .statusCode(204);
+
+        // Child darf keine childOf mehr haben
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + childId)
+                .then()
+                .statusCode(200)
+                .body("childOf", anyOf(nullValue(), hasSize(0)));
+
+        // Parent darf keine parentOf mehr haben
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME,
+                        TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .get(BASE_PATH + "/" + parentId)
+                .then()
+                .statusCode(200)
+                .body("parentOf", anyOf(nullValue(), hasSize(0)));
+    }
 
 }
