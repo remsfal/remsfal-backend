@@ -64,7 +64,6 @@ public interface OrganizationEndpoint {
         @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
     );
 
-    //TODO: Creating and patching organization with address doesn't work
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(description = "Creates a new organization")
