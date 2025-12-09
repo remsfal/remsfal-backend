@@ -66,9 +66,9 @@ public class MailingResource {
             IssueEventJson event = createMockIssueEvent(IssueEventJson.IssueEventType.ISSUE_ASSIGNED);
             UserJson recipient = createMockRecipient(to);
             controller.sendIssueAssignedEmail(event, recipient);
-            return Response.accepted().entity("Issue assigned email sent to " + to).build();
+            return Response.accepted().entity("Issue assigned email sent successfully").build();
         } catch (Exception e) {
-            return Response.serverError().entity("Error: " + e.getMessage()).build();
+            return Response.serverError().entity("Failed to send email").build();
         }
     }
 
@@ -80,9 +80,9 @@ public class MailingResource {
             IssueEventJson event = createMockIssueEvent(IssueEventJson.IssueEventType.ISSUE_CREATED);
             UserJson recipient = createMockRecipient(to);
             controller.sendIssueCreatedEmail(event, recipient);
-            return Response.accepted().entity("Issue created email sent to " + to).build();
+            return Response.accepted().entity("Issue created email sent successfully").build();
         } catch (Exception e) {
-            return Response.serverError().entity("Error: " + e.getMessage()).build();
+            return Response.serverError().entity("Failed to send email").build();
         }
     }
 
@@ -94,9 +94,9 @@ public class MailingResource {
             IssueEventJson event = createMockIssueEvent(IssueEventJson.IssueEventType.ISSUE_UPDATED);
             UserJson recipient = createMockRecipient(to);
             controller.sendIssueUpdatedEmail(event, recipient);
-            return Response.accepted().entity("Issue updated email sent to " + to).build();
+            return Response.accepted().entity("Issue updated email sent successfully").build();
         } catch (Exception e) {
-            return Response.serverError().entity("Error: " + e.getMessage()).build();
+            return Response.serverError().entity("Failed to send email").build();
         }
     }
 
