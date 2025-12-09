@@ -35,13 +35,6 @@
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
 
-        <!-- TEST dependencies -->
-        <dependency>
-            <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
