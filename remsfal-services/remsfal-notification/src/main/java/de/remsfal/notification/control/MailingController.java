@@ -126,6 +126,7 @@ public class MailingController {
         
         TemplateInstance instance = template
             .data("name", recipient.getName())
+            .data("projectTitle", event.getProject() != null ? event.getProject().getTitle() : "N/A")
             .data("issueTitle", event.getTitle())
             .data("issueId", event.getIssueId().toString())
             .data("issueType", event.getIssueType() != null ? event.getIssueType().name() : "N/A")
