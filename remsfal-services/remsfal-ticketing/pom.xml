@@ -61,12 +61,6 @@
 
         <!-- TEST dependencies -->
         <dependency>
-            <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.datastax.oss.quarkus</groupId>
             <artifactId>cassandra-quarkus-test-framework</artifactId>
             <version>1.3.0</version>
@@ -75,6 +69,17 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-test-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.remsfal</groupId>
+            <artifactId>remsfal-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
