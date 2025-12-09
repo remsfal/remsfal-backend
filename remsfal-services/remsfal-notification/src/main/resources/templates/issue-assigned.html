@@ -21,7 +21,13 @@
         </tr>
         <tr style="background-color: #ffffff;">
           <td style="padding: 10px 12px; font-weight: bold;">{issue_status_label}</td>
-          <td style="padding: 10px 12px;">{status}</td>
+          <td style="padding: 10px 12px;">
+            {#if statusBgColor}
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; background-color: {statusBgColor}; color: {statusTextColor}; font-weight: bold;">{status}</span>
+            {#else}
+              {status}
+            {/if}
+          </td>
         </tr>
         <tr>
           <td style="padding: 10px 12px; font-weight: bold;">{issue_owner_label}</td>

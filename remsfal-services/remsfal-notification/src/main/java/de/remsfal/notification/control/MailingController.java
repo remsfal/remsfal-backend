@@ -12,6 +12,7 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.ticketing.StatusColor;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Location;
@@ -120,17 +121,28 @@ public class MailingController {
     }
 
     private TemplateInstance createIssueTemplateInstance(Template template, IssueEventJson event, UserJson recipient) {
-        return template
+        String statusName = event.getStatus() != null ? event.getStatus().name() : "N/A";
+        StatusColor statusColor = statusName.equals("N/A") ? null : StatusColor.valueOf(statusName);
+        
+        TemplateInstance instance = template
             .data("name", recipient.getName())
             .data("issueTitle", event.getTitle())
             .data("issueId", event.getIssueId().toString())
             .data("issueType", event.getIssueType() != null ? event.getIssueType().name() : "N/A")
-            .data("status", event.getStatus() != null ? event.getStatus().name() : "N/A")
+            .data("status", statusName)
             .data("ownerName", event.getOwner() != null ? event.getOwner().getName() : "N/A")
             .data("ownerEmail", event.getOwner() != null ? event.getOwner().getEmail() : "N/A")
             .data("actorName", event.getUser() != null ? event.getUser().getName() : "N/A")
             .data("actorEmail", event.getUser() != null ? event.getUser().getEmail() : "N/A")
             .data("buttonLink", event.getLink());
+        
+        if (statusColor != null) {
+            instance = instance
+                .data("statusBgColor", statusColor.backgroundColor)
+                .data("statusTextColor", statusColor.textColor);
+        }
+        
+        return instance;
     }
 
     private void sendIssueEmail(String to, String subject, TemplateInstance instance) {
