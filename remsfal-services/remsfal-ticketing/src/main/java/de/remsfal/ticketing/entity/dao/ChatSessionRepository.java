@@ -302,4 +302,8 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         cqlSession.execute(updateQuery.build());
     }
 
+    public List<ChatSessionEntity> findAll() {
+        return template.select(ChatSessionEntity.class).result();
+    }
+
 }

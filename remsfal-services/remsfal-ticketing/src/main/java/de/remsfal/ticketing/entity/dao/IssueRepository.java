@@ -85,4 +85,28 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             .execute();
     }
 
+    public List<IssueEntity> findByOwnerId(final UUID ownerId) {
+        return template.select(IssueEntity.class)
+            .where("owner_id").eq(ownerId)
+            .result();
+    }
+
+    public List<IssueEntity> findByRelatedTo(final UUID userId) {
+        return template.select(IssueEntity.class)
+            .where("related_to").eq(userId)
+            .result();
+    }
+
+    public List<IssueEntity> findByReporterId(final UUID userId) {
+        return template.select(IssueEntity.class)
+            .where("reporter_id").eq(userId)
+            .result();
+    }
+
+    public List<IssueEntity> findByCreatedBy(final UUID userId) {
+        return template.select(IssueEntity.class)
+            .where("created_by").eq(userId)
+            .result();
+    }
+
 }
