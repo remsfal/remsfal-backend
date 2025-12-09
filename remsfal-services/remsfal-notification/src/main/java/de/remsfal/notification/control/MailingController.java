@@ -147,7 +147,7 @@ public class MailingController {
     }
 
     private void sendIssueEmail(String to, String subject, TemplateInstance instance) {
-        String html = setTemplateProperties(instance, Locale.GERMAN).render();
+        String html = setTemplateProperties(instance, Locale.ENGLISH).render();
         Mail mail = Mail.withHtml(to, subject, html);
         sendWithAlias(mail, "issues");
     }
