@@ -5,7 +5,7 @@ import java.util.UUID;
 
 /**
  * Model interface for a quotation response in the tendering process.
- * 
+ *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface QuotationModel {

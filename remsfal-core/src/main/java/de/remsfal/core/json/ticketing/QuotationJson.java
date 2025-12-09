@@ -21,7 +21,7 @@ import de.remsfal.core.validation.PostValidation;
 
 /**
  * JSON DTO for a quotation response.
- * 
+ *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Immutable

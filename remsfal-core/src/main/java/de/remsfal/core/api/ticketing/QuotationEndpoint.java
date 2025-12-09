@@ -22,7 +22,7 @@ import de.remsfal.core.validation.PostValidation;
 
 /**
  * Endpoint for managing quotation responses.
- * 
+ *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface QuotationEndpoint {
