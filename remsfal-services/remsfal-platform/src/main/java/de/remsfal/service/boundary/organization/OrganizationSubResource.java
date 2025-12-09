@@ -2,7 +2,6 @@ package de.remsfal.service.boundary.organization;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.OrganizationEmployeeModel;
-import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
 import io.quarkus.security.Authenticated;
@@ -22,17 +21,14 @@ public class OrganizationSubResource {
     @Context
     protected UriInfo uri;
 
-    @Context
-    protected ResourceContext resourceContext;
-
     @Inject
     protected RemsfalPrincipal principal;
 
     @Inject
     protected OrganizationController  controller;
 
-    public boolean checkReadPermissions(final UUID organizationId) {
-        return controller.getEmployeeRole(organizationId, principal) != null;
+    public void checkReadPermissions(final UUID organizationId) {
+        controller.getEmployeeRole(organizationId, principal);
     }
 
     public boolean checkWritePermissions(final UUID organizationId) {
