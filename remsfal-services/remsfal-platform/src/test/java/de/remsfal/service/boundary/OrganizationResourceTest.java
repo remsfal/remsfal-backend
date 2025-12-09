@@ -72,7 +72,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
             .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE))
             .statusCode(Response.Status.CREATED.getStatusCode())
-            .extract().path("id");;
+            .extract().path("id");
 
         long entities = entityManager
                 .createQuery("SELECT count(organization) FROM OrganizationEntity organization where organization.id = :organizationId", Long.class)
