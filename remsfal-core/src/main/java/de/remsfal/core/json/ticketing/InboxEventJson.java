@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.time.OffsetDateTime;
 
 @Value.Immutable
-@JsonDeserialize(as = ImmutableInboxEventJson.class)               
+@JsonDeserialize(as = ImmutableInboxEventJson.class)
 @Schema(name = "InboxEvent", description = "Event emitted for inbox notifications")
 public interface InboxEventJson {
 
