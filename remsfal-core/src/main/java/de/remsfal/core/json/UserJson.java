@@ -106,6 +106,9 @@ public abstract class UserJson implements CustomerModel {
 
 
     @Nullable
+    public abstract String getLocale();
+
+    @Nullable
     @Null
     @Override
     public abstract LocalDate getRegisteredDate();
