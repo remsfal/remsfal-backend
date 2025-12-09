@@ -10,7 +10,6 @@ import de.remsfal.service.boundary.organization.OrganizationSubResource;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import io.quarkus.security.Authenticated;
-import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
