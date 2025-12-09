@@ -64,8 +64,8 @@ public interface ProjectEndpoint {
         description = "Project created successfully",
         headers = @Header(name = "Location", description = "URL of the new project"),
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema    = @Schema(implementation = ProjectJson.class)
+        mediaType = MediaType.APPLICATION_JSON,
+                    schema    = @Schema(implementation = ProjectJson.class)
         )
     )
     @APIResponse(responseCode = "400", description = "Invalid request message")
@@ -139,6 +139,4 @@ public interface ProjectEndpoint {
 
     @Path("/{projectId}/" + TenantEndpoint.SERVICE)
     TenantEndpoint getTenantResource();
-
-
 }

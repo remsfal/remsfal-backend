@@ -25,12 +25,12 @@ public interface TenantEndpoint {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of an tenant")
-    @APIResponse(responseCode = "200", description = "An existing tenant was successfully returned")
+    @Operation(summary = "Retrieve information for all tenants")
+    @APIResponse(responseCode = "200", description = "A list of tenants was successfully returned")
     @APIResponse(responseCode = "404", description = "The tenant does not exist")
     List<UserJson> getTenants(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull UUID projectId
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId
     );
 
     @GET
@@ -40,29 +40,29 @@ public interface TenantEndpoint {
     @APIResponse(responseCode = "200", description = "The specific tenant was successfully returned")
     @APIResponse(responseCode = "404", description = "The tenant you are looking for does not exist")
     UserJson getTenant(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull UUID projectId,
-            @Parameter(description = "ID of the tenant", required = true)
-            @PathParam("tenantId") @NotNull UUID tenantId
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "ID of the tenant", required = true)
+        @PathParam("tenantId") @NotNull UUID tenantId
     );
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new tenant")
     @APIResponse(
-            responseCode = "201",
-            description = "A new tenant was successfully created",
-            headers = @Header(name = "Location", description = "URL of the new tenant"),
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema    = @Schema(implementation = UserJson.class)
-            )
+        responseCode = "201",
+        description = "A new tenant was successfully created",
+        headers = @Header(name = "Location", description = "URL of the new tenant"),
+        content = @Content(
+        mediaType = MediaType.APPLICATION_JSON,
+        schema    = @Schema(implementation = UserJson.class)
+        )
     )
     Response createTenant(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull UUID projectId,
-            @Parameter(description = "Tenant information", required = true)
-            @Valid @ConvertGroup(to = PostValidation.class) UserJson tenant
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "Tenant information", required = true)
+        @Valid @ConvertGroup(to = PostValidation.class) UserJson tenant
     );
 
     @PATCH
@@ -74,12 +74,12 @@ public interface TenantEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenant does not exist")
     UserJson updateTenant(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull UUID projectId,
-            @Parameter(description = "ID of the tenant", required = true)
-            @PathParam("tenantId") @NotNull UUID tenantId,
-            @Parameter(description = "Tenant object with information", required = true)
-            @Valid @ConvertGroup(to = PatchValidation.class) UserJson tenant
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "ID of the tenant", required = true)
+        @PathParam("tenantId") @NotNull UUID tenancyId,
+        @Parameter(description = "Tenant object with information", required = true)
+        @Valid @ConvertGroup(to = PatchValidation.class) UserJson tenant
     );
 
     @DELETE
@@ -87,10 +87,10 @@ public interface TenantEndpoint {
     @Operation(summary = "Delete an existing tenant")
     @APIResponse(responseCode = "204", description = "The tenant was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    void deleteTenant(
-            @Parameter(description = "ID of the project", required = true)
-            @PathParam("projectId") @NotNull UUID projectId,
-            @Parameter(description = "ID of the tenant", required = true)
-            @PathParam("tenantId") @NotNull UUID tenantId
+    Response deleteTenant(
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "ID of the tenant", required = true)
+        @PathParam("tenantId") @NotNull UUID tenantId
     );
 }
