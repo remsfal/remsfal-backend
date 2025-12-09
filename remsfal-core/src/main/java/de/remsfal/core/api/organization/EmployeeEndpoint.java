@@ -30,6 +30,19 @@ public interface EmployeeEndpoint {
     String SERVICE = "employees";
 
     @GET
+    @Path("/{employeeId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @APIResponse(responseCode = "200", description = "The employee was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "The user is not an employee of this organization")
+    OrganizationEmployeeJson getEmployee(
+            @Parameter(description = "Id of the organization", required = true)
+            @PathParam("organizationId") @NotNull UUID organizationId,
+            @Parameter(description = "Id of the employee", required = true)
+            @PathParam("employeeId") @NotNull UUID employeeId
+    );
+
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
     @APIResponse(responseCode = "200", description = "A list of all existing employees was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
