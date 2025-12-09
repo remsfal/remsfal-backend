@@ -124,8 +124,8 @@ public class MailingController {
         String statusName = event.getStatus() != null ? event.getStatus().name() : "N/A";
         StatusColor statusColor = statusName.equals("N/A") ? null : StatusColor.valueOf(statusName);
         
-        String recipientName = recipient.getName() != null && !recipient.getName().isBlank() 
-            ? recipient.getName() 
+        String recipientName = recipient.getName() != null && !recipient.getName().isBlank()
+            ? recipient.getName()
             : "User";
         
         TemplateInstance instance = template

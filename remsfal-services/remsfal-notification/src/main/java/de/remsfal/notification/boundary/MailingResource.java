@@ -134,7 +134,7 @@ public class MailingResource {
             .project(project)
             .projectId(project.getId())
             .title("Test Issue Title")
-            .link("https://remsfal.de/projects/bcf74f9f-5bf1-4fd7-9ba4-2a6cba11e67f/issueedit/5505b407-d8a7-41a7-848c-77eff4c9fc81")
+            .link("https://remsfal.de/projects/bf9f-5bf1-4fd7-9ba4-2a6cb/issueedit/5507-d8a7-41a7-848c-77e81")
             .issueType(IssueModel.Type.DEFECT)
             .status(IssueModel.Status.OPEN)
             .reporterId(UUID.randomUUID())
