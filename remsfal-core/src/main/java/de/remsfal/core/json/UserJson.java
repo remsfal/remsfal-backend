@@ -92,6 +92,9 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getPrivatePhoneNumber();
 
     @Nullable
+    public abstract String getLocale();
+
+    @Nullable
     @Null
     @Override
     public abstract LocalDate getRegisteredDate();
