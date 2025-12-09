@@ -21,6 +21,11 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
     @Inject
     RemsfalPrincipal principal;
 
+    @Override
+    public OrganizationEmployeeJson getEmployee(UUID organizationId, UUID employeeId) {
+        checkReadPermissions(organizationId);
+        return OrganizationEmployeeJson.valueOf(controller.getOrganizationEmployee(organizationId, employeeId));
+    }
 
     @Override
     public OrganizationEmployeeListJson getEmployees(UUID organizationId) {
@@ -37,9 +42,7 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
     @Override
     public OrganizationEmployeeJson updateEmployee(UUID organizationId, UUID employeeId,
         OrganizationEmployeeJson employee) {
-        System.out.println("checking Permissions...");
         checkWritePermissions(organizationId);
-        System.out.println("Permissions checked");
         return OrganizationEmployeeJson.valueOf(
                 controller.updateEmployeeRole(organizationId, employeeId, employee.getEmployeeRole())
         );
