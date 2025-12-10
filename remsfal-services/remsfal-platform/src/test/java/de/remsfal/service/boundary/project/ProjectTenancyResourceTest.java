@@ -59,6 +59,28 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void getTenancy_SUCCESS_tenancyReturned() {
+        String tenancyId = given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .extract().path("tenancies[0].id");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .get(TENANCY_PATH, TestData.PROJECT_ID.toString(), tenancyId)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("id", Matchers.equalTo(tenancyId));
+    }
+
+    @Test
     void createTenancy_SUCCESS_newTenancyReturned() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
@@ -77,23 +99,6 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_SUCCESS_withoutTenants() {
-        String json = "{ \"tenants\": [] }";
-
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(json)
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
-            .then()
-            .log().ifValidationFails()
-            .statusCode(Status.OK.getStatusCode())
-            .body("tenants.size()", Matchers.equalTo(0));
-    }
-
-    @Test
     void createTenancy_SUCCESS_withoutTenants() {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +
@@ -103,7 +108,6 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID.toString())
@@ -152,24 +156,34 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getTenancy_SUCCESS_tenancyReturned() {
-        String tenancyId = given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
-            .get(BASE_PATH, TestData.PROJECT_ID.toString())
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .extract().path("tenancies[0].id");
+    void updateTenancy_SUCCESS_tenantsFieldMissing() {
+        String json = "{ \"startOfRental\": \"2024-01-01\" }"; // no tenants field → null
+
+        given()
+           .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+           .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+           .contentType(MediaType.APPLICATION_JSON)
+           .body(json)
+           .patch(TENANCY_PATH, TestData.PROJECT_ID, TestData.TENANCY_ID)
+           .then()
+           .statusCode(Status.OK.getStatusCode())
+           .body("tenants", Matchers.notNullValue()); // stays unchanged
+    }
+
+    @Test
+    void updateTenancy_SUCCESS_withoutTenants() {
+        String json = "{ \"tenants\": [] }";
 
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
-            .get(TENANCY_PATH, TestData.PROJECT_ID.toString(), tenancyId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
             .then()
+            .log().ifValidationFails()
             .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(tenancyId));
+            .body("tenants.size()", Matchers.equalTo(0));
     }
 }
