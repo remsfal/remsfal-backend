@@ -88,22 +88,8 @@
             <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- TEST dependencies -->
-        <dependency>
-            <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit</artifactId>
-            <version>1.4.1</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
+
 
     <build>
         <finalName>${project.artifactId}</finalName>
