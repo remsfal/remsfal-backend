@@ -5,6 +5,7 @@ import de.remsfal.core.model.project.TenancyModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.TenancyRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.core.model.CustomerModel;
 import de.remsfal.service.entity.dto.TenancyEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -74,12 +75,13 @@ public class TenancyController {
         entity.setStartOfRental(tenancy.getStartOfRental());
         entity.setEndOfRental(tenancy.getEndOfRental());
 
-        if (tenancy.getTenants() != null && !tenancy.getTenants().isEmpty()) {
-            List<UserEntity> tenants = tenancy.getTenants().stream()
+        final List<? extends CustomerModel> tenants = tenancy.getTenants();
+        if (tenants != null && !tenants.isEmpty()) {
+            List<UserEntity> userEntities = tenants.stream()
                 .map(user -> userRepository.findById(user.getId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-            entity.setTenants(tenants);
+            entity.setTenants(userEntities);
         }
 
         tenancyRepository.persistAndFlush(entity);
@@ -99,12 +101,13 @@ public class TenancyController {
             entity.setEndOfRental(tenancy.getEndOfRental());
         }
 
-        if (tenancy.getTenants() != null) {
-            List<UserEntity> tenants = tenancy.getTenants().stream()
+        final List<? extends CustomerModel> tenants = tenancy.getTenants();
+        if (tenants != null) {
+            List<UserEntity> userEntities = tenants.stream()
                 .map(user -> userRepository.findById(user.getId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-            entity.setTenants(tenants);
+            entity.setTenants(userEntities);
         }
 
         return tenancyRepository.merge(entity);
