@@ -14,6 +14,7 @@ import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
 import de.remsfal.core.model.CustomerModel;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 @ApplicationScoped
 public class NotificationController {
@@ -34,6 +35,7 @@ public class NotificationController {
     @Channel(EmailEventJson.TOPIC)
     Emitter<EmailEventJson> notificationEmitter;
 
+    @WithSpan("NotificationController.informUserAboutRegistration")
     public void informUserAboutRegistration(final CustomerModel user) {
         logger.infov("Sending information about user registration (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
@@ -45,6 +47,7 @@ public class NotificationController {
         notificationEmitter.send(mail);
     }
 
+    @WithSpan("NotificationController.informUserAboutProjectMembership")
     public void informUserAboutProjectMembership(final CustomerModel user, final UUID projectId) {
         logger.infov("Sending information about new membership (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
