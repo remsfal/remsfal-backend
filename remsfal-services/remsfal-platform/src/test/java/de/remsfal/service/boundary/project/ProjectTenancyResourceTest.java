@@ -186,4 +186,32 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .body("tenants.size()", Matchers.equalTo(0));
     }
+
+    @Test
+    void updateTenancy_SUCCESS_noTenantField_keepsOldTenants() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{\"tenants\": [{\"id\":\"" + TestData.USER_ID_1 + "\"}]}")
+            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode());
+
+        String json = "{ \"startOfRental\": \"2024-01-01\" }";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .then()
+            .log().ifValidationFails()
+            .statusCode(Status.OK.getStatusCode())
+            .body("tenants.size()", Matchers.equalTo(1))
+            .body("startOfRental", Matchers.equalTo("2024-01-01"));
+    }
 }
