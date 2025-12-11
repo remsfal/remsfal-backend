@@ -5,7 +5,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.core.MediaType;
@@ -51,7 +50,6 @@ public interface InboxEndpoint {
 
     @PATCH
     @Path("/{messageId}/status")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update the read/unread status of a message")
     @APIResponses({
@@ -69,7 +67,7 @@ public interface InboxEndpoint {
             @Parameter(description = "ID of the message", required = true)
             @PathParam("messageId") String messageId,
             @Parameter(description = "New status (true = read, false = unread)", required = true)
-                    boolean read
+                    @QueryParam("read") boolean read
     );
 
     @DELETE
