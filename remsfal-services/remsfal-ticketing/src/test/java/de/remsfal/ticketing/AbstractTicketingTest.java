@@ -57,6 +57,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute("TRUNCATE issues");
         cqlSession.execute("TRUNCATE chat_sessions");
         cqlSession.execute("TRUNCATE chat_messages");
+        cqlSession.execute("TRUNCATE quotations");
     }
 
     protected void setupTestFiles() throws Exception {

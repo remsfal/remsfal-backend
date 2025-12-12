@@ -37,6 +37,9 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
 
+    @Inject
+    Instance<QuotationResource> quotationResource;
+
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
         UnitType rentalType, UUID rentalId, Status status) {
@@ -143,6 +146,11 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     @Override
     public ChatSessionResource getChatSessionResource() {
         return resourceContext.initResource(chatSessionResource.get());
+    }
+
+    @Override
+    public QuotationResource getQuotationResource() {
+        return resourceContext.initResource(quotationResource.get());
     }
 
 }

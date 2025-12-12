@@ -110,4 +110,7 @@ public interface IssueEndpoint {
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
 
+    @Path("/{issueId}/" + QuotationEndpoint.SERVICE)
+    QuotationEndpoint getQuotationResource();
+
 }
