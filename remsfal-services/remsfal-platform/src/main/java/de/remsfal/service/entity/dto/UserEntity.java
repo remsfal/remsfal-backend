@@ -2,8 +2,12 @@ package de.remsfal.service.entity.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 import java.util.Objects;
+import java.util.Collections;
 import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -59,8 +63,15 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Column(name = "private_phone_number")
     private String privatePhoneNumber;
 
+    @Column(name = "locale")
+    private String locale;
+
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<AdditionalEmailEntity> additionalEmails = new HashSet<>();
+
 
     public String getTokenId() {
         return tokenId;
@@ -146,6 +157,15 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         this.privatePhoneNumber = privatePhoneNumber;
     }
 
+    @Override
+    public String getLocale() {
+        return locale;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
+
     public Set<ProjectMembershipEntity> getMemberships() {
         return memberships;
     }
@@ -162,6 +182,20 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Override
     public LocalDateTime getLastLoginDate() {
         return authenticatedAt;
+    }
+
+    public void setAdditionalEmails(Set<AdditionalEmailEntity> additionalEmails) {
+        this.additionalEmails = additionalEmails;
+    }
+
+    @Override
+    public List<String> getAdditionalEmails() {
+        if (additionalEmails == null || additionalEmails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return additionalEmails.stream()
+                .map(AdditionalEmailEntity::getEmail)
+                .toList();
     }
 
     @Override
