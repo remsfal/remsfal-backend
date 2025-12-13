@@ -228,4 +228,18 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
             .result();
     }
 
+    public List<ChatMessageEntity> findBySenderId(UUID senderId) {
+        return template.select(ChatMessageEntity.class)
+            .where("sender_id").eq(senderId)
+            .result();
+    }
+
+    public void anonymizeSender(UUID sessionId, UUID messageId) {
+        Update updateQuery = QueryBuilder.update(keyspace, TABLE)
+            .setColumn("sender_id", QueryBuilder.literal((UUID) null))
+            .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
+            .whereColumn(MESSAGE_ID).isEqualTo(QueryBuilder.literal(messageId));
+        cqlSession.execute(updateQuery.build());
+    }
+
 }
