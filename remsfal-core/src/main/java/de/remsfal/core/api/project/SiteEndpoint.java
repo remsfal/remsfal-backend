@@ -42,8 +42,8 @@ public interface SiteEndpoint {
         description = "A new site was successfully createded",
         headers = @Header(name = "Location", description = "URL of the new site"),
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema    = @Schema(implementation = SiteJson.class)
+        mediaType = MediaType.APPLICATION_JSON,
+        schema    = @Schema(implementation = SiteJson.class)
         )
     )
     Response createSite(
