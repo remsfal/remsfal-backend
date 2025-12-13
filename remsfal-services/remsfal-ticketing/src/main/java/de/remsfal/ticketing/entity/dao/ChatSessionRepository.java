@@ -10,6 +10,9 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
 import de.remsfal.ticketing.entity.dto.ChatSessionKey;
+import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
+import de.remsfal.ticketing.entity.dto.IssueParticipantKey;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -40,6 +43,9 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
     ChatMessageRepository chatMessageRepository;
 
     @Inject
+    IssueParticipantRepository issueParticipantRepository;
+
+    @Inject
     Logger logger;
 
     public enum ParticipantRole {
@@ -61,6 +67,20 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         session.setCreatedAt(Instant.now());
         session.setModifiedAt(Instant.now());
         save(session);
+
+        participants.forEach((userId, role) -> {
+            IssueParticipantEntity p = new IssueParticipantEntity();
+            IssueParticipantKey k = new IssueParticipantKey();
+            k.setUserId(userId);
+            k.setIssueId(issueId);
+            k.setSessionId(session.getSessionId());
+            p.setKey(k);
+            p.setProjectId(projectId);
+            p.setRole(role);
+            p.setCreatedAt(session.getCreatedAt());
+            issueParticipantRepository.insert(p);
+        });
+
         return session;
     }
 
@@ -154,6 +174,18 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             logParticipants(participants);
             validateParticipantAddition(participants, userId, role);
             addParticipantToDatabase(projectId, sessionId, issueId, userId, role, participants);
+
+            IssueParticipantEntity p = new IssueParticipantEntity();
+            IssueParticipantKey k = new IssueParticipantKey();
+            k.setUserId(userId);
+            k.setIssueId(issueId);
+            k.setSessionId(sessionId);
+            p.setKey(k);
+            p.setProjectId(projectId);
+            p.setRole(role);
+            p.setCreatedAt(Instant.now());
+            issueParticipantRepository.insert(p);
+
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
@@ -179,6 +211,17 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
                     .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
                 cqlSession.execute(updateQuery.build());
+                issueParticipantRepository.delete(userId, issueId, sessionId); // remove old role
+                IssueParticipantEntity p = new IssueParticipantEntity();
+                IssueParticipantKey k = new IssueParticipantKey();
+                k.setUserId(userId);
+                k.setIssueId(issueId);
+                k.setSessionId(sessionId);
+                p.setKey(k);
+                p.setProjectId(projectId);
+                p.setRole(newRole);
+                p.setCreatedAt(Instant.now());
+                issueParticipantRepository.insert(p);
             } else {
                 throw new RuntimeException("An error occurred while changing the participant role");
             }
@@ -205,6 +248,9 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
                     .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
                 cqlSession.execute(updateQuery.build());
+
+                issueParticipantRepository.delete(userId, issueId, sessionId);
+
             } else {
                 throw new IllegalArgumentException(NOT_FOUND_PARTICIPANTS);
             }
@@ -301,5 +347,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
 
         cqlSession.execute(updateQuery.build());
     }
+
+
 
 }

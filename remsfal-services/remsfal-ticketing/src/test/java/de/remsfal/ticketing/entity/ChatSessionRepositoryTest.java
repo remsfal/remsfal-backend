@@ -248,4 +248,136 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         );
     }
 
+
+
+
+    /**
+     * Test für deleteMember: "An error occurred while removing the participant"
+     */
+    @Test
+    void deleteMember_DATABASE_ERROR() {
+        logger.info("Testing deleteMember with database error");
+
+        // Verwende eine ungültige Kombination die eine Exception auslösen könnte
+        UUID invalidProjectId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+        Executable executable = () -> chatSessionRepository.deleteMember(
+                invalidProjectId,
+                SESSION_ID,
+                TASK_ID,
+                TicketingTestData.USER_ID_1
+        );
+
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while removing the participant") ||
+                        exception.getMessage().contains("No participants found"),
+                "Exception message should contain error message about removing participant"
+        );
+    }
+
+    /**
+     * Test für ensureNoExistingInitiator: Alle Szenarien
+     */
+    @Test
+    void ensureNoExistingInitiator_WITH_EXISTING_INITIATOR() {
+        logger.info("Testing ensureNoExistingInitiator when initiator exists");
+
+        // Dieser Test ist bereits durch addParticipant_INITIATOR_ALREADY_EXISTS abgedeckt
+        // aber hier ist eine explizite Version
+        UUID newUserId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionRepository.addParticipant(
+                        TicketingTestData.PROJECT_ID,
+                        SESSION_ID,
+                        TASK_ID,
+                        newUserId,
+                        "INITIATOR"
+                )
+        );
+
+        assertTrue(exception.getMessage().contains("Initiator already exists in the session"),
+                "Exception should indicate initiator already exists");
+    }
+
+    @Test
+    void ensureNoExistingInitiator_WITHOUT_EXISTING_INITIATOR() {
+        logger.info("Testing ensureNoExistingInitiator when no initiator exists");
+
+        // Erstelle eine neue Session ohne INITIATOR
+        UUID testProjectId = UUID.randomUUID();
+        UUID testTaskId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testTaskId, testSessionId, Instant.now(),
+                Map.of(TicketingTestData.USER_ID_1, ChatSessionRepository.ParticipantRole.HANDLER.name(),
+                        TicketingTestData.USER_ID_2, ChatSessionRepository.ParticipantRole.OBSERVER.name()));
+
+        // Jetzt sollte das Hinzufügen eines INITIATOR funktionieren
+        UUID newInitiatorId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
+
+        assertDoesNotThrow(() ->
+                chatSessionRepository.addParticipant(
+                        testProjectId,
+                        testSessionId,
+                        testTaskId,
+                        newInitiatorId,
+                        "INITIATOR"
+                )
+        );
+
+        // Verifiziere dass der INITIATOR hinzugefügt wurde
+        Map<UUID, String> participants = chatSessionRepository
+                .findParticipantsById(testProjectId, testSessionId, testTaskId);
+        assertEquals("INITIATOR", participants.get(newInitiatorId),
+                "New initiator should be added successfully");
+    }
+
+    @Test
+    void ensureNoExistingInitiator_EMPTY_PARTICIPANTS() {
+        logger.info("Testing ensureNoExistingInitiator with empty participants map");
+
+        // Erstelle eine Session mit leerem participants map
+        UUID testProjectId = UUID.randomUUID();
+        UUID testTaskId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testTaskId, testSessionId, Instant.now(), Map.of());
+
+        // Das Hinzufügen eines INITIATOR zu einer leeren Session sollte funktionieren
+        UUID initiatorId = UUID.fromString(TicketingTestData.USER_ID_1.toString());
+
+        assertDoesNotThrow(() ->
+                chatSessionRepository.addParticipant(
+                        testProjectId,
+                        testSessionId,
+                        testTaskId,
+                        initiatorId,
+                        "INITIATOR"
+                )
+        );
+
+        Map<UUID, String> participants = chatSessionRepository
+                .findParticipantsById(testProjectId, testSessionId, testTaskId);
+        assertEquals("INITIATOR", participants.get(initiatorId),
+                "Initiator should be added to empty session");
+    }
+
+
+
+
+
 }
