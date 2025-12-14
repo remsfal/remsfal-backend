@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.annotation.Nullable;
