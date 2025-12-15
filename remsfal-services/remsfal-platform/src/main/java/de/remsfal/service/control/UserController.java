@@ -38,6 +38,9 @@ public class UserController {
     @Inject
     NotificationController notificationController;
 
+    @Inject
+    UserEventProducer userEventProducer;
+
     @Transactional
     protected UserModel createUser(final String googleId, final String email) {
         logger.infov("Creating a new user (googleId={0}, email={1})", googleId, email);
@@ -112,7 +115,18 @@ public class UserController {
     @Transactional
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
-        return repository.remove(userId);
+        
+        final UserEntity user = repository.findByIdOptional(userId)
+            .orElseThrow(() -> new NotFoundException("User does not exist"));
+        final String email = user.getEmail();
+        
+        boolean deleted = repository.remove(userId);
+        
+        if (deleted) {
+            userEventProducer.sendUserDeletedEvent(userId.toString(), email);
+        }
+        
+        return deleted;
     }
 
 }
