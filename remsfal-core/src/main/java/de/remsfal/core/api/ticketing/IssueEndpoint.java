@@ -63,7 +63,9 @@ public interface IssueEndpoint {
         @Parameter(description = "Filter to return only issuesfor a specific rental")
         @QueryParam("rentalId") UUID rentalId,
         @Parameter(description = "Filter to return only issues with a specific status")
-        @QueryParam("status") Status status);
+        @QueryParam("status") Status status,
+        @Parameter(description = "Filter to return only issues of a specific contractor")
+        @QueryParam("contractorId") UUID contractorId);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

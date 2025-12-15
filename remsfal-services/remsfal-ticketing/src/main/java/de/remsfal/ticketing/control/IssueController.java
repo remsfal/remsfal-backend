@@ -42,6 +42,7 @@ public class IssueController {
         entity.setTitle(issue.getTitle());
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
+        entity.setContractorId(issue.getContractorId());
         return repository.insert(entity);
     }
 
@@ -52,8 +53,8 @@ public class IssueController {
     }
 
     public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
-        return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+        UnitType rentalType, UUID rentalId, UUID contractorId, Status status) {
+        return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, contractorId, status);
     }
 
     public List<? extends IssueModel> getIssuesOfTenancy(UUID tenancyId) {

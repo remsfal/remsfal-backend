@@ -48,6 +48,9 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("created_by")
     private UUID createdBy;
 
+    @Column("contractor_id")
+    private UUID contractorId;
+
     public IssueKey getKey() {
         return key;
     }
@@ -176,6 +179,14 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setCreatedBy(UUID createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public UUID getContractorId() {
+        return contractorId;
+    }
+
+    public void setContractorId(UUID contractorId) {
+        this.contractorId = contractorId;
     }
 
     public void generateId() {
