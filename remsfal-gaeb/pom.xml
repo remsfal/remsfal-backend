@@ -15,7 +15,6 @@
         <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.jax-rs>4.0.0</version.jax-rs>
-        <version.resteasy>7.0.1.Final</version.resteasy>
         <version.open-api>4.1.1</version.open-api>
         <version.config-api>3.1</version.config-api>
         <jaxb2-plugin.version>4.0.0</jaxb2-plugin.version>
@@ -50,12 +49,6 @@
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${version.jax-rs}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-multipart-provider</artifactId>
-            <version>${version.resteasy}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
