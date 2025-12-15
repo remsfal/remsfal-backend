@@ -43,7 +43,7 @@ jobs:
         microservice: ["remsfal-platform", "remsfal-ticketing", "remsfal-notification"]
     steps:
       - name: Download Artefakts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: built-app-artifacts
           path: .
