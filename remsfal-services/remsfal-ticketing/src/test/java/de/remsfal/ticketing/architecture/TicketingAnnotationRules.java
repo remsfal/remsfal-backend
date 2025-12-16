@@ -1,6 +1,6 @@
-package de.remsfal.test.ticketing.architecture;
+package de.remsfal.ticketing.architecture;
 
-
+import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -37,6 +37,7 @@ public final class TicketingAnnotationRules {
      * {@link Embeddable} or {@link MappedSuperclass} must reside in
      * {@code de.remsfal.ticketing.entity..}.
      */
+    @ArchTest
     public static final ArchRule JPA_ANNOTATIONS_ONLY_IN_ENTITY_PACKAGES =
             classes()
                     .that().resideInAnyPackage(TICKETING_BASE)
@@ -56,6 +57,7 @@ public final class TicketingAnnotationRules {
      * {@code allowEmptyShould(true)} is used to avoid failures when
      * the module does not yet contain any REST endpoints.
      */
+    @ArchTest
     public static final ArchRule JAXRS_PATH_ONLY_IN_BOUNDARY =
             classes()
                     .that().resideInAnyPackage(TICKETING_BASE)
@@ -73,6 +75,7 @@ public final class TicketingAnnotationRules {
      * {@link DELETE} must belong to classes in
      * {@code de.remsfal.ticketing.boundary..}.
      */
+    @ArchTest
     public static final ArchRule JAXRS_HTTP_METHODS_ONLY_IN_BOUNDARY =
             methods()
                     .that().areDeclaredInClassesThat().resideInAnyPackage(TICKETING_BASE)
@@ -88,4 +91,3 @@ public final class TicketingAnnotationRules {
                     )
                     .allowEmptyShould(true);
 }
-

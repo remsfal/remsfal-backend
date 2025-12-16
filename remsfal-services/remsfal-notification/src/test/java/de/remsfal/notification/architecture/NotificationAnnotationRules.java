@@ -1,4 +1,4 @@
-package de.remsfal.test.notification.architecture;
+package de.remsfal.notification.architecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -70,4 +70,3 @@ public final class NotificationAnnotationRules {
                     )
                     .allowEmptyShould(true);
 }
-

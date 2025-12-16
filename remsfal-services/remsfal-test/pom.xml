@@ -38,30 +38,8 @@
         </dependency>
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit-junit5-engine</artifactId>
-            <version>${version.archunit}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5-api</artifactId>
             <version>${version.archunit}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-ticketing</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-platform</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.remsfal</groupId>
-            <artifactId>remsfal-notification</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

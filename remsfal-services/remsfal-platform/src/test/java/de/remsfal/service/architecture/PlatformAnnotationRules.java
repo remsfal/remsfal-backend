@@ -1,4 +1,4 @@
-package de.remsfal.test.plattform.architecture;
+package de.remsfal.service.architecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -21,14 +21,14 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
  * layers and packages in order to keep persistence, domain and API concerns
  * clearly separated.
  */
-public final class PlattformAnnotationRules {
+public final class PlatformAnnotationRules {
 
     /**
      * Base package for the service module.
      */
     private static final String SERVICE_BASE = "de.remsfal.service..";
 
-    private PlattformAnnotationRules() { }
+    private PlatformAnnotationRules() { }
 
     /**
      * Ensures that JPA-related annotations are only used in entity packages.
