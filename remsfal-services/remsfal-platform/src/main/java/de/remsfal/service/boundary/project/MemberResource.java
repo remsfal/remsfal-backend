@@ -21,7 +21,6 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
     @Inject
     ProjectController controller;
 
-    @WithSpan("MemberResource.getProjectMembers")
     @Override
     public ProjectMemberListJson getProjectMembers(final UUID projectId) {
         checkReadPermissions(projectId);
@@ -37,7 +36,6 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
         return ProjectMemberJson.valueOf(model);
     }
 
-    @WithSpan("MemberResource.updateProjectMember")
     @Override
     public ProjectMemberJson updateProjectMember(final UUID projectId, final UUID memberId,
             final ProjectMemberJson member) {
@@ -47,7 +45,6 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
         return ProjectMemberJson.valueOf(model);
     }
 
-    @WithSpan("MemberResource.deleteProjectMember")
     @Override
     public void deleteProjectMember(final UUID projectId, final UUID memberId) {
         checkOwnerPermissions(projectId);
