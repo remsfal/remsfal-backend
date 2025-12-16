@@ -1,5 +1,7 @@
 package de.remsfal.service.control;
 
+import de.remsfal.service.entity.dao.AdditionalEmailRepository;
+import de.remsfal.service.entity.dto.AdditionalEmailEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
@@ -11,6 +13,8 @@ import jakarta.ws.rs.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
+import java.util.HashSet;
 
 import org.jboss.logging.Logger;
 
@@ -31,6 +35,9 @@ public class UserController {
 
     @Inject
     UserRepository repository;
+
+    @Inject
+    AdditionalEmailRepository additionalEmailRepository;
     
     @Inject
     AddressController addressController;
@@ -106,6 +113,14 @@ public class UserController {
         if(user.getPrivatePhoneNumber() != null) {
             entity.setPrivatePhoneNumber(user.getPrivatePhoneNumber());
         }
+        if(user.getLocale() != null) {
+            entity.setLocale(user.getLocale());
+        } else{
+            entity.setLocale("de");
+        }
+        if(user.getAdditionalEmails() != null) {
+            syncAdditionalEmails(entity, user.getAdditionalEmails());
+        }
         return repository.merge(entity);
     }
     
@@ -114,5 +129,47 @@ public class UserController {
         logger.infov("Deleting a user (id = {0})", userId);
         return repository.remove(userId);
     }
+
+    private void syncAdditionalEmails(final UserEntity user, final List<String> newEmailsRaw) {
+
+        List<String> newEmails = newEmailsRaw.stream()
+            .filter(s -> !s.isEmpty())
+            .map(String::toLowerCase)
+            .distinct()
+            .toList();
+
+        List<AdditionalEmailEntity> currentEmails = additionalEmailRepository.findByUserId(user.getId());
+
+        for (AdditionalEmailEntity ae : currentEmails) {
+            final String email = ae.getEmail();
+            if (!newEmails.contains(email)) {
+                additionalEmailRepository.remove(ae.getId());
+            }
+        }
+
+        for (String email : newEmails) {
+
+            if (email.equalsIgnoreCase(user.getEmail())) {
+                throw new AlreadyExistsException("Alternative email must not be equal to the login email.");
+            }
+
+            boolean exists = currentEmails.stream()
+                .anyMatch(ae -> ae.getEmail().equalsIgnoreCase(email));
+
+            if (!exists) {
+                AdditionalEmailEntity ae = new AdditionalEmailEntity();
+                ae.generateId();
+                ae.setUser(user);
+                ae.setEmail(email);
+                ae.setVerified(false);
+
+                additionalEmailRepository.persist(ae);
+            }
+        }
+
+        user.setAdditionalEmails(new HashSet<>(additionalEmailRepository.findByUserId(user.getId())));
+    }
+
+
 
 }
