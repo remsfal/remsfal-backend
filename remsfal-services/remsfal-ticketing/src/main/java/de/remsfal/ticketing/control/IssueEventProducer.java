@@ -27,7 +27,8 @@ public class IssueEventProducer {
     @Channel(IssueEventJson.TOPIC_BASIC)
     Emitter<IssueEventJson> emitter;
 
-    private static final String SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL = "Skipping issue event because issue is null";
+    private static final String SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL =
+        "Skipping issue event because issue is null";
 
     public void sendIssueCreated(final IssueModel issue, final UserModel actor) {
         if (issue == null) {
