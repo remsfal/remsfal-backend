@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.json.ImmutableUserJson;
@@ -40,6 +41,9 @@ class IssueEventEnricherTest {
     @Inject
     IssueEventEnricher enricher;
 
+    @ConfigProperty(name = "de.remsfal.frontend.url.base")
+    String frontendBaseUrl;
+
     @Test
     void enrich_enrichesOwnerDetailsAndBuildsLink() {
         UUID issueId = UUID.randomUUID();
@@ -66,7 +70,7 @@ class IssueEventEnricherTest {
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventType.ISSUE_ASSIGNED)
+            .issueEventType(IssueEventType.ISSUE_ASSIGNED)
             .issueId(issueId)
             .projectId(projectId)
             .title("Ticket title")
@@ -86,7 +90,7 @@ class IssueEventEnricherTest {
 
         IssueEventJson enriched = enricher.enrich(event);
 
-        assertEquals("https://remsfal.de/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
+        assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         assertNotNull(enriched.getOwner());
         assertEquals(ownerId, enriched.getOwner().getId());
         assertEquals("owner@example.com", enriched.getOwner().getEmail());
@@ -122,7 +126,7 @@ class IssueEventEnricherTest {
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventType.ISSUE_UPDATED)
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(UUID.randomUUID())
             .projectId(projectId)
             .title("Owner without id")
@@ -144,7 +148,7 @@ class IssueEventEnricherTest {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventType.ISSUE_UPDATED)
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .projectId(projectId)
             .project(ImmutableProjectEventJson.builder().id(projectId).title("Provided project").build())
@@ -156,7 +160,7 @@ class IssueEventEnricherTest {
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
         assertEquals("Provided project", enriched.getProject().getTitle());
-        assertEquals("https://remsfal.de/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
+        assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         verifyNoInteractions(userRepository);
         verifyNoInteractions(projectRepository);
     }
@@ -171,7 +175,7 @@ class IssueEventEnricherTest {
         buildLink.setAccessible(true);
         String link = (String) buildLink.invoke(enricher, event);
 
-        assertEquals("https://remsfal.de", link);
+        assertEquals(frontendBaseUrl, link);
         verifyNoInteractions(userRepository);
         verifyNoInteractions(projectRepository);
     }
@@ -185,7 +189,7 @@ class IssueEventEnricherTest {
         project.setTitle("No owner project");
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
         IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventType.ISSUE_UPDATED)
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .projectId(projectId)
             .title("No owner")
@@ -197,7 +201,7 @@ class IssueEventEnricherTest {
         IssueEventJson enriched = enricher.enrich(event);
 
         assertNull(enriched.getOwner());
-        assertEquals("https://remsfal.de/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
+        assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         verifyNoInteractions(userRepository);
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
@@ -218,7 +222,7 @@ class IssueEventEnricherTest {
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventType.ISSUE_UPDATED)
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .projectId(projectId)
             .title("Unknown owner")
@@ -246,7 +250,7 @@ class IssueEventEnricherTest {
 
         String link = (String) buildLink.invoke(enricher, new Object[] { null });
 
-        assertEquals("https://remsfal.de", link);
+        assertEquals(frontendBaseUrl, link);
         verifyNoInteractions(userRepository);
         verifyNoInteractions(projectRepository);
     }

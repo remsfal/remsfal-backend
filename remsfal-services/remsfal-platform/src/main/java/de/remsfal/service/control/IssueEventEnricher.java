@@ -46,7 +46,7 @@ public class IssueEventEnricher {
         UserJson enrichedOwner = enrichOwner(event.getOwner());
         ProjectEventJson project = enrichProject(event);
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
-            .type(event.getType())
+            .issueEventType(event.getIssueEventType())
             .issueId(event.getIssueId())
             .projectId(event.getProjectId())
             .project(project)

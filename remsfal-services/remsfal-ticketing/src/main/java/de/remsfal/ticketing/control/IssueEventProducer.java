@@ -27,9 +27,11 @@ public class IssueEventProducer {
     @Channel(IssueEventJson.TOPIC_BASIC)
     Emitter<IssueEventJson> emitter;
 
+    private static final String SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL = "Skipping issue event because issue is null";
+
     public void sendIssueCreated(final IssueModel issue, final UserModel actor) {
         if (issue == null) {
-            logger.warn("Skipping issue event because issue is null");
+            logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
         sendEvent(IssueEventType.ISSUE_CREATED, issue, actor, toUserJson(issue.getOwnerId(), null, null), null);
@@ -37,7 +39,7 @@ public class IssueEventProducer {
 
     public void sendIssueUpdated(final IssueModel issue, final UserModel actor) {
         if (issue == null) {
-            logger.warn("Skipping issue event because issue is null");
+            logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
         sendEvent(IssueEventType.ISSUE_UPDATED, issue, actor, toUserJson(issue.getOwnerId(), null, null), null);
@@ -45,7 +47,7 @@ public class IssueEventProducer {
 
     public void sendIssueAssigned(final IssueModel issue, final UserModel actor, final UUID ownerId) {
         if (issue == null) {
-            logger.warn("Skipping issue event because issue is null");
+            logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
         sendEvent(IssueEventType.ISSUE_ASSIGNED, issue, actor, toUserJson(ownerId, null, null), null);
@@ -53,7 +55,7 @@ public class IssueEventProducer {
 
     public void sendIssueMentioned(final IssueModel issue, final UserModel actor, final UUID mentionedUserId) {
         if (issue == null) {
-            logger.warn("Skipping issue event because issue is null");
+            logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
         sendEvent(IssueEventType.ISSUE_MENTIONED, issue, actor, null, toUserJson(mentionedUserId, null, null));
@@ -62,12 +64,12 @@ public class IssueEventProducer {
     private void sendEvent(final IssueEventType type, final IssueModel issue, final UserModel actor,
         final UserJson owner, final UserJson mentionedUser) {
         if (issue == null) {
-            logger.warn("Skipping issue event because issue is null");
+            logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
 
         final IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(type)
+            .issueEventType(type)
             .issueId(issue.getId())
             .projectId(issue.getProjectId())
             .title(issue.getTitle())

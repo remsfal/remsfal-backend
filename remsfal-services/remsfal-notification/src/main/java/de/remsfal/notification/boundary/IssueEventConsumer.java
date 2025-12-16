@@ -18,6 +18,6 @@ public class IssueEventConsumer {
     @Incoming(IssueEventJson.TOPIC_ENRICHED)
     public void consume(final IssueEventJson event) {
         logger.infov("Received enriched issue event (type={0}, issueId={1}, projectId={2})",
-            event.getType(), event.getIssueId(), event.getProjectId());
+            event.getIssueEventType(), event.getIssueId(), event.getProjectId());
     }
 }

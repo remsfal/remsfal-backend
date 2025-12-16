@@ -29,7 +29,7 @@ public interface IssueEventJson {
         ISSUE_MENTIONED
     }
 
-    IssueEventType getType();
+    IssueEventType getIssueEventType();
 
     UUID getIssueId();
 

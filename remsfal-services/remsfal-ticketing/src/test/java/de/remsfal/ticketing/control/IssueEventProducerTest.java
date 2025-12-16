@@ -28,9 +28,7 @@ import de.remsfal.test.TestData;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
-import io.quarkus.test.junit.QuarkusTest;
 
-@QuarkusTest
 class IssueEventProducerTest {
 
     private IssueEventProducer issueEventProducer;
@@ -64,7 +62,7 @@ class IssueEventProducerTest {
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
-        assertEquals(IssueEventType.ISSUE_CREATED, event.getType());
+        assertEquals(IssueEventType.ISSUE_CREATED, event.getIssueEventType());
         assertEquals(issue.getId(), event.getIssueId());
         assertEquals(issue.getProjectId(), event.getProjectId());
         assertEquals(issue.getTitle(), event.getTitle());
@@ -98,7 +96,7 @@ class IssueEventProducerTest {
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
-        assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getType());
+        assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getIssueEventType());
         assertEquals(newOwnerId, event.getOwner().getId());
         assertEquals(newOwnerId, event.getOwnerId());
     }
@@ -114,7 +112,7 @@ class IssueEventProducerTest {
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
-        assertEquals(IssueEventType.ISSUE_MENTIONED, event.getType());
+        assertEquals(IssueEventType.ISSUE_MENTIONED, event.getIssueEventType());
         assertNull(event.getOwner());
         assertNotNull(event.getMentionedUser());
         assertEquals(mentionedUser, event.getMentionedUser().getId());
@@ -163,9 +161,9 @@ class IssueEventProducerTest {
         issueEventProducer.sendIssueCreated(issue, actor);
 
         verify(logger).infov(
-            Mockito.eq("Issue event sent (type={0}, issueId={1})"),
-            Mockito.eq(IssueEventType.ISSUE_CREATED),
-            Mockito.eq(issue.getId()));
+            "Issue event sent (type={0}, issueId={1})",
+            IssueEventType.ISSUE_CREATED,
+            issue.getId());
     }
 
     @Test

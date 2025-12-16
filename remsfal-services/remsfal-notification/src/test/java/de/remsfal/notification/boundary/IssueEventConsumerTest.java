@@ -20,7 +20,7 @@ class IssueEventConsumerTest {
         consumer.logger = Logger.getLogger(IssueEventConsumer.class);
 
         IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventType.ISSUE_CREATED)
+            .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("Test issue")
@@ -35,7 +35,7 @@ class IssueEventConsumerTest {
         consumer.logger = Logger.getLogger(IssueEventConsumer.class);
 
         IssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventType.ISSUE_MENTIONED)
+            .issueEventType(IssueEventType.ISSUE_MENTIONED)
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("Another issue")
