@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,6 +38,7 @@ class IssueEventProducerTest {
     private UserModel actor;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         issueEventProducer = new IssueEventProducer();
         emitter = mock(Emitter.class);
@@ -97,7 +99,7 @@ class IssueEventProducerTest {
         IssueEventJson event = eventCaptor.getValue();
 
         assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getIssueEventType());
-        assertEquals(newOwnerId, event.getOwner().getId());
+        assertEquals(newOwnerId, Objects.requireNonNull(event.getOwner()).getId());
         assertEquals(newOwnerId, event.getOwnerId());
     }
 
