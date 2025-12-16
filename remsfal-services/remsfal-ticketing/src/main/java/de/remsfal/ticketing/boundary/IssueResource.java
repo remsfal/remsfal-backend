@@ -137,8 +137,8 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         IssueModel updatedIssue = issueController.updateIssue(entity.getKey(), issue);
         IssueJson response = IssueJson.valueOf(updatedIssue);
         UUID newOwner = updatedIssue.getOwnerId();
-        if (issue.getOwnerId() != null && !Objects.equals(previousOwner, newOwner)) {
-            issueEventProducer.sendIssueAssigned(updatedIssue, principal, updatedIssue.getOwnerId());
+        if (newOwner != null && !Objects.equals(previousOwner, newOwner)) {
+            issueEventProducer.sendIssueAssigned(updatedIssue, principal, newOwner);
         } else {
             issueEventProducer.sendIssueUpdated(updatedIssue, principal);
         }
