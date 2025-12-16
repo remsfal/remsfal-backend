@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -125,6 +126,22 @@ class IssueEventProducerTest {
         issueEventProducer.sendIssueUpdated(null, actor);
 
         verify(emitter, never()).send(Mockito.<IssueEventJson>any());
+        verify(logger).warn("Skipping issue event because issue is null");
+    }
+
+    @Test
+    void sendIssueAssigned_withNullIssue_doesNotPublish() {
+        issueEventProducer.sendIssueAssigned(null, actor, UUID.randomUUID());
+
+        verify(emitter, never()).send(any(IssueEventJson.class));
+        verify(logger).warn("Skipping issue event because issue is null");
+    }
+
+    @Test
+    void sendIssueMentioned_withNullIssue_doesNotPublish() {
+        issueEventProducer.sendIssueMentioned(null, actor, UUID.randomUUID());
+
+        verify(emitter, never()).send(any(IssueEventJson.class));
         verify(logger).warn("Skipping issue event because issue is null");
     }
 
