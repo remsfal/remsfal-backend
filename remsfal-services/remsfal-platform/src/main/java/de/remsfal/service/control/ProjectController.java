@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.ProjectMemberModel;
@@ -40,6 +41,7 @@ public class ProjectController {
     @Inject
     NotificationController notificationController;
 
+    @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(),
             offset, limit);
@@ -70,7 +72,7 @@ public class ProjectController {
     public ProjectModel getProject(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
         return projectRepository.findProjectByUserId(user.getId(), projectId)
-                .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+                .orElseThrow(() -> new NotFoundException("Project does not exist or user has no membership"));
     }
 
     @Transactional
@@ -112,6 +114,7 @@ public class ProjectController {
         return entity.getMembers();
     }
 
+    @WithSpan("ProjectController.addProjectMember")
     @Transactional
     public ProjectMemberModel addProjectMember(final UserModel user, final UUID projectId,
         final ProjectMemberModel member) {

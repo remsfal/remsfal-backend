@@ -7,6 +7,7 @@ import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.service.control.ProjectController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 import java.util.Set;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class MemberResource extends ProjectSubResource implements MemberEndpoint
         return ProjectMemberListJson.valueOfSet(model);
     }
 
+    @WithSpan("MemberResource.addProjectMember")
     @Override
     public ProjectMemberJson addProjectMember(final UUID projectId, final ProjectMemberJson member) {
         checkWritePermissions(projectId);
