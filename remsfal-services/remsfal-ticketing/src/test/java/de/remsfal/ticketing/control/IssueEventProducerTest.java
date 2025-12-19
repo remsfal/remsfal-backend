@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,7 @@ import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 
+@QuarkusTest
 class IssueEventProducerTest {
 
     private IssueEventProducer issueEventProducer;
@@ -182,6 +184,32 @@ class IssueEventProducerTest {
         verify(logger).infov(
             "Issue event sent (type={0}, issueId={1})",
             IssueEventType.ISSUE_CREATED,
+            issue.getId());
+    }
+
+    @Test
+    void sendIssueAssigned_logsInfoOnSuccess() {
+        IssueEntity issue = createIssue();
+        UUID newOwnerId = TestData.USER_ID_3;
+
+        issueEventProducer.sendIssueAssigned(issue, actor, newOwnerId);
+
+        verify(logger).infov(
+            "Issue event sent (type={0}, issueId={1})",
+            IssueEventType.ISSUE_ASSIGNED,
+            issue.getId());
+    }
+
+    @Test
+    void sendIssueMentioned_logsInfoOnSuccess() {
+        IssueEntity issue = createIssue();
+        UUID mentionedUser = TestData.USER_ID_2;
+
+        issueEventProducer.sendIssueMentioned(issue, actor, mentionedUser);
+
+        verify(logger).infov(
+            "Issue event sent (type={0}, issueId={1})",
+            IssueEventType.ISSUE_MENTIONED,
             issue.getId());
     }
 
