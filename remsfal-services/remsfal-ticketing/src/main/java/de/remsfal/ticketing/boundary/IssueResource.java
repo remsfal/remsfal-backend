@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.jboss.logging.Logger;
@@ -21,6 +22,7 @@ import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.ticketing.control.IssueEventProducer;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
 
@@ -36,6 +38,9 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
+
+    @Inject
+    IssueEventProducer issueEventProducer;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
@@ -59,8 +64,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         UUID tenancyId, UnitType rentalType, UUID rentalId,
         Status status) {
         final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId,
-                status);
+            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
 
@@ -94,13 +98,17 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
         final IssueJson response;
+        final IssueModel createdIssue;
         if (principalRole == UserRole.MANAGER) {
-            response = IssueJson.valueOf(issueController.createIssue(principal, issue));
+            createdIssue = issueController.createIssue(principal, issue);
+            response = IssueJson.valueOf(createdIssue);
         } else if (principalRole == UserRole.TENANT) {
-            response = IssueJson.valueOfFiltered(issueController.createIssue(principal, issue, Status.PENDING));
+            createdIssue = issueController.createIssue(principal, issue, Status.PENDING);
+            response = IssueJson.valueOfFiltered(createdIssue);
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
+        issueEventProducer.sendIssueCreated(createdIssue, principal);
         final URI location = uri.getAbsolutePathBuilder().path(issue.getProjectId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
@@ -125,7 +133,16 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
-        return IssueJson.valueOf(issueController.updateIssue(entity.getKey(), issue));
+        UUID previousOwner = entity.getOwnerId();
+        IssueModel updatedIssue = issueController.updateIssue(entity.getKey(), issue);
+        IssueJson response = IssueJson.valueOf(updatedIssue);
+        UUID newOwner = updatedIssue.getOwnerId();
+        if (newOwner != null && !Objects.equals(previousOwner, newOwner)) {
+            issueEventProducer.sendIssueAssigned(updatedIssue, principal, newOwner);
+        } else {
+            issueEventProducer.sendIssueUpdated(updatedIssue, principal);
+        }
+        return response;
     }
 
     @Override
