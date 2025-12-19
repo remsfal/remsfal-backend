@@ -41,6 +41,7 @@ class IssueEventEnricherTest {
     @Inject
     IssueEventEnricher enricher;
 
+    @Inject
     @ConfigProperty(name = "de.remsfal.frontend.url.base")
     String frontendBaseUrl;
 

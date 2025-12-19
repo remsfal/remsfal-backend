@@ -89,7 +89,8 @@ public class IssueEventProducer {
             .build();
 
         try {
-            logger.infov("Sending issue event: {0}", event);
+            logger.infov("Sending issue event (type={0}, issueId={1}, projectId={2})", type, issue.getId(),
+                issue.getProjectId());
             CompletionStage<Void> ack = emitter.send(event);
             ack.whenComplete((res, ex) -> {
                 if (ex != null) {

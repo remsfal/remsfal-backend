@@ -109,9 +109,6 @@ public class IssueEventEnricher {
     }
 
     String buildIssueLink(final IssueEventJson event) {
-        if (frontendBaseUrl == null) {
-            return null;
-        }
         if (event == null || event.getIssueId() == null || event.getProjectId() == null) {
             return frontendBaseUrl;
         }
