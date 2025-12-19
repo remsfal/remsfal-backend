@@ -42,8 +42,8 @@ public interface BuildingEndpoint {
         description = "A new building was successfully createded",
         headers = @Header(name = "Location", description = "URL of the new building"),
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema    = @Schema(implementation = BuildingJson.class)
+        mediaType = MediaType.APPLICATION_JSON,
+        schema    = @Schema(implementation = BuildingJson.class)
         )
     )
     Response createBuilding(
