@@ -80,4 +80,9 @@ public class TicketingTestData extends TestData {
     public static final UUID CHAT_MESSAGE_ID_2 = UUID.fromString("3f72a368-48bd-405e-976f-51a5c417a5c2");
     public static final UUID CHAT_MESSAGE_ID_3 = UUID.fromString("42817454-dc1e-476e-93d5-e073b424f191");
 
+    // Quotation test data
+    public static final String QUOTATION_TEXT = "Dear Sir/Madam, "
+        + "we hereby submit our quotation for the requested work. "
+        + "The total cost is 1500 EUR. Best regards";
+
 }

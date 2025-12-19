@@ -18,6 +18,7 @@ public abstract class AbstractRepository<Entity extends AbstractEntity, Key> {
     public static final String ISSUE_ID   = "issue_id";
     public static final String SESSION_ID = "session_id";
     public static final String MESSAGE_ID = "message_id";
+    public static final String QUOTATION_ID = "quotation_id";
 
     @Inject
     @Database(value = DatabaseType.COLUMN)
