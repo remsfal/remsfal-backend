@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>remsfal-gaeb</artifactId>
+    <name>remsfal - XML Binding Library for GAEB DA XML (jar)</name>
+
+    <parent>
+        <groupId>de.remsfal</groupId>
+        <artifactId>remsfal-backend</artifactId>
+        <version>1.0.11-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <version.cdi-api>4.1.0</version.cdi-api>
+        <version.annotation-api>3.0.0</version.annotation-api>
+        <version.xml-bind>4.0.4</version.xml-bind>
+        <version.jax-rs>4.0.0</version.jax-rs>
+        <version.open-api>4.1.1</version.open-api>
+        <jaxb2-plugin.version>4.0.0</jaxb2-plugin.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>6.0.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <version>${version.cdi-api}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${version.annotation-api}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${version.xml-bind}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>${version.jax-rs}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>${version.open-api}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- TEST dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>${jaxb2-plugin.version}</version>
+                <configuration>
+                    <sources>
+                        <!-- Shared Library -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/GAEB_DA_XML_Lib_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/GAEB_DA_XML_Lib5x_3.3_2021-05.xsd</source>
+
+                        <!-- Handel -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_93_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_94_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_96_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Handel/GAEB_DA_XML_97_3.3_2021-05.xsd</source>
+
+                        <!-- Leistungsverzeichnis -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_80_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_81_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_82_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_83_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_84_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_85_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_86_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Leistungsverzeichnis/GAEB_DA_XML_87_3.3_2021-05.xsd</source>
+
+                        <!-- Kosten und Kalkulation -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_50_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_50.1_3.3_2021-05.xsd</source>
+                        <!-- Elementbezeichner (ElePart) wird bevorzugt -->
+                        <!-- source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_50.2_3.3_2021-05.xsd</source -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_51_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_51.1_3.3_2021-05.xsd</source>
+                        <!-- Elementbezeichner (ElePart) wird bevorzugt -->
+                        <!-- source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_51.2_3.3_2021-05.xsd</source -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Kosten_und_Kalkulation/GAEB_DA_XML_52_3.3_2021-05.xsd</source>
+
+                        <!-- Zeitvertrag -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_83Z_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_84Z_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_86ZE_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Zeitvertrag/GAEB_DA_XML_86ZR_3.3_2021-05.xsd</source>
+
+                        <!-- Rechnung -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Rechnung/GAEB_DA_XML_89_3.3_2021-05.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Rechnung/GAEB_DA_XML_89B_3.3_2021-05.xsd</source>
+
+                        <!-- Preisspiegel und Raumbuch -->
+                        <!-- source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_61_3.3_2021-05_Beta.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_84P_3.3_2021-05_Beta.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_98_3.3_2021-05_Beta.xsd</source>
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2021-05_Preisspiegel_und_Raumbuch/GAEB_DA_XML_99_3.3_2021-05_Beta.xsd</source -->
+
+                        <!-- Mengenermittlung -->
+                        <source>src/main/xsd/gaeb_da_xml/3_3/2023-01_Mengenermittlung/GAEB_DA_XML_31_3.3_2023-01.xsd</source>
+                    </sources>
+                    <xjbSources>
+                        <xjbSource>src/main/xjb/bindings-all.xjb</xjbSource>
+                    </xjbSources>
+                    <clearOutputDir>false</clearOutputDir>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>xjc-generate</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                   <execution>
+                      <id>default-prepare-agent</id>
+                      <goals>
+                           <goal>prepare-agent</goal>
+                      </goals>
+                      <configuration>
+                        <destFile>${project.build.directory}/site/jacoco/jacoco.exec</destFile>
+                        <append>true</append>
+                      </configuration>
+                   </execution>
+                   <execution>
+                      <id>report</id>
+                      <goals>
+                        <goal>report</goal>
+                      </goals>
+                      <phase>verify</phase>
+                      <configuration>
+                        <dataFile>${project.build.directory}/site/jacoco/jacoco.exec</dataFile>
+                        <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+                      </configuration>
+                   </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

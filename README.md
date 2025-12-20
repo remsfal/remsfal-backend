@@ -17,10 +17,13 @@ You can see a live version at https://remsfal.online.
 The project is structured into multiple modules:
 
 - **[remsfal-core](remsfal-core/README.md)**: A library containing core business models and API interfaces.
+- **[remsfal-gaeb](remsfal-gaeb/README.md)**: A library providing XML bindings for the GAEB DA XML standard 3.3 (German construction industry data exchange).
 - **[remsfal-common](remsfal-services/remsfal-common/README.md)**: A library containing implementations used in all microservices.
 - **[remsfal-ticketing](remsfal-services/remsfal-ticketing/README.md)**: A microservice responsible for ticketing system functionalities and document storage.
 - **[remsfal-notification](remsfal-services/remsfal-notification/README.md)**: A microservice responsible for all customer notifications.
 - **[remsfal-platform](remsfal-services/remsfal-platform/README.md)**: The most important microservice, which is responsible for core functionalities such as user login, metadata storage, etc.
+
+> **_NOTE:_** When contributing to this repository, please **first** read and understand the **[Authorization Concept](Authorization.md)**.
 
 
 ## Development

@@ -10,6 +10,7 @@
 
     <modules>
         <module>remsfal-core</module>
+        <module>remsfal-gaeb</module>
         <module>remsfal-services</module>
         <module>wrap-up</module>
     </modules>
@@ -25,13 +26,13 @@
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <failsafe-plugin.version>3.5.4</failsafe-plugin.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-        <release-plugin.version>3.2.0</release-plugin.version>
+        <release-plugin.version>3.3.1</release-plugin.version>
         <scm-plugin.version>2.2.1</scm-plugin.version>
         <deploy-plugin.version>3.1.4</deploy-plugin.version>
         <help-plugin.version>3.5.1</help-plugin.version>
-        <jandex-plugin.version>3.5.2</jandex-plugin.version>
+        <jandex-plugin.version>3.5.3</jandex-plugin.version>
         <jacoco-plugin.version>0.8.14</jacoco-plugin.version>
-        <sonar-plugin.version>5.3.0.6276</sonar-plugin.version>
+        <sonar-plugin.version>5.5.0.6356</sonar-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
         <sonar.projectKey>remsfal_remsfal-backend</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
