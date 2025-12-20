@@ -14,24 +14,19 @@ import java.util.UUID;
 @ApplicationScoped
 public class IssueParticipantRepository extends AbstractRepository<IssueParticipantEntity, IssueParticipantKey> {
 
-    @ConfigProperty(name = "quarkus.cassandra.keyspace")
-    String keyspace;
-
-    private static final String TABLE_NAME = "issue_participants";
     private static final String COL_USER_ID = "user_id";
     private static final String COL_ISSUE_ID = "issue_id";
-    private static final String COL_SESSION_ID = "session_id";
 
     public void insert(IssueParticipantEntity entity) {
         template.insert(entity);
     }
 
     public void delete(UUID userId, UUID issueId, UUID sessionId) {
-        Delete delete = QueryBuilder.deleteFrom(keyspace, TABLE_NAME)
-                .whereColumn(COL_USER_ID).isEqualTo(QueryBuilder.literal(userId))
-                .whereColumn(COL_ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId))
-                .whereColumn(COL_SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId));
-        cqlSession.execute(delete.build());
+        template.delete(IssueParticipantEntity.class)
+                .where(COL_USER_ID).eq(userId)
+                .and(ISSUE_ID).eq(issueId)
+                .and(SESSION_ID).eq(sessionId)
+                .execute();
     }
 
     public boolean exists(UUID userId, UUID issueId) {
