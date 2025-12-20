@@ -43,8 +43,6 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
 
-    @Inject
-    IssueParticipantRepository issueParticipantRepository;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
