@@ -211,7 +211,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
                     .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
                 cqlSession.execute(updateQuery.build());
-                issueParticipantRepository.delete(userId, issueId, sessionId); // remove old role
+                issueParticipantRepository.delete(userId, issueId, sessionId); // delete existing participant entry before re-inserting with updated role
                 IssueParticipantEntity p = new IssueParticipantEntity();
                 IssueParticipantKey k = new IssueParticipantKey();
                 k.setUserId(userId);
