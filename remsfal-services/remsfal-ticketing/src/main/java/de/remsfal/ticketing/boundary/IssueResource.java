@@ -113,7 +113,6 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
                     .toList();
         }
 
-        // If you want filtered view for unprivileged, use valueOfFiltered; else valueOf
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
 
