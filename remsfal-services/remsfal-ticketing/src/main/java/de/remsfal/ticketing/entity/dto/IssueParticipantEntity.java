@@ -4,7 +4,6 @@ import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
