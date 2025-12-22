@@ -233,25 +233,37 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
 
     public void deleteMember(UUID projectId, UUID sessionId, UUID issueId, UUID userId) {
         try {
-            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, issueId);
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
+
             if (row != null) {
-                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class,
-                    String.class);
+                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
                 assert participants != null;
+
+                try {
+                    issueParticipantRepository.delete(userId, issueId, sessionId);
+                } catch (Exception e) {
+                    logger.error("Failed to delete participant from issue_participants: "
+                            + userId + " in session " + sessionId, e);
+                    throw new RuntimeException("Failed to remove participant from issue", e);
+                }
+
                 participants.remove(userId);
                 Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                    .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
-                    .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                    .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
-                    .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
-                cqlSession.execute(updateQuery.build());
+                        .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+                        .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+                        .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
+                        .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
+                        .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
 
-                issueParticipantRepository.delete(userId, issueId, sessionId);
-
+                try {
+                    cqlSession.execute(updateQuery.build());
+                } catch (Exception e) {
+                    logger.error("Failed to update chat_sessions after deleting participant. "
+                            + "Manual cleanup may be required for session " + sessionId, e);
+                    throw new RuntimeException("Failed to update session after participant removal", e);
+                }
             } else {
                 throw new IllegalArgumentException(NOT_FOUND_PARTICIPANTS);
             }
