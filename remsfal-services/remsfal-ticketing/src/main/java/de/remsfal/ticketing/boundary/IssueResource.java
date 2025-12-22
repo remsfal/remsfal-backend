@@ -62,17 +62,12 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     }
 
     private IssueListJson getProjectIssues(Integer offset, Integer limit, List<UUID> projectFilter, UUID ownerId,
-                                           UUID tenancyId, UnitType rentalType, UUID rentalId, Status status) {
-
-        final List<? extends IssueModel> allIssues =
-                issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
-        int actualOffset = (offset != null) ? offset : 0;
-        int actualLimit = (limit != null) ? limit : allIssues.size();
-        int fromIndex = Math.min(actualOffset, allIssues.size());
-        int toIndex = Math.min(actualOffset + actualLimit, allIssues.size());
-
-        List<? extends IssueModel> paginatedIssues = allIssues.subList(fromIndex, toIndex);
-        return IssueListJson.valueOf(paginatedIssues, actualOffset, allIssues.size());
+        UUID tenancyId, UnitType rentalType, UUID rentalId,
+        Status status) {
+        final List<? extends IssueModel> issues =
+            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId,
+                status);
+        return IssueListJson.valueOf(issues, 0, issues.size());
     }
 
     private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID tenancyId, Status status) {
