@@ -195,37 +195,49 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
 
     public void changeParticipantRole(UUID projectId, UUID sessionId, UUID issueId, UUID userId, String newRole) {
         try {
-            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, issueId);
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
-            if (row != null) {
-                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN,
-                    UUID.class, String.class);
-                assert participants != null;
-                participants.put(userId, newRole);
-                Update updateQuery = QueryBuilder.update(keyspace, TABLE)
+
+            if (row == null) {
+                throw new IllegalArgumentException("Session not found");
+            }
+
+            Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
+            assert participants != null;
+
+            if (!participants.containsKey(userId)) {
+                throw new IllegalArgumentException("User is not a participant in this session");
+            }
+
+            // Update issue_participants FIRST (preserves created_at)
+            try {
+                issueParticipantRepository.updateRole(userId, issueId, sessionId, newRole);
+            } catch (Exception e) {
+                logger.error("Failed to update role in issue_participants for userId="
+                        + userId + ", sessionId=" + sessionId, e);
+                throw new RuntimeException("Failed to update participant role", e);
+            }
+
+            // Then update chat_sessions
+            participants.put(userId, newRole);
+            Update updateQuery = QueryBuilder.update(keyspace, TABLE)
                     .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
                     .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
                     .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
                     .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
                     .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
+
+            try {
                 cqlSession.execute(updateQuery.build());
-                issueParticipantRepository.delete(userId, issueId, sessionId);
-                // delete existing participant entry before re-inserting with updated role
-                IssueParticipantEntity p = new IssueParticipantEntity();
-                IssueParticipantKey k = new IssueParticipantKey();
-                k.setUserId(userId);
-                k.setIssueId(issueId);
-                k.setSessionId(sessionId);
-                p.setKey(k);
-                p.setProjectId(projectId);
-                p.setRole(newRole);
-                p.setCreatedAt(Instant.now());
-                issueParticipantRepository.insert(p);
-            } else {
-                throw new RuntimeException("An error occurred while changing the participant role");
+            } catch (Exception e) {
+                logger.error("Failed to update chat_sessions after role change. "
+                        + "Manual cleanup may be required for session " + sessionId, e);
+                throw new RuntimeException("Failed to update session after role change", e);
             }
+
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while changing the participant role", e);
         }

@@ -1,11 +1,9 @@
 package de.remsfal.ticketing.entity.dao;
 
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+
 import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
 import de.remsfal.ticketing.entity.dto.IssueParticipantKey;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +14,9 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
 
     private static final String COL_USER_ID = "user_id";
     private static final String COL_ISSUE_ID = "issue_id";
+    private static final String COL_ROLE = "role";
+
+
 
     public void insert(IssueParticipantEntity entity) {
         template.insert(entity);
@@ -47,5 +48,25 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
+    }
+
+    public void updateRole(UUID userId, UUID issueId, UUID sessionId, String newRole) {
+        try {
+            IssueParticipantEntity entity = (IssueParticipantEntity) template.select(IssueParticipantEntity.class)
+                    .where(COL_USER_ID).eq(userId)
+                    .and(ISSUE_ID).eq(issueId)
+                    .and(SESSION_ID).eq(sessionId)
+                    .singleResult()
+                    .orElseThrow(() -> new IllegalArgumentException("Participant not found"));
+
+            entity.setRole(newRole);
+
+            template.update(entity);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update participant role", e);
+        }
     }
 }
