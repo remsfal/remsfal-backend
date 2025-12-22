@@ -18,11 +18,7 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @ApplicationScoped
 public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity, ChatSessionKey> {
@@ -54,8 +50,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         OBSERVER
     }
 
-    public ChatSessionEntity createChatSession(UUID projectId,
-        UUID issueId, Map<UUID, String> participants) {
+    public ChatSessionEntity createChatSession(UUID projectId, UUID issueId, Map<UUID, String> participants) {
         ChatSessionEntity session = new ChatSessionEntity();
         ChatSessionKey key = new ChatSessionKey();
         UUID sessionId = UUID.randomUUID();
@@ -64,22 +59,60 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         key.setIssueId(issueId);
         session.setKey(key);
         session.setParticipants(participants);
-        session.setCreatedAt(Instant.now());
-        session.setModifiedAt(Instant.now());
-        save(session);
+        Instant now = Instant.now();
+        session.setCreatedAt(now);
+        session.setModifiedAt(now);
 
-        participants.forEach((userId, role) -> {
-            IssueParticipantEntity p = new IssueParticipantEntity();
-            IssueParticipantKey k = new IssueParticipantKey();
-            k.setUserId(userId);
-            k.setIssueId(issueId);
-            k.setSessionId(session.getSessionId());
-            p.setKey(k);
-            p.setProjectId(projectId);
-            p.setRole(role);
-            p.setCreatedAt(session.getCreatedAt());
-            issueParticipantRepository.insert(p);
-        });
+        // Create Participants first
+        List<UUID> insertedParticipants = new ArrayList<>();
+        try {
+            for (Map.Entry<UUID, String> entry : participants.entrySet()) {
+                UUID userId = entry.getKey();
+                String role = entry.getValue();
+
+                IssueParticipantEntity p = new IssueParticipantEntity();
+                IssueParticipantKey k = new IssueParticipantKey();
+                k.setUserId(userId);
+                k.setIssueId(issueId);
+                k.setSessionId(sessionId);
+                p.setKey(k);
+                p.setProjectId(projectId);
+                p.setRole(role);
+                p.setCreatedAt(now);
+
+                issueParticipantRepository.insert(p);
+                insertedParticipants.add(userId);
+            }
+        } catch (Exception e) {
+            // Rollback: delete all inserted participants
+            logger.error("Failed to insert participants for session " + sessionId
+                    + ". Rolling back " + insertedParticipants.size() + " participants", e);
+            for (UUID userId : insertedParticipants) {
+                try {
+                    issueParticipantRepository.delete(userId, issueId, sessionId);
+                } catch (Exception rollbackError) {
+                    logger.error("Failed to rollback participant " + userId, rollbackError);
+                }
+            }
+            throw new RuntimeException("Failed to create chat session participants", e);
+        }
+
+        // create session only if all inserts are successful
+        try {
+            save(session);
+        } catch (Exception e) {
+            // Rollback: delete all participants
+            logger.error("Failed to create chat session after inserting participants. "
+                    + "Rolling back all participants for session " + sessionId, e);
+            for (UUID userId : insertedParticipants) {
+                try {
+                    issueParticipantRepository.delete(userId, issueId, sessionId);
+                } catch (Exception rollbackError) {
+                    logger.error("Failed to rollback participant " + userId, rollbackError);
+                }
+            }
+            throw new RuntimeException("Failed to create chat session", e);
+        }
 
         return session;
     }
