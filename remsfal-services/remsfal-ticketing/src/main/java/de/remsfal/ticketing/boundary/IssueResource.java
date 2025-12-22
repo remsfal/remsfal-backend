@@ -1,7 +1,6 @@
 package de.remsfal.ticketing.boundary;
 
 
-import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -63,12 +62,17 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     }
 
     private IssueListJson getProjectIssues(Integer offset, Integer limit, List<UUID> projectFilter, UUID ownerId,
-        UUID tenancyId, UnitType rentalType, UUID rentalId,
-        Status status) {
-        final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId,
-                status);
-        return IssueListJson.valueOf(issues, 0, issues.size());
+                                           UUID tenancyId, UnitType rentalType, UUID rentalId, Status status) {
+
+        final List<? extends IssueModel> allIssues =
+                issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+        int actualOffset = (offset != null) ? offset : 0;
+        int actualLimit = (limit != null) ? limit : allIssues.size();
+        int fromIndex = Math.min(actualOffset, allIssues.size());
+        int toIndex = Math.min(actualOffset + actualLimit, allIssues.size());
+
+        List<? extends IssueModel> paginatedIssues = allIssues.subList(fromIndex, toIndex);
+        return IssueListJson.valueOf(paginatedIssues, actualOffset, allIssues.size());
     }
 
     private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID tenancyId, Status status) {
@@ -86,17 +90,16 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             }
         }
 
-        // Contractors via chat participation
+
         List<UUID> participantIssueIds = issueParticipantRepository.findIssueIdsByParticipant(principal.getId());
         for (UUID pid : participantIssueIds) {
             try {
                 collected.add(issueController.getIssue(pid));
-            } catch (NotFoundException e) {
-                // ignore
+            } catch (NotFoundException ignored) {
+
             }
         }
 
-        // de-duplicate by issueId
         Map<UUID, IssueModel> unique = new LinkedHashMap<>();
         for (IssueModel issue : collected) {
             if (issue != null && issue.getId() != null) {
@@ -111,7 +114,16 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
                     .toList();
         }
 
-        return IssueListJson.valueOf(issues, 0, issues.size());
+        int totalCount = issues.size();
+        int actualOffset = (offset != null) ? offset : 0;
+        int actualLimit = (limit != null) ? limit : totalCount;
+
+        int fromIndex = Math.min(actualOffset, totalCount);
+        int toIndex = Math.min(actualOffset + actualLimit, totalCount);
+
+        List<IssueModel> paginatedIssues = issues.subList(fromIndex, toIndex);
+
+        return IssueListJson.valueOf(paginatedIssues, actualOffset, totalCount);
     }
 
     @Override
@@ -128,7 +140,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
-        final URI location = uri.getAbsolutePathBuilder().path(issue.getProjectId().toString()).build();
+        final URI location = uri.getAbsolutePathBuilder().path(Objects.requireNonNull(issue.getProjectId()).toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(response)
