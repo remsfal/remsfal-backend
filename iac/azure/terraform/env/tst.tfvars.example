@@ -1,0 +1,62 @@
+# Test Environment Configuration
+
+environment = "tst"
+
+# PostgreSQL Configuration
+postgres_admin_username = "psqladmin"
+postgres_admin_password = "TstP@ssw0rd123!"  # Change in production!
+postgres_sku            = "B_Standard_B2s"
+postgres_storage_mb     = 65536
+
+# Cosmos DB Configuration
+cosmos_throughput = 400
+
+# Event Hub Configuration
+eventhub_capacity = 1
+
+# Container Apps Configuration
+container_apps = {
+  frontend = {
+    image            = "remsfal/frontend:latest"
+    cpu              = 0.5
+    memory           = "1Gi"
+    min_replicas     = 1
+    max_replicas     = 3
+    ingress_enabled  = true
+    target_port      = 80
+    external_enabled = true
+  }
+  platform = {
+    image            = "remsfal/platform:latest"
+    cpu              = 0.75
+    memory           = "1.5Gi"
+    min_replicas     = 1
+    max_replicas     = 5
+    ingress_enabled  = true
+    target_port      = 8080
+    external_enabled = true
+  }
+  ticketing = {
+    image            = "remsfal/ticketing:latest"
+    cpu              = 0.75
+    memory           = "1.5Gi"
+    min_replicas     = 1
+    max_replicas     = 5
+    ingress_enabled  = true
+    target_port      = 8081
+    external_enabled = true
+  }
+  ocr = {
+    image            = "remsfal/ocr:latest"
+    cpu              = 0.5
+    memory           = "1Gi"
+    min_replicas     = 0
+    max_replicas     = 3
+    ingress_enabled  = true
+    target_port      = 8082
+    external_enabled = false
+  }
+}
+
+# Maintained By
+maintained_by = "QA Team"
