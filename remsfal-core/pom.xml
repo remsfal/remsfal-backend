@@ -97,6 +97,17 @@
             <version>${version.config-api}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Azure Key Vault dependencies -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-security-keyvault-secrets</artifactId>
+            <version>4.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <version>1.12.0</version>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>
