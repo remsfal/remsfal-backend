@@ -261,6 +261,13 @@ resource "azurerm_key_vault_secret" "eventhub_connection_string" {
   key_vault_id = azurerm_key_vault.main.id
 }
 
+# Store Event Hub bootstrap server in Key Vault
+resource "azurerm_key_vault_secret" "eventhub_bootstrap_server" {
+  name         = "eventhub-bootstrap-server"
+  value        = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
+  key_vault_id = azurerm_key_vault.main.id
+}
+
 # Container Apps Environment
 resource "azurerm_container_app_environment" "main" {
   name                       = local.container_apps_environment_name
