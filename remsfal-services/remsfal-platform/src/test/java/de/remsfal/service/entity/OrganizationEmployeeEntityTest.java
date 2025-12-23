@@ -14,7 +14,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class OrganizationEmployeeEntityTest {
+class OrganizationEmployeeEntityTest {
 
     private UserEntity user1;
     private UserEntity user2;
@@ -24,7 +24,7 @@ public class OrganizationEmployeeEntityTest {
     private OrganizationEmployeeEntity employee2;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         user1 = new UserEntity();
         user1.setId(TestData.USER_ID_1);
 
@@ -67,10 +67,6 @@ public class OrganizationEmployeeEntityTest {
         assertTrue(employee1.equals(employee1));
     }
 
-//    @Test
-//    void isUnequal_SUCCESS_differentInstancesSameValues() {
-//        assertFalse(employee1.equals(employee2));
-//    }
 
     @Test
     void isUnequal_SUCCESS_differentInstancesDifferentValues() {

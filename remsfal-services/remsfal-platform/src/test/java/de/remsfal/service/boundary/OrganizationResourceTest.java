@@ -23,7 +23,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/organization";
 
     @BeforeEach
-    protected void setupTestUsers() {
+    protected void setupTestData() {
         super.setupTestUsers();
         super.setupTestOrganizations();
     }

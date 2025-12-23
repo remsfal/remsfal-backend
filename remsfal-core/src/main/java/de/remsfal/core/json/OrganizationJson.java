@@ -42,7 +42,7 @@ public abstract class OrganizationJson implements OrganizationModel {
     @Override
     public abstract String getName();
 
-    @Pattern(regexp = "^\\+?[0-9]{10,14}$", message = "Phone number must be in E.164 format")
+    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "Phone number must be in E.164 format")
     @Size(max = 15)
     @Override
     public abstract String getPhone();

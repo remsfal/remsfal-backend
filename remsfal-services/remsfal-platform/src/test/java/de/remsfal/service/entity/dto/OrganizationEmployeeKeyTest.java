@@ -51,11 +51,6 @@ public class OrganizationEmployeeKeyTest extends AbstractTest {
         assertTrue(organizationEmployeeKey1.equals(organizationEmployeeKey1));
     }
 
-//    @Test
-//    void isUnequal_SUCCESS_differentInstancesSameValues() {
-//        assertFalse(organization1.equals(organization2));
-//    }
-
     @Test
     void isUnequal_SUCCESS_differentInstancesDifferentValues() {
         organizationEmployeeKey2.setUserId(UUID.randomUUID());

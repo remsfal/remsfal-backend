@@ -17,7 +17,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class OrganizationEntityTest extends AbstractTest {
+class OrganizationEntityTest extends AbstractTest {
 
     private UserEntity user1;
     private UserEntity user2;
@@ -82,11 +82,6 @@ public class OrganizationEntityTest extends AbstractTest {
     void isEqual_SUCCESS_sameInstance() {
         assertTrue(organization1.equals(organization1));
     }
-
-//    @Test
-//    void isUnequal_SUCCESS_differentInstancesSameValues() {
-//        assertFalse(organization1.equals(organization2));
-//    }
 
     @Test
     void isUnequal_SUCCESS_differentInstancesDifferentValues() {

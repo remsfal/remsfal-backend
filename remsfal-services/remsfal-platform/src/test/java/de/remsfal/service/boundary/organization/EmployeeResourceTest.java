@@ -229,4 +229,39 @@ public class EmployeeResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
+
+    @Test
+    void deleteEmployee_SUCCESS_userStillThere() {
+        final String USER_PATH = "/api/v1/user";
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"employeeRole\":\"MANAGER\"}")
+                .post(BASE_PATH, TestData.ORGANIZATION_ID.toString())
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+                .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
+                .delete(EMPLOYEE_PATH, TestData.ORGANIZATION_ID.toString(), TestData.USER_ID_2.toString())
+                .then()
+                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+                .get(USER_PATH)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(ContentType.JSON)
+                .and().body("id", Matchers.equalTo(TestData.USER_ID_2.toString()))
+                .and().body("firstName", Matchers.equalTo(TestData.USER_FIRST_NAME_2))
+                .and().body("lastName", Matchers.equalTo(TestData.USER_LAST_NAME_2))
+                .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2));
+    }
 }

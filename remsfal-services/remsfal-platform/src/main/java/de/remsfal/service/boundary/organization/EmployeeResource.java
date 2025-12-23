@@ -15,12 +15,6 @@ import java.util.UUID;
 @RequestScoped
 public class EmployeeResource extends OrganizationSubResource implements EmployeeEndpoint {
 
-    @Inject
-    OrganizationController controller;
-
-    @Inject
-    RemsfalPrincipal principal;
-
     @Override
     public OrganizationEmployeeJson getEmployee(UUID organizationId, UUID employeeId) {
         checkReadPermissions(organizationId);

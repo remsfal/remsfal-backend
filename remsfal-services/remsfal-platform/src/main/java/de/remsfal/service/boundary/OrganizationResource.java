@@ -4,14 +4,11 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.api.OrganizationEndpoint;
 import de.remsfal.core.json.OrganizationJson;
 import de.remsfal.core.json.OrganizationListJson;
-import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.service.boundary.organization.EmployeeResource;
 import de.remsfal.service.boundary.organization.OrganizationSubResource;
 import de.remsfal.service.control.OrganizationController;
-import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
-import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -30,19 +27,10 @@ import java.util.UUID;
 public class OrganizationResource extends OrganizationSubResource implements OrganizationEndpoint {
 
     @Inject
-    OrganizationController controller;
-
-    @Context
-    protected UriInfo uri;
-
-    @Inject
     Instance<EmployeeResource> employeeResource;
+
     @Inject
     ResourceContext resourceContext;
-
-    @Inject
-    RemsfalPrincipal principal;
-
 
     @Override
     public OrganizationJson getOrganization(UUID organizationId) {

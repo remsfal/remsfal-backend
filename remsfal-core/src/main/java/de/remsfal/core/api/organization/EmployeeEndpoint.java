@@ -36,10 +36,10 @@ public interface EmployeeEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "The user is not an employee of this organization")
     OrganizationEmployeeJson getEmployee(
-            @Parameter(description = "Id of the organization", required = true)
-            @PathParam("organizationId") @NotNull UUID organizationId,
-            @Parameter(description = "Id of the employee", required = true)
-            @PathParam("employeeId") @NotNull UUID employeeId
+        @Parameter(description = "Id of the organization", required = true)
+        @PathParam("organizationId") @NotNull UUID organizationId,
+        @Parameter(description = "Id of the employee", required = true)
+        @PathParam("employeeId") @NotNull UUID employeeId
     );
 
     @GET

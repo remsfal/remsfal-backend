@@ -8,9 +8,9 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
+import org.jboss.logging.Logger;
 
 import java.util.UUID;
 
@@ -27,16 +27,19 @@ public class OrganizationSubResource {
     @Inject
     protected OrganizationController  controller;
 
+    @Inject
+    Logger logger;
+
     public void checkReadPermissions(final UUID organizationId) {
         controller.getEmployeeRole(organizationId, principal);
     }
 
     public boolean checkWritePermissions(final UUID organizationId) {
         if (!controller.getEmployeeRole(organizationId, principal).isPrivileged(PermissionType.WRITE)) {
-            System.out.println("Permissions not granted");
+            logger.info("Permissions not granted");
             throw new ForbiddenException("Inadequate user rights");
         } else {
-            System.out.println("Permissions granted");
+            logger.info("Permissions granted");
             return true;
         }
     }
