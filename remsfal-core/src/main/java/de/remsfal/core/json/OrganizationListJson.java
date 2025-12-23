@@ -1,72 +1,50 @@
 package de.remsfal.core.json;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.OrganizationModel;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonInclude(Include.NON_NULL)
-public class OrganizationListJson {
+@Value.Immutable
+@ImmutableStyle
+@Schema(description = "A list of organizations")
+@JsonDeserialize(as = ImmutableOrganizationListJson.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+public abstract class OrganizationListJson {
 
-    List<OrganizationJson> organizations;
-    Integer offset;
-    Long total;
+    @NotNull
+    public abstract List<OrganizationJson> getOrganizations();
 
-    //Getter and Setter
-    public List<OrganizationJson> getOrganizations() {
-        return organizations;
-    }
+    public abstract Integer getOffset();
 
-    public void setOrganizations(List<OrganizationJson> organizations) {
-        this.organizations = organizations;
-    }
-
-    public Integer getOffset() {
-        return offset;
-    }
-
-    public void setOffset(Integer offset) {
-        this.offset = offset;
-    }
-
-    public Long getTotal() {
-        return total;
-    }
-
-    public void setTotal(Long total) {
-        this.total = total;
-    }
+    public abstract Long getTotal();
 
     public static OrganizationListJson valueOf(List<? extends OrganizationModel> organizations, Integer offset,
         Long total) {
-        OrganizationListJson organizationListJson = new OrganizationListJson();
+        ImmutableOrganizationListJson.Builder builder = ImmutableOrganizationListJson.builder();
 
-        organizationListJson.setOffset(offset);
-        organizationListJson.setTotal(total);
-
-        List<OrganizationJson> organizationList = new ArrayList<>();
         for (OrganizationModel organization : organizations) {
-            organizationList.add(OrganizationJson.valueOf(organization));
+            builder.addOrganizations(OrganizationJson.valueOf(organization));
         }
-        organizationListJson.setOrganizations(organizationList);
 
-        return organizationListJson;
+        return builder.offset(offset).total(total).build();
     }
 
     public static OrganizationListJson valueOf(List<? extends OrganizationModel> organizations) {
-        OrganizationListJson organizationListJson = new OrganizationListJson();
+        ImmutableOrganizationListJson.Builder builder = ImmutableOrganizationListJson.builder();
 
-        organizationListJson.setOffset(0);
-        organizationListJson.setTotal((long) organizations.size());
-
-        List<OrganizationJson> organizationList = new ArrayList<>();
         for (OrganizationModel organization : organizations) {
-            organizationList.add(OrganizationJson.valueOf(organization));
+            builder.addOrganizations(OrganizationJson.valueOf(organization));
         }
-        organizationListJson.setOrganizations(organizationList);
 
-        return organizationListJson;
+        return builder.offset(0).total((long) organizations.size()).build();
     }
 }
