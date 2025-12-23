@@ -28,8 +28,8 @@ locals {
   # Event Hub topic names (matching Kafka topics from REMSFAL)
   eventhub_topics = [
     "user-notification",
-    "ocr-documents-inbox",
-    "ocr-documents-outbox"
+    "ocr.documents.to_process",
+    "ocr.documents.processed"
   ]
 
   # Cosmos DB Cassandra configuration

@@ -247,13 +247,14 @@ resource "azurerm_eventhub_namespace" "main" {
 }
 
 # Event Hubs (Kafka topics)
-# resource "azurerm_eventhub" "topics" {
-#   for_each            = toset(local.eventhub_topics)
-#   name                = each.value
-#   namespace_id         = azurerm_eventhub_namespace.main.id
-#   partition_count     = 2
-#   message_retention   = 1
-# }
+resource "azurerm_eventhub" "topics" {
+  for_each            = toset(local.eventhub_topics)
+  name                = each.value
+  namespace_name      = azurerm_eventhub_namespace.main.name
+  resource_group_name = azurerm_resource_group.main.name
+  partition_count     = 2
+  message_retention   = 1
+}
 
 # Event Hub Authorization Rule for applications (fallback)
 resource "azurerm_eventhub_namespace_authorization_rule" "app_access" {

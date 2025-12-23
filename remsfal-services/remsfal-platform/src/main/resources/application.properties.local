@@ -7,28 +7,17 @@ quarkus.http.host=0.0.0.0
 
 %dev.quarkus.devservices.enabled=false
 
-# Suppress Netty warnings during Azure Key Vault access
-quarkus.log.category."io.netty.util.concurrent".level=ERROR
-
-# Database configuration (Secret loaded from Azure Key Vault via ConfigSource)
+# Database configuration
 quarkus.datasource.db-kind=postgresql
-quarkus.datasource.jdbc.url=${postgres-connection-string}
+%dev.quarkus.datasource.username=remsfalAdmin
+%dev.quarkus.datasource.password=remsfalSecret
+%dev.quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL
 %dev.quarkus.datasource.devservices.enabled=false
-
-# Prod database configuration (uses Key Vault)
-%prod.quarkus.datasource.jdbc.url=${postgres-connection-string}
-
-# Connection pooling - increased timeouts for Azure
+# Connection pooling
 quarkus.datasource.jdbc.min-size=2
 quarkus.datasource.jdbc.max-size=10
-quarkus.datasource.jdbc.acquisition-timeout=30
-quarkus.datasource.jdbc.idle-removal-interval=10M
-quarkus.datasource.jdbc.leak-detection-interval=10M
 # Connection properties
 quarkus.datasource.jdbc.additional-jdbc-properties.ApplicationName=remsfal-platform
-quarkus.datasource.jdbc.additional-jdbc-properties.loginTimeout=30
-quarkus.datasource.jdbc.additional-jdbc-properties.connectTimeout=30
-quarkus.datasource.jdbc.additional-jdbc-properties.socketTimeout=30
 # ORM packages
 quarkus.hibernate-orm.packages=de.remsfal.service.entity.dto
 quarkus.hibernate-orm.schema-management.strategy=validate
@@ -43,6 +32,7 @@ quarkus.smallrye-openapi.store-schema-directory=target/openapi
 quarkus.smallrye-openapi.store-schema-file-name=platform-spec
 
 # REMSFAL Google OAUTH configuration
+%dev.de.remsfal.auth.devservices.enabled=true
 de.remsfal.auth.oidc.client-id=821093255871-8pnrdogfojdc36mqooovf951ao9r4o8i.apps.googleusercontent.com
 de.remsfal.auth.oidc.client-secret=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
 de.remsfal.auth.session.secret=removeMe
@@ -65,19 +55,7 @@ mp.jwt.token.cookie=remsfal_access_token
 # Kafka configuration
 %dev.quarkus.kafka.devservices.enabled=false
 %test.quarkus.kafka.devservices.enabled=true
-
-# Azure Event Hubs (Kafka-compatible) - loaded from Key Vault
-mp.messaging.connector.smallrye-kafka.bootstrap.servers=${eventhub-bootstrap-server}
-mp.messaging.connector.smallrye-kafka.security.protocol=SASL_SSL
-mp.messaging.connector.smallrye-kafka.sasl.mechanism=PLAIN
-mp.messaging.connector.smallrye-kafka.sasl.jaas.config=${eventhub-connection-string}
-
-# Local Kafka (uncomment for local dev without Azure)
-# %dev.mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:39092
-# %dev.mp.messaging.connector.smallrye-kafka.security.protocol=PLAINTEXT
-%test.mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:39092
-%test.mp.messaging.connector.smallrye-kafka.security.protocol=PLAINTEXT
-
+%dev.mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:39092
 mp.messaging.outgoing.user-notification.connector=smallrye-kafka
 mp.messaging.outgoing.user-notification.topic=user-notification
 
