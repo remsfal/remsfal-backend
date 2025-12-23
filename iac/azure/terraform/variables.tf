@@ -97,7 +97,7 @@ variable "container_apps" {
   description = "Container Apps configuration"
   default = {
     frontend = {
-      image            = "nginx:latest"
+      image            = "remsfal-frontend:latest"
       cpu              = 0.25
       memory           = "0.5Gi"
       min_replicas     = 0
@@ -107,7 +107,7 @@ variable "container_apps" {
       external_enabled = true
     }
     platform = {
-      image            = "nginx:latest"
+      image            = "remsfal-platform:latest"
       cpu              = 0.5
       memory           = "1Gi"
       min_replicas     = 1
@@ -117,7 +117,7 @@ variable "container_apps" {
       external_enabled = true
     }
     ticketing = {
-      image            = "nginx:latest"
+      image            = "remsfal-ticketing:latest"
       cpu              = 0.5
       memory           = "1Gi"
       min_replicas     = 1
@@ -127,7 +127,7 @@ variable "container_apps" {
       external_enabled = true
     }
     ocr = {
-      image            = "nginx:latest"
+      image            = "remsfal-ocr:latest"
       cpu              = 0.5
       memory           = "1Gi"
       min_replicas     = 0
