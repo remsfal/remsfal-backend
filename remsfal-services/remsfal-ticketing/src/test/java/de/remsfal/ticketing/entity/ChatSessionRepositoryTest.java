@@ -396,5 +396,42 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
 
 
 
+    @Test
+    void findStatusById_SESSION_NOT_FOUND() {
+        logger.info("Testing findStatusById with non-existent session");
+
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomTaskId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findStatusById(randomProjectId, randomSessionId, randomTaskId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while fetching the status"),
+                "Exception message should contain error about fetching status"
+        );
+    }
+
+
+    @Test
+    void findTaskTypeById_SESSION_NOT_FOUND() {
+        logger.info("Testing findTaskTypeById with non-existent session");
+
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomTaskId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findTaskTypeById(randomProjectId, randomSessionId, randomTaskId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while fetching the task type"),
+                "Exception message should contain error about fetching task type"
+        );
+    }
+
 
 }
