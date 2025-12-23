@@ -41,18 +41,16 @@ resource "azurerm_key_vault" "main" {
   sku_name                   = "standard"
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
-
-  # Allow Terraform service principal
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
-
-    secret_permissions = [
-      "Get", "List", "Set", "Delete", "Purge", "Recover"
-    ]
-  }
+  enable_rbac_authorization  = true
 
   tags = local.common_tags
+}
+
+# Grant Key Vault Administrator to Terraform service principal
+resource "azurerm_role_assignment" "terraform_kv_admin" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = data.azurerm_client_config.current.object_id
 }
 
 # Container Registry
@@ -138,7 +136,20 @@ resource "azurerm_key_vault_secret" "postgres_connection_string" {
   key_vault_id = azurerm_key_vault.main.id
 
   depends_on = [
-    azurerm_key_vault.main
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
+}
+
+# Store Storage Account connection string in Key Vault
+resource "azurerm_key_vault_secret" "storage_connection_string" {
+  name         = "storage-connection-string"
+  value        = "DefaultEndpointsProtocol=https;AccountName=${azurerm_storage_account.main.name};AccountKey=${azurerm_storage_account.main.primary_access_key};EndpointSuffix=core.windows.net"
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
   ]
 }
 
@@ -254,10 +265,10 @@ resource "azurerm_eventhub_namespace_authorization_rule" "app_access" {
   manage              = false
 }
 
-# Store Event Hub connection string in Key Vault
+# Store Event Hub connection string in Key Vault (JAAS format for Kafka)
 resource "azurerm_key_vault_secret" "eventhub_connection_string" {
   name         = "eventhub-connection-string"
-  value        = azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string
+  value        = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string}\";"
   key_vault_id = azurerm_key_vault.main.id
 }
 
@@ -374,16 +385,12 @@ resource "azurerm_role_assignment" "container_app_eventhub_data_owner" {
 #   scope               = azurerm_cosmosdb_account.main.id
 # }
 
-# Grant Key Vault access to each Container App's System-Assigned Managed Identity
-resource "azurerm_key_vault_access_policy" "container_apps" {
-  for_each     = var.container_apps
-  key_vault_id = azurerm_key_vault.main.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_container_app.apps[each.key].identity[0].principal_id
-
-  secret_permissions = [
-    "Get", "List"
-  ]
+# Grant Key Vault Secrets User to each Container App's System-Assigned Managed Identity
+resource "azurerm_role_assignment" "container_app_kv_secrets_user" {
+  for_each             = var.container_apps
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_container_app.apps[each.key].identity[0].principal_id
 }
 
 # Data source for current client config
