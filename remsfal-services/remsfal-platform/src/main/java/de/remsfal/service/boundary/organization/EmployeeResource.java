@@ -4,6 +4,7 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.api.organization.EmployeeEndpoint;
 import de.remsfal.core.json.organization.OrganizationEmployeeJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
+import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.service.control.OrganizationController;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
@@ -44,7 +45,12 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
 
     @Override
     public void deleteEmployee(UUID organizationId, UUID employeeId) {
-        checkWritePermissions(organizationId);
+        if (controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole() == OrganizationEmployeeModel.EmployeeRole.OWNER) {
+            checkOwnerPermissions(organizationId);
+        }
+        else {
+            checkWritePermissions(organizationId);
+        }
         controller.removeEmployee(organizationId, employeeId);
     }
 }
