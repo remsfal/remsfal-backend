@@ -15,10 +15,10 @@ public class OrganizationListJson {
     Long total;
 
     //Getter and Setter
-
     public List<OrganizationJson> getOrganizations() {
         return organizations;
     }
+
     public void setOrganizations(List<OrganizationJson> organizations) {
         this.organizations = organizations;
     }
@@ -26,6 +26,7 @@ public class OrganizationListJson {
     public Integer getOffset() {
         return offset;
     }
+
     public void setOffset(Integer offset) {
         this.offset = offset;
     }
@@ -33,6 +34,7 @@ public class OrganizationListJson {
     public Long getTotal() {
         return total;
     }
+
     public void setTotal(Long total) {
         this.total = total;
     }

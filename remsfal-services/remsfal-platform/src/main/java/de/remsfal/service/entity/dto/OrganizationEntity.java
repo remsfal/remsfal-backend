@@ -25,9 +25,6 @@ import java.util.Objects;
 @NamedQuery(name = "findAll", query = "select o from OrganizationEntity o")
 public class OrganizationEntity extends AbstractEntity implements OrganizationModel {
 
-    @Column(name = "id")
-    private UUID id;
-
     @Column(name = "name")
     private String name;
 

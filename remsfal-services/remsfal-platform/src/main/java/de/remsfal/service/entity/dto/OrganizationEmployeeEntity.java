@@ -107,9 +107,6 @@ public class OrganizationEmployeeEntity extends MetaDataEntity implements Organi
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!(o instanceof OrganizationEmployeeEntity)) {
-            return false;
-        }
         final OrganizationEmployeeEntity entity = (OrganizationEmployeeEntity) o;
         return Objects.equals(organization, entity.organization) &&
                 Objects.equals(user, entity.user) &&

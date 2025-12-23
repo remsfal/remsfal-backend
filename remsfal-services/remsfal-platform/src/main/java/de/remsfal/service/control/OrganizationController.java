@@ -107,7 +107,7 @@ public class OrganizationController {
 
         OrganizationEntity organizationEntity = organizationRepository
             .findOrganizationByUserId(user.getId(), organizationId)
-            .orElseThrow(() -> new ForbiddenException("Organization not found"));
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
 
         if (organization.getName() != null) {
             organizationEntity.setName(organization.getName());
@@ -172,7 +172,7 @@ public class OrganizationController {
         return organizationRepository.findOrganizationEmployeesByOrganizationId(organizationId);
     }
 
-    public List<? extends OrganizationModel> getEmployeesByUser(final UserModel user) {
+    public List<? extends OrganizationModel> getOrganizationsOfUser(final UserModel user) {
         return organizationRepository.findOrganizationEmployeesByUserId(user.getId())
             .stream().map(OrganizationEmployeeEntity::getOrganization).toList();
     }
@@ -180,9 +180,7 @@ public class OrganizationController {
     @Transactional
     public OrganizationEmployeeModel addEmployee(final UUID organizationId, final UserModel user,
         final OrganizationEmployeeModel employee) {
-        logger.infov("Adding a organization employee (user={0}, organization={1}, employeeId={2}, " +
-            "employeeEmail={3}, employeeRole={4})",
-            user.getId(), organizationId, employee.getId(), employee.getEmail(), employee.getEmployeeRole());
+
         final OrganizationEntity organization = organizationRepository
             .findOrganizationByUserId(user.getId(), organizationId)
             .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));

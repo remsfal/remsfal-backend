@@ -18,7 +18,7 @@ public class OrganizationEmployeeKey implements Serializable {
     @Column(name = "organization_id", nullable = false, columnDefinition = "uuid")
     public UUID organizationId;
 
-    @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
+    @Column(name = "employee_id", nullable = false, columnDefinition = "uuid")
     public UUID userId;
 
     public UUID getOrganizationId() {

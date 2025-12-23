@@ -1,23 +1,19 @@
 package de.remsfal.service.boundary;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.api.OrganizationEndpoint;
 import de.remsfal.core.json.OrganizationJson;
 import de.remsfal.core.json.OrganizationListJson;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.service.boundary.organization.EmployeeResource;
 import de.remsfal.service.boundary.organization.OrganizationSubResource;
-import de.remsfal.service.control.OrganizationController;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.container.ResourceContext;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
 import java.util.List;
@@ -40,7 +36,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
 
     @Override
     public OrganizationListJson getOrganizationsOfUser() {
-        return OrganizationListJson.valueOf(controller.getEmployeesByUser(principal));
+        return OrganizationListJson.valueOf(controller.getOrganizationsOfUser(principal));
     }
 
     @Override

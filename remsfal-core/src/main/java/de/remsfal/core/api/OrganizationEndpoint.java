@@ -53,7 +53,7 @@ public interface OrganizationEndpoint {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/my")
+    @Path("/employments")
     @Operation(description = "Retrieve a list of all organizations where the user is an employee")
     @APIResponse(responseCode = "200", description = "An organization was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")

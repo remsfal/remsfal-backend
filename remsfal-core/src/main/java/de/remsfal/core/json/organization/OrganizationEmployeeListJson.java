@@ -14,21 +14,13 @@ import java.util.Set;
 
 @Value.Immutable
 @ImmutableStyle
-@Schema(description = "A list of project members")
+@Schema(description = "A list of organization employees")
 @JsonDeserialize(as = ImmutableOrganizationEmployeeListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class OrganizationEmployeeListJson {
 
     @NotNull
     public abstract List<OrganizationEmployeeJson> getEmployees();
-
-    public static OrganizationEmployeeListJson valueOfSet(Set<? extends OrganizationEmployeeModel> models) {
-        final ImmutableOrganizationEmployeeListJson.Builder builder = ImmutableOrganizationEmployeeListJson.builder();
-        for (OrganizationEmployeeModel model : models) {
-            builder.addEmployees(OrganizationEmployeeJson.valueOf(model));
-        }
-        return builder.build();
-    }
 
     public static OrganizationEmployeeListJson valueOfList(List<? extends OrganizationEmployeeModel> models) {
         final ImmutableOrganizationEmployeeListJson.Builder builder = ImmutableOrganizationEmployeeListJson.builder();
