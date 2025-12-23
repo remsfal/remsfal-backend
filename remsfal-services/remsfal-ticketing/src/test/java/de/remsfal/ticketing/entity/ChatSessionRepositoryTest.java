@@ -38,17 +38,34 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
 
     @BeforeEach
     void setUp() {
-        logger.info("Setting up test data");
+        logger.info("Setting up test data for REST tests");
+
+        // 1. Chat Session einfügen
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
                 "(project_id, issue_id, session_id, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?)";
-        assertNotNull(TestData.PROJECT_ID);
+
         cqlSession.execute(insertSessionCql,
-            TicketingTestData.PROJECT_ID, TASK_ID, SESSION_ID, Instant.now(),
-            Map.of(TicketingTestData.USER_ID_1, ChatSessionRepository.ParticipantRole.INITIATOR.name(),
-                TicketingTestData.USER_ID_2, ChatSessionRepository.ParticipantRole.HANDLER.name()));
-        logger.info("Test session created: " + SESSION_ID);
-        logger.info("Test data setup complete");
+                TicketingTestData.PROJECT_ID, TASK_ID, SESSION_ID, Instant.now(),
+                Map.of(TicketingTestData.USER_ID_1, "INITIATOR",
+                        TicketingTestData.USER_ID_2, "HANDLER"));
+
+        // 2. Issue Participants einfügen (DAS FEHLT!)
+        String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
+                "(user_id, issue_id, session_id, project_id, role, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Instant now = Instant.now();
+
+        cqlSession.execute(insertParticipantCql,
+                TicketingTestData.USER_ID_1, TASK_ID, SESSION_ID,
+                TicketingTestData.PROJECT_ID, "INITIATOR", now);
+
+        cqlSession.execute(insertParticipantCql,
+                TicketingTestData.USER_ID_2, TASK_ID, SESSION_ID,
+                TicketingTestData.PROJECT_ID, "HANDLER", now);
+
+        logger.info("Test setup completed");
     }
 
     @Test

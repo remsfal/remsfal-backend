@@ -243,16 +243,18 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                 throw new IllegalArgumentException("User is not a participant in this session");
             }
 
-            // Update issue_participants FIRST (preserves created_at)
             try {
                 issueParticipantRepository.updateRole(userId, issueId, sessionId, newRole);
+            } catch (IllegalArgumentException e) {
+                logger.error("Participant not found in issue_participants for userId=" + userId
+                        + ", sessionId=" + sessionId, e);
+                throw new RuntimeException("An error occurred while changing the participant role", e);
             } catch (Exception e) {
-                logger.error("Failed to update role in issue_participants for userId="
-                        + userId + ", sessionId=" + sessionId, e);
-                throw new RuntimeException("Failed to update participant role", e);
+                logger.error("Failed to update role in issue_participants for userId=" + userId
+                        + ", sessionId=" + sessionId, e);
+                throw new RuntimeException("An error occurred while changing the participant role", e);
             }
 
-            // Then update chat_sessions
             participants.put(userId, newRole);
             Update updateQuery = QueryBuilder.update(keyspace, TABLE)
                     .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
@@ -266,10 +268,13 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             } catch (Exception e) {
                 logger.error("Failed to update chat_sessions after role change. "
                         + "Manual cleanup may be required for session " + sessionId, e);
-                throw new RuntimeException("Failed to update session after role change", e);
+                throw new RuntimeException("An error occurred while changing the participant role", e);
             }
 
         } catch (IllegalArgumentException e) {
+            // Wrap IllegalArgumentException in RuntimeException with expected message
+            throw new RuntimeException("An error occurred while changing the participant role", e);
+        } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while changing the participant role", e);
