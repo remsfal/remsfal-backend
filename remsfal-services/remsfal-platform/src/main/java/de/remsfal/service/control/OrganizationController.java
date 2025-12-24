@@ -209,4 +209,8 @@ public class OrganizationController {
     public void removeEmployee(final UUID organizationId, final UUID employeeId) {
         organizationRepository.deleteOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId);
     }
+
+    public int countEmployeesWithWriteAccess(final UUID organizationId) {
+        return organizationRepository.countEmployeesWithWriteAccess(organizationId);
+    }
 }

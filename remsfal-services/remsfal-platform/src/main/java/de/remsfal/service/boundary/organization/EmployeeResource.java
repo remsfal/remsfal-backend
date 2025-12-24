@@ -52,6 +52,12 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
         else {
             checkWritePermissions(organizationId);
         }
-        controller.removeEmployee(organizationId, employeeId);
+
+        if (controller.countEmployeesWithWriteAccess(organizationId) <= 1) {
+            controller.deleteOrganization(organizationId);
+        }
+        else {
+            controller.removeEmployee(organizationId, employeeId);
+        }
     }
 }

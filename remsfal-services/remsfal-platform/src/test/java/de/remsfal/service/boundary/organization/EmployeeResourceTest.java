@@ -264,4 +264,32 @@ public class EmployeeResourceTest extends AbstractResourceTest {
                 .and().body("lastName", Matchers.equalTo(TestData.USER_LAST_NAME_2))
                 .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_2));
     }
+
+    @Test
+    void deleteLastEmployeeWithWriteAccess_SUCCESS_organizationDeleted() {
+        final String ORGANIZATION_PATH = "/api/v1/organization";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .delete(EMPLOYEE_PATH, TestData.ORGANIZATION_ID_3.toString(), TestData.USER_ID_2.toString())
+            .then()
+            .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .delete(EMPLOYEE_PATH, TestData.ORGANIZATION_ID_3.toString(), TestData.USER_ID_1.toString())
+            .then()
+            .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
+                .get(ORGANIZATION_PATH + "/" + TestData.ORGANIZATION_ID_3)
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
 }

@@ -29,6 +29,11 @@ import java.util.UUID;
 @NamedQuery(name = "OrganizationEmployeeEntity.removeByOrganizationIdAndUserId",
     query = "DELETE FROM OrganizationEmployeeEntity o " +
     "WHERE o.organization.id = :organizationId AND o.user.id = :userId")
+@NamedQuery(
+    name = "OrganizationEmployeeEntity.countEmployeesWithWriteAccess",
+    query = "SELECT o FROM OrganizationEmployeeEntity o " +
+    "WHERE o.organization.id = :organizationId AND o.role IN (EmployeeRole.OWNER, EmployeeRole.MANAGER)"
+)
 @Table(name = "organization_employees")
 public class OrganizationEmployeeEntity extends MetaDataEntity implements OrganizationEmployeeModel {
 
