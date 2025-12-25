@@ -222,18 +222,33 @@ resource "azurerm_key_vault_secret" "cosmos_contact_point" {
   name         = "cosmos-contact-point"
   value        = "${azurerm_cosmosdb_account.main.name}.cassandra.cosmos.azure.com:10350"
   key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 resource "azurerm_key_vault_secret" "cosmos_username" {
   name         = "cosmos-username"
   value        = azurerm_cosmosdb_account.main.name
   key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 resource "azurerm_key_vault_secret" "cosmos_password" {
   name         = "cosmos-password"
   value        = azurerm_cosmosdb_account.main.primary_key
   key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 # Event Hub Namespace
@@ -271,6 +286,11 @@ resource "azurerm_key_vault_secret" "eventhub_connection_string" {
   name         = "eventhub-connection-string"
   value        = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string}\";"
   key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 # Store Event Hub bootstrap server in Key Vault
@@ -278,6 +298,11 @@ resource "azurerm_key_vault_secret" "eventhub_bootstrap_server" {
   name         = "eventhub-bootstrap-server"
   value        = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
   key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 # Container Apps Environment

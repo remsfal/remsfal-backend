@@ -1,0 +1,58 @@
+# Core HTTP
+quarkus.http.port=8081
+quarkus.http.host=0.0.0.0
+%dev.quarkus.devservices.enabled=false
+%dev.quarkus.http.proxy.enable-forwarded-host=true
+%test.quarkus.http.proxy.enable-forwarded-host=true
+
+# MicroProfile / SmallRye JWT configuration
+quarkus.smallrye-jwt.enabled=true
+mp.jwt.verify.issuer=REMSFAL
+%dev.mp.jwt.verify.publickey.location=http://localhost:8080/api/v1/authentication/jwks
+mp.jwt.token.header=Cookie
+mp.jwt.token.cookie=remsfal_access_token
+
+# SmallRye JWT Debug-Logging
+%dev.quarkus.log.category."io.smallrye.jwt".level=DEBUG
+%dev.quarkus.log.category."io.quarkus.smallrye.jwt".level=DEBUG
+# HTTP Access Log for authentication failures
+quarkus.http.access-log.enabled=true
+
+# MinIO configuration for Dev Profile
+quarkus.minio.devservices.enabled=false
+%dev.quarkus.minio.host=http://localhost
+%dev.quarkus.minio.port=9000
+%dev.quarkus.minio.access-key=remsfalAdmin
+%dev.quarkus.minio.secret-key=remsfalSecret
+%dev.quarkus.minio.secure=false
+%test.quarkus.minio.devservices.enabled=true
+
+# Cassandra configuration
+jnosql.column.database=REMSFAL
+quarkus.cassandra.keyspace=REMSFAL
+%dev.quarkus.cassandra.contact-points=127.0.0.1:9042
+%dev.quarkus.cassandra.auth.username=remsfalAdmin
+%dev.quarkus.cassandra.auth.password=remsfalSecret
+%dev.quarkus.cassandra.init.eager-init=true
+%dev.quarkus.cassandra.local-datacenter=datacenter1
+%test.quarkus.cassandra.devservices.enabled=true
+
+# Liquibase configuration for Cassandra
+quarkus.liquibase.migrate-at-start=true
+quarkus.liquibase.change-log=META-INF/liquibase-changelog.xml
+
+# OpenAPI config
+quarkus.smallrye-openapi.store-schema-directory=target/openapi
+quarkus.smallrye-openapi.store-schema-file-name=ticketing-spec
+
+# Kafka configuration
+quarkus.kafka.devservices.service-name=OcrServiceResourceKafka
+quarkus.kafka.devservices.shared=true
+quarkus.kafka.devservices.enabled=false
+%dev.mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:39092
+mp.messaging.outgoing.ocr-request.connector=smallrye-kafka
+mp.messaging.outgoing.ocr-request.topic=ocr.documents.to_process
+mp.messaging.incoming.ocr-result.connector=smallrye-kafka
+mp.messaging.incoming.ocr-result.topic=ocr.documents.processed
+mp.messaging.incoming.ocr-result.group.id=task-service
+mp.messaging.incoming.ocr-result.failure-strategy=ignore

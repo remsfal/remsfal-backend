@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AzureKeyVaultConfigSource implements ConfigSource {
 
     private static final String VAULT_ENDPOINT_ENV = "AZURE_KEYVAULT_ENDPOINT";
-    private static final String DEFAULT_VAULT_ENDPOINT = "https://rmsfl-dev-weu-exgg-kv.vault.azure.net/";
+    private static final String DEFAULT_VAULT_ENDPOINT = "https://rmsfl-dev-weu-id13-kv.vault.azure.net/";
     private static final int ORDINAL = 270;
     
     private final Map<String, String> cache = new ConcurrentHashMap<>();
