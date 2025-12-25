@@ -126,10 +126,10 @@ variable "container_apps" {
       target_port      = 8081
       external_enabled = true
     }
-    ocr = {
-      image            = "remsfal-ocr:latest"
-      cpu              = 0.5
-      memory           = "1Gi"
+    notification = {
+      image            = "remsfal-notification:latest"
+      cpu              = 0.25
+      memory           = "0.5Gi"
       min_replicas     = 0
       max_replicas     = 3
       ingress_enabled  = true

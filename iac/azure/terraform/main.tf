@@ -347,14 +347,23 @@ resource "azurerm_container_app" "apps" {
       cpu    = each.value.cpu
       memory = each.value.memory
 
+      # Application Insights for monitoring
       env {
         name  = "APPLICATIONINSIGHTS_CONNECTION_STRING"
         value = azurerm_application_insights.main.connection_string
       }
 
+      # Azure Key Vault endpoint for AzureKeyVaultConfigSource
+      # The ConfigSource loads secrets directly from Key Vault using Managed Identity
       env {
-        name  = "AZURE_KEY_VAULT_URL"
+        name  = "AZURE_KEYVAULT_ENDPOINT"
         value = azurerm_key_vault.main.vault_uri
+      }
+
+      # Platform service URL for JWT verification (ticketing/notification need this)
+      env {
+        name  = "PLATFORM_JWKS_URL"
+        value = "https://${local.base_name}-ca-platform.${azurerm_container_app_environment.main.default_domain}/api/v1/authentication/jwks"
       }
     }
   }
