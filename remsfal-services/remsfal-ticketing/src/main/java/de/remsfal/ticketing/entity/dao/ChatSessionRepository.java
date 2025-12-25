@@ -18,7 +18,13 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.Optional;
+import java.util.NoSuchElementException;
+
 
 @ApplicationScoped
 public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity, ChatSessionKey> {

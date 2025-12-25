@@ -44,8 +44,10 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
 
     @Override
-    public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
-                                   UnitType rentalType, UUID rentalId, Status status) {
+    public IssueListJson getIssues(Integer offset, Integer limit,
+                                   UUID projectId, UUID ownerId,
+                                   UUID tenancyId, UnitType rentalType,
+                                   UUID rentalId, Status status) {
         logger.info("Yes i was called");
         List<UUID> projectFilter = null;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
@@ -135,7 +137,10 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
-        final URI location = uri.getAbsolutePathBuilder().path(Objects.requireNonNull(issue.getProjectId()).toString()).build();
+        final URI location = uri.getAbsolutePathBuilder()
+                .path(Objects.requireNonNull(issue.getProjectId())
+                .toString())
+                .build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(response)
