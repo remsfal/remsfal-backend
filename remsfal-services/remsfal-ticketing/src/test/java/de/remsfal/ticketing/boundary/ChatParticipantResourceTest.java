@@ -69,7 +69,6 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
                 "(project_id, issue_id, session_id, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
-        // Chat Session 1
         cqlSession.execute(insertChatSessionCql,
                 TicketingTestData.PROJECT_ID_1,
                 TicketingTestData.ISSUE_ID_1,
@@ -79,7 +78,6 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
                         TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
                         TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
 
-        // *** NEU: Participants in issue_participants einfügen ***
         insertIssueParticipant(
                 TicketingTestData.USER_ID_4,
                 TicketingTestData.ISSUE_ID_1,
@@ -95,7 +93,6 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
                 ParticipantRole.HANDLER.name()
         );
 
-        // Chat Session 2
         cqlSession.execute(insertChatSessionCql,
                 TicketingTestData.PROJECT_ID_1,
                 TicketingTestData.ISSUE_ID_2,
@@ -105,7 +102,6 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
                         TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
                         TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
 
-        // *** NEU: Participants in issue_participants einfügen ***
         insertIssueParticipant(
                 TicketingTestData.USER_ID_4,
                 TicketingTestData.ISSUE_ID_2,
