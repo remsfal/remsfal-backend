@@ -467,6 +467,23 @@ resource "azurerm_container_app" "apps" {
         name  = "QUARKUS_PROFILE"
         value = "prod"
       }
+
+      # Frontend-specific: Backend API URLs for nginx proxy
+      dynamic "env" {
+        for_each = each.key == "frontend" ? [1] : []
+        content {
+          name  = "PLATFORM_API_URL"
+          value = "https://${local.base_name}-ca-platform.${azurerm_container_app_environment.main.default_domain}"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "frontend" ? [1] : []
+        content {
+          name  = "TICKETING_API_URL"
+          value = "https://${local.base_name}-ca-ticketing.${azurerm_container_app_environment.main.default_domain}"
+        }
+      }
     }
   }
 
