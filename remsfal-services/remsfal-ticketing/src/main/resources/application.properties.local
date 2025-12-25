@@ -29,7 +29,10 @@ quarkus.minio.devservices.enabled=false
 
 # Cassandra configuration
 jnosql.column.database=REMSFAL
-quarkus.cassandra.keyspace=REMSFAL
+%dev.jnosql.column.database=REMSFAL
+%test.jnosql.column.database=remsfal
+%dev.quarkus.cassandra.keyspace=REMSFAL
+%test.quarkus.cassandra.keyspace=remsfal
 %dev.quarkus.cassandra.contact-points=127.0.0.1:9042
 %dev.quarkus.cassandra.auth.username=remsfalAdmin
 %dev.quarkus.cassandra.auth.password=remsfalSecret
@@ -48,7 +51,8 @@ quarkus.smallrye-openapi.store-schema-file-name=ticketing-spec
 # Kafka configuration
 quarkus.kafka.devservices.service-name=OcrServiceResourceKafka
 quarkus.kafka.devservices.shared=true
-quarkus.kafka.devservices.enabled=false
+%dev.quarkus.kafka.devservices.enabled=false
+%test.quarkus.kafka.devservices.enabled=true
 %dev.mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:39092
 mp.messaging.outgoing.ocr-request.connector=smallrye-kafka
 mp.messaging.outgoing.ocr-request.topic=ocr.documents.to_process

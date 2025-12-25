@@ -17,17 +17,20 @@
 #
 # USAGE:
 #   chmod +x .github/workflows/deploy-to-acr.sh
-#   ./deploy-to-acr.sh <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [SERVICE]
+#   ./.github/workflows/deploy-to-acr.sh <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [SERVICE]
 #
 # EXAMPLES:
 #   # Deploy all services
-#   ./deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" v1.0.0
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" v1.0.0
 #
 #   # Deploy only platform service
-#   ./deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" v1.0.0 platform
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" v1.0.0 platform
 #
 #   # Deploy only ticketing service
-#   ./deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" latest ticketing
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" latest ticketing
+#
+#   # Deploy only ticketing service
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" latest all --skip-tests
 #
 # PULL AND RUN LOCALLY:
 #   # 1. Login to ACR
@@ -93,26 +96,42 @@ log_step() {
     echo -e "${CYAN}[STEP]${NC} $1"
 }
 
+# Parse arguments - separate flags from positional args
+SKIP_TESTS="false"
+POSITIONAL_ARGS=()
+
+for arg in "$@"; do
+    case $arg in
+        --skip-tests)
+            SKIP_TESTS="true"
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$arg")
+            ;;
+    esac
+done
+
 # Validate input parameters
-if [ $# -lt 3 ]; then
+if [ ${#POSITIONAL_ARGS[@]} -lt 3 ]; then
     log_error "Missing required parameters"
     echo ""
-    echo "Usage: $0 <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [SERVICE]"
+    echo "Usage: $0 <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [SERVICE] [--skip-tests]"
     echo ""
     echo "Examples:"
     echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" v1.0.0"
     echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" latest platform"
+    echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" latest all --skip-tests"
     echo ""
     echo "Services: platform, ticketing, notification, all (default)"
+    echo "Flags:    --skip-tests  Skip running tests before build"
     exit 1
 fi
 
-ACR_NAME="$1"
-ACR_USERNAME="$2"
-ACR_PASSWORD="$3"
-IMAGE_TAG="${4:-latest}"
-SERVICE_FILTER="${5:-all}"
-SKIP_TESTS="${6:-false}"
+ACR_NAME="${POSITIONAL_ARGS[0]}"
+ACR_USERNAME="${POSITIONAL_ARGS[1]}"
+ACR_PASSWORD="${POSITIONAL_ARGS[2]}"
+IMAGE_TAG="${POSITIONAL_ARGS[3]:-latest}"
+SERVICE_FILTER="${POSITIONAL_ARGS[4]:-all}"
 
 # Configuration
 ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
@@ -207,6 +226,12 @@ fi
 log_success "All prerequisites are met (Java ${JAVA_VERSION}, Maven, Docker)"
 echo ""
 
+# Set Maven command (used by tests and build steps)
+MVN_CMD="./mvnw"
+if [ ! -f "./mvnw" ]; then
+    MVN_CMD="mvn"
+fi
+
 ###############################################################################
 # Step 2: Run tests for selected services
 ###############################################################################
@@ -214,11 +239,6 @@ if [ "${SKIP_TESTS}" = "true" ]; then
     log_warning "Step 2: Skipping tests (SKIP_TESTS=true)"
 else
     log_step "Step 2: Running tests for selected services..."
-
-    MVN_CMD="./mvnw"
-    if [ ! -f "./mvnw" ]; then
-        MVN_CMD="mvn"
-    fi
 
     for service_key in ${SERVICES_TO_DEPLOY}; do
         service_name=$(get_service_name "${service_key}")
