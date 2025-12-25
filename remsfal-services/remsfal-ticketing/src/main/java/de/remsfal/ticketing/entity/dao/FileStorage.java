@@ -1,77 +1,84 @@
 package de.remsfal.ticketing.entity.dao;
 
+import de.remsfal.ticketing.entity.dao.storage.AzureBlobStorageClient;
+import de.remsfal.ticketing.entity.dao.storage.MinioStorageClient;
+import de.remsfal.ticketing.entity.dao.storage.StorageClient;
 import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.GetObjectArgs;
-import io.minio.StatObjectArgs;
-import io.minio.RemoveObjectArgs;
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
-
-import io.minio.errors.ErrorResponseException;
-import java.io.InputStream;
-
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import java.io.InputStream;
+import java.util.Optional;
 
+/**
+ * File storage service supporting multiple backends (MinIO, Azure Blob Storage).
+ * The implementation is selected at runtime based on configuration.
+ */
 @ApplicationScoped
 public class FileStorage {
 
-    public static final long DEFAULT_OBJECT_SIZE = -1;
-
-    public static final long DEFAULT_PART_SIZE = 5L * 1024L * 1024L;
-
     public static final String DEFAULT_BUCKET_NAME = "remsfal-ticketing";
+    private static final String STORAGE_PROVIDER_MINIO = "minio";
+    private static final String STORAGE_PROVIDER_AZURE = "azure";
 
-    @ConfigProperty(name = "quarkus.minio.bucket-name", defaultValue = DEFAULT_BUCKET_NAME)
+    @ConfigProperty(name = "storage.provider", defaultValue = STORAGE_PROVIDER_MINIO)
+    String storageProvider;
+
+    @ConfigProperty(name = "storage.bucket-name", defaultValue = DEFAULT_BUCKET_NAME)
     String bucketName;
+
+    // Azure configuration
+    @ConfigProperty(name = "azure.storage.connection-string")
+    Optional<String> azureConnectionString;
 
     @Inject
     Logger logger;
 
-    @Inject
+    // MinIO client - injected only when extension is available
     MinioClient minioClient;
 
-    public void onStartup(@Observes StartupEvent event) throws Exception {
-        logger.info("Initializing File Storage ...");
+    private StorageClient storageClient;
 
-        boolean bucketExists = minioClient.bucketExists(
-            BucketExistsArgs.builder()
-            .bucket(bucketName)
-            .build());
-        if (!bucketExists) {
-            // Create bucket
-            minioClient.makeBucket(
-                MakeBucketArgs.builder()
-                .bucket(bucketName)
-                .build());
-            logger.infov("Bucket '{0}' was created.", bucketName);
-        } else {
-            logger.infov("Bucket '{0}' already exists.", bucketName);
+    @Inject
+    public void setMinioClient(MinioClient minioClient) {
+        this.minioClient = minioClient;
+    }
+
+    public void onStartup(@Observes StartupEvent event) throws Exception {
+        logger.infov("Initializing File Storage with provider: {0}", storageProvider);
+
+        switch (storageProvider.toLowerCase()) {
+            case STORAGE_PROVIDER_MINIO:
+                if (minioClient == null) {
+                    throw new IllegalStateException("MinIO client not available but provider is set to 'minio'");
+                }
+                storageClient = new MinioStorageClient(minioClient, bucketName, logger);
+                break;
+            case STORAGE_PROVIDER_AZURE:
+                if (azureConnectionString.isEmpty()) {
+                    throw new IllegalStateException("Azure connection string not configured but provider is set to 'azure'");
+                }
+                storageClient = new AzureBlobStorageClient(azureConnectionString.get(), bucketName, logger);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown storage provider: " + storageProvider);
         }
+
+        storageClient.initialize();
+        logger.infov("File Storage initialized successfully with {0}", storageProvider);
     }
 
     public String uploadFile(final InputStream inputStream,
         final String fileName, final MediaType contentType) {
         try {
             final String finalFileName = generateUniqueFileName(fileName);
-            logger.infov("Uploading file {0} to bucket {1}", finalFileName, bucketName);
-            minioClient.putObject(
-                PutObjectArgs.builder()
-                .bucket(bucketName)
-                .object(finalFileName)
-                .stream(inputStream, DEFAULT_OBJECT_SIZE, DEFAULT_PART_SIZE)
-                .contentType(contentType.toString())
-                .build());
-            return finalFileName;
+            return storageClient.uploadFile(inputStream, finalFileName, contentType);
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while uploading file", e);
         }
@@ -79,18 +86,9 @@ public class FileStorage {
 
     public InputStream downloadFile(final String fileName) {
         try {
-            logger.infov("Downloading file {0} from bucket {1}", fileName, bucketName);
-            return minioClient.getObject(
-                GetObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(fileName)
-                    .build());
-        } catch (ErrorResponseException e) {
-            if (e.response().code() == 404) {
-                logger.warnv("Object {0} does not exist in bucket {1}", fileName, bucketName);
-                throw new NotFoundException(e);
-            }
-            throw new InternalServerErrorException("Error occurred while downloading file", e);
+            return storageClient.downloadFile(fileName);
+        } catch (jakarta.ws.rs.NotFoundException e) {
+            throw e; // Re-throw NotFoundException as-is
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while downloading file", e);
         }
@@ -98,12 +96,7 @@ public class FileStorage {
 
     public void deleteFile(final String fileName) {
         try {
-            logger.infov("Deleting file {0} from bucket {1}", fileName, bucketName);
-            minioClient.removeObject(
-                RemoveObjectArgs.builder()
-                .bucket(bucketName)
-                .object(fileName)
-                .build());
+            storageClient.deleteFile(fileName);
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while deleting file", e);
         }
@@ -111,20 +104,7 @@ public class FileStorage {
 
     private boolean fileExists(final String fileName) {
         try {
-            logger.infov("Checking if object {0} exists in bucket {1}", fileName, bucketName);
-            minioClient.statObject(
-                StatObjectArgs.builder()
-                .bucket(bucketName)
-                .object(fileName)
-                .build());
-            logger.infov("Object {0} exists in bucket {1}", fileName, bucketName);
-            return true;
-        } catch (ErrorResponseException e) {
-            if (e.response().code() == 404) {
-                logger.infov("Object {0} does not exist in bucket {1}", fileName, bucketName);
-                return false;
-            }
-            throw new InternalServerErrorException("Error occurred while checking if object exists", e);
+            return storageClient.fileExists(fileName);
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while checking if object exists", e);
         }

@@ -1,0 +1,62 @@
+# Development Environment Configuration
+
+environment = "dev"
+
+# PostgreSQL Configuration
+postgres_admin_username = "psqladmin"
+postgres_admin_password = "DevP@ssw0rd123!"  # Change in production!
+postgres_sku            = "B_Standard_B1ms"
+postgres_storage_mb     = 32768
+
+# Cosmos DB Configuration
+cosmos_throughput = 400
+
+# Event Hub Configuration
+eventhub_capacity = 1
+
+# Container Apps Configuration
+container_apps = {
+    frontend = {
+        image            = "nginx:latest"
+        cpu              = 0.25
+        memory           = "0.5Gi"
+        min_replicas     = 0
+        max_replicas     = 2
+        ingress_enabled  = true
+        target_port      = 80
+        external_enabled = true
+    }
+    platform = {
+        image            = "nginx:latest"
+        cpu              = 0.5
+        memory           = "1Gi"
+        min_replicas     = 1
+        max_replicas     = 3
+        ingress_enabled  = true
+        target_port      = 80
+        external_enabled = true
+    }
+    ticketing = {
+        image            = "nginx:latest"
+        cpu              = 0.5
+        memory           = "1Gi"
+        min_replicas     = 1
+        max_replicas     = 3
+        ingress_enabled  = true
+        target_port      = 80
+        external_enabled = true
+    }
+    ocr = {
+        image            = "nginx:latest"
+        cpu              = 0.25
+        memory           = "0.5Gi"
+        min_replicas     = 0
+        max_replicas     = 2
+        ingress_enabled  = true
+        target_port      = 80
+        external_enabled = false
+    }
+}
+
+# Maintained By
+maintained_by = "Dev Team"

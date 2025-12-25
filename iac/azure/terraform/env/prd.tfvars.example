@@ -1,0 +1,62 @@
+# Production Environment Configuration
+
+environment = "prd"
+
+# PostgreSQL Configuration
+postgres_admin_username = "psqladmin"
+postgres_admin_password = "CHANGE_ME_IN_PRODUCTION!"  # Must be changed!
+postgres_sku            = "GP_Standard_D2s_v3"
+postgres_storage_mb     = 131072
+
+# Cosmos DB Configuration
+cosmos_throughput = 1000
+
+# Event Hub Configuration
+eventhub_capacity = 2
+
+# Container Apps Configuration
+container_apps = {
+  frontend = {
+    image            = "remsfal/frontend:stable"
+    cpu              = 1
+    memory           = "2Gi"
+    min_replicas     = 2
+    max_replicas     = 10
+    ingress_enabled  = true
+    target_port      = 80
+    external_enabled = true
+  }
+  platform = {
+    image            = "remsfal/platform:stable"
+    cpu              = 1.5
+    memory           = "3Gi"
+    min_replicas     = 2
+    max_replicas     = 10
+    ingress_enabled  = true
+    target_port      = 8080
+    external_enabled = true
+  }
+  ticketing = {
+    image            = "remsfal/ticketing:stable"
+    cpu              = 1.5
+    memory           = "3Gi"
+    min_replicas     = 2
+    max_replicas     = 10
+    ingress_enabled  = true
+    target_port      = 8081
+    external_enabled = true
+  }
+  ocr = {
+    image            = "remsfal/ocr:stable"
+    cpu              = 1
+    memory           = "2Gi"
+    min_replicas     = 1
+    max_replicas     = 5
+    ingress_enabled  = true
+    target_port      = 8082
+    external_enabled = false
+  }
+}
+
+# Maintained By
+maintained_by = "Platform Team"
