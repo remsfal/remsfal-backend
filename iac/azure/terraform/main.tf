@@ -337,6 +337,51 @@ resource "azurerm_container_app" "apps" {
     value = azurerm_container_registry.main.admin_password
   }
 
+  # Secrets for Platform service (PostgreSQL, Event Hub)
+  dynamic "secret" {
+    for_each = each.key == "platform" ? [1] : []
+    content {
+      name  = "postgres-connection-string"
+      value = "jdbc:postgresql://${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.platform.name}?user=${var.postgres_admin_username}&password=${var.postgres_admin_password}&sslmode=require"
+    }
+  }
+
+  # Secrets for Ticketing service (Cosmos DB)
+  dynamic "secret" {
+    for_each = each.key == "ticketing" ? [1] : []
+    content {
+      name  = "cosmos-contact-point"
+      value = "${azurerm_cosmosdb_account.main.name}.cassandra.cosmos.azure.com"
+    }
+  }
+
+  dynamic "secret" {
+    for_each = each.key == "ticketing" ? [1] : []
+    content {
+      name  = "cosmos-username"
+      value = azurerm_cosmosdb_account.main.name
+    }
+  }
+
+  dynamic "secret" {
+    for_each = each.key == "ticketing" ? [1] : []
+    content {
+      name  = "cosmos-password"
+      value = azurerm_cosmosdb_account.main.primary_key
+    }
+  }
+
+  # Event Hub secrets for all services
+  secret {
+    name  = "eventhub-bootstrap-server"
+    value = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
+  }
+
+  secret {
+    name  = "eventhub-connection-string"
+    value = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string}\";"
+  }
+
   template {
     min_replicas = each.value.min_replicas
     max_replicas = each.value.max_replicas
@@ -360,10 +405,67 @@ resource "azurerm_container_app" "apps" {
         value = azurerm_key_vault.main.vault_uri
       }
 
+      # PostgreSQL connection string for platform service
+      dynamic "env" {
+        for_each = each.key == "platform" ? [1] : []
+        content {
+          name        = "POSTGRES_CONNECTION_STRING"
+          secret_name = "postgres-connection-string"
+        }
+      }
+
+      # Cosmos DB credentials for ticketing service
+      dynamic "env" {
+        for_each = each.key == "ticketing" ? [1] : []
+        content {
+          name        = "COSMOS_CONTACT_POINT"
+          secret_name = "cosmos-contact-point"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ticketing" ? [1] : []
+        content {
+          name        = "COSMOS_USERNAME"
+          secret_name = "cosmos-username"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ticketing" ? [1] : []
+        content {
+          name        = "COSMOS_PASSWORD"
+          secret_name = "cosmos-password"
+        }
+      }
+
+      # Event Hub config for all services (Kafka-compatible)
+      env {
+        name        = "EVENTHUB_BOOTSTRAP_SERVER"
+        secret_name = "eventhub-bootstrap-server"
+      }
+
+      env {
+        name        = "EVENTHUB_CONNECTION_STRING"
+        secret_name = "eventhub-connection-string"
+      }
+
       # Platform service URL for JWT verification (ticketing/notification need this)
       env {
         name  = "PLATFORM_JWKS_URL"
         value = "https://${local.base_name}-ca-platform.${azurerm_container_app_environment.main.default_domain}/api/v1/authentication/jwks"
+      }
+
+      # Frontend URL base for email links etc. (points to remsfal-frontend container app)
+      env {
+        name  = "DE_REMSFAL_FRONTEND_URL_BASE"
+        value = "https://${local.base_name}-ca-frontend.${azurerm_container_app_environment.main.default_domain}"
+      }
+
+      # Quarkus profile for production
+      env {
+        name  = "QUARKUS_PROFILE"
+        value = "prod"
       }
     }
   }
