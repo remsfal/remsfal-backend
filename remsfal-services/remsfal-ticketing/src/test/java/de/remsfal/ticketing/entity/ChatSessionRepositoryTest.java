@@ -4,7 +4,6 @@ import com.datastax.oss.driver.api.core.CqlSession;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.test.TestData;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository;
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.function.Executable;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -432,6 +432,12 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 "Exception message should contain error about fetching task type"
         );
     }
+
+
+
+
+
+
 
 
 }
