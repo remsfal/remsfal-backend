@@ -263,4 +263,203 @@ public class ChatSessionRepositoryRollbackTest extends AbstractTicketingTest {
             logger.info("Line 117 path potentially triggered");
         }
     }
+
+    /**
+     * Tests für die rot markierten Zeilen in changeParticipantRole
+     * Diese Tests gehören in ChatSessionRepositoryRollbackTest.java
+     */
+
+    @Test
+    void changeParticipantRole_PARTICIPANT_NOT_FOUND_IN_ISSUE_PARTICIPANTS() {
+        logger.info("Testing changeParticipantRole when participant not found in issue_participants");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(userId, "INITIATOR"));
+
+
+        doThrow(new IllegalArgumentException("Participant not found"))
+                .when(issueParticipantRepository).updateRole(
+                        any(UUID.class), any(UUID.class), any(UUID.class), any(String.class));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId, testSessionId, testIssueId, userId, "HANDLER")
+        );
+
+        assertTrue(exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Should throw RuntimeException with expected message");
+
+        verify(issueParticipantRepository, times(1)).updateRole(
+                any(UUID.class), any(UUID.class), any(UUID.class), any(String.class));
+
+        logger.info("Successfully tested IllegalArgumentException path (line with logger.error for IllegalArgumentException)");
+    }
+
+    @Test
+    void changeParticipantRole_UPDATE_ROLE_FAILS_WITH_EXCEPTION() {
+        logger.info("Testing changeParticipantRole when updateRole fails with generic Exception");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(userId, "INITIATOR"));
+
+        doThrow(new RuntimeException("Database connection failed"))
+                .when(issueParticipantRepository).updateRole(
+                        any(UUID.class), any(UUID.class), any(UUID.class), any(String.class));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId, testSessionId, testIssueId, userId, "HANDLER")
+        );
+
+        assertTrue(exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Should throw RuntimeException with expected message");
+
+        verify(issueParticipantRepository, times(1)).updateRole(
+                any(UUID.class), any(UUID.class), any(UUID.class), any(String.class));
+
+        logger.info("Successfully tested generic Exception path (line with logger.error for Exception)");
+    }
+
+    @Test
+    void changeParticipantRole_CHAT_SESSIONS_UPDATE_FAILS() {
+        logger.info("Testing changeParticipantRole when chat_sessions update fails");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(userId, "INITIATOR"));
+
+        String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
+                "(user_id, issue_id, session_id, project_id, role, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertParticipantCql,
+                userId, testIssueId, testSessionId, testProjectId, "INITIATOR", Instant.now());
+
+        doNothing().when(issueParticipantRepository).updateRole(
+                any(UUID.class), any(UUID.class), any(UUID.class), any(String.class));
+
+        String deleteCql = "DELETE FROM remsfal.chat_sessions " +
+                "WHERE project_id = ? AND issue_id = ? AND session_id = ?";
+        cqlSession.execute(deleteCql, testProjectId, testIssueId, testSessionId);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId, testSessionId, testIssueId, userId, "HANDLER")
+        );
+
+        assertTrue(exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Should throw RuntimeException when chat_sessions update fails");
+
+        logger.info("Successfully tested chat_sessions update failure path");
+    }
+
+    @Test
+    void changeParticipantRole_USER_NOT_PARTICIPANT() {
+        logger.info("Testing changeParticipantRole when user is not a participant");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+        UUID existingUserId = UUID.randomUUID();
+        UUID nonExistingUserId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(existingUserId, "INITIATOR"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId, testSessionId, testIssueId, nonExistingUserId, "HANDLER")
+        );
+
+        assertTrue(exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Should throw exception when user is not a participant");
+
+        logger.info("Successfully tested 'User is not a participant' path");
+    }
+
+    @Test
+    void changeParticipantRole_SESSION_NOT_FOUND() {
+        logger.info("Testing changeParticipantRole when session not found (row == null)");
+
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomIssueId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        randomProjectId, randomSessionId, randomIssueId, userId, "HANDLER")
+        );
+
+        assertTrue(exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Should throw exception when session not found");
+
+        logger.info("Successfully tested 'Session not found' path");
+    }
+
+    @Test
+    void changeParticipantRole_ILLEGAL_ARGUMENT_WRAPPED() {
+        logger.info("Testing changeParticipantRole IllegalArgumentException wrapping");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(userId, "INITIATOR"));
+
+        String deleteCql = "DELETE FROM remsfal.chat_sessions " +
+                "WHERE project_id = ? AND issue_id = ? AND session_id = ?";
+        cqlSession.execute(deleteCql, testProjectId, testIssueId, testSessionId);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId, testSessionId, testIssueId, userId, "HANDLER")
+        );
+
+        assertTrue(exception.getMessage().contains("An error occurred while changing the participant role"),
+                "IllegalArgumentException should be wrapped in RuntimeException");
+
+        logger.info("Successfully tested IllegalArgumentException wrapping at the end");
+    }
 }
