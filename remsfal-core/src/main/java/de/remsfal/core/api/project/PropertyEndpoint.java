@@ -53,8 +53,8 @@ public interface PropertyEndpoint {
         description = "A new property was successfully createded",
         headers = @Header(name = "Location", description = "URL of the new property"),
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema    = @Schema(implementation = PropertyJson.class)
+        mediaType = MediaType.APPLICATION_JSON,
+        schema    = @Schema(implementation = PropertyJson.class)
         )
     )
     Response createProperty(

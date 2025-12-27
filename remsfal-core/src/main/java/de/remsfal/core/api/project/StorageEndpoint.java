@@ -42,8 +42,8 @@ public interface StorageEndpoint {
         description = "A new storage was successfully createded",
         headers = @Header(name = "Location", description = "URL of the new storage"),
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema    = @Schema(implementation = StorageJson.class)
+        mediaType = MediaType.APPLICATION_JSON,
+        schema    = @Schema(implementation = StorageJson.class)
         )
     )
     Response createStorage(
