@@ -11,10 +11,8 @@ import org.junit.jupiter.api.Test;
 
 
 import java.time.Duration;
-import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static org.wildfly.common.Assert.assertNotNull;
 
 @QuarkusTest
 public class TenantResourceTest extends AbstractResourceTest {
@@ -56,8 +54,6 @@ public class TenantResourceTest extends AbstractResourceTest {
                 .get(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), tenantId)
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode());
-
-        assertNotNull(tenantId);
     }
 
     @Test
@@ -167,7 +163,5 @@ public class TenantResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
-
-
 }
 

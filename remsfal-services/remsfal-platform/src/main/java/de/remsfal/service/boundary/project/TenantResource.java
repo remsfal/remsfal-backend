@@ -24,7 +24,7 @@ public class TenantResource extends ProjectSubResource implements TenantEndpoint
     @Override
     public Response createTenant(final UUID projectId, final UserJson tenant) {
         checkWritePermissions(projectId);
-        final CustomerModel model = controller.createTenant (projectId, tenant);
+        final CustomerModel model = controller.createTenant(projectId, tenant);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
                 .type(MediaType.APPLICATION_JSON)

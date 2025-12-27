@@ -50,7 +50,7 @@ public class TenantController {
             throw new BadRequestException("A tenant with this email already exists in the project");
         }
 
-        UserEntity entity = updateTenant(tenantJson, new UserEntity());
+        UserEntity entity = applyJsonToEntity(tenantJson, new UserEntity());
         entity.generateId();
 
         tenancy.getTenants().add(entity);
@@ -73,7 +73,7 @@ public class TenantController {
     public CustomerModel getTenant(final UUID projectId, final UUID tenantId) {
         logger.infov("Retrieving a tenant (projectId={0}, tenantId={1})",
             projectId, tenantId);
-        return tenantRepository.findTenantByProjectId (projectId, tenantId)
+        return tenantRepository.findTenantByProjectId(projectId, tenantId)
                 .orElseThrow(() -> new NotFoundException("Tenant not found"));
     }
 
@@ -84,7 +84,7 @@ public class TenantController {
         UserEntity entity = tenantRepository.findTenantByProjectId(projectId, tenantId)
             .orElseThrow(() -> new NotFoundException("Tenant not found"));
 
-        updateTenant(tenantJson, entity);
+        applyJsonToEntity(tenantJson, entity);
 
         tenantRepository.persistAndFlush(entity);
         tenantRepository.getEntityManager().refresh(entity);
@@ -92,7 +92,7 @@ public class TenantController {
         return getTenant(projectId, tenantId);
     }
 
-    private UserEntity updateTenant(final UserJson json, final UserEntity entity) {
+    private UserEntity applyJsonToEntity(final UserJson json, final UserEntity entity) {
         entity.setEmail(json.getEmail());
         entity.setFirstName(json.getFirstName());
         entity.setLastName(json.getLastName());

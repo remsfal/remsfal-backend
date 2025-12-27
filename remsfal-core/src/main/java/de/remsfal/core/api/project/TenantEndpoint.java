@@ -84,7 +84,7 @@ public interface TenantEndpoint {
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the tenant", required = true)
-        @PathParam("tenantId") @NotNull UUID tenancyId,
+        @PathParam("tenantId") @NotNull UUID tenantId,
         @Parameter(description = "Tenant object with information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) UserJson tenant
     );

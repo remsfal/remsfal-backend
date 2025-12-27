@@ -98,8 +98,7 @@ public class TenantControllerTest extends AbstractServiceTest {
 
         final List<CustomerModel> result = tenantController.getTenants(TestData.PROJECT_ID_1);
 
-        assertFalse(result.isEmpty(), "List should not be empty.");
-        assertEquals(2, result.size(), "Exactly 2 Mieter tenants should be returned.");
+        assertEquals(2, result.size(), "Exactly 2 tenants should be returned.");
         assertTrue(result.stream().anyMatch(t -> t.getId().equals(tenant1.getId())));
         assertTrue(result.stream().anyMatch(t -> t.getId().equals(tenant2.getId())));
     }

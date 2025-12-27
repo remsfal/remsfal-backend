@@ -149,6 +149,3 @@ public interface ProjectEndpoint {
     @Path("/{projectId}/" + TenantEndpoint.SERVICE)
     TenantEndpoint getTenantResource();
 }
-
-
-
