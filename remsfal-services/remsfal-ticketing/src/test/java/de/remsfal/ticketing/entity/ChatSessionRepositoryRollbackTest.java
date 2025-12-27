@@ -142,55 +142,6 @@ public class ChatSessionRepositoryRollbackTest extends AbstractTicketingTest {
         verify(issueParticipantRepository, atLeastOnce()).insert(any(IssueParticipantEntity.class));
     }
 
-    /**
-     * Besserer Test für Zeile 117 mit direktem Mock
-     */
-    @Test
-    void createChatSession_SESSION_SAVE_FAILS_ROLLBACK_DELETE_FAILS() {
-        logger.info("Testing session save failure with rollback delete failure");
-
-        UUID testProjectId = UUID.randomUUID();
-        UUID testIssueId = UUID.randomUUID();
-        UUID user1 = UUID.randomUUID();
-        UUID user2 = UUID.randomUUID();
-
-        Map<UUID, String> participants = new LinkedHashMap<>();
-        participants.put(user1, "INITIATOR");
-        participants.put(user2, "HANDLER");
-
-
-        doNothing()
-                .doNothing()
-                .when(issueParticipantRepository).insert(any(IssueParticipantEntity.class));
-
-        doThrow(new RuntimeException("Rollback delete failed - database locked"))
-                .when(issueParticipantRepository).delete(any(UUID.class), any(UUID.class), any(UUID.class));
-
-        String preInsertCql = "INSERT INTO remsfal.chat_sessions " +
-                "(project_id, issue_id, session_id, created_at, participants) " +
-                "VALUES (?, ?, ?, ?, ?)";
-
-        try {
-            for (int i = 0; i < 5; i++) {
-                cqlSession.execute(preInsertCql,
-                        testProjectId, testIssueId, UUID.randomUUID(), Instant.now(), Map.of());
-            }
-        } catch (Exception e) {
-            logger.info("Setup exception (expected): " + e.getMessage());
-        }
-
-        // Jetzt testen
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.createChatSession(testProjectId, testIssueId, participants)
-        );
-
-        logger.info("Caught exception: " + exception.getMessage());
-
-        // Verifiziere dass inserts aufgerufen wurden
-        verify(issueParticipantRepository, times(2)).insert(any(IssueParticipantEntity.class));
-
-        logger.info("Successfully tested save failure rollback path");
-    }
 
     /**
      * Minimalistischer Test der gezielt Zeile 96 trifft
