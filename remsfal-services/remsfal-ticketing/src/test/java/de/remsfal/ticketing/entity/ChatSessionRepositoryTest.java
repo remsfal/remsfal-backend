@@ -491,6 +491,185 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         assertEquals(0, result.getParticipants().size());
     }
 
+    /**
+     * Zusätzliche Tests für die verbleibenden uncovered lines
+     * - findStatusById: else-Branch (Zeile mit "throw new RuntimeException")
+     * - findTaskTypeById: else-Branch (Zeile mit "throw new RuntimeException")
+     */
+
+    @Test
+    void findStatusById_NO_STATUS_FOUND() {
+        logger.info("Testing findStatusById when no status is found (null row)");
+
+        // Erstelle eine Session OHNE status column
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+
+        String insertCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(), Map.of());
+
+        // Jetzt versuchen den Status abzufragen - sollte fehlschlagen weil row != null aber status null ist
+        // Oder die Session existiert nicht
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findStatusById(testProjectId, testSessionId, testIssueId)
+        );
+
+        logger.info("Exception message: " + exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains("No status found for the given projectId") ||
+                        exception.getMessage().contains("An error occurred while fetching the status"),
+                "Should throw exception about missing status"
+        );
+    }
+
+    @Test
+    void findStatusById_ROW_IS_NULL() {
+        logger.info("Testing findStatusById when row is null (session doesn't exist)");
+
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomIssueId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findStatusById(randomProjectId, randomSessionId, randomIssueId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("No status found for the given projectId") ||
+                        exception.getMessage().contains("An error occurred while fetching the status"),
+                "Should throw exception when session doesn't exist"
+        );
+
+        logger.info("Successfully tested row == null path in findStatusById");
+    }
+
+    @Test
+    void findTaskTypeById_NO_TASK_TYPE_FOUND() {
+        logger.info("Testing findTaskTypeById when no task type is found (null row)");
+
+        // Erstelle eine Session OHNE task_type column
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+
+        String insertCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(), Map.of());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findTaskTypeById(testProjectId, testSessionId, testIssueId)
+        );
+
+        logger.info("Exception message: " + exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains("No task type found for the given projectId and sessionId") ||
+                        exception.getMessage().contains("An error occurred while fetching the task type"),
+                "Should throw exception about missing task type"
+        );
+    }
+
+    @Test
+    void findTaskTypeById_ROW_IS_NULL() {
+        logger.info("Testing findTaskTypeById when row is null (session doesn't exist)");
+
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomIssueId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findTaskTypeById(randomProjectId, randomSessionId, randomIssueId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("No task type found") ||
+                        exception.getMessage().contains("An error occurred while fetching the task type"),
+                "Should throw exception when session doesn't exist"
+        );
+
+        logger.info("Successfully tested row == null path in findTaskTypeById");
+    }
+
+    /**
+     * Test für den else-Branch in findStatusById wenn row != null aber kein status vorhanden
+     */
+    @Test
+    void findStatusById_ROW_EXISTS_BUT_STATUS_NULL() {
+        logger.info("Testing findStatusById when row exists but status column is null");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+
+        // Füge eine Session ein mit allen required fields aber ohne status
+        String insertCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, modified_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Instant now = Instant.now();
+        cqlSession.execute(insertCql,
+                testProjectId, testIssueId, testSessionId, now, now, new HashMap<UUID, String>());
+
+        // Verifiziere dass die Session existiert
+        Optional<ChatSessionEntity> session = chatSessionRepository
+                .findSessionById(testProjectId, testSessionId, testIssueId);
+        assertTrue(session.isPresent(), "Session should exist");
+
+        // Jetzt versuche status abzurufen - sollte Exception werfen
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findStatusById(testProjectId, testSessionId, testIssueId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("No status found") ||
+                        exception.getMessage().contains("An error occurred"),
+                "Should throw exception when status is null"
+        );
+    }
+
+    /**
+     * Test für den else-Branch in findTaskTypeById wenn row != null aber kein task_type vorhanden
+     */
+    @Test
+    void findTaskTypeById_ROW_EXISTS_BUT_TASK_TYPE_NULL() {
+        logger.info("Testing findTaskTypeById when row exists but task_type column is null");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+
+        // Füge eine Session ein mit allen required fields aber ohne task_type
+        String insertCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, modified_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Instant now = Instant.now();
+        cqlSession.execute(insertCql,
+                testProjectId, testIssueId, testSessionId, now, now, new HashMap<UUID, String>());
+
+        // Verifiziere dass die Session existiert
+        Optional<ChatSessionEntity> session = chatSessionRepository
+                .findSessionById(testProjectId, testSessionId, testIssueId);
+        assertTrue(session.isPresent(), "Session should exist");
+
+        // Jetzt versuche task_type abzurufen - sollte Exception werfen
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findTaskTypeById(testProjectId, testSessionId, testIssueId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("No task type found") ||
+                        exception.getMessage().contains("An error occurred"),
+                "Should throw exception when task_type is null"
+        );
+    }
 
 
 
