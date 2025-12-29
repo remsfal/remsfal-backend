@@ -32,6 +32,13 @@ locals {
     "ocr.documents.processed"
   ]
 
+  # Storage container names
+  storage_containers = [
+    "remsfal-ticketing",
+    "documents",
+    "test-bucket"
+  ]
+
   # Cosmos DB Cassandra configuration
   cosmos_keyspace_name = "REMSFAL"
   cosmos_tables = {

@@ -74,6 +74,14 @@ resource "azurerm_storage_account" "main" {
   tags                     = local.common_tags
 }
 
+# Storage Containers
+resource "azurerm_storage_container" "containers" {
+  for_each              = toset(local.storage_containers)
+  name                  = each.value
+  storage_account_id    = azurerm_storage_account.main.id
+  container_access_type = "private"
+}
+
 # PostgreSQL Flexible Server
 resource "azurerm_postgresql_flexible_server" "main" {
   name                   = local.postgres_server_name
@@ -263,12 +271,11 @@ resource "azurerm_eventhub_namespace" "main" {
 
 # Event Hubs (Kafka topics)
 resource "azurerm_eventhub" "topics" {
-  for_each            = toset(local.eventhub_topics)
-  name                = each.value
-  namespace_name      = azurerm_eventhub_namespace.main.name
-  resource_group_name = azurerm_resource_group.main.name
-  partition_count     = 2
-  message_retention   = 1
+  for_each          = toset(local.eventhub_topics)
+  name              = each.value
+  namespace_id      = azurerm_eventhub_namespace.main.id
+  partition_count   = 2
+  message_retention = 1
 }
 
 # Event Hub Authorization Rule for applications (fallback)
