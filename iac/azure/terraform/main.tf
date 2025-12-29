@@ -137,29 +137,6 @@ resource "azurerm_postgresql_flexible_server_database" "platform" {
 # Note: PostgreSQL role assignments for Managed Identity must be done manually via SQL
 # After deployment, run: GRANT ALL PRIVILEGES ON DATABASE REMSFAL TO "<managed_identity_name>";
 
-# Store PostgreSQL connection string in Key Vault
-resource "azurerm_key_vault_secret" "postgres_connection_string" {
-  name         = "postgres-connection-string"
-  value        = "jdbc:postgresql://${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.platform.name}?user=${var.postgres_admin_username}&password=${var.postgres_admin_password}&sslmode=require"
-  key_vault_id = azurerm_key_vault.main.id
-
-  depends_on = [
-    azurerm_key_vault.main,
-    azurerm_role_assignment.terraform_kv_admin
-  ]
-}
-
-# Store Storage Account connection string in Key Vault
-resource "azurerm_key_vault_secret" "storage_connection_string" {
-  name         = "storage-connection-string"
-  value        = "DefaultEndpointsProtocol=https;AccountName=${azurerm_storage_account.main.name};AccountKey=${azurerm_storage_account.main.primary_access_key};EndpointSuffix=core.windows.net"
-  key_vault_id = azurerm_key_vault.main.id
-
-  depends_on = [
-    azurerm_key_vault.main,
-    azurerm_role_assignment.terraform_kv_admin
-  ]
-}
 
 # Cosmos DB Account with Cassandra API
 resource "azurerm_cosmosdb_account" "main" {
@@ -223,6 +200,29 @@ resource "azurerm_cosmosdb_cassandra_table" "tables" {
       }
     }
   }
+}
+# Store PostgreSQL connection string in Key Vault
+resource "azurerm_key_vault_secret" "postgres_connection_string" {
+  name         = "postgres-connection-string"
+  value        = "jdbc:postgresql://${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.platform.name}?user=${var.postgres_admin_username}&password=${var.postgres_admin_password}&sslmode=require"
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
+}
+
+# Store Storage Account connection string in Key Vault
+resource "azurerm_key_vault_secret" "storage_connection_string" {
+  name         = "storage-connection-string"
+  value        = "DefaultEndpointsProtocol=https;AccountName=${azurerm_storage_account.main.name};AccountKey=${azurerm_storage_account.main.primary_access_key};EndpointSuffix=core.windows.net"
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 # Store Cosmos DB connection details in Key Vault
@@ -292,6 +292,28 @@ resource "azurerm_eventhub_namespace_authorization_rule" "app_access" {
 resource "azurerm_key_vault_secret" "eventhub_connection_string" {
   name         = "eventhub-connection-string"
   value        = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string}\";"
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
+}
+
+resource "azurerm_key_vault_secret" "eventhub_sasl_username" {
+  name         = "eventhub-sasl-username"
+  value        = "$ConnectionString"
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_key_vault.main,
+    azurerm_role_assignment.terraform_kv_admin
+  ]
+}
+
+resource "azurerm_key_vault_secret" "eventhub_sasl_password" {
+  name         = "eventhub-sasl-password"
+  value        = azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string
   key_vault_id = azurerm_key_vault.main.id
 
   depends_on = [
