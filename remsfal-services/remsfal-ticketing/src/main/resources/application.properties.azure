@@ -28,6 +28,15 @@ storage.provider=azure
 %test.storage.provider=minio
 storage.bucket-name=remsfal-ticketing
 
+# MinIO Configuration - disabled for prod (we use Azure Blob Storage)
+# Set dummy values to satisfy extension requirements
+%prod.quarkus.minio.enabled=false
+%prod.quarkus.minio.devservices.enabled=false
+%prod.quarkus.minio.host=disabled
+%prod.quarkus.minio.port=9000
+%prod.quarkus.minio.access-key=disabled
+%prod.quarkus.minio.secret-key=disabled
+
 # Azure Blob Storage configuration - loaded from Key Vault via ConfigSource
 azure.storage.connection-string=${storage-connection-string}
 

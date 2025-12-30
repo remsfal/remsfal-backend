@@ -66,7 +66,7 @@ public class AzureKeyVaultConfigSource implements ConfigSource {
 
             String value = secretClient.getSecret(propertyName).getValue();
             cache.put(propertyName, value);
-            // Uncomment for debugging: System.out.println("✓ Loaded secret from Key Vault: " + propertyName);
+            System.out.println("✓ Loaded secret from Key Vault: " + propertyName);
             return value;
         } catch (Exception e) {
             System.err.println("✗ Failed to load secret: " + propertyName + " - " + e.getMessage());
@@ -97,6 +97,7 @@ public class AzureKeyVaultConfigSource implements ConfigSource {
 
     private SecretClient createSecretClient() {
         String vaultEndpoint = getVaultEndpoint();
+        System.out.println("🔑 Key Vault Endpoint: " + vaultEndpoint);
 
         String clientId = System.getenv("AZURE_CLIENT_ID");
         String clientSecret = System.getenv("AZURE_CLIENT_SECRET");
@@ -122,19 +123,19 @@ public class AzureKeyVaultConfigSource implements ConfigSource {
 
     /**
      * Gets the vault endpoint from (in order of priority):
-     * 1. application.properties (azure.keyvault.endpoint)
-     * 2. Environment variable (AZURE_KEYVAULT_ENDPOINT)
+     * 1. Environment variable (AZURE_KEYVAULT_ENDPOINT) - highest priority for Container Apps
+     * 2. application.properties (azure.keyvault.endpoint) - for local dev
      * 3. Default value (empty - disables Key Vault)
      */
     private String getVaultEndpoint() {
-        // 1. Check application.properties (loaded directly since ConfigSource API not available here)
-        String endpoint = loadFromApplicationProperties(VAULT_ENDPOINT_PROPERTY);
+        // 1. Check environment variable FIRST (Container Apps in Azure)
+        String endpoint = System.getenv(VAULT_ENDPOINT_ENV);
         if (endpoint != null && !endpoint.isEmpty()) {
             return endpoint;
         }
 
-        // 2. Check environment variable
-        endpoint = System.getenv(VAULT_ENDPOINT_ENV);
+        // 2. Check application.properties (local dev)
+        endpoint = loadFromApplicationProperties(VAULT_ENDPOINT_PROPERTY);
         if (endpoint != null && !endpoint.isEmpty()) {
             return endpoint;
         }

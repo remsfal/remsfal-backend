@@ -7,6 +7,7 @@ import io.minio.MinioClient;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.MediaType;
@@ -40,25 +41,21 @@ public class FileStorage {
     @Inject
     Logger logger;
 
-    // MinIO client - injected only when extension is available
-    MinioClient minioClient;
+    // MinIO client - optional injection (only available when MinIO extension is enabled)
+    @Inject
+    Instance<MinioClient> minioClientInstance;
 
     private StorageClient storageClient;
-
-    @Inject
-    public void setMinioClient(MinioClient minioClient) {
-        this.minioClient = minioClient;
-    }
 
     public void onStartup(@Observes StartupEvent event) throws Exception {
         logger.infov("Initializing File Storage with provider: {0}", storageProvider);
 
         switch (storageProvider.toLowerCase()) {
             case STORAGE_PROVIDER_MINIO:
-                if (minioClient == null) {
+                if (!minioClientInstance.isResolvable()) {
                     throw new IllegalStateException("MinIO client not available but provider is set to 'minio'");
                 }
-                storageClient = new MinioStorageClient(minioClient, bucketName, logger);
+                storageClient = new MinioStorageClient(minioClientInstance.get(), bucketName, logger);
                 break;
             case STORAGE_PROVIDER_AZURE:
                 if (azureConnectionString.isEmpty()) {
