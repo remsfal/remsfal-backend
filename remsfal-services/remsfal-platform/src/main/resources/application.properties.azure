@@ -2,22 +2,44 @@
 quarkus.http.port=8080
 # Server host
 quarkus.http.host=0.0.0.0
+
+# Proxy configuration for forwarded headers (required for OAuth redirect URIs)
+# Dev/Test: Frontend proxy on different port
 %dev.quarkus.http.proxy.enable-forwarded-host=true
 %test.quarkus.http.proxy.enable-forwarded-host=true
 
+# Prod: Azure Container Apps Load Balancer terminates HTTPS
+# allow-x-forwarded enables X-Forwarded-Proto, X-Forwarded-Host, X-Forwarded-Port headers
+%prod.quarkus.http.proxy.proxy-address-forwarding=true
+%prod.quarkus.http.proxy.allow-x-forwarded=true
+%prod.quarkus.http.proxy.enable-forwarded-host=true
+%prod.quarkus.http.proxy.enable-forwarded-prefix=true
+
 %dev.quarkus.devservices.enabled=false
+
+# Suppress Netty warnings during Azure Key Vault access
+quarkus.log.category."io.netty.util.concurrent".level=ERROR
+
+# Key vault configuration
+azure.keyvault.endpoint=https://rmsfl-dev-weu-id13-kv.vault.azure.net/
 
 # Database configuration
 quarkus.datasource.db-kind=postgresql
-%dev.quarkus.datasource.username=remsfalAdmin
-%dev.quarkus.datasource.password=remsfalSecret
-%dev.quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL
+%dev.quarkus.datasource.jdbc.url=${postgres-connection-string}
+%prod.quarkus.datasource.jdbc.url=${postgres-connection-string}
 %dev.quarkus.datasource.devservices.enabled=false
-# Connection pooling
+
+# Connection pooling - increased timeouts for Azure
 quarkus.datasource.jdbc.min-size=2
 quarkus.datasource.jdbc.max-size=10
+quarkus.datasource.jdbc.acquisition-timeout=30
+quarkus.datasource.jdbc.idle-removal-interval=10M
+quarkus.datasource.jdbc.leak-detection-interval=10M
 # Connection properties
 quarkus.datasource.jdbc.additional-jdbc-properties.ApplicationName=remsfal-platform
+quarkus.datasource.jdbc.additional-jdbc-properties.loginTimeout=30
+quarkus.datasource.jdbc.additional-jdbc-properties.connectTimeout=30
+quarkus.datasource.jdbc.additional-jdbc-properties.socketTimeout=30
 # ORM packages
 quarkus.hibernate-orm.packages=de.remsfal.service.entity.dto
 quarkus.hibernate-orm.schema-management.strategy=validate
@@ -32,14 +54,17 @@ quarkus.smallrye-openapi.store-schema-directory=target/openapi
 quarkus.smallrye-openapi.store-schema-file-name=platform-spec
 
 # REMSFAL Google OAUTH configuration
-%dev.de.remsfal.auth.devservices.enabled=true
-de.remsfal.auth.oidc.client-id=821093255871-8pnrdogfojdc36mqooovf951ao9r4o8i.apps.googleusercontent.com
-de.remsfal.auth.oidc.client-secret=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
+# ProjectID=remsfal-engo-dev
+# 1031252044536-kjrkngs1lurigfh7oj9sqcp3307e2fbh.apps.googleusercontent.com
+# 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
+de.remsfal.auth.oidc.client-id=1031252044536-kjrkngs1lurigfh7oj9sqcp3307e2fbh.apps.googleusercontent.com
+de.remsfal.auth.oidc.client-secret=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
 de.remsfal.auth.session.secret=removeMe
 
 # REMSFAL Frontend URL configuration
 %test.de.remsfal.frontend.url.base=https://remsfal.de
 %dev.de.remsfal.frontend.url.base=http://localhost:8080
+%prod.de.remsfal.frontend.url.base=${DE_REMSFAL_FRONTEND_URL_BASE:https://remsfal.de}
 
 # JWT authorization configuration
 de.remsfal.auth.jwt.private-key-location=privateKey.pem
@@ -55,7 +80,20 @@ mp.jwt.token.cookie=remsfal_access_token
 # Kafka configuration
 %dev.quarkus.kafka.devservices.enabled=false
 %test.quarkus.kafka.devservices.enabled=true
-%dev.mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:39092
+
+# Azure Event Hubs (Kafka-compatible)
+%dev.mp.messaging.connector.smallrye-kafka.bootstrap.servers=${eventhub-bootstrap-server}
+%dev.mp.messaging.connector.smallrye-kafka.security.protocol=SASL_SSL
+%dev.mp.messaging.connector.smallrye-kafka.sasl.mechanism=PLAIN
+%dev.mp.messaging.connector.smallrye-kafka.sasl.jaas.config=${eventhub-connection-string}
+
+%prod.mp.messaging.connector.smallrye-kafka.bootstrap.servers=${eventhub-bootstrap-server}
+%prod.mp.messaging.connector.smallrye-kafka.security.protocol=SASL_SSL
+%prod.mp.messaging.connector.smallrye-kafka.sasl.mechanism=PLAIN
+%prod.mp.messaging.connector.smallrye-kafka.sasl.jaas.config=${eventhub-connection-string}
+
+# Tests use Kafka DevServices - no manual config needed
+
 mp.messaging.outgoing.user-notification.connector=smallrye-kafka
 mp.messaging.outgoing.user-notification.topic=user-notification
 
