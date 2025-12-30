@@ -11,6 +11,7 @@ import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
@@ -81,6 +82,10 @@ public class TenancyController {
                 .map(user -> userRepository.findById(user.getId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+            
+            if (userEntities.size() != tenants.size()) {
+                throw new BadRequestException("One or more users not found");
+            }
             entity.setTenants(userEntities);
         }
 
@@ -107,6 +112,10 @@ public class TenancyController {
                 .map(user -> userRepository.findById(user.getId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
+            if (userEntities.size() != tenants.size()) {
+                throw new BadRequestException("One or more users not found");
+            }
             entity.setTenants(userEntities);
         }
 
