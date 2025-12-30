@@ -163,6 +163,57 @@ ALL_SERVICES="platform ticketing notification"
 # Change to project root
 cd "${PROJECT_ROOT}"
 
+###############################################################################
+# Cleanup function - restores original application.properties files
+###############################################################################
+cleanup_config_files() {
+    log_info "Restoring original application.properties files..."
+    
+    for service_key in platform ticketing notification; do
+        service_name=$(get_service_name "${service_key}")
+        config_file="remsfal-services/${service_name}/src/main/resources/application.properties"
+        backup_file="${config_file}.backup"
+        
+        if [ -f "${backup_file}" ]; then
+            mv "${backup_file}" "${config_file}"
+            log_success "Restored ${service_name}/application.properties"
+        fi
+    done
+}
+
+# Register cleanup function to run on EXIT (success, error, or interrupt)
+trap cleanup_config_files EXIT
+
+###############################################################################
+# Switch to Azure configuration files
+###############################################################################
+log_info "Switching to Azure configuration files..."
+
+for service_key in platform ticketing notification; do
+    service_name=$(get_service_name "${service_key}")
+    config_file="remsfal-services/${service_name}/src/main/resources/application.properties"
+    azure_config="remsfal-services/${service_name}/src/main/resources/application.properties.azure"
+    backup_file="${config_file}.backup"
+    
+    # Check if Azure config exists
+    if [ ! -f "${azure_config}" ]; then
+        log_error "Azure config not found: ${azure_config}"
+        exit 1
+    fi
+    
+    # Backup current config
+    if [ -f "${config_file}" ]; then
+        cp "${config_file}" "${backup_file}"
+        log_info "Backed up ${service_name}/application.properties"
+    fi
+    
+    # Copy Azure config
+    cp "${azure_config}" "${config_file}"
+    log_success "Using Azure config for ${service_name}"
+done
+
+echo ""
+
 echo "======================================================================"
 log_info "REMSFAL Backend Deployment to Azure Container Registry"
 echo "======================================================================"
