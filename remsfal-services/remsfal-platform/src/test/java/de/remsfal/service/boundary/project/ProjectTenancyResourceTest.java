@@ -214,4 +214,40 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
             .body("tenants.size()", Matchers.equalTo(1))
             .body("startOfRental", Matchers.equalTo("2024-01-01"));
     }
+
+    @Test
+    void createTenancy_FAILURE_userNotFound() {
+        String json = "{" +
+            "\"startOfRental\":\"2023-01-01\"," +
+            "\"endOfRental\":\"2023-12-31\"," +
+            "\"tenants\": [{\"id\":\"" + java.util.UUID.randomUUID() + "\"}]" +
+            "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void updateTenancy_FAILURE_userNotFound() {
+        String json = "{" +
+            "\"tenants\": [{\"id\":\"" + java.util.UUID.randomUUID() + "\"}]" +
+            "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
 }
