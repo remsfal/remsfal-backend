@@ -153,8 +153,10 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     private UriBuilder getAbsoluteUriBuilder() {
         final String forwardedHostHeader = headers.getHeaderString("X-Forwarded-Host");
+        final String forwardedProtoHeader = headers.getHeaderString("X-Forwarded-Proto");
         if (enableForwardedHost && forwardedHostHeader != null) {
-            logger.infov("Proxy is enabled. X-Forwarded-Host: {0}", forwardedHostHeader);
+            logger.infov("Proxy is enabled. X-Forwarded-Host: {0}, X-Forwarded-Proto: {1}",
+                forwardedHostHeader, forwardedProtoHeader);
             final UriBuilder builder = uri.getAbsolutePathBuilder();
             final String[] parts = forwardedHostHeader.split(":");
             if (parts.length > 0) {
@@ -168,6 +170,14 @@ public class AuthenticationResource implements AuthenticationEndpoint {
                 } catch (NumberFormatException e) {
                     logger.errorv("Invalid port in X-Forwarded-Host header {0}", parts[1], e);
                 }
+            } else {
+                // No port specified - remove default port from URI
+                builder.port(-1);
+            }
+            // Apply X-Forwarded-Proto to use correct scheme (https in production)
+            if (forwardedProtoHeader != null && !forwardedProtoHeader.isBlank()) {
+                logger.debugv("Scheme: {0}", forwardedProtoHeader);
+                builder.scheme(forwardedProtoHeader);
             }
             return builder;
         }

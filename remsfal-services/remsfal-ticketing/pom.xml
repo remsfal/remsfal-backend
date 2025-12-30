@@ -35,11 +35,17 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
-        <!-- File Storage dependencies - Minio -->
+        <!-- File Storage dependencies - MinIO -->
         <dependency>
             <groupId>io.quarkiverse.minio</groupId>
             <artifactId>quarkus-minio</artifactId>
             <version>${quarkus-minio.version}</version>
+        </dependency>
+        <!-- File Storage dependencies - Azure Blob Storage -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>12.25.1</version>
         </dependency>
         <!-- Cassandra dependencies -->
         <dependency>
