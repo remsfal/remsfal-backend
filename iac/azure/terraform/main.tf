@@ -278,6 +278,20 @@ resource "azurerm_eventhub" "topics" {
   message_retention = 1
 }
 
+# Consumer Group for OCR service on ocr.documents.* Event Hubs
+resource "azurerm_eventhub_consumer_group" "ocr_service" {
+  for_each = toset([
+    "ocr.documents.to_process",
+    "ocr.documents.processed"
+  ])
+  name                = "ocr-service"
+  namespace_name      = azurerm_eventhub_namespace.main.name
+  eventhub_name       = each.value
+  resource_group_name = azurerm_resource_group.main.name
+
+  depends_on = [azurerm_eventhub.topics]
+}
+
 # Event Hub Authorization Rule for applications (fallback)
 resource "azurerm_eventhub_namespace_authorization_rule" "app_access" {
   name                = "app-access"
@@ -411,9 +425,57 @@ resource "azurerm_container_app" "apps" {
     value = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string}\";"
   }
 
+  # Raw Event Hub connection string for KEDA scaler (without JAAS format)
+  secret {
+    name  = "eventhub-connection-string-raw"
+    value = azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string
+  }
+
+  # Storage connection string for KEDA Event Hub checkpointing
+  dynamic "secret" {
+    for_each = each.value.eventhub_scaling != null && each.value.eventhub_scaling.enabled ? [1] : []
+    content {
+      name  = "storage-connection-string"
+      value = azurerm_storage_account.main.primary_connection_string
+    }
+  }
+
   template {
     min_replicas = each.value.min_replicas
     max_replicas = each.value.max_replicas
+
+    # KEDA custom scale rule for Azure Event Hub (Kafka consumers like OCR service)
+    # This replaces HTTP health probes - container scales based on Event Hub message lag
+    dynamic "custom_scale_rule" {
+      for_each = each.value.eventhub_scaling != null && each.value.eventhub_scaling.enabled ? [1] : []
+      content {
+        name             = "eventhub-keda-scaler"
+        custom_rule_type = "azure-eventhub"
+
+        metadata = {
+          consumerGroup                      = each.value.eventhub_scaling.consumer_group
+          eventHubNamespace                  = azurerm_eventhub_namespace.main.name
+          eventHubName                       = each.value.eventhub_scaling.event_hub_name
+          unprocessedEventThreshold          = tostring(each.value.eventhub_scaling.message_lag_threshold)
+          # Activation threshold: minimum messages needed to scale from 0 to 1
+          activationUnprocessedEventThreshold = "1"
+          # Use blob storage for checkpoint tracking (required for partition ownership)
+          blobContainer                      = "eventhub-checkpoints"
+          checkpointStrategy                 = "blobMetadata"
+          storageAccountName                 = azurerm_storage_account.main.name
+        }
+
+        authentication {
+          secret_name       = "eventhub-connection-string-raw"
+          trigger_parameter = "connection"
+        }
+
+        authentication {
+          secret_name       = "storage-connection-string"
+          trigger_parameter = "storageConnection"
+        }
+      }
+    }
 
     container {
       name   = each.key

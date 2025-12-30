@@ -36,7 +36,8 @@ locals {
   storage_containers = [
     "remsfal-ticketing",
     "documents",
-    "test-bucket"
+    "test-bucket",
+    "eventhub-checkpoints" # For KEDA Event Hub scaler checkpoint storage
   ]
 
   # Cosmos DB Cassandra configuration

@@ -93,6 +93,13 @@ variable "container_apps" {
     ingress_enabled  = bool
     target_port      = number
     external_enabled = bool
+    # KEDA Event Hub scaling for Kafka consumers (optional)
+    eventhub_scaling = optional(object({
+      enabled             = bool
+      consumer_group      = string
+      event_hub_name      = string
+      message_lag_threshold = optional(number, 100) # Messages before scaling up
+    }))
   }))
   description = "Container Apps configuration"
   default = {
@@ -145,6 +152,13 @@ variable "container_apps" {
       ingress_enabled  = false
       target_port      = 8000
       external_enabled = false
+      # KEDA scaling based on Event Hub message lag
+      eventhub_scaling = {
+        enabled             = true
+        consumer_group      = "$Default"
+        event_hub_name      = "ocr.documents.to_process"
+        message_lag_threshold = 10
+      }
     }
   }
 }
