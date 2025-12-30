@@ -7,8 +7,10 @@ import com.azure.security.keyvault.secrets.SecretClient;
 import com.azure.security.keyvault.secrets.SecretClientBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,14 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * ConfigSource that loads secrets from Azure Key Vault.
  * Supports both Client Secret authentication (dev) and Managed Identity (prod).
  * 
- * Configuration:
- * - AZURE_KEYVAULT_ENDPOINT: Key Vault URL (required)
+ * Configuration (checked in order: application.properties, then environment variables):
+ * - azure.keyvault.endpoint: Key Vault URL (in application.properties)
+ * - AZURE_KEYVAULT_ENDPOINT: Key Vault URL (as environment variable)
  * - AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID: For dev authentication (optional)
  */
 public class AzureKeyVaultConfigSource implements ConfigSource {
 
+    private static final String VAULT_ENDPOINT_PROPERTY = "azure.keyvault.endpoint";
     private static final String VAULT_ENDPOINT_ENV = "AZURE_KEYVAULT_ENDPOINT";
-    private static final String DEFAULT_VAULT_ENDPOINT = "https://rmsfl-dev-weu-id13-kv.vault.azure.net/";
+    private static final String DEFAULT_VAULT_ENDPOINT = "";
     private static final int ORDINAL = 270;
     
     private final Map<String, String> cache = new ConcurrentHashMap<>();
@@ -92,10 +96,7 @@ public class AzureKeyVaultConfigSource implements ConfigSource {
     }
 
     private SecretClient createSecretClient() {
-        String vaultEndpoint = System.getenv(VAULT_ENDPOINT_ENV);
-        if (vaultEndpoint == null || vaultEndpoint.isEmpty()) {
-            vaultEndpoint = DEFAULT_VAULT_ENDPOINT;
-        }
+        String vaultEndpoint = getVaultEndpoint();
 
         String clientId = System.getenv("AZURE_CLIENT_ID");
         String clientSecret = System.getenv("AZURE_CLIENT_SECRET");
@@ -117,5 +118,46 @@ public class AzureKeyVaultConfigSource implements ConfigSource {
         }
 
         return builder.buildClient();
+    }
+
+    /**
+     * Gets the vault endpoint from (in order of priority):
+     * 1. application.properties (azure.keyvault.endpoint)
+     * 2. Environment variable (AZURE_KEYVAULT_ENDPOINT)
+     * 3. Default value (empty - disables Key Vault)
+     */
+    private String getVaultEndpoint() {
+        // 1. Check application.properties (loaded directly since ConfigSource API not available here)
+        String endpoint = loadFromApplicationProperties(VAULT_ENDPOINT_PROPERTY);
+        if (endpoint != null && !endpoint.isEmpty()) {
+            return endpoint;
+        }
+
+        // 2. Check environment variable
+        endpoint = System.getenv(VAULT_ENDPOINT_ENV);
+        if (endpoint != null && !endpoint.isEmpty()) {
+            return endpoint;
+        }
+
+        // 3. Fall back to default (empty = disabled)
+        return DEFAULT_VAULT_ENDPOINT;
+    }
+
+    /**
+     * Loads a property directly from application.properties on the classpath.
+     * This is necessary because ConfigSource implementations cannot use the ConfigProvider API.
+     */
+    private String loadFromApplicationProperties(String key) {
+        try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("application.properties")) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                return props.getProperty(key);
+            }
+        } catch (Exception e) {
+            // Ignore - fall back to other sources
+        }
+        return null;
     }
 }
