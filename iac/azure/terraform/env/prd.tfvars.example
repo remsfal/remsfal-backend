@@ -46,6 +46,16 @@ container_apps = {
     target_port      = 8081
     external_enabled = true
   }
+  notification = {
+    image            = "remsfal/notification:stable"
+    cpu              = 1
+    memory           = "2Gi"
+    min_replicas     = 1
+    max_replicas     = 5
+    ingress_enabled  = true
+    target_port      = 8082
+    external_enabled = false
+  }
   ocr = {
     image            = "remsfal/ocr:stable"
     cpu              = 1
@@ -53,7 +63,7 @@ container_apps = {
     min_replicas     = 1
     max_replicas     = 5
     ingress_enabled  = true
-    target_port      = 8082
+    target_port      = 8083
     external_enabled = false
   }
 }

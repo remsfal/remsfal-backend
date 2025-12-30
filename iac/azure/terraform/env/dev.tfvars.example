@@ -46,6 +46,16 @@ container_apps = {
         target_port      = 80
         external_enabled = true
     }
+    notification = {
+        image            = "nginx:latest"
+        cpu              = 0.25
+        memory           = "0.5Gi"
+        min_replicas     = 0
+        max_replicas     = 2
+        ingress_enabled  = true
+        target_port      = 80
+        external_enabled = false
+    }
     ocr = {
         image            = "nginx:latest"
         cpu              = 0.25
