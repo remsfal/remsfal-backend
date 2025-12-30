@@ -491,10 +491,78 @@ resource "azurerm_container_app" "apps" {
         value = "https://${local.base_name}-ca-frontend.${azurerm_container_app_environment.main.default_domain}"
       }
 
-      # Quarkus profile for production
-      env {
-        name  = "QUARKUS_PROFILE"
-        value = "prod"
+      # Quarkus profile for production (not for OCR/frontend)
+      dynamic "env" {
+        for_each = contains(["platform", "ticketing", "notification"], each.key) ? [1] : []
+        content {
+          name  = "QUARKUS_PROFILE"
+          value = "prod"
+        }
+      }
+
+      # OCR-specific environment variables
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "KAFKA_PROVIDER"
+          value = "AZURE"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "KAFKA_TOPIC_IN"
+          value = "ocr.documents.to_process"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "KAFKA_TOPIC_OUT"
+          value = "ocr.documents.processed"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "KAFKA_GROUP_ID"
+          value = "ocr-service"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "SECRETS_PROVIDER"
+          value = "AZURE_KEYVAULT"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "KEYVAULT_URL"
+          value = azurerm_key_vault.main.vault_uri
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "STORAGE_PROVIDER"
+          value = "AZURE"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "ocr" ? [1] : []
+        content {
+          name  = "PYTHONUNBUFFERED"
+          value = "1"
+        }
       }
 
       # Frontend-specific: Backend API URLs for nginx proxy

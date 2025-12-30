@@ -136,6 +136,16 @@ variable "container_apps" {
       target_port      = 8082
       external_enabled = false
     }
+    ocr = {
+      image            = "remsfal-ocr:latest"
+      cpu              = 0.5
+      memory           = "1Gi"
+      min_replicas     = 0
+      max_replicas     = 3
+      ingress_enabled  = false
+      target_port      = 8000
+      external_enabled = false
+    }
   }
 }
 
