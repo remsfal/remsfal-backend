@@ -41,7 +41,7 @@ resource "azurerm_key_vault" "main" {
   sku_name                   = "standard"
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
-  enable_rbac_authorization  = true
+  rbac_authorization_enabled  = true
 
   tags = local.common_tags
 }
@@ -380,55 +380,17 @@ resource "azurerm_container_app" "apps" {
     value = azurerm_container_registry.main.admin_password
   }
 
-  # Secrets for Platform service (PostgreSQL, Event Hub)
-  dynamic "secret" {
-    for_each = each.key == "platform" ? [1] : []
-    content {
-      name  = "postgres-connection-string"
-      value = "jdbc:postgresql://${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.platform.name}?user=${var.postgres_admin_username}&password=${var.postgres_admin_password}&sslmode=require"
-    }
-  }
-
-  # Secrets for Ticketing service (Cosmos DB)
-  dynamic "secret" {
-    for_each = each.key == "ticketing" ? [1] : []
-    content {
-      name  = "cosmos-contact-point"
-      value = "${azurerm_cosmosdb_account.main.name}.cassandra.cosmos.azure.com"
-    }
-  }
-
-  dynamic "secret" {
-    for_each = each.key == "ticketing" ? [1] : []
-    content {
-      name  = "cosmos-username"
-      value = azurerm_cosmosdb_account.main.name
-    }
-  }
-
-  dynamic "secret" {
-    for_each = each.key == "ticketing" ? [1] : []
-    content {
-      name  = "cosmos-password"
-      value = azurerm_cosmosdb_account.main.primary_key
-    }
-  }
-
-  # Event Hub secrets for all services
-  secret {
-    name  = "eventhub-bootstrap-server"
-    value = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
-  }
-
-  secret {
-    name  = "eventhub-connection-string"
-    value = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string}\";"
-  }
+  # NOTE: Database/Cosmos/EventHub secrets for app configuration are loaded 
+  # directly from Key Vault via AzureKeyVaultConfigSource using Managed Identity.
+  # Only KEDA scaler secrets need to be defined here as Container App secrets.
 
   # Raw Event Hub connection string for KEDA scaler (without JAAS format)
-  secret {
-    name  = "eventhub-connection-string-raw"
-    value = azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string
+  dynamic "secret" {
+    for_each = each.value.eventhub_scaling != null && each.value.eventhub_scaling.enabled ? [1] : []
+    content {
+      name  = "eventhub-connection-string-raw"
+      value = azurerm_eventhub_namespace_authorization_rule.app_access.primary_connection_string
+    }
   }
 
   # Storage connection string for KEDA Event Hub checkpointing
@@ -496,50 +458,8 @@ resource "azurerm_container_app" "apps" {
         value = azurerm_key_vault.main.vault_uri
       }
 
-      # PostgreSQL connection string for platform service
-      dynamic "env" {
-        for_each = each.key == "platform" ? [1] : []
-        content {
-          name        = "POSTGRES_CONNECTION_STRING"
-          secret_name = "postgres-connection-string"
-        }
-      }
-
-      # Cosmos DB credentials for ticketing service
-      dynamic "env" {
-        for_each = each.key == "ticketing" ? [1] : []
-        content {
-          name        = "COSMOS_CONTACT_POINT"
-          secret_name = "cosmos-contact-point"
-        }
-      }
-
-      dynamic "env" {
-        for_each = each.key == "ticketing" ? [1] : []
-        content {
-          name        = "COSMOS_USERNAME"
-          secret_name = "cosmos-username"
-        }
-      }
-
-      dynamic "env" {
-        for_each = each.key == "ticketing" ? [1] : []
-        content {
-          name        = "COSMOS_PASSWORD"
-          secret_name = "cosmos-password"
-        }
-      }
-
-      # Event Hub config for all services (Kafka-compatible)
-      env {
-        name        = "EVENTHUB_BOOTSTRAP_SERVER"
-        secret_name = "eventhub-bootstrap-server"
-      }
-
-      env {
-        name        = "EVENTHUB_CONNECTION_STRING"
-        secret_name = "eventhub-connection-string"
-      }
+      # NOTE: Database/Cosmos/EventHub secrets are loaded directly from Key Vault
+      # via AzureKeyVaultConfigSource using Managed Identity (no secret_name references needed)
 
       # Platform service URL for JWT verification (ticketing/notification need this)
       env {
