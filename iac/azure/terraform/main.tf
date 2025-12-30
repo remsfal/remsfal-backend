@@ -555,12 +555,27 @@ resource "azurerm_container_app" "apps" {
           value = "https://${local.base_name}-ca-platform.${azurerm_container_app_environment.main.default_domain}"
         }
       }
+      dynamic "env" {
+        for_each = each.key == "frontend" ? [1] : []
+        content {
+          name  = "PLATFORM_API_HOST"
+          value = "${local.base_name}-ca-platform.${azurerm_container_app_environment.main.default_domain}"
+        }
+      }
 
       dynamic "env" {
         for_each = each.key == "frontend" ? [1] : []
         content {
           name  = "TICKETING_API_URL"
           value = "https://${local.base_name}-ca-ticketing.${azurerm_container_app_environment.main.default_domain}"
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "frontend" ? [1] : []
+        content {
+          name  = "TICKETING_API_HOST"
+          value = "${local.base_name}-ca-ticketing.${azurerm_container_app_environment.main.default_domain}"
         }
       }
     }
