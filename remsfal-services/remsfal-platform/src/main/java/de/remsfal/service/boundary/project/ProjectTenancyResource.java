@@ -24,18 +24,21 @@ public class ProjectTenancyResource extends ProjectSubResource implements Projec
 
     @Override
     public TenancyInfoJson getTenancy(final UUID projectId, final UUID tenancyId) {
+        checkReadPermissions(projectId);
         final TenancyEntity tenancy = tenancyController.getTenancyByProject(projectId, tenancyId);
         return TenancyInfoJson.valueOf(tenancy);
     }
 
     @Override
     public ProjectTenancyListJson getTenancies(final UUID projectId) {
+        checkReadPermissions(projectId);
         final List<TenancyEntity> tenancies = tenancyController.getTenanciesByProject(projectId);
         return ProjectTenancyListJson.valueOf(tenancies);
     }
 
     @Override
     public Response createTenancy(final UUID projectId, final TenancyInfoJson tenancy) {
+        checkWritePermissions(projectId);
         final TenancyEntity entity = tenancyController.createTenancy(projectId, tenancy);
         final URI location = uri.getAbsolutePathBuilder().path(String.valueOf(entity.getId())).build();
         return Response.created(location)
@@ -46,6 +49,7 @@ public class ProjectTenancyResource extends ProjectSubResource implements Projec
 
     @Override
     public TenancyInfoJson updateTenancy(final UUID projectId, final UUID tenancyId, final TenancyInfoJson tenancy) {
+        checkWritePermissions(projectId);
         final TenancyEntity entity = tenancyController.updateTenancy(projectId, tenancyId, tenancy);
         return TenancyInfoJson.valueOf(entity);
     }
