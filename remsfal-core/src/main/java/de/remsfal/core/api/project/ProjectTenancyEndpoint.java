@@ -2,6 +2,7 @@ package de.remsfal.core.api.project;
 
 import de.remsfal.core.json.tenancy.ProjectTenancyListJson;
 import de.remsfal.core.json.tenancy.TenancyInfoJson;
+import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
 import jakarta.validation.Valid;
@@ -78,5 +79,5 @@ public interface ProjectTenancyEndpoint {
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "Tenancy information", required = true)
-        @Valid @NotNull TenancyInfoJson tenancy);
+        @Valid @NotNull @ConvertGroup(to = PatchValidation.class) TenancyInfoJson tenancy);
 }
