@@ -250,4 +250,22 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
+
+    @Test
+    void createTenancy_FAILURE_missingStartOfRental() {
+        String json = "{" +
+            "\"endOfRental\":\"2023-12-31\"" +
+            "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
 }

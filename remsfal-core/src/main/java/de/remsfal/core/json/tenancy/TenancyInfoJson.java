@@ -17,6 +17,7 @@ import de.remsfal.core.model.project.TenancyModel;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.groups.ConvertGroup;
 
@@ -39,6 +40,8 @@ public abstract class TenancyInfoJson implements TenancyModel {
     @Override
     public abstract UUID getId();
 
+    @NotNull(groups = PostValidation.class)
+    @Nullable
     @Override
     public abstract LocalDate getStartOfRental();
 
