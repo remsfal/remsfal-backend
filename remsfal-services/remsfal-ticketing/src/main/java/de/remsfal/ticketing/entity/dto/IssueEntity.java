@@ -8,6 +8,7 @@ import jakarta.nosql.Id;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Instant;
 
 @Entity("issues")
 public class IssueEntity extends AbstractEntity implements IssueModel {
@@ -47,6 +48,18 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     @Column("created_by")
     private UUID createdBy;
+
+    @Column("priority")
+    private String priority;
+
+    @Column("priority_score")
+    private Double priorityScore;
+
+    @Column("priority_model")
+    private String priorityModel;
+
+    @Column("priority_timestamp")
+    private Instant priorityTimestamp;
 
     public IssueKey getKey() {
         return key;
@@ -176,6 +189,46 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setCreatedBy(UUID createdBy) {
         this.createdBy = createdBy;
+    }
+
+    @Override
+    public Priority getPriority() {
+        return priority != null ? Priority.valueOf(priority) : null;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority != null ? priority.name() : null;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public Double getPriorityScore() {
+        return priorityScore;
+    }
+
+    public void setPriorityScore(Double priorityScore) {
+        this.priorityScore = priorityScore;
+    }
+
+    @Override
+    public String getPriorityModel() {
+        return priorityModel;
+    }
+
+    public void setPriorityModel(String priorityModel) {
+        this.priorityModel = priorityModel;
+    }
+
+    @Override
+    public Instant getPriorityTimestamp() {
+        return priorityTimestamp;
+    }
+
+    public void setPriorityTimestamp(Instant priorityTimestamp) {
+        this.priorityTimestamp = priorityTimestamp;
     }
 
     public void generateId() {

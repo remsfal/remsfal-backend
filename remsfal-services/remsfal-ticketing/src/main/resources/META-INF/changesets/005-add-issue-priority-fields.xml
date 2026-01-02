@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.5-issue-priority-fields" author="assistant">
+        <comment>Add priority fields to issues table</comment>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD priority TEXT;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD priority_score DOUBLE;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD priority_model TEXT;
+        </sql>
+        <sql>
+            ALTER TABLE REMSFAL.issues ADD priority_timestamp TIMESTAMP;
+        </sql>
+        <rollback>
+            <sql>ALTER TABLE REMSFAL.issues DROP priority;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP priority_score;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP priority_model;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP priority_timestamp;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

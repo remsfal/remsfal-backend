@@ -10,9 +10,12 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.Priority;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.ticketing.control.IssueEventProducer;
+import de.remsfal.ticketing.control.events.IssueCreatedEvent;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +31,9 @@ public class IssueController {
     @Inject
     IssueRepository repository;
 
+    @Inject
+    IssueEventProducer issueEventProducer;
+
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
         return createIssue(user, issue, Status.OPEN);
     }
@@ -42,7 +48,19 @@ public class IssueController {
         entity.setTitle(issue.getTitle());
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
-        return repository.insert(entity);
+        entity.setPriority(Priority.UNCLASSIFIED);
+        IssueEntity persisted = repository.insert(entity);
+
+        final IssueCreatedEvent event = new IssueCreatedEvent();
+        event.setIssueId(persisted.getId());
+        event.setProjectId(persisted.getProjectId());
+        event.setTitle(persisted.getTitle());
+        event.setDescription(persisted.getDescription());
+        event.setReporterId(persisted.getReporterId());
+        event.setCreatedAt(persisted.getCreatedAt());
+        issueEventProducer.sendIssueCreated(event);
+
+        return persisted;
     }
 
     public IssueEntity getIssue(final UUID issueId) {
