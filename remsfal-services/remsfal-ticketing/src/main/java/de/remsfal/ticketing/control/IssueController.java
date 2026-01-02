@@ -40,6 +40,7 @@ public class IssueController {
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue, final Status initialStatus) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
+
         final IssueEntity entity = new IssueEntity();
         entity.generateId();
         entity.setType(issue.getType());
@@ -48,10 +49,12 @@ public class IssueController {
         entity.setTitle(issue.getTitle());
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
+
         entity.setPriority(Priority.UNCLASSIFIED);
+
         IssueEntity persisted = repository.insert(entity);
 
-        final IssueCreatedEvent event = new IssueCreatedEvent();
+        IssueCreatedEvent event = new IssueCreatedEvent();
         event.setIssueId(persisted.getId());
         event.setProjectId(persisted.getProjectId());
         event.setTitle(persisted.getTitle());
@@ -62,6 +65,8 @@ public class IssueController {
 
         return persisted;
     }
+
+
 
     public IssueEntity getIssue(final UUID issueId) {
         logger.infov("Retrieving issue (issueId={0})", issueId);
