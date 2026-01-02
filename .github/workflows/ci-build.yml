@@ -28,7 +28,7 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Upload Surefire Reports
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: surefire-reports-jdk-${{ matrix.java }}-${{ github.run_id }}
           path: |
@@ -40,7 +40,7 @@ jobs:
         run: mvn -B verify
       - name: Upload Coverage Reports (only on JDK 25)
         if: ${{ matrix.java == 25 }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-${{ github.run_id }}
           path: target/site/jacoco/jacoco.xml
@@ -48,7 +48,7 @@ jobs:
           if-no-files-found: error
       - name: Upload Compiled Classes (only on JDK 25)
         if: ${{ matrix.java == 25 }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: binaries-${{ github.run_id }}
           path: |
@@ -60,7 +60,7 @@ jobs:
         run: mvn -B checkstyle:checkstyle-aggregate
       - name: Upload Checkstyle Reports (only on JDK 25)
         if: ${{ matrix.java == 25 }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: checkstyle-${{ github.run_id }}
           path: target/checkstyle-result.xml

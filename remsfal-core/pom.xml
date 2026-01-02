@@ -12,13 +12,13 @@
     </parent>
 
     <properties>
-        <version.immutables>2.11.7</version.immutables>
+        <version.immutables>2.12.0</version.immutables>
         <version.jackson>2.20.1</version.jackson>
         <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.validation>3.1.1</version.validation>
         <version.jax-rs>4.0.0</version.jax-rs>
-        <version.resteasy>7.0.0.Final</version.resteasy>
+        <version.resteasy>7.0.1.Final</version.resteasy>
         <version.open-api>4.1.1</version.open-api>
         <version.config-api>3.1</version.config-api>
     </properties>
@@ -35,7 +35,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
-                <version>5.20.0</version>
+                <version>5.21.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
