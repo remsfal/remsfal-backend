@@ -50,7 +50,7 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     private UUID createdBy;
 
     @Column("priority")
-    private String priority;
+    private  IssueModel.Priority priority;
 
     @Column("priority_score")
     private Double priorityScore;
@@ -192,17 +192,26 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public Priority getPriority() {
-        return priority != null ? Priority.valueOf(priority) : null;
+    public IssueModel.Priority getPriority() {
+        return priority != null ? priority : IssueModel.Priority.UNCLASSIFIED;
     }
 
-    public void setPriority(Priority priority) {
-        this.priority = priority != null ? priority.name() : null;
+    public void setPriority(IssueModel.Priority priority) {
+        this.priority = priority != null ? priority : IssueModel.Priority.UNCLASSIFIED;
     }
-
     public void setPriority(String priority) {
-        this.priority = priority;
+        if (priority == null) {
+            this.priority = IssueModel.Priority.UNCLASSIFIED;
+            return;
+        }
+        try {
+            this.priority = IssueModel.Priority.valueOf(priority.trim().toUpperCase());
+        } catch (Exception e) {
+            this.priority = IssueModel.Priority.UNCLASSIFIED;
+        }
     }
+
+
 
     @Override
     public Double getPriorityScore() {

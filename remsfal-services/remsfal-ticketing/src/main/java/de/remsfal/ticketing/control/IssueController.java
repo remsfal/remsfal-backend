@@ -10,7 +10,6 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
-import de.remsfal.core.model.ticketing.IssueModel.Priority;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
@@ -50,7 +49,7 @@ public class IssueController {
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
 
-        entity.setPriority(Priority.UNCLASSIFIED);
+        entity.setPriority(IssueModel.Priority.UNCLASSIFIED);
 
         IssueEntity persisted = repository.insert(entity);
 

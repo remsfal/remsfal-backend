@@ -56,11 +56,6 @@
             <version>${quarkus-cassandra.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
-            <version>${quarkus.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.liquibase.ext</groupId>
             <artifactId>liquibase-cassandra</artifactId>
             <version>5.0.1</version>
