@@ -155,8 +155,8 @@ public class UserController {
         currentEmails.removeIf(ae -> !newEmails.contains(ae.getEmail()));
 
         Set<String> existingEmails = currentEmails.stream()
-           .map(AdditionalEmailEntity::getEmail)
-           .collect(Collectors.toSet());
+            .map(AdditionalEmailEntity::getEmail)
+            .collect(Collectors.toSet());
 
         for (String email : newEmails) {
 
