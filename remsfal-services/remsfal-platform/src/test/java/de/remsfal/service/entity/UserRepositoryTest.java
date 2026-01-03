@@ -63,12 +63,12 @@ class UserRepositoryTest extends AbstractServiceTest {
 
         AdditionalEmailEntity ae1 = new AdditionalEmailEntity();
         ae1.generateId();
-        ae1.setEmail("alt1@example.com");
+        ae1.setEmail(TestData.ALTERNATIVE_EMAIL_1);
         ae1.setUser(user);
 
         AdditionalEmailEntity ae2 = new AdditionalEmailEntity();
         ae2.generateId();
-        ae2.setEmail("alt2@example.com");
+        ae2.setEmail(TestData.ALTERNATIVE_EMAIL_2);
         ae2.setUser(user);
 
         Set<AdditionalEmailEntity> emails = new HashSet<>();
@@ -80,8 +80,8 @@ class UserRepositoryTest extends AbstractServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertTrue(result.contains("alt1@example.com"));
-        assertTrue(result.contains("alt2@example.com"));
+        assertTrue(result.contains(TestData.ALTERNATIVE_EMAIL_1));
+        assertTrue(result.contains(TestData.ALTERNATIVE_EMAIL_2));
     }
     
 }

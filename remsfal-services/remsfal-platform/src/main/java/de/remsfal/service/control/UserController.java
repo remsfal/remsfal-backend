@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
 
@@ -45,13 +47,19 @@ public class UserController {
     @Inject
     NotificationController notificationController;
 
+    private static final String DEFAULT_LOCALE = "de";
+
     @Transactional
     protected UserModel createUser(final String googleId, final String email) {
         logger.infov("Creating a new user (googleId={0}, email={1})", googleId, email);
         final UserEntity entity = new UserEntity();
         entity.generateId();
         entity.setTokenId(googleId);
+        if(additionalEmailRepository.existsByEmail(email.toLowerCase())){
+            throw new AlreadyExistsException("Unable to create user");
+        }
         entity.setEmail(email.toLowerCase());
+        entity.setLocale(DEFAULT_LOCALE);
         entity.setAuthenticatedAt(LocalDateTime.now());
         try {
             repository.persistAndFlush(entity);
@@ -92,7 +100,7 @@ public class UserController {
     @Transactional
     public CustomerModel updateUser(final UUID userId, final CustomerModel user) {
         logger.infov("Updating a user ({0})", user);
-        final UserEntity entity = repository.findByIdOptional(userId)
+        final UserEntity entity = repository.findByIdWithAdditionalEmails(userId)
             .orElseThrow(() -> new NotFoundException("User not exist"));
 
         if(user.getFirstName() != null) {
@@ -115,8 +123,6 @@ public class UserController {
         }
         if(user.getLocale() != null) {
             entity.setLocale(user.getLocale());
-        } else{
-            entity.setLocale("de");
         }
         if(user.getAdditionalEmails() != null) {
             syncAdditionalEmails(entity, user.getAdditionalEmails());
@@ -130,46 +136,48 @@ public class UserController {
         return repository.remove(userId);
     }
 
-    private void syncAdditionalEmails(final UserEntity user, final List<String> newEmailsRaw) {
-
+    private void syncAdditionalEmails(UserEntity user, List<String> newEmailsRaw) {
         List<String> newEmails = newEmailsRaw.stream()
+            .filter(Objects::nonNull)
+            .map(String::trim)
             .filter(s -> !s.isEmpty())
             .map(String::toLowerCase)
             .distinct()
             .toList();
 
-        List<AdditionalEmailEntity> currentEmails = additionalEmailRepository.findByUserId(user.getId());
-
-        for (AdditionalEmailEntity ae : currentEmails) {
-            final String email = ae.getEmail();
-            if (!newEmails.contains(email)) {
-                additionalEmailRepository.remove(ae.getId());
-            }
+        if (newEmails.stream().anyMatch(email -> repository.findByEmail(email).isPresent())) {
+            throw new AlreadyExistsException(
+                "Alternative email must not be equal to an existing login email."
+            );
         }
+
+        Set<AdditionalEmailEntity> currentEmails = user.getAdditionalEmailEntities();
+        currentEmails.removeIf(ae -> !newEmails.contains(ae.getEmail()));
+
+        Set<String> existingEmails = currentEmails.stream()
+           .map(AdditionalEmailEntity::getEmail)
+           .collect(Collectors.toSet());
 
         for (String email : newEmails) {
 
-            if (email.equalsIgnoreCase(user.getEmail())) {
-                throw new AlreadyExistsException("Alternative email must not be equal to the login email.");
+            if (existingEmails.contains(email)) {
+                continue;
             }
 
-            boolean exists = currentEmails.stream()
-                .anyMatch(ae -> ae.getEmail().equalsIgnoreCase(email));
-
-            if (!exists) {
-                AdditionalEmailEntity ae = new AdditionalEmailEntity();
-                ae.generateId();
-                ae.setUser(user);
-                ae.setEmail(email);
-                ae.setVerified(false);
-
-                additionalEmailRepository.persist(ae);
+            if (additionalEmailRepository.existsByEmail(email)) {
+                throw new AlreadyExistsException(
+                    "Alternative email already exists."
+                );
             }
+
+            AdditionalEmailEntity ae = new AdditionalEmailEntity();
+            ae.generateId();
+            ae.setUser(user);
+            ae.setEmail(email);
+            ae.setVerified(false);
+
+            currentEmails.add(ae);
         }
-
-        user.setAdditionalEmails(new HashSet<>(additionalEmailRepository.findByUserId(user.getId())));
     }
-
-
 
 }

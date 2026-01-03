@@ -30,6 +30,8 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
     query = "update UserEntity user set user.authenticatedAt = :timestamp where user.tokenId = :tokenId")
 @NamedQuery(name = "UserEntity.deleteById",
     query = "delete from UserEntity user where user.id = :id")
+@NamedQuery(name = "UserEntity.findByIdWithAdditionalEmails",
+    query = "select u from UserEntity u left join fetch u.additionalEmails where u.id = :id ")
 @Entity
 @Table(name = "users")
 public class UserEntity extends AbstractEntity implements CustomerModel {
@@ -69,9 +71,8 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AdditionalEmailEntity> additionalEmails = new HashSet<>();
-
 
     public String getTokenId() {
         return tokenId;
@@ -198,6 +199,10 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
                 .toList();
     }
 
+    public Set<AdditionalEmailEntity> getAdditionalEmailEntities() {
+        return additionalEmails;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -212,7 +217,8 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
                 && Objects.equals(address, e.address)
                 && Objects.equals(mobilePhoneNumber, e.mobilePhoneNumber)
                 && Objects.equals(businessPhoneNumber, e.businessPhoneNumber)
-                && Objects.equals(privatePhoneNumber, e.privatePhoneNumber);
+                && Objects.equals(privatePhoneNumber, e.privatePhoneNumber)
+                && Objects.equals(locale, e.locale);
         }
         return false;
     }

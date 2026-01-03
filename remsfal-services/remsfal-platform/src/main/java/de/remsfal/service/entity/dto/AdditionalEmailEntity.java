@@ -6,16 +6,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 
 import java.util.Objects;
 
-@NamedQuery(
-    name = "AdditionalEmailEntity.deleteById",
-    query = "delete from AdditionalEmailEntity ae where ae.id = :id"
-)
 @Entity
 @Table(name = "user_additional_email")
 public class AdditionalEmailEntity extends AbstractEntity {
@@ -29,7 +24,7 @@ public class AdditionalEmailEntity extends AbstractEntity {
     private String email;
 
     @Column(name = "verified", nullable = false)
-    private boolean verified = false;
+    private boolean verified;
 
     public UserEntity getUser() {
         return user;
@@ -47,7 +42,7 @@ public class AdditionalEmailEntity extends AbstractEntity {
         this.email = email;
     }
 
-    public boolean getVerified() {
+    public boolean isVerified() {
         return verified;
     }
 

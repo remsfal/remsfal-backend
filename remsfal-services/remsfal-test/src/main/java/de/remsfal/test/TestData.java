@@ -20,6 +20,8 @@ public class TestData {
     public static final String USER_EMAIL_1 = "max.mustermann@example.org";
     public static final String USER_FIRST_NAME_1 = "Max";
     public static final String USER_LAST_NAME_1 = "Mustermann";
+    public static final String ALTERNATIVE_EMAIL_1 = "alternativ1@example.com";
+    public static final String ALTERNATIVE_EMAIL_2 = "alternativ2@example.com";
 
     // Default test user
     public static final UUID USER_ID = TestData.USER_ID_1;
