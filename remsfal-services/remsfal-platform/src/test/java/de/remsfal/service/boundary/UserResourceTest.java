@@ -162,6 +162,36 @@ class UserResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void updateUser_FAILED_invalidLocale() {
+        setupTestUsers();
+
+        final String update = "{ \"locale\":\"deutsch\"}";
+        given()
+             .when()
+             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+             .contentType(ContentType.JSON)
+             .body(update)
+             .patch(BASE_PATH)
+             .then()
+             .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void updateUser_FAILED_invalidAdditionalEmail() {
+        setupTestUsers();
+
+        final String update = "{ \"additionalEmails\":[\"testexample.com\"]}";
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(ContentType.JSON)
+                .body(update)
+                .patch(BASE_PATH)
+                .then()
+                .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
     void deleteUser_SUCCESS_userDeleted() {
         setupTestUsers();
 
