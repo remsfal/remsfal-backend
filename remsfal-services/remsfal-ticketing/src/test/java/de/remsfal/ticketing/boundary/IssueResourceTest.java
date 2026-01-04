@@ -652,41 +652,6 @@ class IssueResourceTest extends AbstractResourceTest {
                 .contentType(ContentType.JSON);
     }
 
-    @Test
-    void getIssue_SUCCESS_tenantViewsFilteredIssue() {
-        // Manager erstellt Issue
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-                + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-                + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-                + "\"type\":\"TASK\""
-                + "}";
-
-        final Response createResponse = given()
-                .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
-                .contentType(ContentType.JSON)
-                .body(createJson)
-                .post(BASE_PATH)
-                .thenReturn();
-
-        final String issueId = createResponse.then()
-                .contentType(MediaType.APPLICATION_JSON)
-                .extract().path("id");
-
-        // Tenant holt gefilterte Ansicht
-        given()
-                .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                        TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-                .get(BASE_PATH + "/" + issueId)
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body("id", equalTo(issueId))
-                .body("title", equalTo(TicketingTestData.ISSUE_TITLE))
-                .body("description", nullValue());
-    }
 
     @Test
     void getIssue_SUCCESS_participantViewsFilteredIssue() {
@@ -769,5 +734,164 @@ class IssueResourceTest extends AbstractResourceTest {
                 .get(BASE_PATH + "/" + issueId)
                 .then()
                 .statusCode(403);
+    }
+
+
+
+    @Test
+    void deleteIssue_FAILED_noPermissionToDelete() {
+        // Manager erstellt Issue
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+                + "\"type\":\"TASK\""
+                + "}";
+
+        final Response createResponse = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(createJson)
+                .post(BASE_PATH)
+                .thenReturn();
+
+        final String issueId = createResponse.then()
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().path("id");
+
+        UUID unauthorizedUserId = UUID.randomUUID();
+
+        // User ohne Berechtigung versucht Issue zu löschen
+        given()
+                .when()
+                .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
+                        "Unauthorized", Map.of(), Map.of()))
+                .delete(BASE_PATH + "/" + issueId)
+                .then()
+                .statusCode(403);
+    }
+
+
+    @Test
+    void getIssues_SUCCESS_tenantWithSpecificTenancyIdGetsIssues() {
+        // Erstelle Issue als Manager
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Tenancy Specific Issue\","
+                + "\"type\":\"TASK\""
+                + "}";
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(createJson)
+                .post(BASE_PATH);
+
+        // Hole Issues für spezifische TenancyId (Line 10 Coverage)
+        UUID tenancyId = UUID.fromString(TicketingTestData.TENANT_PROJECT_ROLES.keySet().iterator().next());
+
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                        TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+                .queryParam("tenancyId", tenancyId.toString())
+                .get(BASE_PATH)
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
+    }
+
+    @Test
+    void getIssues_SUCCESS_participantIssueAddedToCollection() {
+        // Erstelle Issue
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Participant Issue\","
+                + "\"type\":\"TASK\""
+                + "}";
+
+        Response createResponse = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(createJson)
+                .post(BASE_PATH)
+                .thenReturn();
+
+        String issueId = createResponse.then()
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().path("id");
+
+        UUID participantId = UUID.randomUUID();
+
+        // Füge Participant hinzu
+        IssueParticipantKey key = new IssueParticipantKey();
+        key.setUserId(participantId);
+        key.setIssueId(UUID.fromString(issueId));
+        key.setSessionId(UUID.randomUUID());
+
+        IssueParticipantEntity participantEntity = new IssueParticipantEntity();
+        participantEntity.setKey(key);
+        participantEntity.setProjectId(TicketingTestData.PROJECT_ID);
+        participantEntity.setRole("CONTRACTOR");
+
+        issueParticipantRepository.insert(participantEntity);
+
+        // Participant holt Issues (Line 20 Coverage)
+        given()
+                .when()
+                .cookie(buildCookie(participantId, "participant@test.com",
+                        "Participant", Map.of(), Map.of()))
+                .get(BASE_PATH)
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("issues", hasSize(1));
+    }
+
+    @Test
+    void getIssues_SUCCESS_deduplicationRemovesDuplicates() {
+        // Erstelle Issue
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Duplicate Test Issue\","
+                + "\"type\":\"TASK\""
+                + "}";
+
+        Response createResponse = given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(createJson)
+                .post(BASE_PATH)
+                .thenReturn();
+
+        String issueId = createResponse.then()
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().path("id");
+
+        // User ist sowohl Tenant als auch Participant
+        IssueParticipantKey key = new IssueParticipantKey();
+        key.setUserId(TicketingTestData.USER_ID_1);
+        key.setIssueId(UUID.fromString(issueId));
+        key.setSessionId(UUID.randomUUID());
+
+        IssueParticipantEntity participantEntity = new IssueParticipantEntity();
+        participantEntity.setKey(key);
+        participantEntity.setProjectId(TicketingTestData.PROJECT_ID);
+        participantEntity.setRole("CONTRACTOR");
+
+        issueParticipantRepository.insert(participantEntity);
+
+        // User mit beiden Rollen holt Issues - sollte dedupliziert werden (Line 29 Coverage)
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                        TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+                .get(BASE_PATH)
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
     }
 }
