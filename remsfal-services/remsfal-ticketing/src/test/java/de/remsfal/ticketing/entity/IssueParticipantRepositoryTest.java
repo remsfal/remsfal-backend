@@ -483,4 +483,159 @@ class IssueParticipantRepositoryTest {
 
   return entity;
  }
+
+ @Test
+ void testUpdateRole_SUCCESS() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, "OWNER"));
+
+  repository.delete(userId, issueId, sessionId);
+ }
+
+ @Test
+ void testUpdateRole_PARTICIPANT_NOT_FOUND() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+
+  IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+          repository.updateRole(userId, issueId, sessionId, "OWNER")
+  );
+
+  assertEquals("Participant not found", exception.getMessage());
+ }
+
+ @Test
+ void testUpdateRole_RUNTIME_EXCEPTION() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  // Verwende ungültige Daten um RuntimeException zu provozieren
+  RuntimeException exception = assertThrows(RuntimeException.class, () ->
+          repository.updateRole(null, issueId, sessionId, "OWNER")
+  );
+
+  assertTrue(exception.getMessage().contains("Failed to update participant role"));
+
+  repository.delete(userId, issueId, sessionId);
+ }
+
+ @Test
+ void testUpdateRole_MULTIPLE_ROLE_CHANGES() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, "EDITOR"));
+  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, "OWNER"));
+  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, "HANDLER"));
+
+  repository.delete(userId, issueId, sessionId);
+ }
+
+ @Test
+ void testUpdateRole_WITH_NULL_ROLE() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, null));
+
+  repository.delete(userId, issueId, sessionId);
+ }
+
+ @Test
+ void testUpdateRole_WITH_EMPTY_ROLE() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, ""));
+
+  repository.delete(userId, issueId, sessionId);
+ }
+
+ @Test
+ void testUpdateRole_WRONG_SESSION_ID() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID wrongSessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+          repository.updateRole(userId, issueId, wrongSessionId, "OWNER")
+  );
+
+  assertEquals("Participant not found", exception.getMessage());
+
+  repository.delete(userId, issueId, sessionId);
+ }
+
+ @Test
+ void testUpdateRole_WRONG_USER_ID() {
+  UUID userId = UUID.randomUUID();
+  UUID wrongUserId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+          repository.updateRole(wrongUserId, issueId, sessionId, "OWNER")
+  );
+
+  assertEquals("Participant not found", exception.getMessage());
+
+  repository.delete(userId, issueId, sessionId);
+ }
+
+ @Test
+ void testUpdateRole_WRONG_ISSUE_ID() {
+  UUID userId = UUID.randomUUID();
+  UUID issueId = UUID.randomUUID();
+  UUID wrongIssueId = UUID.randomUUID();
+  UUID sessionId = UUID.randomUUID();
+  UUID projectId = UUID.randomUUID();
+
+  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
+  repository.insert(entity);
+
+  IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+          repository.updateRole(userId, wrongIssueId, sessionId, "OWNER")
+  );
+
+  assertEquals("Participant not found", exception.getMessage());
+
+  repository.delete(userId, issueId, sessionId);
+ }
 }

@@ -30,8 +30,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     @Inject
     ChatSessionRepository chatSessionRepository;
 
-    @Inject
-    IssueParticipantRepository issueParticipantRepository;
+
 
     @Inject
     CqlSession cqlSession;
@@ -436,162 +435,103 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         );
     }
 
+
+    // Change Participant Role
     @Test
-    void createChatSession_ROLLBACK_ON_PARTICIPANT_INSERT_FAILURE() {
-        logger.info("Testing createChatSession rollback when participant insert fails");
+    void changeParticipantRole_USER_NOT_PARTICIPANT() {
+        logger.info("Testing changeParticipantRole when user is not a participant");
 
-        UUID testProjectId = UUID.randomUUID();
-        UUID testIssueId = UUID.randomUUID();
-
-        // Erstelle ungültige Participant-Daten die einen Fehler verursachen
-        Map<UUID, String> invalidParticipants = new HashMap<>();
-        invalidParticipants.put(null, "INITIATOR"); // null userId sollte Fehler verursachen
+        UUID nonParticipantUserId = UUID.randomUUID();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.createChatSession(testProjectId, testIssueId, invalidParticipants)
+                chatSessionRepository.changeParticipantRole(
+                        TicketingTestData.PROJECT_ID,
+                        SESSION_ID,
+                        TASK_ID,
+                        nonParticipantUserId,
+                        "OBSERVER"
+                )
         );
 
         assertTrue(
-                exception.getMessage().contains("Failed to create chat session participants"),
-                "Exception message should contain 'Failed to create chat session participants'"
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain 'An error occurred while changing the participant role'"
         );
     }
 
     @Test
-    void createChatSession_ROLLBACK_WHEN_SAVE_FAILS() {
-        logger.info("Testing createChatSession rollback when save fails");
+    void changeParticipantRole_PARTICIPANT_NOT_FOUND_IN_ISSUE_PARTICIPANTS() {
+        logger.info("Testing changeParticipantRole when participant not found in issue_participants");
 
+        // Erstelle Session mit Participant in chat_sessions aber nicht in issue_participants
         UUID testProjectId = UUID.randomUUID();
         UUID testIssueId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
 
-        // Erstelle Participants die erfolgreich eingefügt werden
-        Map<UUID, String> participants = new HashMap<>();
-        participants.put(UUID.randomUUID(), "INITIATOR");
-        participants.put(UUID.randomUUID(), "HANDLER");
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
 
-        // Provoziere Fehler durch ungültige Daten für die Session
-        // z.B. durch Setzen von null-Werten oder ungültige Kombinationen
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(testUserId, "HANDLER"));
 
-        try {
-            chatSessionRepository.createChatSession(testProjectId, testIssueId, participants);
-        } catch (RuntimeException e) {
-            // Erwarteter Fehler
-            assertTrue(
-                    e.getMessage().contains("Failed to create chat session") ||
-                            e.getMessage().contains("Failed to create chat session participants"),
-                    "Exception should indicate session creation failure"
-            );
-        }
+        // User existiert in chat_sessions aber NICHT in issue_participants
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId,
+                        testSessionId,
+                        testIssueId,
+                        testUserId,
+                        "OBSERVER"
+                )
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain error about changing participant role"
+        );
     }
 
     @Test
-    void createChatSession_ROLLBACK_FAILURE_IS_LOGGED() {
-        logger.info("Testing that rollback failures are logged");
+    void changeParticipantRole_UPDATE_ROLE_GENERAL_EXCEPTION() {
+        logger.info("Testing changeParticipantRole with general exception during updateRole");
 
         UUID testProjectId = UUID.randomUUID();
         UUID testIssueId = UUID.randomUUID();
-        UUID userId1 = UUID.randomUUID();
-        UUID userId2 = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
 
-        Map<UUID, String> participants = new HashMap<>();
-        participants.put(userId1, "INITIATOR");
-        participants.put(userId2, "HANDLER");
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
 
-        // Füge zuerst Participants manuell ein
-        Instant now = Instant.now();
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(testUserId, "HANDLER"));
+
         String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
                 "(user_id, issue_id, session_id, project_id, role, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
-        UUID tempSessionId = UUID.randomUUID();
         cqlSession.execute(insertParticipantCql,
-                userId1, testIssueId, tempSessionId, testProjectId, "INITIATOR", now);
+                testUserId, testIssueId, testSessionId, testProjectId, "HANDLER", Instant.now());
 
-        // Versuche Session zu erstellen - sollte fehlschlagen wenn Participants schon existieren
-        try {
-            chatSessionRepository.createChatSession(testProjectId, testIssueId, participants);
-        } catch (RuntimeException e) {
-            // Erwarteter Fehler
-            logger.info("Caught expected exception: " + e.getMessage());
-        }
-    }
-
-    @Test
-    void createChatSession_PARTIAL_ROLLBACK_ON_SECOND_PARTICIPANT_FAILURE() {
-        logger.info("Testing partial rollback when second participant insert fails");
-
-        UUID testProjectId = UUID.randomUUID();
-        UUID testIssueId = UUID.randomUUID();
-        UUID userId1 = UUID.randomUUID();
-
-        Map<UUID, String> participants = new HashMap<>();
-        participants.put(userId1, "INITIATOR");
-        participants.put(null, "HANDLER"); // null sollte Fehler beim zweiten Insert verursachen
-
+        // Verwende ungültige Daten für newRole um Exception zu provozieren
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.createChatSession(testProjectId, testIssueId, participants)
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId,
+                        testSessionId,
+                        testIssueId,
+                        testUserId,
+                        null  // null könnte Exception verursachen
+                )
         );
 
         assertTrue(
-                exception.getMessage().contains("Failed to create chat session participants"),
-                "Should fail with participant creation error"
-        );
-
-        // Verifiziere dass der erste Participant auch zurückgerollt wurde
-        assertFalse(
-                issueParticipantRepository.exists(userId1, testIssueId),
-                "First participant should be rolled back"
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain error about changing participant role"
         );
     }
-
-    @Test
-    void createChatSession_MULTIPLE_PARTICIPANTS_ROLLBACK() {
-        logger.info("Testing rollback with multiple participants");
-
-        UUID testProjectId = UUID.randomUUID();
-        UUID testIssueId = UUID.randomUUID();
-        UUID userId1 = UUID.randomUUID();
-        UUID userId2 = UUID.randomUUID();
-        UUID userId3 = UUID.randomUUID();
-
-        Map<UUID, String> participants = new HashMap<>();
-        participants.put(userId1, "INITIATOR");
-        participants.put(userId2, "HANDLER");
-        participants.put(userId3, "OBSERVER");
-
-        // Erstelle die Participants erfolgreich
-        chatSessionRepository.createChatSession(testProjectId, testIssueId, participants);
-
-        // Verifiziere dass alle Participants existieren
-        assertTrue(issueParticipantRepository.exists(userId1, testIssueId));
-        assertTrue(issueParticipantRepository.exists(userId2, testIssueId));
-        assertTrue(issueParticipantRepository.exists(userId3, testIssueId));
-    }
-
-    @Test
-    void createChatSession_EMPTY_PARTICIPANTS_MAP() {
-        logger.info("Testing createChatSession with empty participants map");
-
-        UUID testProjectId = UUID.randomUUID();
-        UUID testIssueId = UUID.randomUUID();
-
-        Map<UUID, String> emptyParticipants = new HashMap<>();
-
-        ChatSessionEntity session = chatSessionRepository.createChatSession(
-                testProjectId,
-                testIssueId,
-                emptyParticipants
-        );
-
-        assertNotNull(session, "Session should be created even with empty participants");
-        assertEquals(0, session.getParticipants().size(), "Participants map should be empty");
-    }
-
-
-
-
-
-
-
-
 }
