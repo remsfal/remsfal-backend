@@ -45,6 +45,23 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
 
     @Override
     public void deleteEmployee(UUID organizationId, UUID employeeId) {
+    OrganizationEmployeeModel.EmployeeRole role =
+        controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole();
+
+    if (role == OrganizationEmployeeModel.EmployeeRole.OWNER) {
+        checkOwnerPermissions(organizationId);
+    } else {
+        checkWritePermissions(organizationId);
+    }
+
+    boolean targetHasWrite = role.isPrivileged(PermissionType.WRITE);
+
+    if (targetHasWrite && controller.countEmployeesWithWriteAccess(organizationId) <= 1) {
+        controller.deleteOrganization(organizationId);
+    } else {
+        controller.removeEmployee(organizationId, employeeId);
+    }
+}
         if (controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole() ==
             OrganizationEmployeeModel.EmployeeRole.OWNER) {
             checkOwnerPermissions(organizationId);
