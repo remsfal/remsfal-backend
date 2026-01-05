@@ -1,14 +1,11 @@
 package de.remsfal.service.boundary.organization;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.api.organization.EmployeeEndpoint;
 import de.remsfal.core.json.organization.OrganizationEmployeeJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.model.OrganizationEmployeeModel;
-import de.remsfal.service.control.OrganizationController;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
 
 import java.util.UUID;
 
@@ -45,35 +42,20 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
 
     @Override
     public void deleteEmployee(UUID organizationId, UUID employeeId) {
-    OrganizationEmployeeModel.EmployeeRole role =
-        controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole();
+        OrganizationEmployeeModel.EmployeeRole role =
+            controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole();
 
-    if (role == OrganizationEmployeeModel.EmployeeRole.OWNER) {
-        checkOwnerPermissions(organizationId);
-    } else {
-        checkWritePermissions(organizationId);
-    }
-
-    boolean targetHasWrite = role.isPrivileged(PermissionType.WRITE);
-
-    if (targetHasWrite && controller.countEmployeesWithWriteAccess(organizationId) <= 1) {
-        controller.deleteOrganization(organizationId);
-    } else {
-        controller.removeEmployee(organizationId, employeeId);
-    }
-}
-        if (controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole() ==
-            OrganizationEmployeeModel.EmployeeRole.OWNER) {
+        if (role == OrganizationEmployeeModel.EmployeeRole.OWNER) {
             checkOwnerPermissions(organizationId);
-        }
-        else {
+        } else {
             checkWritePermissions(organizationId);
         }
 
-        if (controller.countEmployeesWithWriteAccess(organizationId) <= 1) {
+        boolean targetHasWrite = role.isPrivileged(OrganizationEmployeeModel.PermissionType.WRITE);
+
+        if (targetHasWrite && controller.countEmployeesWithWriteAccess(organizationId) <= 1) {
             controller.deleteOrganization(organizationId);
-        }
-        else {
+        } else {
             controller.removeEmployee(organizationId, employeeId);
         }
     }
