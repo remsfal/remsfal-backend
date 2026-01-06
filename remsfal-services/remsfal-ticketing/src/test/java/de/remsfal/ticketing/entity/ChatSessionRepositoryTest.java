@@ -534,4 +534,69 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 "Exception message should contain error about changing participant role"
         );
     }
+
+
+        @Test
+        void createChatSession_PARTICIPANT_INSERTION_FAILURE() {
+                logger.info("Testing createChatSession with participant insertion failure");
+
+                UUID testProjectId = UUID.randomUUID();
+                UUID testIssueId = UUID.randomUUID();
+
+                Map<UUID, String> invalidParticipants = new HashMap<>();
+                invalidParticipants.put(null, "INITIATOR"); // null userId should cause issues
+
+                RuntimeException exception = assertThrows(RuntimeException.class,
+                        () -> chatSessionRepository.createChatSession(
+                                testProjectId,
+                                testIssueId,
+                                invalidParticipants));
+
+                logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+                assertTrue(
+                        exception.getMessage().contains("Failed to create chat session participants"),
+                        "Exception message should contain 'Failed to create chat session participants'");
+        }
+
+
+
+
+        @Test
+        void createChatSession_PARTIAL_PARTICIPANT_INSERTION_WITH_ROLLBACK() {
+                logger.info("Testing createChatSession with partial participant insertion requiring rollback");
+
+                UUID testProjectId = UUID.randomUUID();
+                UUID testIssueId = UUID.randomUUID();
+
+                // Create a map with valid and invalid participants
+                // The invalid one should cause the entire operation to rollback
+                Map<UUID, String> mixedParticipants = new HashMap<>();
+                mixedParticipants.put(TicketingTestData.USER_ID_1, "INITIATOR");
+                mixedParticipants.put(null, "HANDLER"); // This will cause failure
+
+                RuntimeException exception = assertThrows(RuntimeException.class,
+                        () -> chatSessionRepository.createChatSession(
+                                testProjectId,
+                                testIssueId,
+                                mixedParticipants));
+
+                assertTrue(
+                        exception.getMessage().contains("Failed to create chat session participants"),
+                        "Should throw exception about participant creation failure");
+
+                // Verify that the successfully inserted participant was rolled back
+                // by checking it doesn't exist in issue_participants table
+                boolean participantExists = false;
+                try {
+                        String checkCql = "SELECT * FROM remsfal.issue_participants WHERE user_id = ? AND issue_id = ?";
+                        com.datastax.oss.driver.api.core.cql.ResultSet rs = cqlSession.execute(checkCql,
+                                TicketingTestData.USER_ID_1, testIssueId);
+                        participantExists = rs.one() != null;
+                } catch (Exception e) {
+                        logger.info("Error checking participant existence: " + e.getMessage());
+                }
+
+                assertFalse(participantExists,
+                        "Participant should have been rolled back and not exist in database");
+        }
 }
