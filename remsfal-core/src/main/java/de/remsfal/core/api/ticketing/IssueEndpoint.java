@@ -117,11 +117,13 @@ public interface IssueEndpoint {
     @APIResponse(responseCode = "204", description = "The realtion was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteRelation(
-        @Parameter(description = "ID of the Issue where the Relation should be deleted, " +
-        "Type of the relation, and the ID for the related Issue")
+        @Parameter(description = "ID of the source Issue")
         @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Type of the relation (e.g. blocks, blocked_by, related_to)")
         @PathParam("type") @NotNull String type,
+        @Parameter(description = "ID of the related Issue")
         @PathParam("relatedIssueId") @NotNull UUID relatedIssueId
+
     );
 
 
