@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.util.Objects;
-
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
@@ -96,7 +94,10 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             try {
                 collected.add(issueController.getIssue(pid));
             } catch (NotFoundException ignored) {
-
+                // Intentionally ignored:
+                // The user may be listed as a participant of an issue that was deleted or closed.
+                // In this case, the issue no longer exists and should simply be skipped
+                // without failing the entire request.
             }
         }
 

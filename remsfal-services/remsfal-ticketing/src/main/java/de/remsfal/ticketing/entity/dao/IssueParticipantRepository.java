@@ -14,7 +14,6 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
 
     private static final String COL_USER_ID = "user_id";
     private static final String COL_ISSUE_ID = "issue_id";
-    private static final String COL_ROLE = "role";
 
 
 
@@ -24,18 +23,18 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
 
     public void delete(UUID userId, UUID issueId, UUID sessionId) {
         template.delete(IssueParticipantEntity.class)
-                .where(COL_USER_ID).eq(userId)
-                .and(ISSUE_ID).eq(issueId)
-                .and(SESSION_ID).eq(sessionId)
-                .execute();
+           .where(COL_USER_ID).eq(userId)
+           .and(ISSUE_ID).eq(issueId)
+           .and(SESSION_ID).eq(sessionId)
+           .execute();
     }
 
     public boolean exists(UUID userId, UUID issueId) {
         return template.select(IssueParticipantEntity.class)
-                .where(COL_USER_ID).eq(userId)
-                .and(COL_ISSUE_ID).eq(issueId)
-                .singleResult()
-                .isPresent();
+           .where(COL_USER_ID).eq(userId)
+           .and(COL_ISSUE_ID).eq(issueId)
+           .singleResult()
+           .isPresent();
     }
 
     public List<UUID> findIssueIdsByParticipant(UUID userId) {
@@ -44,10 +43,10 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
                 .result();
 
         return entities.stream()
-                .map(IssueParticipantEntity::getIssueId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+           .map(IssueParticipantEntity::getIssueId)
+           .filter(Objects::nonNull)
+           .distinct()
+           .toList();
     }
 
     public void updateRole(UUID userId, UUID issueId, UUID sessionId, String newRole) {

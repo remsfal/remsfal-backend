@@ -90,9 +90,8 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                 insertedParticipants.add(userId);
             }
         } catch (Exception e) {
-            // Rollback: delete all inserted participants
             logger.error("Failed to insert participants for session " + sessionId
-                    + ". Rolling back " + insertedParticipants.size() + " participants", e);
+                + ". Rolling back " + insertedParticipants.size() + " participants", e);
             for (UUID userId : insertedParticipants) {
                 try {
                     issueParticipantRepository.delete(userId, issueId, sessionId);
@@ -100,7 +99,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     logger.error("Failed to rollback participant " + userId, rollbackError);
                 }
             }
-            throw new RuntimeException("Failed to create chat session participants", e);
+            throw new IllegalStateException("Failed to create chat session participants", e);
         }
 
         // create session only if all inserts are successful
@@ -109,7 +108,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         } catch (Exception e) {
             // Rollback: delete all participants
             logger.error("Failed to create chat session after inserting participants. "
-                    + "Rolling back all participants for session " + sessionId, e);
+                + "Rolling back all participants for session " + sessionId, e);
             for (UUID userId : insertedParticipants) {
                 try {
                     issueParticipantRepository.delete(userId, issueId, sessionId);
@@ -117,7 +116,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     logger.error("Failed to rollback participant " + userId, rollbackError);
                 }
             }
-            throw new RuntimeException("Failed to create chat session", e);
+            throw new IllegalStateException("Failed to create chat session", e);
         }
 
         return session;
@@ -253,37 +252,37 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                 issueParticipantRepository.updateRole(userId, issueId, sessionId, newRole);
             } catch (IllegalArgumentException e) {
                 logger.error("Participant not found in issue_participants for userId=" + userId
-                        + ", sessionId=" + sessionId, e);
-                throw new RuntimeException("An error occurred while changing the participant role", e);
+                    + ", sessionId=" + sessionId, e);
+                throw new IllegalStateException("An error occurred while changing the participant role", e);
             } catch (Exception e) {
                 logger.error("Failed to update role in issue_participants for userId=" + userId
-                        + ", sessionId=" + sessionId, e);
-                throw new RuntimeException("An error occurred while changing the participant role", e);
-            }
+                    + ", sessionId=" + sessionId, e);
+                throw new IllegalStateException("An error occurred while changing the participant role", e);
 
+            }
             participants.put(userId, newRole);
             Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                    .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
-                    .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                    .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
-                    .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
+               .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+               .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+               .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
+               .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
+               .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
 
             try {
                 cqlSession.execute(updateQuery.build());
             } catch (Exception e) {
                 logger.error("Failed to update chat_sessions after role change. "
                         + "Manual cleanup may be required for session " + sessionId, e);
-                throw new RuntimeException("An error occurred while changing the participant role", e);
+                throw new IllegalStateException("An error occurred while changing the participant role", e);
             }
 
         } catch (IllegalArgumentException e) {
             // Wrap IllegalArgumentException in RuntimeException with expected message
-            throw new RuntimeException("An error occurred while changing the participant role", e);
-        } catch (RuntimeException e) {
+            throw new IllegalStateException("An error occurred while changing the participant role", e);
+        } catch (IllegalStateException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while changing the participant role", e);
+            throw new IllegalStateException("An error occurred while changing the participant role", e);
         }
     }
 
@@ -301,23 +300,23 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                     issueParticipantRepository.delete(userId, issueId, sessionId);
                 } catch (Exception e) {
                     logger.error("Failed to delete participant from issue_participants: "
-                            + userId + " in session " + sessionId, e);
+                       + userId + " in session " + sessionId, e);
                     throw new RuntimeException("Failed to remove participant from issue", e);
                 }
 
                 participants.remove(userId);
                 Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                        .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
-                        .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                        .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
-                        .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                        .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
+                   .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+                   .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+                   .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
+                   .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
+                   .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
 
                 try {
                     cqlSession.execute(updateQuery.build());
                 } catch (Exception e) {
                     logger.error("Failed to update chat_sessions after deleting participant. "
-                            + "Manual cleanup may be required for session " + sessionId, e);
+                       + "Manual cleanup may be required for session " + sessionId, e);
                     throw new RuntimeException("Failed to update session after participant removal", e);
                 }
             } else {
