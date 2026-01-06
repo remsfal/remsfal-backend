@@ -25,7 +25,7 @@ jobs:
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: built-app-artifacts
           path: |
@@ -43,7 +43,7 @@ jobs:
         microservice: ["remsfal-platform", "remsfal-ticketing", "remsfal-notification"]
     steps:
       - name: Download Artefakts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: built-app-artifacts
           path: .
