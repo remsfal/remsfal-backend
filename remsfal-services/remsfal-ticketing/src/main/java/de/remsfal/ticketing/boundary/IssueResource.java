@@ -39,8 +39,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status, UUID contractorId) {
-        logger.info("Yes i was called");
+        UnitType rentalType, UUID rentalId, UUID contractorId, Status status) {
         List<UUID> projectFilter = null;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
             projectFilter = List.of(projectId);
