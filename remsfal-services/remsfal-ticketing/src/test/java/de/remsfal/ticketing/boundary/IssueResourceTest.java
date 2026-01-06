@@ -372,4 +372,56 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body("total", equalTo(2));
     }
 
+    @Test
+    void getIssues_FAILED_noTenancyMembership() {
+        given()
+                .when()
+                .cookie(buildCookie(
+                    TicketingTestData.USER_ID,
+                    TicketingTestData.USER_EMAIL,
+                    TicketingTestData.USER_FIRST_NAME,
+                    Map.of(),
+                    Map.of()))
+                .get(BASE_PATH)
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    void getIssues_FAILED_invalidTenancyIdForbidden() {
+        UUID unknownTenancy = UUID.randomUUID();
+
+        given()
+                .when()
+                .cookie(buildCookie(
+                    TicketingTestData.USER_ID,
+                    TicketingTestData.USER_EMAIL,
+                    TicketingTestData.USER_FIRST_NAME,
+                    Map.of(),
+                    TicketingTestData.TENANT_PROJECT_ROLES))
+                .queryParam("tenancyId", unknownTenancy.toString())
+                .get(BASE_PATH)
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void getIssues_SUCCESS_tenancyIssuesForMember() {
+        given()
+                .when()
+                .cookie(buildCookie(
+                    TicketingTestData.USER_ID,
+                    TicketingTestData.USER_EMAIL,
+                    TicketingTestData.USER_FIRST_NAME,
+                    Map.of(),
+                    TicketingTestData.TENANT_PROJECT_ROLES))
+                .queryParam("tenancyId", TicketingTestData.TENANCY_ID.toString())
+                .get(BASE_PATH)
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("issues", hasSize(0))
+                .body("total", equalTo(0));
+    }
+
 }
