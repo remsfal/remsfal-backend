@@ -148,7 +148,6 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
                 .toString())
                 .build();
         issueEventProducer.sendIssueCreated(createdIssue, principal);
-        final URI location = uri.getAbsolutePathBuilder().path(issue.getProjectId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(response)
@@ -207,4 +206,4 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         return issueParticipantRepository.exists(principal.getId(), issueId);
     }
 }
-}
+
