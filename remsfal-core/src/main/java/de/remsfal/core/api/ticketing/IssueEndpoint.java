@@ -114,7 +114,7 @@ public interface IssueEndpoint {
     @DELETE
     @Path("/{issueId}/relations/{type}/{relatedIssueId}")
     @Operation(summary = "Delete an existing relation between two Issues")
-    @APIResponse(responseCode = "204", description = "The realtion was deleted successfully")
+    @APIResponse(responseCode = "204", description = "The relation was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteRelation(
         @Parameter(description = "ID of the source Issue")
