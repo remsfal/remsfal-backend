@@ -85,8 +85,6 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getContractorId();
 
-
-
     /**
      * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
      * <p>
