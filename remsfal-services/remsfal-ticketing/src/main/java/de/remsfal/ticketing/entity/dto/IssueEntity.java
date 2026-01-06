@@ -37,7 +37,7 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("description")
     private String description;
 
-    @Column("blocks")
+    @Column("blocks_set")
     private Set<UUID> blocks;
 
     @Column("blocked_by_set")
@@ -49,10 +49,10 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("duplicate_of_set")
     private Set<UUID> duplicateOf;
 
-    @Column("parent_of")
+    @Column("parent_of_set")
     private Set<UUID> parentOf;
 
-    @Column("child_of")
+    @Column("child_of_set")
     private Set<UUID> childOf;
 
 

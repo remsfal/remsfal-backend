@@ -28,7 +28,7 @@
 
         <!-- 2) Neue N:M-Spalten hinzufügen (mit neuen Namen, keine Typ-Kollision) -->
         <sql>
-            ALTER TABLE REMSFAL.issues ADD blocks set&lt;uuid&gt;;
+            ALTER TABLE REMSFAL.issues ADD blocks_set set&lt;uuid&gt;;
         </sql>
         <sql>
             ALTER TABLE REMSFAL.issues ADD blocked_by_set set&lt;uuid&gt;;
@@ -40,20 +40,20 @@
             ALTER TABLE REMSFAL.issues ADD duplicate_of_set set&lt;uuid&gt;;
         </sql>
         <sql>
-            ALTER TABLE REMSFAL.issues ADD parent_of set&lt;uuid&gt;;
+            ALTER TABLE REMSFAL.issues ADD parent_of_set set&lt;uuid&gt;;
         </sql>
         <sql>
-            ALTER TABLE REMSFAL.issues ADD child_of set&lt;uuid&gt;;
+            ALTER TABLE REMSFAL.issues ADD child_of_set set&lt;uuid&gt;;
         </sql>
 
         <rollback>
             <!-- 1) Neue N:M-Spalten wieder entfernen -->
-            <sql>ALTER TABLE REMSFAL.issues DROP blocks;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP blocks_set;</sql>
             <sql>ALTER TABLE REMSFAL.issues DROP blocked_by_set;</sql>
             <sql>ALTER TABLE REMSFAL.issues DROP related_to_set;</sql>
             <sql>ALTER TABLE REMSFAL.issues DROP duplicate_of_set;</sql>
-            <sql>ALTER TABLE REMSFAL.issues DROP parent_of;</sql>
-            <sql>ALTER TABLE REMSFAL.issues DROP child_of;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP parent_of_set;</sql>
+            <sql>ALTER TABLE REMSFAL.issues DROP child_of_set;</sql>
 
             <!-- 2) Alte 1:1-Spalten im ursprünglichen Typ (uuid) wieder herstellen -->
             <sql>ALTER TABLE REMSFAL.issues ADD blocked_by uuid;</sql>

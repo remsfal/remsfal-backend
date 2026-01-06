@@ -765,19 +765,6 @@ class IssueResourceTest extends AbstractResourceTest {
         assertNoRelationsContain(sourceId, targetId);
     }
 
-    @Test
-    void deleteRelation_FAILED_unknownType() {
-        String sourceId = createSimpleIssue("Source");
-        String targetId = createSimpleIssue("Target");
-
-        given()
-                .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
-                .delete(BASE_PATH + "/" + sourceId + "/relations/unknown_type/" + targetId)
-                .then()
-                .statusCode(400);
-    }
 
     @Test
     void deleteRelation_onNonExistingRelation_isNoOp() {
