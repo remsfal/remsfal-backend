@@ -2,6 +2,7 @@ package de.remsfal.core.json;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -91,6 +92,18 @@ public abstract class UserJson implements CustomerModel {
     @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
     public abstract String getPrivatePhoneNumber();
 
+    @Size(max = 2, message = "Locale must be 2 characters long")
+    @Nullable
+    @Override
+    public abstract String getLocale();
+
+    @Nullable
+    @Override
+    public abstract List<
+        @Email
+        @Size(max = 255, message = "Each email cannot be longer than 255 characters")
+        String> getAdditionalEmails();
+
     @Nullable
     @Null
     @Override
@@ -103,18 +116,20 @@ public abstract class UserJson implements CustomerModel {
 
     public static ImmutableUserJson valueOf(final CustomerModel model) {
         return ImmutableUserJson.builder()
-            .id(model.getId())
-            .email(model.getEmail())
-            .active(model.isActive())
-            .firstName(model.getFirstName())
-            .lastName(model.getLastName())
-            .address(AddressJson.valueOf(model.getAddress()))
-            .mobilePhoneNumber(model.getMobilePhoneNumber())
-            .businessPhoneNumber(model.getBusinessPhoneNumber())
-            .privatePhoneNumber(model.getPrivatePhoneNumber())
-            .registeredDate(model.getRegisteredDate())
-            .lastLoginDate(model.getLastLoginDate())
-            .build();
+                .id(model.getId())
+                .email(model.getEmail())
+                .active(model.isActive())
+                .firstName(model.getFirstName())
+                .lastName(model.getLastName())
+                .address(AddressJson.valueOf(model.getAddress()))
+                .mobilePhoneNumber(model.getMobilePhoneNumber())
+                .businessPhoneNumber(model.getBusinessPhoneNumber())
+                .privatePhoneNumber(model.getPrivatePhoneNumber())
+                .locale(model.getLocale())
+                .additionalEmails(model.getAdditionalEmails())
+                .registeredDate(model.getRegisteredDate())
+                .lastLoginDate(model.getLastLoginDate())
+                .build();
     }
 
     public static UserJson valueOf(final CustomerModel model, final Set<UserRole> userRoles) {
