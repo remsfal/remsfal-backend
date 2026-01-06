@@ -203,54 +203,54 @@ public class IssueController {
         String t = type.toLowerCase();
 
         switch (t) {
-            case "blocks" -> {
+            case "blocks" -> 
                 // source.blocks – target.blockedBy
                 removeSingleRelation(
                     source, target, relatedId,
                     IssueEntity::getBlocks, IssueEntity::setBlocks,
                     IssueEntity::getBlockedBy, IssueEntity::setBlockedBy
                 );
-            }
-            case "blocked_by" -> {
+            
+            case "blocked_by" -> 
                 // source.blockedBy – target.blocks
                 removeSingleRelation(
                     source, target, relatedId,
                     IssueEntity::getBlockedBy, IssueEntity::setBlockedBy,
                     IssueEntity::getBlocks, IssueEntity::setBlocks
                 );
-            }
-            case "related_to" -> {
+            
+            case "related_to" -> 
                 // symmetrisch
                 removeSingleRelation(
                     source, target, relatedId,
                     IssueEntity::getRelatedTo, IssueEntity::setRelatedTo,
                     IssueEntity::getRelatedTo, IssueEntity::setRelatedTo
                 );
-            }
-            case "duplicate_of" -> {
+            
+            case "duplicate_of" -> 
                 // symmetrisch
                 removeSingleRelation(
                     source, target, relatedId,
                     IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf,
                     IssueEntity::getDuplicateOf, IssueEntity::setDuplicateOf
                 );
-            }
-            case "parent_of" -> {
+            
+            case "parent_of" -> 
                 // source.parentOf – target.childOf
                 removeSingleRelation(
                     source, target, relatedId,
                     IssueEntity::getParentOf, IssueEntity::setParentOf,
                     IssueEntity::getChildOf, IssueEntity::setChildOf
                 );
-            }
-            case "child_of" -> {
+            
+            case "child_of" -> 
                 // source.childOf – target.parentOf
                 removeSingleRelation(
                     source, target, relatedId,
                     IssueEntity::getChildOf, IssueEntity::setChildOf,
                     IssueEntity::getParentOf, IssueEntity::setParentOf
                 );
-            }
+            
             default -> throw new BadRequestException("Missing or wrong Relation type");
         }
 
