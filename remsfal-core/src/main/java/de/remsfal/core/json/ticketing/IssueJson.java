@@ -81,7 +81,6 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getDuplicateOf();
 
-    @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract UUID getContractorId();
