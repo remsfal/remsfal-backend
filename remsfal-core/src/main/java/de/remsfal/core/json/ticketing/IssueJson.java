@@ -20,7 +20,8 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
-import org.immutables.value.internal.$processor$.meta.$OkJsonMirrors;
+
+
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
