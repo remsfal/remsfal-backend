@@ -377,7 +377,7 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body("issues", hasSize(2))
                 .body("total", equalTo(2));
     }
-    // Testfälle für das hinzufügen der N:M Relationen
+    // Testfälle für das Hinzufügen der N:M-Relationen
     @Test
     void relation_blockedBy_blocks_bidirectional() {
         // Source (wird geblockt)
