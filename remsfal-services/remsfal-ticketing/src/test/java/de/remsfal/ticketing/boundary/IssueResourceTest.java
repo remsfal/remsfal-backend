@@ -771,7 +771,7 @@ class IssueResourceTest extends AbstractResourceTest {
         String sourceId = createSimpleIssue("Source");
         String targetId = createSimpleIssue("Target");
 
-        // Kein Relation gesetzt, direkt deleteRelation aufrufen
+        // Keine Relation gesetzt, direkt deleteRelation aufrufen
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
