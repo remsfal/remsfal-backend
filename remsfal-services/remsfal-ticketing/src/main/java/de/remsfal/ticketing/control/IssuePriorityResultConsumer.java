@@ -69,7 +69,11 @@ public class IssuePriorityResultConsumer {
 
             entity.setPriorityScore(event.getPriorityScore());
             entity.setPriorityModel(event.getPriorityModel());
-            entity.setPriorityTimestamp(event.getPriorityTimestamp() != null ? event.getPriorityTimestamp() : Instant.now());
+            Instant priorityTimestamp = event.getPriorityTimestamp() != null
+                    ? event.getPriorityTimestamp()
+                    : Instant.now();
+            entity.setPriorityTimestamp(priorityTimestamp);
+
 
             repository.update(entity);
 
