@@ -255,4 +255,65 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
+
+    @Test
+    void getTenancy_FAILURE_tenancyNotFound() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(TENANCY_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void updateTenancy_FAILURE_tenancyNotFound() {
+        String json = "{ \"startOfRental\": \"2024-01-01\" }";
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void createTenancy_FAILURE_projectNotFound() {
+        String json = "{" +
+            "\"startOfRental\":\"2023-01-01\"," +
+            "\"endOfRental\":\"2023-12-31\"" +
+            "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, java.util.UUID.randomUUID().toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    void getTenancies_FAILURE_unauthorized() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    void getTenancy_FAILURE_unauthorized() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
 }
