@@ -3,14 +3,18 @@ package de.remsfal.ticketing.control;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.control.events.IssuePriorityAlertEvent;
 import de.remsfal.ticketing.control.events.IssuePriorityResultEvent;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.jboss.logging.Logger;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -27,6 +31,10 @@ public class IssuePriorityResultConsumer {
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    @Channel("tickets-alert")
+    Emitter<ProducerRecord<String, String>> alertEmitter;
+
     @Incoming("tickets-incoming-prio")
     public void consume(final String payload) {
         try {
@@ -35,6 +43,7 @@ public class IssuePriorityResultConsumer {
                 logger.warn("Received priority event without issueId or projectId, ignoring");
                 return;
             }
+
             IssueKey key = new IssueKey();
             key.setIssueId(event.getIssueId());
             key.setProjectId(event.getProjectId());
@@ -47,6 +56,7 @@ public class IssuePriorityResultConsumer {
             }
 
             IssueEntity entity = entityOptional.get();
+
             if (event.getPriority() != null) {
                 try {
                     entity.setPriority(IssueModel.Priority.valueOf(event.getPriority()));
@@ -56,11 +66,35 @@ public class IssuePriorityResultConsumer {
                     entity.setPriority(event.getPriority());
                 }
             }
+
             entity.setPriorityScore(event.getPriorityScore());
             entity.setPriorityModel(event.getPriorityModel());
             entity.setPriorityTimestamp(event.getPriorityTimestamp() != null ? event.getPriorityTimestamp() : Instant.now());
+
             repository.update(entity);
+
             logger.infov("Updated issue priority (issueId={0}, priority={1})", event.getIssueId(), event.getPriority());
+
+            // ---- NEW: emit alert event if HIGH ----
+            if ("HIGH".equalsIgnoreCase(event.getPriority())) {
+                IssuePriorityAlertEvent alert = new IssuePriorityAlertEvent();
+                alert.setIssueId(entity.getId());          // UUID
+                alert.setProjectId(entity.getProjectId()); // UUID
+                alert.setPriority("HIGH");
+                alert.setPriorityScore(event.getPriorityScore());
+                alert.setPriorityModel(event.getPriorityModel());
+                alert.setTitle(entity.getTitle());
+
+                String alertJson = objectMapper.writeValueAsString(alert);
+
+                ProducerRecord<String, String> record =
+                        new ProducerRecord<>("tickets.priority.alert", entity.getId().toString(), alertJson);
+
+                alertEmitter.send(record);
+
+                logger.infov("Emitted HIGH priority alert event (issueId={0})", event.getIssueId());
+            }
+
         } catch (MismatchedInputException ex) {
             logger.warnf(ex, "Could not parse priority event payload: %s", payload);
         } catch (Exception ex) {
