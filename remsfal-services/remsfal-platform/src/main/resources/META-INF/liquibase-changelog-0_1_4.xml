@@ -8,6 +8,17 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
+    <changeSet id="add-locale-to-users" author="AlexandraRuzina">
+        <comment>Add locale column to users table to store the user's preferred language</comment>
+
+        <addColumn tableName="users">
+            <column name="locale" type="varchar(2)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+    </changeSet>
+
     <changeSet id="remsfal-backend-0.1.4-organization" author="miroslaw.keil@Student.htw-berlin.de">
         <createTable tableName="organization">
             <column name="id" type="uuid">
