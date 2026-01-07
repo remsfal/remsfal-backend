@@ -79,7 +79,7 @@ public class TenancyController {
         final List<? extends CustomerModel> tenants = tenancy.getTenants();
         if (tenants != null && !tenants.isEmpty()) {
             List<UserEntity> userEntities = tenants.stream()
-                .map(user -> userRepository.findById(user.getId()))
+                .map(user -> userRepository.findByIdWithAdditionalEmails(user.getId()).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
             
@@ -109,7 +109,7 @@ public class TenancyController {
         final List<? extends CustomerModel> tenants = tenancy.getTenants();
         if (tenants != null) {
             List<UserEntity> userEntities = tenants.stream()
-                .map(user -> userRepository.findById(user.getId()))
+                .map(user -> userRepository.findByIdWithAdditionalEmails(user.getId()).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
