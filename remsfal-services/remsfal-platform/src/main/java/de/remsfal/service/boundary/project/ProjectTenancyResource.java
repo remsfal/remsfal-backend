@@ -16,7 +16,10 @@ import de.remsfal.service.entity.dto.TenancyEntity;
 
 import java.util.List;
 
+import jakarta.transaction.Transactional; 
+
 @RequestScoped
+@Transactional
 public class ProjectTenancyResource extends ProjectSubResource implements ProjectTenancyEndpoint {
 
     @Inject
