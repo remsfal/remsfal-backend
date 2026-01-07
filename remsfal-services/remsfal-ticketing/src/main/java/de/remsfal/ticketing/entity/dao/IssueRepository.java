@@ -16,8 +16,11 @@ import jakarta.ws.rs.BadRequestException;
 
 
 import java.time.Instant;
-import java.util.*;
-
+import java.util.Set;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.List;
+import java.util.HashSet;
 @ApplicationScoped
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     @Inject
@@ -101,7 +104,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     // ---- CQL templates ----
     private static final String UPDATE_SET_TEMPLATE =
-            "UPDATE remsfal.issues SET %s = %s %s ? WHERE project_id = ? AND issue_id = ?";
+        "UPDATE remsfal.issues SET %s = %s %s ? WHERE project_id = ? AND issue_id = ?";
 
     // '+' add / '-' remove
     private SimpleStatement setUpdate(String column, boolean add, UUID projectId, UUID issueId, UUID deltaId) {
@@ -113,19 +116,29 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     /**
      * Apply a single bidirectional relation update as UNLOGGED BATCH.
      */
-    private void applyBidirectional(UUID projectId, UUID sourceId, UUID targetId, boolean add, String sourceColumn, String targetColumn) {
+    private void applyBidirectional(UUID projectId,
+        UUID sourceId,
+        UUID targetId,
+        boolean add,
+        String sourceColumn,
+        String targetColumn) {
         if (projectId == null || sourceId == null || targetId == null) return;
         if (sourceId.equals(targetId)) return;
 
         BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
-                .addStatement(setUpdate(sourceColumn, add, projectId, sourceId, targetId))
-                .addStatement(setUpdate(targetColumn, add, projectId, targetId, sourceId))
-                .build();
+            .addStatement(setUpdate(sourceColumn, add, projectId, sourceId, targetId))
+            .addStatement(setUpdate(targetColumn, add, projectId, targetId, sourceId))
+            .build();
 
         session.execute(batch);
     }
 
-    private void applyBidirectionalMany(UUID projectId, UUID sourceId, Set<UUID> targets, boolean add, String sourceColumn, String targetColumn) {
+    private void applyBidirectionalMany(UUID projectId,
+        UUID sourceId,
+        Set<UUID> targets,
+        boolean add,
+        String sourceColumn,
+        String targetColumn) {
         if (targets == null || targets.isEmpty()) return;
         for (UUID t : new HashSet<>(targets)) {
             if (t == null) continue;
@@ -133,7 +146,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         }
     }
 
-// ---- Public API used by Controller ----
+    // ---- Public API used by Controller ----
 
     public void addBlocks(UUID projectId, UUID sourceId, Set<UUID> targets) {
         applyBidirectionalMany(projectId, sourceId, targets, true, COL_BLOCKS, COL_BLOCKED_BY);
@@ -163,12 +176,18 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         if (type == null) throw new BadRequestException("Missing or wrong Relation type");
 
         switch (type.toLowerCase()) {
-            case "blocks" -> applyBidirectional(projectId, sourceId, targetId, false, COL_BLOCKS, COL_BLOCKED_BY);
-            case "blocked_by" -> applyBidirectional(projectId, sourceId, targetId, false, COL_BLOCKED_BY, COL_BLOCKS);
-            case "related_to" -> applyBidirectional(projectId, sourceId, targetId, false, COL_RELATED_TO, COL_RELATED_TO);
-            case "duplicate_of" -> applyBidirectional(projectId, sourceId, targetId, false, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
-            case "parent_of" -> applyBidirectional(projectId, sourceId, targetId, false, COL_PARENT_OF, COL_CHILD_OF);
-            case "child_of" -> applyBidirectional(projectId, sourceId, targetId, false, COL_CHILD_OF, COL_PARENT_OF);
+            case "blocks" -> applyBidirectional(projectId, sourceId, targetId,
+                    false, COL_BLOCKS, COL_BLOCKED_BY);
+            case "blocked_by" -> applyBidirectional(projectId, sourceId, targetId,
+                    false, COL_BLOCKED_BY, COL_BLOCKS);
+            case "related_to" -> applyBidirectional(projectId, sourceId, targetId,
+                    false, COL_RELATED_TO, COL_RELATED_TO);
+            case "duplicate_of" -> applyBidirectional(projectId, sourceId, targetId,
+                    false, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
+            case "parent_of" -> applyBidirectional(projectId, sourceId, targetId,
+                    false, COL_PARENT_OF, COL_CHILD_OF);
+            case "child_of" -> applyBidirectional(projectId, sourceId, targetId,
+                    false, COL_CHILD_OF, COL_PARENT_OF);
             default -> throw new BadRequestException("Missing or wrong Relation type");
         }
     }

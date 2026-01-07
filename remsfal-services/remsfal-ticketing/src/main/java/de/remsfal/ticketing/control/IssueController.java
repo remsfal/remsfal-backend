@@ -51,12 +51,12 @@ public class IssueController {
         entity = repository.insert(entity);
 
         boolean hasRelations = java.util.stream.Stream.of(
-                issue.getBlocks(),
-                issue.getBlockedBy(),
-                issue.getRelatedTo(),
-                issue.getDuplicateOf(),
-                issue.getParentOf(),
-                issue.getChildOf()
+            issue.getBlocks(),
+            issue.getBlockedBy(),
+            issue.getRelatedTo(),
+            issue.getDuplicateOf(),
+            issue.getParentOf(),
+            issue.getChildOf()
         ).anyMatch(set -> set != null && !set.isEmpty());
 
         if (hasRelations) {
@@ -74,7 +74,7 @@ public class IssueController {
     }
 
     public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
-                                                UnitType rentalType, UUID rentalId, Status status) {
+        UnitType rentalType, UUID rentalId, Status status) {
         return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
     }
 
@@ -90,7 +90,7 @@ public class IssueController {
         logger.infov("Updating issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
 
         final IssueEntity entity = repository.find(key)
-                .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
+            .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         if (issue.getTitle() != null) {
             entity.setTitle(issue.getTitle());
@@ -115,7 +115,7 @@ public class IssueController {
         logger.infov("Deleting issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
 
         IssueEntity entity = repository.find(key)
-                .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
+            .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         // 1) alle Referenzen auf dieses Issue bereinigen (bidirektional per Batch)
         repository.removeAllRelations(entity);
