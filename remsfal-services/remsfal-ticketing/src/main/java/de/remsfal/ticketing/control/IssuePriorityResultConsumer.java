@@ -73,7 +73,10 @@ public class IssuePriorityResultConsumer {
 
             repository.update(entity);
 
-            logger.infov("Updated issue priority (issueId={0}, priority={1})", event.getIssueId(), event.getPriority());
+            logger.infov("Updated issue priority (issueId={0}, priority={1})",
+                    event.getIssueId(),
+                    event.getPriority()
+            );
 
             // ---- NEW: emit alert event if HIGH ----
             if ("HIGH".equalsIgnoreCase(event.getPriority())) {
@@ -88,7 +91,11 @@ public class IssuePriorityResultConsumer {
                 String alertJson = objectMapper.writeValueAsString(alert);
 
                 ProducerRecord<String, String> record =
-                        new ProducerRecord<>("tickets.priority.alert", entity.getId().toString(), alertJson);
+                        new ProducerRecord<>(
+                                "tickets.priority.alert",
+                                entity.getId().toString(),
+                                alertJson
+                        );
 
                 alertEmitter.send(record);
 
