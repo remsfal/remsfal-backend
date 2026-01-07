@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
+import java.time.Instant;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -39,6 +40,18 @@ public abstract class IssueItemJson {
     @Nullable
     public abstract UUID getOwner();
 
+    @Nullable
+    public abstract IssueModel.Priority getPriority();
+
+    @Nullable
+    public abstract Double getPriorityScore();
+
+    @Nullable
+    public abstract String getPriorityModel();
+
+    @Nullable
+    public abstract Instant getPriorityTimestamp();
+
     public static IssueItemJson valueOf(final IssueModel model) {
         return ImmutableIssueItemJson.builder()
             .id(model.getId())
@@ -47,6 +60,10 @@ public abstract class IssueItemJson {
             .type(model.getType())
             .status(model.getStatus())
             .owner(model.getOwnerId())
+                .priority(model.getPriority())
+                .priorityScore(model.getPriorityScore())
+                .priorityModel(model.getPriorityModel())
+                .priorityTimestamp(model.getPriorityTimestamp())
             .build();
     }
 

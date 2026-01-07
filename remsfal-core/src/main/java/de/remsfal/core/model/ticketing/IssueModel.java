@@ -1,6 +1,7 @@
 package de.remsfal.core.model.ticketing;
 
 import java.util.UUID;
+import java.time.Instant;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -46,4 +47,18 @@ public interface IssueModel {
 
     UUID getDuplicateOf();
 
+    enum Priority {
+        HIGH,
+        MEDIUM,
+        LOW,
+        UNCLASSIFIED
+    }
+
+    Priority getPriority();
+
+    Double getPriorityScore();
+
+    String getPriorityModel();
+
+    Instant getPriorityTimestamp();
 }
