@@ -14,7 +14,7 @@ import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
 
 @ApplicationScoped
-public class IssueEventProducer {
+public class IssuePriorityRequestProducer {
 
     @Inject
     Logger logger;

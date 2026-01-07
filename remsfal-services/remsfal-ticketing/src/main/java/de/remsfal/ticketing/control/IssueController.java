@@ -13,7 +13,6 @@ import de.remsfal.core.model.ticketing.IssueModel.Status;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
-import de.remsfal.ticketing.control.IssueEventProducer;
 import de.remsfal.ticketing.control.events.IssueCreatedEvent;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public class IssueController {
     IssueRepository repository;
 
     @Inject
-    IssueEventProducer issueEventProducer;
+    IssuePriorityRequestProducer issuePriorityRequestProducer;
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
         return createIssue(user, issue, Status.OPEN);
@@ -60,7 +59,7 @@ public class IssueController {
         event.setDescription(persisted.getDescription());
         event.setReporterId(persisted.getReporterId());
         event.setCreatedAt(persisted.getCreatedAt());
-        issueEventProducer.sendIssueCreated(event);
+        issuePriorityRequestProducer.sendIssueCreated(event);
 
         return persisted;
     }
