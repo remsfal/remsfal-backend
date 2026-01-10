@@ -31,22 +31,22 @@ public interface InboxEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve all inbox messages, optionally filtered")
     @APIResponse(
-            responseCode = "200",
-            description = "Filtered list of inbox messages",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = InboxMessageJson.class)
-            )
+        responseCode = "200",
+        description = "Filtered list of inbox messages",
+        content = @Content(
+        mediaType = MediaType.APPLICATION_JSON,
+        schema = @Schema(implementation = InboxMessageJson.class)
+        )
     )
     List<InboxMessageJson> getInboxMessages(
-            @Parameter(description = "Filter by message type ()")
-            @QueryParam("type") String type,
+        @Parameter(description = "Filter by message type ()")
+        @QueryParam("type") String type,
 
-            @Parameter(description = "Filter by read status (true = read, false = unread)")
-            @QueryParam("read") Boolean read,
+        @Parameter(description = "Filter by read status (true = read, false = unread)")
+        @QueryParam("read") Boolean read,
 
-            @Parameter(description = "Filter by user ID")
-            @QueryParam("userId") String userId
+        @Parameter(description = "Filter by user ID")
+        @QueryParam("userId") String userId
     );
 
     @PATCH
@@ -55,7 +55,7 @@ public interface InboxEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update the read/unread status of a message")
     @APIResponses({
-            @APIResponse(
+    @APIResponse(
                     responseCode = "200",
                     description = "Message status updated successfully",
                     content = @Content(
@@ -63,25 +63,25 @@ public interface InboxEndpoint {
                             schema = @Schema(implementation = InboxMessageJson.class)
                     )
             ),
-            @APIResponse(responseCode = "404", description = "Message not found")
+    @APIResponse(responseCode = "404", description = "Message not found")
     })
     InboxMessageJson updateMessageStatus(
-            @Parameter(description = "ID of the message", required = true)
-            @PathParam("messageId") String messageId,
-            @Parameter(description = "New status (true = read, false = unread)", required = true)
-                    boolean read
+    @Parameter(description = "ID of the message", required = true)
+    @PathParam("messageId") String messageId,
+    @Parameter(description = "New status (true = read, false = unread)", required = true)
+    boolean read
     );
 
     @DELETE
     @Path("/{messageId}")
     @Operation(summary = "Delete an inbox message")
     @APIResponses({
-            @APIResponse(responseCode = "204", description = "Message deleted successfully"),
-            @APIResponse(responseCode = "404", description = "Message not found")
+    @APIResponse(responseCode = "204", description = "Message deleted successfully"),
+    @APIResponse(responseCode = "404", description = "Message not found")
     })
     void deleteInboxMessage(
-            @Parameter(description = "ID of the message to delete", required = true)
-            @PathParam("messageId") String messageId
+    @Parameter(description = "ID of the message to delete", required = true)
+    @PathParam("messageId") String messageId
     );
 }
 

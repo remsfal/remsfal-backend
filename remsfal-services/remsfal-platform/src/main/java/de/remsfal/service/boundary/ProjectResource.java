@@ -33,6 +33,7 @@ import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.CommercialResource;
 import de.remsfal.service.boundary.project.StorageResource;
 import de.remsfal.service.boundary.project.ContractorResource;
+import de.remsfal.service.boundary.project.TenantResource;
 
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
@@ -81,6 +82,9 @@ public class ProjectResource implements ProjectEndpoint {
     @Inject
     Instance<ContractorResource> contractorResource;
 
+    @Inject
+    Instance<TenantResource> tenantResource;
+  
     @Inject
     Instance<ProjectTenancyResource> tenancyResource;
 
@@ -160,6 +164,11 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public ContractorResource getContractorResource() {
         return resourceContext.initResource(contractorResource.get());
+    }
+
+    @Override
+    public TenantResource getTenantResource() {
+        return resourceContext.initResource(tenantResource.get());
     }
 
     @Override

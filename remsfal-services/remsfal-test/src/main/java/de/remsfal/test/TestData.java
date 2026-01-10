@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import de.remsfal.core.json.ImmutableAddressJson;
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.core.json.project.ImmutableCommercialJson;
@@ -698,6 +699,19 @@ public class TestData {
         .location(STORAGE_LOCATION_2)
         .description(STORAGE_DESCRIPTION_2)
         .usableSpace(STORAGE_USABLE_SPACE_2);
+    }
+
+    public static final ImmutableUserJson.Builder userBuilder() {
+        return userBuilder1();
+    }
+
+    // Test user builder 1
+    public static final ImmutableUserJson.Builder userBuilder1() {
+        return ImmutableUserJson.builder() // Ersetzen Sie dies durch den tatsächlichen Builder-Namen
+                .firstName(USER_FIRST_NAME_1)
+                .lastName(USER_LAST_NAME_1)
+                .email(USER_EMAIL_1)
+                .address(addressBuilder1().build()); // Fügt eine Standardadresse hinzu
     }
 
     // Test tenancy 1

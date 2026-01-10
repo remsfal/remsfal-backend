@@ -43,8 +43,8 @@ public interface CommercialEndpoint {
         description = "A new commercial was successfully createded",
         headers = @Header(name = "Location", description = "URL of the new commercial"),
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema    = @Schema(implementation = CommercialJson.class)
+        mediaType = MediaType.APPLICATION_JSON,
+        schema    = @Schema(implementation = CommercialJson.class)
         )
     )
     Response createCommercial(
