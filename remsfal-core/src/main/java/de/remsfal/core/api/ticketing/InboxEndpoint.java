@@ -55,15 +55,15 @@ public interface InboxEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update the read/unread status of a message")
     @APIResponses({
-            @APIResponse(
-                    responseCode = "200",
-                    description = "Message status updated successfully",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON,
-                            schema = @Schema(implementation = InboxMessageJson.class)
-                    )
-            ),
-            @APIResponse(responseCode = "404", description = "Message not found")
+        @APIResponse(
+            responseCode = "200",
+            description = "Message status updated successfully",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON,
+                schema = @Schema(implementation = InboxMessageJson.class)
+            )
+        ),
+        @APIResponse(responseCode = "404", description = "Message not found")
     })
     InboxMessageJson updateMessageStatus(
             @Parameter(description = "ID of the message", required = true)
@@ -76,8 +76,8 @@ public interface InboxEndpoint {
     @Path("/{messageId}")
     @Operation(summary = "Delete an inbox message")
     @APIResponses({
-            @APIResponse(responseCode = "204", description = "Message deleted successfully"),
-            @APIResponse(responseCode = "404", description = "Message not found")
+        @APIResponse(responseCode = "204", description = "Message deleted successfully"),
+        @APIResponse(responseCode = "404", description = "Message not found")
     })
     void deleteInboxMessage(
             @Parameter(description = "ID of the message to delete", required = true)
