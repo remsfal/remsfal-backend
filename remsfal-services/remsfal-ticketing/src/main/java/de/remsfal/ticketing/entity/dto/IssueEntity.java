@@ -7,6 +7,7 @@ import jakarta.nosql.Id;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity("issues")
@@ -36,14 +37,24 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("description")
     private String description;
 
-    @Column("blocked_by")
-    private UUID blockedBy;
+    @Column("blocks_set")
+    private Set<UUID> blocks;
 
-    @Column("related_to")
-    private UUID relatedTo;
+    @Column("blocked_by_set")
+    private Set<UUID> blockedBy;
 
-    @Column("duplicate_of")
-    private UUID duplicateOf;
+    @Column("related_to_set")
+    private Set<UUID> relatedTo;
+
+    @Column("duplicate_of_set")
+    private Set<UUID> duplicateOf;
+
+    @Column("parent_of_set")
+    private Set<UUID> parentOf;
+
+    @Column("child_of_set")
+    private Set<UUID> childOf;
+
 
     @Column("created_by")
     private UUID createdBy;
@@ -144,31 +155,45 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public UUID getBlockedBy() {
+    public Set<UUID> getBlockedBy() {
         return blockedBy;
     }
 
-    public void setBlockedBy(UUID blockedBy) {
+    public void setBlockedBy(Set<UUID> blockedBy) {
         this.blockedBy = blockedBy;
     }
 
     @Override
-    public UUID getRelatedTo() {
+    public Set<UUID> getRelatedTo() {
         return relatedTo;
     }
 
-    public void setRelatedTo(UUID relatedTo) {
+    public void setRelatedTo(Set<UUID> relatedTo) {
         this.relatedTo = relatedTo;
     }
 
     @Override
-    public UUID getDuplicateOf() {
+    public Set<UUID> getDuplicateOf() {
         return duplicateOf;
     }
 
-    public void setDuplicateOf(UUID duplicateOf) {
+    public void setDuplicateOf(Set<UUID> duplicateOf) {
         this.duplicateOf = duplicateOf;
     }
+
+    @Override
+    public Set<UUID> getBlocks() {return blocks;}
+
+    public void setBlocks(Set<UUID> blocks) {this.blocks = blocks;}
+
+    @Override
+    public Set<UUID> getParentOf() {return parentOf;}
+
+    public void setParentOf(Set<UUID> parentOf) {this.parentOf = parentOf;}
+
+    @Override
+    public Set<UUID> getChildOf() {return childOf;}
+    public void setChildOf(Set<UUID> childOf) {this.childOf = childOf;}
 
     public UUID getCreatedBy() {
         return createdBy;

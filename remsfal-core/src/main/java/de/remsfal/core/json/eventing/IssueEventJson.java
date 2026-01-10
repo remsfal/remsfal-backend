@@ -1,5 +1,6 @@
 package de.remsfal.core.json.eventing;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.immutables.value.Value.Immutable;
@@ -69,13 +70,22 @@ public interface IssueEventJson {
     String getDescription();
 
     @Nullable
-    UUID getBlockedBy();
+    Set<UUID> getBlockedBy();
 
     @Nullable
-    UUID getRelatedTo();
+    Set<UUID> getRelatedTo();
 
     @Nullable
-    UUID getDuplicateOf();
+    Set<UUID> getDuplicateOf();
+
+    @Nullable
+    Set<UUID> getBlocks();
+
+    @Nullable
+    Set<UUID> getParentOf();
+
+    @Nullable
+    Set<UUID> getChildOf();
 
     @Nullable
     UserJson getUser();
