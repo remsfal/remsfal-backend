@@ -1,15 +1,5 @@
 package de.remsfal.core.api;
 
-import de.remsfal.core.api.project.MemberEndpoint;
-import de.remsfal.core.api.project.PropertyEndpoint;
-import de.remsfal.core.api.project.SiteEndpoint;
-import de.remsfal.core.api.project.BuildingEndpoint;
-import de.remsfal.core.api.project.ApartmentEndpoint;
-import de.remsfal.core.api.project.CommercialEndpoint;
-import de.remsfal.core.api.project.StorageEndpoint;
-import de.remsfal.core.api.project.ContractorEndpoint;
-import de.remsfal.core.api.project.TenantEndpoint;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -37,6 +27,17 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+
+import de.remsfal.core.api.project.ApartmentEndpoint;
+import de.remsfal.core.api.project.BuildingEndpoint;
+import de.remsfal.core.api.project.CommercialEndpoint;
+import de.remsfal.core.api.project.ContractorEndpoint;
+import de.remsfal.core.api.project.MemberEndpoint;
+import de.remsfal.core.api.project.PropertyEndpoint;
+import de.remsfal.core.api.project.SiteEndpoint;
+import de.remsfal.core.api.project.StorageEndpoint;
+import de.remsfal.core.api.project.ProjectTenancyEndpoint;
+import de.remsfal.core.api.project.TenantEndpoint;
 
 import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.ProjectListJson;
@@ -74,7 +75,7 @@ public interface ProjectEndpoint {
         headers = @Header(name = "Location", description = "URL of the new project"),
         content = @Content(
         mediaType = MediaType.APPLICATION_JSON,
-                    schema    = @Schema(implementation = ProjectJson.class)
+        schema = @Schema(implementation = ProjectJson.class)
         )
     )
     @APIResponse(responseCode = "400", description = "Invalid request message")
@@ -148,4 +149,7 @@ public interface ProjectEndpoint {
 
     @Path("/{projectId}/" + TenantEndpoint.SERVICE)
     TenantEndpoint getTenantResource();
+}
+    @Path("/{projectId}/" + ProjectTenancyEndpoint.SERVICE)
+    ProjectTenancyEndpoint getTenancyResource();
 }

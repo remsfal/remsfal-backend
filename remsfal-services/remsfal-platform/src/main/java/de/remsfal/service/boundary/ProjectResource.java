@@ -4,16 +4,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-import de.remsfal.core.api.project.TenantEndpoint;
-import de.remsfal.service.boundary.project.MemberResource;
-import de.remsfal.service.boundary.project.PropertyResource;
-import de.remsfal.service.boundary.project.SiteResource;
-import de.remsfal.service.boundary.project.BuildingResource;
-import de.remsfal.service.boundary.project.ApartmentResource;
-import de.remsfal.service.boundary.project.CommercialResource;
-import de.remsfal.service.boundary.project.StorageResource;
-import de.remsfal.service.boundary.project.ContractorResource;
-import de.remsfal.service.boundary.project.TenantResource;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -34,7 +24,19 @@ import de.remsfal.core.model.ProjectModel;
 
 import de.remsfal.service.control.ProjectController;
 
+import de.remsfal.service.boundary.project.ProjectTenancyResource;
+import de.remsfal.service.boundary.project.MemberResource;
+import de.remsfal.service.boundary.project.PropertyResource;
+import de.remsfal.service.boundary.project.SiteResource;
+import de.remsfal.service.boundary.project.BuildingResource;
+import de.remsfal.service.boundary.project.ApartmentResource;
+import de.remsfal.service.boundary.project.CommercialResource;
+import de.remsfal.service.boundary.project.StorageResource;
+import de.remsfal.service.boundary.project.ContractorResource;
+import de.remsfal.service.boundary.project.TenantResource;
+
 import org.eclipse.microprofile.metrics.annotation.Timed;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -82,6 +84,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<TenantResource> tenantResource;
+  
+    @Inject
+    Instance<ProjectTenancyResource> tenancyResource;
 
     @Override
     @Timed(name = "GetProjectsListTimer", unit = MetricUnits.MILLISECONDS)
@@ -162,6 +167,12 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public TenantEndpoint getTenantResource() { return resourceContext.initResource(tenantResource.get()); }
+    public TenantResource getTenantResource() { 
+        return resourceContext.initResource(tenantResource.get()); 
+    }
 
+    @Override
+    public ProjectTenancyResource getTenancyResource() {
+        return resourceContext.initResource(tenancyResource.get());
+    }
 }

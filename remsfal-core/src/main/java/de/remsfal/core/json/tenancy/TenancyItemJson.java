@@ -21,7 +21,7 @@ import org.immutables.value.Value.Immutable;
 @JsonDeserialize(as = ImmutableTenancyItemJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TenancyItemJson {
-    // Validation is not required, because it is read-only for tenants.
+    // Validation is not required because it is read-only for tenants.
 
     public abstract String getId();
 

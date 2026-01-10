@@ -27,7 +27,7 @@ import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 @JsonDeserialize(as = ImmutableTenancyJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class TenancyJson {
-    // Validation is not required, because it is read-only for tenants.
+    // Validation is not required because it is read-only for tenants.
 
     public abstract String getId();
 
