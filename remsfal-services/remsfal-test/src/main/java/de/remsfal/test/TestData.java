@@ -21,6 +21,8 @@ public class TestData {
     public static final String USER_EMAIL_1 = "max.mustermann@example.org";
     public static final String USER_FIRST_NAME_1 = "Max";
     public static final String USER_LAST_NAME_1 = "Mustermann";
+    public static final String ALTERNATIVE_EMAIL_1 = "alternativ1@example.com";
+    public static final String ALTERNATIVE_EMAIL_2 = "alternativ2@example.com";
 
     // Default test user
     public static final UUID USER_ID = TestData.USER_ID_1;
@@ -65,7 +67,7 @@ public class TestData {
     public static final String ADDRESS_PROVINCE = TestData.ADDRESS_PROVINCE_1;
     public static final String ADDRESS_ZIP = TestData.ADDRESS_ZIP_1;
     public static final String ADDRESS_COUNTRY = TestData.ADDRESS_COUNTRY_1;
-    
+
     public static final ImmutableAddressJson.Builder addressBuilder() {
         return addressBuilder1();
     }
@@ -454,7 +456,7 @@ public class TestData {
     public static final String PROPERTY_PLOT = TestData.PROPERTY_PLOT_1;
     public static final String PROPERTY_ECONOMY_TYPE = TestData.PROPERTY_ECONOMY_TYPE_1;
     public static final Integer PROPERTY_PLOT_AREA = TestData.PROPERTY_PLOT_AREA_1;
-    
+
     public static final ImmutablePropertyJson.Builder propertyBuilder() {
         return propertyBuilder1();
     }
@@ -479,7 +481,7 @@ public class TestData {
     public static final String SITE_TITLE_1 = "PKW Stellplatz";
     public static final String SITE_DESCRIPTION_1 = "Stellplatz mit Carport";
     public static final Float SITE_OUTDOOR_AREA_1 = 13.4f;
-    
+
     public static final ImmutableSiteJson.Builder siteBuilder1() {
         return ImmutableSiteJson
             .builder()
@@ -515,7 +517,7 @@ public class TestData {
             .usableSpace(BUILDING_USABLE_SPACE_1)
             .heatingSpace(BUILDING_HEATING_SPACE_1);
     }
-      
+
     // Default test building
     public static final UUID BUILDING_ID = TestData.BUILDING_ID_1;
     public static final String BUILDING_TITLE = TestData.BUILDING_TITLE_1;
@@ -580,7 +582,7 @@ public class TestData {
     public static final ImmutableApartmentJson.Builder apartmentBuilder() {
         return apartmentBuilder1();
     }
-    
+
     // Test apartment 2
     public static final UUID APARTMENT_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c24-000000000002");
     public static final String APARTMENT_TITLE_2 = "3 Zimmerwohnung 1.OG links";
@@ -626,7 +628,7 @@ public class TestData {
     public static final String COMMERCIAL_DESCRIPTION = TestData.COMMERCIAL_DESCRIPTION_1;
     public static final Float COMMERCIAL_NET_FLOOR_AREA = TestData.COMMERCIAL_NET_FLOOR_AREA_1;
     public static final Float COMMERCIAL_HEATING_SPACE = TestData.COMMERCIAL_HEATING_SPACE_1;
-    
+
     public static final ImmutableCommercialJson.Builder commercialBuilder() {
         return commercialBuilder1();
     }
@@ -677,7 +679,7 @@ public class TestData {
     public static final String STORAGE_DESCRIPTION = TestData.STORAGE_DESCRIPTION_1;
     public static final Float STORAGE_USABLE_SPACE = TestData.STORAGE_USABLE_SPACE_1;
     public static final Float STORAGE_RENT = TestData.STORAGE_RENT_1;
-    
+
     public static final ImmutableStorageJson.Builder storageBuilder() {
         return storageBuilder1();
     }
@@ -786,4 +788,45 @@ public class TestData {
     public static final String TASK_TITLE = TestData.TASK_TITLE_1;
     public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
 
+    // Test organization 1
+    public static final UUID ORGANIZATION_ID = UUID.fromString("00000000-A1bA-8235-e751-a2Dcac9D78De");
+    public static final String ORGANIZATION_NAME = "Test";
+    public static final String ORGANIZATION_PHONE = "+57752788714093";
+    public static final String ORGANIZATION_EMAIL = "test@test.de";
+    public static final String ORGANIZATION_TRADE = "Test";
+
+    // Test organization 2
+    public static final UUID ORGANIZATION_ID_2 = UUID.fromString("11111111-A1bA-8235-e751-a2Dcac9D78De");
+    public static final String ORGANIZATION_NAME_2 = "Test 2";
+    public static final String ORGANIZATION_PHONE_2 = "+57752788714093";
+    public static final String ORGANIZATION_EMAIL_2 = "test2@test.de";
+    public static final String ORGANIZATION_TRADE_2 = "Test";
+
+    // Test organization 3
+    public static final UUID ORGANIZATION_ID_3 = UUID.fromString("22222222-A1bA-8235-e751-a2Dcac9D78De");
+    public static final String ORGANIZATION_NAME_3 = "Test 3";
+    public static final String ORGANIZATION_PHONE_3 = "+57752788714093";
+    public static final String ORGANIZATION_EMAIL_3 = "test3@test.de";
+    public static final String ORGANIZATION_TRADE_3 = "Test3";
+
+    // Test employee 1
+    public static final UUID EMPLOYEE_ID = UUID.fromString("9CA5aac6-29B5-FB0E-D5E8-eD2Ec5cDDe3C");
+    public static final String EMPLOYEE_NAME = "Max Mustermann";
+    public static final String EMPLOYEE_EMAIL = "mm@test.de";
+    public static final boolean EMPLOYEE_ACTIVE = true;
+    public static final String EMPLOYEE_ROLE = "MANAGER";
+
+    // Test employee 2
+    public static final UUID EMPLOYEE_ID_2 = UUID.fromString("D9D14493-4eaE-06FC-AED0-E793feB10bc9");
+    public static final String EMPLOYEE_NAME_2 = "Rainer Zufall";
+    public static final String EMPLOYEE_EMAIL_2 = "rz@test.de";
+    public static final boolean EMPLOYEE_ACTIVE_2 = false;
+    public static final String EMPLOYEE_ROLE_2 = "STAFF";
+
+    // Test employee 3
+    public static final UUID EMPLOYEE_ID_3 = UUID.fromString("1fD0AdCD-E462-c3A8-2770-c5Bf8AEBF6B7");
+    public static final String EMPLOYEE_NAME_3 = "Maximilia Musterfrau";
+    public static final String EMPLOYEE_EMAIL_3 = "mm2@test.de";
+    public static final boolean EMPLOYEE_ACTIVE_3 = true;
+    public static final String EMPLOYEE_ROLE_3 = "STAFF";
 }

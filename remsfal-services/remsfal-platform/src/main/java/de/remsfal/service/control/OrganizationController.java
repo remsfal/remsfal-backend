@@ -1,0 +1,216 @@
+package de.remsfal.service.control;
+
+import de.remsfal.core.model.OrganizationEmployeeModel;
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
+import de.remsfal.core.model.OrganizationModel;
+import de.remsfal.core.model.UserModel;
+
+import de.remsfal.service.entity.dao.OrganizationRepository;
+import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
+import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.UserEntity;
+
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+
+import org.jboss.logging.Logger;
+
+import java.util.List;
+import java.util.UUID;
+
+@RequestScoped
+public class OrganizationController {
+
+    @Inject
+    Logger logger;
+
+    @Inject
+    OrganizationRepository organizationRepository;
+
+    @Inject
+    AddressController addressController;
+
+    @Inject
+    UserController userController;
+
+    /**
+     * Retrieve an organization by id
+     *
+     * @param id id of the organization
+     * @return organization entity
+     */
+    public OrganizationEntity getOrganizationById(final UUID id) {
+        logger.infov("Retrieve Organization by id {0}", id);
+        return organizationRepository.findByIdOptional(id)
+                .orElseThrow(() -> new NotFoundException("Organization not found"));
+    }
+
+    /**
+     * Retrieve all organizations
+     *
+     * @return list of all organizations
+     */
+    public List<OrganizationEntity> getOrganizations() {
+        logger.info("Retrieving all Organizations");
+        return organizationRepository.findAll().list();
+    }
+
+    /**
+     * Create an organization
+     *
+     * @param organization the organization
+     * @return the created organization entity
+     */
+    @Transactional
+    public OrganizationEntity createOrganization(final OrganizationModel organization, final UserModel user) {
+
+        logger.infov("Creating Organization (name={0}, email={1}, phone={2}, trade={3}, address={4}",
+            organization.getName(), organization.getEmail(), organization.getPhone(), organization.getTrade(),
+            organization.getAddress());
+
+        UserEntity userEntity = userController.findOrCreateUser(user);
+
+        OrganizationEntity organizationEntity = new OrganizationEntity();
+
+        organizationEntity.generateId();
+        organizationEntity.setName(organization.getName());
+        organizationEntity.setEmail(organization.getEmail());
+        organizationEntity.setPhone(organization.getPhone());
+        organizationEntity.setTrade(organization.getTrade());
+        organizationEntity.addEmployee(userEntity, EmployeeRole.OWNER);
+
+        if (organization.getAddress() != null) {
+            organizationEntity.setAddress(addressController.updateAddress(organization.getAddress(), null));
+        }
+
+        organizationRepository.persistAndFlush(organizationEntity);
+
+        return organizationEntity;
+    }
+
+    /**
+     * Update an organization
+     *
+     * @param organization The organization entity containing the updated values
+     * @return The updated organization
+     */
+    @Transactional
+    public OrganizationEntity updateOrganization(final UserModel user, final UUID organizationId,
+        final OrganizationModel organization) {
+
+        logger.infov("Updating Organization (id={0}, name={1}, email={2}, phone={3}, trade={4}, address={5}",
+            organization.getId(), organization.getName(), organization.getEmail(), organization.getPhone(),
+            organization.getTrade(), organization.getAddress());
+
+        OrganizationEntity organizationEntity = organizationRepository
+            .findOrganizationByUserId(user.getId(), organizationId)
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+
+        if (organization.getName() != null) {
+            organizationEntity.setName(organization.getName());
+        }
+
+        if (organization.getEmail() != null) {
+            organizationEntity.setEmail(organization.getEmail());
+        }
+
+        if (organization.getPhone() != null) {
+            organizationEntity.setPhone(organization.getPhone());
+        }
+
+        if (organization.getTrade() != null) {
+            organizationEntity.setTrade(organization.getTrade());
+        }
+
+        if (organization.getAddress() != null) {
+            organizationEntity.setAddress(addressController.updateAddress(organization.getAddress(), null));
+        }
+
+        return organizationRepository.mergeAndFlush(organizationEntity);
+    }
+
+    /**
+     * Delete the organization with the given id
+     *
+     * @param id id of the organization which should be deleted
+     * @return true if the organization was deleted successfully
+     */
+    @Transactional
+    public boolean deleteOrganization(final UUID id) {
+
+        logger.infov("Deleting Organization (id={0})", id);
+
+        OrganizationEntity organization = organizationRepository.findByIdOptional(id)
+            .orElseThrow(() -> new NotFoundException("Organization not found"));
+        return organizationRepository.deleteById(organization.getId());
+    }
+
+    /**
+     * Retrieves the employee role of a user within the requested organization
+     * @param organizationId id of the organization
+     * @param user employee of the organization
+     * @return role of the employee
+     */
+    public EmployeeRole getEmployeeRole(final UUID organizationId, final UserModel user) {
+
+        logger.infov("Retrieving Employee Role (id={0}, user={1})", organizationId, user.getName());
+
+        return organizationRepository.findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, user.getId())
+                .map(OrganizationEmployeeEntity::getRole)
+                .orElseThrow(() -> new ForbiddenException("Organization not exist or user is not an employee"));
+    }
+
+    public OrganizationEmployeeModel getOrganizationEmployee(final UUID organizationId, final UUID employeeId) {
+        return organizationRepository.findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, employeeId)
+                .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+    }
+
+    public List<? extends OrganizationEmployeeModel> getEmployeesByOrganization(final UUID organizationId) {
+        return organizationRepository.findOrganizationEmployeesByOrganizationId(organizationId);
+    }
+
+    public List<? extends OrganizationModel> getOrganizationsOfUser(final UserModel user) {
+        return organizationRepository.findOrganizationEmployeesByUserId(user.getId())
+            .stream().map(OrganizationEmployeeEntity::getOrganization).toList();
+    }
+
+    @Transactional
+    public OrganizationEmployeeModel addEmployee(final UUID organizationId, final UserModel user,
+        final OrganizationEmployeeModel employee) {
+
+        final OrganizationEntity organization = organizationRepository
+            .findOrganizationByUserId(user.getId(), organizationId)
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+
+        UserEntity userEntity = userController.findOrCreateUser(employee);
+        organization.addEmployee(userEntity, employee.getEmployeeRole());
+        organizationRepository.mergeAndFlush(organization);
+        return organizationRepository
+            .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, userEntity.getId())
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+    }
+
+    @Transactional
+    public OrganizationEmployeeModel updateEmployeeRole(final UUID organizationId, final UUID employeeId,
+        final EmployeeRole role) {
+        OrganizationEmployeeEntity entity = organizationRepository
+            .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, employeeId)
+            .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+
+        entity.setRole(role);
+
+        return organizationRepository.merge(entity);
+    }
+
+    @Transactional
+    public void removeEmployee(final UUID organizationId, final UUID employeeId) {
+        organizationRepository.deleteOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId);
+    }
+
+    public int countEmployeesWithWriteAccess(final UUID organizationId) {
+        return organizationRepository.countEmployeesWithWriteAccess(organizationId);
+    }
+}
