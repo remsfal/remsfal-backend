@@ -42,7 +42,7 @@ class IssueRepositoryTest {
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            List.of(projectId), null, null, null, null, Status.OPEN
+            List.of(projectId), null, null, null, null, null, Status.OPEN
         );
 
         // Verify: Should return 2 OPEN issues
@@ -77,7 +77,7 @@ class IssueRepositoryTest {
 
         // Test: Filter by ownerId1
         List<? extends IssueModel> ownerIssues = repository.findByQuery(
-            List.of(projectId), ownerId1, null, null, null, null
+            List.of(projectId), ownerId1, null, null, null, null, null
         );
 
         // Verify: Should return 2 issues owned by ownerId1
@@ -85,6 +85,41 @@ class IssueRepositoryTest {
         assertEquals(2, ownerIssues.size());
         ownerIssues.forEach(issue -> assertEquals(ownerId1, issue.getOwnerId()));
         
+        // Cleanup
+        repository.delete(issue1.getKey());
+        repository.delete(issue2.getKey());
+        repository.delete(issue3.getKey());
+    }
+
+    @Test
+    void testFindByQuery_filterByContractorId() {
+        // Setup: Create issues with different contractors
+        UUID projectId = UUID.randomUUID();
+        UUID contractorId1 = UUID.randomUUID();
+        UUID contractorId2 = UUID.randomUUID();
+
+        IssueEntity issue1 = createIssue(projectId, "Issue 1", Status.OPEN);
+        issue1.setContractorId(contractorId1);
+        repository.insert(issue1);
+
+        IssueEntity issue2 = createIssue(projectId, "Issue 2", Status.OPEN);
+        issue2.setContractorId(contractorId2);
+        repository.insert(issue2);
+
+        IssueEntity issue3 = createIssue(projectId, "Issue 3", Status.OPEN);
+        issue3.setContractorId(contractorId1);
+        repository.insert(issue3);
+
+        // Test: Filter by contractorId1
+        List<? extends IssueModel> contractorIssues = repository.findByQuery(
+                List.of(projectId), null, null, null, null, contractorId1, null
+        );
+
+        // Verify: Should return 2 issues assigned to contractorId1
+        assertNotNull(contractorIssues);
+        assertEquals(2, contractorIssues.size());
+        contractorIssues.forEach(issue -> assertEquals(contractorId1, issue.getContractorId()));
+
         // Cleanup
         repository.delete(issue1.getKey());
         repository.delete(issue2.getKey());

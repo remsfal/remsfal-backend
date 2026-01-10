@@ -27,11 +27,11 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     public Optional<IssueEntity> findByIssueId(final UUID issueId) {
         return template.select(IssueEntity.class)
             .where(ISSUE_ID).eq(issueId)
-            .singleResult();
+                .singleResult();
     }
 
     public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
+        UnitType rentalType, UUID rentalId, UUID contractorId, Status status) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).in(projectIds);
         if (ownerId != null) {
@@ -48,6 +48,9 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         }
         if (status != null) {
             query = query.and("status").eq(status.name());
+        }
+        if (contractorId != null) {
+            query = query.and("contractor_id").eq(contractorId);
         }
         return query.result();
     }

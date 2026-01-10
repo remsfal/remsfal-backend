@@ -81,6 +81,10 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getDuplicateOf();
 
+    @Nullable
+    @Override
+    public abstract UUID getContractorId();
+
     /**
      * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
      * <p>
@@ -102,6 +106,7 @@ public abstract class IssueJson implements IssueModel {
                 .blockedBy(model.getBlockedBy())
                 .relatedTo(model.getRelatedTo())
                 .duplicateOf(model.getDuplicateOf())
+                .contractorId(model.getContractorId())
                 .build();
     }
 
@@ -121,7 +126,7 @@ public abstract class IssueJson implements IssueModel {
                 .title(model.getTitle())
                 .type(model.getType())
                 .status(model.getStatus())
-                // ownerId, description, blockedBy, relatedTo, duplicateOf are omitted
+                // ownerId, description, blockedBy, relatedTo, duplicateOf, contractorId are omitted
                 .build();
     }
 
