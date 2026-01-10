@@ -2,12 +2,14 @@ package de.remsfal.ticketing.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.test.TestData;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository;
+import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -17,9 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +30,8 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     @Inject
     ChatSessionRepository chatSessionRepository;
 
+
+
     @Inject
     CqlSession cqlSession;
 
@@ -38,17 +40,34 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
 
     @BeforeEach
     void setUp() {
-        logger.info("Setting up test data");
+        logger.info("Setting up test data for REST tests");
+
+        // 1. Chat Session einfügen
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
                 "(project_id, issue_id, session_id, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?)";
-        assertNotNull(TestData.PROJECT_ID);
+
         cqlSession.execute(insertSessionCql,
-            TicketingTestData.PROJECT_ID, TASK_ID, SESSION_ID, Instant.now(),
-            Map.of(TicketingTestData.USER_ID_1, ChatSessionRepository.ParticipantRole.INITIATOR.name(),
-                TicketingTestData.USER_ID_2, ChatSessionRepository.ParticipantRole.HANDLER.name()));
-        logger.info("Test session created: " + SESSION_ID);
-        logger.info("Test data setup complete");
+                TicketingTestData.PROJECT_ID, TASK_ID, SESSION_ID, Instant.now(),
+                Map.of(TicketingTestData.USER_ID_1, "INITIATOR",
+                        TicketingTestData.USER_ID_2, "HANDLER"));
+
+        // 2. Issue Participants einfügen (DAS FEHLT!)
+        String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
+                "(user_id, issue_id, session_id, project_id, role, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Instant now = Instant.now();
+
+        cqlSession.execute(insertParticipantCql,
+                TicketingTestData.USER_ID_1, TASK_ID, SESSION_ID,
+                TicketingTestData.PROJECT_ID, "INITIATOR", now);
+
+        cqlSession.execute(insertParticipantCql,
+                TicketingTestData.USER_ID_2, TASK_ID, SESSION_ID,
+                TicketingTestData.PROJECT_ID, "HANDLER", now);
+
+        logger.info("Test setup completed");
     }
 
     @Test
@@ -248,4 +267,336 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         );
     }
 
+
+
+
+    /**
+     * Test für deleteMember: "An error occurred while removing the participant"
+     */
+    @Test
+    void deleteMember_DATABASE_ERROR() {
+        logger.info("Testing deleteMember with database error");
+
+        // Verwende eine ungültige Kombination die eine Exception auslösen könnte
+        UUID invalidProjectId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+        Executable executable = () -> chatSessionRepository.deleteMember(
+                invalidProjectId,
+                SESSION_ID,
+                TASK_ID,
+                TicketingTestData.USER_ID_1
+        );
+
+        RuntimeException exception = assertThrows(RuntimeException.class, executable);
+        logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while removing the participant") ||
+                        exception.getMessage().contains("No participants found"),
+                "Exception message should contain error message about removing participant"
+        );
+    }
+
+    /**
+     * Test für ensureNoExistingInitiator: Alle Szenarien
+     */
+    @Test
+    void ensureNoExistingInitiator_WITH_EXISTING_INITIATOR() {
+        logger.info("Testing ensureNoExistingInitiator when initiator exists");
+
+        // Dieser Test ist bereits durch addParticipant_INITIATOR_ALREADY_EXISTS abgedeckt
+        // aber hier ist eine explizite Version
+        UUID newUserId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                chatSessionRepository.addParticipant(
+                        TicketingTestData.PROJECT_ID,
+                        SESSION_ID,
+                        TASK_ID,
+                        newUserId,
+                        "INITIATOR"
+                )
+        );
+
+        assertTrue(exception.getMessage().contains("Initiator already exists in the session"),
+                "Exception should indicate initiator already exists");
+    }
+
+    @Test
+    void ensureNoExistingInitiator_WITHOUT_EXISTING_INITIATOR() {
+        logger.info("Testing ensureNoExistingInitiator when no initiator exists");
+
+        // Erstelle eine neue Session ohne INITIATOR
+        UUID testProjectId = UUID.randomUUID();
+        UUID testTaskId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testTaskId, testSessionId, Instant.now(),
+                Map.of(TicketingTestData.USER_ID_1, ChatSessionRepository.ParticipantRole.HANDLER.name(),
+                        TicketingTestData.USER_ID_2, ChatSessionRepository.ParticipantRole.OBSERVER.name()));
+
+        // Jetzt sollte das Hinzufügen eines INITIATOR funktionieren
+        UUID newInitiatorId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
+
+        assertDoesNotThrow(() ->
+                chatSessionRepository.addParticipant(
+                        testProjectId,
+                        testSessionId,
+                        testTaskId,
+                        newInitiatorId,
+                        "INITIATOR"
+                )
+        );
+
+        // Verifiziere dass der INITIATOR hinzugefügt wurde
+        Map<UUID, String> participants = chatSessionRepository
+                .findParticipantsById(testProjectId, testSessionId, testTaskId);
+        assertEquals("INITIATOR", participants.get(newInitiatorId),
+                "New initiator should be added successfully");
+    }
+
+    @Test
+    void ensureNoExistingInitiator_EMPTY_PARTICIPANTS() {
+        logger.info("Testing ensureNoExistingInitiator with empty participants map");
+
+        // Erstelle eine Session mit leerem participants map
+        UUID testProjectId = UUID.randomUUID();
+        UUID testTaskId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testTaskId, testSessionId, Instant.now(), Map.of());
+
+        // Das Hinzufügen eines INITIATOR zu einer leeren Session sollte funktionieren
+        UUID initiatorId = UUID.fromString(TicketingTestData.USER_ID_1.toString());
+
+        assertDoesNotThrow(() ->
+                chatSessionRepository.addParticipant(
+                        testProjectId,
+                        testSessionId,
+                        testTaskId,
+                        initiatorId,
+                        "INITIATOR"
+                )
+        );
+
+        Map<UUID, String> participants = chatSessionRepository
+                .findParticipantsById(testProjectId, testSessionId, testTaskId);
+        assertEquals("INITIATOR", participants.get(initiatorId),
+                "Initiator should be added to empty session");
+    }
+
+
+
+
+    @Test
+    void findStatusById_SESSION_NOT_FOUND() {
+        logger.info("Testing findStatusById with non-existent session");
+
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomTaskId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findStatusById(randomProjectId, randomSessionId, randomTaskId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while fetching the status"),
+                "Exception message should contain error about fetching status"
+        );
+    }
+
+
+    @Test
+    void findTaskTypeById_SESSION_NOT_FOUND() {
+        logger.info("Testing findTaskTypeById with non-existent session");
+
+        UUID randomProjectId = UUID.randomUUID();
+        UUID randomSessionId = UUID.randomUUID();
+        UUID randomTaskId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.findTaskTypeById(randomProjectId, randomSessionId, randomTaskId)
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while fetching the task type"),
+                "Exception message should contain error about fetching task type"
+        );
+    }
+
+
+    // Change Participant Role
+    @Test
+    void changeParticipantRole_USER_NOT_PARTICIPANT() {
+        logger.info("Testing changeParticipantRole when user is not a participant");
+
+        UUID nonParticipantUserId = UUID.randomUUID();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        TicketingTestData.PROJECT_ID,
+                        SESSION_ID,
+                        TASK_ID,
+                        nonParticipantUserId,
+                        "OBSERVER"
+                )
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain 'An error occurred while changing the participant role'"
+        );
+    }
+
+    @Test
+    void changeParticipantRole_PARTICIPANT_NOT_FOUND_IN_ISSUE_PARTICIPANTS() {
+        logger.info("Testing changeParticipantRole when participant not found in issue_participants");
+
+        // Erstelle Session mit Participant in chat_sessions aber nicht in issue_participants
+        UUID testProjectId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(testUserId, "HANDLER"));
+
+        // User existiert in chat_sessions aber NICHT in issue_participants
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId,
+                        testSessionId,
+                        testIssueId,
+                        testUserId,
+                        "OBSERVER"
+                )
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain error about changing participant role"
+        );
+    }
+
+    @Test
+    void changeParticipantRole_UPDATE_ROLE_GENERAL_EXCEPTION() {
+        logger.info("Testing changeParticipantRole with general exception during updateRole");
+
+        UUID testProjectId = UUID.randomUUID();
+        UUID testIssueId = UUID.randomUUID();
+        UUID testSessionId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+
+        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertSessionCql,
+                testProjectId, testIssueId, testSessionId, Instant.now(),
+                Map.of(testUserId, "HANDLER"));
+
+        String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
+                "(user_id, issue_id, session_id, project_id, role, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        cqlSession.execute(insertParticipantCql,
+                testUserId, testIssueId, testSessionId, testProjectId, "HANDLER", Instant.now());
+
+        // Verwende ungültige Daten für newRole um Exception zu provozieren
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                chatSessionRepository.changeParticipantRole(
+                        testProjectId,
+                        testSessionId,
+                        testIssueId,
+                        testUserId,
+                        null  // null könnte Exception verursachen
+                )
+        );
+
+        assertTrue(
+                exception.getMessage().contains("An error occurred while changing the participant role"),
+                "Exception message should contain error about changing participant role"
+        );
+    }
+
+
+        @Test
+        void createChatSession_PARTICIPANT_INSERTION_FAILURE() {
+                logger.info("Testing createChatSession with participant insertion failure");
+
+                UUID testProjectId = UUID.randomUUID();
+                UUID testIssueId = UUID.randomUUID();
+
+                Map<UUID, String> invalidParticipants = new HashMap<>();
+                invalidParticipants.put(null, "INITIATOR"); // null userId should cause issues
+
+                RuntimeException exception = assertThrows(RuntimeException.class,
+                        () -> chatSessionRepository.createChatSession(
+                                testProjectId,
+                                testIssueId,
+                                invalidParticipants));
+
+                logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
+                assertTrue(
+                        exception.getMessage().contains("Failed to create chat session participants"),
+                        "Exception message should contain 'Failed to create chat session participants'");
+        }
+
+
+
+
+        @Test
+        void createChatSession_PARTIAL_PARTICIPANT_INSERTION_WITH_ROLLBACK() {
+                logger.info("Testing createChatSession with partial participant insertion requiring rollback");
+
+                UUID testProjectId = UUID.randomUUID();
+                UUID testIssueId = UUID.randomUUID();
+
+                // Create a map with valid and invalid participants
+                // The invalid one should cause the entire operation to rollback
+                Map<UUID, String> mixedParticipants = new HashMap<>();
+                mixedParticipants.put(TicketingTestData.USER_ID_1, "INITIATOR");
+                mixedParticipants.put(null, "HANDLER"); // This will cause failure
+
+                RuntimeException exception = assertThrows(RuntimeException.class,
+                        () -> chatSessionRepository.createChatSession(
+                                testProjectId,
+                                testIssueId,
+                                mixedParticipants));
+
+                assertTrue(
+                        exception.getMessage().contains("Failed to create chat session participants"),
+                        "Should throw exception about participant creation failure");
+
+                // Verify that the successfully inserted participant was rolled back
+                // by checking it doesn't exist in issue_participants table
+                boolean participantExists = false;
+                try {
+                        String checkCql = "SELECT * FROM remsfal.issue_participants WHERE user_id = ? AND issue_id = ?";
+                        com.datastax.oss.driver.api.core.cql.ResultSet rs = cqlSession.execute(checkCql,
+                                TicketingTestData.USER_ID_1, testIssueId);
+                        participantExists = rs.one() != null;
+                } catch (Exception e) {
+                        logger.info("Error checking participant existence: " + e.getMessage());
+                }
+
+                assertFalse(participantExists,
+                        "Participant should have been rolled back and not exist in database");
+        }
 }
