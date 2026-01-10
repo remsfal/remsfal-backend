@@ -27,7 +27,7 @@ public class TenancyRepository extends AbstractRepository<TenancyEntity> {
     }
 
     public Optional<TenancyEntity> findTenancyByProjectId(final UUID projectId) {
-        return find("projectId", projectId).firstResultOptional(); 
+        return find("projectId", projectId).firstResultOptional();
     }
   
     public List<TenancyEntity> findTenancyByProject(final UUID projectId) {

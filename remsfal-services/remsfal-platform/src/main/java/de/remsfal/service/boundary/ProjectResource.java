@@ -167,8 +167,8 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
-    public TenantResource getTenantResource() { 
-        return resourceContext.initResource(tenantResource.get()); 
+    public TenantResource getTenantResource() {
+        return resourceContext.initResource(tenantResource.get());
     }
 
     @Override
