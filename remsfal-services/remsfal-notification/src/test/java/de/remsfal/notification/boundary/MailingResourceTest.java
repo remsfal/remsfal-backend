@@ -58,67 +58,41 @@ class MailingResourceTest extends AbstractTest {
         assertEquals(4, sent.size());
         MailMessage actual = sent.get(2);
         assertTrue(actual.getHtml().contains("You have been added to a new project."));
-        assertTrue(actual.getSubject().contains("been added to a new project"));
+        assertEquals("You’ve been added to a new project", actual.getSubject());
         assertEquals(4, mailbox.getTotalMessagesSent());
     }
 
     @Test
     void testIssueAssignedEmail() {
-        given()
-                .queryParam("to", "assigned@example.com")
-                .when()
-                .get(BASE_PATH + "/issue-assigned")
-                .then()
-                .statusCode(Status.ACCEPTED.getStatusCode());
-
-        List<MailMessage> sent = mailbox.getMailMessagesSentTo("assigned@example.com");
-        assertEquals(1, sent.size());
-        
-        MailMessage actual = sent.get(0);
-        assertTrue(actual.getHtml().contains("Test Issue Title"));
-        assertTrue(actual.getHtml().contains("Test Project"));
-        assertTrue(actual.getHtml().contains("OPEN"));
-        assertEquals("[Issue Assigned] Test Issue Title", actual.getSubject());
-        assertEquals(1, mailbox.getTotalMessagesSent());
+        assertIssueEmailSent("/issue-assigned", "assigned@example.com", "[Issue Assigned] Test Issue Title");
     }
 
     @Test
     void testIssueCreatedEmail() {
-        given()
-                .queryParam("to", "created@example.com")
-                .when()
-                .get(BASE_PATH + "/issue-created")
-                .then()
-                .statusCode(Status.ACCEPTED.getStatusCode());
-
-        List<MailMessage> sent = mailbox.getMailMessagesSentTo("created@example.com");
-        assertEquals(1, sent.size());
-        
-        MailMessage actual = sent.get(0);
-        assertTrue(actual.getHtml().contains("Test Issue Title"));
-        assertTrue(actual.getHtml().contains("Test Project"));
-        assertTrue(actual.getHtml().contains("OPEN"));
-        assertEquals("[Issue Created] Test Issue Title", actual.getSubject());
-        assertEquals(1, mailbox.getTotalMessagesSent());
+        assertIssueEmailSent("/issue-created", "created@example.com", "[Issue Created] Test Issue Title");
     }
 
     @Test
     void testIssueUpdatedEmail() {
+        assertIssueEmailSent("/issue-updated", "updated@example.com", "[Issue Updated] Test Issue Title");
+    }
+
+    private void assertIssueEmailSent(String endpoint, String email, String expectedSubject) {
         given()
-                .queryParam("to", "updated@example.com")
+                .queryParam("to", email)
                 .when()
-                .get(BASE_PATH + "/issue-updated")
+                .get(BASE_PATH + endpoint)
                 .then()
                 .statusCode(Status.ACCEPTED.getStatusCode());
 
-        List<MailMessage> sent = mailbox.getMailMessagesSentTo("updated@example.com");
+        List<MailMessage> sent = mailbox.getMailMessagesSentTo(email);
         assertEquals(1, sent.size());
-        
+
         MailMessage actual = sent.get(0);
         assertTrue(actual.getHtml().contains("Test Issue Title"));
         assertTrue(actual.getHtml().contains("Test Project"));
         assertTrue(actual.getHtml().contains("OPEN"));
-        assertEquals("[Issue Updated] Test Issue Title", actual.getSubject());
+        assertEquals(expectedSubject, actual.getSubject());
         assertEquals(1, mailbox.getTotalMessagesSent());
     }
 
