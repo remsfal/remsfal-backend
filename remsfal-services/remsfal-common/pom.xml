@@ -25,7 +25,6 @@
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
         </dependency>
-
         <!-- TEST dependencies -->
         <dependency>
             <groupId>de.remsfal</groupId>
