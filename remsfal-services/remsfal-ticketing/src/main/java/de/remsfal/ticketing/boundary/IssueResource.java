@@ -47,9 +47,9 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit,
-            UUID projectId, UUID ownerId,
-            UUID tenancyId, UnitType rentalType,
-            UUID rentalId, Status status) {
+        UUID projectId, UUID ownerId,
+        UUID tenancyId, UnitType rentalType,
+        UUID rentalId, Status status) {
         logger.info("Yes i was called");
         List<UUID> projectFilter;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
@@ -72,40 +72,21 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
-
     private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID tenancyId, Status status) {
         List<IssueModel> collected = new ArrayList<>();
 
         // Tenants
-        if (!principal.getTenancyProjects().isEmpty()) {
-            if (tenancyId != null && !principal.getTenancyProjects().containsKey(tenancyId)) {
-                throw new ForbiddenException("User does not have permission to view issues in this tenancy");
-            }
-            if (tenancyId != null && principal.getTenancyProjects().containsKey(tenancyId)) {
-                collected.addAll(issueController.getIssuesOfTenancy(tenancyId));
-            } else {
-                collected.addAll(issueController.getIssuesOfTenancies(principal.getTenancyProjects().keySet()));
-            }
-        }
+        collectTenancyIssues(collected, tenancyId);
 
-
-        List<UUID> participantIssueIds = issueParticipantRepository.findIssueIdsByParticipant(principal.getId());
-        for (UUID pid : participantIssueIds) {
-            try {
-                collected.add(issueController.getIssue(pid));
-            } catch (NotFoundException ignored) {
-                // Intentionally ignored:
-                // The user may be listed as a participant of an issue that was deleted or closed.
-                // In this case, the issue no longer exists and should simply be skipped
-                // without failing the entire request.
-            }
-        }
+        // Participants
+        collectParticipantIssues(collected);
 
         Map<UUID, IssueModel> unique = new LinkedHashMap<>();
         for (IssueModel issue : collected) {
-            if (issue != null && issue.getId() != null) {
-                unique.put(issue.getId(), issue);
+            if (issue == null || issue.getId() == null) {
+                continue;
             }
+            unique.put(issue.getId(), issue);
         }
         List<IssueModel> issues = new ArrayList<>(unique.values());
 
@@ -125,6 +106,33 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         List<IssueModel> paginatedIssues = issues.subList(fromIndex, toIndex);
 
         return IssueListJson.valueOf(paginatedIssues, actualOffset, totalCount);
+    }
+
+    private void collectTenancyIssues(List<IssueModel> collected, UUID tenancyId) {
+        if (!principal.getTenancyProjects().isEmpty()) {
+            if (tenancyId != null && !principal.getTenancyProjects().containsKey(tenancyId)) {
+                throw new ForbiddenException("User does not have permission to view issues in this tenancy");
+            }
+            if (tenancyId != null) {
+                collected.addAll(issueController.getIssuesOfTenancy(tenancyId));
+            } else {
+                collected.addAll(issueController.getIssuesOfTenancies(principal.getTenancyProjects().keySet()));
+            }
+        }
+    }
+
+    private void collectParticipantIssues(List<IssueModel> collected) {
+        List<UUID> participantIssueIds = issueParticipantRepository.findIssueIdsByParticipant(principal.getId());
+        for (UUID pid : participantIssueIds) {
+            try {
+                collected.add(issueController.getIssue(pid));
+            } catch (NotFoundException ignored) {
+                // Intentionally ignored:
+                // The user may be listed as a participant of an issue that was deleted or closed.
+                // In this case, the issue no longer exists and should simply be skipped
+                // without failing the entire request.
+            }
+        }
     }
 
     @Override
