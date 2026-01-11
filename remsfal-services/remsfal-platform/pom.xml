@@ -73,10 +73,6 @@
         <!-- Logging and monitoring dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-opentelemetry</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-observability-devservices-lgtm</artifactId>
         </dependency>
         <dependency>

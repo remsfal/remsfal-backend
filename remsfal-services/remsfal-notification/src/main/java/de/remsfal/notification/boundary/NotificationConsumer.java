@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 import java.util.Locale;
 import java.util.concurrent.CompletionStage;
@@ -23,6 +24,7 @@ public class NotificationConsumer {
 
     @Blocking
     @Incoming(EmailEventJson.TOPIC)
+    @WithSpan("NotificationConsumer.consumeUserNotification")
     public CompletionStage<Void> consumeUserNotification(Message<EmailEventJson> msg) {
         EmailEventJson mail = msg.getPayload();
 
@@ -41,7 +43,7 @@ public class NotificationConsumer {
                 mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
                 break;
         }
-        logger.infov("Email has been send");
+        logger.infov("Email has been sent");
         return msg.ack();
     }
 
