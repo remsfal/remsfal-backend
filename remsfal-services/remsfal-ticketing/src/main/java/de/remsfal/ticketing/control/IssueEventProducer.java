@@ -70,7 +70,7 @@ public class IssueEventProducer {
         }
 
         final IssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(type)
+            .type(type)
             .issueId(issue.getId())
             .projectId(issue.getProjectId())
             .title(issue.getTitle())
