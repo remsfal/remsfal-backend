@@ -47,11 +47,11 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit,
-                                   UUID projectId, UUID ownerId,
-                                   UUID tenancyId, UnitType rentalType,
-                                   UUID rentalId, Status status) {
+            UUID projectId, UUID ownerId,
+            UUID tenancyId, UnitType rentalType,
+            UUID rentalId, Status status) {
         logger.info("Yes i was called");
-        List<UUID> projectFilter = null;
+        List<UUID> projectFilter;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
             projectFilter = List.of(projectId);
         } else {
@@ -61,11 +61,11 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (projectFilter.isEmpty()) {
             return getUnprivilegedIssues(offset, limit, tenancyId, status);
         } else {
-            return getProjectIssues(offset, limit, projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+            return getProjectIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
         }
     }
 
-    private IssueListJson getProjectIssues(Integer offset, Integer limit, List<UUID> projectFilter, UUID ownerId,
+    private IssueListJson getProjectIssues(List<UUID> projectFilter, UUID ownerId,
         UUID tenancyId, UnitType rentalType, UUID rentalId,
         Status status) {
         final List<? extends IssueModel> issues =
@@ -145,9 +145,9 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
         final URI location = uri.getAbsolutePathBuilder()
-                .path(Objects.requireNonNull(issue.getProjectId())
-                .toString())
-                .build();
+            .path(Objects.requireNonNull(issue.getProjectId())
+            .toString())
+            .build();
         issueEventProducer.sendIssueCreated(createdIssue, principal);
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)

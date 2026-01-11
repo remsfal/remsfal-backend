@@ -23,10 +23,10 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
 
     public void delete(UUID userId, UUID issueId, UUID sessionId) {
         template.delete(IssueParticipantEntity.class)
-           .where(COL_USER_ID).eq(userId)
-           .and(ISSUE_ID).eq(issueId)
-           .and(SESSION_ID).eq(sessionId)
-           .execute();
+            .where(COL_USER_ID).eq(userId)
+            .and(ISSUE_ID).eq(issueId)
+            .and(SESSION_ID).eq(sessionId)
+            .execute();
     }
 
     public boolean exists(UUID userId, UUID issueId) {
@@ -39,8 +39,8 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
 
     public List<UUID> findIssueIdsByParticipant(UUID userId) {
         List<IssueParticipantEntity> entities = template.select(IssueParticipantEntity.class)
-                .where(COL_USER_ID).eq(userId)
-                .result();
+            .where(COL_USER_ID).eq(userId)
+            .result();
 
         return entities.stream()
            .map(IssueParticipantEntity::getIssueId)
@@ -52,11 +52,11 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
     public void updateRole(UUID userId, UUID issueId, UUID sessionId, String newRole) {
         try {
             IssueParticipantEntity entity = (IssueParticipantEntity) template.select(IssueParticipantEntity.class)
-                    .where(COL_USER_ID).eq(userId)
-                    .and(ISSUE_ID).eq(issueId)
-                    .and(SESSION_ID).eq(sessionId)
-                    .singleResult()
-                    .orElseThrow(() -> new IllegalArgumentException("Participant not found"));
+                .where(COL_USER_ID).eq(userId)
+                .and(ISSUE_ID).eq(issueId)
+                .and(SESSION_ID).eq(sessionId)
+                .singleResult()
+                .orElseThrow(() -> new IllegalArgumentException("Participant not found"));
 
             entity.setRole(newRole);
 
@@ -65,7 +65,7 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to update participant role", e);
+            throw new IllegalArgumentException("Failed to update participant role", e);
         }
     }
 }
