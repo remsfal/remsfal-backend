@@ -136,10 +136,10 @@ public class MailingController {
         // Use event link if available, otherwise construct a fallback
         String buttonLink = event.getLink();
         if (buttonLink == null && event.getProjectId() != null && event.getIssueId() != null) {
-            buttonLink = String.format("%s/projects/%s/issueedit/%s", 
+            buttonLink = String.format("%s/projects/%s/issueedit/%s",
                 frontendBaseUrl, event.getProjectId(), event.getIssueId());
         }
-        
+
         TemplateInstance instance = template
             .data("name", recipientName)
             .data("projectTitle", event.getProject() != null ? event.getProject().getTitle() : "N/A")
