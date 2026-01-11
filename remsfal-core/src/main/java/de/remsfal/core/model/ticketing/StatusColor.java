@@ -6,10 +6,10 @@ package de.remsfal.core.model.ticketing;
  */
 public enum StatusColor {
     PENDING("#F1C40F", "#333333"),
-    OPEN("#3498DB", "#ffffff"),
-    IN_PROGRESS("#E67E22", "#ffffff"),
-    CLOSED("#2ECC71", "#ffffff"),
-    REJECTED("#E74C3C", "#ffffff");
+    OPEN("#185D8C", "#ffffff"),
+    IN_PROGRESS("#AE5C13", "#ffffff"),
+    CLOSED("#1D8147", "#ffffff"),
+    REJECTED("#DA2E1B", "#ffffff");
 
     public final String backgroundColor;
     public final String textColor;
