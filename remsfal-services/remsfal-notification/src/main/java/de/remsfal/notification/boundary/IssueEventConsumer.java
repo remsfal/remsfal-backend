@@ -28,7 +28,11 @@ public class IssueEventConsumer {
     public CompletionStage<Void> consumeIssueEvent(Message<IssueEventJson> msg) {
         IssueEventJson event = msg.getPayload();
 
-        logger.infov("Received issue event: type={0}, issueId={1}", event.getIssueEventType(), event.getIssueId());
+        logger.infov(
+            "Received issue event: type={0}, issueId={1}",
+            event.getIssueEventType(),
+            event.getIssueId()
+        );
 
         try {
             switch (event.getIssueEventType()) {
@@ -47,7 +51,11 @@ public class IssueEventConsumer {
                     break;
                 default:
                     // Surface unexpected types to ease schema evolution
-                    logger.warnv("Unhandled issue event type: {0} (issueId={1})", event.getIssueEventType(), event.getIssueId());
+                    logger.warnv(
+                        "Unhandled issue event type: {0} (issueId={1})",
+                        event.getIssueEventType(),
+                        event.getIssueId()
+                    );
                     break;
             }
         } catch (Exception e) {
