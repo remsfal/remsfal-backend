@@ -98,25 +98,25 @@ public interface IssueEventJson {
     @Nullable
     String getDescription();
 
-    @Nullable
     /**
      * Identifier of a ticket that blocks this issue from progressing.
      * Reserved for future notification types (e.g., dependency updates).
      */
+    @Nullable
     UUID getBlockedBy();
 
-    @Nullable
     /**
      * Identifier of a ticket that is related to this issue (non-blocking relation).
      * Intended for future email content linking related work items.
      */
+    @Nullable
     UUID getRelatedTo();
 
-    @Nullable
     /**
      * Identifier of the original ticket when this issue is marked as a duplicate.
      * May be used by future templates to guide users to the canonical ticket.
      */
+    @Nullable
     UUID getDuplicateOf();
 
     @Nullable
