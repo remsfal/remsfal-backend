@@ -45,6 +45,10 @@ public class IssueEventConsumer {
                     // Not active yet, ignore
                     logger.debugv("ISSUE_MENTIONED event ignored (not implemented)");
                     break;
+                default:
+                    // Surface unexpected types to ease schema evolution
+                    logger.warnv("Unhandled issue event type: {0} (issueId={1})", event.getType(), event.getIssueId());
+                    break;
             }
         } catch (Exception e) {
             logger.errorv(e, "Failed to process issue event: {0}", event.getIssueId());
@@ -62,10 +66,9 @@ public class IssueEventConsumer {
         }
 
         // Send to creator (user)
-        if (event.getUser() != null && event.getUser().getEmail() != null) {
-            if (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail())) {
-                mailingController.sendIssueCreatedEmail(event, event.getUser());
-            }
+        if (event.getUser() != null && event.getUser().getEmail() != null
+                && (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail()))) {
+            mailingController.sendIssueCreatedEmail(event, event.getUser());
         }
     }
 
@@ -78,10 +81,9 @@ public class IssueEventConsumer {
         }
 
         // Send to updater (user)
-        if (event.getUser() != null && event.getUser().getEmail() != null) {
-            if (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail())) {
-                mailingController.sendIssueUpdatedEmail(event, event.getUser());
-            }
+        if (event.getUser() != null && event.getUser().getEmail() != null
+                && (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail()))) {
+            mailingController.sendIssueUpdatedEmail(event, event.getUser());
         }
     }
 
@@ -94,10 +96,9 @@ public class IssueEventConsumer {
         }
 
         // Send to assigner (user)
-        if (event.getUser() != null && event.getUser().getEmail() != null) {
-            if (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail())) {
-                mailingController.sendIssueAssignedEmail(event, event.getUser());
-            }
+        if (event.getUser() != null && event.getUser().getEmail() != null
+                && (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail()))) {
+            mailingController.sendIssueAssignedEmail(event, event.getUser());
         }
     }
 }
