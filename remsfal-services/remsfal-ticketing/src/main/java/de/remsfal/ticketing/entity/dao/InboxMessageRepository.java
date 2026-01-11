@@ -14,7 +14,6 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,12 +27,12 @@ public class InboxMessageRepository extends AbstractRepository<InboxMessageEntit
     private static final String TABLE = "inbox_messages";
 
     private static final String USER_ID = "user_id";
-    private static final String RECEIVED_AT = "received_at";
-    private static final String ID = "id";
+    private static final String MESSAGE_ID = "id";
 
     @Inject
     Logger logger;
 
+    // SELECT QUERIES
     public List<InboxMessageEntity> findByUserId(String userId) {
         return template.select(InboxMessageEntity.class)
                 .where(USER_ID).eq(userId)
@@ -47,17 +46,17 @@ public class InboxMessageRepository extends AbstractRepository<InboxMessageEntit
                 .result();
     }
 
-    public List<InboxMessageEntity> findByUserIdAndType(String userId, String type) {
+    public List<InboxMessageEntity> findByUserIdAndEventType(String userId, String eventType) {
         return template.select(InboxMessageEntity.class)
                 .where(USER_ID).eq(userId)
-                .and("type").eq(type)
+                .and("event_type").eq(eventType)
                 .result();
     }
 
-    public List<InboxMessageEntity> findByUserIdAndTypeAndRead(String userId, String type, Boolean read) {
+    public List<InboxMessageEntity> findByUserIdAndEventTypeAndRead(String userId, String eventType, Boolean read) {
         return template.select(InboxMessageEntity.class)
                 .where(USER_ID).eq(userId)
-                .and("type").eq(type)
+                .and("event_type").eq(eventType)
                 .and("read").eq(read)
                 .result();
     }
@@ -65,44 +64,52 @@ public class InboxMessageRepository extends AbstractRepository<InboxMessageEntit
     public Optional<InboxMessageEntity> findByUserIdAndId(String userId, UUID id) {
         return template.select(InboxMessageEntity.class)
                 .where(USER_ID).eq(userId)
-                .and(ID).eq(id)
+                .and(MESSAGE_ID).eq(id)
                 .singleResult();
     }
 
-    public void saveInboxMessage(InboxMessageEntity message) {
-        InboxMessageKey key = message.getKey();
+
+    // INSERT
+    public void saveInboxMessage(InboxMessageEntity msg) {
+
+        InboxMessageKey key = msg.getKey();
 
         Insert insert = QueryBuilder.insertInto(keyspace, TABLE)
                 .value(USER_ID, QueryBuilder.literal(key.getUserId()))
-                .value(ID, QueryBuilder.literal(key.getId()))
-                .value(RECEIVED_AT, QueryBuilder.literal(message.getReceivedAt()))
-                .value("type", QueryBuilder.literal(message.getType()))
-                .value("contractor", QueryBuilder.literal(message.getContractor()))
-                .value("subject", QueryBuilder.literal(message.getSubject()))
-                .value("property", QueryBuilder.literal(message.getProperty()))
-                .value("tenant", QueryBuilder.literal(message.getTenant()))
-                .value("read", QueryBuilder.literal(message.getRead()))
-                .value("issue_link", QueryBuilder.literal(message.getIssueLink()));
+                .value(MESSAGE_ID, QueryBuilder.literal(key.getId()))
+                .value("event_type", QueryBuilder.literal(msg.getEventType()))
+                .value("issue_id", QueryBuilder.literal(msg.getIssueId()))
+                .value("title", QueryBuilder.literal(msg.getTitle()))
+                .value("issue_type", QueryBuilder.literal(msg.getIssueType()))
+                .value("status", QueryBuilder.literal(msg.getStatus()))
+                .value("description", QueryBuilder.literal(msg.getDescription() == null ? "" : msg.getDescription()))
+                .value("actor_email", QueryBuilder.literal(msg.getActorEmail() == null ? "" : msg.getActorEmail()))
+                .value("owner_email", QueryBuilder.literal(msg.getOwnerEmail() == null ? "" : msg.getOwnerEmail()))
+                .value("link", QueryBuilder.literal(msg.getLink()))
+                .value("created_at", QueryBuilder.literal(msg.getCreatedAt()))
+                .value("read", QueryBuilder.literal(msg.getRead()));
 
         cqlSession.execute(insert.build());
     }
 
 
-
+    // UPDATE
     public void updateReadStatus(String userId, UUID messageId, boolean read) {
 
         Update update = QueryBuilder.update(keyspace, TABLE)
                 .setColumn("read", QueryBuilder.literal(read))
                 .whereColumn(USER_ID).isEqualTo(QueryBuilder.literal(userId))
-                .whereColumn(ID).isEqualTo(QueryBuilder.literal(messageId));
+                .whereColumn(MESSAGE_ID).isEqualTo(QueryBuilder.literal(messageId));
 
         cqlSession.execute(update.build());
     }
 
+    //DELETE
     public void deleteInboxMessage(String userId, UUID messageId) {
+
         Delete delete = QueryBuilder.deleteFrom(keyspace, TABLE)
                 .whereColumn(USER_ID).isEqualTo(QueryBuilder.literal(userId))
-                .whereColumn(ID).isEqualTo(QueryBuilder.literal(messageId));
+                .whereColumn(MESSAGE_ID).isEqualTo(QueryBuilder.literal(messageId));
 
         cqlSession.execute(delete.build());
     }

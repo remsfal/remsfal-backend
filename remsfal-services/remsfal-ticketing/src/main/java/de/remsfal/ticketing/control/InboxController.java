@@ -6,6 +6,7 @@ import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,45 +17,49 @@ public class InboxController {
     @Inject
     InboxMessageRepository repository;
 
-    public List<InboxMessageEntity> getInboxMessages(String type, Boolean read, String userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("userId must not be null");
-        }
+    /**
+     * Returns inbox messages for a user with optional filtering.
+     */
+    public List<InboxMessageEntity> getInboxMessages(Boolean read, String userId) {
 
         List<InboxMessageEntity> result;
 
-        if (type != null && read != null) {
-            result = repository.findByUserIdAndTypeAndRead(userId, type, read);
-        } else if (type != null) {
-            result = repository.findByUserIdAndType(userId, type);
-        } else if (read != null) {
+        if (read != null) {
             result = repository.findByUserIdAndRead(userId, read);
-        } else {
+        }
+        else {
             result = repository.findByUserId(userId);
         }
 
-        List<InboxMessageEntity> sorted = new java.util.ArrayList<>(result);
+        // nach dem Repository-Call:
+        List<InboxMessageEntity> mutable = new ArrayList<>(result);
 
-        sorted.sort((a, b) ->
-                b.getReceivedAt().compareTo(a.getReceivedAt())
-        );
+        mutable.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
 
-        return sorted;
+        return mutable;
     }
 
 
+    /**
+     * Updates read/unread status for a message belonging to a user.
+     */
     public InboxMessageEntity updateMessageStatus(String messageId, boolean read, String userId) {
         UUID id = UUID.fromString(messageId);
 
-        Optional<InboxMessageEntity> entityOpt = repository.findByUserIdAndId(userId, id);
-        if (entityOpt.isEmpty()) {
+        Optional<InboxMessageEntity> opt = repository.findByUserIdAndId(userId, id);
+        if (opt.isEmpty()) {
             throw new IllegalArgumentException("Inbox message not found for user");
         }
 
         repository.updateReadStatus(userId, id, read);
+
         return repository.findByUserIdAndId(userId, id).orElseThrow();
     }
 
+
+    /**
+     * Deletes a message from a user's inbox.
+     */
     public void deleteMessage(String messageId, String userId) {
         UUID id = UUID.fromString(messageId);
 

@@ -26,39 +26,54 @@ public class InboxResource extends AbstractResource implements InboxEndpoint {
     @Inject
     InboxMessageJsonMapper mapper;
 
+    /**
+     * Lists inbox messages for the authenticated user.
+     */
     @Override
-    public List<InboxMessageJson> getInboxMessages(String type, Boolean read, String userId) {
+    public List<InboxMessageJson> getInboxMessages(
+            @QueryParam("read") Boolean read
+    ) {
         try {
-            List<InboxMessageEntity> entities =
-                    controller.getInboxMessages(type, read, userId);
+            String userId = principal.getJwt().getSubject();
 
-            return mapper.toJsonList(entities);
+            List<InboxMessageEntity> messages =
+                    controller.getInboxMessages(read, userId);
+
+            return mapper.toJsonList(messages);
+
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
     }
 
+    /**
+     * Updates the read flag of a message that belongs to the authenticated user.
+     */
     @Override
     public InboxMessageJson updateMessageStatus(
             @PathParam("messageId") String messageId,
             @QueryParam("read") boolean read
     ) {
         try {
-            String userId = principal.getId().toString();
+            String userId = principal.getJwt().getSubject();
 
             InboxMessageEntity updated =
                     controller.updateMessageStatus(messageId, read, userId);
 
             return mapper.toJson(updated);
+
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(e.getMessage());
         }
     }
 
+    /**
+     * Deletes a message that belongs to the authenticated user.
+     */
     @Override
-    public void deleteInboxMessage(String messageId) {
+    public void deleteInboxMessage(@PathParam("messageId") String messageId) {
         try {
-            String userId = principal.getId().toString();
+            String userId = principal.getJwt().getSubject();
             controller.deleteMessage(messageId, userId);
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(e.getMessage());

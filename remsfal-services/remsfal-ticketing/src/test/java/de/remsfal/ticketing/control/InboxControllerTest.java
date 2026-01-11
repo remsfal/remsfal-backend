@@ -23,53 +23,25 @@ class InboxControllerTest {
     void setup() {
         controller = new InboxController();
         repository = mock(InboxMessageRepository.class);
-
         controller.repository = repository;
     }
 
+    // GET TESTS
     @Test
     void testGetInboxMessages_userIdNull_throws() {
-        assertThrows(IllegalArgumentException.class, () ->
-                controller.getInboxMessages(null, null, null)
-        );
-    }
-
-    @Test
-    void testGetInboxMessages_typeAndRead() {
-        InboxMessageEntity msg = new InboxMessageEntity();
-        msg.setReceivedAt(Instant.now());
-
-        when(repository.findByUserIdAndTypeAndRead("u1", "INFO", true))
-                .thenReturn(List.of(msg));
-
-        var result = controller.getInboxMessages("INFO", true, "u1");
-
-        verify(repository).findByUserIdAndTypeAndRead("u1", "INFO", true);
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void testGetInboxMessages_typeOnly() {
-        InboxMessageEntity msg = new InboxMessageEntity();
-        msg.setReceivedAt(Instant.now());
-
-        when(repository.findByUserIdAndType("u1", "INFO"))
-                .thenReturn(List.of(msg));
-
-        controller.getInboxMessages("INFO", null, "u1");
-
-        verify(repository).findByUserIdAndType("u1", "INFO");
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.getInboxMessages(true, null));
     }
 
     @Test
     void testGetInboxMessages_readOnly() {
         InboxMessageEntity msg = new InboxMessageEntity();
-        msg.setReceivedAt(Instant.now());
+        msg.setCreatedAt(Instant.now());
 
         when(repository.findByUserIdAndRead("u1", true))
                 .thenReturn(List.of(msg));
 
-        controller.getInboxMessages(null, true, "u1");
+        controller.getInboxMessages(true, "u1");
 
         verify(repository).findByUserIdAndRead("u1", true);
     }
@@ -77,33 +49,34 @@ class InboxControllerTest {
     @Test
     void testGetInboxMessages_noFilters() {
         InboxMessageEntity msg = new InboxMessageEntity();
-        msg.setReceivedAt(Instant.now());
+        msg.setCreatedAt(Instant.now());
 
         when(repository.findByUserId("u1"))
                 .thenReturn(List.of(msg));
 
-        controller.getInboxMessages(null, null, "u1");
+        controller.getInboxMessages(null, "u1");
 
         verify(repository).findByUserId("u1");
     }
 
     @Test
-    void testGetInboxMessages_sortedByReceivedAt() {
-        InboxMessageEntity oldMsg = new InboxMessageEntity();
-        oldMsg.setReceivedAt(Instant.now().minusSeconds(100));
+    void testGetInboxMessages_sortedByCreatedAt() {
+        InboxMessageEntity older = new InboxMessageEntity();
+        older.setCreatedAt(Instant.now().minusSeconds(100));
 
-        InboxMessageEntity newMsg = new InboxMessageEntity();
-        newMsg.setReceivedAt(Instant.now());
+        InboxMessageEntity newer = new InboxMessageEntity();
+        newer.setCreatedAt(Instant.now());
 
         when(repository.findByUserId("u1"))
-                .thenReturn(List.of(oldMsg, newMsg));
+                .thenReturn(List.of(older, newer));
 
-        var result = controller.getInboxMessages(null, null, "u1");
+        var result = controller.getInboxMessages(null, "u1");
 
-        assertEquals(newMsg, result.get(0));
-        assertEquals(oldMsg, result.get(1));
+        assertEquals(newer, result.get(0));
+        assertEquals(older, result.get(1));
     }
 
+    // UPDATE MESSAGE STATUS
     @Test
     void testUpdateMessageStatus_notFound() {
         UUID id = UUID.randomUUID();
@@ -111,22 +84,19 @@ class InboxControllerTest {
         when(repository.findByUserIdAndId("u1", id))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () ->
-                controller.updateMessageStatus(id.toString(), true, "u1")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.updateMessageStatus(id.toString(), true, "u1"));
     }
 
     @Test
     void testUpdateMessageStatus_success() {
         UUID id = UUID.randomUUID();
-
         InboxMessageEntity msg = new InboxMessageEntity();
-        msg.setReceivedAt(Instant.now());
+        msg.setCreatedAt(Instant.now());
 
         when(repository.findByUserIdAndId("u1", id))
-                .thenReturn(Optional.of(msg)); // first call
-        when(repository.findByUserIdAndId("u1", id))
-                .thenReturn(Optional.of(msg)); // second call after update
+                .thenReturn(Optional.of(msg))
+                .thenReturn(Optional.of(msg));
 
         var result = controller.updateMessageStatus(id.toString(), true, "u1");
 
@@ -134,6 +104,7 @@ class InboxControllerTest {
         assertEquals(msg, result);
     }
 
+    // DELETE MESSAGE
     @Test
     void testDeleteMessage_notFound() {
         UUID id = UUID.randomUUID();
@@ -141,9 +112,8 @@ class InboxControllerTest {
         when(repository.findByUserIdAndId("u1", id))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () ->
-                controller.deleteMessage(id.toString(), "u1")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.deleteMessage(id.toString(), "u1"));
     }
 
     @Test
@@ -159,3 +129,4 @@ class InboxControllerTest {
         verify(repository).deleteInboxMessage("u1", id);
     }
 }
+

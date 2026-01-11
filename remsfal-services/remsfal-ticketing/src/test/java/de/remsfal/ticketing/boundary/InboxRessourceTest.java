@@ -1,13 +1,12 @@
 package de.remsfal.ticketing.boundary;
 
+import com.github.dockerjava.api.exception.BadRequestException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.ticketing.control.InboxController;
 import de.remsfal.ticketing.control.InboxMessageJsonMapper;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 import de.remsfal.core.json.ticketing.InboxMessageJson;
-
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
 
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -47,51 +46,51 @@ class InboxResourceTest {
     void testGetInboxMessages_success() {
         InboxMessageEntity e = new InboxMessageEntity();
 
-        when(controller.getInboxMessages("INFO", true, "user1"))
+        String userId = "11111111-1111-1111-1111-111111111111";
+        when(principal.getId()).thenReturn(UUID.fromString(userId));
+
+        when(controller.getInboxMessages(true, userId))
                 .thenReturn(List.of(e));
 
         InboxMessageJson dummyJson = mock(InboxMessageJson.class);
+        when(mapper.toJsonList(any())).thenReturn(List.of(dummyJson));
 
-        when(mapper.toJsonList(any()))
-                .thenReturn(List.of(dummyJson));
-
-        List<InboxMessageJson> result =
-                resource.getInboxMessages("INFO", true, "user1");
+        List<InboxMessageJson> result = resource.getInboxMessages(true);
 
         assertEquals(1, result.size());
-        verify(controller).getInboxMessages("INFO", true, "user1");
+        verify(controller).getInboxMessages(true, userId);
     }
 
     @Test
     void testGetInboxMessages_badRequest() {
-        when(controller.getInboxMessages(any(), any(), any()))
+        when(principal.getId()).thenReturn(UUID.randomUUID());
+        when(controller.getInboxMessages(any(), any()))
                 .thenThrow(new IllegalArgumentException("boom"));
 
         assertThrows(BadRequestException.class, () ->
-                resource.getInboxMessages("x", null, "u")
+                resource.getInboxMessages(false)
         );
     }
 
     @Test
     void testUpdateMessageStatus_success() {
         UUID msgId = UUID.randomUUID();
+        String userId = "11111111-1111-1111-1111-111111111111";
 
         InboxMessageEntity updated = new InboxMessageEntity();
 
-        when(principal.getId()).thenReturn(UUID.fromString("11111111-1111-1111-1111-111111111111"));
-        when(controller.updateMessageStatus(msgId.toString(), true, "11111111-1111-1111-1111-111111111111"))
+        when(principal.getId()).thenReturn(UUID.fromString(userId));
+        when(controller.updateMessageStatus(msgId.toString(), true, userId))
                 .thenReturn(updated);
 
         InboxMessageJson dummyJson = mock(InboxMessageJson.class);
         when(mapper.toJson(any())).thenReturn(dummyJson);
 
-        InboxMessageJson result =
-                resource.updateMessageStatus(msgId.toString(), true);
+        InboxMessageJson result = resource.updateMessageStatus(msgId.toString(), true);
 
         assertNotNull(result);
-        verify(controller).updateMessageStatus(
-                msgId.toString(), true, "11111111-1111-1111-1111-111111111111"
-        );
+
+        verify(controller).updateMessageStatus(msgId.toString(), true, userId);
     }
 
     @Test
@@ -107,11 +106,13 @@ class InboxResourceTest {
 
     @Test
     void testDeleteInboxMessage_success() {
-        when(principal.getId()).thenReturn(UUID.fromString("11111111-1111-1111-1111-111111111111"));
+        String userId = "11111111-1111-1111-1111-111111111111";
+
+        when(principal.getId()).thenReturn(UUID.fromString(userId));
 
         resource.deleteInboxMessage("xyz");
 
-        verify(controller).deleteMessage("xyz", "11111111-1111-1111-1111-111111111111");
+        verify(controller).deleteMessage("xyz", userId);
     }
 
     @Test

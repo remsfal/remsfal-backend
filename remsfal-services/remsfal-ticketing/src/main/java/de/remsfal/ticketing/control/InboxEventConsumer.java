@@ -24,11 +24,20 @@ public class InboxEventConsumer {
     @Incoming("inbox-events")
     public void consume(InboxEventJson event) {
 
-        logger.infof("Received inbox event for user %s: %s",
-                event.userId(), event.eventType());
+        logger.infof("Received enriched issue event: %s for issue %s",
+                event.type(), event.issueId());
 
-        InboxMessageEntity entity = mapper.toEntity(event);
+        if (event.owner() == null || event.owner().id() == null) {
+            logger.warn("Skipping inbox event because owner is null");
+            return;
+        }
+
+        String recipientUserId = event.owner().id().toString();
+
+        InboxMessageEntity entity = mapper.toEntity(event, recipientUserId);
 
         repository.saveInboxMessage(entity);
+
+        logger.infof("Stored inbox notification for user %s", recipientUserId);
     }
 }

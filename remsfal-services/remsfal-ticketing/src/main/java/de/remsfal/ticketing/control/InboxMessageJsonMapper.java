@@ -24,14 +24,19 @@ public class InboxMessageJsonMapper {
         json.id = key.getId().toString();
         json.userId = key.getUserId();
 
-        json.receivedAt = OffsetDateTime.ofInstant(entity.getReceivedAt(), ZoneOffset.UTC);
-        json.type = entity.getType();
-        json.contractor = entity.getContractor();
-        json.subject = entity.getSubject();
-        json.property = entity.getProperty();
-        json.tenant = entity.getTenant();
+        json.eventType = entity.getEventType();
+        json.issueId = entity.getIssueId();
+        json.title = entity.getTitle();
+        json.description = entity.getDescription();
+        json.issueType = entity.getIssueType();
+        json.status = entity.getStatus();
+        json.link = entity.getLink();
+
+        json.actorEmail = entity.getActorEmail();
+        json.ownerEmail = entity.getOwnerEmail();
+
         json.read = Boolean.TRUE.equals(entity.getRead());
-        json.issueLink = entity.getIssueLink();
+        json.createdAt = OffsetDateTime.ofInstant(entity.getCreatedAt(), ZoneOffset.UTC);
 
         return json;
     }

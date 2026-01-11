@@ -10,20 +10,23 @@
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="005-create-inbox-messages-table" author="Hoang.Nguyen@Student.HTW-Berlin.de">
-        <comment>Create inbox_messages table</comment>
+        <comment>Create inbox_messages table (event-based inbox)</comment>
 
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.inbox_messages (
             user_id TEXT,
-            received_at TIMESTAMP,
             id UUID,
-            type TEXT,
-            contractor TEXT,
-            subject TEXT,
-            property TEXT,
-            tenant TEXT,
+            issue_id TEXT,
+            title TEXT,
+            issue_type TEXT,
+            status TEXT,
+            description TEXT,
+            link TEXT,
+            event_type TEXT,
+            actor_email TEXT,
+            owner_email TEXT,
+            created_at TIMESTAMP,
             read BOOLEAN,
-            issue_link TEXT,
             PRIMARY KEY ((user_id), id)
             );
         </sql>
