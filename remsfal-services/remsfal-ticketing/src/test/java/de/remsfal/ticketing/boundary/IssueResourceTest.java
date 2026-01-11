@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
@@ -26,6 +27,9 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -464,33 +468,6 @@ class IssueResourceTest extends AbstractResourceTest {
                 .contentType(ContentType.JSON);
     }
 
-    @Test
-    void getIssues_SUCCESS_deduplicationOfIssues() {
-        // Erstelle ein Issue als Manager
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-                + "\"title\":\"Dedupe Issue\","
-                + "\"type\":\"TASK\""
-                + "}";
-
-        given()
-                .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
-                .contentType(ContentType.JSON)
-                .body(createJson)
-                .post(BASE_PATH);
-
-        // User hat sowohl Tenant-Rolle als auch ist Participant
-        // Dies sollte das gleiche Issue nur einmal zurückgeben
-        given()
-                .when()
-                .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                        TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-                .get(BASE_PATH)
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON);
-    }
 
     @Test
     void getIssues_SUCCESS_tenantFiltersByStatus() {
@@ -628,59 +605,41 @@ class IssueResourceTest extends AbstractResourceTest {
                     .body("total", equalTo(0));
         }
 
-        @Test
-        void getIssues_SUCCESS_userWithBothTenantAndContractorRoles () {
-            // Erstelle Issue
-            final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-                    + "\"title\":\"Combined Role Issue\","
-                    + "\"type\":\"TASK\""
-                    + "}";
+    @ParameterizedTest
+    @MethodSource("provideIssueTestCases")
+    void getIssues_SUCCESS_variousScenarios(String title, String description) {
+        // Erstelle Issue
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"" + title + "\","
+                + "\"type\":\"TASK\""
+                + "}";
 
-            given()
-                    .when()
-                    .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                            TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
-                    .contentType(ContentType.JSON)
-                    .body(createJson)
-                    .post(BASE_PATH);
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                        TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
+                .contentType(ContentType.JSON)
+                .body(createJson)
+                .post(BASE_PATH);
 
-            // User mit Tenant-Rolle UND als Participant
-            given()
-                    .when()
-                    .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                            TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-                    .get(BASE_PATH)
-                    .then()
-                    .statusCode(200)
-                    .contentType(ContentType.JSON);
-        }
+        // User mit Tenant-Rolle
+        given()
+                .when()
+                .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                        TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+                .get(BASE_PATH)
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
+    }
 
-        // Test 10: Status Filter mit null Status
-        @Test
-        void getIssues_SUCCESS_withoutStatusFilter () {
-            final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-                    + "\"title\":\"No Filter Issue\","
-                    + "\"type\":\"TASK\""
-                    + "}";
-
-            given()
-                    .when()
-                    .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                            TicketingTestData.USER_FIRST_NAME, TicketingTestData.MANAGER_PROJECT_ROLES, Map.of()))
-                    .contentType(ContentType.JSON)
-                    .body(createJson)
-                    .post(BASE_PATH);
-
-            // Ohne Status-Filter als Tenant
-            given()
-                    .when()
-                    .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                            TicketingTestData.USER_FIRST_NAME_1, Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-                    .get(BASE_PATH)
-                    .then()
-                    .statusCode(200)
-                    .contentType(ContentType.JSON);
-        }
+    private static Stream<Arguments> provideIssueTestCases() {
+        return Stream.of(
+                Arguments.of("Dedupe Issue", "Deduplication of issues"),
+                Arguments.of("Combined Role Issue", "User with both tenant and contractor roles"),
+                Arguments.of("No Filter Issue", "Without status filter")
+        );
+    }
 
         @Test
         void getIssues_SUCCESS_handlesIssueWithNullId () {

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,9 @@ import de.remsfal.ticketing.entity.dto.IssueParticipantKey;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -23,7 +27,6 @@ class IssueParticipantRepositoryTest {
  @Inject
  IssueParticipantRepository repository;
 
- // ========== Original Tests ==========
 
  @Test
  void testInsertAndExists() {
@@ -484,20 +487,7 @@ class IssueParticipantRepositoryTest {
   return entity;
  }
 
- @Test
- void testUpdateRole_SUCCESS() {
-  UUID userId = UUID.randomUUID();
-  UUID issueId = UUID.randomUUID();
-  UUID sessionId = UUID.randomUUID();
-  UUID projectId = UUID.randomUUID();
 
-  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
-  repository.insert(entity);
-
-  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, "OWNER"));
-
-  repository.delete(userId, issueId, sessionId);
- }
 
  @Test
  void testUpdateRole_PARTICIPANT_NOT_FOUND() {
@@ -549,8 +539,9 @@ class IssueParticipantRepositoryTest {
   repository.delete(userId, issueId, sessionId);
  }
 
- @Test
- void testUpdateRole_WITH_NULL_ROLE() {
+ @ParameterizedTest
+ @MethodSource("provideRoleTestCases")
+ void testUpdateRole(String newRole, String description) {
   UUID userId = UUID.randomUUID();
   UUID issueId = UUID.randomUUID();
   UUID sessionId = UUID.randomUUID();
@@ -559,24 +550,17 @@ class IssueParticipantRepositoryTest {
   IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
   repository.insert(entity);
 
-  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, null));
+  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, newRole));
 
   repository.delete(userId, issueId, sessionId);
  }
 
- @Test
- void testUpdateRole_WITH_EMPTY_ROLE() {
-  UUID userId = UUID.randomUUID();
-  UUID issueId = UUID.randomUUID();
-  UUID sessionId = UUID.randomUUID();
-  UUID projectId = UUID.randomUUID();
-
-  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
-  repository.insert(entity);
-
-  assertDoesNotThrow(() -> repository.updateRole(userId, issueId, sessionId, ""));
-
-  repository.delete(userId, issueId, sessionId);
+ private static Stream<Arguments> provideRoleTestCases() {
+  return Stream.of(
+          Arguments.of("OWNER", "SUCCESS"),
+          Arguments.of(null, "WITH_NULL_ROLE"),
+          Arguments.of("", "WITH_EMPTY_ROLE")
+  );
  }
 
  @Test
