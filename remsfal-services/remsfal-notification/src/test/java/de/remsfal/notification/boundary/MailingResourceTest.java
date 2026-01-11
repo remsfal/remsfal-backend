@@ -109,8 +109,8 @@ class MailingResourceTest extends AbstractTest {
         assertEquals(1, sent.size());
         
         MailMessage actual = sent.get(0);
-        // Should default to "User" greeting
-        assertTrue(actual.getHtml().contains("Dear User") || actual.getHtml().contains("Liebe(r) User"));
+        // Should default to "User" greeting in the configured (English) locale
+        assertTrue(actual.getHtml().contains("Dear User"));
         assertEquals(1, mailbox.getTotalMessagesSent());
     }
 }
