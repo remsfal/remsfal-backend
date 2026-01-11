@@ -34,6 +34,9 @@ public class MailingController {
     @ConfigProperty(name = "quarkus.mailer.from")
     String from;
 
+    @ConfigProperty(name = "de.remsfal.frontend.url.base", defaultValue = "https://remsfal.de")
+    String frontendBaseUrl;
+
     @Inject
     @Location("welcome.html")
     Template welcome;
@@ -128,6 +131,13 @@ public class MailingController {
             ? recipient.getName()
             : "User";
         
+        // Use event link if available, otherwise construct a fallback
+        String buttonLink = event.getLink();
+        if (buttonLink == null && event.getProjectId() != null && event.getIssueId() != null) {
+            buttonLink = String.format("%s/projects/%s/issueedit/%s", 
+                frontendBaseUrl, event.getProjectId(), event.getIssueId());
+        }
+        
         TemplateInstance instance = template
             .data("name", recipientName)
             .data("projectTitle", event.getProject() != null ? event.getProject().getTitle() : "N/A")
@@ -139,7 +149,7 @@ public class MailingController {
             .data("ownerEmail", event.getOwner() != null ? event.getOwner().getEmail() : "N/A")
             .data("actorName", event.getUser() != null ? event.getUser().getName() : "N/A")
             .data("actorEmail", event.getUser() != null ? event.getUser().getEmail() : "N/A")
-            .data("buttonLink", event.getLink());
+            .data("buttonLink", buttonLink);
         
         if (statusColor != null) {
             instance = instance
