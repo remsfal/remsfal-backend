@@ -1,5 +1,9 @@
 package de.remsfal.core.model.ticketing;
 
+/**
+ * Maps issue statuses to badge colors used in email templates.
+ * backgroundColor is applied to the status badge, textColor ensures sufficient contrast.
+ */
 public enum StatusColor {
     PENDING("#F1C40F", "#333333"),
     OPEN("#3498DB", "#ffffff"),

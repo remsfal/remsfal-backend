@@ -57,7 +57,7 @@ public interface IssueEventJson {
     UUID getIssueId();
 
     /**
-     * Project identifier for direct database queries or lookups.
+     * Project identifier for direct lookups.
      */
     UUID getProjectId();
 
