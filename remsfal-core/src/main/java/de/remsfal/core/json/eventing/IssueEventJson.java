@@ -16,25 +16,30 @@ import jakarta.annotation.Nullable;
 
 /**
  * Enriched issue event schema for Kafka messaging between microservices.
- * 
+ *
  * <h3>Schema Version: 1.0</h3>
- * 
+ *
  * This interface defines the public contract for issue events exchanged between:
  * <ul>
- *   <li>ticketing-service: Producer of basic issue events (ISSUE_CREATED, ISSUE_UPDATED, ISSUE_ASSIGNED, ISSUE_MENTIONED)</li>
+ *   <li>ticketing-service: Producer of basic issue events (ISSUE_CREATED, ISSUE_UPDATED,
+ *   ISSUE_ASSIGNED, ISSUE_MENTIONED)</li>
  *   <li>platform-service: Enricher of events (adds project and user details)</li>
  *   <li>notification-service: Consumer of enriched events (sends email notifications)</li>
  * </ul>
- * 
+ *
  * <h3>Versioning Guidelines</h3>
  * When modifying this schema:
  * <ul>
- *   <li>MINOR changes (new optional fields): Increment patch version (e.g., 1.0 → 1.0.1)</li>
- *   <li>MAJOR changes (remove/rename fields, change types): Increment minor version (e.g., 1.0 → 1.1)</li>
- *   <li>Breaking changes: Increment major version (e.g., 1.0 → 2.0) and coordinate across all services</li>
+ *   <li>MINOR changes (new optional fields): Increment patch version (e.g., 1.0 →
+ *   1.0.1)</li>
+ *   <li>MAJOR changes (remove/rename fields, change types): Increment minor version (e.g.,
+ *   1.0 → 1.1)</li>
+ *   <li>Breaking changes: Increment major version (e.g., 1.0 → 2.0) and coordinate across
+ *   all services</li>
  * </ul>
- * 
- * @see <a href="https://github.com/remsfal/remsfal-backend/issues/593">Issue #593: Ticket notification Kafka consumer</a>
+ *
+ * @see <a href="https://github.com/remsfal/remsfal-backend/issues/593">Issue #593: Ticket
+ *      notification Kafka consumer</a>
  */
 @Immutable
 @ImmutableStyle
