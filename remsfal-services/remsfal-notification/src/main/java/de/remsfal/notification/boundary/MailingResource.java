@@ -23,8 +23,15 @@ import de.remsfal.notification.control.MailingController;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * REST endpoint for manual testing of email notifications.
+ * Uses mock data with hardcoded values for development environments only.
+ * Should not be exposed in production deployments.
+ */
 @Path("/notification/test")
 public class MailingResource {
+
+    private static final String ERROR_SEND_EMAIL = "Failed to send email";
 
     @Inject
     MailingController controller;
@@ -68,7 +75,7 @@ public class MailingResource {
             controller.sendIssueAssignedEmail(event, recipient);
             return Response.accepted().entity("Issue assigned email sent successfully").build();
         } catch (Exception e) {
-            return Response.serverError().entity("Failed to send email").build();
+            return Response.serverError().entity(ERROR_SEND_EMAIL).build();
         }
     }
 
@@ -82,7 +89,7 @@ public class MailingResource {
             controller.sendIssueCreatedEmail(event, recipient);
             return Response.accepted().entity("Issue created email sent successfully").build();
         } catch (Exception e) {
-            return Response.serverError().entity("Failed to send email").build();
+            return Response.serverError().entity(ERROR_SEND_EMAIL).build();
         }
     }
 
@@ -96,7 +103,7 @@ public class MailingResource {
             controller.sendIssueUpdatedEmail(event, recipient);
             return Response.accepted().entity("Issue updated email sent successfully").build();
         } catch (Exception e) {
-            return Response.serverError().entity("Failed to send email").build();
+            return Response.serverError().entity(ERROR_SEND_EMAIL).build();
         }
     }
 
