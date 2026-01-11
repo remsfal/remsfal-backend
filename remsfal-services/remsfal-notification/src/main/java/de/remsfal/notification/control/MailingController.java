@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
@@ -67,6 +68,7 @@ public class MailingController {
         sendWithAlias(mail, "info");
     }
 
+    @WithSpan("MailingController.sendNewMembershipEmail")
     public void sendNewMembershipEmail(final UserModel recipient, final String link, final Locale locale) {
         logger.infov("Sending new membership email to {0}", recipient.getEmail());
         final TemplateInstance instance = newMembership.data("name", recipient.getName()).data("buttonLink", link);

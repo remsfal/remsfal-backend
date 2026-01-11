@@ -26,4 +26,14 @@ public class TenancyRepository extends AbstractRepository<TenancyEntity> {
             .singleResultOptional();
     }
 
+    public List<TenancyEntity> findTenancyByProject(final UUID projectId) {
+        return find("projectId", projectId).list();
+    }
+
+    public Optional<TenancyEntity> findTenancyByProject(final UUID projectId, final UUID tenancyId) {
+        return find("SELECT t FROM TenancyEntity t LEFT JOIN FETCH t.tenants u " +
+            "LEFT JOIN FETCH u.additionalEmails WHERE t.id = :id and t.projectId = :projectId",
+            Parameters.with(PARAM_ID, tenancyId).and(PARAM_PROJECT_ID, projectId))
+            .singleResultOptional();
+    }
 }

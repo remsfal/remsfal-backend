@@ -2,8 +2,12 @@ package de.remsfal.service.entity.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 import java.util.Objects;
+import java.util.Collections;
 import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,6 +30,8 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
     query = "update UserEntity user set user.authenticatedAt = :timestamp where user.tokenId = :tokenId")
 @NamedQuery(name = "UserEntity.deleteById",
     query = "delete from UserEntity user where user.id = :id")
+@NamedQuery(name = "UserEntity.findByIdWithAdditionalEmails",
+    query = "select u from UserEntity u left join fetch u.additionalEmails where u.id = :id ")
 @Entity
 @Table(name = "users")
 public class UserEntity extends AbstractEntity implements CustomerModel {
@@ -59,8 +65,14 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Column(name = "private_phone_number")
     private String privatePhoneNumber;
 
+    @Column(name = "locale")
+    private String locale;
+
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AdditionalEmailEntity> additionalEmails = new HashSet<>();
 
     public String getTokenId() {
         return tokenId;
@@ -146,6 +158,15 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         this.privatePhoneNumber = privatePhoneNumber;
     }
 
+    @Override
+    public String getLocale() {
+        return locale;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
+
     public Set<ProjectMembershipEntity> getMemberships() {
         return memberships;
     }
@@ -164,6 +185,24 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         return authenticatedAt;
     }
 
+    public void setAdditionalEmails(Set<AdditionalEmailEntity> additionalEmails) {
+        this.additionalEmails = additionalEmails;
+    }
+
+    @Override
+    public List<String> getAdditionalEmails() {
+        if (additionalEmails == null || additionalEmails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return additionalEmails.stream()
+                .map(AdditionalEmailEntity::getEmail)
+                .toList();
+    }
+
+    public Set<AdditionalEmailEntity> getAdditionalEmailEntities() {
+        return additionalEmails;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -178,7 +217,8 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
                 && Objects.equals(address, e.address)
                 && Objects.equals(mobilePhoneNumber, e.mobilePhoneNumber)
                 && Objects.equals(businessPhoneNumber, e.businessPhoneNumber)
-                && Objects.equals(privatePhoneNumber, e.privatePhoneNumber);
+                && Objects.equals(privatePhoneNumber, e.privatePhoneNumber)
+                && Objects.equals(locale, e.locale);
         }
         return false;
     }
