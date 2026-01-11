@@ -67,7 +67,7 @@ class IssueEventProducerTest {
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
-        assertEquals(IssueEventType.ISSUE_CREATED, event.getType());
+        assertEquals(IssueEventType.ISSUE_CREATED, event.getIssueEventType());
         assertEquals(issue.getId(), event.getIssueId());
         assertEquals(issue.getProjectId(), event.getProjectId());
         assertEquals(issue.getTitle(), event.getTitle());
@@ -101,7 +101,7 @@ class IssueEventProducerTest {
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
-        assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getType());
+        assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getIssueEventType());
         assertEquals(newOwnerId, Objects.requireNonNull(event.getOwner()).getId());
         assertEquals(newOwnerId, event.getOwnerId());
     }
@@ -117,7 +117,7 @@ class IssueEventProducerTest {
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
-        assertEquals(IssueEventType.ISSUE_MENTIONED, event.getType());
+        assertEquals(IssueEventType.ISSUE_MENTIONED, event.getIssueEventType());
         assertNull(event.getOwner());
         assertNotNull(event.getMentionedUser());
         assertEquals(mentionedUser, event.getMentionedUser().getId());

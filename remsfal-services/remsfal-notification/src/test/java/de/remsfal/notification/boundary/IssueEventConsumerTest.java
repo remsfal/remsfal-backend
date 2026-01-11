@@ -16,10 +16,10 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.json.ImmutableProjectJson;
 import de.remsfal.core.json.ImmutableUserJson;
-import de.remsfal.core.json.ProjectJson;
+import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -51,7 +51,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueCreated_SendsToOwnerAndCreator() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -69,7 +69,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())
@@ -104,7 +104,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueCreated_SendsOnlyToOwnerWhenSameAsCreator() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -116,7 +116,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())
@@ -148,7 +148,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueUpdated_SendsToOwnerAndUpdater() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -166,7 +166,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_UPDATED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_UPDATED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())
@@ -200,7 +200,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueAssigned_SendsToNewOwnerAndAssigner() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -218,7 +218,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_ASSIGNED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_ASSIGNED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())
@@ -252,7 +252,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueMentioned_IsIgnored() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -264,7 +264,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_MENTIONED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_MENTIONED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())
@@ -298,7 +298,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueCreated_HandlesNullOwner() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -310,7 +310,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())
@@ -340,7 +340,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueCreated_HandlesNullUser() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -352,7 +352,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())
@@ -383,7 +383,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Test
     void testConsumeIssueEvent_HandlesException() {
-        ProjectJson project = ImmutableProjectJson.builder()
+        ProjectEventJson project = ImmutableProjectEventJson.builder()
             .id(UUID.randomUUID())
             .title("Test Project")
             .build();
@@ -395,7 +395,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .type(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .project(project)
             .projectId(project.getId())

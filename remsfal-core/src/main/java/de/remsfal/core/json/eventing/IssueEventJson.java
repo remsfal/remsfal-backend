@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.json.ProjectJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.annotation.Nullable;
@@ -57,7 +56,7 @@ public interface IssueEventJson {
         ISSUE_MENTIONED
     }
 
-    IssueEventType getType();
+    IssueEventType getIssueEventType();
 
     UUID getIssueId();
 
@@ -72,7 +71,7 @@ public interface IssueEventJson {
      * use projectId for database operations and project for display purposes.
      */
     @Nullable
-    ProjectJson getProject();
+    ProjectEventJson getProject();
 
     @Nullable
     String getTitle();
