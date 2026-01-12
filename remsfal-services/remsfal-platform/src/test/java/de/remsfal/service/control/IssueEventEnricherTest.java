@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -53,9 +54,12 @@ class IssueEventEnricherTest {
         UUID actorId = UUID.randomUUID();
         UUID reporterId = UUID.randomUUID();
         UUID tenancyId = UUID.randomUUID();
-        UUID blockedBy = UUID.randomUUID();
-        UUID relatedTo = UUID.randomUUID();
-        UUID duplicateOf = UUID.randomUUID();
+        Set<UUID> blockedBy = Set.of(UUID.randomUUID());
+        Set<UUID> relatedTo = Set.of(UUID.randomUUID());
+        Set<UUID> duplicateOf = Set.of(UUID.randomUUID());
+        Set<UUID> blocks = Set.of(UUID.randomUUID());
+        Set<UUID> parentOf = Set.of(UUID.randomUUID());
+        Set<UUID> childOf = Set.of(UUID.randomUUID());
         String projectTitle = "Project title";
 
         UserEntity ownerEntity = new UserEntity();
@@ -84,6 +88,9 @@ class IssueEventEnricherTest {
             .blockedBy(blockedBy)
             .relatedTo(relatedTo)
             .duplicateOf(duplicateOf)
+            .blocks(blocks)
+            .parentOf(parentOf)
+            .childOf(childOf)
             .user(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
             .owner(ImmutableUserJson.builder().id(ownerId).build())
             .mentionedUser(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
