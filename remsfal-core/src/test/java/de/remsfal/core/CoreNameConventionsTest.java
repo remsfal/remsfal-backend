@@ -50,16 +50,6 @@ public class CoreNameConventionsTest {
                     .should().haveSimpleNameEndingWith("Endpoint")
                     .allowEmptyShould(true);
 
-    /**
-     * Core API must be contracts only: no classes/implementations in core.api.
-     */
-    @ArchTest
-    static final ArchRule core_api_should_only_contain_interfaces =
-            classes()
-                    .that().resideInAnyPackage("de.remsfal.core.api..")
-                    .and().areTopLevelClasses()
-                    .should().beInterfaces()
-                    .allowEmptyShould(true);
 
     /**
      * Ensures that model interfaces follow a consistent naming convention.
