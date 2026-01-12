@@ -211,6 +211,15 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         return resourceContext.initResource(chatSessionResource.get());
     }
 
+    @Override
+    public void deleteRelation(UUID issueId, String type, UUID relatedIssueId) {
+        IssueEntity entity = issueController.getIssue(issueId);
+        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
+            throw new ForbiddenException("User does not have permission to update this issue");
+        }
+        issueController.deleteRelation(entity, type, relatedIssueId);
+    }
+
     private boolean isParticipantInIssue(UUID issueId) {
         return issueParticipantRepository.exists(principal.getId(), issueId);
     }

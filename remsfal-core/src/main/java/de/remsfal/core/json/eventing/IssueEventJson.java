@@ -1,5 +1,6 @@
 package de.remsfal.core.json.eventing;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.immutables.value.Value.Immutable;
@@ -107,21 +108,30 @@ public interface IssueEventJson {
      * Reserved for future notification types (e.g., dependency updates).
      */
     @Nullable
-    UUID getBlockedBy();
+    Set<UUID> getBlockedBy();
 
     /**
      * Identifier of a ticket that is related to this issue (non-blocking relation).
      * Intended for future email content linking related work items.
      */
     @Nullable
-    UUID getRelatedTo();
+    Set<UUID> getRelatedTo();
 
     /**
      * Identifier of the original ticket when this issue is marked as a duplicate.
      * May be used by future templates to guide users to the canonical ticket.
      */
     @Nullable
-    UUID getDuplicateOf();
+    Set<UUID> getDuplicateOf();
+
+    @Nullable
+    Set<UUID> getBlocks();
+
+    @Nullable
+    Set<UUID> getParentOf();
+
+    @Nullable
+    Set<UUID> getChildOf();
 
     @Nullable
     UserJson getUser();
