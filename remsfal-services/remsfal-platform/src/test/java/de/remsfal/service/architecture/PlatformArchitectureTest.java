@@ -36,4 +36,11 @@ class PlatformArchitectureTest {
     @ArchTest
     static final ArchTests NAMING_RULES =
             ArchTests.in(PlatformLayerNamingRules.class);
+
+    @ArchTest
+    static final ArchTests ENDPOINT_IMPL_RULES = ArchTests.in(PlatformEndpointImplementationNamingRules.class);
+
+    @ArchTest
+    static final ArchTests ECB_RULES = ArchTests.in(PlatformEcbArchitectureRules.class);
+
 }

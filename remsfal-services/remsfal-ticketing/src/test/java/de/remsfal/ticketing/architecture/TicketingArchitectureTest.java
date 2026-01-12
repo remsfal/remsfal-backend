@@ -36,4 +36,11 @@ class TicketingArchitectureTest {
     @ArchTest
     static final ArchTests NAMING_RULES =
             ArchTests.in(TicketingLayerNamingRules.class);
+
+    @ArchTest
+    static final ArchTests ENDPOINT_IMPL_RULES = ArchTests.in(TicketingEndpointImplementationNamingRules.class);
+
+    @ArchTest
+    static final ArchTests ECB_RULES = ArchTests.in(TicketingEcbArchitectureRules.class);
+
 }

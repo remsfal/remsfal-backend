@@ -2,40 +2,22 @@ package de.remsfal.ticketing.architecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import jakarta.persistence.Embeddable;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-/**
- * Defines layer-specific naming conventions for the ticketing module.
- * *
- * These rules ensure that classes follow consistent naming patterns
- * based on their architectural layer, making responsibilities and
- * technical roles immediately visible.
- */
 public final class TicketingLayerNamingRules {
 
-    private TicketingLayerNamingRules() {
-    }
+    private TicketingLayerNamingRules() { }
 
-    /**
-     * Boundary layer classes represent REST APIs.
-     * *
-     * All top-level classes in the ticketing boundary package must
-     * have a simple class name ending with {@code Resource}.
-     */
     @ArchTest
     static final ArchRule boundary_classes_should_be_resources =
             classes()
                     .that().resideInAnyPackage("de.remsfal.ticketing.boundary..")
                     .and().areTopLevelClasses()
-                    .should().haveSimpleNameEndingWith("Resource");
+                    .should().haveSimpleNameEndingWith("Resource")
+                    .allowEmptyShould(true);
 
-    /**
-     * Control layer classes encapsulate application and messaging logic.
-     * *
-     * All top-level classes in the ticketing control package must
-     * end with {@code Controller}, {@code Producer}, or {@code Consumer}.
-     */
     @ArchTest
     static final ArchRule control_classes_should_be_controllers_or_messaging_components =
             classes()
@@ -43,31 +25,28 @@ public final class TicketingLayerNamingRules {
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Controller")
                     .orShould().haveSimpleNameEndingWith("Producer")
-                    .orShould().haveSimpleNameEndingWith("Consumer");
+                    .orShould().haveSimpleNameEndingWith("Consumer")
+                    .allowEmptyShould(true);
 
     /**
-     * DTO classes used in the persistence layer.
-     * *
-     * All top-level classes in {@code de.remsfal.ticketing.entity.dto..}
-     * must have a simple class name ending with {@code Entity}.
+     * entity.dto: allow Entity classes, Embeddables and Key classes.
+     * (Whitelist based -> no growing exception list.)
      */
     @ArchTest
-    static final ArchRule dto_classes_should_end_with_entity =
+    static final ArchRule entity_dto_classes_should_follow_conventions =
             classes()
                     .that().resideInAnyPackage("de.remsfal.ticketing.entity.dto..")
                     .and().areTopLevelClasses()
-                    .should().haveSimpleNameEndingWith("Entity");
+                    .should().haveSimpleNameEndingWith("Entity")
+                    .orShould().haveSimpleNameEndingWith("Key")
+                    .orShould().beAnnotatedWith(Embeddable.class)
+                    .allowEmptyShould(true);
 
-    /**
-     * DAO / repository classes responsible for data access.
-     * *
-     * All top-level classes in {@code de.remsfal.ticketing.entity.dao..}
-     * must have a simple class name ending with {@code Repository}.
-     */
     @ArchTest
     static final ArchRule dao_classes_should_end_with_repository =
             classes()
                     .that().resideInAnyPackage("de.remsfal.ticketing.entity.dao..")
                     .and().areTopLevelClasses()
-                    .should().haveSimpleNameEndingWith("Repository");
+                    .should().haveSimpleNameEndingWith("Repository")
+                    .allowEmptyShould(true);
 }

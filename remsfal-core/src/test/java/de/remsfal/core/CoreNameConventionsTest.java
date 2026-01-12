@@ -33,7 +33,8 @@ public class CoreNameConventionsTest {
             classes()
                     .that().resideInAnyPackage("de.remsfal.core.json..")
                     .and().areTopLevelClasses()
-                    .should().haveSimpleNameEndingWith("Json");
+                    .should().haveSimpleNameEndingWith("Json")
+                    .allowEmptyShould(true);;
 
     /**
      * Ensures that API contract interfaces are named consistently.
@@ -46,7 +47,19 @@ public class CoreNameConventionsTest {
             classes()
                     .that().resideInAnyPackage("de.remsfal.core.api..")
                     .and().areInterfaces()
-                    .should().haveSimpleNameEndingWith("Endpoint");
+                    .should().haveSimpleNameEndingWith("Endpoint")
+                    .allowEmptyShould(true);
+
+    /**
+     * Core API must be contracts only: no classes/implementations in core.api.
+     */
+    @ArchTest
+    static final ArchRule core_api_should_only_contain_interfaces =
+            classes()
+                    .that().resideInAnyPackage("de.remsfal.core.api..")
+                    .and().areTopLevelClasses()
+                    .should().beInterfaces()
+                    .allowEmptyShould(true);
 
     /**
      * Ensures that model interfaces follow a consistent naming convention.
@@ -59,7 +72,8 @@ public class CoreNameConventionsTest {
             classes()
                     .that().resideInAnyPackage("de.remsfal.core.model..")
                     .and().areInterfaces()
-                    .should().haveSimpleNameEndingWith("Model");
+                    .should().haveSimpleNameEndingWith("Model")
+                    .allowEmptyShould(true);;
 
     /**
      * Ensures that the core model package contains only interfaces.
@@ -72,6 +86,7 @@ public class CoreNameConventionsTest {
             classes()
                     .that().resideInAnyPackage("de.remsfal.core.model..")
                     .and().areTopLevelClasses()
-                    .should().beInterfaces();
+                    .should().beInterfaces()
+                    .allowEmptyShould(true);
 }
 

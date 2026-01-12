@@ -36,4 +36,11 @@ class NotificationArchitectureTest {
     @ArchTest
     static final ArchTests NAMING_RULES =
             ArchTests.in(NotificationLayerNamingRules.class);
+
+    @ArchTest
+    static final ArchTests ENDPOINT_IMPL_RULES = ArchTests.in(NotificationEndpointImplementationNamingRules.class);
+
+    @ArchTest
+    static final ArchTests ECB_RULES = ArchTests.in(NotificationEcbArchitectureRules.class);
+
 }

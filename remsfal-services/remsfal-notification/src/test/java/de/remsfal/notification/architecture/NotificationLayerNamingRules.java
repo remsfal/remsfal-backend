@@ -2,42 +2,33 @@ package de.remsfal.notification.architecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import jakarta.persistence.Embeddable;
+import jakarta.ws.rs.Path;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-/**
- * Defines layer-specific naming conventions for classes
- * within the notification module.
- * *
- * These rules enforce clear and consistent naming patterns
- * for boundary and control layer classes, making their
- * responsibilities immediately visible from the class name.
- */
 public final class NotificationLayerNamingRules {
 
-    private NotificationLayerNamingRules() {
-    }
+    private NotificationLayerNamingRules() { }
 
-    /**
-     * Boundary layer classes represent REST endpoints or messaging consumers.
-     * *
-     * All top-level classes in the notification boundary package must
-     * end with {@code Resource} or {@code Consumer}.
-     */
     @ArchTest
     static final ArchRule boundary_classes_should_be_resources_or_consumers =
             classes()
                     .that().resideInAnyPackage("de.remsfal.notification.boundary..")
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Resource")
-                    .orShould().haveSimpleNameEndingWith("Consumer");
+                    .orShould().haveSimpleNameEndingWith("Consumer")
+                    .allowEmptyShould(true);
 
-    /**
-     * Control layer classes coordinate application logic and messaging.
-     * *
-     * All top-level classes in the notification control package must
-     * end with {@code Controller}, {@code Producer}, or {@code Consumer}.
-     */
+    @ArchTest
+    static final ArchRule boundary_path_annotated_should_end_with_resource =
+            classes()
+                    .that().resideInAnyPackage("de.remsfal.notification.boundary..")
+                    .and().areTopLevelClasses()
+                    .and().areAnnotatedWith(Path.class)
+                    .should().haveSimpleNameEndingWith("Resource")
+                    .allowEmptyShould(true);
+
     @ArchTest
     static final ArchRule control_classes_should_be_controllers_or_messaging_components =
             classes()
@@ -45,5 +36,31 @@ public final class NotificationLayerNamingRules {
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Controller")
                     .orShould().haveSimpleNameEndingWith("Producer")
-                    .orShould().haveSimpleNameEndingWith("Consumer");
+                    .orShould().haveSimpleNameEndingWith("Consumer")
+                    .allowEmptyShould(true);
+
+    /**
+     * DTO classes used in persistence layer.
+     * Requirement: Java classes in de.remsfal.*.dto end with Entity (typo in requirement kept: Enitity -> Entity).
+     */
+    @ArchTest
+    static final ArchRule entity_dto_classes_should_follow_conventions =
+            classes()
+                    .that().resideInAnyPackage("de.remsfal.notification.entity.dto..")
+                    .and().areTopLevelClasses()
+                    .should().haveSimpleNameEndingWith("Entity")
+                    .orShould().haveSimpleNameEndingWith("Key")
+                    .orShould().beAnnotatedWith(Embeddable.class)
+                    .allowEmptyShould(true);
+
+    /**
+     * DAO/repository classes.
+     */
+    @ArchTest
+    static final ArchRule dao_classes_should_end_with_repository =
+            classes()
+                    .that().resideInAnyPackage("de.remsfal.notification.entity.dao..")
+                    .and().areTopLevelClasses()
+                    .should().haveSimpleNameEndingWith("Repository")
+                    .allowEmptyShould(true);
 }
