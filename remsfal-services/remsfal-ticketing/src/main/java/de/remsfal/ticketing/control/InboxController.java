@@ -35,7 +35,6 @@ public class InboxController {
             result = repository.findByUserId(userId);
         }
 
-        // nach dem Repository-Call:
         List<InboxMessageEntity> mutable = new ArrayList<>(result);
 
         mutable.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
@@ -48,7 +47,12 @@ public class InboxController {
      * Updates read/unread status for a message belonging to a user.
      */
     public InboxMessageEntity updateMessageStatus(String messageId, boolean read, String userId) {
-        UUID id = UUID.fromString(messageId);
+        UUID id;
+        try {
+            id = UUID.fromString(messageId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid UUID format: " + messageId);
+        }
 
         Optional<InboxMessageEntity> opt = repository.findByUserIdAndId(userId, id);
         if (opt.isEmpty()) {
@@ -57,7 +61,10 @@ public class InboxController {
 
         repository.updateReadStatus(userId, id, read);
 
-        return repository.findByUserIdAndId(userId, id).orElseThrow();
+        InboxMessageEntity entity = opt.get();
+        entity.setRead(read);
+
+        return entity;
     }
 
 
@@ -65,7 +72,12 @@ public class InboxController {
      * Deletes a message from a user's inbox.
      */
     public void deleteMessage(String messageId, String userId) {
-        UUID id = UUID.fromString(messageId);
+        UUID id;
+        try {
+            id = UUID.fromString(messageId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid UUID format: " + messageId);
+        }
 
         if (repository.findByUserIdAndId(userId, id).isEmpty()) {
             throw new IllegalArgumentException("Inbox message not found for user");
