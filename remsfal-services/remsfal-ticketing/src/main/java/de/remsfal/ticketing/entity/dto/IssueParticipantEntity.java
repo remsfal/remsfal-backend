@@ -10,6 +10,23 @@ import java.util.UUID;
 @Entity("issue_participants")
 public class IssueParticipantEntity extends AbstractEntity {
 
+    public enum ParticipantRole {
+        INITIATOR,   // User who created the issue/started the chat
+        HANDLER,     // User assigned to handle/resolve the issue
+        OBSERVER;    // User who observes but doesn't actively handle
+
+        public static ParticipantRole fromString(String role) {
+            if (role == null) {
+                return null;
+            }
+            try {
+                return ParticipantRole.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid participant role: " + role);
+            }
+        }
+    }
+
     @Id
     private IssueParticipantKey key;
 
@@ -17,8 +34,7 @@ public class IssueParticipantEntity extends AbstractEntity {
     private UUID projectId;
 
     @Column("role")
-    private String role;
-
+    private String role;  // Stored as String in DB for compatibility
 
     public IssueParticipantKey getKey() {
         return key;
@@ -56,5 +72,12 @@ public class IssueParticipantEntity extends AbstractEntity {
         this.role = role;
     }
 
+    // Type-safe getter and setter
+    public ParticipantRole getParticipantRole() {
+        return ParticipantRole.fromString(role);
+    }
 
+    public void setParticipantRole(ParticipantRole participantRole) {
+        this.role = participantRole != null ? participantRole.name() : null;
+    }
 }

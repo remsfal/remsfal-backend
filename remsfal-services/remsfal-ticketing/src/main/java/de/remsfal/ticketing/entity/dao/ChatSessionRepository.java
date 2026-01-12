@@ -262,18 +262,18 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             issueParticipantRepository.updateRole(userId, issueId, sessionId, newRole);
         } catch (IllegalArgumentException e) {
             logger.error("Participant not found in issue_participants for userId=" + userId
-                    + ", sessionId=" + sessionId, e);
+                + ", sessionId=" + sessionId, e);
             throw new IllegalStateException("An error occurred while changing the participant role", e);
         } catch (Exception e) {
             logger.error("Failed to update role in issue_participants for userId=" + userId
-                    + ", sessionId=" + sessionId, e);
+                + ", sessionId=" + sessionId, e);
             throw new IllegalStateException("An error occurred while changing the participant role", e);
         }
     }
 
 
     private void updateParticipantsAfterRoleChange(UUID projectId, UUID sessionId, UUID issueId,
-                                                   Map<UUID, String> participants) {
+        Map<UUID, String> participants) {
         Update updateQuery = QueryBuilder.update(keyspace, TABLE)
             .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
             .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
@@ -319,19 +319,19 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             issueParticipantRepository.delete(userId, issueId, sessionId);
         } catch (Exception e) {
             logger.error("Failed to delete participant from issue_participants: "
-                    + userId + " in session " + sessionId, e);
+                + userId + " in session " + sessionId, e);
             throw new IllegalArgumentException("Failed to remove participant from issue", e);
         }
     }
 
     private void updateParticipantsAfterDeletion(UUID projectId, UUID sessionId, UUID issueId,
-                                                 Map<UUID, String> participants) {
+        Map<UUID, String> participants) {
         Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
-                .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
-                .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
+            .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+            .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+            .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
+            .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
+            .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
 
         try {
             cqlSession.execute(updateQuery.build());
