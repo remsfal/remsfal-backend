@@ -1,0 +1,10 @@
+{#let showButton?=true}
+{#let buttonText?=issue_button}
+{#include base}
+  {#title}{issue-created_title}{/title}
+  {#introduction}
+    <div style="margin-bottom: 12px;">{issue-created_introduction}</div>
+
+    {#include issue-details-table /}
+  {/introduction}
+{/include}

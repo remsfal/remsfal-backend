@@ -61,4 +61,56 @@ class MailingResourceTest extends AbstractTest {
         assertEquals("You’ve been added to a new project", actual.getSubject());
         assertEquals(4, mailbox.getTotalMessagesSent());
     }
+
+    @Test
+    void testIssueAssignedEmail() {
+        assertIssueEmailSent("/issue-assigned", "assigned@example.com", "[Issue Assigned] Test Issue Title");
+    }
+
+    @Test
+    void testIssueCreatedEmail() {
+        assertIssueEmailSent("/issue-created", "created@example.com", "[Issue Created] Test Issue Title");
+    }
+
+    @Test
+    void testIssueUpdatedEmail() {
+        assertIssueEmailSent("/issue-updated", "updated@example.com", "[Issue Updated] Test Issue Title");
+    }
+
+    private void assertIssueEmailSent(String endpoint, String email, String expectedSubject) {
+        given()
+                .queryParam("to", email)
+                .when()
+                .get(BASE_PATH + endpoint)
+                .then()
+                .statusCode(Status.ACCEPTED.getStatusCode());
+
+        List<MailMessage> sent = mailbox.getMailMessagesSentTo(email);
+        assertEquals(1, sent.size());
+
+        MailMessage actual = sent.get(0);
+        assertTrue(actual.getHtml().contains("Test Issue Title"));
+        assertTrue(actual.getHtml().contains("Test Project"));
+        assertTrue(actual.getHtml().contains("OPEN"));
+        assertEquals(expectedSubject, actual.getSubject());
+        assertEquals(1, mailbox.getTotalMessagesSent());
+    }
+
+    @Test
+    void testIssueAssignedEmail_HandlesNullRecipientName() {
+        given()
+                .queryParam("to", "noname@example.com")
+                .when()
+                .get(BASE_PATH + "/issue-assigned")
+                .then()
+                .statusCode(Status.ACCEPTED.getStatusCode());
+
+        List<MailMessage> sent = mailbox.getMailMessagesSentTo("noname@example.com");
+        assertEquals(1, sent.size());
+        
+        MailMessage actual = sent.get(0);
+        // Should default to "User" greeting in the configured (English) locale
+        assertTrue(actual.getHtml().contains("Dear User"));
+        assertEquals(1, mailbox.getTotalMessagesSent());
+    }
 }
