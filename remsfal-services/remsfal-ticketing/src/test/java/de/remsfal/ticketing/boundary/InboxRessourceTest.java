@@ -19,6 +19,8 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+
 
 @QuarkusTest
 class InboxResourceTest {
@@ -32,6 +34,9 @@ class InboxResourceTest {
     @InjectMock
     RemsfalPrincipal principal;
 
+    @InjectMock
+    JsonWebToken jwt;
+
     InboxResource resource;
 
     @BeforeEach
@@ -40,6 +45,8 @@ class InboxResourceTest {
         resource.controller = controller;
         resource.mapper = mapper;
         resource.principal = principal;
+        when(principal.getJwt()).thenReturn(jwt);
+        when(jwt.getSubject()).thenReturn("11111111-1111-1111-1111-111111111111");
     }
 
     @Test

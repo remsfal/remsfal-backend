@@ -22,6 +22,10 @@ public class InboxController {
      */
     public List<InboxMessageEntity> getInboxMessages(Boolean read, String userId) {
 
+        if (userId == null) {
+            throw new IllegalArgumentException("userId cannot be null");
+        }
+
         List<InboxMessageEntity> result;
 
         if (read != null) {
