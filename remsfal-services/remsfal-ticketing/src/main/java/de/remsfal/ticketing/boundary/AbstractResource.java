@@ -57,12 +57,10 @@ public class AbstractResource {
     public UUID checkReadPermissions(final UUID issueId) {
         IssueModel issue = issueController.getIssue(issueId);
 
-        // Manager (Projektrolle)
         if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
             return issue.getProjectId();
         }
 
-        // Contractor (Chat-Participant)
         if (issueParticipantRepository.exists(principal.getId(), issueId)) {
             return issue.getProjectId();
         }

@@ -154,7 +154,7 @@ class IssueParticipantRepositoryTest {
           createParticipant(userId, issueId, sessionId, projectId, "OWNER");
 
   repository.insert(entity);
-  repository.insert(entity); // Cassandra erlaubt idempotente Inserts
+  repository.insert(entity);
 
   assertTrue(repository.exists(userId, issueId));
 
@@ -170,8 +170,6 @@ class IssueParticipantRepositoryTest {
 
   assertFalse(exists);
  }
-
- // ========== Extended Tests ==========
 
  @Test
  void testFindIssueIdsByParticipantReturnsEmptyListForUnknownUser() {
@@ -349,20 +347,6 @@ class IssueParticipantRepositoryTest {
   repository.delete(user3, issueId, p3.getSessionId());
  }
 
- @Test
- void testRoleIsStoredCorrectly() {
-  UUID userId = UUID.randomUUID();
-  UUID issueId = UUID.randomUUID();
-  UUID sessionId = UUID.randomUUID();
-  UUID projectId = UUID.randomUUID();
-
-  IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "SUPPORT");
-  repository.insert(entity);
-
-  assertTrue(repository.exists(userId, issueId));
-
-  repository.delete(userId, issueId, sessionId);
- }
 
  @Test
  void testEmptyRoleIsAccepted() {
@@ -512,7 +496,6 @@ class IssueParticipantRepositoryTest {
   IssueParticipantEntity entity = createParticipant(userId, issueId, sessionId, projectId, "VIEWER");
   repository.insert(entity);
 
-  // Verwende ungültige Daten um RuntimeException zu provozieren
   RuntimeException exception = assertThrows(RuntimeException.class, () ->
           repository.updateRole(null, issueId, sessionId, "OWNER")
   );

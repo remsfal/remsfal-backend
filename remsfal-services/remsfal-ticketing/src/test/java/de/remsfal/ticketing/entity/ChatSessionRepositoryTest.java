@@ -2,14 +2,11 @@ package de.remsfal.ticketing.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository;
-import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -42,7 +39,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void setUp() {
         logger.info("Setting up test data for REST tests");
 
-        // 1. Chat Session einfügen
         String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
                 "(project_id, issue_id, session_id, created_at, participants) " +
                 "VALUES (?, ?, ?, ?, ?)";
@@ -52,7 +48,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 Map.of(TicketingTestData.USER_ID_1, "INITIATOR",
                         TicketingTestData.USER_ID_2, "HANDLER"));
 
-        // 2. Issue Participants einfügen (DAS FEHLT!)
         String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
                 "(user_id, issue_id, session_id, project_id, role, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
@@ -277,7 +272,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void deleteMember_DATABASE_ERROR() {
         logger.info("Testing deleteMember with database error");
 
-        // Verwende eine ungültige Kombination die eine Exception auslösen könnte
         UUID invalidProjectId = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
         Executable executable = () -> chatSessionRepository.deleteMember(
@@ -304,8 +298,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void ensureNoExistingInitiator_WITH_EXISTING_INITIATOR() {
         logger.info("Testing ensureNoExistingInitiator when initiator exists");
 
-        // Dieser Test ist bereits durch addParticipant_INITIATOR_ALREADY_EXISTS abgedeckt
-        // aber hier ist eine explizite Version
         UUID newUserId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
 
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
@@ -326,7 +318,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void ensureNoExistingInitiator_WITHOUT_EXISTING_INITIATOR() {
         logger.info("Testing ensureNoExistingInitiator when no initiator exists");
 
-        // Erstelle eine neue Session ohne INITIATOR
         UUID testProjectId = UUID.randomUUID();
         UUID testTaskId = UUID.randomUUID();
         UUID testSessionId = UUID.randomUUID();
@@ -340,7 +331,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 Map.of(TicketingTestData.USER_ID_1, ChatSessionRepository.ParticipantRole.HANDLER.name(),
                         TicketingTestData.USER_ID_2, ChatSessionRepository.ParticipantRole.OBSERVER.name()));
 
-        // Jetzt sollte das Hinzufügen eines INITIATOR funktionieren
         UUID newInitiatorId = UUID.fromString(TicketingTestData.USER_ID_3.toString());
 
         assertDoesNotThrow(() ->
@@ -353,7 +343,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 )
         );
 
-        // Verifiziere dass der INITIATOR hinzugefügt wurde
         Map<UUID, String> participants = chatSessionRepository
                 .findParticipantsById(testProjectId, testSessionId, testTaskId);
         assertEquals("INITIATOR", participants.get(newInitiatorId),
@@ -364,7 +353,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void ensureNoExistingInitiator_EMPTY_PARTICIPANTS() {
         logger.info("Testing ensureNoExistingInitiator with empty participants map");
 
-        // Erstelle eine Session mit leerem participants map
         UUID testProjectId = UUID.randomUUID();
         UUID testTaskId = UUID.randomUUID();
         UUID testSessionId = UUID.randomUUID();
@@ -376,7 +364,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         cqlSession.execute(insertSessionCql,
                 testProjectId, testTaskId, testSessionId, Instant.now(), Map.of());
 
-        // Das Hinzufügen eines INITIATOR zu einer leeren Session sollte funktionieren
         UUID initiatorId = UUID.fromString(TicketingTestData.USER_ID_1.toString());
 
         assertDoesNotThrow(() ->
@@ -436,7 +423,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     }
 
 
-    // Change Participant Role
     @Test
     void changeParticipantRole_USER_NOT_PARTICIPANT() {
         logger.info("Testing changeParticipantRole when user is not a participant");
@@ -463,7 +449,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     void changeParticipantRole_PARTICIPANT_NOT_FOUND_IN_ISSUE_PARTICIPANTS() {
         logger.info("Testing changeParticipantRole when participant not found in issue_participants");
 
-        // Erstelle Session mit Participant in chat_sessions aber nicht in issue_participants
         UUID testProjectId = UUID.randomUUID();
         UUID testIssueId = UUID.randomUUID();
         UUID testSessionId = UUID.randomUUID();
@@ -477,7 +462,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 testProjectId, testIssueId, testSessionId, Instant.now(),
                 Map.of(testUserId, "HANDLER"));
 
-        // User existiert in chat_sessions aber NICHT in issue_participants
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 chatSessionRepository.changeParticipantRole(
                         testProjectId,
@@ -518,14 +502,13 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         cqlSession.execute(insertParticipantCql,
                 testUserId, testIssueId, testSessionId, testProjectId, "HANDLER", Instant.now());
 
-        // Verwende ungültige Daten für newRole um Exception zu provozieren
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 chatSessionRepository.changeParticipantRole(
                         testProjectId,
                         testSessionId,
                         testIssueId,
                         testUserId,
-                        null  // null könnte Exception verursachen
+                        null
                 )
         );
 
@@ -544,8 +527,7 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 UUID testIssueId = UUID.randomUUID();
 
                 Map<UUID, String> invalidParticipants = new HashMap<>();
-                invalidParticipants.put(null, "INITIATOR"); // null userId should cause issues
-
+                invalidParticipants.put(null, "INITIATOR");
                 RuntimeException exception = assertThrows(RuntimeException.class,
                         () -> chatSessionRepository.createChatSession(
                                 testProjectId,

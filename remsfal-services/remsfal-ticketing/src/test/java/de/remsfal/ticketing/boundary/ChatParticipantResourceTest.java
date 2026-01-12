@@ -118,21 +118,17 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
         );
     }
 
-    // Helper-Methode zum Einfügen von Participants
     private void insertIssueParticipant(UUID userId, UUID issueId, UUID sessionId, UUID projectId, String role) {
-        // Erstelle den zusammengesetzten Schlüssel
         IssueParticipantKey key = new IssueParticipantKey();
         key.setUserId(userId);
         key.setIssueId(issueId);
         key.setSessionId(sessionId);
 
-        // Erstelle die Entity
         IssueParticipantEntity participant = new IssueParticipantEntity();
         participant.setKey(key);
         participant.setProjectId(projectId);
         participant.setRole(role);
 
-        // Speichere in der Datenbank
         issueParticipantRepository.insert(participant);
     }
 

@@ -38,12 +38,6 @@ class IssueResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/ticketing/v1/issues";
 
     @Inject
-    IssueController issueController;
-
-    @Inject
-    IssueRepository issueRepository;
-
-    @Inject
     IssueParticipantRepository issueParticipantRepository;
 
     @Test
@@ -120,7 +114,7 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body("type", equalTo("DEFECT"))
                 .body("status", equalTo("PENDING"))
                 .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
-                .body("description", nullValue()); // Filtered for tenant view
+                .body("description", nullValue());
     }
 
     @Test
@@ -176,7 +170,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Test
     void getIssue_SUCCESS_issueIsReturned() {
-        // First create an issue
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                 + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
@@ -398,7 +391,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Test
     void getIssues_SUCCESS_tenantWithoutSpecificTenancyId() {
-        // Erstelle mehrere Issues
         final String createJson1 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Tenant Issue 1\","
                 + "\"type\":\"TASK\""
@@ -412,7 +404,6 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body(createJson1)
                 .post(BASE_PATH);
 
-        // Hole alle Issues für alle Tenancies des Tenants
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
@@ -425,7 +416,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Test
     void getIssues_SUCCESS_contractorAsParticipantWithDeletedIssue() {
-        // Erstelle ein Issue
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Contractor Issue\","
                 + "\"type\":\"TASK\""
@@ -444,11 +434,8 @@ class IssueResourceTest extends AbstractResourceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .extract().path("id");
 
-        // Füge Contractor als Participant hinzu (müsste über separaten Endpoint geschehen)
-        // Simuliert durch direktes Hinzufügen in Repository
         UUID contractorId = UUID.randomUUID();
 
-        // Lösche das Issue
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
@@ -457,7 +444,6 @@ class IssueResourceTest extends AbstractResourceTest {
                 .then()
                 .statusCode(204);
 
-        // Contractor versucht Issues zu holen - gelöschtes Issue wird ignoriert
         given()
                 .when()
                 .cookie(buildCookie(contractorId, "contractor@test.com",
@@ -471,7 +457,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Test
     void getIssues_SUCCESS_tenantFiltersByStatus() {
-        // Erstelle Issues mit unterschiedlichen Status
         final String createJson1 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Open Issue\","
                 + "\"type\":\"TASK\""
@@ -490,7 +475,6 @@ class IssueResourceTest extends AbstractResourceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .extract().path("id");
 
-        // Ändere Status eines Issues zu IN_PROGRESS
         final String updateJson = "{ \"status\":\"IN_PROGRESS\" }";
 
         given()
@@ -501,7 +485,6 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body(updateJson)
                 .patch(BASE_PATH + "/" + issueId1);
 
-        // Erstelle zweites Issue (bleibt OPEN/PENDING)
         final String createJson2 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Pending Issue\","
                 + "\"type\":\"DEFECT\""
@@ -515,7 +498,6 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body(createJson2)
                 .post(BASE_PATH);
 
-        // Filtere nach PENDING Status als Tenant
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
@@ -529,8 +511,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
     @Test
     void getIssues_SUCCESS_handlesNullIssuesInDeduplication() {
-        // Dieser Test stellt sicher, dass null Issues korrekt gefiltert werden
-        // Dies kann auftreten wenn getIssue() null zurückgibt
 
         given()
                 .when()
@@ -542,12 +522,10 @@ class IssueResourceTest extends AbstractResourceTest {
                 .contentType(ContentType.JSON);
     }
 
-    // Test 8: Leere participantIssueIds Liste
     @Test
     void getIssues_SUCCESS_contractorWithNoParticipations() {
         UUID contractorId = UUID.randomUUID();
 
-        // Contractor ohne Beteiligungen
         given()
                 .when()
                 .cookie(buildCookie(contractorId, "contractor@test.com",
@@ -608,7 +586,7 @@ class IssueResourceTest extends AbstractResourceTest {
     @ParameterizedTest
     @MethodSource("provideIssueTestCases")
     void getIssues_SUCCESS_variousScenarios(String title, String description) {
-        // Erstelle Issue
+
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + title + "\","
                 + "\"type\":\"TASK\""
@@ -622,7 +600,7 @@ class IssueResourceTest extends AbstractResourceTest {
                 .body(createJson)
                 .post(BASE_PATH);
 
-        // User mit Tenant-Rolle
+
         given()
                 .when()
                 .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
@@ -643,8 +621,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
         @Test
         void getIssues_SUCCESS_handlesIssueWithNullId () {
-            // Dieser Edge-Case wird durch die null-Prüfung abgedeckt
-            // issue.getId() != null
 
             given()
                     .when()
@@ -659,7 +635,7 @@ class IssueResourceTest extends AbstractResourceTest {
 
         @Test
         void getIssue_SUCCESS_participantViewsFilteredIssue () {
-            // Manager erstellt Issue
+
             final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                     + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                     + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
@@ -693,7 +669,7 @@ class IssueResourceTest extends AbstractResourceTest {
 
             issueParticipantRepository.insert(participantEntity);
 
-            // Participant holt gefilterte Ansicht
+
             given()
                     .when()
                     .cookie(buildCookie(participantId, "participant@test.com",
@@ -709,7 +685,7 @@ class IssueResourceTest extends AbstractResourceTest {
 
         @Test
         void getIssue_FAILED_noPermission () {
-            // Manager erstellt Issue
+
             final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                     + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                     + "\"type\":\"TASK\""
@@ -730,7 +706,7 @@ class IssueResourceTest extends AbstractResourceTest {
 
             UUID unauthorizedUserId = UUID.randomUUID();
 
-            // User ohne Berechtigung versucht Issue zu holen
+
             given()
                     .when()
                     .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
@@ -743,7 +719,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
         @Test
         void deleteIssue_FAILED_noPermissionToDelete () {
-            // Manager erstellt Issue
             final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                     + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
                     + "\"type\":\"TASK\""
@@ -764,7 +739,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
             UUID unauthorizedUserId = UUID.randomUUID();
 
-            // User ohne Berechtigung versucht Issue zu löschen
             given()
                     .when()
                     .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
@@ -777,7 +751,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
         @Test
         void getIssues_SUCCESS_tenantWithSpecificTenancyIdGetsIssues () {
-            // Erstelle Issue als Manager
             final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                     + "\"title\":\"Tenancy Specific Issue\","
                     + "\"type\":\"TASK\""
@@ -791,7 +764,6 @@ class IssueResourceTest extends AbstractResourceTest {
                     .body(createJson)
                     .post(BASE_PATH);
 
-            // Hole Issues für spezifische TenancyId (Line 10 Coverage)
             UUID tenancyId = UUID.fromString(TicketingTestData.TENANT_PROJECT_ROLES.keySet().iterator().next());
 
             given()
@@ -807,7 +779,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
         @Test
         void getIssues_SUCCESS_participantIssueAddedToCollection () {
-            // Erstelle Issue
             final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                     + "\"title\":\"Participant Issue\","
                     + "\"type\":\"TASK\""
@@ -828,7 +799,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
             UUID participantId = UUID.randomUUID();
 
-            // Füge Participant hinzu
             IssueParticipantKey key = new IssueParticipantKey();
             key.setUserId(participantId);
             key.setIssueId(UUID.fromString(issueId));
@@ -841,7 +811,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
             issueParticipantRepository.insert(participantEntity);
 
-            // Participant holt Issues (Line 20 Coverage)
             given()
                     .when()
                     .cookie(buildCookie(participantId, "participant@test.com",
@@ -855,7 +824,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
         @Test
         void getIssues_SUCCESS_deduplicationRemovesDuplicates () {
-            // Erstelle Issue
             final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                     + "\"title\":\"Duplicate Test Issue\","
                     + "\"type\":\"TASK\""
@@ -874,7 +842,6 @@ class IssueResourceTest extends AbstractResourceTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .extract().path("id");
 
-            // User ist sowohl Tenant als auch Participant
             IssueParticipantKey key = new IssueParticipantKey();
             key.setUserId(TicketingTestData.USER_ID_1);
             key.setIssueId(UUID.fromString(issueId));
@@ -887,7 +854,6 @@ class IssueResourceTest extends AbstractResourceTest {
 
             issueParticipantRepository.insert(participantEntity);
 
-            // User mit beiden Rollen holt Issues - sollte dedupliziert werden (Line 29 Coverage)
             given()
                     .when()
                     .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
