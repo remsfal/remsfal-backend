@@ -24,6 +24,11 @@ public class InboxEventConsumer {
     @Incoming("inbox-events")
     public void consume(InboxEventJson event) {
 
+        if (event == null) {
+            logger.warn("Skipping inbox event because payload is null (Kafka tombstone)");
+            return;
+        }
+
         logger.infof("Received enriched issue event: %s for issue %s",
                 event.type(), event.issueId());
 
