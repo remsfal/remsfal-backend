@@ -6,10 +6,6 @@ import jakarta.ws.rs.NotFoundException;
 import java.util.UUID;
 
 import de.remsfal.core.api.tenancy.TenancyEndpoint;
-import de.remsfal.core.json.tenancy.ImmutableTenancyListJson;
-import de.remsfal.core.json.tenancy.TenancyItemJson;
-import de.remsfal.core.json.tenancy.TenancyJson;
-import de.remsfal.core.json.tenancy.TenancyListJson;
 import de.remsfal.service.control.ApartmentController;
 import de.remsfal.service.control.BuildingController;
 import de.remsfal.service.control.CommercialController;
@@ -23,6 +19,11 @@ import de.remsfal.service.entity.dto.PropertyRentEntity;
 import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenancyEntity;
+
+import de.remsfal.core.json.tenancy.ImmutableTenancyListJson;
+import de.remsfal.core.json.tenancy.TenancyItemJson;
+import de.remsfal.core.json.tenancy.TenancyJson;
+import de.remsfal.core.json.tenancy.TenancyListJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
