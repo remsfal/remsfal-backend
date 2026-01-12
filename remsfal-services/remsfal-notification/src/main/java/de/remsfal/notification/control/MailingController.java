@@ -10,7 +10,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.ticketing.StatusColor;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Location;
@@ -32,6 +35,9 @@ public class MailingController {
     @ConfigProperty(name = "quarkus.mailer.from")
     String from;
 
+    @ConfigProperty(name = "de.remsfal.frontend.url.base", defaultValue = "https://remsfal.de")
+    String frontendBaseUrl;
+
     @Inject
     @Location("welcome.html")
     Template welcome;
@@ -40,7 +46,18 @@ public class MailingController {
     @Location("new-membership.html")
     Template newMembership;
 
-    @WithSpan("MailingController.sendWelcomeEmail")
+    @Inject
+    @Location("issue-created.html")
+    Template issueCreated;
+
+    @Inject
+    @Location("issue-updated.html")
+    Template issueUpdated;
+
+    @Inject
+    @Location("issue-assigned.html")
+    Template issueAssigned;
+
     public void sendWelcomeEmail(final UserModel recipient, final String link, final Locale locale) {
         logger.infov("Sending welcome email to {0}", recipient.getEmail());
         final TemplateInstance instance = welcome.data("name", recipient.getName()).data("buttonLink", link);
@@ -85,4 +102,69 @@ public class MailingController {
         mailer.send(mail);
     }
 
+    // Issue event email methods
+
+    public void sendIssueCreatedEmail(IssueEventJson event, UserJson recipient) {
+        logger.infov("Sending issue-created email to {0}", recipient.getEmail());
+        TemplateInstance instance = createIssueTemplateInstance(issueCreated, event, recipient);
+        String subject = "[Issue Created] " + event.getTitle();
+        sendIssueEmail(recipient.getEmail(), subject, instance);
+    }
+
+    public void sendIssueUpdatedEmail(IssueEventJson event, UserJson recipient) {
+        logger.infov("Sending issue-updated email to {0}", recipient.getEmail());
+        TemplateInstance instance = createIssueTemplateInstance(issueUpdated, event, recipient);
+        String subject = "[Issue Updated] " + event.getTitle();
+        sendIssueEmail(recipient.getEmail(), subject, instance);
+    }
+
+    public void sendIssueAssignedEmail(IssueEventJson event, UserJson recipient) {
+        logger.infov("Sending issue-assigned email to {0}", recipient.getEmail());
+        TemplateInstance instance = createIssueTemplateInstance(issueAssigned, event, recipient);
+        String subject = "[Issue Assigned] " + event.getTitle();
+        sendIssueEmail(recipient.getEmail(), subject, instance);
+    }
+
+    private TemplateInstance createIssueTemplateInstance(Template template, IssueEventJson event, UserJson recipient) {
+        String statusName = event.getStatus() != null ? event.getStatus().name() : "N/A";
+        StatusColor statusColor = statusName.equals("N/A") ? null : StatusColor.valueOf(statusName);
+        
+        String recipientName = recipient.getName() != null && !recipient.getName().isBlank()
+            ? recipient.getName()
+            : "User";
+        
+        // Use event link if available, otherwise construct a fallback
+        String buttonLink = event.getLink();
+        if (buttonLink == null && event.getProjectId() != null && event.getIssueId() != null) {
+            buttonLink = String.format("%s/projects/%s/issueedit/%s",
+                frontendBaseUrl, event.getProjectId(), event.getIssueId());
+        }
+
+        TemplateInstance instance = template
+            .data("name", recipientName)
+            .data("projectTitle", event.getProject() != null ? event.getProject().getTitle() : "N/A")
+            .data("issueTitle", event.getTitle())
+            .data("issueId", event.getIssueId().toString())
+            .data("issueType", event.getIssueType() != null ? event.getIssueType().name() : "N/A")
+            .data("status", statusName)
+            .data("ownerName", event.getOwner() != null ? event.getOwner().getName() : "N/A")
+            .data("ownerEmail", event.getOwner() != null ? event.getOwner().getEmail() : "N/A")
+            .data("actorName", event.getUser() != null ? event.getUser().getName() : "N/A")
+            .data("actorEmail", event.getUser() != null ? event.getUser().getEmail() : "N/A")
+            .data("buttonLink", buttonLink);
+        
+        if (statusColor != null) {
+            instance = instance
+                .data("statusBgColor", statusColor.backgroundColor)
+                .data("statusTextColor", statusColor.textColor);
+        }
+        
+        return instance;
+    }
+
+    private void sendIssueEmail(String to, String subject, TemplateInstance instance) {
+        String html = setTemplateProperties(instance, Locale.ENGLISH).render();
+        Mail mail = Mail.withHtml(to, subject, html);
+        sendWithAlias(mail, "issues");
+    }
 }
