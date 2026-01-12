@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,8 +36,9 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     @OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "tenants",
         joinColumns = @JoinColumn(name = "tenancy_id", columnDefinition = "uuid"),
-        inverseJoinColumns = @JoinColumn(name = "user_id", columnDefinition = "uuid"))
-    private List<UserEntity> tenants;
+        inverseJoinColumns = @JoinColumn(name = "user_id", columnDefinition = "uuid")
+    )
+    private List<UserEntity> tenants = new ArrayList<>();
 
     @Column(name = "start_of_rental", columnDefinition = "date")
     private LocalDate startOfRental;

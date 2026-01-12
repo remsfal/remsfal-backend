@@ -11,8 +11,8 @@ public class InboxMessageJson {
     public String id;
 
     @Schema(
-            description = "Type of message (Message | Invoice)",
-            enumeration = {"Message", "Invoice"}
+    description = "Type of message (Message | Invoice)",
+    enumeration = {"Message", "Invoice"}
     )
     public String type;
 
