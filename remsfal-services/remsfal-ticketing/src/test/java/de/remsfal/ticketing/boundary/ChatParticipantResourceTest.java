@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
+import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
+import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
+import de.remsfal.ticketing.entity.dto.IssueParticipantKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +34,9 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
     @Inject
     CqlSession cqlSession;
 
+    @Inject
+    IssueParticipantRepository issueParticipantRepository;
+
     static final String BASE_PATH = "/ticketing/v1/issues";
     static final String CHAT_SESSION_PATH = BASE_PATH + "/{issueId}/chats";
     static final String CHAT_SESSION_ID_PATH = CHAT_SESSION_PATH + "/{sessionId}";
@@ -40,38 +46,90 @@ class ChatParticipantResourceTest extends AbstractResourceTest {
     protected void setup() throws Exception {
         logger.info("Setting up test data");
         super.setupTestFiles();
+
         logger.info("Setting up issues for chat sessions");
         String insertIssueCql = "INSERT INTO remsfal.issues " +
-            "(project_id, issue_id, type, title, status, reporter_id, owner_id, description, created_by, created_at, modified_at) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(project_id, issue_id, type, title, status, reporter_id, owner_id, description, created_by, created_at, modified_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertIssueCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1,
-            "TASK", "Test Issue 1", "OPEN",
-            TicketingTestData.USER_ID, TicketingTestData.USER_ID,
-            "Test issue for chat session 1",
-            TicketingTestData.USER_ID, Instant.now(), Instant.now());
+                TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1,
+                "TASK", "Test Issue 1", "OPEN",
+                TicketingTestData.USER_ID, TicketingTestData.USER_ID,
+                "Test issue for chat session 1",
+                TicketingTestData.USER_ID, Instant.now(), Instant.now());
         cqlSession.execute(insertIssueCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2,
-            "TASK", "Test Issue 2", "OPEN",
-            TicketingTestData.USER_ID, TicketingTestData.USER_ID,
-            "Test issue for chat session 2",
-            TicketingTestData.USER_ID, Instant.now(), Instant.now());
+                TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2,
+                "TASK", "Test Issue 2", "OPEN",
+                TicketingTestData.USER_ID, TicketingTestData.USER_ID,
+                "Test issue for chat session 2",
+                TicketingTestData.USER_ID, Instant.now(), Instant.now());
+
         logger.info("Setting up chat sessions and participants");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
-            "(project_id, issue_id, session_id, created_at, participants) " +
-            "VALUES (?, ?, ?, ?, ?)";
+                "(project_id, issue_id, session_id, created_at, participants) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
         cqlSession.execute(insertChatSessionCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1,
-            Instant.now(),
-            Map.of(
-                TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
-                TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
+                TicketingTestData.PROJECT_ID_1,
+                TicketingTestData.ISSUE_ID_1,
+                TicketingTestData.CHAT_SESSION_ID_1,
+                Instant.now(),
+                Map.of(
+                        TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
+                        TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
+
+        insertIssueParticipant(
+                TicketingTestData.USER_ID_4,
+                TicketingTestData.ISSUE_ID_1,
+                TicketingTestData.CHAT_SESSION_ID_1,
+                TicketingTestData.PROJECT_ID_1,
+                ParticipantRole.INITIATOR.name()
+        );
+        insertIssueParticipant(
+                TicketingTestData.USER_ID_3,
+                TicketingTestData.ISSUE_ID_1,
+                TicketingTestData.CHAT_SESSION_ID_1,
+                TicketingTestData.PROJECT_ID_1,
+                ParticipantRole.HANDLER.name()
+        );
+
         cqlSession.execute(insertChatSessionCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2, TicketingTestData.CHAT_SESSION_ID_2,
-            Instant.now(),
-            Map.of(
-                TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
-                TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
+                TicketingTestData.PROJECT_ID_1,
+                TicketingTestData.ISSUE_ID_2,
+                TicketingTestData.CHAT_SESSION_ID_2,
+                Instant.now(),
+                Map.of(
+                        TicketingTestData.USER_ID_4, ParticipantRole.INITIATOR.name(),
+                        TicketingTestData.USER_ID_3, ParticipantRole.HANDLER.name()));
+
+        insertIssueParticipant(
+                TicketingTestData.USER_ID_4,
+                TicketingTestData.ISSUE_ID_2,
+                TicketingTestData.CHAT_SESSION_ID_2,
+                TicketingTestData.PROJECT_ID_1,
+                ParticipantRole.INITIATOR.name()
+        );
+        insertIssueParticipant(
+                TicketingTestData.USER_ID_3,
+                TicketingTestData.ISSUE_ID_2,
+                TicketingTestData.CHAT_SESSION_ID_2,
+                TicketingTestData.PROJECT_ID_1,
+                ParticipantRole.HANDLER.name()
+        );
+    }
+
+    private void insertIssueParticipant(UUID userId, UUID issueId, UUID sessionId, UUID projectId, String role) {
+        IssueParticipantKey key = new IssueParticipantKey();
+        key.setUserId(userId);
+        key.setIssueId(issueId);
+        key.setSessionId(sessionId);
+
+        IssueParticipantEntity participant = new IssueParticipantEntity();
+        participant.setKey(key);
+        participant.setProjectId(projectId);
+        participant.setRole(role);
+
+        issueParticipantRepository.insert(participant);
     }
 
     private Map<String, String> rolesManagerP1() {
