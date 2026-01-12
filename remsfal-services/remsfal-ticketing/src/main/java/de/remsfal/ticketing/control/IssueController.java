@@ -60,8 +60,8 @@ public class IssueController {
         ).anyMatch(set -> set != null && !set.isEmpty());
 
         if (hasRelations) {
-            updateRelations(entity, issue);     // Batch + lokale Set-Pflege
-            entity = repository.update(entity); // speichert u.a. lokale Sets (damit kein "zurückschreiben" passiert)
+            updateRelations(entity, issue);
+            entity = repository.update(entity);
         }
 
         return entity;
@@ -105,7 +105,6 @@ public class IssueController {
             entity.setDescription(issue.getDescription());
         }
 
-        // Relation-Updates: bidirektional per Batch + lokale Set-Pflege
         updateRelations(entity, issue);
 
         return repository.update(entity);
@@ -117,10 +116,8 @@ public class IssueController {
         IssueEntity entity = repository.find(key)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
-        // 1) alle Referenzen auf dieses Issue bereinigen (bidirektional per Batch)
         repository.removeAllRelations(entity);
 
-        // 2) Issue selbst löschen
         repository.delete(key);
     }
 
@@ -132,8 +129,6 @@ public class IssueController {
             repository.update(e);
         });
     }
-
-    // ---------- Relationen beim Patch/Erstellen aktualisieren ----------
 
     /**
      * Apply bidirectional relation writes via repository (Cassandra set +/- in UNLOGGED BATCH),
@@ -155,13 +150,13 @@ public class IssueController {
             entity.setBlockedBy(merge(entity.getBlockedBy(), patch.getBlockedBy(), sourceId));
         }
 
-        // related_to (symmetrisch)
+        // related_to
         if (patch.getRelatedTo() != null && !patch.getRelatedTo().isEmpty()) {
             repository.addRelatedTo(projectId, sourceId, patch.getRelatedTo());
             entity.setRelatedTo(merge(entity.getRelatedTo(), patch.getRelatedTo(), sourceId));
         }
 
-        // duplicate_of (symmetrisch)
+        // duplicate_of
         if (patch.getDuplicateOf() != null && !patch.getDuplicateOf().isEmpty()) {
             repository.addDuplicateOf(projectId, sourceId, patch.getDuplicateOf());
             entity.setDuplicateOf(merge(entity.getDuplicateOf(), patch.getDuplicateOf(), sourceId));
@@ -180,13 +175,9 @@ public class IssueController {
         }
     }
 
-    // ---------- Einzelne Relation löschen (API-Methode) ----------
-
     public void deleteRelation(IssueEntity source, String type, UUID relatedId) {
-        // Bidirectional remove per batch:
         repository.removeRelation(source.getProjectId(), source.getId(), relatedId, type);
 
-        // lokale Seite updaten, weil wir danach repository.update(source) machen
         if (type == null) {
             throw new BadRequestException("Missing or wrong Relation type");
         }
@@ -203,8 +194,6 @@ public class IssueController {
 
         repository.update(source);
     }
-
-    // ---------- kleine Helpers (nur lokal, keine DB) ----------
 
     /**
      * Merge: existing + incoming, ignore nulls and self references.

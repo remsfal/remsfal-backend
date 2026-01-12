@@ -21,8 +21,6 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PostValidation;
 
-
-
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */

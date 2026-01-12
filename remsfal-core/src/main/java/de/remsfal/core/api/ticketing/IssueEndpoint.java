@@ -110,7 +110,6 @@ public interface IssueEndpoint {
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
 
-    // Endpunkt zum Löschen einer Relation zwischen zwei Tickets
     @DELETE
     @Path("/{issueId}/relations/{type}/{relatedIssueId}")
     @Operation(summary = "Delete an existing relation between two Issues")
@@ -125,6 +124,5 @@ public interface IssueEndpoint {
         @PathParam("relatedIssueId") @NotNull UUID relatedIssueId
 
     );
-
 
 }
