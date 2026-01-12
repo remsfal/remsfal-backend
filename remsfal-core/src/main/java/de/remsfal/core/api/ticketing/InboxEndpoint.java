@@ -52,7 +52,7 @@ public interface InboxEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update the read/unread status of an inbox message")
     @APIResponses({
-            @APIResponse(
+    @APIResponse(
                     responseCode = "200",
                     description = "Message status updated",
                     content = @Content(

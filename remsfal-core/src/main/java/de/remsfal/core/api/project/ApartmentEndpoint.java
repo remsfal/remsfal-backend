@@ -43,8 +43,8 @@ public interface ApartmentEndpoint {
         description = "A new apartment was successfully createded",
         headers = @Header(name = "Location", description = "URL of the new apartment"),
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema    = @Schema(implementation = ApartmentJson.class)
+        mediaType = MediaType.APPLICATION_JSON,
+        schema    = @Schema(implementation = ApartmentJson.class)
         )
     )
     Response createApartment(
