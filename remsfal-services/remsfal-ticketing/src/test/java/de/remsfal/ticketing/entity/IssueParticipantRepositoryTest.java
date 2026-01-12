@@ -622,4 +622,69 @@ class IssueParticipantRepositoryTest {
 
   repository.delete(userId, issueId, sessionId);
  }
+
+ @ParameterizedTest
+ @MethodSource("provideRoles")
+ void testFromString(String roleString, IssueParticipantEntity.ParticipantRole expectedRole) {
+  IssueParticipantEntity.ParticipantRole role = IssueParticipantEntity.ParticipantRole.fromString(roleString);
+  assertEquals(expectedRole, role);
+ }
+
+ private static Stream<Arguments> provideRoles() {
+  return Stream.of(
+          Arguments.of("INITIATOR", IssueParticipantEntity.ParticipantRole.INITIATOR),
+          Arguments.of("HANDLER", IssueParticipantEntity.ParticipantRole.HANDLER),
+          Arguments.of("OBSERVER", IssueParticipantEntity.ParticipantRole.OBSERVER)
+  );
+ }
+
+ @Test
+ void testFromString_Null() {
+  IssueParticipantEntity.ParticipantRole role = IssueParticipantEntity.ParticipantRole.fromString(null);
+  assertNull(role);
+ }
+
+ @Test
+ void testFromString_InvalidRole() {
+  IllegalArgumentException exception = assertThrows(
+          IllegalArgumentException.class,
+          () -> IssueParticipantEntity.ParticipantRole.fromString("INVALID")
+  );
+  assertEquals("Invalid participant role: INVALID", exception.getMessage());
+ }
+
+ @ParameterizedTest
+ @MethodSource("provideRolesForSetter")
+ void testSetAndGetParticipantRole(IssueParticipantEntity.ParticipantRole role, String expectedString) {
+  IssueParticipantEntity entity = new IssueParticipantEntity();
+  entity.setParticipantRole(role);
+
+  assertEquals(role, entity.getParticipantRole());
+  assertEquals(expectedString, entity.getRole());
+ }
+
+ private static Stream<Arguments> provideRolesForSetter() {
+  return Stream.of(
+          Arguments.of(IssueParticipantEntity.ParticipantRole.INITIATOR, "INITIATOR"),
+          Arguments.of(IssueParticipantEntity.ParticipantRole.HANDLER, "HANDLER"),
+          Arguments.of(IssueParticipantEntity.ParticipantRole.OBSERVER, "OBSERVER")
+  );
+ }
+
+ @Test
+ void testSetParticipantRole_Null() {
+  IssueParticipantEntity entity = new IssueParticipantEntity();
+  entity.setParticipantRole(null);
+
+  assertNull(entity.getRole());
+  assertNull(entity.getParticipantRole());
+ }
+
+ @Test
+ void testGetParticipantRole_NullRole() {
+  IssueParticipantEntity entity = new IssueParticipantEntity();
+  entity.setRole(null);
+
+  assertNull(entity.getParticipantRole());
+ }
 }
