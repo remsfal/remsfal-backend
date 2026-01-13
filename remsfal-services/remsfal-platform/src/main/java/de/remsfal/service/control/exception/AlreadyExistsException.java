@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary.exception;
+package de.remsfal.service.control.exception;
 
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.core.Response;

@@ -1,5 +1,6 @@
 package de.remsfal.notification.control;
 
+import de.remsfal.notification.control.parameter.StatusColor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -13,7 +14,6 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.ticketing.StatusColor;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Location;
