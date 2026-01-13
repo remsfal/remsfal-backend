@@ -10,10 +10,8 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 /**
  * Verifies that there are no cyclic dependencies between
  * top-level packages within the {@code de.remsfal} namespace.
- * *
  * Each first-level package below {@code de.remsfal} is treated as a slice.
  * Cyclic dependencies between these slices are not allowed.
- * *
  * This rule helps enforce a clean and maintainable module structure
  * by preventing mutual dependencies between major application modules.
  */
@@ -21,14 +19,15 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
     packages = "de.remsfal",
     importOptions = ImportOption.DoNotIncludeTests.class
 )
-public class DependencyCycleTest {
+public final class DependencyCycleTest {
+    private DependencyCycleTest() {
+        // utility class
+    }
 
     /**
      * Ensures that no cyclic dependencies exist between
      * top-level slices below {@code de.remsfal}.
-     * *
      * The slice definition {@code "de.remsfal.(*).."} creates slices such as:
-     * *
      * <ul>
      *   <li>{@code de.remsfal.core..}</li>
      *   <li>{@code de.remsfal.service..}</li>
@@ -36,12 +35,11 @@ public class DependencyCycleTest {
      *   <li>{@code de.remsfal.ticketing..}</li>
      *   <li>{@code de.remsfal.test..}</li>
      * </ul>
-     * *
      * Any cyclic dependency between these slices will cause the test to fail.
      */
     @ArchTest
     static final ArchRule no_cycles_between_top_level_packages =
-        slices()
-            .matching("de.remsfal.(*)..")
-            .should().beFreeOfCycles();
+            slices().matching("de.remsfal.(*)..")
+                    .should().beFreeOfCycles();
+
 }

@@ -8,10 +8,8 @@ import com.tngtech.archunit.junit.ArchTests;
 /**
  * Aggregates ArchUnit rules that enforce architecture constraints
  * for the platform/service module.
- * *
  * This test class imports rule sets for annotation usage and
  * layer naming conventions specific to the platform service.
- * *
  * Only production classes located under {@code de.remsfal.service} are analyzed.
  * Test classes are explicitly excluded from the analysis.
  */

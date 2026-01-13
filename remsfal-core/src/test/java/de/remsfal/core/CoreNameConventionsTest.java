@@ -9,10 +9,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 /**
  * Enforces naming and structural conventions for the core module.
- * *
  * The core module represents stable, implementation-independent
  * contracts and models that are shared across multiple modules.
- * *
  * These rules ensure that naming conventions and package responsibilities
  * are consistently applied.
  */
@@ -24,7 +22,6 @@ public class CoreNameConventionsTest {
 
     /**
      * Ensures that JSON representation classes are named consistently.
-     * *
      * All top-level classes located in {@code de.remsfal.core.json..}
      * must have a simple class name ending with {@code Json}.
      */
@@ -34,11 +31,10 @@ public class CoreNameConventionsTest {
                     .that().resideInAnyPackage("de.remsfal.core.json..")
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Json")
-                    .allowEmptyShould(true);;
+                    .allowEmptyShould(true);
 
     /**
      * Ensures that API contract interfaces are named consistently.
-     * *
      * All interfaces located in {@code de.remsfal.core.api..}
      * must have a simple name ending with {@code Endpoint}.
      */
@@ -53,7 +49,6 @@ public class CoreNameConventionsTest {
 
     /**
      * Ensures that model interfaces follow a consistent naming convention.
-     * *
      * All interfaces located in {@code de.remsfal.core.model..}
      * must have a simple name ending with {@code Model}.
      */
@@ -63,11 +58,10 @@ public class CoreNameConventionsTest {
                     .that().resideInAnyPackage("de.remsfal.core.model..")
                     .and().areInterfaces()
                     .should().haveSimpleNameEndingWith("Model")
-                    .allowEmptyShould(true);;
+                    .allowEmptyShould(true);
 
     /**
      * Ensures that the core model package contains only interfaces.
-     * *
      * This prevents concrete implementations from leaking into
      * the core module and keeps the model purely abstract.
      */

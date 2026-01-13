@@ -6,14 +6,16 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchTests;
 
 /**
- * Aggregates ArchUnit rules that enforce architecture constraints
- * for the notification module.
- * *
- * This test class imports rule sets for annotation usage and
- * layer naming conventions specific to the notification service.
- * *
- * Only production classes located under {@code de.remsfal.notification} are analyzed.
- * Test classes are explicitly excluded from the analysis.
+ * Central ArchUnit test suite for the Notification service.
+ * This class aggregates all architecture rules that define and enforce
+ * structural constraints for the notification module.
+ * The following rule sets are executed:
+ * - annotation usage rules
+ * - layer and naming conventions
+ * - endpoint implementation naming rules
+ * - ECB (Entity–Control–Boundary) architecture rules
+ * Only production classes located under {@code de.remsfal.notification}
+ * are analyzed. Test classes are explicitly excluded.
  */
 @AnalyzeClasses(
         packages = "de.remsfal.notification",
@@ -37,9 +39,19 @@ class NotificationArchitectureTest {
     static final ArchTests NAMING_RULES =
             ArchTests.in(NotificationLayerNamingRules.class);
 
+    /**
+     * Executes endpoint implementation naming rules.
+     * Ensures that endpoint implementation classes follow
+     * the defined naming conventions for the notification service.
+     */
     @ArchTest
     static final ArchTests ENDPOINT_IMPL_RULES = ArchTests.in(NotificationEndpointImplementationNamingRules.class);
 
+    /**
+     * Executes ECB (Entity–Control–Boundary) architecture rules.
+     * Enforces a strict separation of responsibilities between
+     * entities, control logic, and boundary components.
+     */
     @ArchTest
     static final ArchTests ECB_RULES = ArchTests.in(NotificationEcbArchitectureRules.class);
 
