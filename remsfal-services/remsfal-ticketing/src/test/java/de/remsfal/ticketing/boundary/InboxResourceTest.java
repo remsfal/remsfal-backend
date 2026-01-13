@@ -5,8 +5,8 @@ import jakarta.ws.rs.NotFoundException;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.ticketing.control.InboxController;
-import de.remsfal.ticketing.control.InboxMessageJsonMapper;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
+import de.remsfal.ticketing.entity.dto.InboxMessageKey;
 import de.remsfal.core.json.ticketing.InboxMessageJson;
 
 import io.quarkus.test.InjectMock;
@@ -29,9 +29,6 @@ class InboxResourceTest {
     InboxController controller;
 
     @InjectMock
-    InboxMessageJsonMapper mapper;
-
-    @InjectMock
     RemsfalPrincipal principal;
 
     @InjectMock
@@ -43,7 +40,6 @@ class InboxResourceTest {
     void setup() {
         resource = new InboxResource();
         resource.controller = controller;
-        resource.mapper = mapper;
         resource.principal = principal;
 
         when(principal.getJwt()).thenReturn(jwt);
@@ -53,14 +49,26 @@ class InboxResourceTest {
     @Test
     void testGetInboxMessages_success() {
         InboxMessageEntity e = new InboxMessageEntity();
+        InboxMessageKey key = new InboxMessageKey();
+        key.setUserId("11111111-1111-1111-1111-111111111111");
+        key.setId(UUID.randomUUID());
+        e.setKey(key);
+        e.setEventType("ISSUE_CREATED");
+        e.setIssueId("issue-123");
+        e.setTitle("Test Issue");
+        e.setDescription("Test Description");
+        e.setIssueType("BUG");
+        e.setStatus("OPEN");
+        e.setLink("/api/issues/issue-123");
+        e.setActorEmail("actor@example.com");
+        e.setOwnerEmail("owner@example.com");
+        e.setRead(false);
+        e.setCreatedAt(java.time.Instant.now());
 
         String userId = "11111111-1111-1111-1111-111111111111";
         when(principal.getId()).thenReturn(UUID.fromString(userId));
 
         when(controller.getInboxMessages(true, userId)).thenReturn(List.of(e));
-
-        InboxMessageJson dummyJson = mock(InboxMessageJson.class);
-        when(mapper.toJsonList(any())).thenReturn(List.of(dummyJson));
 
         List<InboxMessageJson> result = resource.getInboxMessages(true);
 
@@ -86,13 +94,26 @@ class InboxResourceTest {
         String userId = "11111111-1111-1111-1111-111111111111";
 
         InboxMessageEntity updated = new InboxMessageEntity();
+        InboxMessageKey key = new InboxMessageKey();
+        key.setUserId(userId);
+        key.setId(msgId);
+        updated.setKey(key);
+        updated.setEventType("ISSUE_UPDATED");
+        updated.setIssueId("issue-456");
+        updated.setTitle("Updated Issue");
+        updated.setDescription("Updated Description");
+        updated.setIssueType("FEATURE");
+        updated.setStatus("IN_PROGRESS");
+        updated.setLink("/api/issues/issue-456");
+        updated.setActorEmail("actor2@example.com");
+        updated.setOwnerEmail("owner2@example.com");
+        updated.setRead(true);
+        updated.setCreatedAt(java.time.Instant.now());
+
         when(principal.getId()).thenReturn(UUID.fromString(userId));
 
         when(controller.updateMessageStatus(msgId.toString(), true, userId))
                 .thenReturn(updated);
-
-        InboxMessageJson dummyJson = mock(InboxMessageJson.class);
-        when(mapper.toJson(any())).thenReturn(dummyJson);
 
         InboxMessageJson result = resource.updateMessageStatus(msgId.toString(), true);
 
