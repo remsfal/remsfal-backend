@@ -16,5 +16,6 @@
     <include file="META-INF/changesets/002-create-chat-sessions-table.xml"/>
     <include file="META-INF/changesets/003-create-chat-messages-table.xml"/>
     <include file="META-INF/changesets/004-add-issues-indexes.xml"/>
-
+    <include file="META-INF/changesets/005-create-issue-participants-table.xml"/>
+    <include file="/META-INF/changesets/006-issues-relations-nm.xml"/>
 </databaseChangeLog>

@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.boundary;
 
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -9,10 +10,12 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
+import java.util.ArrayList;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
@@ -43,10 +46,12 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     IssueEventProducer issueEventProducer;
 
     @Override
-    public IssueListJson getIssues(Integer offset, Integer limit, UUID projectId, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
+    public IssueListJson getIssues(Integer offset, Integer limit,
+        UUID projectId, UUID ownerId,
+        UUID tenancyId, UnitType rentalType,
+        UUID rentalId, Status status) {
         logger.info("Yes i was called");
-        List<UUID> projectFilter = null;
+        List<UUID> projectFilter;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
             projectFilter = List.of(projectId);
         } else {
@@ -54,41 +59,80 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         }
 
         if (projectFilter.isEmpty()) {
-            return getTenancyIssues(offset, limit, tenancyId, status);
+            return getUnprivilegedIssues(offset, limit, tenancyId, status);
         } else {
-            return getProjectIssues(offset, limit, projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+            return getProjectIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
         }
     }
 
-    private IssueListJson getProjectIssues(Integer offset, Integer limit, List<UUID> projectFilter, UUID ownerId,
+    private IssueListJson getProjectIssues(List<UUID> projectFilter, UUID ownerId,
         UUID tenancyId, UnitType rentalType, UUID rentalId,
         Status status) {
         final List<? extends IssueModel> issues =
             issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
+    private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID tenancyId, Status status) {
+        List<IssueModel> collected = new ArrayList<>();
 
-    private IssueListJson getTenancyIssues(Integer offset, Integer limit, UUID tenancyId, Status status) {
-        if (principal.getTenancyProjects().isEmpty()) {
-            throw new NotFoundException("User is not a member of any tenancy");
-        }
-        if (tenancyId != null && !principal.getTenancyProjects().containsKey(tenancyId)) {
-            throw new ForbiddenException("User does not have permission to view issues in this tenancy");
-        }
+        // Tenants
+        collectTenancyIssues(collected, tenancyId);
 
-        List<? extends IssueModel> issues;
-        if (tenancyId != null && principal.getTenancyProjects().containsKey(tenancyId)) {
-            issues = issueController.getIssuesOfTenancy(tenancyId);
-        } else {
-            issues = issueController.getIssuesOfTenancies(principal.getTenancyProjects().keySet());
+        // Participants
+        collectParticipantIssues(collected);
+
+        Map<UUID, IssueModel> unique = new LinkedHashMap<>();
+        for (IssueModel issue : collected) {
+            if (issue == null || issue.getId() == null) {
+                continue;
+            }
+            unique.put(issue.getId(), issue);
         }
+        List<IssueModel> issues = new ArrayList<>(unique.values());
 
         if (status != null) {
             issues = issues.stream()
-                .filter(issue -> issue.getStatus() == status)
-                .toList();
+                    .filter(i -> Objects.equals(i.getStatus(), status))
+                    .toList();
         }
-        return IssueListJson.valueOf(issues, 0, issues.size());
+
+        int totalCount = issues.size();
+        int actualOffset = (offset != null) ? offset : 0;
+        int actualLimit = (limit != null) ? limit : totalCount;
+
+        int fromIndex = Math.min(actualOffset, totalCount);
+        int toIndex = Math.min(actualOffset + actualLimit, totalCount);
+
+        List<IssueModel> paginatedIssues = issues.subList(fromIndex, toIndex);
+
+        return IssueListJson.valueOf(paginatedIssues, actualOffset, totalCount);
+    }
+
+    private void collectTenancyIssues(List<IssueModel> collected, UUID tenancyId) {
+        if (!principal.getTenancyProjects().isEmpty()) {
+            if (tenancyId != null && !principal.getTenancyProjects().containsKey(tenancyId)) {
+                throw new ForbiddenException("User does not have permission to view issues in this tenancy");
+            }
+            if (tenancyId != null) {
+                collected.addAll(issueController.getIssuesOfTenancy(tenancyId));
+            } else {
+                collected.addAll(issueController.getIssuesOfTenancies(principal.getTenancyProjects().keySet()));
+            }
+        }
+    }
+
+    private void collectParticipantIssues(List<IssueModel> collected) {
+        List<UUID> participantIssueIds = issueParticipantRepository.findIssueIdsByParticipant(principal.getId());
+        for (UUID pid : participantIssueIds) {
+            try {
+                collected.add(issueController.getIssue(pid));
+            } catch (NotFoundException ignored) {
+                // Intentionally ignored:
+                // The user may be listed as a participant of an issue that was deleted or closed.
+                // In this case, the issue no longer exists and should simply be skipped
+                // without failing the entire request.
+            }
+        }
     }
 
     @Override
@@ -108,8 +152,11 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
+        final URI location = uri.getAbsolutePathBuilder()
+            .path(Objects.requireNonNull(issue.getProjectId())
+            .toString())
+            .build();
         issueEventProducer.sendIssueCreated(createdIssue, principal);
-        final URI location = uri.getAbsolutePathBuilder().path(issue.getProjectId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(response)
@@ -122,6 +169,8 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
             return IssueJson.valueOf(issue);
         } else if (principal.getTenancyProjects().containsKey(issue.getTenancyId())) {
+            return IssueJson.valueOfFiltered(issue);
+        } else if (isParticipantInIssue(issueId)) {
             return IssueJson.valueOfFiltered(issue);
         }
         throw new ForbiddenException("User does not have permission to view this issue");
@@ -162,4 +211,17 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         return resourceContext.initResource(chatSessionResource.get());
     }
 
+    @Override
+    public void deleteRelation(UUID issueId, String type, UUID relatedIssueId) {
+        IssueEntity entity = issueController.getIssue(issueId);
+        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
+            throw new ForbiddenException("User does not have permission to update this issue");
+        }
+        issueController.deleteRelation(entity, type, relatedIssueId);
+    }
+
+    private boolean isParticipantInIssue(UUID issueId) {
+        return issueParticipantRepository.exists(principal.getId(), issueId);
+    }
 }
+
