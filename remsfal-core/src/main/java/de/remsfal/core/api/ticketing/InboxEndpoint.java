@@ -27,41 +27,35 @@ public interface InboxEndpoint {
     String VERSION = "v1";
     String SERVICE = "inbox";
 
-    // GET /api/v1/inbox
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve inbox messages for the authenticated user")
-    @APIResponses({
-            @APIResponse(
-                    responseCode = "200",
-                    description = "List of inbox messages belonging to the authenticated user",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON,
-                            schema = @Schema(implementation = InboxMessageJson.class)
-                    )
-            )
-    })
+    @APIResponse(
+        responseCode = "200",
+        description = "List of inbox messages belonging to the authenticated user",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = InboxMessageJson.class)
+        )
+    )
     List<InboxMessageJson> getInboxMessages(
             @Parameter(description = "Filter by read status (true = read, false = unread)")
             @QueryParam("read") Boolean read
     );
 
-    // PATCH /api/v1/inbox/{messageId}/status
     @PATCH
     @Path("/{messageId}/status")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update the read/unread status of an inbox message")
-    @APIResponses({
     @APIResponse(
-                    responseCode = "200",
-                    description = "Message status updated",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON,
-                            schema = @Schema(implementation = InboxMessageJson.class)
-                    )
-            ),
-            @APIResponse(responseCode = "404", description = "Message not found for this user")
-    })
+            responseCode = "200",
+            description = "Message status updated",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON,
+                schema = @Schema(implementation = InboxMessageJson.class)
+            )
+        )
+    @APIResponse(responseCode = "404", description = "Message not found for this user")
     InboxMessageJson updateMessageStatus(
             @Parameter(description = "Message ID", required = true)
             @PathParam("messageId") String messageId,
@@ -70,13 +64,12 @@ public interface InboxEndpoint {
             @QueryParam("read") boolean read
     );
 
-    // DELETE /api/v1/inbox/{messageId}
     @DELETE
     @Path("/{messageId}")
     @Operation(summary = "Delete an inbox message for the authenticated user")
     @APIResponses({
-            @APIResponse(responseCode = "204", description = "Message deleted"),
-            @APIResponse(responseCode = "404", description = "Message not found for this user")
+        @APIResponse(responseCode = "204", description = "Message deleted"),
+        @APIResponse(responseCode = "404", description = "Message not found for this user")
     })
     void deleteInboxMessage(
             @Parameter(description = "Message ID", required = true)

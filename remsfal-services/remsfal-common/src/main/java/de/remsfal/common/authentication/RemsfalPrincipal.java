@@ -26,18 +26,6 @@ public class RemsfalPrincipal implements Principal, UserModel {
         return jwt != null && jwt.getSubject() != null ? UUID.fromString(jwt.getSubject()) : null;
     }
 
-    /**
-     * Returns the raw JWT subject.
-     *
-     * Important:
-     * - JWT subject is a STRING by specification
-     * - Not all services interpret it as UUID
-     * - Ticketing Inbox uses string-based user ids (e.g. "user-owner")
-     */
-    public String getSubject() {
-        return jwt != null ? jwt.getSubject() : null;
-    }
-
     @Override
     public String getEmail() {
         return jwt != null ? jwt.getClaim("email") : null;
