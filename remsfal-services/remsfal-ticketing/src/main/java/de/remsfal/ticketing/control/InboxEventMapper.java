@@ -1,6 +1,6 @@
 package de.remsfal.ticketing.control;
 
-import de.remsfal.core.json.ticketing.InboxEventJson;
+import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 import de.remsfal.ticketing.entity.dto.InboxMessageKey;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -12,12 +12,12 @@ import java.util.UUID;
 public class InboxEventMapper {
 
     /**
-     * Converts an enriched IssueEvent into a persistent inbox message
+     * Converts an enriched IssueEventJson into a persistent inbox message
      * for a specific recipient user.
      */
-    public InboxMessageEntity toEntity(InboxEventJson event, String recipientUserId) {
+    public InboxMessageEntity toEntity(IssueEventJson event, String recipientUserId) {
 
-        // Cassandra key: user inbox + unique message id
+        // Create Cassandra key
         InboxMessageKey key = new InboxMessageKey();
         key.setUserId(recipientUserId);
         key.setId(UUID.randomUUID());
@@ -25,26 +25,28 @@ public class InboxEventMapper {
         InboxMessageEntity entity = new InboxMessageEntity();
         entity.setKey(key);
 
-        // Event core fields
-        entity.setIssueId(event.issueId());
-        entity.setTitle(event.title());
-        entity.setIssueType(event.issueType());
-        entity.setStatus(event.status());
-        entity.setDescription(event.description());
-        entity.setLink(event.link());
+        // Core Issue Event Fields
+        entity.setIssueId(event.getIssueId().toString());
+        entity.setTitle(event.getTitle());
+        entity.setIssueType(event.getIssueType() != null ? event.getIssueType().name() : null);
+        entity.setStatus(event.getStatus() != null ? event.getStatus().name() : null);
+        entity.setDescription(event.getDescription());
+        entity.setLink(event.getLink());
 
-        // Event metadata
-        entity.setEventType(event.type());
+        // Event type (ISSUE_CREATED, ...)
+        entity.setEventType(event.getIssueEventType().name());
+
         entity.setCreatedAt(Instant.now());
         entity.setRead(false);
 
-        // Actor / Owner info
-        if (event.user() != null) {
-            entity.setActorEmail(event.user().email());
+        // Sender
+        if (event.getUser() != null) {
+            entity.setActorEmail(event.getUser().getEmail());
         }
 
-        if (event.owner() != null) {
-            entity.setOwnerEmail(event.owner().email());
+        // Owner
+        if (event.getOwner() != null) {
+            entity.setOwnerEmail(event.getOwner().getEmail());
         }
 
         return entity;

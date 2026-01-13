@@ -1,13 +1,15 @@
 package de.remsfal.ticketing.control;
 
-import de.remsfal.core.json.ticketing.InboxEventJson;
+import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.ticketing.entity.dao.InboxMessageRepository;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
+
+import java.util.concurrent.CompletionStage;
 
 @ApplicationScoped
 public class InboxEventConsumer {
@@ -21,28 +23,38 @@ public class InboxEventConsumer {
     @Inject
     Logger logger;
 
-    @Incoming("inbox-events")
-    public void consume(InboxEventJson event) {
+    @Incoming(IssueEventJson.TOPIC_ENRICHED)
+    public CompletionStage<Void> consume(Message<IssueEventJson> msg) {
 
+        IssueEventJson event = msg.getPayload();
+
+        // 1. NULL CHECK (Kafka Tombstone)
         if (event == null) {
             logger.warn("Skipping inbox event because payload is null (Kafka tombstone)");
-            return;
+            return msg.ack();
         }
 
-        logger.infof("Received enriched issue event: %s for issue %s",
-                event.type(), event.issueId());
+        logger.infof(
+                "Received enriched issue event: %s for issue %s",
+                event.getIssueEventType(),
+                event.getIssueId()
+        );
 
-        if (event.owner() == null || event.owner().id() == null) {
+        if (event.getOwner() == null || event.getOwner().getId() == null) {
             logger.warn("Skipping inbox event because owner is null");
-            return;
+            return msg.ack();
         }
 
-        String recipientUserId = event.owner().id().toString();
+        String recipientUserId = event.getOwner().getId().toString();
 
+        // Convert IssueEventJson → InboxMessageEntity
         InboxMessageEntity entity = mapper.toEntity(event, recipientUserId);
 
+        // Save into Cassandra
         repository.saveInboxMessage(entity);
 
         logger.infof("Stored inbox notification for user %s", recipientUserId);
+
+        return msg.ack();
     }
 }
