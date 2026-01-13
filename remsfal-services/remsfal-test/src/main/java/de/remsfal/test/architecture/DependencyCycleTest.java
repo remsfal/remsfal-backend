@@ -39,7 +39,7 @@ public final class DependencyCycleTest {
      */
     @ArchTest
     static final ArchRule no_cycles_between_top_level_packages =
-            slices().matching("de.remsfal.(*)..")
-                    .should().beFreeOfCycles();
+        slices().matching("de.remsfal.(*)..")
+                .should().beFreeOfCycles();
 
 }
