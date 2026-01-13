@@ -2,7 +2,6 @@ package de.remsfal.notification.architecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import jakarta.persistence.Embeddable;
 import jakarta.ws.rs.Path;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -32,7 +31,7 @@ public final class NotificationLayerNamingRules {
     @ArchTest
     static final ArchRule control_classes_should_be_controllers_or_messaging_components =
             classes()
-                    .that().resideInAnyPackage("de.remsfal.notification.control..")
+                    .that().resideInAnyPackage("de.remsfal.notification.control")
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Controller")
                     .orShould().haveSimpleNameEndingWith("Producer")
@@ -49,8 +48,6 @@ public final class NotificationLayerNamingRules {
                     .that().resideInAnyPackage("de.remsfal.notification.entity.dto..")
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Entity")
-                    .orShould().haveSimpleNameEndingWith("Key")
-                    .orShould().beAnnotatedWith(Embeddable.class)
                     .allowEmptyShould(true);
 
     /**

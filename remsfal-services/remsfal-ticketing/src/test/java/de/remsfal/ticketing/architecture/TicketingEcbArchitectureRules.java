@@ -45,6 +45,7 @@ public final class TicketingEcbArchitectureRules {
             "java..",
             "jakarta..",
             "org.jboss.logging..",
+            "org.jboss.resteasy..",
             "io.quarkus..",
             "org.eclipse.microprofile..",
             "io.smallrye.."

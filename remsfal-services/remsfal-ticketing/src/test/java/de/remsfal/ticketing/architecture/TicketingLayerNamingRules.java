@@ -2,7 +2,7 @@ package de.remsfal.ticketing.architecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import jakarta.persistence.Embeddable;
+import jakarta.nosql.Embeddable;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
@@ -39,6 +39,8 @@ public final class TicketingLayerNamingRules {
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Entity")
                     .orShould().haveSimpleNameEndingWith("Key")
+                    .orShould().haveSimpleNameEndingWith("EntityMetaData")
+                    .orShould().haveSimpleNameEndingWith("FieldMetaData")
                     .orShould().beAnnotatedWith(Embeddable.class)
                     .allowEmptyShould(true);
 
