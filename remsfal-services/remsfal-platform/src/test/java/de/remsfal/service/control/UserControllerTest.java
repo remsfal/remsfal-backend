@@ -20,7 +20,7 @@ import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
-import de.remsfal.service.boundary.exception.AlreadyExistsException;
+import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.test.TestData;
 

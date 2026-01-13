@@ -1,4 +1,4 @@
-package de.remsfal.core.model.ticketing;
+package de.remsfal.notification.control.parameter;
 
 /**
  * Maps issue statuses to badge colors used in email templates.
