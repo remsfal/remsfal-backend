@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.2-add-contractor-id" author="s0595830@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-0.0.7-add-contractor-id" author="s0595830@htw-berlin.de">
         <comment>Add contractor_id and index to issues table</comment>
         <sql>
             ALTER TABLE REMSFAL.issues ADD contractor_id UUID;
