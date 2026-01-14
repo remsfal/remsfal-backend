@@ -27,7 +27,7 @@ public class InboxMessageEntity extends AbstractEntity {
     @Column("description")
     private String description;
 
-    @Column("issue_link")
+    @Column("link")
     private String link;
 
     @Column("event_type")

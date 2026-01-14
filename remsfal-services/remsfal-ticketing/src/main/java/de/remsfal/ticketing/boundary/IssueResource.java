@@ -1,6 +1,5 @@
 package de.remsfal.ticketing.boundary;
 
-
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
