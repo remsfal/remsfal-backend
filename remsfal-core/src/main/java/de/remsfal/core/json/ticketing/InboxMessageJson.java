@@ -4,39 +4,45 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.OffsetDateTime;
 
-@Schema(name = "InboxMessage", description = "Represents a message or invoice in the user's inbox")
+@Schema(name = "InboxMessage", description = "Represents an enriched issue event stored in a user's inbox")
 public class InboxMessageJson {
 
-    @Schema(description = "Unique identifier of the message")
+    @Schema(description = "Unique identifier of this inbox message")
     public String id;
 
-    @Schema(
-    description = "Type of message (Message | Invoice)",
-    enumeration = {"Message", "Invoice"}
-    )
-    public String type;
+    @Schema(description = "User who received this notification")
+    public String userId;
 
-    @Schema(description = "Sender or contractor associated with the message")
-    public String contractor;
+    @Schema(description = "Event type, e.g. ISSUE_CREATED, ISSUE_UPDATED, ISSUE_ASSIGNED")
+    public String eventType;
 
-    @Schema(description = "Subject or title of the message")
-    public String subject;
+    @Schema(description = "Related issue ID")
+    public String issueId;
 
-    @Schema(description = "Property or building related to the message")
-    public String property;
+    @Schema(description = "Issue title")
+    public String title;
 
-    @Schema(description = "Tenant or person related to the message")
-    public String tenant;
+    @Schema(description = "Issue description")
+    public String description;
 
-    @Schema(description = "Date and time when the message was received")
-    public OffsetDateTime receivedAt;
+    @Schema(description = "Issue type: DEFECT, TASK, APPLICATION, ...")
+    public String issueType;
+
+    @Schema(description = "Current status of the issue")
+    public String status;
+
+    @Schema(description = "Link to the frontend issue page")
+    public String link;
 
     @Schema(description = "Whether the message has been read")
     public boolean read;
 
-    @Schema(description = "ID of the user who owns the message")
-    public String userId;
+    @Schema(description = "Timestamp when the notification was created")
+    public OffsetDateTime createdAt;
 
-    @Schema(description = "URL to the related GitHub issue or external resource")
-    public String issueLink;
+    @Schema(description = "Email of the actor who triggered the event")
+    public String actorEmail;
+
+    @Schema(description = "Email of the owner assigned to the issue")
+    public String ownerEmail;
 }
