@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -66,20 +67,29 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract String getDescription();
 
-    @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getBlockedBy();
+    public abstract Set<UUID> getBlockedBy();
 
-    @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getRelatedTo();
+    public abstract Set<UUID> getRelatedTo();
 
-    @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getDuplicateOf();
+    public abstract Set<UUID> getDuplicateOf();
+
+    @Nullable
+    @Override
+    public abstract Set<UUID> getBlocks();
+
+    @Nullable
+    @Override
+    public abstract Set<UUID> getParentOf();
+
+    @Nullable
+    @Override
+    public abstract Set<UUID> getChildOf();
 
     @Nullable
     @Override
@@ -107,6 +117,9 @@ public abstract class IssueJson implements IssueModel {
                 .relatedTo(model.getRelatedTo())
                 .duplicateOf(model.getDuplicateOf())
                 .contractorId(model.getContractorId())
+                .blocks(model.getBlocks())
+                .parentOf(model.getParentOf())
+                .childOf(model.getChildOf())
                 .build();
     }
 

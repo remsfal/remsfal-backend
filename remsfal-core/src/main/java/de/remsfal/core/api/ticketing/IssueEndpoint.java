@@ -112,4 +112,19 @@ public interface IssueEndpoint {
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
 
+    @DELETE
+    @Path("/{issueId}/relations/{type}/{relatedIssueId}")
+    @Operation(summary = "Delete an existing relation between two Issues")
+    @APIResponse(responseCode = "204", description = "The relation was deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    void deleteRelation(
+        @Parameter(description = "ID of the source Issue")
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Type of the relation (e.g. blocks, blocked_by, related_to)")
+        @PathParam("type") @NotNull String type,
+        @Parameter(description = "ID of the related Issue")
+        @PathParam("relatedIssueId") @NotNull UUID relatedIssueId
+
+    );
+
 }

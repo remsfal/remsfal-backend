@@ -26,7 +26,7 @@ import de.remsfal.ticketing.control.ChatMessageController;
 import de.remsfal.ticketing.control.ChatSessionController;
 import de.remsfal.ticketing.control.FileStorageController;
 import de.remsfal.ticketing.control.OcrEventProducer;
-import de.remsfal.ticketing.entity.dao.FileStorage;
+import de.remsfal.ticketing.entity.storage.FileStorage;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
 import io.quarkus.security.Authenticated;

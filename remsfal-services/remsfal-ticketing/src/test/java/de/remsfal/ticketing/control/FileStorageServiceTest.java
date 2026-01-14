@@ -12,7 +12,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.ticketing.AbstractTicketingTest;
-import de.remsfal.ticketing.entity.dao.FileStorage;
+import de.remsfal.ticketing.entity.storage.FileStorage;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;

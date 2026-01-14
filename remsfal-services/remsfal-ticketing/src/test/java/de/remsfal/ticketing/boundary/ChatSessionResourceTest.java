@@ -98,8 +98,8 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSession_UNPRIVILEGED() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
-                    nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
+            .cookie(buildCookie(TicketingTestData.USER_ID_2, TicketingTestData.USER_EMAIL_2,
+                    nameOf(TicketingTestData.USER_FIRST_NAME_2, TicketingTestData.USER_LAST_NAME_2), true,
                     rolesNone(), rolesNone(), Duration.ofMinutes(10)))
             .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()

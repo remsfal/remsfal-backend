@@ -5,6 +5,7 @@ import de.remsfal.core.json.UserJson.UserRole;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.IssueController;
+import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -36,6 +37,9 @@ public class AbstractResource {
     @Inject
     protected IssueController issueController;
 
+    @Inject
+    IssueParticipantRepository issueParticipantRepository;
+
     public UserRole getPrincipalRole(@NotNull final UUID projectId) {
         Map<UUID, MemberRole> roles = principal.getProjectRoles();
         if (roles.containsKey(projectId)) {
@@ -52,9 +56,15 @@ public class AbstractResource {
 
     public UUID checkReadPermissions(final UUID issueId) {
         IssueModel issue = issueController.getIssue(issueId);
+
         if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
             return issue.getProjectId();
         }
+
+        if (issueParticipantRepository.exists(principal.getId(), issueId)) {
+            return issue.getProjectId();
+        }
+
         throw new ForbiddenException("Inadequate user rights");
     }
 

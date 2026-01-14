@@ -1,5 +1,6 @@
 package de.remsfal.core.model.ticketing;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -40,11 +41,17 @@ public interface IssueModel {
 
     String getDescription();
 
-    UUID getBlockedBy();
+    Set<UUID> getBlockedBy();
 
-    UUID getRelatedTo();
+    Set<UUID> getRelatedTo();
 
-    UUID getDuplicateOf();
+    Set<UUID> getBlocks();
+
+    Set<UUID> getDuplicateOf();
+
+    Set<UUID> getParentOf();
+
+    Set<UUID> getChildOf();
 
     UUID getContractorId();
 
