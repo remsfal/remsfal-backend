@@ -34,10 +34,9 @@ public class InboxEventConsumer {
             return msg.ack();
         }
 
-        logger.infof(
-                "Received enriched issue event: %s for issue %s",
-                event.getIssueEventType(),
-                event.getIssueId()
+        logger.infof("Received enriched issue event: %s for issue %s",
+            event.getIssueEventType(),
+            event.getIssueId()
         );
 
         if (event.getOwner() == null || event.getOwner().getId() == null) {
@@ -63,7 +62,6 @@ public class InboxEventConsumer {
      * for a specific recipient user.
      */
     private InboxMessageEntity toEntity(IssueEventJson event, String recipientUserId) {
-
         // Create Cassandra key
         InboxMessageKey key = new InboxMessageKey();
         key.setUserId(recipientUserId);
@@ -82,7 +80,6 @@ public class InboxEventConsumer {
 
         // Event type (ISSUE_CREATED, ...)
         entity.setEventType(event.getIssueEventType().name());
-
         entity.setCreatedAt(Instant.now());
         entity.setRead(false);
 

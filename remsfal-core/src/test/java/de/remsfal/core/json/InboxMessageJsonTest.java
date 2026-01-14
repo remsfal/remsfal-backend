@@ -7,7 +7,7 @@ import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InboxMessageJsonTest {
+class InboxMessageJsonTest {
 
     @Test
     void shouldCreateAndAccessInboxMessageJson() {

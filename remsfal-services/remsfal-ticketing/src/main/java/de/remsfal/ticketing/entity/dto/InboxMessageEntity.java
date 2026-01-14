@@ -4,8 +4,6 @@ import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
-import java.time.Instant;
-
 @Entity("inbox_messages")
 public class InboxMessageEntity extends AbstractEntity {
 

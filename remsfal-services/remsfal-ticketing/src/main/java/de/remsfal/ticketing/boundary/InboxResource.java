@@ -29,17 +29,14 @@ public class InboxResource extends AbstractResource implements InboxEndpoint {
      * Lists inbox messages for the authenticated user.
      */
     @Override
-    public List<InboxMessageJson> getInboxMessages(
-            @QueryParam("read") Boolean read
-    ) {
+    public List<InboxMessageJson> getInboxMessages(final Boolean read) {
         try {
             String userId = principal.getJwt().getSubject();
 
             List<InboxMessageEntity> messages =
-                    controller.getInboxMessages(read, userId);
+                controller.getInboxMessages(read, userId);
 
             return toJsonList(messages);
-
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -49,15 +46,12 @@ public class InboxResource extends AbstractResource implements InboxEndpoint {
      * Updates the read flag of a message that belongs to the authenticated user.
      */
     @Override
-    public InboxMessageJson updateMessageStatus(
-            @PathParam("messageId") String messageId,
-            @QueryParam("read") boolean read
-    ) {
+    public InboxMessageJson updateMessageStatus(final String messageId, final Boolean read) {
         try {
             String userId = principal.getJwt().getSubject();
 
             InboxMessageEntity updated =
-                    controller.updateMessageStatus(messageId, read, userId);
+                controller.updateMessageStatus(messageId, read, userId);
 
             return toJson(updated);
 
@@ -70,7 +64,7 @@ public class InboxResource extends AbstractResource implements InboxEndpoint {
      * Deletes a message that belongs to the authenticated user.
      */
     @Override
-    public void deleteInboxMessage(@PathParam("messageId") String messageId) {
+    public void deleteInboxMessage(final String messageId) {
         try {
             String userId = principal.getJwt().getSubject();
             controller.deleteMessage(messageId, userId);
