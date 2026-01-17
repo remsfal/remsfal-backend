@@ -116,6 +116,8 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         return template.select(IssueEntity.class)
             .where("created_by").eq(userId)
             .result();
+    }
+
     // ---- Relation columns (Cassandra) ----
     private static final String COL_BLOCKS = "blocks_set";
     private static final String COL_BLOCKED_BY = "blocked_by_set";
