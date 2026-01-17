@@ -42,8 +42,7 @@ public class UserEventProducer {
                 }
             });
         } catch (Exception e) {
-            logger.errorv(e, "Exception while sending USER_DELETED event for user {0}", userId);
-            throw new RuntimeException("Failed to send USER_DELETED event", e);
+            logger.errorv(e, "Exception while sending USER_DELETED event for user {0}. Event will not be retried.", userId);
         }
     }
 
