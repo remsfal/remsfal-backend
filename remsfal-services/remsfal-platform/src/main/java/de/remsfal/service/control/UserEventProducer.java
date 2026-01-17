@@ -28,6 +28,8 @@ public class UserEventProducer {
             .userId(userId)
             .email(email)
             .type(UserEventType.USER_DELETED)
+            .timestamp(java.time.Instant.now())
+            .version(1)
             .build();
 
         try {

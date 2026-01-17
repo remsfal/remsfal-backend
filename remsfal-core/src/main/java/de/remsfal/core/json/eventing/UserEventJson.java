@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import java.time.Instant;
+
 /**
  * Event JSON for user-related events published via Kafka.
  * Used for event sourcing when users are deleted.
@@ -38,5 +40,15 @@ public interface UserEventJson {
      * The type of user event.
      */
     UserEventType getType();
+
+    /**
+     * Timestamp when the event was created.
+     */
+    Instant getTimestamp();
+
+    /**
+     * Schema version of this event.
+     */
+    int getVersion();
 
 }
