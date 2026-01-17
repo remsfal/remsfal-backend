@@ -94,6 +94,30 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             .execute();
     }
 
+    public List<IssueEntity> findByOwnerId(final UUID ownerId) {
+        return template.select(IssueEntity.class)
+            .where("owner_id").eq(ownerId)
+            .result();
+    }
+
+    public List<IssueEntity> findByRelatedTo(final UUID userId) {
+        return template.select(IssueEntity.class)
+            .where("related_to_set").eq(userId)
+            .result();
+    }
+
+    public List<IssueEntity> findByReporterId(final UUID userId) {
+        return template.select(IssueEntity.class)
+            .where("reporter_id").eq(userId)
+            .result();
+    }
+
+    public List<IssueEntity> findByCreatedBy(final UUID userId) {
+        return template.select(IssueEntity.class)
+            .where("created_by").eq(userId)
+            .result();
+    }
+
     // ---- Relation columns (Cassandra) ----
     private static final String COL_BLOCKS = "blocks_set";
     private static final String COL_BLOCKED_BY = "blocked_by_set";

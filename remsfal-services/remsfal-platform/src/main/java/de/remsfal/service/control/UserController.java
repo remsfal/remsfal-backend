@@ -47,6 +47,9 @@ public class UserController {
     @Inject
     NotificationController notificationController;
 
+    @Inject
+    UserEventProducer userEventProducer;
+
     private static final String DEFAULT_LOCALE = "de";
 
     @Transactional
@@ -133,7 +136,21 @@ public class UserController {
     @Transactional
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
-        return repository.remove(userId);
+        
+        final Optional<UserEntity> userOpt = repository.findByIdOptional(userId);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+        final UserEntity user = userOpt.get();
+        final String email = user.getEmail();
+        
+        boolean deleted = repository.remove(userId);
+        
+        if (deleted) {
+            userEventProducer.sendUserDeletedEvent(userId, email);
+        }
+        
+        return deleted;
     }
 
     private void syncAdditionalEmails(UserEntity user, List<String> newEmailsRaw) {
