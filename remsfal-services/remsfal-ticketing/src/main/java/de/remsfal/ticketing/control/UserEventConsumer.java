@@ -25,6 +25,13 @@ public class UserEventConsumer {
     public CompletionStage<Void> consumeUserEvent(Message<UserEventJson> msg) {
         UserEventJson event = msg.getPayload();
         
+        // Validate payload to prevent NullPointerExceptions
+        if (event == null || event.getType() == null || event.getUserId() == null) {
+            logger.errorv("Received invalid user event payload: event={0}, type={1}, userId={2}",
+                event, event != null ? event.getType() : null, event != null ? event.getUserId() : null);
+            return msg.ack(); // Acknowledge to prevent queue blocking
+        }
+        
         logger.infov("Received user event: type={0}, userId={1}", event.getType(), event.getUserId());
 
         switch (event.getType()) {
