@@ -38,6 +38,9 @@ public class UserEventConsumer {
             case USER_DELETED:
                 handleUserDeleted(event);
                 break;
+            default:
+                logger.warnv("Unhandled user event type: {0}, userId={1}", event.getType(), event.getUserId());
+                break;
         }
         
         return msg.ack();
