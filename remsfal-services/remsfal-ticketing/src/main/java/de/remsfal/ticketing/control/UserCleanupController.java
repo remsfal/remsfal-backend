@@ -110,11 +110,10 @@ public class UserCleanupController {
             for (IssueEntity issue : issues) {
                 try {
                     issue.setRelatedTo(null);
-                    issueRepository.update(issue);
                     if (issue.getStatus() == Status.IN_PROGRESS || issue.getStatus() == Status.PENDING) {
                         issue.setStatus(Status.OPEN);
-                        issueRepository.update(issue);
                     }
+                    issueRepository.update(issue);
                     count++;
                 } catch (Exception e) {
                     String error = String.format("Failed to clear relatedTo for issue %s: %s", issue.getId(), e.getMessage());
