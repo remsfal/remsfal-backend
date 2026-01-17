@@ -137,8 +137,11 @@ public class UserController {
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
         
-        final UserEntity user = repository.findByIdOptional(userId)
-            .orElseThrow(() -> new NotFoundException("User does not exist"));
+        final Optional<UserEntity> userOpt = repository.findByIdOptional(userId);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+        final UserEntity user = userOpt.get();
         final String email = user.getEmail();
         
         boolean deleted = repository.remove(userId);
