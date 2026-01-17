@@ -41,10 +41,16 @@ public class UserEventConsumer {
         
         try {
             UUID userId = event.getUserId();
-            userCleanupController.cleanupUserData(userId);
-            logger.infov("User cleanup completed for user {0}", userId);
+            CleanupResult result = userCleanupController.cleanupUserData(userId);
+            
+            if (result.hasErrors()) {
+                logger.warnv("User cleanup for {0} completed with {1} error(s) but will acknowledge message. " +
+                    "Partial cleanup is acceptable (best-effort strategy).", userId, result.errors.size());
+            } else {
+                logger.infov("User cleanup completed successfully for user {0}", userId);
+            }
         } catch (Exception e) {
-            logger.errorv(e, "Error during user cleanup for user {0}", event.getUserId());
+            logger.errorv(e, "Unexpected error during user cleanup for user {0}", event.getUserId());
         }
     }
 
