@@ -33,7 +33,16 @@ public interface UserEventJson {
     UUID getUserId();
 
     /**
-     * The email address of the user (for reference during cleanup).
+     * The email address of the user.
+     * <p>
+     * Primarily used for:
+     * <ul>
+     *   <li>Logging and debugging (human-readable identifier in logs)</li>
+     *   <li>Audit trails and event monitoring</li>
+     *   <li>Potential future consumers (e.g., email notifications, external systems)</li>
+     * </ul>
+     * Note: Cleanup operations in ticketing service use {@code userId} only.
+     * </p>
      */
     String getEmail();
 
