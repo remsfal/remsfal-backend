@@ -47,12 +47,10 @@ public class UserController {
     @Inject
     NotificationController notificationController;
 
-<<<<<<< HEAD
     @Inject
     UserEventProducer userEventProducer;
-=======
+
     private static final String DEFAULT_LOCALE = "de";
->>>>>>> e332dba80e99edb866aff19b51fa77e73a49d6a5
 
     @Transactional
     protected UserModel createUser(final String googleId, final String email) {
