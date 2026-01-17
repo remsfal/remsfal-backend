@@ -3,9 +3,10 @@ package de.remsfal.ticketing.control;
 import de.remsfal.core.model.ticketing.IssueModel.Status;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository;
+import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
-import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
+import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -13,7 +14,6 @@ import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -30,6 +30,9 @@ public class UserCleanupController {
 
     @Inject
     ChatMessageRepository chatMessageRepository;
+
+    @Inject
+    IssueParticipantRepository issueParticipantRepository;
 
     /**
      * Best-effort cleanup of user data across all ticketing entities.
@@ -178,28 +181,28 @@ public class UserCleanupController {
     private int removeFromChatSessions(UUID userId, List<String> errors) {
         int count = 0;
         try {
-            List<ChatSessionEntity> allSessions = chatSessionRepository.findAll();
-            for (ChatSessionEntity session : allSessions) {
-                Map<UUID, String> participants = session.getParticipants();
-                if (participants != null && participants.containsKey(userId)) {
-                    try {
-                        chatSessionRepository.deleteMember(
-                            session.getProjectId(),
-                            session.getSessionId(),
-                            session.getIssueId(),
-                            userId
-                        );
-                        count++;
-                        logger.infov("Removed user from chat session {0}", session.getSessionId());
-                    } catch (Exception e) {
-                        String error = String.format("Failed to remove user from session %s: %s", session.getSessionId(), e.getMessage());
-                        errors.add(error);
-                        logger.errorv(e, error);
-                    }
+            // Efficiently query only sessions where this user is a participant
+            List<IssueParticipantEntity> participants = issueParticipantRepository.findParticipantsByUserId(userId);
+            
+            for (IssueParticipantEntity participant : participants) {
+                try {
+                    chatSessionRepository.deleteMember(
+                        participant.getProjectId(),
+                        participant.getSessionId(),
+                        participant.getIssueId(),
+                        userId
+                    );
+                    count++;
+                    logger.infov("Removed user from chat session {0}", participant.getSessionId());
+                } catch (Exception e) {
+                    String error = String.format("Failed to remove user from session %s: %s", 
+                        participant.getSessionId(), e.getMessage());
+                    errors.add(error);
+                    logger.errorv(e, error);
                 }
             }
         } catch (Exception e) {
-            String error = String.format("Failed to find chat sessions: %s", e.getMessage());
+            String error = String.format("Failed to find user participants: %s", e.getMessage());
             errors.add(error);
             logger.errorv(e, error);
         }

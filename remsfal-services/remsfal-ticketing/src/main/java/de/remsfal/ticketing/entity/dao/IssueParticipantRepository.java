@@ -49,6 +49,38 @@ public class IssueParticipantRepository extends AbstractRepository<IssueParticip
            .toList();
     }
 
+    /**
+     * Finds all session IDs where the specified user is a participant.
+     * Used for efficient cleanup when removing a user from all chat sessions.
+     *
+     * @param userId the user ID to search for
+     * @return list of session IDs where the user participates
+     */
+    public List<UUID> findSessionIdsByUserId(UUID userId) {
+        List<IssueParticipantEntity> entities = template.select(IssueParticipantEntity.class)
+            .where(COL_USER_ID).eq(userId)
+            .result();
+
+        return entities.stream()
+            .map(IssueParticipantEntity::getSessionId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    }
+
+    /**
+     * Finds all participant entities for the specified user.
+     * Returns full entities with project_id, session_id, and issue_id needed for cleanup.
+     *
+     * @param userId the user ID to search for
+     * @return list of participant entities
+     */
+    public List<IssueParticipantEntity> findParticipantsByUserId(UUID userId) {
+        return template.select(IssueParticipantEntity.class)
+            .where(COL_USER_ID).eq(userId)
+            .result();
+    }
+
     public void updateRole(UUID userId, UUID issueId, UUID sessionId, String newRole) {
         try {
             IssueParticipantEntity entity = (IssueParticipantEntity) template.select(IssueParticipantEntity.class)
