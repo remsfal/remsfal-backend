@@ -8,6 +8,7 @@ import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
 import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.model.CleanupResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
@@ -119,7 +120,8 @@ public class UserCleanupController {
                     issueRepository.update(issue);
                     count++;
                 } catch (Exception e) {
-                    String error = String.format("Failed to clear relatedTo for issue %s: %s", issue.getId(), e.getMessage());
+                    String error = String.format("Failed to clear relatedTo for issue %s: %s",
+                        issue.getId(), e.getMessage());
                     errors.add(error);
                     logger.errorv(e, error);
                 }
@@ -142,7 +144,8 @@ public class UserCleanupController {
                     issueRepository.update(issue);
                     count++;
                 } catch (Exception e) {
-                    String error = String.format("Failed to clear reporterId for issue %s: %s", issue.getId(), e.getMessage());
+                    String error = String.format("Failed to clear reporterId for issue %s: %s",
+                        issue.getId(), e.getMessage());
                     errors.add(error);
                     logger.errorv(e, error);
                 }
@@ -165,7 +168,8 @@ public class UserCleanupController {
                     issueRepository.update(issue);
                     count++;
                 } catch (Exception e) {
-                    String error = String.format("Failed to clear createdBy for issue %s: %s", issue.getId(), e.getMessage());
+                    String error = String.format("Failed to clear createdBy for issue %s: %s",
+                        issue.getId(), e.getMessage());
                     errors.add(error);
                     logger.errorv(e, error);
                 }
@@ -195,7 +199,7 @@ public class UserCleanupController {
                     count++;
                     logger.infov("Removed user from chat session {0}", participant.getSessionId());
                 } catch (Exception e) {
-                    String error = String.format("Failed to remove user from session %s: %s", 
+                    String error = String.format("Failed to remove user from session %s: %s",
                         participant.getSessionId(), e.getMessage());
                     errors.add(error);
                     logger.errorv(e, error);
@@ -218,7 +222,8 @@ public class UserCleanupController {
                     chatMessageRepository.anonymizeSender(message.getSessionId(), message.getMessageId());
                     count++;
                 } catch (Exception e) {
-                    String error = String.format("Failed to anonymize message %s: %s", message.getMessageId(), e.getMessage());
+                    String error = String.format("Failed to anonymize message %s: %s",
+                        message.getMessageId(), e.getMessage());
                     errors.add(error);
                     logger.errorv(e, error);
                 }

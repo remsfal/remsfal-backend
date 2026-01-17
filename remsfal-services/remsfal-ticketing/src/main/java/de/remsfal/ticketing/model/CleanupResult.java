@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.control;
+package de.remsfal.ticketing.model;
 
 import java.util.List;
 
@@ -20,8 +20,8 @@ public class CleanupResult {
     public final List<String> errors;
 
     public CleanupResult(int closedIssues, int clearedRelatedTo, int clearedReporterId,
-                       int clearedCreatedBy, int removedFromSessions, int anonymizedMessages,
-                       List<String> errors) {
+            int clearedCreatedBy, int removedFromSessions, int anonymizedMessages,
+            List<String> errors) {
         this.closedIssues = closedIssues;
         this.clearedRelatedTo = clearedRelatedTo;
         this.clearedReporterId = clearedReporterId;
@@ -42,7 +42,7 @@ public class CleanupResult {
      * @return true if at least one cleanup operation succeeded
      */
     public boolean hasPartialSuccess() {
-        return closedIssues > 0 || clearedRelatedTo > 0 || clearedReporterId > 0 
+        return closedIssues > 0 || clearedRelatedTo > 0 || clearedReporterId > 0
             || clearedCreatedBy > 0 || removedFromSessions > 0 || anonymizedMessages > 0;
     }
 }

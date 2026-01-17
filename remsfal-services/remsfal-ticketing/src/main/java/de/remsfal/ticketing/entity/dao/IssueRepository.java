@@ -102,7 +102,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     public List<IssueEntity> findByRelatedTo(final UUID userId) {
         return template.select(IssueEntity.class)
-            .where("related_to").eq(userId)
+            .where("related_to_set").eq(userId)
             .result();
     }
 

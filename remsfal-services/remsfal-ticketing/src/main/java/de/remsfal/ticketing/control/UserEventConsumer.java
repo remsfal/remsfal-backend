@@ -1,6 +1,7 @@
 package de.remsfal.ticketing.control;
 
 import de.remsfal.core.json.eventing.UserEventJson;
+import de.remsfal.ticketing.model.CleanupResult;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -64,7 +65,8 @@ public class UserEventConsumer {
             CleanupResult result = userCleanupController.cleanupUserData(userId);
             
             if (result.hasErrors()) {
-                logger.warnv("User cleanup for {0} completed with {1} error(s) but message will be acknowledged if partial success. " +
+                logger.warnv("User cleanup for {0} completed with {1} error(s) " +
+                    "but message will be acknowledged if partial success. " +
                     "Partial cleanup is acceptable (best-effort strategy).", userId, result.errors.size());
             } else {
                 logger.infov("User cleanup completed successfully for user {0}", userId);
@@ -74,7 +76,7 @@ public class UserEventConsumer {
         } catch (Exception e) {
             logger.errorv(e, "Unexpected error during user cleanup for user {0}", event.getUserId());
             // Return a result indicating total failure
-            return new CleanupResult(0, 0, 0, 0, 0, 0, 
+            return new CleanupResult(0, 0, 0, 0, 0, 0,
                 java.util.List.of("Unexpected exception: " + e.getMessage()));
         }
     }

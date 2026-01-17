@@ -8,7 +8,7 @@
         <comment>Create indexes for user cleanup operations on issues table</comment>
         <sql>
             CREATE INDEX IF NOT EXISTS issues_owner_id_idx ON REMSFAL.issues (owner_id);
-            CREATE INDEX IF NOT EXISTS issues_related_to_idx ON REMSFAL.issues (related_to);
+            CREATE INDEX IF NOT EXISTS issues_related_to_idx ON REMSFAL.issues (related_to_set);
             CREATE INDEX IF NOT EXISTS issues_reporter_id_idx ON REMSFAL.issues (reporter_id);
             CREATE INDEX IF NOT EXISTS issues_created_by_idx ON REMSFAL.issues (created_by);
         </sql>
