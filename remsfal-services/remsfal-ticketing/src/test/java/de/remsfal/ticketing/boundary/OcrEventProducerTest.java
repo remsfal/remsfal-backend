@@ -14,7 +14,7 @@ import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import de.remsfal.ticketing.control.OcrEventProducer;
-import de.remsfal.ticketing.entity.dao.FileStorage;
+import de.remsfal.ticketing.entity.storage.FileStorage;
 import de.remsfal.ticketing.testcontainers.OcrServiceResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;

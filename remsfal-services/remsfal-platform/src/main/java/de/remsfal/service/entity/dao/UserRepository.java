@@ -23,6 +23,13 @@ public class UserRepository extends AbstractRepository<UserEntity> {
         return find("email", email).singleResultOptional();
     }
 
+    public Optional<UserEntity> findByIdWithAdditionalEmails(UUID id) {
+        return getEntityManager().createNamedQuery("UserEntity.findByIdWithAdditionalEmails", UserEntity.class)
+            .setParameter("id", id)
+            .getResultStream()
+            .findFirst();
+    }
+
     public boolean remove(final UUID userId) {
         return getEntityManager().createNamedQuery("UserEntity.deleteById")
             .setParameter("id", userId)

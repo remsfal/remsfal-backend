@@ -8,7 +8,6 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
-import jakarta.ws.rs.BadRequestException;
 
 import java.util.List;
 import java.util.Locale;
@@ -30,13 +29,12 @@ public class AddressController {
         return repository.findAddressByZip(zipCode);
     }
 
-    public boolean isValidAddress(final AddressModel address) {
-        return repository.findAddressByParameters(address).isPresent();
-    }
-
     @Transactional(TxType.MANDATORY)
     public AddressEntity updateAddress(final AddressModel address, AddressEntity entity) {
-        if(entity == null) {
+        if(entity == null && address.getStreet() == null && address.getCity() == null &&
+           address.getProvince() == null && address.getZip() == null && address.getCountry() == null) {
+            return null;
+        } else if(entity == null) {
             entity = new AddressEntity();
             entity.generateId();
         }
@@ -54,9 +52,6 @@ public class AddressController {
         }
         if(address.getCountry() != null) {
             entity.setCountry(address.getCountry());
-        }
-        if(!isValidAddress(entity)) {
-            throw new BadRequestException("Invalid address: " + entity.toString());
         }
         return entity;
     }

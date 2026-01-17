@@ -10,16 +10,21 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
 import de.remsfal.ticketing.entity.dto.ChatSessionKey;
+import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
+import de.remsfal.ticketing.entity.dto.IssueParticipantKey;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Optional;
+import java.util.NoSuchElementException;
+
 
 @ApplicationScoped
 public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity, ChatSessionKey> {
@@ -37,7 +42,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
     private static final String ERROR_SESSION_FETCH = "An error occurred while fetching the session";
 
     @Inject
-    ChatMessageRepository chatMessageRepository;
+    IssueParticipantRepository issueParticipantRepository;
 
     @Inject
     Logger logger;
@@ -48,8 +53,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         OBSERVER
     }
 
-    public ChatSessionEntity createChatSession(UUID projectId,
-        UUID issueId, Map<UUID, String> participants) {
+    public ChatSessionEntity createChatSession(UUID projectId, UUID issueId, Map<UUID, String> participants) {
         ChatSessionEntity session = new ChatSessionEntity();
         ChatSessionKey key = new ChatSessionKey();
         UUID sessionId = UUID.randomUUID();
@@ -58,9 +62,60 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         key.setIssueId(issueId);
         session.setKey(key);
         session.setParticipants(participants);
-        session.setCreatedAt(Instant.now());
-        session.setModifiedAt(Instant.now());
-        save(session);
+        Instant now = Instant.now();
+        session.setCreatedAt(now);
+        session.setModifiedAt(now);
+
+        // Create Participants first
+        List<UUID> insertedParticipants = new ArrayList<>();
+        try {
+            for (Map.Entry<UUID, String> entry : participants.entrySet()) {
+                UUID userId = entry.getKey();
+                String role = entry.getValue();
+
+                IssueParticipantEntity p = new IssueParticipantEntity();
+                IssueParticipantKey k = new IssueParticipantKey();
+                k.setUserId(userId);
+                k.setIssueId(issueId);
+                k.setSessionId(sessionId);
+                p.setKey(k);
+                p.setProjectId(projectId);
+                p.setRole(role);
+                p.setCreatedAt(now);
+
+                issueParticipantRepository.insert(p);
+                insertedParticipants.add(userId);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to insert participants for session " + sessionId
+                + ". Rolling back " + insertedParticipants.size() + " participants", e);
+            for (UUID userId : insertedParticipants) {
+                try {
+                    issueParticipantRepository.delete(userId, issueId, sessionId);
+                } catch (Exception rollbackError) {
+                    logger.error("Failed to rollback participant " + userId, rollbackError);
+                }
+            }
+            throw new IllegalStateException("Failed to create chat session participants", e);
+        }
+
+        // create session only if all inserts are successful
+        try {
+            save(session);
+        } catch (Exception e) {
+            // Rollback: delete all participants
+            logger.error("Failed to create chat session after inserting participants. "
+                + "Rolling back all participants for session " + sessionId, e);
+            for (UUID userId : insertedParticipants) {
+                try {
+                    issueParticipantRepository.delete(userId, issueId, sessionId);
+                } catch (Exception rollbackError) {
+                    logger.error("Failed to rollback participant " + userId, rollbackError);
+                }
+            }
+            throw new IllegalStateException("Failed to create chat session", e);
+        }
+
         return session;
     }
 
@@ -154,6 +209,18 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             logParticipants(participants);
             validateParticipantAddition(participants, userId, role);
             addParticipantToDatabase(projectId, sessionId, issueId, userId, role, participants);
+
+            IssueParticipantEntity p = new IssueParticipantEntity();
+            IssueParticipantKey k = new IssueParticipantKey();
+            k.setUserId(userId);
+            k.setIssueId(issueId);
+            k.setSessionId(sessionId);
+            p.setKey(k);
+            p.setProjectId(projectId);
+            p.setRole(role);
+            p.setCreatedAt(Instant.now());
+            issueParticipantRepository.insert(p);
+
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
@@ -163,55 +230,115 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
 
     public void changeParticipantRole(UUID projectId, UUID sessionId, UUID issueId, UUID userId, String newRole) {
         try {
-            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, issueId);
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
-            if (row != null) {
-                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN,
-                    UUID.class, String.class);
-                assert participants != null;
-                participants.put(userId, newRole);
-                Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                    .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
-                    .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                    .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
-                    .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
-                cqlSession.execute(updateQuery.build());
-            } else {
-                throw new RuntimeException("An error occurred while changing the participant role");
+
+            if (row == null) {
+                throw new IllegalArgumentException("Session not found");
             }
+
+            Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
+            assert participants != null;
+
+            if (!participants.containsKey(userId)) {
+                throw new IllegalArgumentException("User is not a participant in this session");
+            }
+
+            updateRoleInRepository(userId, issueId, sessionId, newRole);
+
+            participants.put(userId, newRole);
+            updateParticipantsAfterRoleChange(projectId, sessionId, issueId, participants);
+
+        } catch (IllegalStateException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while changing the participant role", e);
+            throw new IllegalStateException("An error occurred while changing the participant role", e);
+        }
+    }
+
+    private void updateRoleInRepository(UUID userId, UUID issueId, UUID sessionId, String newRole) {
+        try {
+            issueParticipantRepository.updateRole(userId, issueId, sessionId, newRole);
+        } catch (IllegalArgumentException e) {
+            logger.error("Participant not found in issue_participants for userId=" + userId
+                + ", sessionId=" + sessionId, e);
+            throw new IllegalStateException("An error occurred while changing the participant role", e);
+        } catch (Exception e) {
+            logger.error("Failed to update role in issue_participants for userId=" + userId
+                + ", sessionId=" + sessionId, e);
+            throw new IllegalStateException("An error occurred while changing the participant role", e);
+        }
+    }
+
+
+    private void updateParticipantsAfterRoleChange(UUID projectId, UUID sessionId, UUID issueId,
+        Map<UUID, String> participants) {
+        Update updateQuery = QueryBuilder.update(keyspace, TABLE)
+            .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+            .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+            .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
+            .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
+            .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
+
+        try {
+            cqlSession.execute(updateQuery.build());
+        } catch (Exception e) {
+            logger.error("Failed to update chat_sessions after role change. "
+                + "Manual cleanup may be required for session " + sessionId, e);
+            throw new IllegalStateException("An error occurred while changing the participant role", e);
         }
     }
 
     public void deleteMember(UUID projectId, UUID sessionId, UUID issueId, UUID userId) {
         try {
-            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN,
-                projectId, sessionId, issueId);
+            Select selectQuery = makeSelectQuery(PARTICIPANTS_COLUMN, projectId, sessionId, issueId);
             ResultSet resultSet = cqlSession.execute(selectQuery.build());
             Row row = resultSet.one();
+
             if (row != null) {
-                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class,
-                    String.class);
+                Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
                 assert participants != null;
+
+                deleteParticipantFromRepository(userId, issueId, sessionId);
+
                 participants.remove(userId);
-                Update updateQuery = QueryBuilder.update(keyspace, TABLE)
-                    .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
-                    .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
-                    .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
-                    .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
-                    .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
-                cqlSession.execute(updateQuery.build());
+                updateParticipantsAfterDeletion(projectId, sessionId, issueId, participants);
             } else {
                 throw new IllegalArgumentException(NOT_FOUND_PARTICIPANTS);
             }
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while removing the participant", e);
+            throw new IllegalArgumentException("An error occurred while removing the participant", e);
+        }
+    }
+
+    private void deleteParticipantFromRepository(UUID userId, UUID issueId, UUID sessionId) {
+        try {
+            issueParticipantRepository.delete(userId, issueId, sessionId);
+        } catch (Exception e) {
+            logger.error("Failed to delete participant from issue_participants: "
+                + userId + " in session " + sessionId, e);
+            throw new IllegalArgumentException("Failed to remove participant from issue", e);
+        }
+    }
+
+    private void updateParticipantsAfterDeletion(UUID projectId, UUID sessionId, UUID issueId,
+        Map<UUID, String> participants) {
+        Update updateQuery = QueryBuilder.update(keyspace, TABLE)
+            .setColumn(PARTICIPANTS_COLUMN, QueryBuilder.literal(participants))
+            .setColumn(MODIFIED_AT_COLUMN, QueryBuilder.literal(Instant.now()))
+            .whereColumn(PROJECT_ID).isEqualTo(QueryBuilder.literal(projectId))
+            .whereColumn(SESSION_ID).isEqualTo(QueryBuilder.literal(sessionId))
+            .whereColumn(ISSUE_ID).isEqualTo(QueryBuilder.literal(issueId));
+
+        try {
+            cqlSession.execute(updateQuery.build());
+        } catch (Exception e) {
+            logger.error("Failed to update chat_sessions after deleting participant. "
+                + "Manual cleanup may be required for session " + sessionId, e);
+            throw new IllegalArgumentException("Failed to update session after participant removal", e);
         }
     }
 
@@ -224,7 +351,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             logger.info("Executing delete query: " + deleteQuery.asCql());
             cqlSession.execute(deleteQuery.build());
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while deleting the session", e);
+            throw new IllegalArgumentException("An error occurred while deleting the session", e);
         }
     }
 
@@ -305,5 +432,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
     public List<ChatSessionEntity> findAll() {
         return template.select(ChatSessionEntity.class).result();
     }
+
 
 }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import com.datastax.oss.driver.api.core.CqlSession;
 
 import de.remsfal.test.AbstractTest;
-import de.remsfal.ticketing.entity.dao.FileStorage;
+import de.remsfal.ticketing.entity.storage.FileStorage;
 import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -57,6 +57,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute("TRUNCATE issues");
         cqlSession.execute("TRUNCATE chat_sessions");
         cqlSession.execute("TRUNCATE chat_messages");
+        cqlSession.execute("TRUNCATE inbox_messages");
     }
 
     protected void setupTestFiles() throws Exception {
