@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.1-user-cleanup-indexes" author="remsfal-bot">
+        <comment>Create indexes for user cleanup operations on issues table</comment>
+        <sql>
+            CREATE INDEX IF NOT EXISTS issues_owner_id_idx ON REMSFAL.issues (owner_id);
+            CREATE INDEX IF NOT EXISTS issues_related_to_idx ON REMSFAL.issues (related_to);
+            CREATE INDEX IF NOT EXISTS issues_reporter_id_idx ON REMSFAL.issues (reporter_id);
+            CREATE INDEX IF NOT EXISTS issues_created_by_idx ON REMSFAL.issues (created_by);
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS issues_owner_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS issues_related_to_idx;</sql>
+            <sql>DROP INDEX IF EXISTS issues_reporter_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS issues_created_by_idx;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

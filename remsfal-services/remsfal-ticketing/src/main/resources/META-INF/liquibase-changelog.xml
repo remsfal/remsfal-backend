@@ -19,4 +19,5 @@
     <include file="META-INF/changesets/005-create-issue-participants-table.xml"/>
     <include file="META-INF/changesets/006-issues-relations-nm.xml"/>
     <include file="META-INF/changesets/007-create-inbox-messages-table.xml"/>
+    <include file="META-INF/changesets/008-add-user-cleanup-indexes.xml"/>
 </databaseChangeLog>
