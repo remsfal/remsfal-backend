@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Event JSON for user-related events published via Kafka.
@@ -29,7 +30,7 @@ public interface UserEventJson {
     /**
      * The unique identifier of the user.
      */
-    String getUserId();
+    UUID getUserId();
 
     /**
      * The email address of the user (for reference during cleanup).

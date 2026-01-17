@@ -144,7 +144,7 @@ public class UserController {
         boolean deleted = repository.remove(userId);
         
         if (deleted) {
-            userEventProducer.sendUserDeletedEvent(userId.toString(), email);
+            userEventProducer.sendUserDeletedEvent(userId, email);
         }
         
         return deleted;

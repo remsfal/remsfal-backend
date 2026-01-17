@@ -40,11 +40,9 @@ public class UserEventConsumer {
         logger.infov("Processing USER_DELETED event for user {0}", event.getUserId());
         
         try {
-            UUID userId = UUID.fromString(event.getUserId());
+            UUID userId = event.getUserId();
             userCleanupController.cleanupUserData(userId);
-            logger.infov("User cleanup completed for user {0}", event.getUserId());
-        } catch (IllegalArgumentException e) {
-            logger.errorv(e, "Invalid userId format: {0}", event.getUserId());
+            logger.infov("User cleanup completed for user {0}", userId);
         } catch (Exception e) {
             logger.errorv(e, "Error during user cleanup for user {0}", event.getUserId());
         }

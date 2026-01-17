@@ -21,7 +21,7 @@ public class UserEventProducer {
     @Channel(UserEventJson.TOPIC)
     Emitter<UserEventJson> emitter;
 
-    public void sendUserDeletedEvent(final String userId, final String email) {
+    public void sendUserDeletedEvent(final java.util.UUID userId, final String email) {
         logger.infov("Sending USER_DELETED event for user (id={0}, email={1})", userId, email);
         
         UserEventJson event = ImmutableUserEventJson.builder()
