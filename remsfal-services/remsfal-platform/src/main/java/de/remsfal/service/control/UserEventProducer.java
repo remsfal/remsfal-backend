@@ -32,18 +32,14 @@ public class UserEventProducer {
             .version(1)
             .build();
 
-        try {
-            CompletionStage<Void> ack = emitter.send(event);
-            ack.whenComplete((res, ex) -> {
-                if (ex != null) {
-                    logger.errorv(ex, "Failed to send USER_DELETED event for user {0}", userId);
-                } else {
-                    logger.infov("Successfully sent USER_DELETED event for user {0}", userId);
-                }
-            });
-        } catch (Exception e) {
-            logger.errorv(e, "Exception while sending USER_DELETED event for user {0}. Event will not be retried.", userId);
-        }
+        CompletionStage<Void> ack = emitter.send(event);
+        ack.whenComplete((res, ex) -> {
+            if (ex != null) {
+                logger.errorv(ex, "Failed to send USER_DELETED event for user {0}", userId);
+            } else {
+                logger.infov("Successfully sent USER_DELETED event for user {0}", userId);
+            }
+        });
     }
 
 }
