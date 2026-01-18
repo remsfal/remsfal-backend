@@ -372,8 +372,6 @@ resource "azurerm_container_app" "apps" {
   registry {
     identity = "system"
     server               = azurerm_container_registry.main.login_server
-    # username             = azurerm_container_registry.main.admin_username
-    # password_secret_name = "acr-password"
   }
 
   # NOTE: Database/Cosmos/EventHub secrets for app configuration are loaded 
