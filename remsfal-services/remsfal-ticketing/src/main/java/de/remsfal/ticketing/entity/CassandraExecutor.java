@@ -154,50 +154,6 @@ public class CassandraExecutor {
         }
     }
 
-    private void runDirectMigrations(CqlSession session) {
-        logger.info("Running CQL migrations directly (bypassing Liquibase for Cosmos DB)");
-        
-        // 001-create-issues-table
-        logger.info("Creating issues table...");
-        session.execute(
-            "CREATE TABLE IF NOT EXISTS issues (" +
-            "project_id UUID, issue_id UUID, type TEXT, title TEXT, status TEXT, " +
-            "reporter_id UUID, tenancy_id UUID, owner_id UUID, description TEXT, " +
-            "blocked_by UUID, related_to UUID, duplicate_of UUID, " +
-            "created_by UUID, created_at TIMESTAMP, modified_at TIMESTAMP, " +
-            "PRIMARY KEY (project_id, issue_id)) " +
-            "WITH CLUSTERING ORDER BY (issue_id ASC)");
-        // Note: No index on issue_id - it's a clustering key (already indexed)
-        // Cosmos DB does not support indexes on clustering keys
-        
-        // 002-create-chat-sessions-table
-        logger.info("Creating chat_sessions table...");
-        session.execute(
-            "CREATE TABLE IF NOT EXISTS chat_sessions (" +
-            "project_id UUID, issue_id UUID, session_id UUID, " +
-            "participants MAP<UUID, TEXT>, created_at TIMESTAMP, modified_at TIMESTAMP, " +
-            "PRIMARY KEY ((project_id, issue_id), session_id)) " +
-            "WITH CLUSTERING ORDER BY (session_id ASC)");
-        
-        // 003-create-chat-messages-table
-        logger.info("Creating chat_messages table...");
-        session.execute(
-            "CREATE TABLE IF NOT EXISTS chat_messages (" +
-            "session_id UUID, message_id UUID, sender_id UUID, " +
-            "content_type TEXT, content TEXT, url TEXT, " +
-            "created_at TIMESTAMP, modified_at TIMESTAMP, " +
-            "PRIMARY KEY (session_id, message_id)) " +
-            "WITH CLUSTERING ORDER BY (message_id ASC)");
-        
-        // 004-add-issues-indexes
-        logger.info("Creating indexes on issues table...");
-        session.execute("CREATE INDEX IF NOT EXISTS issues_status_idx ON issues (status)");
-        session.execute("CREATE INDEX IF NOT EXISTS issues_owner_id_idx ON issues (owner_id)");
-        session.execute("CREATE INDEX IF NOT EXISTS issues_tenancy_id_idx ON issues (tenancy_id)");
-        
-        logger.info("CQL migrations completed successfully");
-    }
-
     private void processChangelogs(CqlSession session) throws SQLException, LiquibaseException {
         logger.infov("Processing Cassandra changelogs XML at {0}", liquibaseChangelog);
 
