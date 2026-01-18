@@ -2,6 +2,10 @@
 
 environment = "prd"
 
+# Pre-created ACR (WICHTIG: muss VOR terraform apply via CLI erstellt werden!)
+acr_name           = "rmsflprdweuacr"    # ${PROJECT_PREFIX}${ENVIRONMENT}weuacr
+acr_resource_group = "remsfal-iac-rg"    # ${IAC_RESOURCE_GROUP}
+
 # PostgreSQL Configuration
 postgres_admin_username = "psqladmin"
 postgres_admin_password = "CHANGE_ME_IN_PRODUCTION!"  # Must be changed!
@@ -15,9 +19,10 @@ cosmos_throughput = 1000
 eventhub_capacity = 2
 
 # Container Apps Configuration
+# Images werden aus der ACR geladen: ${acr_name}.azurecr.io/${image_name}:stable
 container_apps = {
   frontend = {
-    image            = "remsfal/frontend:stable"
+    image            = "remsfal-frontend:stable"
     cpu              = 1
     memory           = "2Gi"
     min_replicas     = 2
@@ -27,7 +32,7 @@ container_apps = {
     external_enabled = true
   }
   platform = {
-    image            = "remsfal/platform:stable"
+    image            = "remsfal-platform:stable"
     cpu              = 1.5
     memory           = "3Gi"
     min_replicas     = 2
@@ -37,7 +42,7 @@ container_apps = {
     external_enabled = true
   }
   ticketing = {
-    image            = "remsfal/ticketing:stable"
+    image            = "remsfal-ticketing:stable"
     cpu              = 1.5
     memory           = "3Gi"
     min_replicas     = 2
@@ -47,7 +52,7 @@ container_apps = {
     external_enabled = true
   }
   notification = {
-    image            = "remsfal/notification:stable"
+    image            = "remsfal-notification:stable"
     cpu              = 1
     memory           = "2Gi"
     min_replicas     = 1
@@ -57,9 +62,9 @@ container_apps = {
     external_enabled = false
   }
   ocr = {
-    image            = "remsfal/ocr:stable"
-    cpu              = 1
-    memory           = "2Gi"
+    image            = "remsfal-ocr:stable"
+    cpu              = 2
+    memory           = "4Gi"
     min_replicas     = 1
     max_replicas     = 5
     ingress_enabled  = true
