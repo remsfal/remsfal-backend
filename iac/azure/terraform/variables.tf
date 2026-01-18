@@ -4,6 +4,17 @@ variable "subscription_id" {
   default     = "012e925b-f538-41ef-8d23-b0c85e7dbe7b"
 }
 
+# Pre-created Azure Container Registry (created via CLI before terraform apply)
+variable "acr_name" {
+  type        = string
+  description = "Name of the pre-created Azure Container Registry"
+}
+
+variable "acr_resource_group" {
+  type        = string
+  description = "Resource group of the pre-created Azure Container Registry"
+}
+
 variable "location" {
   type        = string
   description = "Azure Region"

@@ -53,14 +53,11 @@ resource "azurerm_role_assignment" "terraform_kv_admin" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-# Container Registry
-resource "azurerm_container_registry" "main" {
-  name                = local.container_registry_name
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-  sku                 = "Basic"
-  admin_enabled       = true
-  tags                = local.common_tags
+# Container Registry (pre-created via CLI)
+# Using data source to reference existing ACR created before terraform apply
+data "azurerm_container_registry" "main" {
+  name                = var.acr_name
+  resource_group_name = var.acr_resource_group
 }
 
 # Storage Account for Blob Storage
@@ -371,7 +368,7 @@ resource "azurerm_container_app" "apps" {
 
   registry {
     identity = "system"
-    server               = azurerm_container_registry.main.login_server
+    server               = data.azurerm_container_registry.main.login_server
   }
 
   # NOTE: Database/Cosmos/EventHub secrets for app configuration are loaded 
@@ -435,7 +432,7 @@ resource "azurerm_container_app" "apps" {
 
     container {
       name   = each.key
-      image  = "${azurerm_container_registry.main.login_server}/${each.value.image}"
+      image  = "${data.azurerm_container_registry.main.login_server}/${each.value.image}"
       cpu    = each.value.cpu
       memory = each.value.memory
 
@@ -593,7 +590,7 @@ resource "azurerm_container_app" "apps" {
 # Grant ACR Pull permissions to each Container App's System-Assigned Managed Identity
 resource "azurerm_role_assignment" "container_app_acr_pull" {
   for_each             = var.container_apps
-  scope                = azurerm_container_registry.main.id
+  scope                = data.azurerm_container_registry.main.id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_container_app.apps[each.key].identity[0].principal_id
 }

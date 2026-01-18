@@ -4,11 +4,11 @@
 # REMSFAL Backend - Azure Container Registry Deployment Script
 ###############################################################################
 #
-# This script builds the backend microservices, runs tests, creates Docker 
-# images, and pushes them to Azure Container Registry (ACR).
+# This script builds the backend microservices, runs tests, and pushes Docker
+# images to Azure Container Registry (ACR) using ACR Build Tasks.
 #
-# REQUIRES: Bash 4+ (for associative arrays)
-# On macOS: brew install bash && /opt/homebrew/bin/bash deploy-to-acr.sh ...
+# NOTE: Uses 'az acr build' to build on Azure's amd64 infrastructure,
+#       avoiding emulation issues on Apple Silicon Macs.
 #
 # SERVICES:
 #   - remsfal-platform     (Port 8080) - Main platform service with PostgreSQL
@@ -17,24 +17,28 @@
 #
 # USAGE:
 #   chmod +x .github/workflows/deploy-to-acr.sh
-#   ./.github/workflows/deploy-to-acr.sh <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [SERVICE]
+#   ./.github/workflows/deploy-to-acr.sh <ACR_NAME> [IMAGE_TAG] [SERVICE] [--skip-tests]
+#
+# PREREQUISITES:
+#   - Azure CLI installed and logged in (az login)
+#   - Java 17+ and Maven installed
 #
 # EXAMPLES:
 #   # Deploy all services
-#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" v1.0.0
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr v1.0.0
 #
 #   # Deploy only platform service
-#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" v1.0.0 platform
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr v1.0.0 platform
 #
 #   # Deploy only ticketing service
-#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" latest ticketing
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr latest ticketing
 #
-#   # Deploy only ticketing service
-#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" latest all --skip-tests
+#   # Deploy all services without tests
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr latest all --skip-tests
 #
 # PULL AND RUN LOCALLY:
 #   # 1. Login to ACR
-#   docker login rmsfldevweuacr.azurecr.io -u rmsfldevweuacr -p "YOUR_PASSWORD"
+#   az acr login --name rmsfldevweuacr
 #
 #   # 2. Pull images
 #   docker pull rmsfldevweuacr.azurecr.io/remsfal-platform:latest
@@ -56,11 +60,9 @@
 #
 # PARAMETERS:
 #   ACR_NAME      - Name of Azure Container Registry (e.g., rmsfldevweuacr)
-#   ACR_USERNAME  - ACR username (typically same as ACR_NAME)
-#   ACR_PASSWORD  - ACR password or access token
 #   IMAGE_TAG     - (Optional) Docker image tag (default: latest)
 #   SERVICE       - (Optional) Single service to deploy: platform|ticketing|notification|all
-#   SKIP_TESTS    - (Optional) Set to "true" to skip tests
+#   --skip-tests  - (Optional) Skip running tests before build
 #
 ###############################################################################
 
@@ -112,15 +114,19 @@ for arg in "$@"; do
 done
 
 # Validate input parameters
-if [ ${#POSITIONAL_ARGS[@]} -lt 3 ]; then
+if [ ${#POSITIONAL_ARGS[@]} -lt 1 ]; then
     log_error "Missing required parameters"
     echo ""
-    echo "Usage: $0 <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [SERVICE] [--skip-tests]"
+    echo "Usage: $0 <ACR_NAME> [IMAGE_TAG] [SERVICE] [--skip-tests]"
+    echo ""
+    echo "Prerequisites:"
+    echo "  - Azure CLI installed and logged in (az login)"
+    echo "  - Java 17+ and Maven installed"
     echo ""
     echo "Examples:"
-    echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" v1.0.0"
-    echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" latest platform"
-    echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" latest all --skip-tests"
+    echo "  $0 rmsfldevweuacr v1.0.0"
+    echo "  $0 rmsfldevweuacr latest platform"
+    echo "  $0 rmsfldevweuacr latest all --skip-tests"
     echo ""
     echo "Services: platform, ticketing, notification, all (default)"
     echo "Flags:    --skip-tests  Skip running tests before build"
@@ -128,10 +134,8 @@ if [ ${#POSITIONAL_ARGS[@]} -lt 3 ]; then
 fi
 
 ACR_NAME="${POSITIONAL_ARGS[0]}"
-ACR_USERNAME="${POSITIONAL_ARGS[1]}"
-ACR_PASSWORD="${POSITIONAL_ARGS[2]}"
-IMAGE_TAG="${POSITIONAL_ARGS[3]:-latest}"
-SERVICE_FILTER="${POSITIONAL_ARGS[4]:-all}"
+IMAGE_TAG="${POSITIONAL_ARGS[1]:-latest}"
+SERVICE_FILTER="${POSITIONAL_ARGS[2]:-all}"
 
 # Configuration
 ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
@@ -263,18 +267,14 @@ if ! command -v mvn &> /dev/null && ! command -v ./mvnw &> /dev/null; then
     exit 1
 fi
 
-if ! command -v docker &> /dev/null; then
-    log_error "Docker is not installed. Please install Docker first."
+if ! command -v az &> /dev/null; then
+    log_error "Azure CLI is not installed. Please install it first:"
+    log_info "  brew install azure-cli  (macOS)"
+    log_info "  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash  (Linux)"
     exit 1
 fi
 
-# Check if Docker daemon is running
-if ! docker info &> /dev/null; then
-    log_error "Docker daemon is not running. Please start Docker."
-    exit 1
-fi
-
-log_success "All prerequisites are met (Java ${JAVA_VERSION}, Maven, Docker)"
+log_success "All prerequisites are met (Java ${JAVA_VERSION}, Maven, Azure CLI)"
 echo ""
 
 # Set Maven command (used by tests and build steps)
@@ -338,60 +338,30 @@ done
 echo ""
 
 ###############################################################################
-# Step 4: Build Docker images
+# Step 4: Build and Push Docker images using ACR Build Tasks
 ###############################################################################
-log_step "Step 4: Building Docker images for linux/amd64 platform..."
+log_step "Step 4: Building Docker images on Azure (ACR Build Tasks)..."
 
-log_warning "Building for linux/amd64 (required for Azure Container Apps)"
+log_info "Building on Azure's amd64 infrastructure (avoids local emulation issues)"
 echo ""
 
 for service_key in ${SERVICES_TO_DEPLOY}; do
     service_name=$(get_service_name "${service_key}")
     full_image_name="${ACR_LOGIN_SERVER}/${service_name}:${IMAGE_TAG}"
     
-    log_info "Building Docker image for ${service_name}..."
+    log_info "Building ${service_name} on ACR..."
+    log_info "Target image: ${full_image_name}"
     
-    docker build \
-        --platform linux/amd64 \
-        -f "${DOCKERFILE_PATH}" \
+    az acr build \
+        --registry "${ACR_NAME}" \
+        --image "${service_name}:${IMAGE_TAG}" \
+        --file "${DOCKERFILE_PATH}" \
         --build-arg SERVICE_NAME="${service_name}" \
-        -t "${full_image_name}" \
+        --platform linux/amd64 \
         . \
-        || { log_error "Docker build failed for ${service_name}"; exit 1; }
+        || { log_error "ACR Build failed for ${service_name}"; exit 1; }
     
-    log_success "Built image: ${full_image_name}"
-done
-
-echo ""
-
-###############################################################################
-# Step 5: Login to ACR
-###############################################################################
-log_step "Step 5: Logging in to Azure Container Registry..."
-
-echo "${ACR_PASSWORD}" | docker login "${ACR_LOGIN_SERVER}" \
-    --username "${ACR_USERNAME}" \
-    --password-stdin \
-    || { log_error "Failed to login to ACR"; exit 1; }
-
-log_success "Successfully logged in to ACR: ${ACR_LOGIN_SERVER}"
-echo ""
-
-###############################################################################
-# Step 6: Push Docker images
-###############################################################################
-log_step "Step 6: Pushing Docker images to ACR..."
-
-for service_key in ${SERVICES_TO_DEPLOY}; do
-    service_name=$(get_service_name "${service_key}")
-    full_image_name="${ACR_LOGIN_SERVER}/${service_name}:${IMAGE_TAG}"
-    
-    log_info "Pushing ${service_name}..."
-    
-    docker push "${full_image_name}" \
-        || { log_error "Failed to push ${service_name}"; exit 1; }
-    
-    log_success "Pushed: ${full_image_name}"
+    log_success "Built and pushed: ${full_image_name}"
 done
 
 echo ""

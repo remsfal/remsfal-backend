@@ -13,15 +13,20 @@ output "environment" {
   value       = var.environment
 }
 
-# Container Registry
+# Container Registry (pre-created)
+output "container_registry_name" {
+  description = "Container Registry name"
+  value       = data.azurerm_container_registry.main.name
+}
+
 output "container_registry_login_server" {
   description = "Container Registry login server"
-  value       = azurerm_container_registry.main.login_server
+  value       = data.azurerm_container_registry.main.login_server
 }
 
 output "container_registry_admin_username" {
   description = "Container Registry admin username"
-  value       = azurerm_container_registry.main.admin_username
+  value       = data.azurerm_container_registry.main.admin_username
   sensitive   = true
 }
 
