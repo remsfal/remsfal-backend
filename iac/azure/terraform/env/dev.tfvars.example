@@ -1,4 +1,7 @@
 # Development Environment Configuration
+# =====================================
+# Entwicklungsumgebung mit minimalen Ressourcen und Scale-to-Zero für alle Services.
+# Hinweis: min_replicas=0 bedeutet Cold-Start-Latenz bei erstem Request (~10-30s).
 
 environment = "dev"
 
@@ -8,49 +11,58 @@ acr_name           = "rmsfldevweuacr"    # ${PROJECT_PREFIX}${ENVIRONMENT}weuacr
 acr_resource_group = "remsfal-iac-rg"    # ${IAC_RESOURCE_GROUP}
 
 # PostgreSQL Configuration
+# SKU-Optionen: B_Standard_B1ms (1 vCore, 2GB) → B_Standard_B2s (2 vCores, 4GB) → GP_Standard_D2s_v3 (Production)
 postgres_admin_username = "psqladmin"
 postgres_admin_password = "DevP@ssw0rd123!"  # Change in production!
-postgres_sku            = "B_Standard_B1ms"
-postgres_storage_mb     = 32768
+postgres_sku            = "B_Standard_B1ms"   # Burstable, günstigste Option
+postgres_storage_mb     = 32768               # 32 GB Minimum
 
 # Cosmos DB Configuration
+# Throughput in RU/s (Request Units). 400 RU/s ist das Minimum für Cassandra API.
 cosmos_throughput = 400
 
 # Event Hub Configuration
-eventhub_capacity = 1
+# WICHTIG: Standard SKU ist erforderlich für Kafka-Kompatibilität (Basic unterstützt kein Kafka!)
+eventhub_capacity = 1  # 1 Throughput Unit = 1 MB/s ingress, 2 MB/s egress
 
 # Container Apps Configuration
-# Images werden aus der ACR geladen: ${acr_name}.azurecr.io/${image_name}:latest
+# ============================
+# Development: Alle Services mit min_replicas=0 (Scale-to-Zero) und minimalen Ressourcen.
+# CPU: 0.25 (Minimum), Memory: 0.5Gi (Minimum)
+# OCR-Service: benötigt mehr Ressourcen wegen ML-Modellen (cpu=0.5, memory=1Gi)
 container_apps = {
   frontend = {
     image            = "remsfal-frontend:latest"
     cpu              = 0.25
     memory           = "0.5Gi"
-    min_replicas     = 0
+    min_replicas     = 0  # Scale-to-Zero für Kostenoptimierung
     max_replicas     = 2
     ingress_enabled  = true
     target_port      = 80
     external_enabled = true
+    eventhub_scaling = null  # Kein Event Hub Scaling für Frontend
   }
   platform = {
     image            = "remsfal-platform:latest"
-    cpu              = 0.5
-    memory           = "1Gi"
-    min_replicas     = 1
+    cpu              = 0.25
+    memory           = "0.5Gi"
+    min_replicas     = 0  # Scale-to-Zero (Cold-Start: ~15-30s)
     max_replicas     = 3
     ingress_enabled  = true
     target_port      = 8080
     external_enabled = true
+    eventhub_scaling = null  # HTTP-basiertes Scaling
   }
   ticketing = {
     image            = "remsfal-ticketing:latest"
-    cpu              = 0.5
-    memory           = "1Gi"
-    min_replicas     = 1
+    cpu              = 0.25
+    memory           = "0.5Gi"
+    min_replicas     = 0  # Scale-to-Zero (Cold-Start: ~15-30s)
     max_replicas     = 3
     ingress_enabled  = true
     target_port      = 8081
     external_enabled = true
+    eventhub_scaling = null  # HTTP-basiertes Scaling
   }
   notification = {
     image            = "remsfal-notification:latest"
@@ -60,17 +72,25 @@ container_apps = {
     max_replicas     = 2
     ingress_enabled  = true
     target_port      = 8082
-    external_enabled = false
+    external_enabled = false  # Internal only
+    eventhub_scaling = null   # Kafka-Consumer, aber einfaches Scaling reicht
   }
   ocr = {
     image            = "remsfal-ocr:latest"
-    cpu              = 1.0
-    memory           = "2Gi"
+    cpu              = 0.5    # Mehr CPU für ML-Modelle
+    memory           = "1Gi"  # Mehr Memory für OCR-Verarbeitung
     min_replicas     = 0
     max_replicas     = 2
-    ingress_enabled  = true
-    target_port      = 8083
+    ingress_enabled  = false  # Kein HTTP-Ingress, nur Kafka
+    target_port      = 8000   # Health-Check Port
     external_enabled = false
+    # KEDA Event Hub Scaling für automatische Skalierung basierend auf Message Backlog
+    eventhub_scaling = {
+      enabled               = true
+      consumer_group        = "ocr-service"  # WICHTIG: Dedizierte Consumer Group, NICHT $Default!
+      event_hub_name        = "ocr.documents.to_process"
+      message_lag_threshold = 10  # Skaliert bei 10+ unverarbeiteten Nachrichten
+    }
   }
 }
 

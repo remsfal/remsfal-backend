@@ -165,9 +165,9 @@ variable "container_apps" {
       external_enabled = false
       # KEDA scaling based on Event Hub message lag
       eventhub_scaling = {
-        enabled             = true
-        consumer_group      = "$Default"
-        event_hub_name      = "ocr.documents.to_process"
+        enabled               = true
+        consumer_group        = "ocr-service"  # WICHTIG: Dedizierte Consumer Group, nicht $Default!
+        event_hub_name        = "ocr.documents.to_process"
         message_lag_threshold = 10
       }
     }

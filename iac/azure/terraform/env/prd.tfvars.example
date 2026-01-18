@@ -1,4 +1,7 @@
 # Production Environment Configuration
+# =====================================
+# Produktionsumgebung mit Hochverfügbarkeit und ausreichend Ressourcen.
+# WICHTIG: min_replicas > 0 für kritische Services (Platform, Ticketing) um Cold-Starts zu vermeiden!
 
 environment = "prd"
 
@@ -7,69 +10,85 @@ acr_name           = "rmsflprdweuacr"    # ${PROJECT_PREFIX}${ENVIRONMENT}weuacr
 acr_resource_group = "remsfal-iac-rg"    # ${IAC_RESOURCE_GROUP}
 
 # PostgreSQL Configuration
+# GP_Standard_D2s_v3: General Purpose, 2 vCores, 8GB RAM - empfohlen für Production
+# Weitere Optionen: GP_Standard_D4s_v3 (4 vCores), GP_Standard_D8s_v3 (8 vCores)
 postgres_admin_username = "psqladmin"
-postgres_admin_password = "CHANGE_ME_IN_PRODUCTION!"  # Must be changed!
-postgres_sku            = "GP_Standard_D2s_v3"
-postgres_storage_mb     = 131072
+postgres_admin_password = "CHANGE_ME_IN_PRODUCTION!"  # MUSS geändert werden!
+postgres_sku            = "GP_Standard_D2s_v3"         # General Purpose Tier
+postgres_storage_mb     = 131072                       # 128 GB
 
 # Cosmos DB Configuration
+# 1000 RU/s für Production-Last. Für Autoscale: cosmos_throughput = null und autoscale_settings konfigurieren
 cosmos_throughput = 1000
 
 # Event Hub Configuration
+# 2 TUs für höhere Durchsatzrate in Production
 eventhub_capacity = 2
 
 # Container Apps Configuration
-# Images werden aus der ACR geladen: ${acr_name}.azurecr.io/${image_name}:stable
+# ============================
+# Production: Kritische Services (Platform, Ticketing) mit min_replicas > 0 für Verfügbarkeit.
+# Image-Tag: :stable statt :latest für kontrollierte Deployments.
 container_apps = {
   frontend = {
     image            = "remsfal-frontend:stable"
-    cpu              = 1
-    memory           = "2Gi"
-    min_replicas     = 2
+    cpu              = 0.5
+    memory           = "1Gi"
+    min_replicas     = 1  # Immer eine Instanz für schnelle Antwort
     max_replicas     = 10
     ingress_enabled  = true
     target_port      = 80
     external_enabled = true
+    eventhub_scaling = null
   }
   platform = {
     image            = "remsfal-platform:stable"
-    cpu              = 1.5
-    memory           = "3Gi"
-    min_replicas     = 2
+    cpu              = 1.0
+    memory           = "2Gi"
+    min_replicas     = 2  # Hochverfügbar: mindestens 2 Instanzen
     max_replicas     = 10
     ingress_enabled  = true
     target_port      = 8080
     external_enabled = true
+    eventhub_scaling = null
   }
   ticketing = {
     image            = "remsfal-ticketing:stable"
-    cpu              = 1.5
-    memory           = "3Gi"
-    min_replicas     = 2
+    cpu              = 1.0
+    memory           = "2Gi"
+    min_replicas     = 2  # Hochverfügbar: mindestens 2 Instanzen
     max_replicas     = 10
     ingress_enabled  = true
     target_port      = 8081
     external_enabled = true
+    eventhub_scaling = null
   }
   notification = {
     image            = "remsfal-notification:stable"
-    cpu              = 1
-    memory           = "2Gi"
+    cpu              = 0.5
+    memory           = "1Gi"
     min_replicas     = 1
     max_replicas     = 5
     ingress_enabled  = true
     target_port      = 8082
     external_enabled = false
+    eventhub_scaling = null
   }
   ocr = {
     image            = "remsfal-ocr:stable"
-    cpu              = 2
-    memory           = "4Gi"
-    min_replicas     = 1
+    cpu              = 1.0
+    memory           = "2Gi"
+    min_replicas     = 1  # Immer eine Instanz für schnelle OCR-Verarbeitung
     max_replicas     = 5
-    ingress_enabled  = true
-    target_port      = 8083
+    ingress_enabled  = false
+    target_port      = 8000
     external_enabled = false
+    eventhub_scaling = {
+      enabled               = true
+      consumer_group        = "ocr-service"
+      event_hub_name        = "ocr.documents.to_process"
+      message_lag_threshold = 5  # Niedrigerer Schwellwert für schnellere Skalierung
+    }
   }
 }
 

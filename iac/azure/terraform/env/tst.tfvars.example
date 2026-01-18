@@ -1,4 +1,7 @@
 # Test Environment Configuration
+# ===============================
+# Testumgebung mit mehr Ressourcen als Dev, aber noch kostenoptimiert.
+# min_replicas=0 für alle Services außer Production-kritische Tests.
 
 environment = "tst"
 
@@ -7,69 +10,82 @@ acr_name           = "rmsfltstweuacr"    # ${PROJECT_PREFIX}${ENVIRONMENT}weuacr
 acr_resource_group = "remsfal-iac-rg"    # ${IAC_RESOURCE_GROUP}
 
 # PostgreSQL Configuration
+# B_Standard_B2s: 2 vCores, 4GB RAM - ausreichend für Last-Tests
 postgres_admin_username = "psqladmin"
 postgres_admin_password = "TstP@ssw0rd123!"  # Change in production!
-postgres_sku            = "B_Standard_B2s"
-postgres_storage_mb     = 65536
+postgres_sku            = "B_Standard_B2s"    # Größerer Burstable Tier
+postgres_storage_mb     = 65536               # 64 GB
 
 # Cosmos DB Configuration
-cosmos_throughput = 400
+cosmos_throughput = 400  # 400 RU/s ausreichend für Tests
 
 # Event Hub Configuration
 eventhub_capacity = 1
 
 # Container Apps Configuration
-# Images werden aus der ACR geladen: ${acr_name}.azurecr.io/${image_name}:latest
+# ============================
+# Test: Alle Services mit min_replicas=0 (Scale-to-Zero).
+# Höhere max_replicas für Last-Tests.
 container_apps = {
   frontend = {
     image            = "remsfal-frontend:latest"
-    cpu              = 0.5
-    memory           = "1Gi"
-    min_replicas     = 1
+    cpu              = 0.25
+    memory           = "0.5Gi"
+    min_replicas     = 0
     max_replicas     = 3
     ingress_enabled  = true
     target_port      = 80
     external_enabled = true
+    eventhub_scaling = null
   }
   platform = {
     image            = "remsfal-platform:latest"
-    cpu              = 0.75
-    memory           = "1.5Gi"
-    min_replicas     = 1
+    cpu              = 0.25
+    memory           = "0.5Gi"
+    min_replicas     = 0
     max_replicas     = 5
     ingress_enabled  = true
     target_port      = 8080
     external_enabled = true
+    eventhub_scaling = null
   }
   ticketing = {
     image            = "remsfal-ticketing:latest"
-    cpu              = 0.75
-    memory           = "1.5Gi"
-    min_replicas     = 1
+    cpu              = 0.25
+    memory           = "0.5Gi"
+    min_replicas     = 0
     max_replicas     = 5
     ingress_enabled  = true
     target_port      = 8081
     external_enabled = true
+    eventhub_scaling = null
   }
   notification = {
     image            = "remsfal-notification:latest"
-    cpu              = 0.5
-    memory           = "1Gi"
+    cpu              = 0.25
+    memory           = "0.5Gi"
     min_replicas     = 0
     max_replicas     = 3
     ingress_enabled  = true
     target_port      = 8082
     external_enabled = false
+    eventhub_scaling = null
   }
   ocr = {
     image            = "remsfal-ocr:latest"
-    cpu              = 1.0
-    memory           = "2Gi"
+    cpu              = 0.5
+    memory           = "1Gi"
     min_replicas     = 0
     max_replicas     = 3
-    ingress_enabled  = true
-    target_port      = 8083
+    ingress_enabled  = false
+    target_port      = 8000
     external_enabled = false
+    eventhub_scaling = {
+      enabled               = true
+      consumer_group        = "ocr-service"
+      event_hub_name        = "ocr.documents.to_process"
+      message_lag_threshold = 10
+    }
   }
 }
 
