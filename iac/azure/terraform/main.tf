@@ -354,6 +354,22 @@ resource "azurerm_container_app_environment" "main" {
   tags                       = local.common_tags
 }
 
+# User-Assigned Managed Identity for Container Apps
+# This identity is created BEFORE the Container Apps so we can grant ACR access first
+resource "azurerm_user_assigned_identity" "container_apps" {
+  name                = "${local.base_name}-ca-identity"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  tags                = local.common_tags
+}
+
+# Grant ACR Pull to the User-Assigned Identity BEFORE Container Apps are created
+resource "azurerm_role_assignment" "container_apps_acr_pull" {
+  scope                = data.azurerm_container_registry.main.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_user_assigned_identity.container_apps.principal_id
+}
+
 # Container Apps
 resource "azurerm_container_app" "apps" {
   for_each                     = var.container_apps
@@ -362,13 +378,18 @@ resource "azurerm_container_app" "apps" {
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
 
+  # Depends on ACR role assignment to ensure image can be pulled
+  depends_on = [azurerm_role_assignment.container_apps_acr_pull]
+
   identity {
-    type = "SystemAssigned"
+    type         = "SystemAssigned, UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.container_apps.id]
   }
 
+  # Use User-Assigned Identity for ACR pull (avoids chicken-egg problem)
   registry {
-    identity = "system"
-    server               = data.azurerm_container_registry.main.login_server
+    identity = azurerm_user_assigned_identity.container_apps.id
+    server   = data.azurerm_container_registry.main.login_server
   }
 
   # NOTE: Database/Cosmos/EventHub secrets for app configuration are loaded 
@@ -587,13 +608,8 @@ resource "azurerm_container_app" "apps" {
   tags = local.common_tags
 }
 
-# Grant ACR Pull permissions to each Container App's System-Assigned Managed Identity
-resource "azurerm_role_assignment" "container_app_acr_pull" {
-  for_each             = var.container_apps
-  scope                = data.azurerm_container_registry.main.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_container_app.apps[each.key].identity[0].principal_id
-}
+# NOTE: ACR Pull is already granted to User-Assigned Identity above (container_apps_acr_pull)
+# The following role assignments use System-Assigned Identity for service-specific access
 
 # Grant Storage Blob Data Contributor to each Container App's System-Assigned Managed Identity
 resource "azurerm_role_assignment" "container_app_storage_blob_contributor" {
