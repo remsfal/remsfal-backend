@@ -24,7 +24,7 @@
         <quarkus.version>3.30.6</quarkus.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
-        <version.archunit>1.3.0</version.archunit>
+        <version.archunit>1.4.1</version.archunit>
     </properties>
 
     <dependencyManagement>
