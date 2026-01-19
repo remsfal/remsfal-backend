@@ -28,6 +28,10 @@ import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 @NamedQuery(name = "ProjectOrganizationEntity.findByProjectIdAndOrganizationId",
     query = "SELECT o FROM ProjectOrganizationEntity o "
         + "WHERE o.project.id = :projectId AND o.organization.id = :organizationId")
+@NamedQuery(name = "ProjectOrganizationEntity.findByUserId",
+    query = "SELECT po FROM ProjectOrganizationEntity po "
+        + "JOIN OrganizationEmployeeEntity oe ON oe.organization.id = po.organization.id "
+        + "WHERE oe.user.id = :userId")
 @NamedQuery(name = "ProjectOrganizationEntity.removeByProjectIdAndOrganizationId",
     query = "DELETE FROM ProjectOrganizationEntity o "
         + "WHERE o.project.id = :projectId AND o.organization.id = :organizationId")

@@ -48,4 +48,11 @@ public class ProjectOrganizationRepository extends AbstractRepository<ProjectOrg
         return getEntityManager().merge(entity);
     }
 
+    public List<ProjectOrganizationEntity> findByUserId(final UUID userId) {
+        return getEntityManager()
+            .createNamedQuery("ProjectOrganizationEntity.findByUserId", ProjectOrganizationEntity.class)
+            .setParameter("userId", userId)
+            .getResultList();
+    }
+
 }

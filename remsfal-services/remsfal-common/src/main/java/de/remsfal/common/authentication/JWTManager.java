@@ -67,7 +67,8 @@ public class JWTManager {
 
     /** Issue an access token using SmallRye JWT Build (platform only) */
     public String createAccessToken(final UserModel user, final Map<String, String> projectRoles,
-        final Map<String, String> tenancyProjects, final long ttlSeconds) {
+        final Map<String, String> organizationRoles, final Map<String, String> tenancyProjects,
+        final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
@@ -77,6 +78,7 @@ public class JWTManager {
             .claim("email", user.getEmail())
             .claim("active", user.isActive())
             .claim("project_roles", projectRoles)
+            .claim("organization_roles", organizationRoles)
             .claim("tenancy_projects", tenancyProjects)
             .issuer(issuer)
             .expiresAt(exp);

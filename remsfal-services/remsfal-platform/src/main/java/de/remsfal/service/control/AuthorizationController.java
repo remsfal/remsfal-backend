@@ -6,6 +6,7 @@ import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +23,11 @@ import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.TenancyRepository;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
+import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
+import de.remsfal.service.entity.dto.ProjectOrganizationEntity;
 import de.remsfal.service.entity.dto.TenancyEntity;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
@@ -50,6 +55,12 @@ public class AuthorizationController {
 
     @Inject
     TenancyRepository tenancyRepository;
+
+    @Inject
+    de.remsfal.service.entity.dao.OrganizationRepository organizationRepository;
+
+    @Inject
+    de.remsfal.service.entity.dao.ProjectOrganizationRepository projectOrganizationRepository;
 
     @Inject
     private Event<AuthenticationEvent> authenticatedUser;
@@ -125,12 +136,77 @@ public class AuthorizationController {
     }
 
     public Map<String, String> getProjectAuthorization(final UUID userId) {
-        List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(userId, 0,
+        Map<UUID, MemberRole> projectRoles = new HashMap<>();
+
+        // 1. Add direct project memberships
+        List<ProjectMembershipEntity> directMemberships = projectRepository.findMembershipByUserId(userId, 0,
             Integer.MAX_VALUE);
-        return memberships.stream().collect(Collectors.toMap(
-            m -> m.getProject().getId().toString(),
-            m -> m.getRole().name()
-        ));
+        for (ProjectMembershipEntity membership : directMemberships) {
+            projectRoles.put(membership.getProject().getId(), membership.getRole());
+        }
+
+        // 2. Add indirect memberships through organizations
+        List<ProjectOrganizationEntity> orgProjects = projectOrganizationRepository.findByUserId(userId);
+        List<OrganizationEmployeeEntity> userOrgs = organizationRepository.findOrganizationEmployeesByUserId(userId);
+
+        // Create a map of organization ID to employee role for quick lookup
+        Map<UUID, EmployeeRole> orgRoles = userOrgs.stream()
+            .collect(Collectors.toMap(
+                e -> e.getOrganization().getId(),
+                OrganizationEmployeeEntity::getRole
+            ));
+
+        for (ProjectOrganizationEntity orgProject : orgProjects) {
+            UUID projectId = orgProject.getProject().getId();
+            MemberRole orgRoleInProject = orgProject.getRole();
+            EmployeeRole userRoleInOrg = orgRoles.get(orgProject.getOrganization().getId());
+
+            if (userRoleInOrg != null) {
+                MemberRole derivedRole = calculateProjectRole(userRoleInOrg, orgRoleInProject);
+
+                // Keep the highest role (lowest leadership value) for this project
+                projectRoles.merge(projectId, derivedRole,
+                    (existing, derived) -> existing.getLeadershipLevel() <= derived.getLeadershipLevel()
+                        ? existing : derived);
+            }
+        }
+
+        // Convert to String map
+        return projectRoles.entrySet().stream()
+            .collect(Collectors.toMap(
+                e -> e.getKey().toString(),
+                e -> e.getValue().name()
+            ));
+    }
+
+    /**
+     * Calculates the project role based on the user's role in the organization
+     * and the organization's role in the project, according to Authorization.md.
+     *
+     * @param employeeRole User's role in the organization
+     * @param orgRoleInProject Organization's role in the project
+     * @return The calculated project role for the user
+     */
+    private MemberRole calculateProjectRole(EmployeeRole employeeRole, MemberRole orgRoleInProject) {
+        return switch (employeeRole) {
+            case OWNER -> orgRoleInProject;  // Owner gets the organization's role
+            case MANAGER -> {
+                // Manager gets MANAGER or lower (higher leadership value)
+                if (orgRoleInProject.getLeadershipLevel() <= MemberRole.MANAGER.getLeadershipLevel()) {
+                    yield MemberRole.MANAGER;
+                } else {
+                    yield orgRoleInProject;
+                }
+            }
+            case STAFF -> {
+                // Staff gets STAFF or lower (higher leadership value)
+                if (orgRoleInProject.getLeadershipLevel() <= MemberRole.STAFF.getLeadershipLevel()) {
+                    yield MemberRole.STAFF;
+                } else {
+                    yield orgRoleInProject;
+                }
+            }
+        };
     }
 
     public Map<String, String> getTenancyAuthorization(final UUID userId) {
@@ -138,6 +214,15 @@ public class AuthorizationController {
         return tenancies.stream().collect(Collectors.toMap(
             t -> t.getId().toString(),
             t -> t.getProjectId().toString()
+        ));
+    }
+
+    public Map<String, String> getOrganizationAuthorization(final UUID userId) {
+        List<de.remsfal.service.entity.dto.OrganizationEmployeeEntity> employees =
+            organizationRepository.findOrganizationEmployeesByUserId(userId);
+        return employees.stream().collect(Collectors.toMap(
+            e -> e.getOrganization().getId().toString(),
+            e -> e.getRole().name()
         ));
     }
 
