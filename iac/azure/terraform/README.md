@@ -1,559 +1,730 @@
-# REMSFAL Azure Infrastructure - Terraform
+# Infrastructure as Code - Azure Terraform
 
-This Terraform project provisions the complete Azure infrastructure for the REMSFAL application based on a microservices architecture.
+Diese Dokumentation beschreibt die Terraform-basierte Infrastruktur für die REMSFAL-Anwendung auf Microsoft Azure.
 
-## 📋 Table of Contents
+**Repository:** [GitHub - IaC Terraform](https://github.com/enricogoerlitz/remsfal-backend/tree/Enrico-Goerlitz%23644/iac/azure/terraform)
 
-- [Architecture Overview](#architecture-overview)
-- [Prerequisites](#prerequisites)
-- [Project Structure](#project-structure)
-- [Resource Naming Convention](#resource-naming-convention)
-- [Setup Instructions](#setup-instructions)
-- [Environment Management](#environment-management)
-- [Deployed Resources](#deployed-resources)
-- [Post-Deployment Steps](#post-deployment-steps)
-- [Maintenance](#maintenance)
-- [Troubleshooting](#troubleshooting)
+---
 
-## 🏗️ Architecture Overview
+## Inhaltsverzeichnis
 
-The infrastructure deploys a cloud-native microservices architecture with the following components:
+1. [Projektstruktur](#projektstruktur)
+2. [Verwendete Versionen](#verwendete-versionen)
+3. [Naming Convention](#naming-convention)
+4. [Azure-Ressourcen im Überblick](#azure-ressourcen-im-überblick)
+5. [Detaillierte Ressourcen-Konfiguration](#detaillierte-ressourcen-konfiguration)
+6. [Umgebungskonfiguration](#umgebungskonfiguration)
+7. [Secret Management](#secret-management)
+8. [Managed Identity & RBAC](#managed-identity--rbac)
 
-### Compute & Container Services
-- **Azure Container Apps**: Hosting for 4 microservices (Frontend, Platform, Ticketing, OCR)
-- **Azure Container Registry (ACR)**: Private Docker image registry
+---
 
-### Data Storage Services
-- **Azure Blob Storage**: Object storage for documents and attachments (MinIO replacement)
-- **Azure Database for PostgreSQL Flexible Server**: Relational database for Platform service
-- **Azure Cosmos DB (Cassandra API)**: NoSQL database for Ticketing service (Cassandra replacement)
-
-### Event Streaming & Messaging
-- **Azure Event Hubs**: Kafka-compatible event streaming (Kafka replacement)
-  - Topics: `user-notification`, `ocr-documents-inbox`, `ocr-documents-outbox`
-
-### Security & Identity
-- **Azure Key Vault**: Secret and credential management
-- **Azure Managed Identity**: Service-to-service authentication without credentials
-
-⚠️ **Important Note on Managed Identity Support:**
-- **Cosmos DB Cassandra API**: Does NOT support Managed Identity authentication. Requires username/password (primary key) stored in Key Vault.
-- **PostgreSQL Flexible Server**: Supports Azure AD authentication with Managed Identity, but requires manual SQL configuration after deployment. Password authentication is used by default.
-
-### Monitoring & Observability
-- **Azure Monitor & Application Insights**: Centralized logging and APM
-- **Azure Log Analytics**: Log aggregation and analysis
-
-## ✅ Prerequisites
-
-### Required Tools
-1. **Azure CLI** (version 2.50+)
-   ```bash
-   # Install on macOS
-   brew install azure-cli
-   
-   # Verify installation
-   az --version
-   ```
-
-2. **Terraform** (version 1.5+)
-   ```bash
-   # Install on macOS
-   brew install terraform
-   
-   # Verify installation
-   terraform --version
-   ```
-
-3. **Git** (for version control)
-   ```bash
-   brew install git
-   ```
-
-4. **(Optional) cqlsh** - For Cosmos DB Cassandra index creation
-   ```bash
-   pip install cassandra-driver
-   ```
-
-### Azure Setup
-
-1. **Azure Subscription**
-   - Subscription ID: `012e925b-f538-41ef-8d23-b0c85e7dbe7b`
-   - Ensure you have **Contributor** or **Owner** role
-
-2. **Azure CLI Login**
-   ```bash
-   # Login to Azure
-   az login
-   
-   # Set the correct subscription
-   az account set --subscription "012e925b-f538-41ef-8d23-b0c85e7dbe7b"
-   
-   # Verify
-   az account show
-   ```
-
-3. **Terraform Backend Storage** (One-time setup)
-   
-   The backend storage account must exist before running Terraform:
-   
-   ```bash
-   # Create resource group for Terraform state
-   az group create \
-     --name remsfal-iac-rg \
-     --location germanywestcentral
-   
-   # Create storage account
-   az storage account create \
-     --name engobaremsfalsa \
-     --resource-group remsfal-iac-rg \
-     --location germanywestcentral \
-     --sku Standard_LRS \
-     --encryption-services blob
-   
-   # Create container for Terraform state
-   az storage container create \
-     --name tfstate \
-     --account-name engobaremsfalsa
-   ```
-
-## 📁 Project Structure
+## Projektstruktur
 
 ```
 iac/azure/terraform/
-├── providers.tf           # Provider and backend configuration
-├── main.tf               # Main resource definitions
-├── variables.tf          # Variable declarations
-├── locals.tf             # Local values and naming logic
-├── outputs.tf            # Output values
-├── .gitignore            # Git ignore rules
-├── env/                  # Environment-specific configurations
-│   ├── dev.tfvars       # Development environment
-│   ├── tst.tfvars       # Test environment
-│   └── prd.tfvars       # Production environment
-├── scripts/              # Post-deployment scripts
-│   ├── setup-cosmos-indexes.sh    # Bash script for Cosmos DB indexes
-│   └── setup-cosmos-indexes.ps1   # PowerShell script for Windows
-└── README.md             # This file
+├── main.tf              # Hauptkonfiguration aller Azure-Ressourcen
+├── variables.tf         # Variablendefinitionen mit Validierung
+├── locals.tf            # Lokale Werte und Naming-Logik
+├── outputs.tf           # Output-Werte nach dem Deployment
+├── providers.tf         # Provider-Konfiguration und Backend
+├── README.md            # Terraform-spezifische Dokumentation
+├── env/                 # Umgebungsspezifische Konfigurationen
+│   ├── dev.tfvars       # Development-Umgebung
+│   ├── tst.tfvars       # Test-Umgebung
+│   └── prd.tfvars       # Production-Umgebung
+└── scripts/             # Hilfs-Skripte
 ```
 
-## 🏷️ Resource Naming Convention
+### Dateibeschreibungen
 
-All resources follow the naming pattern:
+| Datei | Beschreibung |
+|-------|--------------|
+| `main.tf` | Definiert alle Azure-Ressourcen: Container Apps, Datenbanken, Event Hubs, Key Vault, Storage, Monitoring |
+| `variables.tf` | Deklariert alle Eingabevariablen mit Typen, Beschreibungen und Standardwerten |
+| `locals.tf` | Berechnet abgeleitete Werte wie Ressourcennamen, Tags und Cosmos DB Tabellenschemata |
+| `outputs.tf` | Exportiert wichtige Werte nach dem Deployment (URLs, Connection Strings, Principal IDs) |
+| `providers.tf` | Konfiguriert Azure Provider und Remote Backend für State-Management |
 
-```
-{project_name_short}-{location_short}-{env}-{resource_short}
-```
+---
 
-**Example for Dev Environment:**
-- Resource Group: `rmsfl-gwc-dev-rg`
-- PostgreSQL Server: `rmsfl-gwc-dev-psql`
-- Cosmos DB Account: `rmsfl-gwc-dev-cosmos`
-- Key Vault: `rmsfl-gwc-dev-kv`
+## Verwendete Versionen
 
-**Abbreviations:**
-- `rmsfl` = REMSFAL (project_name_short)
-- `gwc` = Germany West Central (location_short)
-- `dev/tst/prd` = Environment
+### Terraform
 
-## 🚀 Setup Instructions
+| Komponente | Version | Beschreibung |
+|------------|---------|--------------|
+| **Terraform** | >= 1.5 | Infrastructure as Code Tool |
+| **azurerm Provider** | ~> 4.57.0 | Azure Resource Manager Provider |
+| **azapi Provider** | ~> 2.8.0 | Azure API Direct Access Provider |
+| **random Provider** | ~> 3.6 | Zufallsgenerierung für eindeutige Namen |
 
-### Initial Setup
+### Backend-Konfiguration
 
-1. **Clone the repository**
-   ```bash
-   cd /Users/enricogoerlitz/Developer/repos/remsfal-backend/iac/azure/terraform
-   ```
-
-2. **Initialize Terraform**
-   ```bash
-   terraform init
-   ```
-   
-   This will:
-   - Download required providers (azurerm, azapi)
-   - Initialize the remote backend (Azure Storage)
-   - Create `.terraform` directory
-
-3. **Select Environment**
-   
-   Choose which environment to deploy (dev/tst/prd):
-   ```bash
-   # For development
-   export TF_VAR_FILE="env/dev.tfvars"
-   
-   # For test
-   export TF_VAR_FILE="env/tst.tfvars"
-   
-   # For production
-   export TF_VAR_FILE="env/prd.tfvars"
-   ```
-
-### Deploy Infrastructure
-
-1. **Review the Terraform Plan**
-   ```bash
-   terraform plan -var-file=$TF_VAR_FILE
-   ```
-   
-   Review the output to understand what resources will be created.
-
-2. **Apply the Configuration**
-   ```bash
-   terraform apply -var-file=$TF_VAR_FILE
-   ```
-   
-   Type `yes` when prompted to confirm.
-   
-   ⏱️ **Expected Duration:** 15-25 minutes
-
-3. **Save Outputs**
-   ```bash
-   terraform output > outputs.txt
-   ```
-
-### Post-Deployment Configuration
-
-After Terraform completes, run the Cosmos DB index setup script:
-
-```bash
-# macOS/Linux
-cd scripts
-./setup-cosmos-indexes.sh
-
-# Windows (PowerShell)
-.\scripts\setup-cosmos-indexes.ps1
-```
-
-This script will:
-- Retrieve Cosmos DB connection details from Terraform outputs
-- Get credentials from Azure Key Vault
-- Create required indexes on Cassandra tables
-
-## 🌍 Environment Management
-
-### Development (dev)
-```bash
-terraform plan -var-file=env/dev.tfvars
-terraform apply -var-file=env/dev.tfvars
-```
-
-**Characteristics:**
-- Lowest cost configuration (Burstable tiers)
-- Scale-to-zero enabled for some services
-- Public firewall rules enabled
-- Minimal redundancy
-
-### Test (tst)
-```bash
-terraform plan -var-file=env/tst.tfvars
-terraform apply -var-file=env/tst.tfvars
-```
-
-**Characteristics:**
-- Medium-tier configuration
-- Higher resource limits than dev
-- Suitable for load testing
-- No scale-to-zero
-
-### Production (prd)
-```bash
-terraform plan -var-file=env/prd.tfvars
-terraform apply -var-file=env/prd.tfvars
-```
-
-**Characteristics:**
-- Production-grade tiers (General Purpose)
-- High availability configuration
-- Increased throughput and capacity
-- Multiple replicas
-
-⚠️ **Important:** Change the PostgreSQL password in `env/prd.tfvars` before deploying to production!
-
-## 📦 Deployed Resources
-
-### By Resource Type
-
-| Resource Type | Count | Purpose |
-|--------------|-------|---------|
-| Resource Group | 1 | Container for all resources |
-| Container Registry | 1 | Docker image storage |
-| Container Apps | 4 | Microservices hosting |
-| Container App Environment | 1 | Shared runtime environment |
-| Storage Account | 1 | Blob storage for documents |
-| PostgreSQL Flexible Server | 1 | Platform service database |
-| Cosmos DB Account | 1 | Ticketing service database |
-| Cosmos DB Cassandra Keyspace | 1 | Logical database |
-| Cosmos DB Cassandra Tables | 3 | `issues`, `chat_sessions`, `chat_messages` |
-| Event Hub Namespace | 1 | Kafka-compatible messaging |
-| Event Hubs | 3 | Individual topics/queues |
-| Key Vault | 1 | Secret management |
-| Managed Identity | 1 | Service authentication |
-| Log Analytics Workspace | 1 | Log aggregation |
-| Application Insights | 1 | Application monitoring |
-
-### Container Apps
-
-| Service | Port | External | Min Replicas | Max Replicas |
-|---------|------|----------|--------------|--------------|
-| Frontend | 80 | Yes | 0-2 (dev) | 10 (prd) |
-| Platform | 8080 | Yes | 1 | 10 (prd) |
-| Ticketing | 8081 | Yes | 1 | 10 (prd) |
-| OCR | 8082 | No (internal) | 0-1 | 5 (prd) |
-
-### Event Hub Topics
-
-- `user-notification`: User notification events
-- `ocr-documents-inbox`: Documents to be processed by OCR
-- `ocr-documents-outbox`: OCR processing results
-
-## 🔧 Post-Deployment Steps
-
-### 1. Push Container Images to ACR
-
-```bash
-# Get ACR credentials
-ACR_NAME=$(terraform output -raw container_registry_login_server)
-az acr login --name $(terraform output -raw container_registry_login_server | cut -d'.' -f1)
-
-# Build and push images (example)
-docker build -t $ACR_NAME/remsfal/platform:latest ./remsfal-services/remsfal-platform
-docker push $ACR_NAME/remsfal/platform:latest
-
-# Repeat for ticketing, frontend, and ocr services
-```
-
-### 2. Configure Application Settings
-
-Update Container Apps with environment variables:
-
-```bash
-# Get Key Vault name
-KV_NAME=$(terraform output -raw key_vault_name)
-
-# Container Apps will automatically use Managed Identity to access:
-# - Key Vault secrets
-# - Blob Storage
-# - PostgreSQL (with Azure AD authentication)
-# - Cosmos DB
-```
-
-### 3. Configure Connection Strings in Applications
-
-**PostgreSQL Connection (Platform Service):**
-```properties
-quarkus.datasource.jdbc.url=jdbc:postgresql://{postgres_fqdn}:5432/remsfal_platform
-quarkus.datasource.username=psqladmin
-quarkus.datasource.password=${POSTGRES_PASSWORD} # From Key Vault
-```
-
-**Cosmos DB Cassandra (Ticketing Service):**
-```properties
-quarkus.cassandra.contact-points=${COSMOS_CONTACT_POINT}
-quarkus.cassandra.local-datacenter=Germany West Central
-quarkus.cassandra.keyspace=remsfal_ticketing
-quarkus.cassandra.auth.username=${COSMOS_USERNAME}
-quarkus.cassandra.auth.password=${COSMOS_PASSWORD}
-```
-
-**Event Hub / Kafka (All Services):**
-```properties
-kafka.bootstrap.servers=${EVENTHUB_NAMESPACE}.servicebus.windows.net:9093
-kafka.security.protocol=SASL_SSL
-kafka.sasl.mechanism=PLAIN
-kafka.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="$ConnectionString" password="${EVENTHUB_CONNECTION_STRING}";
-```
-
-### 4. Set up Monitoring Alerts
-
-```bash
-# Example: Create alert for high error rate
-az monitor metrics alert create \
-  --name high-error-rate \
-  --resource-group $(terraform output -raw resource_group_name) \
-  --scopes $(terraform output -raw application_insights_id) \
-  --condition "avg requests/failed > 10" \
-  --description "Alert when error rate exceeds 10 per minute"
-```
-
-## 🛠️ Maintenance
-
-### Update Infrastructure
-
-```bash
-# Pull latest changes
-git pull
-
-# Plan changes
-terraform plan -var-file=env/dev.tfvars
-
-# Apply updates
-terraform apply -var-file=env/dev.tfvars
-```
-
-### Scale Container Apps
-
-Modify `container_apps` in the respective `env/*.tfvars` file:
+Der Terraform State wird remote in Azure Blob Storage gespeichert:
 
 ```hcl
-container_apps = {
-  platform = {
-    # ... other settings ...
-    min_replicas = 3  # Increase minimum replicas
-    max_replicas = 15 # Increase maximum replicas
+backend "azurerm" {
+  resource_group_name  = "remsfal-iac-rg"
+  storage_account_name = "engobaremsfalsa"
+  container_name       = "tfstate"
+  key                  = "terraform.tfstate"
+}
+```
+
+**Begründung:** Remote State ermöglicht Team-Kollaboration und verhindert State-Konflikte. Azure Blob Storage bietet integrierte Versionierung und Locking.
+
+---
+
+## Naming Convention
+
+Alle Ressourcen folgen einem einheitlichen Namensschema:
+
+```
+{project_name_short}-{environment}-{location_short}-{resource_short}
+```
+
+**Beispiel:** `rmsfl-dev-weu-rg` (Resource Group für Development in West Europe)
+
+### Namenszusammensetzung
+
+| Komponente | Wert | Beschreibung |
+|------------|------|--------------|
+| `project_name_short` | `rmsfl` | Kurzform von "remsfal" |
+| `environment` | `dev`, `tst`, `prd` | Umgebungsbezeichnung |
+| `location_short` | `weu` | West Europe |
+| `resource_short` | `rg`, `acr`, `kv`, etc. | Ressourcentyp-Kürzel |
+
+### Sonderregeln
+
+- **Azure Container Registry (ACR):** Keine Bindestriche erlaubt → `rmsfldevweuacr`
+- **Storage Account:** Keine Bindestriche, max. 24 Zeichen → `rmsfldevweusa`
+- **Key Vault:** Eindeutiger Name erforderlich → Suffix mit `random_string`
+
+---
+
+## Azure-Ressourcen im Überblick
+
+### Architekturdiagramm
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Azure Resource Group                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                    Container Apps Environment                       │    │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │    │
+│  │  │ Frontend │ │ Platform │ │Ticketing │ │  OCR     │ │Notific.  │   │    │
+│  │  │ (Vue.js) │ │ (Quarkus)│ │(Quarkus) │ │ (Python) │ │(Quarkus) │   │    │
+│  │  │ Port 80  │ │ Port 8080│ │Port 8081 │ │Port 8000 │ │Port 8082 │   │    │
+│  │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘   │    │
+│  └───────┼────────────┼────────────┼────────────┼────────────┼─────────┘    │
+│          │            │            │            │            │              │
+│  ┌───────▼────────────▼────────────▼────────────▼────────────▼─────────┐    │
+│  │                         Azure Key Vault                             │    │
+│  │         (Secrets: DB Credentials, Event Hub, Storage)               │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌───────────────────────────┐    │
+│  │   PostgreSQL    │  │    Cosmos DB    │  │     Azure Event Hubs      │    │
+│  │ Flexible Server │  │  (Cassandra API)│  │    (Kafka-kompatibel)     │    │
+│  │   (Platform)    │  │   (Ticketing)   │  │ Topics: user-notif.,      │    │
+│  │                 │  │                 │  │ ocr.documents.*           │    │
+│  └─────────────────┘  └─────────────────┘  └───────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌───────────────────────────┐    │
+│  │  Blob Storage   │  │ Container       │  │   Application Insights    │    │
+│  │  (Documents,    │  │ Registry (ACR)  │  │   + Log Analytics         │    │
+│  │   Attachments)  │  │                 │  │                           │    │
+│  └─────────────────┘  └─────────────────┘  └───────────────────────────┘    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Ressourcenübersicht
+
+| Ressource | Azure Service | Zweck |
+|-----------|---------------|-------|
+| **Compute** | Container Apps | Hosting der 5 Microservices |
+| **Container Images** | Container Registry (ACR) | Private Docker Registry |
+| **Relationale DB** | PostgreSQL Flexible Server | Platform-Service Datenbank |
+| **NoSQL DB** | Cosmos DB (Cassandra API) | Ticketing-Service Datenbank |
+| **Messaging** | Event Hubs | Kafka-kompatibler Message Broker |
+| **Object Storage** | Blob Storage | Dokumente und Attachments |
+| **Secrets** | Key Vault | Credentials und Connection Strings |
+| **Monitoring** | Application Insights | APM und Distributed Tracing |
+| **Logs** | Log Analytics Workspace | Zentralisierte Log-Aggregation |
+
+---
+
+## Detaillierte Ressourcen-Konfiguration
+
+### 1. Container Apps Environment
+
+**Ressource:** `azurerm_container_app_environment`
+
+Das Container Apps Environment ist die serverlose Hosting-Plattform für alle Microservices.
+
+```hcl
+resource "azurerm_container_app_environment" "main" {
+  name                       = local.container_apps_environment_name
+  resource_group_name        = azurerm_resource_group.main.name
+  location                   = azurerm_resource_group.main.location
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+}
+```
+
+**Begründung:**
+- **Serverless:** Automatische Skalierung basierend auf Last
+- **Integriertes Logging:** Direkte Anbindung an Log Analytics
+- **KEDA-Integration:** Event-driven Autoscaling für Kafka-Consumer
+
+### 2. Container Apps (Microservices)
+
+**Ressource:** `azurerm_container_app`
+
+Jeder Microservice wird als eigene Container App deployt. Die Konfiguration verwendet eine **User-Assigned Managed Identity** für ACR-Zugriff und eine **System-Assigned Identity** für weitere Ressourcenzugriffe.
+
+#### Ressourcen-Konfiguration (Development)
+
+| Service | CPU | Memory | Min Replicas | Max Replicas | Ingress | Port |
+|---------|-----|--------|--------------|--------------|---------|------|
+| **Frontend** | 0.25 | 0.5 Gi | 0 | 2 | External | 80 |
+| **Platform** | 0.25 | 0.5 Gi | 0 | 3 | External | 8080 |
+| **Ticketing** | 0.25 | 0.5 Gi | 0 | 3 | External | 8081 |
+| **Notification** | 0.25 | 0.5 Gi | 0 | 2 | Internal | 8082 |
+| **OCR** | 0.5 | 1 Gi | 0 | 2 | Kein Ingress | 8000 |
+
+**Konfigurationsentscheidungen:**
+
+- **min_replicas=0 (Scale-to-Zero):** Alle Services in Dev/Test skalieren auf 0 bei Inaktivität. Dies spart erhebliche Kosten, führt aber zu **Cold-Start-Latenz** von ca. 10-30 Sekunden beim ersten Request.
+- **Minimale Ressourcen:** CPU=0.25 und Memory=0.5Gi sind die Minimalwerte für Container Apps. Der OCR-Service benötigt mehr Ressourcen (0.5 CPU, 1Gi Memory) wegen der ML-Modelle.
+- **OCR ohne HTTP-Ingress:** Der OCR-Service kommuniziert ausschließlich über Event Hubs (Kafka), daher kein HTTP-Ingress erforderlich.
+
+> **⚠️ Production-Empfehlung:** Für kritische Services (Platform, Ticketing) sollte `min_replicas >= 1` gesetzt werden, um Cold-Starts zu vermeiden und die Verfügbarkeit zu gewährleisten.
+
+#### KEDA Event Hub Scaling (OCR-Service)
+
+```hcl
+eventhub_scaling = {
+  enabled               = true
+  consumer_group        = "ocr-service"  # Dedizierte Consumer Group!
+  event_hub_name        = "ocr.documents.to_process"
+  message_lag_threshold = 10
+}
+```
+
+**Begründung:** Der OCR-Service skaliert automatisch basierend auf der Anzahl unverarbeiteter Nachrichten in der Event Hub Queue. Bei 10 oder mehr wartenden Dokumenten wird eine zusätzliche Instanz gestartet.
+
+**Wichtig zur Consumer Group:**
+- **NICHT `$Default` verwenden!** Die `$Default` Consumer Group ist für allgemeine Zwecke reserviert.
+- Dedizierte Consumer Group `ocr-service` gewährleistet korrekte Offset-Verfolgung und verhindert Konflikte mit anderen Konsumenten.
+- Die Consumer Group wird automatisch via Terraform auf den Topics `ocr.documents.to_process` und `ocr.documents.processed` erstellt.
+
+### 3. Azure Database for PostgreSQL Flexible Server
+
+**Ressource:** `azurerm_postgresql_flexible_server`
+
+```hcl
+resource "azurerm_postgresql_flexible_server" "main" {
+  name                   = local.postgres_server_name
+  version                = "16"
+  administrator_login    = var.postgres_admin_username
+  administrator_password = var.postgres_admin_password
+  storage_mb             = var.postgres_storage_mb  # 32 GB
+  sku_name               = var.postgres_sku         # B_Standard_B1ms
+  backup_retention_days  = 7
+  zone                   = "1"
+  
+  authentication {
+    active_directory_auth_enabled = true
+    password_auth_enabled         = true
   }
 }
 ```
 
-Then apply:
-```bash
-terraform apply -var-file=env/prd.tfvars
+**Konfigurationsentscheidungen:**
+
+| Einstellung | Wert | Begründung |
+|-------------|------|------------|
+| **Version** | 16 | Neueste PostgreSQL LTS-Version |
+| **SKU** | B_Standard_B1ms | Burstable Tier - kostengünstig für Dev/Test |
+| **Storage** | 32 GB | Minimum für Flexible Server |
+| **Backup Retention** | 7 Tage | Standard für automatische Backups |
+| **Zone** | 1 | Keine Zone Redundancy für Kostenoptimierung |
+| **AD Auth** | Aktiviert | Ermöglicht Managed Identity Authentifizierung |
+
+#### Verfügbare PostgreSQL SKUs
+
+| SKU | vCores | RAM | Tier | Empfohlen für |
+|-----|--------|-----|------|---------------|
+| **B_Standard_B1ms** | 1 | 2 GB | Burstable | Development, minimale Kosten |
+| **B_Standard_B2s** | 2 | 4 GB | Burstable | Test, leichte Last |
+| **B_Standard_B2ms** | 2 | 8 GB | Burstable | Test mit mehr Memory |
+| **GP_Standard_D2s_v3** | 2 | 8 GB | General Purpose | Production (empfohlen) |
+| **GP_Standard_D4s_v3** | 4 | 16 GB | General Purpose | Production, höhere Last |
+| **GP_Standard_D8s_v3** | 8 | 32 GB | General Purpose | Production, hohe Last |
+
+> **💡 Hinweis:** Burstable SKUs (B_*) sind für variable Workloads konzipiert und günstiger. General Purpose (GP_*) bieten konsistente Performance für Production.
+
+**Firewall-Regeln:**
+- `allow-azure-services`: Erlaubt Zugriff von Azure-Services (Container Apps)
+- `allow-all` (nur Dev): Erlaubt externen Zugriff für Debugging
+
+### 4. Azure Cosmos DB mit Cassandra API
+
+**Ressource:** `azurerm_cosmosdb_account`
+
+```hcl
+resource "azurerm_cosmosdb_account" "main" {
+  name       = local.cosmos_account_name
+  offer_type = "Standard"
+  kind       = "GlobalDocumentDB"
+
+  capabilities {
+    name = "EnableCassandra"
+  }
+
+  consistency_policy {
+    consistency_level = "Session"
+  }
+  
+  geo_location {
+    location          = azurerm_resource_group.main.location
+    failover_priority = 0
+  }
+}
 ```
 
-### View Logs
+#### Warum Cosmos DB mit Cassandra API?
 
-```bash
-# Log Analytics query
-az monitor log-analytics query \
-  --workspace $(terraform output -raw log_analytics_workspace_id) \
-  --analytics-query "ContainerAppConsoleLogs_CL | where ContainerAppName_s == 'platform' | limit 100"
+- **Migration ohne Code-Änderungen:** Der Ticketing-Service wurde ursprünglich für Apache Cassandra entwickelt. Die Cassandra API ermöglicht die Migration ohne Änderungen am Datenmodell oder CQL-Queries.
+- **Managed Service:** Kein Betrieb von Cassandra-Clustern erforderlich, automatische Patches und Backups.
+- **Globale Verteilung:** Multi-Region Replikation möglich (nicht in dieser Konfiguration aktiviert).
 
-# Application Insights
-az monitor app-insights query \
-  --app $(terraform output -raw application_insights_name) \
-  --resource-group $(terraform output -raw resource_group_name) \
-  --analytics-query "requests | where timestamp > ago(1h) | summarize count() by resultCode"
+#### Throughput-Konfiguration (Request Units)
+
+| Umgebung | Throughput | Beschreibung |
+|----------|------------|--------------|
+| **Dev** | 400 RU/s | Minimum für Cassandra API |
+| **Test** | 400 RU/s | Ausreichend für Integrationstests |
+| **Prod** | 1000 RU/s | Höhere Kapazität für Production |
+
+> **💡 Request Units (RU/s):** Eine RU entspricht ungefähr einer Leseoperation für ein 1KB-Dokument. Komplexere Operationen (Writes, Queries) verbrauchen mehr RUs.
+
+#### Manual vs. Autoscale Throughput
+
+Die aktuelle Konfiguration verwendet **Manual (Provisioned) Throughput**. Alternativ bietet Cosmos DB **Autoscale**, das automatisch zwischen 10% und 100% des konfigurierten Maximums skaliert.
+
+| Aspekt | Manual (Provisioned) | Autoscale |
+|--------|---------------------|-----------|
+| **Minimum** | 400 RU/s (Cassandra API) | 10% des Max-Werts (z.B. 100 bei max 1000) |
+| **Preis pro RU/s** | 1× Basispreis | ~1,5× Basispreis (50% teurer) |
+| **Abrechnung** | Immer volle RU/s | Nur genutzter Anteil |
+| **Skalierungsbereich** | Fest | Automatisch 10%-100% |
+
+**Wann lohnt sich Autoscale?**
+
+Autoscale kann günstiger sein, obwohl der Preis pro RU/s höher ist:
+- **Bei stark variierender Last:** Wenn nachts/am Wochenende kaum Nutzung erfolgt
+- **Faustregel:** Autoscale ist günstiger, wenn durchschnittliche Nutzung **< 66%** der provisionierten RU/s liegt
+
+**Beispielrechnung:**
+- **Manual 400 RU/s:** Zahlt immer für 400 RU/s (100%)
+- **Autoscale max 1000 RU/s:** Skaliert zwischen 100-1000 RU/s
+  - Bei 10% Last (Nacht): 100 RU/s × 1,5 = Kosten wie 150 RU/s manual
+  - Bei Peaks: Bis zu 1000 RU/s verfügbar
+
+> **💡 Empfehlung für Dev/Test:** Bei sporadischer Nutzung (Entwicklung, gelegentliche Tests) kann Autoscale günstiger sein, da außerhalb der Arbeitszeiten nur minimale Kosten anfallen. Für Production mit konstanter Last ist Manual oft kosteneffizienter.
+
+#### Consistency Level
+
+**Session Consistency** wurde gewählt, da sie den besten Kompromiss bietet:
+- **Monotonic Reads:** Ein Client sieht nie ältere Daten als zuvor gelesene.
+- **Read Your Writes:** Eigene Schreiboperationen sind sofort lesbar.
+- **Performance:** Geringere Latenz als Strong Consistency.
+
+Andere verfügbare Level: `Eventual`, `ConsistentPrefix`, `BoundedStaleness`, `Strong`
+
+#### Tabellenschema und Partition Keys
+
+```hcl
+# Definiert in locals.tf
+cosmos_tables = {
+  issues = {
+    schema = {
+      columns = [
+        { name = "project_id", type = "uuid" },
+        { name = "issue_id", type = "uuid" },
+        { name = "title", type = "text" },
+        # ... weitere Spalten
+      ]
+      partition_keys = [{ name = "project_id" }]
+      cluster_keys   = [{ name = "issue_id", order_by = "asc" }]
+    }
+  }
+  chat_sessions = {
+    schema = {
+      partition_keys = [{ name = "project_id" }, { name = "issue_id" }]
+      cluster_keys   = [{ name = "session_id", order_by = "asc" }]
+    }
+  }
+  chat_messages = {
+    schema = {
+      partition_keys = [{ name = "session_id" }]
+      cluster_keys   = [{ name = "created_at", order_by = "desc" }]
+    }
+  }
+}
 ```
 
-### Backup and Disaster Recovery
+**Begründung für Partition Key Design:**
 
-**PostgreSQL:**
-- Automated daily backups with 7-day retention
-- Point-in-time restore available
+| Tabelle | Partition Key | Begründung |
+|---------|---------------|------------|
+| **issues** | `project_id` | Alle Issues eines Projekts werden zusammen gespeichert. Ermöglicht effiziente Abfragen wie "Alle Issues für Projekt X". |
+| **chat_sessions** | `project_id` + `issue_id` | Composite Key, da Chat-Sessions immer im Kontext eines Issues abgefragt werden. |
+| **chat_messages** | `session_id` | Nachrichten werden immer pro Session geladen. `created_at` als Cluster Key ermöglicht chronologische Sortierung. |
 
-**Cosmos DB:**
-- Continuous backup (automatic)
-- Point-in-time restore within last 30 days
+> **⚠️ Wichtiger Hinweis:** Cosmos DB Cassandra API unterstützt **keine Managed Identity**. Die Authentifizierung erfolgt über Username/Password, die im Key Vault gespeichert werden. Dies erfordert SSL-Konfiguration im CassandraExecutor (siehe [REFACTORING.md](REFACTORING.md#cosmos-db-cassandra-api-ssl-konfiguration)).
 
-**Blob Storage:**
-- Enable soft delete:
-  ```bash
-  az storage blob service-properties delete-policy update \
-    --account-name $(terraform output -raw storage_account_name) \
-    --enable true \
-    --days-retained 30
-  ```
+### 5. Azure Event Hubs (Kafka-Ersatz)
 
-## 🔍 Troubleshooting
+**Ressource:** `azurerm_eventhub_namespace`
 
-### Common Issues
-
-**1. Backend Initialization Failed**
-```
-Error: Failed to get existing workspaces
-```
-**Solution:** Ensure the backend storage account exists and you have access:
-```bash
-az storage account show --name engobaremsfalsa --resource-group remsfal-iac-rg
+```hcl
+resource "azurerm_eventhub_namespace" "main" {
+  name     = local.eventhub_namespace_name
+  sku      = "Standard"
+  capacity = var.eventhub_capacity  # 1 TU
+}
 ```
 
-**2. Insufficient Permissions**
-```
-Error: authorization failed
-```
-**Solution:** Verify your Azure role assignment:
-```bash
-az role assignment list --assignee $(az account show --query user.name -o tsv)
-```
+> **⚠️ WICHTIG:** Für **Kafka-Kompatibilität ist mindestens Standard SKU erforderlich**! Die REMSFAL-Services verwenden das Kafka-Protokoll (SASL_SSL, Port 9093), daher ist Basic SKU keine Option.
 
-**3. Resource Name Conflicts**
-```
-Error: A resource with the ID already exists
-```
-**Solution:** Resource names must be globally unique (ACR, Storage Account, Cosmos DB). Modify `project_name_short` in `variables.tf`.
+#### Throughput Units (TU)
 
-**4. Cosmos DB Connection Issues**
-```
-Error: SSL handshake failed
-```
-**Solution:** Ensure you're using port 10350 and SSL is enabled in your connection string.
+| Umgebung | TUs | Kapazität |
+|----------|-----|-----------|
+| **Dev/Test** | 1 | 1 MB/s ingress, 2 MB/s egress |
+| **Production** | 2 | 2 MB/s ingress, 4 MB/s egress |
 
-**5. Container Apps Not Starting**
-```
-Error: Failed to pull image
-```
-**Solution:** 
-- Verify ACR credentials are configured
-- Check Managed Identity has `AcrPull` role
-- Ensure image exists in ACR
+**Konfigurierte Topics (Event Hubs):**
 
-### Get Help
+| Topic | Partitions | Retention | Zweck |
+|-------|------------|-----------|-------|
+| `user-notification` | 2 | 1 Tag | Benutzerbenachrichtigungen |
+| `ocr.documents.to_process` | 2 | 1 Tag | Eingangswarteschlange für OCR |
+| `ocr.documents.processed` | 2 | 1 Tag | Verarbeitete OCR-Ergebnisse |
 
-```bash
-# View Terraform state
-terraform show
+**Begründung für Event Hubs statt Kafka:**
+- **Vollständig Kafka-kompatibel:** SASL_SSL, Port 9093, Standard Kafka-Clients funktionieren
+- **Managed Service:** Kein Betrieb von Kafka-Clustern/Zookeeper nötig
+- **Automatische Skalierung:** Throughput Units je nach Bedarf
+- **Native Integration:** KEDA-Scaler für Container Apps, Azure Functions Trigger
 
-# List all resources in resource group
-az resource list --resource-group $(terraform output -raw resource_group_name) -o table
+**Consumer Groups:**
 
-# Check Container App logs
-az containerapp logs show \
-  --name <container-app-name> \
-  --resource-group $(terraform output -raw resource_group_name) \
-  --follow
+```hcl
+resource "azurerm_eventhub_consumer_group" "ocr_service" {
+  for_each = toset([
+    "ocr.documents.to_process",
+    "ocr.documents.processed"
+  ])
+  name           = "ocr-service"
+  eventhub_name  = each.value
+  namespace_name = azurerm_eventhub_namespace.main.name
+}
 ```
 
-### Destroy Infrastructure
+- `ocr-service`: Dedizierte Consumer Group für den OCR-Service
+- `$Default`: Standard Consumer Group (für andere Services/Debugging)
 
-⚠️ **Warning:** This will permanently delete all resources!
+### 6. Azure Blob Storage
 
-```bash
-# Destroy specific environment
-terraform destroy -var-file=env/dev.tfvars
+**Ressource:** `azurerm_storage_account`
 
-# Confirm with 'yes' when prompted
+```hcl
+resource "azurerm_storage_account" "main" {
+  name                     = local.storage_account_name
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  account_kind             = "StorageV2"
+}
 ```
 
-## 📊 Cost Estimation
+**Konfigurierte Container:**
 
-### Development (dev)
-- **Estimated Monthly Cost:** €50-80
-  - Container Apps (Burstable): €20
-  - PostgreSQL (B1ms): €15
-  - Cosmos DB (400 RU/s): €20
-  - Storage, Event Hub, etc.: €10-15
+| Container | Zweck |
+|-----------|-------|
+| `remsfal-ticketing` | Dokumente für Ticketing-Service |
+| `documents` | Allgemeine Dokumentenspeicherung |
+| `test-bucket` | Test-Daten |
+| `eventhub-checkpoints` | KEDA Checkpoint Storage |
 
-### Production (prd)
-- **Estimated Monthly Cost:** €300-500
-  - Container Apps (Production tier): €150
-  - PostgreSQL (GP D2s_v3): €100
-  - Cosmos DB (1000 RU/s): €50
-  - Event Hub, Storage, Monitoring: €50-100
+**Begründung für LRS (Locally Redundant Storage):**
+- Kostenoptimierung für Dev/Test-Umgebungen
+- Für Production empfohlen: ZRS oder GRS
 
-💡 **Cost Optimization Tips:**
-- Use scale-to-zero for dev/test environments
-- Enable auto-pause for PostgreSQL in dev
-- Use Cosmos DB autoscale
-- Set up budget alerts in Azure
+### 7. Azure Key Vault
 
-## 📚 Additional Resources
+**Ressource:** `azurerm_key_vault`
 
-- [Azure Container Apps Documentation](https://learn.microsoft.com/azure/container-apps/)
-- [Azure Cosmos DB Cassandra API](https://learn.microsoft.com/azure/cosmos-db/cassandra/)
-- [Azure Event Hubs as Kafka](https://learn.microsoft.com/azure/event-hubs/event-hubs-for-kafka-ecosystem-overview)
-- [Terraform Azure Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
+```hcl
+resource "azurerm_key_vault" "main" {
+  name                       = local.key_vault_name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  soft_delete_retention_days = 7
+  purge_protection_enabled   = false
+  rbac_authorization_enabled = true
+}
+```
 
-## 🏷️ Tags
+**Gespeicherte Secrets:**
 
-All resources are tagged with:
-- `project_name`: remsfal
-- `environment`: dev/tst/prd
-- `maintained_by`: Team name
-- `managed_by`: terraform
+| Secret | Beschreibung |
+|--------|--------------|
+| `postgres-connection-string` | JDBC Connection String für PostgreSQL |
+| `storage-connection-string` | Azure Storage Connection String |
+| `cosmos-contact-point` | Cassandra Contact Point (Host:Port) |
+| `cosmos-username` | Cosmos DB Account Name |
+| `cosmos-password` | Cosmos DB Primary Key |
+| `eventhub-connection-string` | JAAS-Format für Kafka-Konfiguration |
+| `eventhub-sasl-username` | `$ConnectionString` |
+| `eventhub-sasl-password` | Event Hub Connection String |
+| `eventhub-bootstrap-server` | Kafka Bootstrap Server URL |
+
+**Begründung für RBAC:**
+- RBAC statt Access Policies ermöglicht feinere Zugriffssteuerung
+- Konsistent mit Azure-weitem Identity Management
+
+### 8. Monitoring (Application Insights & Log Analytics)
+
+**Ressourcen:** `azurerm_application_insights`, `azurerm_log_analytics_workspace`
+
+```hcl
+resource "azurerm_log_analytics_workspace" "main" {
+  name              = local.log_analytics_workspace_name
+  sku               = "PerGB2018"
+  retention_in_days = 30
+}
+
+resource "azurerm_application_insights" "main" {
+  name             = local.application_insights_name
+  workspace_id     = azurerm_log_analytics_workspace.main.id
+  application_type = "web"
+}
+```
+
+**Begründung:**
+- **Log Analytics Workspace:** Zentrale Log-Aggregation für alle Services
+- **Application Insights:** APM mit Distributed Tracing, Dependency Mapping
+- **30 Tage Retention:** Ausreichend für Debugging, kostenoptimiert
 
 ---
 
-**Maintained by:** Platform Team  
-**Last Updated:** December 2025  
-**Terraform Version:** >= 1.5  
-**Azure Provider Version:** ~> 3.0
+## Umgebungskonfiguration
+
+Die Infrastruktur unterstützt drei Umgebungen, die sich in Ressourcenausstattung, Skalierung und Kosten unterscheiden:
+
+| Umgebung | Datei | Beschreibung |
+|----------|-------|--------------|
+| **Development** | `env/dev.tfvars` | Minimale Ressourcen, Scale-to-Zero, günstigste Konfiguration |
+| **Test** | `env/tst.tfvars` | Mittlere Ressourcen für Integrationstests und QA |
+| **Production** | `env/prd.tfvars` | Hochverfügbarkeit, ausreichende Ressourcen für Produktionslast |
+
+### Umgebungsvergleich
+
+| Einstellung | Dev | Test | Production |
+|-------------|-----|------|------------|
+| **PostgreSQL SKU** | B_Standard_B1ms | B_Standard_B2s | GP_Standard_D2s_v3 |
+| **PostgreSQL Storage** | 32 GB | 64 GB | 128 GB |
+| **Cosmos Throughput** | 400 RU/s | 400 RU/s | 1000 RU/s |
+| **Event Hub TUs** | 1 | 1 | 2 |
+| **Container min_replicas** | 0 (alle) | 0 (alle) | 1-2 (kritische) |
+| **Container max_replicas** | 2-3 | 3-5 | 5-10 |
+| **Container CPU** | 0.25-0.5 | 0.25-0.5 | 0.5-1.0 |
+| **Container Memory** | 0.5-1 Gi | 0.5-1 Gi | 1-2 Gi |
+| **Image Tag** | `:latest` | `:latest` | `:stable` |
+| **Storage Redundancy** | LRS | LRS | LRS (GRS empfohlen) |
+
+### Development-Umgebung (dev.tfvars)
+
+**Ziel:** Minimale Kosten bei Entwicklung und lokalem Testing.
+
+```hcl
+# Alle Services: Scale-to-Zero für Kostenoptimierung
+# CPU: 0.25 (Minimum), Memory: 0.5Gi (Minimum)
+# OCR: 0.5 CPU, 1Gi wegen ML-Modellen
+
+container_apps = {
+  platform = {
+    cpu          = 0.25
+    memory       = "0.5Gi"
+    min_replicas = 0  # Scale-to-Zero → Cold-Start bei erstem Request
+    max_replicas = 3
+  }
+  # ...
+}
+```
+
+**Eigenschaften:**
+- ✅ Günstigste Konfiguration
+- ✅ Scale-to-Zero spart Kosten bei Inaktivität
+- ⚠️ Cold-Start-Latenz: 10-30 Sekunden beim ersten Request
+- ⚠️ Minimale Ressourcen können bei komplexen Operationen langsam sein
+
+### Test-Umgebung (tst.tfvars)
+
+**Ziel:** Realistische Umgebung für Integrationstests und QA.
+
+```hcl
+# Gleiche Ressourcen wie Dev, aber höhere max_replicas für Lasttests
+# PostgreSQL: B_Standard_B2s für mehr Performance bei parallelen Tests
+
+postgres_sku = "B_Standard_B2s"  # 2 vCores, 4GB RAM
+
+container_apps = {
+  platform = {
+    min_replicas = 0
+    max_replicas = 5  # Höher für Lasttests
+  }
+}
+```
+
+**Eigenschaften:**
+- ✅ Größere PostgreSQL-Instanz für parallele Tests
+- ✅ Höhere max_replicas für Skalierungstests
+- ✅ Scale-to-Zero für Kostenoptimierung außerhalb der Testzeiten
+- ⚠️ Cold-Start bei Tests nach längerer Inaktivität
+
+### Production-Umgebung (prd.tfvars)
+
+**Ziel:** Hochverfügbarkeit und konsistente Performance.
+
+```hcl
+# Kritische Services: min_replicas > 0 für Verfügbarkeit
+# Image-Tag: :stable für kontrollierte Deployments
+
+container_apps = {
+  platform = {
+    image        = "remsfal-platform:stable"
+    cpu          = 1.0
+    memory       = "2Gi"
+    min_replicas = 2  # Hochverfügbar
+    max_replicas = 10
+  }
+}
+
+postgres_sku = "GP_Standard_D2s_v3"  # General Purpose für konsistente Performance
+cosmos_throughput = 1000              # Höhere Kapazität
+eventhub_capacity = 2                 # Mehr Durchsatz
+```
+
+**Eigenschaften:**
+- ✅ Keine Cold-Starts für kritische Services (Platform, Ticketing)
+- ✅ Ausreichende Ressourcen für Produktionslast
+- ✅ General Purpose PostgreSQL für konsistente Performance
+- ✅ `:stable` Image-Tags für kontrollierte Releases
+- 💰 Höhere Kosten, aber notwendig für Produktionsbetrieb
+
+> **💡 Empfehlung für Production:** Zusätzlich Zone Redundancy für PostgreSQL aktivieren und Storage Redundancy auf GRS (Geo-Redundant) ändern.
+
+---
+
+## Secret Management
+
+### AzureKeyVaultConfigSource
+
+Die Quarkus-Services laden Secrets direkt aus dem Key Vault mittels der `AzureKeyVaultConfigSource`:
+
+```java
+// Quarkus lädt automatisch Secrets aus Key Vault
+// wenn AZURE_KEYVAULT_ENDPOINT gesetzt ist
+@ConfigProperty(name = "quarkus.datasource.jdbc.url")
+String jdbcUrl;  // Wird aus Key Vault Secret "postgres-connection-string" geladen
+```
+
+**Vorteile:**
+- Keine Secrets in Environment Variables oder Configs
+- Automatische Rotation möglich
+- Zentrale Secret-Verwaltung
+
+### Secret-Mapping für Services
+
+| Service | Benötigte Secrets |
+|---------|-------------------|
+| **Platform** | `postgres-connection-string` |
+| **Ticketing** | `cosmos-*`, `storage-connection-string` |
+| **Notification** | `eventhub-*` |
+| **OCR** | `eventhub-*`, `storage-connection-string` |
+
+---
+
+## Managed Identity & RBAC
+
+### Dual Identity Pattern
+
+Die Container Apps verwenden ein **Dual Identity Pattern** mit zwei verschiedenen Managed Identities:
+
+```hcl
+# User-Assigned Identity für ACR Pull (erstellt VOR den Container Apps)
+resource "azurerm_user_assigned_identity" "container_apps" {
+  name = "${local.base_name}-ca-identity"
+}
+
+# Grant ACR Pull BEVOR Container Apps erstellt werden
+resource "azurerm_role_assignment" "container_apps_acr_pull" {
+  scope                = data.azurerm_container_registry.main.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_user_assigned_identity.container_apps.principal_id
+}
+
+# Container App mit beiden Identity-Typen
+resource "azurerm_container_app" "apps" {
+  identity {
+    type         = "SystemAssigned, UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.container_apps.id]
+  }
+  
+  # User-Assigned Identity für ACR Pull
+  registry {
+    identity = azurerm_user_assigned_identity.container_apps.id
+    server   = data.azurerm_container_registry.main.login_server
+  }
+}
+```
+
+**Begründung für Dual Identity:**
+
+| Identity-Typ | Verwendungszweck | Warum? |
+|--------------|------------------|--------|
+| **User-Assigned** | ACR Pull | Identity existiert bevor Container App erstellt wird |
+| **System-Assigned** | Storage, Event Hubs, Key Vault | Automatisch verwaltet, pro Container App eindeutig |
+
+### Zugewiesene Rollen
+
+| Rolle | Scope | Identity | Zweck |
+|-------|-------|----------|-------|
+| `AcrPull` | Container Registry | **User-Assigned** | Container Images aus ACR ziehen |
+| `Storage Blob Data Contributor` | Storage Account | System-Assigned | Lesen/Schreiben von Blobs |
+| `Azure Event Hubs Data Owner` | Event Hub Namespace | System-Assigned | Kafka Produce/Consume |
+| `Key Vault Secrets User` | Key Vault | System-Assigned | Secrets aus Key Vault lesen |
+
+**Vorteile von Managed Identity:**
+- Keine Credentials im Code oder Config
+- Automatische Credential-Rotation
+- Zentrale Zugriffskontrolle über Azure RBAC
+- Kein manuelles Secret-Management für Azure-Services
+
+> **⚠️ Ausnahme Cosmos DB:** Cosmos DB Cassandra API unterstützt keine Managed Identity. Credentials werden aus Key Vault gelesen.
+
+---
+
+## Hinweise
+
+> **⚠️ Produktionsempfehlung:** Diese Dokumentation beschreibt die IaC-Konfiguration für Development/Test. Für Production sollten zusätzliche Maßnahmen wie Zone Redundancy, Geo-Replikation und erweiterte Backup-Strategien implementiert werden.
+
+> **📝 Repository-Hinweis:** Idealerweise sollte Infrastructure as Code in einem eigenen Repository verwaltet werden. Da für die REMSFAL GitHub-Organisation keine neuen Repositories erstellt werden können, befindet sich der IaC-Code im Backend-Repository unter `/iac/azure/terraform`.
