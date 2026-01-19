@@ -18,14 +18,17 @@ public class ProjectOrganizationResource extends ProjectSubResource implements P
     @Override
     public ProjectOrganizationListJson getProjectOrganizations(final UUID projectId) {
         checkReadPermissions(projectId);
-        final Set<? extends ProjectOrganizationModel> model = projectController.getProjectOrganizations(principal, projectId);
+        final Set<? extends ProjectOrganizationModel> model =
+            projectController.getProjectOrganizations(principal, projectId);
         return ProjectOrganizationListJson.valueOfSet(model);
     }
 
     @Override
-    public ProjectOrganizationJson addProjectOrganization(final UUID projectId, final ProjectOrganizationJson organization) {
+    public ProjectOrganizationJson addProjectOrganization(final UUID projectId,
+            final ProjectOrganizationJson organization) {
         checkWritePermissions(projectId);
-        final ProjectOrganizationModel model = projectController.addProjectOrganization(principal, projectId, organization);
+        final ProjectOrganizationModel model =
+            projectController.addProjectOrganization(principal, projectId, organization);
         return ProjectOrganizationJson.valueOf(model);
     }
 

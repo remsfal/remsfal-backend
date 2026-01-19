@@ -26,9 +26,11 @@ import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 @NamedQuery(name = "ProjectOrganizationEntity.findByProjectId",
     query = "SELECT o FROM ProjectOrganizationEntity o WHERE o.project.id = :projectId")
 @NamedQuery(name = "ProjectOrganizationEntity.findByProjectIdAndOrganizationId",
-    query = "SELECT o FROM ProjectOrganizationEntity o WHERE o.project.id = :projectId AND o.organization.id = :organizationId")
+    query = "SELECT o FROM ProjectOrganizationEntity o "
+        + "WHERE o.project.id = :projectId AND o.organization.id = :organizationId")
 @NamedQuery(name = "ProjectOrganizationEntity.removeByProjectIdAndOrganizationId",
-    query = "DELETE FROM ProjectOrganizationEntity o WHERE o.project.id = :projectId AND o.organization.id = :organizationId")
+    query = "DELETE FROM ProjectOrganizationEntity o "
+        + "WHERE o.project.id = :projectId AND o.organization.id = :organizationId")
 @Table(name = "project_organizations")
 public class ProjectOrganizationEntity extends MetaDataEntity implements ProjectOrganizationModel {
 

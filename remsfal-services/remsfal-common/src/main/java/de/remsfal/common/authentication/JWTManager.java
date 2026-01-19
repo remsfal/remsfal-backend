@@ -72,13 +72,14 @@ public class JWTManager {
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
 
-        JwtClaimsBuilder builder = Jwt.subject(user.getId().toString())
-                .claim("email", user.getEmail())
-                .claim("active", user.isActive())
-                .claim("project_roles", projectRoles)
-                .claim("tenancy_projects", tenancyProjects)
-                .issuer(issuer)
-                .expiresAt(exp);
+        JwtClaimsBuilder builder = Jwt
+            .subject(user.getId().toString())
+            .claim("email", user.getEmail())
+            .claim("active", user.isActive())
+            .claim("project_roles", projectRoles)
+            .claim("tenancy_projects", tenancyProjects)
+            .issuer(issuer)
+            .expiresAt(exp);
 
         if (user.getName() != null) {
             builder.claim("name", user.getName());

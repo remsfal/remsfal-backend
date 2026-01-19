@@ -182,7 +182,8 @@ public class ProjectController {
 
         projectEntity.addOrganization(organizationEntity, organization.getRole());
         projectRepository.mergeAndFlush(projectEntity);
-        return projectOrganizationRepository.findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
+        return projectOrganizationRepository
+            .findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
             .orElseThrow(() -> new NotFoundException("Failed to add organization to project"));
     }
 
