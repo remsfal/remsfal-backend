@@ -10,7 +10,7 @@
     <changeSet id="005-create-issue-participants-table"
                author="huyhoang.nguyen@htw-berlin.de">
 
-        <comment>Create issue_participants table</comment>
+        <comment>Create issue participation schema</comment>
 
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.issue_participants (

@@ -5,12 +5,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-ticketing-0.0.5-issues-relations-nm" author="max.büning@htw-berlin.de">
-        <comment>
-            Migrate issue relations to N:M:
-            - Drop old 1:1 relation columns (blocked_by, related_to, duplicate_of)
-            - Add new SET&lt;UUID&gt;-based relation columns:
-            blocks, blocked_by_set, related_to_set, duplicate_of_set, parent_of, child_of
-        </comment>
+        <comment>Migrate issue relations from 1:1 to N:M relationships</comment>
 
         <!-- 1) Alte 1:1-Spalten entfernen -->
         <sql>

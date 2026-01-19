@@ -4,7 +4,6 @@ import de.remsfal.service.boundary.AbstractResourceTest;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
@@ -24,12 +23,6 @@ public class EmployeeResourceTest extends AbstractResourceTest {
     protected void setupTestDate() {
         super.setupTestUsers();
         super.setupTestOrganizations();
-    }
-
-    @AfterEach
-    @Transactional
-    protected void cleanupTestData() {
-        entityManager.createNativeQuery("DELETE FROM organization").executeUpdate();
     }
 
     @Test

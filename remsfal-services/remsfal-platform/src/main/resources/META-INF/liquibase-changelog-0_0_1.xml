@@ -9,6 +9,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.1-init" author="alexander.stanik@htw-berlin.de">
+        <comment>Initialize Liquibase metadata table</comment>
+
         <createIndex tableName="DATABASECHANGELOG" indexName="idx_date_order_executed">
             <column name="DATEEXECUTED"/>
             <column name="ORDEREXECUTED"/>
@@ -18,6 +20,8 @@
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.1-user" author="alexander.stanik@htw-berlin.de">
+        <comment>Create user management schema with addresses and users tables</comment>
+
         <createTable tableName="addresses">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
@@ -44,13 +48,6 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
-
-        <createIndex indexName="idx_address_street_lookup" tableName="addresses">
-            <column name="street" type="varchar(255)" />
-        </createIndex>
-        <createIndex indexName="idx_address_zip_lookup" tableName="addresses">
-            <column name="zip" type="varchar(255)" />
-        </createIndex>
 
         <createTable tableName="users">
             <column name="id" type="uuid">

@@ -9,6 +9,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.1.0-commercial" author="alexander.stanik@htw-berlin.de">
+        <comment>Create commercial space schema with commercials and commercial rental tables</comment>
+
         <createTable tableName="commercials">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />

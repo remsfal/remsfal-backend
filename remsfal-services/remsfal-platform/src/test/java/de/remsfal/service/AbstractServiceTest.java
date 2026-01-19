@@ -27,10 +27,12 @@ public abstract class AbstractServiceTest extends AbstractTest {
     @BeforeEach
     void cleanDB() {
         runInTransaction(() -> {
-            entityManager.createQuery("DELETE FROM AddressEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM ProjectOrganizationEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM ProjectEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM OrganizationEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM UserAuthenticationEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM UserEntity").executeUpdate();
+            entityManager.createQuery("DELETE FROM AddressEntity").executeUpdate();
         });
     }
 
