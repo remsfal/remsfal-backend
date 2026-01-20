@@ -1,6 +1,7 @@
 package de.remsfal.service.entity.dto;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
@@ -27,13 +29,16 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     @Column(name = "project_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID projectId;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "tenants",
+    @ManyToOne
+    @JoinColumn(name = "project_id", insertable = false, updatable = false)
+    private ProjectEntity project;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(name = "tenants",
         joinColumns = @JoinColumn(name = "tenancy_id", columnDefinition = "uuid"),
         inverseJoinColumns = @JoinColumn(name = "user_id", columnDefinition = "uuid")
     )
-    private List<UserEntity> tenants;
+    private List<UserEntity> tenants = new ArrayList<>();
 
     @Column(name = "start_of_rental", columnDefinition = "date")
     private LocalDate startOfRental;

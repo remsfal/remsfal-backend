@@ -5,7 +5,8 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="1-create-user-authentication" author="gflachs">
-        <!-- Create USERAUTHENTICATION Table -->
+        <comment>Create user authentication table for refresh token management</comment>
+
         <createTable tableName="user_authentications">
             <column name="user_id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>

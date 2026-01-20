@@ -8,7 +8,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="remsfal-ticketing-0.0.1-issues" author="alexander.stanik@htw-berlin.de">
-        <comment>Create issues table</comment>
+        <comment>Create issue tracking schema</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.issues (
                 project_id UUID,

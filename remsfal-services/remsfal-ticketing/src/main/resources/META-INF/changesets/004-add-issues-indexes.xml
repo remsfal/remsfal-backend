@@ -8,7 +8,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="remsfal-ticketing-0.0.2-issues-indexes" author="github-copilot">
-        <comment>Add indexes for status, owner_id, and tenancy_id columns to support filtering</comment>
+        <comment>Add indexes to issues table for filtering</comment>
         <sql>
             CREATE INDEX IF NOT EXISTS issues_status_idx ON REMSFAL.issues (status);
         </sql>

@@ -108,10 +108,12 @@ class SessionManagerTest {
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
         when(controller.getProjectAuthorization(TestData.USER_ID))
             .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.getOrganizationAuthorization(TestData.USER_ID))
+            .thenReturn(Map.of());
         when(controller.getTenancyAuthorization(TestData.USER_ID))
             .thenReturn(Map.of());
 
-        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyLong()))
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyMap(), anyLong()))
                 .thenReturn("new-access");
 
         when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L)))
@@ -128,7 +130,7 @@ class SessionManagerTest {
 
         verify(controller).requireValidRefreshToken(TestData.USER_ID, refreshId);
         verify(jwtParser).parse(refreshTokenValue);
-        verify(jwtManager).createAccessToken(eq(user), anyMap(), anyMap(), anyLong());
+        verify(jwtManager).createAccessToken(eq(user), anyMap(), anyMap(), anyMap(), anyLong());
         verify(jwtManager).createRefreshToken(eq(TestData.USER_ID), eq(email), anyString(), eq(604800L));
     }
 
@@ -149,10 +151,12 @@ class SessionManagerTest {
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
         when(controller.getProjectAuthorization(TestData.USER_ID))
             .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.getOrganizationAuthorization(TestData.USER_ID))
+            .thenReturn(Map.of());
         when(controller.getTenancyAuthorization(TestData.USER_ID))
             .thenReturn(Map.of());
 
-        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyLong()))
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyMap(), anyLong()))
                 .thenReturn("access.jwt");
 
         // Act
@@ -199,9 +203,11 @@ class SessionManagerTest {
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
         when(controller.getProjectAuthorization(TestData.USER_ID))
                 .thenReturn(createMemberships("MANAGER", "STAFF"));
+        when(controller.getOrganizationAuthorization(TestData.USER_ID))
+                .thenReturn(Map.of());
         when(controller.getTenancyAuthorization(TestData.USER_ID))
                 .thenReturn(Map.of());
-        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), eq(300L)))
+        when(jwtManager.createAccessToken(eq(user), anyMap(), anyMap(), anyMap(), eq(300L)))
                 .thenReturn("access.jwt");
         when(jwtManager.createRefreshToken(eq(TestData.USER_ID), eq(TestData.USER_EMAIL), anyString(), eq(604800L)))
                 .thenReturn("refresh.jwt");
@@ -245,9 +251,9 @@ class SessionManagerTest {
 
     @Test
     void test_generateAccessToken_throws_whenUserMissing() {
-        when(controller.getAuthenticatedUser(TestData.USER_ID_4)).thenThrow(UnauthorizedException.class);  
+        when(controller.getAuthenticatedUser(TestData.USER_ID_4)).thenThrow(UnauthorizedException.class);
         assertThrows(UnauthorizedException.class, () -> sessionManager.generateAccessToken(TestData.USER_ID_4, "x@x"));
-        verify(jwtManager, never()).createAccessToken(any(UserEntity.class), anyMap(), anyMap(), anyLong());
+        verify(jwtManager, never()).createAccessToken(any(UserEntity.class), anyMap(), anyMap(), anyMap(), anyLong());
     }
 
     @Test

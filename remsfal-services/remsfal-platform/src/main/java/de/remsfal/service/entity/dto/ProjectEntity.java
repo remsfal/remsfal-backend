@@ -29,6 +29,12 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ProjectMembershipEntity> memberships;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<ProjectOrganizationEntity> organizations;
+
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    private Set<TenancyEntity> tenancies;
     
     @Override
     public String getTitle() {
@@ -67,6 +73,25 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
             }
         }
         return false;
+    }
+
+    public Set<ProjectOrganizationEntity> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(final Set<ProjectOrganizationEntity> organizations) {
+        this.organizations = organizations;
+    }
+
+    public void addOrganization(final OrganizationEntity organizationEntity, final MemberRole role) {
+        if(organizations == null) {
+            organizations = new HashSet<>();
+        }
+        ProjectOrganizationEntity organization = new ProjectOrganizationEntity();
+        organization.setProject(this);
+        organization.setOrganization(organizationEntity);
+        organization.setRole(role);
+        this.organizations.add(organization);
     }
 
     @Override

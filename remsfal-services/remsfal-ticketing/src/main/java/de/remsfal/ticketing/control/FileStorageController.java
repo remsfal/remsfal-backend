@@ -8,7 +8,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-import de.remsfal.ticketing.entity.dao.FileStorage;
+import de.remsfal.ticketing.entity.storage.FileStorage;
 
 import java.io.IOException;
 import java.io.InputStream;

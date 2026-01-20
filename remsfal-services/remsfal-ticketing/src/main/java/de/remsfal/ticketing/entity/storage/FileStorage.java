@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.entity.dao;
+package de.remsfal.ticketing.entity.storage;
 
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;

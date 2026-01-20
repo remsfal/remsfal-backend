@@ -9,6 +9,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.3-project" author="alexander.stanik@htw-berlin.de">
+        <comment>Create project schema with projects and membership tables</comment>
+
         <createTable tableName="projects">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
