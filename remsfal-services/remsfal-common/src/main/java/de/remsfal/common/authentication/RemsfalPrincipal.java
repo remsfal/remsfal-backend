@@ -14,6 +14,7 @@ import jakarta.json.JsonObject;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 
 @RequestScoped
 public class RemsfalPrincipal implements Principal, UserModel {
@@ -50,6 +51,13 @@ public class RemsfalPrincipal implements Principal, UserModel {
             .collect(Collectors.toMap(
                 e -> UUID.fromString(e.getKey()),
                 e -> MemberRole.valueOf(e.getValue().trim())));
+    }
+
+    public Map<UUID, EmployeeRole> getOrganizationRoles() {
+        return getClaimMap("organization_roles").entrySet().stream()
+            .collect(Collectors.toMap(
+                e -> UUID.fromString(e.getKey()),
+                e -> EmployeeRole.valueOf(e.getValue().trim())));
     }
 
     public Map<UUID, UUID> getTenancyProjects() {

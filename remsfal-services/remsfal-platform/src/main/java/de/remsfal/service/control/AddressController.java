@@ -32,7 +32,7 @@ public class AddressController {
     @Transactional(TxType.MANDATORY)
     public AddressEntity updateAddress(final AddressModel address, AddressEntity entity) {
         if(entity == null && address.getStreet() == null && address.getCity() == null &&
-           address.getProvince() == null && address.getZip() == null && address.getCountry() == null) {
+            address.getProvince() == null && address.getZip() == null && address.getCountry() == null) {
             return null;
         } else if(entity == null) {
             entity = new AddressEntity();

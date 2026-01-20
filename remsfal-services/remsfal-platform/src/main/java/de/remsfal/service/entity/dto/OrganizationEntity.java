@@ -15,13 +15,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.CascadeType;
 
-import java.util.UUID;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
 
 @Entity
-@Table(name = "organization")
+@Table(name = "organizations")
 @NamedQuery(name = "findAll", query = "select o from OrganizationEntity o")
 public class OrganizationEntity extends AbstractEntity implements OrganizationModel {
 

@@ -4,11 +4,15 @@ import de.remsfal.core.api.organization.EmployeeEndpoint;
 import de.remsfal.core.json.organization.OrganizationEmployeeJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.model.OrganizationEmployeeModel;
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 
 import java.util.UUID;
 
+/**
+ * @author Miroslaw Keil [miroslaw.keil@student.htw-berlin.de]
+ */
 @Authenticated
 @RequestScoped
 public class EmployeeResource extends OrganizationSubResource implements EmployeeEndpoint {
@@ -27,14 +31,22 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
 
     @Override
     public OrganizationEmployeeJson addEmployee(UUID organizationId, OrganizationEmployeeJson employee) {
-        checkWritePermissions(organizationId);
+        if (employee.getEmployeeRole() == EmployeeRole.OWNER) {
+            checkOwnerPermissions(organizationId);
+        } else {
+            checkWritePermissions(organizationId);
+        }
         return OrganizationEmployeeJson.valueOf(controller.addEmployee(organizationId, principal, employee));
     }
 
     @Override
     public OrganizationEmployeeJson updateEmployee(UUID organizationId, UUID employeeId,
         OrganizationEmployeeJson employee) {
-        checkWritePermissions(organizationId);
+        if (employee.getEmployeeRole() == EmployeeRole.OWNER) {
+            checkOwnerPermissions(organizationId);
+        } else {
+            checkWritePermissions(organizationId);
+        }
         return OrganizationEmployeeJson.valueOf(
                 controller.updateEmployeeRole(organizationId, employeeId, employee.getEmployeeRole())
         );
@@ -42,10 +54,10 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
 
     @Override
     public void deleteEmployee(UUID organizationId, UUID employeeId) {
-        OrganizationEmployeeModel.EmployeeRole role =
+        EmployeeRole role =
             controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole();
 
-        if (role == OrganizationEmployeeModel.EmployeeRole.OWNER) {
+        if (role == EmployeeRole.OWNER) {
             checkOwnerPermissions(organizationId);
         } else {
             checkWritePermissions(organizationId);
