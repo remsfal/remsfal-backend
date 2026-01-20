@@ -10,7 +10,7 @@
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="005-create-inbox-messages-table" author="Hoang.Nguyen@Student.HTW-Berlin.de">
-        <comment>Create inbox_messages table (event-based inbox)</comment>
+        <comment>Create inbox messaging schema</comment>
 
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.inbox_messages (

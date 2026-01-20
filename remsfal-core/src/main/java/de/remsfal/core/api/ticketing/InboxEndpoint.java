@@ -10,8 +10,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -29,11 +27,7 @@ public interface InboxEndpoint {
     @Operation(summary = "Retrieve inbox messages for the authenticated user")
     @APIResponse(
         responseCode = "200",
-        description = "List of inbox messages belonging to the authenticated user",
-        content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = InboxMessageJson.class)
-        )
+        description = "List of inbox messages belonging to the authenticated user"
     )
     List<InboxMessageJson> getInboxMessages(
         @Parameter(description = "Filter by read status (true = read, false = unread)")
@@ -46,11 +40,7 @@ public interface InboxEndpoint {
     @Operation(summary = "Update the read/unread status of an inbox message")
     @APIResponse(
         responseCode = "200",
-        description = "Message status updated",
-        content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = InboxMessageJson.class)
-        )
+        description = "Message status updated"
     )
     @APIResponse(responseCode = "404", description = "Message not found for this user")
     InboxMessageJson updateMessageStatus(
@@ -69,4 +59,5 @@ public interface InboxEndpoint {
             @Parameter(description = "Message ID", required = true)
             @PathParam("messageId") String messageId
     );
+
 }

@@ -789,11 +789,18 @@ public class TestData {
     public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
 
     // Test organization 1
-    public static final UUID ORGANIZATION_ID = UUID.fromString("00000000-A1bA-8235-e751-a2Dcac9D78De");
-    public static final String ORGANIZATION_NAME = "Test";
-    public static final String ORGANIZATION_PHONE = "+57752788714093";
-    public static final String ORGANIZATION_EMAIL = "test@test.de";
-    public static final String ORGANIZATION_TRADE = "Test";
+    public static final UUID ORGANIZATION_ID_1 = UUID.fromString("00000000-A1bA-8235-e751-a2Dcac9D78De");
+    public static final String ORGANIZATION_NAME_1 = "Test";
+    public static final String ORGANIZATION_PHONE_1 = "+57752788714093";
+    public static final String ORGANIZATION_EMAIL_1 = "test@test.de";
+    public static final String ORGANIZATION_TRADE_1 = "Test";
+
+    // Default test organization
+    public static final UUID ORGANIZATION_ID = ORGANIZATION_ID_1;
+    public static final String ORGANIZATION_NAME = ORGANIZATION_NAME_1;
+    public static final String ORGANIZATION_PHONE = ORGANIZATION_PHONE_1;
+    public static final String ORGANIZATION_EMAIL = ORGANIZATION_EMAIL_1;
+    public static final String ORGANIZATION_TRADE = ORGANIZATION_TRADE_1;
 
     // Test organization 2
     public static final UUID ORGANIZATION_ID_2 = UUID.fromString("11111111-A1bA-8235-e751-a2Dcac9D78De");

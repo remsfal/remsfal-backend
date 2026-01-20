@@ -20,6 +20,7 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
     importOptions = ImportOption.DoNotIncludeTests.class
 )
 public final class DependencyCycleTest {
+
     private DependencyCycleTest() {
         // utility class
     }
@@ -38,10 +39,8 @@ public final class DependencyCycleTest {
      * Any cyclic dependency between these slices will cause the test to fail.
      */
     @ArchTest
-    static final ArchRule no_cycles_between_top_level_packages =
-            slices()
-                    .matching("de.remsfal.(*)..")
-                    .should().beFreeOfCycles();
-
+    static final ArchRule no_cycles_between_top_level_packages = slices()
+        .matching("de.remsfal.(*)..")
+        .should().beFreeOfCycles();
 
 }

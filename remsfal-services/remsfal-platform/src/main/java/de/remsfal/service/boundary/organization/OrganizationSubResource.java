@@ -1,7 +1,7 @@
 package de.remsfal.service.boundary.organization;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.core.model.OrganizationEmployeeModel;
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
 import io.quarkus.security.Authenticated;
@@ -14,6 +14,9 @@ import org.jboss.logging.Logger;
 
 import java.util.UUID;
 
+/**
+ * @author Miroslaw Keil [miroslaw.keil@student.htw-berlin.de]
+ */
 @Authenticated
 @RequestScoped
 public class OrganizationSubResource {
@@ -45,7 +48,7 @@ public class OrganizationSubResource {
     }
 
     public boolean checkOwnerPermissions(final UUID organizationId) {
-        if (controller.getEmployeeRole(organizationId, principal) != OrganizationEmployeeModel.EmployeeRole.OWNER) {
+        if (controller.getEmployeeRole(organizationId, principal) != EmployeeRole.OWNER) {
             throw new ForbiddenException("Owner rights are required");
         } else {
             return true;

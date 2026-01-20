@@ -4,6 +4,8 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-contractor" author="efehan.cekic@student.htw-berlin.de">
+        <comment>Create contractor schema with contractors and contractor employees tables</comment>
+
         <createTable tableName="contractors">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />

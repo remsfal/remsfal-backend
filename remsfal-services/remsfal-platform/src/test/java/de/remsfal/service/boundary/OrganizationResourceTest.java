@@ -3,11 +3,9 @@ package de.remsfal.service.boundary;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,12 +24,6 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     protected void setupTestData() {
         super.setupTestUsers();
         super.setupTestOrganizations();
-    }
-
-    @AfterEach
-    @Transactional
-    protected void cleanupTestData() {
-        entityManager.createNativeQuery("DELETE FROM organization").executeUpdate();
     }
 
     @Test

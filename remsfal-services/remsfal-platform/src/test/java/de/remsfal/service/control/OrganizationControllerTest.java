@@ -7,13 +7,10 @@ import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 public class OrganizationControllerTest extends AbstractResourceTest {
@@ -28,12 +25,6 @@ public class OrganizationControllerTest extends AbstractResourceTest {
     protected void setupTestData() {
         super.setupTestUsers();
         super.setupTestOrganizations();
-    }
-
-    @AfterEach
-    @Transactional
-    protected void cleanupTestData() {
-        entityManager.createNativeQuery("DELETE FROM organization").executeUpdate();
     }
 
     @Test

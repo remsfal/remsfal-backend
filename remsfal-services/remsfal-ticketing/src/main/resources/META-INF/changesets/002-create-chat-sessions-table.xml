@@ -8,7 +8,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="remsfal-ticketing-0.0.2-chat_sessions" author="alexander.stanik@htw-berlin.de">
-        <comment>Create chat_sessions table</comment>
+        <comment>Create chat session schema</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.chat_sessions (
                 project_id UUID,

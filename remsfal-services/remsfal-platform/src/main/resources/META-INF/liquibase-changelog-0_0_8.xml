@@ -9,6 +9,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.1.0-storage" author="alexander.stanik@htw-berlin.de">
+        <comment>Create storage schema with storages and storage rental tables</comment>
+
         <createTable tableName="storages">
             <column name="ID" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
