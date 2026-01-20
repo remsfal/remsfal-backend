@@ -37,9 +37,12 @@ public interface IssueEventJson {
     }
 
     // --- Stable meta (settable) ---
-    @Nullable UUID getEventId();
-    @Nullable Long getCreatedAt(); // epoch millis
-    @Nullable Audience getAudience();
+    @Nullable
+    UUID getEventId();
+    @Nullable
+    Long getCreatedAt(); // epoch millis
+    @Nullable
+    Audience getAudience();
 
     /**
      * Always returns a non-null event id.
