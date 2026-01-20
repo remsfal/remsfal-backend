@@ -9,6 +9,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.2-address-validation" author="alexander.stanik@htw-berlin.de">
+        <comment>Create address validation table with German postal codes and cities</comment>
+
         <createTable tableName="address_validations">
             <column name="id" type="int" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true" />

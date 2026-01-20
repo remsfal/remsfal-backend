@@ -9,6 +9,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.4-tenancy" author="alexander.stanik@htw-berlin.de">
+        <comment>Create tenancy schema with tenancies and tenants tables</comment>
+
         <createTable tableName="tenancies">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
@@ -61,6 +63,8 @@
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.4-property" author="alexander.stanik@htw-berlin.de">
+        <comment>Create property schema with properties and rental agreement tables</comment>
+
         <createTable tableName="properties">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />

@@ -25,6 +25,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import java.util.UUID;
 
+/**
+ * @author Miroslaw Keil [miroslaw.keil@student.htw-berlin.de]
+ */
 public interface EmployeeEndpoint {
 
     String SERVICE = "employees";
@@ -55,14 +58,14 @@ public interface EmployeeEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "add an employee to an organization")
+    @Operation(summary = "Add an employee to an organization")
     @APIResponse(responseCode = "200", description = "A new employee was successfully added")
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     OrganizationEmployeeJson addEmployee(
         @Parameter(description = "Id of the organization", required = true)
         @PathParam("organizationId") @NotNull final UUID organizationId,
-        @Parameter(description = "employee information", required = true)
+        @Parameter(description = "Employee information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) final OrganizationEmployeeJson employee
     );
 
@@ -77,9 +80,9 @@ public interface EmployeeEndpoint {
     OrganizationEmployeeJson updateEmployee(
         @Parameter(description = "Id of the organization", required = true)
         @PathParam("organizationId") @NotNull UUID organizationId,
-        @Parameter(description = "employeeId", required = true)
+        @Parameter(description = "Id of the employee", required = true)
         @PathParam("employeeId") @NotNull UUID employeeId,
-        @Parameter(description = "employee information", required = true)
+        @Parameter(description = "Employee information", required = true)
         @Valid @ConvertGroup(to = PatchValidation.class) final OrganizationEmployeeJson employee
     );
 

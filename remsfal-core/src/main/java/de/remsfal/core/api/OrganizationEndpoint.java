@@ -33,23 +33,15 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import java.util.UUID;
 
+/**
+ * @author Miroslaw Keil [miroslaw.keil@student.htw-berlin.de]
+ */
 @Path(OrganizationEndpoint.CONTEXT + "/" + OrganizationEndpoint.VERSION + "/" + OrganizationEndpoint.SERVICE)
 public interface OrganizationEndpoint {
 
     String CONTEXT = "api";
     String VERSION = "v1";
     String SERVICE = "organization";
-
-    @GET
-    @Path("/{organizationId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(description = "Retrieve information of an organization by id")
-    @APIResponse(responseCode = "200", description = "An organization was successfully returned")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "The organization with the requested id doesn't exist")
-    OrganizationJson getOrganization(
-        @Parameter(description = "Id of the organization", required = true)
-        @PathParam("organizationId") UUID organizationId);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -78,13 +70,26 @@ public interface OrganizationEndpoint {
     @Operation(description = "Creates a new organization")
     @APIResponse(
         responseCode = "201",
-        description = "organization was created successfully",
+        description = "Organization was created successfully",
         headers = @Header(name = "Location", description = "URL of the new organization")
     )
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createOrganization(
-        @Parameter(description = "organization information")
-        @Valid @ConvertGroup(to = PostValidation.class) OrganizationJson organization);
+        @Parameter(description = "Organization information")
+        @Valid @ConvertGroup(to = PostValidation.class) OrganizationJson organization
+    );
+
+    @GET
+    @Path("/{organizationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(description = "Retrieve information of an organization by id")
+    @APIResponse(responseCode = "200", description = "An organization was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The organization with the requested id doesn't exist")
+    OrganizationJson getOrganization(
+        @Parameter(description = "Id of the organization", required = true)
+        @PathParam("organizationId") UUID organizationId
+    );
 
     @PATCH
     @Path("/{organizationId}")
@@ -95,10 +100,11 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The organization does not exist")
     OrganizationJson updateOrganization(
-        @Parameter(description = "id of the organization")
+        @Parameter(description = "Id of the organization")
         @PathParam("organizationId") UUID organizationId,
-        @Parameter(description = "organization information")
-        @Valid @ConvertGroup(to = PatchValidation.class) OrganizationJson organization);
+        @Parameter(description = "Organization information")
+        @Valid @ConvertGroup(to = PatchValidation.class) OrganizationJson organization
+    );
 
     @DELETE
     @Path("/{organizationId}")
@@ -113,4 +119,5 @@ public interface OrganizationEndpoint {
 
     @Path("{organizationId}/" + EmployeeEndpoint.SERVICE)
     EmployeeEndpoint getEmployeeEndpoint();
+
 }

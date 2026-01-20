@@ -13,9 +13,14 @@ import de.remsfal.core.model.ProjectMemberModel;
 import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.service.entity.dao.OrganizationRepository;
+import de.remsfal.service.entity.dao.ProjectOrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
+import de.remsfal.service.entity.dto.ProjectOrganizationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 
 import java.util.ArrayList;
@@ -40,6 +45,12 @@ public class ProjectController {
 
     @Inject
     NotificationController notificationController;
+
+    @Inject
+    ProjectOrganizationRepository projectOrganizationRepository;
+
+    @Inject
+    OrganizationRepository organizationRepository;
 
     @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
@@ -147,6 +158,52 @@ public class ProjectController {
         logger.infov("Removing a project membership (projectId={0}, memberId={1})",
             projectId, memberId);
         return projectRepository.removeMembershipByUserIdAndProjectId(memberId, projectId);
+    }
+
+    public Set<? extends ProjectOrganizationModel> getProjectOrganizations(final UserModel user, final UUID projectId) {
+        logger.infov("Retrieving project organizations (user={0}, project={1})", user.getId(), projectId);
+        final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
+            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+        return entity.getOrganizations();
+    }
+
+    @Transactional
+    public ProjectOrganizationModel addProjectOrganization(final UserModel user, final UUID projectId,
+        final ProjectOrganizationModel organization) {
+        logger.infov("Adding an organization to project (user={0}, project={1}, organizationId={2}, role={3})",
+            user.getId(), projectId, organization.getOrganizationId(), organization.getRole());
+        final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
+            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+
+        final OrganizationEntity organizationEntity = organizationRepository.findById(organization.getOrganizationId());
+        if (organizationEntity == null) {
+            throw new NotFoundException("Organization does not exist");
+        }
+
+        projectEntity.addOrganization(organizationEntity, organization.getRole());
+        projectRepository.mergeAndFlush(projectEntity);
+        return projectOrganizationRepository
+            .findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
+            .orElseThrow(() -> new NotFoundException("Failed to add organization to project"));
+    }
+
+    @Transactional
+    public ProjectOrganizationModel changeProjectOrganizationRole(final UUID projectId, final UUID organizationId,
+        final MemberRole role) {
+        logger.infov("Updating a project organization role (projectId={0}, organizationId={1}, role={2})",
+            projectId, organizationId, role);
+        final ProjectOrganizationEntity entity = projectOrganizationRepository
+            .findByProjectIdAndOrganizationId(projectId, organizationId)
+            .orElseThrow(() -> new NotFoundException("Organization is not assigned to this project"));
+        entity.setRole(role);
+        return projectOrganizationRepository.merge(entity);
+    }
+
+    @Transactional
+    public boolean removeProjectOrganization(final UUID projectId, final UUID organizationId) {
+        logger.infov("Removing an organization from project (projectId={0}, organizationId={1})",
+            projectId, organizationId);
+        return projectOrganizationRepository.removeByProjectIdAndOrganizationId(projectId, organizationId);
     }
 
 }

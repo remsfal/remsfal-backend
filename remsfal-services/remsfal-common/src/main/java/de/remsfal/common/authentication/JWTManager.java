@@ -67,18 +67,21 @@ public class JWTManager {
 
     /** Issue an access token using SmallRye JWT Build (platform only) */
     public String createAccessToken(final UserModel user, final Map<String, String> projectRoles,
-        final Map<String, String> tenancyProjects, final long ttlSeconds) {
+        final Map<String, String> organizationRoles, final Map<String, String> tenancyProjects,
+        final long ttlSeconds) {
         ensureIssuerMode();
         long exp = (System.currentTimeMillis() / 1000) + ttlSeconds;
 
 
-        JwtClaimsBuilder builder = Jwt.subject(user.getId().toString())
-                .claim("email", user.getEmail())
-                .claim("active", user.isActive())
-                .claim("project_roles", projectRoles)
-                .claim("tenancy_projects", tenancyProjects)
-                .issuer(issuer)
-                .expiresAt(exp);
+        JwtClaimsBuilder builder = Jwt
+            .subject(user.getId().toString())
+            .claim("email", user.getEmail())
+            .claim("active", user.isActive())
+            .claim("project_roles", projectRoles)
+            .claim("organization_roles", organizationRoles)
+            .claim("tenancy_projects", tenancyProjects)
+            .issuer(issuer)
+            .expiresAt(exp);
 
         if (user.getName() != null) {
             builder.claim("name", user.getName());

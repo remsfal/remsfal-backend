@@ -26,6 +26,7 @@ import de.remsfal.service.control.ProjectController;
 
 import de.remsfal.service.boundary.project.ProjectTenancyResource;
 import de.remsfal.service.boundary.project.MemberResource;
+import de.remsfal.service.boundary.project.ProjectOrganizationResource;
 import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.boundary.project.SiteResource;
 import de.remsfal.service.boundary.project.BuildingResource;
@@ -60,6 +61,9 @@ public class ProjectResource implements ProjectEndpoint {
 
     @Inject
     Instance<MemberResource> memberResource;
+
+    @Inject
+    Instance<ProjectOrganizationResource> projectOrganizationResource;
 
     @Inject
     Instance<PropertyResource> propertyResource;
@@ -174,5 +178,10 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     public ProjectTenancyResource getTenancyResource() {
         return resourceContext.initResource(tenancyResource.get());
+    }
+
+    @Override
+    public ProjectOrganizationResource getProjectOrganizationResource() {
+        return resourceContext.initResource(projectOrganizationResource.get());
     }
 }
