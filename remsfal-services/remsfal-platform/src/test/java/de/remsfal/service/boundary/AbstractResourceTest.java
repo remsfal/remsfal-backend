@@ -326,7 +326,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
 
     protected void insertOrganization(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO organization (id, name, phone, email, trade, address_id) VALUES (?,?,?,?,?, ?)")
+                .createNativeQuery("INSERT INTO organizations (id, name, phone, email, trade, address_id) VALUES (?,?,?,?,?, ?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .setParameter(3, params[2])
@@ -339,6 +339,15 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
     protected void insertEmployee(Object... params) {
         runInTransaction(() -> entityManager
             .createNativeQuery("INSERT INTO organization_employees (organization_id, employee_id, employee_role) VALUES (?,?,?)")
+            .setParameter(1, params[0])
+            .setParameter(2, params[1])
+            .setParameter(3, params[2])
+            .executeUpdate());
+    }
+
+    protected void insertProjectOrganization(Object... params) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO project_organizations (project_id, organization_id, organization_role) VALUES (?,?,?)")
             .setParameter(1, params[0])
             .setParameter(2, params[1])
             .setParameter(3, params[2])

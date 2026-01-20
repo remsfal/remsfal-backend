@@ -265,11 +265,11 @@ The `RemsfalPrincipal` provides access to the authenticated user and their autho
 @RequestScoped
 public class RemsfalPrincipal implements Principal, UserModel {
 
-    public UUID getId();                                 // User ID
-    public String getEmail();                            // User email
-    public Map<UUID, MemberRole> getProjectRoles();      // Project memberships
-    public Map<UUID, MemberRole> getOrganizationRoles(); // Organization employment
-    public Map<UUID, UUID> getTenancyProjects();         // Tenant assignments
+    public UUID getId();                                  // User ID
+    public String getEmail();                             // User email
+    public Map<UUID, MemberRole> getProjectRoles();       // Project memberships
+    public Map<UUID, EmployeeRole> getOrganizationRoles(); // Organization employment
+    public Map<UUID, UUID> getTenancyProjects();          // Tenant assignments
 }
 ```
 

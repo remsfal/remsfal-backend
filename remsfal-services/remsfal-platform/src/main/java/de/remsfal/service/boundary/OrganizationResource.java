@@ -19,6 +19,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @author Miroslaw Keil [miroslaw.keil@student.htw-berlin.de]
+ */
 @Authenticated
 public class OrganizationResource extends OrganizationSubResource implements OrganizationEndpoint {
 
@@ -27,12 +30,6 @@ public class OrganizationResource extends OrganizationSubResource implements Org
 
     @Inject
     ResourceContext resourceContext;
-
-    @Override
-    public OrganizationJson getOrganization(UUID organizationId) {
-        checkReadPermissions(organizationId);
-        return OrganizationJson.valueOf(controller.getOrganizationById(organizationId));
-    }
 
     @Override
     public OrganizationListJson getOrganizationsOfUser() {
@@ -53,6 +50,12 @@ public class OrganizationResource extends OrganizationSubResource implements Org
                 .type(MediaType.APPLICATION_JSON)
                 .entity(OrganizationJson.valueOf(organizationModel))
                 .build();
+    }
+
+    @Override
+    public OrganizationJson getOrganization(UUID organizationId) {
+        checkReadPermissions(organizationId);
+        return OrganizationJson.valueOf(controller.getOrganizationById(organizationId));
     }
 
     @Override
