@@ -74,19 +74,34 @@ public interface IssueEventJson {
     UUID getIssueId();
     UUID getProjectId();
 
-    @Nullable ProjectEventJson getProject();
-    @Nullable String getTitle();
-    @Nullable String getLink();
-    @Nullable IssueModel.Type getIssueType();
-    @Nullable IssueModel.Status getStatus();
-    @Nullable UUID getReporterId();
-    @Nullable UUID getTenancyId();
-    @Nullable UUID getOwnerId();
-    @Nullable String getDescription();
-    @Nullable UUID getBlockedBy();
-    @Nullable UUID getRelatedTo();
-    @Nullable UUID getDuplicateOf();
-    @Nullable UserJson getUser();
-    @Nullable UserJson getOwner();
-    @Nullable UserJson getMentionedUser();
+    @Nullable
+    ProjectEventJson getProject();
+    @Nullable
+    String getTitle();
+    @Nullable
+    String getLink();
+    @Nullable
+    IssueModel.Type getIssueType();
+    @Nullable
+    IssueModel.Status getStatus();
+    @Nullable
+    UUID getReporterId();
+    @Nullable
+    UUID getTenancyId();
+    @Nullable
+    UUID getOwnerId();
+    @Nullable
+    String getDescription();
+    @Nullable
+    UUID getBlockedBy();
+    @Nullable
+    UUID getRelatedTo();
+    @Nullable
+    UUID getDuplicateOf();
+    @Nullable
+    UserJson getUser();
+    @Nullable
+    UserJson getOwner();
+    @Nullable
+    UserJson getMentionedUser();
 }
