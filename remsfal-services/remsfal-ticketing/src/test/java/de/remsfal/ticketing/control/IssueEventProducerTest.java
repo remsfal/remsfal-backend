@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -169,11 +170,11 @@ class IssueEventProducerTest {
         assertDoesNotThrow(() -> issueEventProducer.sendIssueCreated(issue, actor));
 
         verify(logger).errorv(
-                failure,
-                "Error while sending issue event (eventId={0}, type={1}, issueId={2})",
-                Mockito.any(UUID.class),
-                IssueEventType.ISSUE_CREATED,
-                issue.getId()
+                eq(failure),
+                eq("Error while sending issue event (eventId={0}, type={1}, issueId={2})"),
+                any(UUID.class),
+                eq(IssueEventType.ISSUE_CREATED),
+                eq(issue.getId())
         );
     }
 
@@ -184,10 +185,10 @@ class IssueEventProducerTest {
         issueEventProducer.sendIssueCreated(issue, actor);
 
         verify(logger).infov(
-                "Issue event sent (eventId={0}, type={1}, issueId={2})",
-                Mockito.any(UUID.class),
-                IssueEventType.ISSUE_CREATED,
-                issue.getId()
+                eq("Issue event sent (eventId={0}, type={1}, issueId={2})"),
+                any(UUID.class),
+                eq(IssueEventType.ISSUE_CREATED),
+                eq(issue.getId())
         );
     }
 
@@ -199,10 +200,10 @@ class IssueEventProducerTest {
         issueEventProducer.sendIssueAssigned(issue, actor, newOwnerId);
 
         verify(logger).infov(
-                "Issue event sent (eventId={0}, type={1}, issueId={2})",
-                Mockito.any(UUID.class),
-                IssueEventType.ISSUE_ASSIGNED,
-                issue.getId()
+                eq("Issue event sent (eventId={0}, type={1}, issueId={2})"),
+                any(UUID.class),
+                eq(IssueEventType.ISSUE_ASSIGNED),
+                eq(issue.getId())
         );
     }
 
@@ -214,10 +215,10 @@ class IssueEventProducerTest {
         issueEventProducer.sendIssueMentioned(issue, actor, mentionedUser);
 
         verify(logger).infov(
-                "Issue event sent (eventId={0}, type={1}, issueId={2})",
-                Mockito.any(UUID.class),
-                IssueEventType.ISSUE_MENTIONED,
-                issue.getId()
+                eq("Issue event sent (eventId={0}, type={1}, issueId={2})"),
+                any(UUID.class),
+                eq(IssueEventType.ISSUE_MENTIONED),
+                eq(issue.getId())
         );
     }
 
@@ -231,14 +232,13 @@ class IssueEventProducerTest {
         issueEventProducer.sendIssueCreated(issue, actor);
 
         verify(logger, times(1)).errorv(
-                failure,
-                "Failed to send issue event (eventId={0}, type={1}, issueId={2})",
-                Mockito.any(UUID.class),
-                IssueEventType.ISSUE_CREATED,
-                issue.getId()
+                eq(failure),
+                eq("Failed to send issue event (eventId={0}, type={1}, issueId={2})"),
+                any(UUID.class),
+                eq(IssueEventType.ISSUE_CREATED),
+                eq(issue.getId())
         );
     }
-
 
     private IssueEntity createIssue() {
         IssueEntity issue = new IssueEntity();
