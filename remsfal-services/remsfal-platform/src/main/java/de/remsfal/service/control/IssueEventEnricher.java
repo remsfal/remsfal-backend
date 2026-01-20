@@ -43,36 +43,62 @@ public class IssueEventEnricher {
     @Outgoing(IssueEventJson.TOPIC_ENRICHED)
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
-        UserJson enrichedOwner = enrichOwner(event.getOwner());
-        ProjectEventJson project = enrichProject(event);
-        IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
-            .issueEventType(event.getIssueEventType())
-            .issueId(event.getIssueId())
-            .projectId(event.getProjectId())
-            .project(project)
-            .title(event.getTitle())
-            .link(buildIssueLink(event))
-            .issueType(event.getIssueType())
-            .status(event.getStatus())
-            .reporterId(event.getReporterId())
-            .tenancyId(event.getTenancyId())
-            .ownerId(event.getOwnerId())
-            .description(event.getDescription())
-            .blockedBy(event.getBlockedBy())
-            .relatedTo(event.getRelatedTo())
-            .duplicateOf(event.getDuplicateOf())
-            .user(event.getUser())
-            .owner(enrichedOwner)
-            .mentionedUser(event.getMentionedUser())
-            .build();
-        logger.infov("Enriched issue event (issueId={0}, projectId={1})", event.getIssueId(), event.getProjectId());
+        if (event == null) {
+            return null;
+        }
+
+        final ProjectEventJson project = enrichProject(event);
+
+        final UserJson enrichedOwner = enrichUser(event.getOwner());
+        final UserJson enrichedMentionedUser = enrichUser(event.getMentionedUser());
+        final UserJson enrichedActor = enrichUser(event.getUser());
+
+        final String link = (event.getLink() != null) ? event.getLink() : buildIssueLink(event);
+
+        final IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
+                // ✅ stable meta (use effective values!)
+                .eventId(event.getEffectiveEventId())
+                .createdAt(event.getEffectiveCreatedAt())
+                .audience(event.getEffectiveAudience())
+
+                // payload
+                .issueEventType(event.getIssueEventType())
+                .issueId(event.getIssueId())
+                .projectId(event.getProjectId())
+                .project(project)
+                .title(event.getTitle())
+                .link(link)
+                .issueType(event.getIssueType())
+                .status(event.getStatus())
+                .reporterId(event.getReporterId())
+                .tenancyId(event.getTenancyId())
+                .ownerId(event.getOwnerId())
+                .description(event.getDescription())
+                .blockedBy(event.getBlockedBy())
+                .relatedTo(event.getRelatedTo())
+                .duplicateOf(event.getDuplicateOf())
+
+                // users
+                .user(enrichedActor)
+                .owner(enrichedOwner)
+                .mentionedUser(enrichedMentionedUser)
+                .build();
+
+        logger.infov(
+                "Enriched issue event (eventId={0}, createdAt={1}, audience={2}, type={3}, issueId={4}, projectId={5}, tenancyId={6})",
+                enrichedEvent.getEventId(),
+                enrichedEvent.getCreatedAt(),
+                enrichedEvent.getAudience(),
+                enrichedEvent.getIssueEventType(),
+                enrichedEvent.getIssueId(),
+                enrichedEvent.getProjectId(),
+                enrichedEvent.getTenancyId()
+        );
+
         return enrichedEvent;
     }
 
     private ProjectEventJson enrichProject(final IssueEventJson event) {
-        if (event == null) {
-            return null;
-        }
         if (event.getProject() != null && event.getProject().getTitle() != null) {
             return event.getProject();
         }
@@ -80,32 +106,35 @@ public class IssueEventEnricher {
             return event.getProject();
         }
         return projectRepository.findByIdOptional(event.getProjectId())
-            .map(this::toProjectEventJson)
-            .orElse(event.getProject());
+                .map(this::toProjectEventJson)
+                .orElse(event.getProject());
     }
 
     private ProjectEventJson toProjectEventJson(final ProjectEntity project) {
+        if (project == null) {
+            return null;
+        }
         return ImmutableProjectEventJson.builder()
-            .id(project.getId())
-            .title(project.getTitle())
-            .build();
+                .id(project.getId())
+                .title(project.getTitle())
+                .build();
     }
 
-    private UserJson enrichOwner(final UserJson owner) {
-        if (owner == null || owner.getId() == null) {
-            return owner;
+    private UserJson enrichUser(final UserJson user) {
+        if (user == null || user.getId() == null) {
+            return user;
         }
-        Optional<UserEntity> entity = userRepository.findByIdOptional(owner.getId());
+        Optional<UserEntity> entity = userRepository.findByIdOptional(user.getId());
         if (entity.isEmpty()) {
-            return owner;
+            return user;
         }
-        UserEntity user = entity.get();
+        UserEntity u = entity.get();
         return ImmutableUserJson.builder()
-            .id(user.getId())
-            .email(user.getEmail())
-            .firstName(user.getFirstName())
-            .lastName(user.getLastName())
-            .build();
+                .id(u.getId())
+                .email(u.getEmail())
+                .firstName(u.getFirstName())
+                .lastName(u.getLastName())
+                .build();
     }
 
     String buildIssueLink(final IssueEventJson event) {
