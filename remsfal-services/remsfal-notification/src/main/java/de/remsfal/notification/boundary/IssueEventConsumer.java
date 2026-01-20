@@ -27,7 +27,8 @@ public class IssueEventConsumer {
     @Blocking
     @Incoming(IssueEventJson.TOPIC_ENRICHED)
     public void consume(final IssueEventJson event) {
-        logger.infov("Received enriched issue event (eventId={0}, type={1}, issueId={2}, projectId={3}, tenancyId={4}, audience={5})",
+        logger.infov("Received enriched issue event " +
+                        "(eventId={0}, type={1}, issueId={2}, projectId={3}, tenancyId={4}, audience={5})",
                 event.getEffectiveEventId(),
                 event.getIssueEventType(),
                 event.getIssueId(),
