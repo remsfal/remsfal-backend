@@ -85,7 +85,8 @@ public class IssueEventEnricher {
                 .build();
 
         logger.infov(
-                "Enriched issue event (eventId={0}, createdAt={1}, audience={2}, type={3}, issueId={4}, projectId={5}, tenancyId={6})",
+                "Enriched issue event (eventId={0}, createdAt={1}, audience={2}, type={3}," +
+                        " issueId={4}, projectId={5}, tenancyId={6})",
                 enrichedEvent.getEventId(),
                 enrichedEvent.getCreatedAt(),
                 enrichedEvent.getAudience(),
