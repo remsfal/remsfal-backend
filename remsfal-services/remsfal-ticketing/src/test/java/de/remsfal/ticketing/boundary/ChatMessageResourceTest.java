@@ -549,17 +549,22 @@ class ChatMessageResourceTest extends AbstractResourceTest {
 
     @ParameterizedTest
     @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/upload" })
-    void uploadFile_EmptyInputStream_FAILURE(String path) {
-        given()
-            .multiPart("file", "", MediaType.TEXT_PLAIN) // Empty file content
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
-            .when()
-            .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
-            .then()
-            .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
-            .body("message", equalTo("Failed to read file stream: unknown"));
+    void uploadFile_EmptyInputStream_FAILURE(String path) throws Exception {
+        Path tempFile = Files.createTempFile("empty-upload", ".txt"); // ist standardmäßig leer (0 Bytes)
+        try {
+            given()
+                    .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
+                    .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                            nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
+                            rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+                    .when()
+                    .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+                    .then()
+                    .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                    .body("message", equalTo("Failed to read file stream: unknown"));
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     @ParameterizedTest

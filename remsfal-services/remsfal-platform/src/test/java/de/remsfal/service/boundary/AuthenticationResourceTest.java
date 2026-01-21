@@ -3,6 +3,9 @@ package de.remsfal.service.boundary;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.matcher.RestAssuredMatchers;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import jakarta.inject.Inject;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +16,11 @@ import jakarta.ws.rs.core.Response.Status;
 
 @QuarkusTest
 class AuthenticationResourceTest extends AbstractResourceTest {
+
+    @Inject
+    @ConfigProperty(name = "de.remsfal.auth.session.cookie-secure")
+    boolean cookieSecure;
+
 
     static final String BASE_PATH = "/api/v1/authentication";
 
@@ -136,11 +144,11 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .cookie("remsfal_access_token", RestAssuredMatchers.detailedCookie()
                     .path("/")
                     .sameSite("Strict")
-                    .secured(true))
+                    .secured(cookieSecure))
             .cookie("remsfal_refresh_token", RestAssuredMatchers.detailedCookie()
                     .path("/api")
                     .sameSite("Strict")
-                    .secured(true));
+                    .secured(cookieSecure));
     }
 
     @Test
