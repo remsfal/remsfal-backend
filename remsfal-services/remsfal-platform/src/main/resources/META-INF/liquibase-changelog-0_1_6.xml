@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-0.1.6-project-organizations" author="alexander.stanik@htw-berlin.de">
+        <comment>Create project organization assignment schema</comment>
+
+        <createTable tableName="project_organizations">
+            <column name="project_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_role" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="organization_role IN ('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="project_organizations" constraintName="pk_project_organizations"
+                       columnNames="project_id,organization_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_project_organizations_project_id"
+                                 baseTableName="project_organizations" baseColumnNames="project_id"
+                                 referencedTableName="projects" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_project_organizations_organization_id"
+                                 baseTableName="project_organizations" baseColumnNames="organization_id"
+                                 referencedTableName="organizations" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_project_organizations_project_fk" tableName="project_organizations">
+            <column name="project_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_project_organizations_organization_fk" tableName="project_organizations">
+            <column name="organization_id" type="uuid" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import de.remsfal.core.json.ImmutableAddressJson;
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.project.ImmutableApartmentJson;
 import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.core.json.project.ImmutableCommercialJson;
@@ -700,6 +701,19 @@ public class TestData {
         .usableSpace(STORAGE_USABLE_SPACE_2);
     }
 
+    public static final ImmutableUserJson.Builder userBuilder() {
+        return userBuilder1();
+    }
+
+    // Test user builder 1
+    public static final ImmutableUserJson.Builder userBuilder1() {
+        return ImmutableUserJson.builder() // Ersetzen Sie dies durch den tatsächlichen Builder-Namen
+                .firstName(USER_FIRST_NAME_1)
+                .lastName(USER_LAST_NAME_1)
+                .email(USER_EMAIL_1)
+                .address(addressBuilder1().build()); // Fügt eine Standardadresse hinzu
+    }
+
     // Test tenancy 1
     public static final UUID TENANCY_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
     public static final LocalDate TENANCY_START_1 = LocalDate.of(2007, 12, 1);
@@ -775,11 +789,18 @@ public class TestData {
     public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
 
     // Test organization 1
-    public static final UUID ORGANIZATION_ID = UUID.fromString("00000000-A1bA-8235-e751-a2Dcac9D78De");
-    public static final String ORGANIZATION_NAME = "Test";
-    public static final String ORGANIZATION_PHONE = "+57752788714093";
-    public static final String ORGANIZATION_EMAIL = "test@test.de";
-    public static final String ORGANIZATION_TRADE = "Test";
+    public static final UUID ORGANIZATION_ID_1 = UUID.fromString("00000000-A1bA-8235-e751-a2Dcac9D78De");
+    public static final String ORGANIZATION_NAME_1 = "Test";
+    public static final String ORGANIZATION_PHONE_1 = "+57752788714093";
+    public static final String ORGANIZATION_EMAIL_1 = "test@test.de";
+    public static final String ORGANIZATION_TRADE_1 = "Test";
+
+    // Default test organization
+    public static final UUID ORGANIZATION_ID = ORGANIZATION_ID_1;
+    public static final String ORGANIZATION_NAME = ORGANIZATION_NAME_1;
+    public static final String ORGANIZATION_PHONE = ORGANIZATION_PHONE_1;
+    public static final String ORGANIZATION_EMAIL = ORGANIZATION_EMAIL_1;
+    public static final String ORGANIZATION_TRADE = ORGANIZATION_TRADE_1;
 
     // Test organization 2
     public static final UUID ORGANIZATION_ID_2 = UUID.fromString("11111111-A1bA-8235-e751-a2Dcac9D78De");

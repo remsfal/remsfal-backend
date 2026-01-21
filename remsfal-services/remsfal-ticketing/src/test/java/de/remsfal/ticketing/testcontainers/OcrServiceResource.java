@@ -75,10 +75,13 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
             .withEnv("KAFKA_BROKER", "kafka-broker:29092")
             .dependsOn(kafkaContainer)
             .withEnv("MINIO_ENDPOINT", "minio:9000")
+            .withEnv("MINIO_ACCESS_KEY", "minioadmin")
+            .withEnv("MINIO_SECRET_KEY", "minioadminpassword")
             .dependsOn(minioContainer)
             .withEnv("PYTHONUNBUFFERED", "1")
-            .waitingFor(Wait.forLogMessage(".*Listening to topic .*\\n", 1))
-            .withStartupTimeout(Duration.ofMinutes(2));
+            .withLogConsumer(new JBossLogConsumer(logger, "[OCR] "))
+            .waitingFor(Wait.forLogMessage(".*Listening to topic.*", 1))
+            .withStartupTimeout(Duration.ofMinutes(3));
 
         kafkaContainer.setPortBindings(List.of(kafkaPort + ":" + kafkaPort));
 
@@ -106,8 +109,14 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
 
     @Override
     public void stop() {
-        if (ocrContainer != null)
+        if (ocrContainer != null) {
+            logger.info("========================================");
+            logger.info("OCR Container Final Logs:");
+            logger.info("========================================");
+            logger.info(ocrContainer.getLogs());
+            logger.info("========================================");
             ocrContainer.stop();
+        }
         if (kafkaContainer != null)
             kafkaContainer.stop();
         if (network != null)

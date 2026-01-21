@@ -253,9 +253,9 @@ class IssueEventProducerTest {
         issue.setTenancyId(TestData.TENANCY_ID);
         issue.setOwnerId(TestData.USER_ID_2);
         issue.setDescription(TicketingTestData.ISSUE_DESCRIPTION_1);
-        issue.setBlockedBy(TicketingTestData.ISSUE_ID_2);
-        issue.setRelatedTo(TicketingTestData.ISSUE_ID_3);
-        issue.setDuplicateOf(TicketingTestData.ISSUE_ID_2);
+        issue.setBlockedBy(TicketingTestData.ISSUE_ID_SET_2);
+        issue.setRelatedTo(TicketingTestData.ISSUE_ID_SET_3);
+        issue.setDuplicateOf(TicketingTestData.ISSUE_ID_SET_2);
         return issue;
     }
 }

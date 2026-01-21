@@ -8,22 +8,28 @@ public interface InboxMessageModel {
 
     String id();
 
-    String type();
+    String userId();
 
-    String contractor();
+    String eventType();
 
-    String subject();
+    String issueId();
 
-    String property();
+    String title();
 
-    String tenant();
+    String description();
 
-    String receivedAt();
+    String issueType();
+
+    String status();
+
+    String link();
 
     boolean read();
 
-    String userId();
+    String actorEmail();
 
-    String issueLink();
+    String ownerEmail();
+
+    String createdAt();
 }
 

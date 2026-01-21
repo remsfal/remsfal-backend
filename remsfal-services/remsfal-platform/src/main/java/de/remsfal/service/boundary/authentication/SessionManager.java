@@ -83,10 +83,11 @@ public class SessionManager {
         UserModel user = controller.getAuthenticatedUser(userId);
 
         Map<String, String> projectRoles = controller.getProjectAuthorization(userId);
+        Map<String, String> organizationRoles = controller.getOrganizationAuthorization(userId);
         Map<String, String> tenancyProjects = controller.getTenancyAuthorization(userId);
 
-        String jwt = jwtManager.createAccessToken(user, projectRoles, tenancyProjects,
-                accessTokenTimeout.getSeconds());
+        String jwt = jwtManager.createAccessToken(user, projectRoles, organizationRoles, tenancyProjects,
+            accessTokenTimeout.getSeconds());
         return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false,
                 accessTokenCookiePath);
     }

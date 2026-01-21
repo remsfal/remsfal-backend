@@ -26,6 +26,7 @@ import de.remsfal.service.control.ProjectController;
 
 import de.remsfal.service.boundary.project.ProjectTenancyResource;
 import de.remsfal.service.boundary.project.MemberResource;
+import de.remsfal.service.boundary.project.ProjectOrganizationResource;
 import de.remsfal.service.boundary.project.PropertyResource;
 import de.remsfal.service.boundary.project.SiteResource;
 import de.remsfal.service.boundary.project.BuildingResource;
@@ -33,6 +34,7 @@ import de.remsfal.service.boundary.project.ApartmentResource;
 import de.remsfal.service.boundary.project.CommercialResource;
 import de.remsfal.service.boundary.project.StorageResource;
 import de.remsfal.service.boundary.project.ContractorResource;
+import de.remsfal.service.boundary.project.TenantResource;
 
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
@@ -61,6 +63,9 @@ public class ProjectResource implements ProjectEndpoint {
     Instance<MemberResource> memberResource;
 
     @Inject
+    Instance<ProjectOrganizationResource> projectOrganizationResource;
+
+    @Inject
     Instance<PropertyResource> propertyResource;
 
     @Inject
@@ -81,6 +86,9 @@ public class ProjectResource implements ProjectEndpoint {
     @Inject
     Instance<ContractorResource> contractorResource;
 
+    @Inject
+    Instance<TenantResource> tenantResource;
+  
     @Inject
     Instance<ProjectTenancyResource> tenancyResource;
 
@@ -163,7 +171,17 @@ public class ProjectResource implements ProjectEndpoint {
     }
 
     @Override
+    public TenantResource getTenantResource() {
+        return resourceContext.initResource(tenantResource.get());
+    }
+
+    @Override
     public ProjectTenancyResource getTenancyResource() {
         return resourceContext.initResource(tenancyResource.get());
+    }
+
+    @Override
+    public ProjectOrganizationResource getProjectOrganizationResource() {
+        return resourceContext.initResource(projectOrganizationResource.get());
     }
 }

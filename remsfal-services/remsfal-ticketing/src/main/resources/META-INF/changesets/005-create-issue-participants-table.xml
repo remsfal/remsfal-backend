@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="005-create-issue-participants-table"
+               author="huyhoang.nguyen@htw-berlin.de">
+
+        <comment>Create issue participation schema</comment>
+
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.issue_participants (
+                                                                      user_id UUID,
+                                                                      project_id UUID,
+                                                                      issue_id UUID,
+                                                                      session_id UUID,
+                                                                      role TEXT,
+                                                                      created_at TIMESTAMP,
+                                                                      modified_at TIMESTAMP,
+                                                                      PRIMARY KEY (user_id, issue_id, session_id)
+                ) WITH CLUSTERING ORDER BY (issue_id ASC, session_id ASC);
+        </sql>
+
+        <sql>
+            CREATE INDEX IF NOT EXISTS issue_participants_issue_id_idx
+                ON REMSFAL.issue_participants (issue_id);
+        </sql>
+
+        <rollback>
+            <sql>DROP INDEX IF EXISTS issue_participants_issue_id_idx;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.issue_participants;</sql>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

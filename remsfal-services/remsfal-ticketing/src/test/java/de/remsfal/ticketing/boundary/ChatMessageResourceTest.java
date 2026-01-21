@@ -31,7 +31,7 @@ import de.remsfal.ticketing.control.ChatMessageController;
 import de.remsfal.ticketing.control.FileStorageController;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository;
-import de.remsfal.ticketing.entity.dao.FileStorage;
+import de.remsfal.ticketing.entity.storage.FileStorage;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository.ParticipantRole;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
 import io.minio.ListObjectsArgs;
