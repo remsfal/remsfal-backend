@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.boundary;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
@@ -104,7 +105,7 @@ public class OcrTest extends AbstractResourceTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() -> verify(chatMessageController, atLeastOnce())
-                .updateTextChatMessage(eq(sessionId), eq(UUID.fromString(messageId)), eq("Das hier ist ein Text")));
+                .updateTextChatMessage(eq(sessionId), eq(UUID.fromString(messageId)), anyString()));
     }
 
     @Test

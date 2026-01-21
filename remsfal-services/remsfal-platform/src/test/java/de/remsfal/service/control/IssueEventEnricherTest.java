@@ -203,8 +203,8 @@ class IssueEventEnricherTest {
             .title("No owner")
             .issueType(IssueModel.Type.TASK)
             .status(IssueModel.Status.IN_PROGRESS)
-            .user(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
-            .build();
+            .user(ImmutableUserJson.builder().build())
+                .build();
 
         IssueEventJson enriched = enricher.enrich(event);
 
@@ -261,5 +261,45 @@ class IssueEventEnricherTest {
         assertEquals(frontendBaseUrl, link);
         verifyNoInteractions(userRepository);
         verifyNoInteractions(projectRepository);
+    }
+
+    @Test
+    void enrich_enrichesActorWhenUserIdPresent() {
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Actor project");
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        UserEntity actor = new UserEntity();
+        actor.setId(actorId);
+        actor.setEmail("actor@example.com");
+        actor.setFirstName("Act");
+        actor.setLastName("Or");
+        when(userRepository.findByIdOptional(actorId)).thenReturn(Optional.of(actor));
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+                .issueEventType(IssueEventType.ISSUE_UPDATED)
+                .issueId(issueId)
+                .projectId(projectId)
+                .title("Actor present")
+                .issueType(IssueModel.Type.TASK)
+                .status(IssueModel.Status.IN_PROGRESS)
+                .user(ImmutableUserJson.builder().id(actorId).build())
+                .build();
+
+        IssueEventJson enriched = enricher.enrich(event);
+
+        assertNotNull(enriched.getUser());
+        assertEquals(actorId, enriched.getUser().getId());
+        assertEquals("actor@example.com", enriched.getUser().getEmail());
+        assertEquals("Act", enriched.getUser().getFirstName());
+        assertEquals("Or", enriched.getUser().getLastName());
+
+        verify(userRepository).findByIdOptional(actorId);
+        verify(projectRepository).findByIdOptional(projectId);
     }
 }

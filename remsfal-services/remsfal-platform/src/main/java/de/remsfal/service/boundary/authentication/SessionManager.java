@@ -26,12 +26,15 @@ public class SessionManager {
 
     public static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
     public static final String REFRESH_COOKIE_NAME = "remsfal_refresh_token";
-    
+
     // Token renewal threshold: renew access token if it expires in less than 5 minutes
     private static final long TOKEN_RENEWAL_THRESHOLD_SECONDS = 300;
 
     @ConfigProperty(name = "de.remsfal.auth.session.cookie-same-site", defaultValue = "STRICT")
     SameSite sessionCookieSameSite;
+
+    @ConfigProperty(name = "de.remsfal.auth.session.cookie-secure", defaultValue = "true")
+    boolean sessionCookieSecure;
 
     @ConfigProperty(name = "de.remsfal.auth.access-token.cookie-path", defaultValue = "/")
     String accessTokenCookiePath;
@@ -86,7 +89,7 @@ public class SessionManager {
         String jwt = jwtManager.createAccessToken(user, projectRoles, organizationRoles, tenancyProjects,
             accessTokenTimeout.getSeconds());
         return buildCookie(ACCESS_COOKIE_NAME, jwt, (int) accessTokenTimeout.getSeconds(), false,
-            accessTokenCookiePath);
+                accessTokenCookiePath);
     }
 
     /**
@@ -109,9 +112,9 @@ public class SessionManager {
         }
 
         String jwt = jwtManager.createRefreshToken(userId, userEmail, newRefreshTokenId.toString(),
-            refreshTokenTimeout.getSeconds());
+                refreshTokenTimeout.getSeconds());
         return buildCookie(REFRESH_COOKIE_NAME, jwt, (int) refreshTokenTimeout.getSeconds(), true,
-            refreshTokenCookiePath);
+                refreshTokenCookiePath);
     }
 
     /**
@@ -150,9 +153,9 @@ public class SessionManager {
 
     /** Builds a new cookie with the given parameters */
     private NewCookie buildCookie(final String name, final String value, int maxAge, boolean httpOnly,
-        String cookiePath) {
+                                  String cookiePath) {
         return new NewCookie.Builder(name).value(value).path(cookiePath + getSameSiteWorkaround())
-            .httpOnly(httpOnly).secure(true).maxAge(maxAge).build();
+                .httpOnly(httpOnly).secure(sessionCookieSecure).maxAge(maxAge).build();
     }
 
     @Transactional
@@ -175,8 +178,8 @@ public class SessionManager {
     public NewCookie removalCookie(String cookieName) {
         String cookiePath = ACCESS_COOKIE_NAME.equals(cookieName) ? accessTokenCookiePath : refreshTokenCookiePath;
         return new NewCookie.Builder(cookieName).value("").path(cookiePath + getSameSiteWorkaround())
-            // sameSite is currently not supported
-            .sameSite(sessionCookieSameSite).maxAge(0).build();
+                // sameSite is currently not supported
+                .sameSite(sessionCookieSameSite).maxAge(0).build();
     }
 
     /**
@@ -222,7 +225,7 @@ public class SessionManager {
             long expirationTime = jwt.getExpirationTime();
             long currentTime = System.currentTimeMillis() / 1000;
             long timeUntilExpiration = expirationTime - currentTime;
-            
+
             // Renew if token expires in less than the threshold (5 minutes)
             return timeUntilExpiration < TOKEN_RENEWAL_THRESHOLD_SECONDS;
         } catch (ParseException e) {
@@ -234,7 +237,7 @@ public class SessionManager {
     private String getSameSiteWorkaround() {
         // see: https://github.com/jakartaee/rest/issues/862
         return ";SameSite=" + sessionCookieSameSite.name().substring(0, 1).toUpperCase() +
-            sessionCookieSameSite.name().substring(1).toLowerCase();
+                sessionCookieSameSite.name().substring(1).toLowerCase();
     }
 
     /**

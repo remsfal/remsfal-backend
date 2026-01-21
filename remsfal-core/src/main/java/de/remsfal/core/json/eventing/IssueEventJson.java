@@ -3,6 +3,7 @@ package de.remsfal.core.json.eventing;
 import java.util.Set;
 import java.util.UUID;
 
+import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -57,23 +58,55 @@ public interface IssueEventJson {
         ISSUE_MENTIONED
     }
 
-    IssueEventType getIssueEventType();
+    enum Audience {
+        PROJECT_ALL,
+        TENANCY_ALL,
+        USER_ONLY
+    }
 
-    UUID getIssueId();
+    // --- Stable meta (settable) ---
+    @Nullable
+    UUID getEventId();
+    @Nullable
+    Long getCreatedAt(); // epoch millis
+    @Nullable
+    Audience getAudience();
 
     /**
-     * Project identifier for direct lookups.
+     * Always returns a non-null event id.
+     * Use this in logs, SSE id, dedupe, etc.
      */
+    @Value.Derived
+    default UUID getEffectiveEventId() {
+        return getEventId() != null ? getEventId() : UUID.randomUUID();
+    }
+
+    /**
+     * Always returns a non-null timestamp (epoch millis).
+     */
+    @Value.Derived
+    default long getEffectiveCreatedAt() {
+        return getCreatedAt() != null ? getCreatedAt() : System.currentTimeMillis();
+    }
+
+    /**
+     * Always returns a non-null audience.
+     */
+    @Value.Derived
+    default Audience getEffectiveAudience() {
+        if (getAudience() != null) {
+            return getAudience();
+        }
+        return getTenancyId() != null ? Audience.TENANCY_ALL : Audience.PROJECT_ALL;
+    }
+
+    // --- Domain payload ---
+    IssueEventType getIssueEventType();
+    UUID getIssueId();
     UUID getProjectId();
 
-    /**
-     * Optional enriched project details. When present, provides the project title and metadata
-     * to avoid additional database queries. Both projectId and project may be present;
-     * use projectId for database operations and project for display purposes.
-     */
     @Nullable
     ProjectEventJson getProject();
-
     @Nullable
     String getTitle();
 
@@ -84,22 +117,16 @@ public interface IssueEventJson {
      */
     @Nullable
     String getLink();
-
     @Nullable
     IssueModel.Type getIssueType();
-
     @Nullable
     IssueModel.Status getStatus();
-
     @Nullable
     UUID getReporterId();
-
     @Nullable
     UUID getTenancyId();
-
     @Nullable
     UUID getOwnerId();
-
     @Nullable
     String getDescription();
 
@@ -135,16 +162,8 @@ public interface IssueEventJson {
 
     @Nullable
     UserJson getUser();
-
-    /**
-     * Target user for owner assignment events.
-     */
     @Nullable
     UserJson getOwner();
-
-    /**
-     * Target user for mention events.
-     */
     @Nullable
     UserJson getMentionedUser();
 }
