@@ -14,6 +14,7 @@ import de.remsfal.core.model.ticketing.IssueModel.Status;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.ticketing.control.events.IssueCreatedEvent;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,9 @@ public class IssueController {
     @Inject
     IssueRepository repository;
 
+    @Inject
+    IssuePriorityRequestProducer issuePriorityRequestProducer;
+
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
@@ -39,7 +43,7 @@ public class IssueController {
     public IssueModel createIssue(final UserModel user, final IssueModel issue, final Status initialStatus) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
-        IssueEntity entity = new IssueEntity();
+        final IssueEntity entity = new IssueEntity();
         entity.generateId();
         entity.setType(issue.getType());
         entity.setProjectId(issue.getProjectId());
@@ -47,8 +51,9 @@ public class IssueController {
         entity.setTitle(issue.getTitle());
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
+        entity.setPriority(IssueModel.Priority.UNCLASSIFIED);
 
-        entity = repository.insert(entity);
+        IssueEntity persisted = repository.insert(entity);
 
         boolean hasRelations = java.util.stream.Stream.of(
             issue.getBlocks(),
@@ -60,11 +65,20 @@ public class IssueController {
         ).anyMatch(set -> set != null && !set.isEmpty());
 
         if (hasRelations) {
-            updateRelations(entity, issue);
-            entity = repository.update(entity);
+            updateRelations(persisted, issue);
+            persisted = repository.update(persisted);
         }
 
-        return entity;
+        IssueCreatedEvent event = new IssueCreatedEvent();
+        event.setIssueId(persisted.getId());
+        event.setProjectId(persisted.getProjectId());
+        event.setTitle(persisted.getTitle());
+        event.setDescription(persisted.getDescription());
+        event.setReporterId(persisted.getReporterId());
+        event.setCreatedAt(persisted.getCreatedAt());
+        issuePriorityRequestProducer.sendIssueCreated(event);
+
+        return persisted;
     }
 
     public IssueEntity getIssue(final UUID issueId) {

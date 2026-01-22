@@ -41,6 +41,14 @@
             <artifactId>quarkus-minio</artifactId>
             <version>${quarkus-minio.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-kafka-client</artifactId>
+        </dependency>
         <!-- Cassandra dependencies -->
         <dependency>
             <groupId>io.quarkiverse.jnosql</groupId>

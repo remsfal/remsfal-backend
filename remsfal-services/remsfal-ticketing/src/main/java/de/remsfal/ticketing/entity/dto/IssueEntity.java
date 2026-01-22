@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.time.Instant;
 
 @Entity("issues")
 public class IssueEntity extends AbstractEntity implements IssueModel {
@@ -58,6 +59,18 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     @Column("created_by")
     private UUID createdBy;
+
+    @Column("priority")
+    private  IssueModel.Priority priority;
+
+    @Column("priority_score")
+    private Double priorityScore;
+
+    @Column("priority_model")
+    private String priorityModel;
+
+    @Column("priority_timestamp")
+    private Instant priorityTimestamp;
 
     public IssueKey getKey() {
         return key;
@@ -201,6 +214,55 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setCreatedBy(UUID createdBy) {
         this.createdBy = createdBy;
+    }
+
+    @Override
+    public IssueModel.Priority getPriority() {
+        return priority != null ? priority : IssueModel.Priority.UNCLASSIFIED;
+    }
+
+    public void setPriority(IssueModel.Priority priority) {
+        this.priority = priority != null ? priority : IssueModel.Priority.UNCLASSIFIED;
+    }
+    public void setPriority(String priority) {
+        if (priority == null) {
+            this.priority = IssueModel.Priority.UNCLASSIFIED;
+            return;
+        }
+        try {
+            this.priority = IssueModel.Priority.valueOf(priority.trim().toUpperCase());
+        } catch (Exception e) {
+            this.priority = IssueModel.Priority.UNCLASSIFIED;
+        }
+    }
+
+
+
+    @Override
+    public Double getPriorityScore() {
+        return priorityScore;
+    }
+
+    public void setPriorityScore(Double priorityScore) {
+        this.priorityScore = priorityScore;
+    }
+
+    @Override
+    public String getPriorityModel() {
+        return priorityModel;
+    }
+
+    public void setPriorityModel(String priorityModel) {
+        this.priorityModel = priorityModel;
+    }
+
+    @Override
+    public Instant getPriorityTimestamp() {
+        return priorityTimestamp;
+    }
+
+    public void setPriorityTimestamp(Instant priorityTimestamp) {
+        this.priorityTimestamp = priorityTimestamp;
     }
 
     public void generateId() {

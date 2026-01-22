@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
+import de.remsfal.core.model.ticketing.IssueModel.Priority;
 import de.remsfal.core.validation.PostValidation;
 
 /**
@@ -91,6 +93,27 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract Set<UUID> getChildOf();
 
+    @Null(groups = PostValidation.class)
+    @Nullable
+    @Override
+    public abstract Priority getPriority();
+
+    @Null(groups = PostValidation.class)
+    @Nullable
+    @Override
+    public abstract Double getPriorityScore();
+
+    @Null(groups = PostValidation.class)
+    @Nullable
+    @Override
+    public abstract String getPriorityModel();
+
+    @Null(groups = PostValidation.class)
+    @Nullable
+    @Override
+    public abstract Instant getPriorityTimestamp();
+
+
     /**
      * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
      * <p>
@@ -115,6 +138,10 @@ public abstract class IssueJson implements IssueModel {
                 .blocks(model.getBlocks())
                 .parentOf(model.getParentOf())
                 .childOf(model.getChildOf())
+                .priority(model.getPriority())
+                .priorityScore(model.getPriorityScore())
+                .priorityModel(model.getPriorityModel())
+                .priorityTimestamp(model.getPriorityTimestamp())
                 .build();
     }
 
@@ -134,8 +161,11 @@ public abstract class IssueJson implements IssueModel {
                 .title(model.getTitle())
                 .type(model.getType())
                 .status(model.getStatus())
+                .priority(model.getPriority())
+                .priorityScore(model.getPriorityScore())
+                .priorityModel(model.getPriorityModel())
+                .priorityTimestamp(model.getPriorityTimestamp())
                 // ownerId, description, blockedBy, relatedTo, duplicateOf are omitted
                 .build();
     }
-
 }
