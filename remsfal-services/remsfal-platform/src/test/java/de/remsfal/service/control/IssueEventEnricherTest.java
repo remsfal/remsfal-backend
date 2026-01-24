@@ -22,6 +22,8 @@ import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ProjectEntity;
@@ -79,8 +81,8 @@ class IssueEventEnricherTest {
             .issueId(issueId)
             .projectId(projectId)
             .title("Ticket title")
-            .issueType(IssueModel.Type.MAINTENANCE)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.MAINTENANCE)
+            .status(IssueStatus.OPEN)
             .reporterId(reporterId)
             .tenancyId(tenancyId)
             .ownerId(ownerId)
@@ -201,8 +203,8 @@ class IssueEventEnricherTest {
             .issueId(issueId)
             .projectId(projectId)
             .title("No owner")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.IN_PROGRESS)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.IN_PROGRESS)
             .user(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
@@ -234,8 +236,8 @@ class IssueEventEnricherTest {
             .issueId(issueId)
             .projectId(projectId)
             .title("Unknown owner")
-            .issueType(IssueModel.Type.APPLICATION)
-            .status(IssueModel.Status.PENDING)
+            .issueType(IssueType.APPLICATION)
+            .status(IssueStatus.PENDING)
             .owner(ImmutableUserJson.builder().id(ownerId).build())
             .build();
 

@@ -23,7 +23,7 @@ import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.control.IssueEventProducer;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
@@ -48,7 +48,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     public IssueListJson getIssues(Integer offset, Integer limit,
         UUID projectId, UUID ownerId,
         UUID tenancyId, UnitType rentalType,
-        UUID rentalId, Status status) {
+        UUID rentalId, IssueStatus status) {
         logger.info("Yes i was called");
         List<UUID> projectFilter;
         if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
@@ -66,12 +66,13 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     private IssueListJson getProjectIssues(List<UUID> projectFilter, UUID ownerId,
         UUID tenancyId, UnitType rentalType, UUID rentalId,
-        Status status) {
+        IssueStatus status) {
         final List<? extends IssueModel> issues =
             issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
-    private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID tenancyId, Status status) {
+
+    private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID tenancyId, IssueStatus status) {
         List<IssueModel> collected = new ArrayList<>();
 
         // Tenants
@@ -146,7 +147,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
             createdIssue = issueController.createIssue(principal, issue);
             response = IssueJson.valueOf(createdIssue);
         } else if (principalRole == UserRole.TENANT) {
-            createdIssue = issueController.createIssue(principal, issue, Status.PENDING);
+            createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
             response = IssueJson.valueOfFiltered(createdIssue);
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");

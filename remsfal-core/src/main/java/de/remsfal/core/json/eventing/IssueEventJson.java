@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import jakarta.annotation.Nullable;
 
 /**
@@ -86,10 +88,10 @@ public interface IssueEventJson {
     String getLink();
 
     @Nullable
-    IssueModel.Type getIssueType();
+    IssueType getIssueType();
 
     @Nullable
-    IssueModel.Status getStatus();
+    IssueStatus getStatus();
 
     @Nullable
     UUID getReporterId();

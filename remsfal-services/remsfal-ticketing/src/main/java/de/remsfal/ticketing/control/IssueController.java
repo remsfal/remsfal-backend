@@ -10,7 +10,7 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
@@ -33,10 +33,10 @@ public class IssueController {
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, Status.OPEN);
+        return createIssue(user, issue, IssueStatus.OPEN);
     }
 
-    public IssueModel createIssue(final UserModel user, final IssueModel issue, final Status initialStatus) {
+    public IssueModel createIssue(final UserModel user, final IssueModel issue, final IssueStatus initialStatus) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
         IssueEntity entity = new IssueEntity();
@@ -74,7 +74,7 @@ public class IssueController {
     }
 
     public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
+        UnitType rentalType, UUID rentalId, IssueStatus status) {
         return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
     }
 
@@ -94,6 +94,9 @@ public class IssueController {
 
         if (issue.getTitle() != null) {
             entity.setTitle(issue.getTitle());
+        }
+        if (issue.getType() != null) {
+            entity.setType(issue.getType());
         }
         if (issue.getStatus() != null) {
             entity.setStatus(issue.getStatus());
@@ -125,7 +128,7 @@ public class IssueController {
         logger.infov("Closing issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
         final Optional<IssueEntity> entity = repository.find(key);
         entity.ifPresent((e) -> {
-            e.setStatus(Status.CLOSED);
+            e.setStatus(IssueStatus.CLOSED);
             repository.update(e);
         });
     }

@@ -18,6 +18,8 @@ import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.notification.control.MailingController;
 
 import java.util.Locale;
@@ -142,8 +144,8 @@ public class MailingResource {
             .projectId(project.getId())
             .title("Test Issue Title")
             .link("https://remsfal.de/projects/bf9f-5bf1-4fd7-9ba4-2a6cb/issueedit/5507-d8a7-41a7-848c-77e81")
-            .issueType(IssueModel.Type.DEFECT)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.DEFECT)
+            .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
             .ownerId(owner.getId())

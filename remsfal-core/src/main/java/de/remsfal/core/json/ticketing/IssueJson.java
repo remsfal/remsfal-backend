@@ -51,12 +51,12 @@ public abstract class IssueJson implements IssueModel {
     @NotNull(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract Type getType();
+    public abstract IssueType getType();
 
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract Status getStatus();
+    public abstract IssueStatus getStatus();
 
     @Null(groups = PostValidation.class)
     @Nullable

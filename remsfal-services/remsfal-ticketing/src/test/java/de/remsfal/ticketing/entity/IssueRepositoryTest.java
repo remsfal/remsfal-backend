@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
@@ -31,24 +32,24 @@ class IssueRepositoryTest {
         // Setup: Create issues with different statuses
         UUID projectId = UUID.randomUUID();
         
-        IssueEntity issue1 = createIssue(projectId, "Issue 1", Status.OPEN);
+        IssueEntity issue1 = createIssue(projectId, "Issue 1", IssueStatus.OPEN);
         repository.insert(issue1);
         
-        IssueEntity issue2 = createIssue(projectId, "Issue 2", Status.CLOSED);
+        IssueEntity issue2 = createIssue(projectId, "Issue 2", IssueStatus.CLOSED);
         repository.insert(issue2);
         
-        IssueEntity issue3 = createIssue(projectId, "Issue 3", Status.OPEN);
+        IssueEntity issue3 = createIssue(projectId, "Issue 3", IssueStatus.OPEN);
         repository.insert(issue3);
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            List.of(projectId), null, null, null, null, Status.OPEN
+            List.of(projectId), null, null, null, null, IssueStatus.OPEN
         );
 
         // Verify: Should return 2 OPEN issues
         assertNotNull(openIssues);
         assertEquals(2, openIssues.size());
-        openIssues.forEach(issue -> assertEquals(Status.OPEN, issue.getStatus()));
+        openIssues.forEach(issue -> assertEquals(IssueStatus.OPEN, issue.getStatus()));
         
         // Cleanup
         repository.delete(issue1.getKey());
@@ -63,15 +64,15 @@ class IssueRepositoryTest {
         UUID ownerId1 = UUID.randomUUID();
         UUID ownerId2 = UUID.randomUUID();
         
-        IssueEntity issue1 = createIssue(projectId, "Issue 1", Status.OPEN);
+        IssueEntity issue1 = createIssue(projectId, "Issue 1", IssueStatus.OPEN);
         issue1.setOwnerId(ownerId1);
         repository.insert(issue1);
         
-        IssueEntity issue2 = createIssue(projectId, "Issue 2", Status.OPEN);
+        IssueEntity issue2 = createIssue(projectId, "Issue 2", IssueStatus.OPEN);
         issue2.setOwnerId(ownerId2);
         repository.insert(issue2);
         
-        IssueEntity issue3 = createIssue(projectId, "Issue 3", Status.OPEN);
+        IssueEntity issue3 = createIssue(projectId, "Issue 3", IssueStatus.OPEN);
         issue3.setOwnerId(ownerId1);
         repository.insert(issue3);
 
@@ -98,15 +99,15 @@ class IssueRepositoryTest {
         UUID tenancyId1 = UUID.randomUUID();
         UUID tenancyId2 = UUID.randomUUID();
         
-        IssueEntity issue1 = createIssue(projectId, "Issue 1", Status.OPEN);
+        IssueEntity issue1 = createIssue(projectId, "Issue 1", IssueStatus.OPEN);
         issue1.setTenancyId(tenancyId1);
         repository.insert(issue1);
         
-        IssueEntity issue2 = createIssue(projectId, "Issue 2", Status.OPEN);
+        IssueEntity issue2 = createIssue(projectId, "Issue 2", IssueStatus.OPEN);
         issue2.setTenancyId(tenancyId2);
         repository.insert(issue2);
         
-        IssueEntity issue3 = createIssue(projectId, "Issue 3", Status.OPEN);
+        IssueEntity issue3 = createIssue(projectId, "Issue 3", IssueStatus.OPEN);
         issue3.setTenancyId(tenancyId1);
         repository.insert(issue3);
 
@@ -124,7 +125,7 @@ class IssueRepositoryTest {
         repository.delete(issue3.getKey());
     }
 
-    private IssueEntity createIssue(UUID projectId, String title, Status status) {
+    private IssueEntity createIssue(UUID projectId, String title, IssueStatus status) {
         IssueEntity entity = new IssueEntity();
         IssueKey key = new IssueKey();
         key.setProjectId(projectId);
@@ -132,7 +133,7 @@ class IssueRepositoryTest {
         entity.setKey(key);
         entity.setTitle(title);
         entity.setStatus(status);
-        entity.setType(IssueModel.Type.TASK);
+        entity.setType(IssueType.TASK);
         return entity;
     }
 }

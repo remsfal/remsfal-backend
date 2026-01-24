@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.core.model.ticketing.IssueModel.Status;
-import de.remsfal.core.model.ticketing.IssueModel.Type;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import jakarta.annotation.Nullable;
 
 import java.util.UUID;
@@ -32,9 +32,9 @@ public abstract class IssueItemJson {
 
     public abstract String getTitle();
 
-    public abstract Type getType();
+    public abstract IssueType getType();
 
-    public abstract Status getStatus();
+    public abstract IssueStatus getStatus();
 
     @Nullable
     public abstract UUID getOwner();

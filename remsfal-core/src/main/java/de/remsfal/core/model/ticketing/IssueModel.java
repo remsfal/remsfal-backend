@@ -14,16 +14,16 @@ public interface IssueModel {
 
     String getTitle();
 
-    public enum Type {
+    public enum IssueType {
         APPLICATION,
         TASK,
         DEFECT,
         MAINTENANCE
     }
 
-    Type getType();
+    IssueType getType();
 
-    public enum Status {
+    public enum IssueStatus {
         PENDING,
         OPEN,
         IN_PROGRESS,
@@ -31,7 +31,7 @@ public interface IssueModel {
         REJECTED
     }
 
-    Status getStatus();
+    IssueStatus getStatus();
 
     UUID getReporterId();
 

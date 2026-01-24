@@ -91,11 +91,11 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public Type getType() {
-        return type != null ? Type.valueOf(type) : null;
+    public IssueType getType() {
+        return type != null ? IssueType.valueOf(type) : null;
     }
 
-    public void setType(Type type) {
+    public void setType(IssueType type) {
         this.type = type != null ? type.name() : null;
     }
 
@@ -105,11 +105,11 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public Status getStatus() {
-        return status != null ? Status.valueOf(status) : null;
+    public IssueStatus getStatus() {
+        return status != null ? IssueStatus.valueOf(status) : null;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(IssueStatus status) {
         this.status = status != null ? status.name() : null;
     }
 

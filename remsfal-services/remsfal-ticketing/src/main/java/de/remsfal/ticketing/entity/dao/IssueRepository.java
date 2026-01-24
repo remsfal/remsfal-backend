@@ -2,7 +2,7 @@ package de.remsfal.ticketing.entity.dao;
 
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.core.model.ticketing.IssueModel.Status;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,8 +21,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
 import java.util.HashSet;
+
 @ApplicationScoped
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
+
     @Inject
     CqlSession session;
 
@@ -40,7 +42,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     }
 
     public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID ownerId, UUID tenancyId,
-        UnitType rentalType, UUID rentalId, Status status) {
+        UnitType rentalType, UUID rentalId, IssueStatus status) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).in(projectIds);
         if (ownerId != null) {
