@@ -3,6 +3,7 @@ package de.remsfal.ticketing.boundary;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
@@ -46,7 +47,7 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit,
-        UUID projectId, UUID ownerId,
+        UUID projectId, UUID assigneeId,
         UUID tenancyId, UnitType rentalType,
         UUID rentalId, IssueStatus status) {
         logger.info("Yes i was called");
@@ -60,15 +61,15 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (projectFilter.isEmpty()) {
             return getUnprivilegedIssues(offset, limit, tenancyId, status);
         } else {
-            return getProjectIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+            return getProjectIssues(projectFilter, assigneeId, tenancyId, rentalType, rentalId, status);
         }
     }
 
-    private IssueListJson getProjectIssues(List<UUID> projectFilter, UUID ownerId,
+    private IssueListJson getProjectIssues(List<UUID> projectFilter, UUID assigneeId,
         UUID tenancyId, UnitType rentalType, UUID rentalId,
         IssueStatus status) {
         final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+            issueController.getIssues(projectFilter, assigneeId, tenancyId, rentalType, rentalId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
 
@@ -182,12 +183,12 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
-        UUID previousOwner = entity.getOwnerId();
+        UUID previousAssignee = entity.getAssigneeId();
         IssueModel updatedIssue = issueController.updateIssue(entity.getKey(), issue);
         IssueJson response = IssueJson.valueOf(updatedIssue);
-        UUID newOwner = updatedIssue.getOwnerId();
-        if (newOwner != null && !Objects.equals(previousOwner, newOwner)) {
-            issueEventProducer.sendIssueAssigned(updatedIssue, principal, newOwner);
+        UUID newAssignee = updatedIssue.getAssigneeId();
+        if (newAssignee != null && !Objects.equals(previousAssignee, newAssignee)) {
+            issueEventProducer.sendIssueAssigned(updatedIssue, principal, newAssignee);
         } else {
             issueEventProducer.sendIssueUpdated(updatedIssue, principal);
         }
@@ -207,21 +208,64 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
     }
 
     @Override
-    public ChatSessionResource getChatSessionResource() {
-        return resourceContext.initResource(chatSessionResource.get());
-    }
-
-    @Override
-    public void deleteRelation(UUID issueId, String type, UUID relatedIssueId) {
+    public IssueJson setParent(final UUID issueId, final UUID parentIssueId) {
         IssueEntity entity = issueController.getIssue(issueId);
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
-        issueController.deleteRelation(entity, type, relatedIssueId);
+
+        IssueModel updatedIssue = issueController.setParentIssue(entity, parentIssueId);
+        IssueJson response = IssueJson.valueOf(updatedIssue);
+        issueEventProducer.sendIssueUpdated(updatedIssue, principal);
+        return response;
+    }
+
+    @Override
+    public IssueJson createRelation(final UUID issueId, final String relationType, final UUID relatedIssueId) {
+        IssueEntity entity = issueController.getIssue(issueId);
+        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
+            throw new ForbiddenException("User does not have permission to update this issue");
+        }
+
+        IssueModel updatedIssue = switch (relationType.toLowerCase()) {
+            case "children" -> issueController.addChildIssue(entity, relatedIssueId);
+            case "blocks" -> issueController.addBlocksRelation(entity, relatedIssueId);
+            case "blocked-by" -> issueController.addBlockedByRelation(entity, relatedIssueId);
+            case "related-to" -> issueController.addRelatedToRelation(entity, relatedIssueId);
+            case "duplicate-of" -> issueController.addDuplicateOfRelation(entity, relatedIssueId);
+            default -> throw new BadRequestException("Invalid relation type: " + relationType);
+        };
+
+        IssueJson response = IssueJson.valueOf(updatedIssue);
+        issueEventProducer.sendIssueUpdated(updatedIssue, principal);
+        return response;
+    }
+
+    @Override
+    public void deleteRelation(final UUID issueId, final String relationType, final UUID relatedIssueId) {
+        IssueEntity entity = issueController.getIssue(issueId);
+        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
+            throw new ForbiddenException("User does not have permission to update this issue");
+        }
+
+        switch (relationType.toLowerCase()) {
+            case "parent" -> issueController.deleteParentRelation(entity, relatedIssueId);
+            case "children" -> issueController.deleteChildRelation(entity, relatedIssueId);
+            case "blocks" -> issueController.deleteBlocksRelation(entity, relatedIssueId);
+            case "blocked-by" -> issueController.deleteBlockedByRelation(entity, relatedIssueId);
+            case "related-to" -> issueController.deleteRelatedToRelation(entity, relatedIssueId);
+            case "duplicate-of" -> issueController.deleteDuplicateOfRelation(entity, relatedIssueId);
+            default -> throw new BadRequestException("Invalid relation type: " + relationType);
+        }
+    }
+
+    @Override
+    public ChatSessionResource getChatSessionResource() {
+        return resourceContext.initResource(chatSessionResource.get());
     }
 
     private boolean isParticipantInIssue(UUID issueId) {
         return issueParticipantRepository.exists(principal.getId(), issueId);
     }
-}
 
+}

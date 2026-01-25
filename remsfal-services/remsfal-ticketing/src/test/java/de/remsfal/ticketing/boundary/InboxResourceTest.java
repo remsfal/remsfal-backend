@@ -61,7 +61,7 @@ class InboxResourceTest {
         e.setStatus("OPEN");
         e.setLink("/api/issues/issue-123");
         e.setActorEmail("actor@example.com");
-        e.setOwnerEmail("owner@example.com");
+        e.setAssigneeEmail("owner@example.com");
         e.setRead(false);
         e.setCreatedAt(java.time.Instant.now());
 
@@ -106,7 +106,7 @@ class InboxResourceTest {
         updated.setStatus("IN_PROGRESS");
         updated.setLink("/api/issues/issue-456");
         updated.setActorEmail("actor2@example.com");
-        updated.setOwnerEmail("owner2@example.com");
+        updated.setAssigneeEmail("owner2@example.com");
         updated.setRead(true);
         updated.setCreatedAt(java.time.Instant.now());
 

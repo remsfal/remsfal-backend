@@ -1,13 +1,18 @@
 package de.remsfal.ticketing;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import com.datastax.oss.driver.api.core.CqlSession;
 
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.test.AbstractTest;
 import de.remsfal.ticketing.entity.storage.FileStorage;
 import io.minio.ListObjectsArgs;
@@ -76,6 +81,31 @@ public abstract class AbstractTicketingTest extends AbstractTest {
                     .contentType(TicketingTestData.FILE_PNG_TYPE)
                     .build());
         }
+    }
+
+    protected void setupTestIssues() {
+        insertIssue(TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1,
+            TicketingTestData.ISSUE_TITLE_1, IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.HIGH,
+            TicketingTestData.USER_ID_1, TicketingTestData.TENANCY_ID_1, TicketingTestData.USER_ID_2,
+            TicketingTestData.ISSUE_DESCRIPTION_1);
+        insertIssue(TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2,
+            TicketingTestData.ISSUE_TITLE_2, IssueType.DEFECT, IssueStatus.IN_PROGRESS, IssuePriority.MEDIUM,
+            TicketingTestData.USER_ID_1, TicketingTestData.TENANCY_ID_1, TicketingTestData.USER_ID_2,
+            TicketingTestData.ISSUE_DESCRIPTION_2);
+        insertIssue(TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_3,
+            TicketingTestData.ISSUE_TITLE_3, IssueType.DEFECT, IssueStatus.CLOSED, IssuePriority.LOW,
+            TicketingTestData.USER_ID_1, TicketingTestData.TENANCY_ID_1, TicketingTestData.USER_ID_2,
+            TicketingTestData.ISSUE_DESCRIPTION_3);
+    }
+
+    protected void insertIssue(UUID projectId, UUID issueId, String title, IssueType type, IssueStatus status,
+            IssuePriority priority, UUID reporterId, UUID tenancyId, UUID assigneeId, String description) {
+        String insertIssueCql = "INSERT INTO remsfal.issues " +
+            "(project_id, issue_id, title, type, status, priority, reporter_id, tenancy_id, assignee_id, description, created_at, modified_at) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertIssueCql,
+            projectId, issueId, title, type.name(), status.name(), priority.name(),
+            reporterId, tenancyId, assigneeId, description, Instant.now(), Instant.now());
     }
 
 }

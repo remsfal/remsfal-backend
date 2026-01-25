@@ -9,10 +9,8 @@ import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 import de.remsfal.ticketing.entity.dto.InboxMessageKey;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
 
 import java.util.List;
 import java.util.Optional;
@@ -77,7 +75,7 @@ public class InboxMessageRepository extends AbstractRepository<InboxMessageEntit
             .value("status", QueryBuilder.literal(msg.getStatus()))
             .value("description", QueryBuilder.literal(msg.getDescription() == null ? "" : msg.getDescription()))
             .value("actor_email", QueryBuilder.literal(msg.getActorEmail() == null ? "" : msg.getActorEmail()))
-            .value("owner_email", QueryBuilder.literal(msg.getOwnerEmail() == null ? "" : msg.getOwnerEmail()))
+            .value("assignee_email", QueryBuilder.literal(msg.getAssigneeEmail() == null ? "" : msg.getAssigneeEmail()))
             .value("link", QueryBuilder.literal(msg.getLink()))
             .value("created_at", QueryBuilder.literal(msg.getCreatedAt()))
             .value("read", QueryBuilder.literal(msg.getRead()));

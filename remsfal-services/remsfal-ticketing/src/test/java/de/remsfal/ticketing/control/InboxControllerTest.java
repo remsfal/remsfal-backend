@@ -142,13 +142,13 @@ class InboxControllerTest extends AbstractTicketingTest {
     void testRepository_saveWithNullOwnerEmail() {
         String userId = "user-null-owner";
         InboxMessageEntity msg = createTestMessage(userId, "No Owner");
-        msg.setOwnerEmail(null);
+        msg.setAssigneeEmail(null);
 
         repository.saveInboxMessage(msg);
 
         List<InboxMessageEntity> results = repository.findByUserId(userId);
         assertEquals(1, results.size());
-        assertEquals("", results.get(0).getOwnerEmail());
+        assertEquals("", results.get(0).getAssigneeEmail());
     }
 
     // ========================================
@@ -331,7 +331,7 @@ class InboxControllerTest extends AbstractTicketingTest {
         entity.setDescription("Test description");
         entity.setLink("/api/issues/" + entity.getIssueId());
         entity.setActorEmail("actor@example.com");
-        entity.setOwnerEmail("owner@example.com");
+        entity.setAssigneeEmail("owner@example.com");
         entity.setCreatedAt(Instant.now());
         entity.setRead(false);
 

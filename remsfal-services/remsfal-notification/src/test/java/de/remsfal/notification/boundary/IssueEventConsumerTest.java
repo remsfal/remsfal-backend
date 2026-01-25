@@ -58,9 +58,9 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .title("Test Project")
             .build();
 
-        UserJson owner = ImmutableUserJson.builder()
+        UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
-            .email("owner@example.com")
+            .email("assignee@example.com")
             .name("Test Owner")
             .build();
 
@@ -81,10 +81,10 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(owner.getId())
+            .assigneeId(assignee.getId())
             .description("Test description")
             .user(creator)
-            .owner(owner)
+            .assignee(assignee)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -94,10 +94,10 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() -> {
-                // Verify emails sent to both owner and creator by checking email addresses
+                // Verify emails sent to both assignee and creator by checking email addresses
                 verify(mailingController, atLeastOnce()).sendIssueCreatedEmail(
                     any(IssueEventJson.class),
-                    argThat(user -> "owner@example.com".equals(user.getEmail())));
+                    argThat(user -> "assignee@example.com".equals(user.getEmail())));
                 verify(mailingController, atLeastOnce()).sendIssueCreatedEmail(
                     any(IssueEventJson.class),
                     argThat(user -> "creator@example.com".equals(user.getEmail())));
@@ -128,10 +128,10 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(user.getId())
+            .assigneeId(user.getId())
             .description("Test description")
             .user(user)
-            .owner(user)
+            .assignee(user)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -141,7 +141,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() -> {
-                // Only one email should be sent when owner = creator
+                // Only one email should be sent when assignee = creator
                 verify(mailingController, times(1)).sendIssueCreatedEmail(
                     any(IssueEventJson.class),
                     argThat(u -> "user@example.com".equals(u.getEmail())));
@@ -155,9 +155,9 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .title("Test Project")
             .build();
 
-        UserJson owner = ImmutableUserJson.builder()
+        UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
-            .email("owner@example.com")
+            .email("assignee@example.com")
             .name("Test Owner")
             .build();
 
@@ -178,10 +178,10 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.IN_PROGRESS)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(owner.getId())
+            .assigneeId(assignee.getId())
             .description("Updated description")
             .user(updater)
-            .owner(owner)
+            .assignee(assignee)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -193,7 +193,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .untilAsserted(() -> {
                 verify(mailingController, atLeastOnce()).sendIssueUpdatedEmail(
                     any(IssueEventJson.class),
-                    argThat(user -> "owner@example.com".equals(user.getEmail())));
+                    argThat(user -> "assignee@example.com".equals(user.getEmail())));
                 verify(mailingController, atLeastOnce()).sendIssueUpdatedEmail(
                     any(IssueEventJson.class),
                     argThat(user -> "updater@example.com".equals(user.getEmail())));
@@ -209,7 +209,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
         UserJson newOwner = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
-            .email("newowner@example.com")
+            .email("newassignee@example.com")
             .name("New Owner")
             .build();
 
@@ -230,10 +230,10 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(newOwner.getId())
+            .assigneeId(newOwner.getId())
             .description("Assignment description")
             .user(assigner)
-            .owner(newOwner)
+            .assignee(newOwner)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -245,7 +245,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .untilAsserted(() -> {
                 verify(mailingController, atLeastOnce()).sendIssueAssignedEmail(
                     any(IssueEventJson.class),
-                    argThat(user -> "newowner@example.com".equals(user.getEmail())));
+                    argThat(user -> "newassignee@example.com".equals(user.getEmail())));
                 verify(mailingController, atLeastOnce()).sendIssueAssignedEmail(
                     any(IssueEventJson.class),
                     argThat(user -> "assigner@example.com".equals(user.getEmail())));
@@ -276,10 +276,10 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(user.getId())
+            .assigneeId(user.getId())
             .description("Mention description")
             .user(user)
-            .owner(user)
+            .assignee(user)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -322,7 +322,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .description("No owner")
+            .description("No assignee")
             .user(creator)
             .build();
 
@@ -347,9 +347,9 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .title("Test Project")
             .build();
 
-        UserJson owner = ImmutableUserJson.builder()
+        UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
-            .email("owner@example.com")
+            .email("assignee@example.com")
             .name("Owner")
             .build();
 
@@ -364,9 +364,9 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(owner.getId())
+            .assigneeId(assignee.getId())
             .description("No user")
-            .owner(owner)
+            .assignee(assignee)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -376,10 +376,10 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() -> {
-                // Only owner should receive email
+                // Only assignee should receive email
                 verify(mailingController, times(1)).sendIssueCreatedEmail(
                     any(IssueEventJson.class),
-                    argThat(user -> "owner@example.com".equals(user.getEmail())));
+                    argThat(user -> "assignee@example.com".equals(user.getEmail())));
             });
     }
 
@@ -390,9 +390,9 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .title("Test Project")
             .build();
 
-        UserJson owner = ImmutableUserJson.builder()
+        UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
-            .email("owner@example.com")
+            .email("assignee@example.com")
             .name("Owner")
             .build();
 
@@ -407,9 +407,9 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(owner.getId())
+            .assigneeId(assignee.getId())
             .description("Will throw exception")
-            .owner(owner)
+            .assignee(assignee)
             .build();
 
         // Make the mailing controller throw an exception

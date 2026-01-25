@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import jakarta.annotation.Nullable;
@@ -36,8 +37,10 @@ public abstract class IssueItemJson {
 
     public abstract IssueStatus getStatus();
 
+    public abstract IssuePriority getPriority();
+
     @Nullable
-    public abstract UUID getOwner();
+    public abstract UUID getAssigneeId();
 
     public static IssueItemJson valueOf(final IssueModel model) {
         return ImmutableIssueItemJson.builder()
@@ -46,7 +49,8 @@ public abstract class IssueItemJson {
             .title(model.getTitle())
             .type(model.getType())
             .status(model.getStatus())
-            .owner(model.getOwnerId())
+            .priority(model.getPriority())
+            .assigneeId(model.getAssigneeId())
             .build();
     }
 

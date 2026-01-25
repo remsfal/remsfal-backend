@@ -41,12 +41,12 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             .singleResult();
     }
 
-    public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID ownerId, UUID tenancyId,
+    public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID assigneeId, UUID tenancyId,
         UnitType rentalType, UUID rentalId, IssueStatus status) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).in(projectIds);
-        if (ownerId != null) {
-            query = query.and("owner_id").eq(ownerId);
+        if (assigneeId != null) {
+            query = query.and("assignee_id").eq(assigneeId);
         }
         if (tenancyId != null) {
             query = query.and("tenancy_id").eq(tenancyId);
@@ -97,12 +97,12 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     }
 
     // ---- Relation columns (Cassandra) ----
-    private static final String COL_BLOCKS = "blocks_set";
-    private static final String COL_BLOCKED_BY = "blocked_by_set";
-    private static final String COL_RELATED_TO = "related_to_set";
-    private static final String COL_DUPLICATE_OF = "duplicate_of_set";
-    private static final String COL_PARENT_OF = "parent_of_set";
-    private static final String COL_CHILD_OF = "child_of_set";
+    private static final String COL_BLOCKS = "blocks_issue_ids";
+    private static final String COL_BLOCKED_BY = "blocked_by_issue_ids";
+    private static final String COL_RELATED_TO = "related_to_issue_ids";
+    private static final String COL_DUPLICATE_OF = "duplicate_of_issue_ids";
+    private static final String COL_PARENT_ISSUE = "parent_issue_id";
+    private static final String COL_CHILDREN_ISSUES = "children_issue_ids";
 
     // ---- CQL templates ----
     private static final String UPDATE_SET_TEMPLATE =
@@ -166,12 +166,34 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         applyBidirectionalMany(projectId, sourceId, targets, true, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
     }
 
-    public void addParentOf(UUID projectId, UUID sourceId, Set<UUID> targets) {
-        applyBidirectionalMany(projectId, sourceId, targets, true, COL_PARENT_OF, COL_CHILD_OF);
+    public void addParentIssue(UUID projectId, UUID sourceId, UUID parentId) {
+        if (projectId == null || sourceId == null || parentId == null) return;
+        if (sourceId.equals(parentId)) return;
+
+        // source.parent_issue_id = parentId, parent.children_issue_ids += sourceId
+        BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
+            .addStatement(SimpleStatement.newInstance(
+                "UPDATE remsfal.issues SET parent_issue_id = ? WHERE project_id = ? AND issue_id = ?",
+                parentId, projectId, sourceId))
+            .addStatement(setUpdate(COL_CHILDREN_ISSUES, true, projectId, parentId, sourceId))
+            .build();
+        session.execute(batch);
     }
 
-    public void addChildOf(UUID projectId, UUID sourceId, Set<UUID> targets) {
-        applyBidirectionalMany(projectId, sourceId, targets, true, COL_CHILD_OF, COL_PARENT_OF);
+    public void addChildrenIssues(UUID projectId, UUID sourceId, Set<UUID> childrenIds) {
+        if (childrenIds == null || childrenIds.isEmpty()) return;
+        for (UUID childId : new HashSet<>(childrenIds)) {
+            if (childId == null || childId.equals(sourceId)) continue;
+
+            // source.children_issue_ids += childId, child.parent_issue_id = sourceId
+            BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
+                .addStatement(setUpdate(COL_CHILDREN_ISSUES, true, projectId, sourceId, childId))
+                .addStatement(SimpleStatement.newInstance(
+                    "UPDATE remsfal.issues SET parent_issue_id = ? WHERE project_id = ? AND issue_id = ?",
+                    sourceId, projectId, childId))
+                .build();
+            session.execute(batch);
+        }
     }
 
     public void removeRelation(UUID projectId, UUID sourceId, UUID targetId, String type) {
@@ -186,10 +208,26 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
                     false, COL_RELATED_TO, COL_RELATED_TO);
             case "duplicate_of" -> applyBidirectional(projectId, sourceId, targetId,
                     false, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
-            case "parent_of" -> applyBidirectional(projectId, sourceId, targetId,
-                    false, COL_PARENT_OF, COL_CHILD_OF);
-            case "child_of" -> applyBidirectional(projectId, sourceId, targetId,
-                    false, COL_CHILD_OF, COL_PARENT_OF);
+            case "parent_issue" -> {
+                // Remove source.parent_issue_id and target.children_issue_ids
+                BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
+                    .addStatement(SimpleStatement.newInstance(
+                        "UPDATE remsfal.issues SET parent_issue_id = null WHERE project_id = ? AND issue_id = ?",
+                        projectId, sourceId))
+                    .addStatement(setUpdate(COL_CHILDREN_ISSUES, false, projectId, targetId, sourceId))
+                    .build();
+                session.execute(batch);
+            }
+            case "children_issues" -> {
+                // Remove source.children_issue_ids and target.parent_issue_id
+                BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
+                    .addStatement(setUpdate(COL_CHILDREN_ISSUES, false, projectId, sourceId, targetId))
+                    .addStatement(SimpleStatement.newInstance(
+                        "UPDATE remsfal.issues SET parent_issue_id = null WHERE project_id = ? AND issue_id = ?",
+                        projectId, targetId))
+                    .build();
+                session.execute(batch);
+            }
             default -> throw new BadRequestException("Missing or wrong Relation type");
         }
     }
@@ -202,8 +240,18 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         applyBidirectionalMany(projectId, sourceId, entity.getBlockedBy(), false, COL_BLOCKED_BY, COL_BLOCKS);
         applyBidirectionalMany(projectId, sourceId, entity.getRelatedTo(), false, COL_RELATED_TO, COL_RELATED_TO);
         applyBidirectionalMany(projectId, sourceId, entity.getDuplicateOf(), false, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
-        applyBidirectionalMany(projectId, sourceId, entity.getParentOf(), false, COL_PARENT_OF, COL_CHILD_OF);
-        applyBidirectionalMany(projectId, sourceId, entity.getChildOf(), false, COL_CHILD_OF, COL_PARENT_OF);
+
+        // Remove parent_issue relation
+        if (entity.getParentIssue() != null) {
+            removeRelation(projectId, sourceId, entity.getParentIssue(), "parent_issue");
+        }
+
+        // Remove children_issues relations
+        if (entity.getChildrenIssues() != null) {
+            for (UUID childId : new HashSet<>(entity.getChildrenIssues())) {
+                removeRelation(projectId, sourceId, childId, "children_issues");
+            }
+        }
     }
 
 }

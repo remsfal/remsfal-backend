@@ -35,7 +35,7 @@ public class IssueEventProducer {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
-        sendEvent(IssueEventType.ISSUE_CREATED, issue, actor, toUserJson(issue.getOwnerId(), null, null), null);
+        sendEvent(IssueEventType.ISSUE_CREATED, issue, actor, toUserJson(issue.getAssigneeId(), null, null), null);
     }
 
     public void sendIssueUpdated(final IssueModel issue, final UserModel actor) {
@@ -43,15 +43,15 @@ public class IssueEventProducer {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
-        sendEvent(IssueEventType.ISSUE_UPDATED, issue, actor, toUserJson(issue.getOwnerId(), null, null), null);
+        sendEvent(IssueEventType.ISSUE_UPDATED, issue, actor, toUserJson(issue.getAssigneeId(), null, null), null);
     }
 
-    public void sendIssueAssigned(final IssueModel issue, final UserModel actor, final UUID ownerId) {
+    public void sendIssueAssigned(final IssueModel issue, final UserModel actor, final UUID assigneeId) {
         if (issue == null) {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
-        sendEvent(IssueEventType.ISSUE_ASSIGNED, issue, actor, toUserJson(ownerId, null, null), null);
+        sendEvent(IssueEventType.ISSUE_ASSIGNED, issue, actor, toUserJson(assigneeId, null, null), null);
     }
 
     public void sendIssueMentioned(final IssueModel issue, final UserModel actor, final UUID mentionedUserId) {
@@ -63,7 +63,7 @@ public class IssueEventProducer {
     }
 
     private void sendEvent(final IssueEventType type, final IssueModel issue, final UserModel actor,
-        final UserJson owner, final UserJson mentionedUser) {
+        final UserJson assignee, final UserJson mentionedUser) {
         if (issue == null) {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
@@ -78,13 +78,16 @@ public class IssueEventProducer {
             .status(issue.getStatus())
             .reporterId(issue.getReporterId())
             .tenancyId(issue.getTenancyId())
-            .ownerId(issue.getOwnerId())
+            .assigneeId(issue.getAssigneeId())
             .description(issue.getDescription())
+            .parentIssue(issue.getParentIssue())
+            .childrenIssues(issue.getChildrenIssues())
             .blockedBy(issue.getBlockedBy())
             .relatedTo(issue.getRelatedTo())
+            .blocks(issue.getBlocks())
             .duplicateOf(issue.getDuplicateOf())
             .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName()))
-            .owner(owner)
+            .assignee(assignee)
             .mentionedUser(mentionedUser)
             .build();
 

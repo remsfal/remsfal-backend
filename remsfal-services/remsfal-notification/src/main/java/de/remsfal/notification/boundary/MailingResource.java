@@ -17,7 +17,6 @@ import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.notification.control.MailingController;
@@ -131,9 +130,9 @@ public class MailingResource {
             .name("Test Actor")
             .build();
 
-        UserJson owner = ImmutableUserJson.builder()
+        UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
-            .email("owner@example.com")
+            .email("assignee@example.com")
             .name("Test Owner")
             .build();
 
@@ -148,10 +147,10 @@ public class MailingResource {
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .tenancyId(UUID.randomUUID())
-            .ownerId(owner.getId())
+            .assigneeId(assignee.getId())
             .description("Das ist eine Test Issue")
             .user(actor)
-            .owner(owner)
+            .assignee(assignee)
             .build();
     }
 }

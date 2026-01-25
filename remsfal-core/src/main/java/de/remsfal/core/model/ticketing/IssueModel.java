@@ -33,24 +33,34 @@ public interface IssueModel {
 
     IssueStatus getStatus();
 
+    enum IssuePriority {
+        URGENT,
+        HIGH,
+        MEDIUM,
+        LOW,
+        UNCLASSIFIED
+    }
+
+    IssuePriority getPriority();
+
     UUID getReporterId();
 
     UUID getTenancyId();
 
-    UUID getOwnerId();
+    UUID getAssigneeId();
 
     String getDescription();
 
-    Set<UUID> getBlockedBy();
+    UUID getParentIssue();
+
+    Set<UUID> getChildrenIssues();
 
     Set<UUID> getRelatedTo();
 
-    Set<UUID> getBlocks();
-
     Set<UUID> getDuplicateOf();
 
-    Set<UUID> getParentOf();
+    Set<UUID> getBlockedBy();
 
-    Set<UUID> getChildOf();
+    Set<UUID> getBlocks();
 
 }

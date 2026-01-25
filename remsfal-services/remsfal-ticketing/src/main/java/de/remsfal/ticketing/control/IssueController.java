@@ -43,7 +43,6 @@ public class IssueController {
         entity.generateId();
         entity.setType(issue.getType());
         entity.setProjectId(issue.getProjectId());
-        entity.setCreatedBy(user.getId());
         entity.setTitle(issue.getTitle());
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
@@ -54,10 +53,10 @@ public class IssueController {
             issue.getBlocks(),
             issue.getBlockedBy(),
             issue.getRelatedTo(),
-            issue.getDuplicateOf(),
-            issue.getParentOf(),
-            issue.getChildOf()
-        ).anyMatch(set -> set != null && !set.isEmpty());
+            issue.getDuplicateOf()
+        ).anyMatch(set -> set != null && !set.isEmpty())
+            || issue.getParentIssue() != null
+            || (issue.getChildrenIssues() != null && !issue.getChildrenIssues().isEmpty());
 
         if (hasRelations) {
             updateRelations(entity, issue);
@@ -73,9 +72,9 @@ public class IssueController {
                 .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
-    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID ownerId, UUID tenancyId,
+    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID assigneeId, UUID tenancyId,
         UnitType rentalType, UUID rentalId, IssueStatus status) {
-        return repository.findByQuery(projectFilter, ownerId, tenancyId, rentalType, rentalId, status);
+        return repository.findByQuery(projectFilter, assigneeId, tenancyId, rentalType, rentalId, status);
     }
 
     public List<? extends IssueModel> getIssuesOfTenancy(UUID tenancyId) {
@@ -101,14 +100,18 @@ public class IssueController {
         if (issue.getStatus() != null) {
             entity.setStatus(issue.getStatus());
         }
-        if (issue.getOwnerId() != null) {
-            entity.setOwnerId(issue.getOwnerId());
+        if (issue.getPriority() != null) {
+            entity.setPriority(issue.getPriority());
+        }
+        if (issue.getAssigneeId() != null) {
+            entity.setAssigneeId(issue.getAssigneeId());
         }
         if (issue.getDescription() != null) {
             entity.setDescription(issue.getDescription());
         }
 
-        updateRelations(entity, issue);
+        // Relations are now managed through separate endpoints (PUT/POST/DELETE)
+        // and should not be updated via PATCH
 
         return repository.update(entity);
     }
@@ -165,37 +168,204 @@ public class IssueController {
             entity.setDuplicateOf(merge(entity.getDuplicateOf(), patch.getDuplicateOf(), sourceId));
         }
 
-        // parent_of -> target.child_of_set
-        if (patch.getParentOf() != null && !patch.getParentOf().isEmpty()) {
-            repository.addParentOf(projectId, sourceId, patch.getParentOf());
-            entity.setParentOf(merge(entity.getParentOf(), patch.getParentOf(), sourceId));
+        // parent_issue -> target.children_issues_set
+        if (patch.getParentIssue() != null) {
+            repository.addParentIssue(projectId, sourceId, patch.getParentIssue());
+            entity.setParentIssue(patch.getParentIssue());
         }
 
-        // child_of -> target.parent_of_set
-        if (patch.getChildOf() != null && !patch.getChildOf().isEmpty()) {
-            repository.addChildOf(projectId, sourceId, patch.getChildOf());
-            entity.setChildOf(merge(entity.getChildOf(), patch.getChildOf(), sourceId));
+        // children_issues -> target.parent_issue
+        if (patch.getChildrenIssues() != null && !patch.getChildrenIssues().isEmpty()) {
+            repository.addChildrenIssues(projectId, sourceId, patch.getChildrenIssues());
+            entity.setChildrenIssues(merge(entity.getChildrenIssues(), patch.getChildrenIssues(), sourceId));
         }
     }
 
-    public void deleteRelation(IssueEntity source, String type, UUID relatedId) {
-        repository.removeRelation(source.getProjectId(), source.getId(), relatedId, type);
-
-        if (type == null) {
-            throw new BadRequestException("Missing or wrong Relation type");
+    public IssueModel setParentIssue(IssueEntity entity, UUID parentIssueId) {
+        if (entity.getId().equals(parentIssueId)) {
+            throw new BadRequestException("An issue cannot be its own parent");
         }
 
-        switch (type.toLowerCase()) {
-            case "blocks" -> removeFrom(source.getBlocks(), relatedId);
-            case "blocked_by" -> removeFrom(source.getBlockedBy(), relatedId);
-            case "related_to" -> removeFrom(source.getRelatedTo(), relatedId);
-            case "duplicate_of" -> removeFrom(source.getDuplicateOf(), relatedId);
-            case "parent_of" -> removeFrom(source.getParentOf(), relatedId);
-            case "child_of" -> removeFrom(source.getChildOf(), relatedId);
-            default -> throw new BadRequestException("Missing or wrong Relation type");
+        // Verify that parent issue exists and is in the same project
+        IssueEntity parentEntity = repository.findByIssueId(parentIssueId)
+            .orElseThrow(() -> new NotFoundException("Parent issue not found"));
+
+        if (!entity.getProjectId().equals(parentEntity.getProjectId())) {
+            throw new BadRequestException("Parent issue must be in the same project");
         }
 
-        repository.update(source);
+        UUID projectId = entity.getProjectId();
+        UUID issueId = entity.getId();
+
+        repository.addParentIssue(projectId, issueId, parentIssueId);
+        entity.setParentIssue(parentIssueId);
+
+        return repository.update(entity);
+    }
+
+    public IssueModel addChildIssue(IssueEntity entity, UUID childIssueId) {
+        if (entity.getId().equals(childIssueId)) {
+            throw new BadRequestException("An issue cannot be its own child");
+        }
+
+        IssueEntity childEntity = repository.findByIssueId(childIssueId)
+            .orElseThrow(() -> new NotFoundException("Child issue not found"));
+
+        if (!entity.getProjectId().equals(childEntity.getProjectId())) {
+            throw new BadRequestException("Child issue must be in the same project");
+        }
+
+        UUID projectId = entity.getProjectId();
+        UUID issueId = entity.getId();
+
+        repository.addChildrenIssues(projectId, issueId, Set.of(childIssueId));
+        entity.setChildrenIssues(merge(entity.getChildrenIssues(), Set.of(childIssueId), issueId));
+
+        return repository.update(entity);
+    }
+
+    public IssueModel addBlocksRelation(IssueEntity entity, UUID blockedIssueId) {
+        if (entity.getId().equals(blockedIssueId)) {
+            throw new BadRequestException("An issue cannot block itself");
+        }
+
+        IssueEntity blockedEntity = repository.findByIssueId(blockedIssueId)
+            .orElseThrow(() -> new NotFoundException("Blocked issue not found"));
+
+        if (!entity.getProjectId().equals(blockedEntity.getProjectId())) {
+            throw new BadRequestException("Blocked issue must be in the same project");
+        }
+
+        UUID projectId = entity.getProjectId();
+        UUID issueId = entity.getId();
+
+        repository.addBlocks(projectId, issueId, Set.of(blockedIssueId));
+        entity.setBlocks(merge(entity.getBlocks(), Set.of(blockedIssueId), issueId));
+
+        return repository.update(entity);
+    }
+
+    public IssueModel addBlockedByRelation(IssueEntity entity, UUID blockerIssueId) {
+        if (entity.getId().equals(blockerIssueId)) {
+            throw new BadRequestException("An issue cannot be blocked by itself");
+        }
+
+        IssueEntity blockerEntity = repository.findByIssueId(blockerIssueId)
+            .orElseThrow(() -> new NotFoundException("Blocker issue not found"));
+
+        if (!entity.getProjectId().equals(blockerEntity.getProjectId())) {
+            throw new BadRequestException("Blocker issue must be in the same project");
+        }
+
+        UUID projectId = entity.getProjectId();
+        UUID issueId = entity.getId();
+
+        repository.addBlockedBy(projectId, issueId, Set.of(blockerIssueId));
+        entity.setBlockedBy(merge(entity.getBlockedBy(), Set.of(blockerIssueId), issueId));
+
+        return repository.update(entity);
+    }
+
+    public IssueModel addRelatedToRelation(IssueEntity entity, UUID relatedIssueId) {
+        if (entity.getId().equals(relatedIssueId)) {
+            throw new BadRequestException("An issue cannot be related to itself");
+        }
+
+        IssueEntity relatedEntity = repository.findByIssueId(relatedIssueId)
+            .orElseThrow(() -> new NotFoundException("Related issue not found"));
+
+        if (!entity.getProjectId().equals(relatedEntity.getProjectId())) {
+            throw new BadRequestException("Related issue must be in the same project");
+        }
+
+        UUID projectId = entity.getProjectId();
+        UUID issueId = entity.getId();
+
+        repository.addRelatedTo(projectId, issueId, Set.of(relatedIssueId));
+        entity.setRelatedTo(merge(entity.getRelatedTo(), Set.of(relatedIssueId), issueId));
+
+        return repository.update(entity);
+    }
+
+    public IssueModel addDuplicateOfRelation(IssueEntity entity, UUID duplicateIssueId) {
+        if (entity.getId().equals(duplicateIssueId)) {
+            throw new BadRequestException("An issue cannot be a duplicate of itself");
+        }
+
+        IssueEntity duplicateEntity = repository.findByIssueId(duplicateIssueId)
+            .orElseThrow(() -> new NotFoundException("Duplicate issue not found"));
+
+        if (!entity.getProjectId().equals(duplicateEntity.getProjectId())) {
+            throw new BadRequestException("Duplicate issue must be in the same project");
+        }
+
+        UUID projectId = entity.getProjectId();
+        UUID issueId = entity.getId();
+
+        repository.addDuplicateOf(projectId, issueId, Set.of(duplicateIssueId));
+        entity.setDuplicateOf(merge(entity.getDuplicateOf(), Set.of(duplicateIssueId), issueId));
+
+        return repository.update(entity);
+    }
+
+    public void deleteParentRelation(IssueEntity entity, UUID parentIssueId) {
+        if (!parentIssueId.equals(entity.getParentIssue())) {
+            throw new BadRequestException("Issue is not a child of the specified parent");
+        }
+
+        repository.removeRelation(entity.getProjectId(), entity.getId(), parentIssueId, "parent_issue");
+        entity.setParentIssue(null);
+        repository.update(entity);
+    }
+
+    public void deleteChildRelation(IssueEntity entity, UUID childIssueId) {
+        if (entity.getChildrenIssues() == null || !entity.getChildrenIssues().contains(childIssueId)) {
+            throw new BadRequestException("Issue is not a parent of the specified child");
+        }
+
+        repository.removeRelation(entity.getProjectId(), entity.getId(), childIssueId, "children_issues");
+        removeFrom(entity.getChildrenIssues(), childIssueId);
+        repository.update(entity);
+    }
+
+    public void deleteBlocksRelation(IssueEntity entity, UUID blockedIssueId) {
+        if (entity.getBlocks() == null || !entity.getBlocks().contains(blockedIssueId)) {
+            throw new BadRequestException("Issue does not block the specified issue");
+        }
+
+        repository.removeRelation(entity.getProjectId(), entity.getId(), blockedIssueId, "blocks");
+        removeFrom(entity.getBlocks(), blockedIssueId);
+        repository.update(entity);
+    }
+
+    public void deleteBlockedByRelation(IssueEntity entity, UUID blockerIssueId) {
+        if (entity.getBlockedBy() == null || !entity.getBlockedBy().contains(blockerIssueId)) {
+            throw new BadRequestException("Issue is not blocked by the specified issue");
+        }
+
+        repository.removeRelation(entity.getProjectId(), entity.getId(), blockerIssueId, "blocked_by");
+        removeFrom(entity.getBlockedBy(), blockerIssueId);
+        repository.update(entity);
+    }
+
+    public void deleteRelatedToRelation(IssueEntity entity, UUID relatedIssueId) {
+        if (entity.getRelatedTo() == null || !entity.getRelatedTo().contains(relatedIssueId)) {
+            throw new BadRequestException("Issue is not related to the specified issue");
+        }
+
+        repository.removeRelation(entity.getProjectId(), entity.getId(), relatedIssueId, "related_to");
+        removeFrom(entity.getRelatedTo(), relatedIssueId);
+        repository.update(entity);
+    }
+
+    public void deleteDuplicateOfRelation(IssueEntity entity, UUID duplicateIssueId) {
+        if (entity.getDuplicateOf() == null || !entity.getDuplicateOf().contains(duplicateIssueId)) {
+            throw new BadRequestException("Issue is not a duplicate of the specified issue");
+        }
+
+        repository.removeRelation(entity.getProjectId(), entity.getId(), duplicateIssueId, "duplicate_of");
+        removeFrom(entity.getDuplicateOf(), duplicateIssueId);
+        repository.update(entity);
     }
 
     /**
