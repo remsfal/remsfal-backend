@@ -31,8 +31,7 @@ public class IssueEventConsumer {
         logger.infov(
             "Received issue event: type={0}, issueId={1}",
             event.getIssueEventType(),
-            event.getIssueId()
-        );
+            event.getIssueId());
 
         try {
             switch (event.getIssueEventType()) {
@@ -54,8 +53,7 @@ public class IssueEventConsumer {
                     logger.warnv(
                         "Unhandled issue event type: {0} (issueId={1})",
                         event.getIssueEventType(),
-                        event.getIssueId()
-                    );
+                        event.getIssueId());
                     break;
             }
         } catch (Exception e) {
@@ -75,7 +73,8 @@ public class IssueEventConsumer {
 
         // Send to creator (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
-                && (event.getAssignee() == null || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            && (event.getAssignee() == null
+                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
             mailingController.sendIssueCreatedEmail(event, event.getUser());
         }
     }
@@ -90,7 +89,8 @@ public class IssueEventConsumer {
 
         // Send to updater (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
-                && (event.getAssignee() == null || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            && (event.getAssignee() == null
+                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
             mailingController.sendIssueUpdatedEmail(event, event.getUser());
         }
     }
@@ -105,7 +105,8 @@ public class IssueEventConsumer {
 
         // Send to assigner (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
-                && (event.getAssignee() == null || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            && (event.getAssignee() == null
+                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
             mailingController.sendIssueAssignedEmail(event, event.getUser());
         }
     }
