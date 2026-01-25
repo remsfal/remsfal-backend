@@ -11,7 +11,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import jakarta.annotation.Nullable;
 
 /**
@@ -86,10 +87,10 @@ public interface IssueEventJson {
     String getLink();
 
     @Nullable
-    IssueModel.Type getIssueType();
+    IssueType getIssueType();
 
     @Nullable
-    IssueModel.Status getStatus();
+    IssueStatus getStatus();
 
     @Nullable
     UUID getReporterId();
@@ -98,10 +99,16 @@ public interface IssueEventJson {
     UUID getTenancyId();
 
     @Nullable
-    UUID getOwnerId();
+    UUID getAssigneeId();
 
     @Nullable
     String getDescription();
+
+    @Nullable
+    UUID getParentIssue();
+
+    @Nullable
+    Set<UUID> getChildrenIssues();
 
     /**
      * Identifier of a ticket that blocks this issue from progressing.
@@ -117,6 +124,9 @@ public interface IssueEventJson {
     @Nullable
     Set<UUID> getRelatedTo();
 
+    @Nullable
+    Set<UUID> getBlocks();
+
     /**
      * Identifier of the original ticket when this issue is marked as a duplicate.
      * May be used by future templates to guide users to the canonical ticket.
@@ -125,22 +135,13 @@ public interface IssueEventJson {
     Set<UUID> getDuplicateOf();
 
     @Nullable
-    Set<UUID> getBlocks();
-
-    @Nullable
-    Set<UUID> getParentOf();
-
-    @Nullable
-    Set<UUID> getChildOf();
-
-    @Nullable
     UserJson getUser();
 
     /**
      * Target user for owner assignment events.
      */
     @Nullable
-    UserJson getOwner();
+    UserJson getAssignee();
 
     /**
      * Target user for mention events.

@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.ForbiddenException;
 
 import de.remsfal.core.api.ticketing.ChatSessionEndpoint;
 import de.remsfal.core.api.ticketing.ChatParticipantEndpoint;

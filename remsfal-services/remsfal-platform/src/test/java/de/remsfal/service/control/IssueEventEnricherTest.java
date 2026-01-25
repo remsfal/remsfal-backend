@@ -22,6 +22,8 @@ import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.ProjectEntity;
@@ -47,10 +49,10 @@ class IssueEventEnricherTest {
     String frontendBaseUrl;
 
     @Test
-    void enrich_enrichesOwnerDetailsAndBuildsLink() {
+    void enrich_enrichesAssigneeDetailsAndBuildsLink() {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
-        UUID ownerId = UUID.randomUUID();
+        UUID assigneeId = UUID.randomUUID();
         UUID actorId = UUID.randomUUID();
         UUID reporterId = UUID.randomUUID();
         UUID tenancyId = UUID.randomUUID();
@@ -58,17 +60,17 @@ class IssueEventEnricherTest {
         Set<UUID> relatedTo = Set.of(UUID.randomUUID());
         Set<UUID> duplicateOf = Set.of(UUID.randomUUID());
         Set<UUID> blocks = Set.of(UUID.randomUUID());
-        Set<UUID> parentOf = Set.of(UUID.randomUUID());
+        UUID parent = UUID.randomUUID();
         Set<UUID> childOf = Set.of(UUID.randomUUID());
         String projectTitle = "Project title";
 
-        UserEntity ownerEntity = new UserEntity();
-        ownerEntity.setId(ownerId);
-        ownerEntity.setEmail("owner@example.com");
-        ownerEntity.setFirstName("Owner");
-        ownerEntity.setLastName("Person");
+        UserEntity assigneeEntity = new UserEntity();
+        assigneeEntity.setId(assigneeId);
+        assigneeEntity.setEmail("assignee@example.com");
+        assigneeEntity.setFirstName("Assignee");
+        assigneeEntity.setLastName("Person");
 
-        when(userRepository.findByIdOptional(ownerId)).thenReturn(Optional.of(ownerEntity));
+        when(userRepository.findByIdOptional(assigneeId)).thenReturn(Optional.of(assigneeEntity));
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
         project.setTitle(projectTitle);
@@ -79,36 +81,36 @@ class IssueEventEnricherTest {
             .issueId(issueId)
             .projectId(projectId)
             .title("Ticket title")
-            .issueType(IssueModel.Type.MAINTENANCE)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.MAINTENANCE)
+            .status(IssueStatus.OPEN)
             .reporterId(reporterId)
             .tenancyId(tenancyId)
-            .ownerId(ownerId)
+            .assigneeId(assigneeId)
             .description("Fixture broken")
             .blockedBy(blockedBy)
             .relatedTo(relatedTo)
             .duplicateOf(duplicateOf)
             .blocks(blocks)
-            .parentOf(parentOf)
-            .childOf(childOf)
+            .parentIssue(parent)
+            .childrenIssues(childOf)
             .user(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
-            .owner(ImmutableUserJson.builder().id(ownerId).build())
+            .assignee(ImmutableUserJson.builder().id(assigneeId).build())
             .mentionedUser(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
         IssueEventJson enriched = enricher.enrich(event);
 
         assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
-        assertNotNull(enriched.getOwner());
-        assertEquals(ownerId, enriched.getOwner().getId());
-        assertEquals("owner@example.com", enriched.getOwner().getEmail());
-        assertEquals("Owner", enriched.getOwner().getFirstName());
-        assertEquals("Person", enriched.getOwner().getLastName());
+        assertNotNull(enriched.getAssignee());
+        assertEquals(assigneeId, enriched.getAssignee().getId());
+        assertEquals("assignee@example.com", enriched.getAssignee().getEmail());
+        assertEquals("Assignee", enriched.getAssignee().getFirstName());
+        assertEquals("Person", enriched.getAssignee().getLastName());
         assertEquals(event.getUser(), enriched.getUser());
         assertEquals(event.getMentionedUser(), enriched.getMentionedUser());
         assertEquals(reporterId, enriched.getReporterId());
         assertEquals(tenancyId, enriched.getTenancyId());
-        assertEquals(ownerId, enriched.getOwnerId());
+        assertEquals(assigneeId, enriched.getAssigneeId());
         assertEquals("Fixture broken", enriched.getDescription());
         assertEquals(blockedBy, enriched.getBlockedBy());
         assertEquals(relatedTo, enriched.getRelatedTo());
@@ -117,37 +119,37 @@ class IssueEventEnricherTest {
         assertEquals(projectId, enriched.getProject().getId());
         assertEquals(projectTitle, enriched.getProject().getTitle());
 
-        verify(userRepository).findByIdOptional(ownerId);
+        verify(userRepository).findByIdOptional(assigneeId);
         verify(projectRepository).findByIdOptional(projectId);
     }
 
     @Test
-    void enrich_ownerWithoutId_returnsSameOwnerAndSkipsLookup() {
-        UserJson ownerWithoutId = ImmutableUserJson.builder()
+    void enrich_assigneeWithoutId_returnsSameAssigneeAndSkipsLookup() {
+        UserJson assigneeWithoutId = ImmutableUserJson.builder()
             .email("no-id@example.com")
             .build();
 
         UUID projectId = UUID.randomUUID();
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
-        project.setTitle("Ownerless project");
+        project.setTitle("Assigneeless project");
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(UUID.randomUUID())
             .projectId(projectId)
-            .title("Owner without id")
-            .owner(ownerWithoutId)
+            .title("Assignee without id")
+            .assignee(assigneeWithoutId)
             .build();
 
         IssueEventJson enriched = enricher.enrich(event);
 
-        assertEquals(ownerWithoutId, enriched.getOwner());
+        assertEquals(assigneeWithoutId, enriched.getAssignee());
         verifyNoInteractions(userRepository);
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
-        assertEquals("Ownerless project", enriched.getProject().getTitle());
+        assertEquals("Assigneeless project", enriched.getProject().getTitle());
         verify(projectRepository).findByIdOptional(projectId);
     }
 
@@ -189,65 +191,65 @@ class IssueEventEnricherTest {
     }
 
     @Test
-    void enrich_keepsOwnerWhenMissingAndBuildsLinkFromConfig() {
+    void enrich_keepsAssigneeWhenMissingAndBuildsLinkFromConfig() {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
-        project.setTitle("No owner project");
+        project.setTitle("No assignee project");
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
         IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .projectId(projectId)
-            .title("No owner")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.IN_PROGRESS)
+            .title("No assignee")
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.IN_PROGRESS)
             .user(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
         IssueEventJson enriched = enricher.enrich(event);
 
-        assertNull(enriched.getOwner());
+        assertNull(enriched.getAssignee());
         assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         verifyNoInteractions(userRepository);
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
-        assertEquals("No owner project", enriched.getProject().getTitle());
+        assertEquals("No assignee project", enriched.getProject().getTitle());
         verify(projectRepository).findByIdOptional(projectId);
     }
 
     @Test
-    void enrich_returnsOriginalOwnerWhenNotFound() {
+    void enrich_returnsOriginalAssigneeWhenNotFound() {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
-        UUID ownerId = UUID.randomUUID();
+        UUID assigneeId = UUID.randomUUID();
 
-        when(userRepository.findByIdOptional(ownerId)).thenReturn(Optional.empty());
+        when(userRepository.findByIdOptional(assigneeId)).thenReturn(Optional.empty());
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
-        project.setTitle("Project unknown owner");
+        project.setTitle("Project unknown assignee");
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .projectId(projectId)
-            .title("Unknown owner")
-            .issueType(IssueModel.Type.APPLICATION)
-            .status(IssueModel.Status.PENDING)
-            .owner(ImmutableUserJson.builder().id(ownerId).build())
+            .title("Unknown assignee")
+            .issueType(IssueType.APPLICATION)
+            .status(IssueStatus.PENDING)
+            .assignee(ImmutableUserJson.builder().id(assigneeId).build())
             .build();
 
         IssueEventJson enriched = enricher.enrich(event);
 
-        assertNotNull(enriched.getOwner());
-        assertEquals(ownerId, enriched.getOwner().getId());
-        assertNull(enriched.getOwner().getEmail());
-        verify(userRepository).findByIdOptional(ownerId);
+        assertNotNull(enriched.getAssignee());
+        assertEquals(assigneeId, enriched.getAssignee().getId());
+        assertNull(enriched.getAssignee().getEmail());
+        verify(userRepository).findByIdOptional(assigneeId);
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
-        assertEquals("Project unknown owner", enriched.getProject().getTitle());
+        assertEquals("Project unknown assignee", enriched.getProject().getTitle());
         verify(projectRepository).findByIdOptional(projectId);
     }
 

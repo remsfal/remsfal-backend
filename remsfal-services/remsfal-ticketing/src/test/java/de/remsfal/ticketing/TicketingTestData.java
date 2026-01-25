@@ -18,9 +18,9 @@ public class TicketingTestData extends TestData {
     public static final UUID ISSUE_ID_3 = UUID.fromString("7c9de466-be18-448b-af82-b5f3f8736068");
 
     // Issue list test data
-    public static final Set<UUID> ISSUE_ID_SET_1 = Set.of(UUID.fromString("5b111b34-1073-4f48-a79d-f19b17e7d56b"));
-    public static final Set<UUID> ISSUE_ID_SET_2 = Set.of(UUID.fromString("4b8cd355-ad07-437a-9e71-a4e2e3624957"));
-    public static final Set<UUID> ISSUE_ID_SET_3 = Set.of(UUID.fromString("7c9de466-be18-448b-af82-b5f3f8736068"));
+    public static final Set<UUID> ISSUE_ID_SET_1 = Set.of(ISSUE_ID_1);
+    public static final Set<UUID> ISSUE_ID_SET_2 = Set.of(ISSUE_ID_2);
+    public static final Set<UUID> ISSUE_ID_SET_3 = Set.of(ISSUE_ID_3);
 
     // Default test issue
     public static final String ISSUE_TITLE = TicketingTestData.ISSUE_TITLE_1;

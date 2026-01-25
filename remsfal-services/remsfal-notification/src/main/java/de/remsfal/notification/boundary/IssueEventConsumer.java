@@ -31,8 +31,7 @@ public class IssueEventConsumer {
         logger.infov(
             "Received issue event: type={0}, issueId={1}",
             event.getIssueEventType(),
-            event.getIssueId()
-        );
+            event.getIssueId());
 
         try {
             switch (event.getIssueEventType()) {
@@ -54,8 +53,7 @@ public class IssueEventConsumer {
                     logger.warnv(
                         "Unhandled issue event type: {0} (issueId={1})",
                         event.getIssueEventType(),
-                        event.getIssueId()
-                    );
+                        event.getIssueId());
                     break;
             }
         } catch (Exception e) {
@@ -69,13 +67,14 @@ public class IssueEventConsumer {
         logger.infov("Handling ISSUE_CREATED for issue: {0}", event.getTitle());
 
         // Send to owner
-        if (event.getOwner() != null && event.getOwner().getEmail() != null) {
-            mailingController.sendIssueCreatedEmail(event, event.getOwner());
+        if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
+            mailingController.sendIssueCreatedEmail(event, event.getAssignee());
         }
 
         // Send to creator (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
-                && (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail()))) {
+            && (event.getAssignee() == null
+                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
             mailingController.sendIssueCreatedEmail(event, event.getUser());
         }
     }
@@ -84,13 +83,14 @@ public class IssueEventConsumer {
         logger.infov("Handling ISSUE_UPDATED for issue: {0}", event.getTitle());
 
         // Send to owner
-        if (event.getOwner() != null && event.getOwner().getEmail() != null) {
-            mailingController.sendIssueUpdatedEmail(event, event.getOwner());
+        if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
+            mailingController.sendIssueUpdatedEmail(event, event.getAssignee());
         }
 
         // Send to updater (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
-                && (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail()))) {
+            && (event.getAssignee() == null
+                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
             mailingController.sendIssueUpdatedEmail(event, event.getUser());
         }
     }
@@ -99,13 +99,14 @@ public class IssueEventConsumer {
         logger.infov("Handling ISSUE_ASSIGNED for issue: {0}", event.getTitle());
 
         // Send to new owner
-        if (event.getOwner() != null && event.getOwner().getEmail() != null) {
-            mailingController.sendIssueAssignedEmail(event, event.getOwner());
+        if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
+            mailingController.sendIssueAssignedEmail(event, event.getAssignee());
         }
 
         // Send to assigner (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
-                && (event.getOwner() == null || !event.getUser().getEmail().equals(event.getOwner().getEmail()))) {
+            && (event.getAssignee() == null
+                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
             mailingController.sendIssueAssignedEmail(event, event.getUser());
         }
     }

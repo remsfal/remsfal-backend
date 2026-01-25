@@ -14,16 +14,16 @@ public interface IssueModel {
 
     String getTitle();
 
-    public enum Type {
+    public enum IssueType {
         APPLICATION,
         TASK,
         DEFECT,
         MAINTENANCE
     }
 
-    Type getType();
+    IssueType getType();
 
-    public enum Status {
+    public enum IssueStatus {
         PENDING,
         OPEN,
         IN_PROGRESS,
@@ -31,26 +31,36 @@ public interface IssueModel {
         REJECTED
     }
 
-    Status getStatus();
+    IssueStatus getStatus();
+
+    enum IssuePriority {
+        URGENT,
+        HIGH,
+        MEDIUM,
+        LOW,
+        UNCLASSIFIED
+    }
+
+    IssuePriority getPriority();
 
     UUID getReporterId();
 
     UUID getTenancyId();
 
-    UUID getOwnerId();
+    UUID getAssigneeId();
 
     String getDescription();
 
-    Set<UUID> getBlockedBy();
+    UUID getParentIssue();
+
+    Set<UUID> getChildrenIssues();
 
     Set<UUID> getRelatedTo();
 
-    Set<UUID> getBlocks();
-
     Set<UUID> getDuplicateOf();
 
-    Set<UUID> getParentOf();
+    Set<UUID> getBlockedBy();
 
-    Set<UUID> getChildOf();
+    Set<UUID> getBlocks();
 
 }

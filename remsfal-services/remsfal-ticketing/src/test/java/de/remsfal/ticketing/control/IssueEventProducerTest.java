@@ -26,7 +26,8 @@ import org.mockito.Mockito;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.test.TestData;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
@@ -75,7 +76,7 @@ class IssueEventProducerTest {
         assertEquals(issue.getStatus(), event.getStatus());
         assertEquals(issue.getReporterId(), event.getReporterId());
         assertEquals(issue.getTenancyId(), event.getTenancyId());
-        assertEquals(issue.getOwnerId(), event.getOwnerId());
+        assertEquals(issue.getAssigneeId(), event.getAssigneeId());
         assertEquals(issue.getDescription(), event.getDescription());
         assertEquals(issue.getBlockedBy(), event.getBlockedBy());
         assertEquals(issue.getRelatedTo(), event.getRelatedTo());
@@ -84,26 +85,26 @@ class IssueEventProducerTest {
         assertEquals(actor.getId(), event.getUser().getId());
         assertEquals(actor.getEmail(), event.getUser().getEmail());
         assertEquals(actor.getName(), event.getUser().getName());
-        assertNotNull(event.getOwner());
-        assertEquals(issue.getOwnerId(), event.getOwner().getId());
+        assertNotNull(event.getAssignee());
+        assertEquals(issue.getAssigneeId(), event.getAssignee().getId());
         assertNull(event.getMentionedUser());
     }
 
     @Test
-    void sendIssueAssigned_usesProvidedOwnerAsTarget() {
+    void sendIssueAssigned_usesProvidedAssigneeAsTarget() {
         IssueEntity issue = createIssue();
-        UUID newOwnerId = TestData.USER_ID_3;
-        issue.setOwnerId(newOwnerId);
+        UUID newAssigneeId = TestData.USER_ID_3;
+        issue.setAssigneeId(newAssigneeId);
 
-        issueEventProducer.sendIssueAssigned(issue, actor, newOwnerId);
+        issueEventProducer.sendIssueAssigned(issue, actor, newAssigneeId);
 
         ArgumentCaptor<IssueEventJson> eventCaptor = ArgumentCaptor.forClass(IssueEventJson.class);
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
         assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getIssueEventType());
-        assertEquals(newOwnerId, Objects.requireNonNull(event.getOwner()).getId());
-        assertEquals(newOwnerId, event.getOwnerId());
+        assertEquals(newAssigneeId, Objects.requireNonNull(event.getAssignee()).getId());
+        assertEquals(newAssigneeId, event.getAssigneeId());
     }
 
     @Test
@@ -118,7 +119,7 @@ class IssueEventProducerTest {
         IssueEventJson event = eventCaptor.getValue();
 
         assertEquals(IssueEventType.ISSUE_MENTIONED, event.getIssueEventType());
-        assertNull(event.getOwner());
+        assertNull(event.getAssignee());
         assertNotNull(event.getMentionedUser());
         assertEquals(mentionedUser, event.getMentionedUser().getId());
     }
@@ -148,16 +149,16 @@ class IssueEventProducerTest {
     }
 
     @Test
-    void sendIssueUpdated_allowsNullOwner() {
+    void sendIssueUpdated_allowsNullAssignee() {
         IssueEntity issue = createIssue();
-        issue.setOwnerId(null);
+        issue.setAssigneeId(null);
 
         issueEventProducer.sendIssueUpdated(issue, actor);
 
         ArgumentCaptor<IssueEventJson> eventCaptor = ArgumentCaptor.forClass(IssueEventJson.class);
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
-        assertNull(event.getOwner());
+        assertNull(event.getAssignee());
     }
 
     @Test
@@ -190,9 +191,9 @@ class IssueEventProducerTest {
     @Test
     void sendIssueAssigned_logsInfoOnSuccess() {
         IssueEntity issue = createIssue();
-        UUID newOwnerId = TestData.USER_ID_3;
+        UUID newAssigneeId = TestData.USER_ID_3;
 
-        issueEventProducer.sendIssueAssigned(issue, actor, newOwnerId);
+        issueEventProducer.sendIssueAssigned(issue, actor, newAssigneeId);
 
         verify(logger).infov(
             "Issue event sent (type={0}, issueId={1})",
@@ -236,11 +237,11 @@ class IssueEventProducerTest {
         key.setProjectId(TestData.PROJECT_ID);
         issue.setKey(key);
         issue.setTitle(TicketingTestData.ISSUE_TITLE_1);
-        issue.setType(IssueModel.Type.TASK);
-        issue.setStatus(IssueModel.Status.OPEN);
+        issue.setType(IssueType.TASK);
+        issue.setStatus(IssueStatus.OPEN);
         issue.setReporterId(TestData.USER_ID);
         issue.setTenancyId(TestData.TENANCY_ID);
-        issue.setOwnerId(TestData.USER_ID_2);
+        issue.setAssigneeId(TestData.USER_ID_2);
         issue.setDescription(TicketingTestData.ISSUE_DESCRIPTION_1);
         issue.setBlockedBy(TicketingTestData.ISSUE_ID_SET_2);
         issue.setRelatedTo(TicketingTestData.ISSUE_ID_SET_3);

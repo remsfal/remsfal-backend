@@ -10,8 +10,6 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
 import io.quarkus.security.Authenticated;
 
 import java.time.OffsetDateTime;
@@ -93,7 +91,7 @@ public class InboxResource extends AbstractResource implements InboxEndpoint {
         json.link = entity.getLink();
 
         json.actorEmail = entity.getActorEmail();
-        json.ownerEmail = entity.getOwnerEmail();
+        json.ownerEmail = entity.getAssigneeEmail();
 
         json.read = Boolean.TRUE.equals(entity.getRead());
         json.createdAt = OffsetDateTime.ofInstant(entity.getCreatedAt(), ZoneOffset.UTC);

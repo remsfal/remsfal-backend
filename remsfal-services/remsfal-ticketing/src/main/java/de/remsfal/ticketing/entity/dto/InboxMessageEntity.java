@@ -34,8 +34,8 @@ public class InboxMessageEntity extends AbstractEntity {
     @Column("actor_email")
     private String actorEmail;
 
-    @Column("owner_email")
-    private String ownerEmail;
+    @Column("assignee_email")
+    private String assigneeEmail;
 
     @Column("read")
     private Boolean read;
@@ -112,12 +112,12 @@ public class InboxMessageEntity extends AbstractEntity {
         this.actorEmail = actorEmail;
     }
 
-    public String getOwnerEmail() {
-        return ownerEmail;
+    public String getAssigneeEmail() {
+        return assigneeEmail;
     }
 
-    public void setOwnerEmail(String ownerEmail) {
-        this.ownerEmail = ownerEmail;
+    public void setAssigneeEmail(String assigneeEmail) {
+        this.assigneeEmail = assigneeEmail;
     }
     
     public Boolean getRead() {

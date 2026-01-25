@@ -147,8 +147,8 @@ public class MailingController {
             .data("issueId", event.getIssueId().toString())
             .data("issueType", event.getIssueType() != null ? event.getIssueType().name() : "N/A")
             .data("status", statusName)
-            .data("ownerName", event.getOwner() != null ? event.getOwner().getName() : "N/A")
-            .data("ownerEmail", event.getOwner() != null ? event.getOwner().getEmail() : "N/A")
+            .data("ownerName", event.getAssignee() != null ? event.getAssignee().getName() : "N/A")
+            .data("ownerEmail", event.getAssignee() != null ? event.getAssignee().getEmail() : "N/A")
             .data("actorName", event.getUser() != null ? event.getUser().getName() : "N/A")
             .data("actorEmail", event.getUser() != null ? event.getUser().getEmail() : "N/A")
             .data("buttonLink", buttonLink);

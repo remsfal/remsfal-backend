@@ -39,12 +39,12 @@ public class InboxEventConsumer {
             event.getIssueId()
         );
 
-        if (event.getOwner() == null || event.getOwner().getId() == null) {
+        if (event.getAssignee() == null || event.getAssignee().getId() == null) {
             logger.warn("Skipping inbox event because owner is null");
             return msg.ack();
         }
 
-        String recipientUserId = event.getOwner().getId().toString();
+        String recipientUserId = event.getAssignee().getId().toString();
 
         // Convert IssueEventJson → InboxMessageEntity
         InboxMessageEntity entity = toEntity(event, recipientUserId);
@@ -88,9 +88,9 @@ public class InboxEventConsumer {
             entity.setActorEmail(event.getUser().getEmail());
         }
 
-        // Owner
-        if (event.getOwner() != null) {
-            entity.setOwnerEmail(event.getOwner().getEmail());
+        // Assignee
+        if (event.getAssignee() != null) {
+            entity.setAssigneeEmail(event.getAssignee().getEmail());
         }
 
         return entity;

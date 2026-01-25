@@ -13,14 +13,14 @@
             CREATE INDEX IF NOT EXISTS issues_status_idx ON REMSFAL.issues (status);
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS issues_owner_id_idx ON REMSFAL.issues (owner_id);
+            CREATE INDEX IF NOT EXISTS issues_assignee_id_idx ON REMSFAL.issues (assignee_id);
         </sql>
         <sql>
             CREATE INDEX IF NOT EXISTS issues_tenancy_id_idx ON REMSFAL.issues (tenancy_id);
         </sql>
         <rollback>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_status_idx;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_owner_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_assignee_id_idx;</sql>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_tenancy_id_idx;</sql>
         </rollback>
     </changeSet>

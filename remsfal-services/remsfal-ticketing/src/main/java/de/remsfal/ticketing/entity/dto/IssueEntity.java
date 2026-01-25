@@ -16,14 +16,17 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Id
     private IssueKey key;
 
-    @Column("type")
-    private String type;
-
     @Column("title")
     private String title;
 
+    @Column("type")
+    private String type;
+
     @Column("status")
     private String status;
+
+    @Column("priority")
+    private String priority;
 
     @Column("reporter_id")
     private UUID reporterId;
@@ -31,33 +34,29 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("tenancy_id")
     private UUID tenancyId;
 
-    @Column("owner_id")
-    private UUID ownerId;
+    @Column("assignee_id")
+    private UUID assigneeId;
 
     @Column("description")
     private String description;
 
-    @Column("blocks_set")
-    private Set<UUID> blocks;
+    @Column("parent_issue_id")
+    private UUID parentIssue;
 
-    @Column("blocked_by_set")
-    private Set<UUID> blockedBy;
+    @Column("children_issue_ids")
+    private Set<UUID> childrenIssues;
 
-    @Column("related_to_set")
+    @Column("related_to_issue_ids")
     private Set<UUID> relatedTo;
 
-    @Column("duplicate_of_set")
+    @Column("duplicate_of_issue_ids")
     private Set<UUID> duplicateOf;
 
-    @Column("parent_of_set")
-    private Set<UUID> parentOf;
+    @Column("blocked_by_issue_ids")
+    private Set<UUID> blockedBy;
 
-    @Column("child_of_set")
-    private Set<UUID> childOf;
-
-
-    @Column("created_by")
-    private UUID createdBy;
+    @Column("blocks_issue_ids")
+    private Set<UUID> blocks;
 
     public IssueKey getKey() {
         return key;
@@ -91,11 +90,11 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public Type getType() {
-        return type != null ? Type.valueOf(type) : null;
+    public IssueType getType() {
+        return type != null ? IssueType.valueOf(type) : null;
     }
 
-    public void setType(Type type) {
+    public void setType(IssueType type) {
         this.type = type != null ? type.name() : null;
     }
 
@@ -105,17 +104,31 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public Status getStatus() {
-        return status != null ? Status.valueOf(status) : null;
+    public IssueStatus getStatus() {
+        return status != null ? IssueStatus.valueOf(status) : null;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(IssueStatus status) {
         this.status = status != null ? status.name() : null;
     }
 
     // Setter for string status for Cassandra mapping
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public IssuePriority getPriority() {
+        return priority != null ? IssuePriority.valueOf(priority) : null;
+    }
+
+    public void setPriority(IssuePriority priority) {
+        this.priority = priority != null ? priority.name() : null;
+    }
+
+    // Setter for string priority for Cassandra mapping
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 
     @Override
@@ -137,12 +150,12 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public UUID getOwnerId() {
-        return ownerId;
+    public UUID getAssigneeId() {
+        return assigneeId;
     }
 
-    public void setOwnerId(UUID ownerId) {
-        this.ownerId = ownerId;
+    public void setAssigneeId(UUID assigneeId) {
+        this.assigneeId = assigneeId;
     }
 
     @Override
@@ -155,12 +168,21 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public Set<UUID> getBlockedBy() {
-        return blockedBy;
+    public UUID getParentIssue() {
+        return parentIssue;
     }
 
-    public void setBlockedBy(Set<UUID> blockedBy) {
-        this.blockedBy = blockedBy;
+    public void setParentIssue(UUID parentIssue) {
+        this.parentIssue = parentIssue;
+    }
+
+    @Override
+    public Set<UUID> getChildrenIssues() {
+        return childrenIssues;
+    }
+
+    public void setChildrenIssues(Set<UUID> childrenIssues) {
+        this.childrenIssues = childrenIssues;
     }
 
     @Override
@@ -182,25 +204,21 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public Set<UUID> getBlocks() {return blocks;}
-
-    public void setBlocks(Set<UUID> blocks) {this.blocks = blocks;}
-
-    @Override
-    public Set<UUID> getParentOf() {return parentOf;}
-
-    public void setParentOf(Set<UUID> parentOf) {this.parentOf = parentOf;}
-
-    @Override
-    public Set<UUID> getChildOf() {return childOf;}
-    public void setChildOf(Set<UUID> childOf) {this.childOf = childOf;}
-
-    public UUID getCreatedBy() {
-        return createdBy;
+    public Set<UUID> getBlockedBy() {
+        return blockedBy;
     }
 
-    public void setCreatedBy(UUID createdBy) {
-        this.createdBy = createdBy;
+    public void setBlockedBy(Set<UUID> blockedBy) {
+        this.blockedBy = blockedBy;
+    }
+
+    @Override
+    public Set<UUID> getBlocks() {
+        return blocks;
+    }
+
+    public void setBlocks(Set<UUID> blocks) {
+        this.blocks = blocks;
     }
 
     public void generateId() {

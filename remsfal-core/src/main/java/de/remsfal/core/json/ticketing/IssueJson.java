@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
+import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
 /**
@@ -37,6 +38,7 @@ public abstract class IssueJson implements IssueModel {
     public abstract UUID getId();
 
     @NotNull(groups = PostValidation.class)
+    @Null(groups = PatchValidation.class)
     @Nullable
     @Override
     public abstract UUID getProjectId();
@@ -51,17 +53,31 @@ public abstract class IssueJson implements IssueModel {
     @NotNull(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract Type getType();
+    public abstract IssueType getType();
 
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract Status getStatus();
+    public abstract IssueStatus getStatus();
+
+    @Nullable
+    @Override
+    public abstract IssuePriority getPriority();
+
+    @Null
+    @Nullable
+    @Override
+    public abstract UUID getReporterId();
 
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getOwnerId();
+    public abstract UUID getTenancyId();
+
+    @Null(groups = PostValidation.class)
+    @Nullable
+    @Override
+    public abstract UUID getAssigneeId();
 
     @Nullable
     @Override
@@ -69,7 +85,11 @@ public abstract class IssueJson implements IssueModel {
 
     @Nullable
     @Override
-    public abstract Set<UUID> getBlockedBy();
+    public abstract UUID getParentIssue();
+
+    @Nullable
+    @Override
+    public abstract Set<UUID> getChildrenIssues();
 
     @Nullable
     @Override
@@ -81,61 +101,60 @@ public abstract class IssueJson implements IssueModel {
 
     @Nullable
     @Override
+    public abstract Set<UUID> getBlockedBy();
+
+    @Nullable
+    @Override
     public abstract Set<UUID> getBlocks();
-
-    @Nullable
-    @Override
-    public abstract Set<UUID> getParentOf();
-
-    @Nullable
-    @Override
-    public abstract Set<UUID> getChildOf();
 
     /**
      * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
      * <p>
-     * This method is intended for internal or privileged users and exposes all information from the IssueModel.
-     * All fields are mapped to the resulting IssueJson instance.
+     * This method is intended for internal or privileged users and exposes all information from the IssueModel. All
+     * fields are mapped to the resulting IssueJson instance.
      *
      * @param model the source {@link IssueModel}
      * @return an immutable {@link IssueJson} containing all fields
      */
     public static IssueJson valueOf(final IssueModel model) {
         return ImmutableIssueJson.builder()
-                .id(model.getId())
-                .projectId(model.getProjectId())
-                .title(model.getTitle())
-                .type(model.getType())
-                .status(model.getStatus())
-                .ownerId(model.getOwnerId())
-                .description(model.getDescription())
-                .blockedBy(model.getBlockedBy())
-                .relatedTo(model.getRelatedTo())
-                .duplicateOf(model.getDuplicateOf())
-                .blocks(model.getBlocks())
-                .parentOf(model.getParentOf())
-                .childOf(model.getChildOf())
-                .build();
+            .id(model.getId())
+            .projectId(model.getProjectId())
+            .title(model.getTitle())
+            .type(model.getType())
+            .status(model.getStatus())
+            .priority(model.getPriority())
+            .reporterId(model.getReporterId())
+            .tenancyId(model.getTenancyId())
+            .assigneeId(model.getAssigneeId())
+            .description(model.getDescription())
+            .parentIssue(model.getParentIssue())
+            .childrenIssues(model.getChildrenIssues())
+            .relatedTo(model.getRelatedTo())
+            .duplicateOf(model.getDuplicateOf())
+            .blockedBy(model.getBlockedBy())
+            .blocks(model.getBlocks())
+            .build();
     }
 
     /**
      * Creates a filtered {@link IssueJson} DTO from the given {@link IssueModel}, exposing only public fields.
      * <p>
-     * This method is intended for external or restricted users and hides sensitive or internal information.
-     * Only basic issue information (id, projectId, title, type, status) is included in the resulting IssueJson.
+     * This method is intended for external or restricted users and hides sensitive or internal information. Only basic
+     * issue information (id, projectId, title, type, status) is included in the resulting IssueJson.
      *
      * @param model the source {@link IssueModel}
      * @return an immutable {@link IssueJson} containing only public fields
      */
     public static IssueJson valueOfFiltered(final IssueModel model) {
         return ImmutableIssueJson.builder()
-                .id(model.getId())
-                .projectId(model.getProjectId())
-                .title(model.getTitle())
-                .type(model.getType())
-                .status(model.getStatus())
-                // ownerId, description, blockedBy, relatedTo, duplicateOf are omitted
-                .build();
+            .id(model.getId())
+            .projectId(model.getProjectId())
+            .title(model.getTitle())
+            .type(model.getType())
+            .status(model.getStatus())
+            // assigneeId, description, blockedBy, relatedTo, duplicateOf are omitted
+            .build();
     }
 
 }

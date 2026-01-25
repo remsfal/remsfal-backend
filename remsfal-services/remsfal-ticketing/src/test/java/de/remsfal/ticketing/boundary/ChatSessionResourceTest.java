@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository.ParticipantRole;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -40,21 +43,14 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         logger.info("Setting up test data");
         super.setupTestFiles();
         logger.info("Setting up issues for chat sessions");
-        String insertIssueCql = "INSERT INTO remsfal.issues " +
-            "(project_id, issue_id, type, title, status, reporter_id, owner_id, description, created_by, created_at, modified_at) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        cqlSession.execute(insertIssueCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1,
-            "TASK", "Test Issue 1", "OPEN",
-            TicketingTestData.USER_ID, TicketingTestData.USER_ID,
-            "Test issue for chat session 1",
-            TicketingTestData.USER_ID, Instant.now(), Instant.now());
-        cqlSession.execute(insertIssueCql,
-            TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2,
-            "TASK", "Test Issue 2", "OPEN",
-            TicketingTestData.USER_ID, TicketingTestData.USER_ID,
-            "Test issue for chat session 2",
-            TicketingTestData.USER_ID, Instant.now(), Instant.now());
+        insertIssue(TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1,
+            "Test Issue 1", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            TicketingTestData.USER_ID, null, TicketingTestData.USER_ID,
+            "Test issue for chat session 1");
+        insertIssue(TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_2,
+            "Test Issue 2", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            TicketingTestData.USER_ID, null, TicketingTestData.USER_ID,
+            "Test issue for chat session 2");
         logger.info("Setting up chat sessions");
         String insertChatSessionCql = "INSERT INTO remsfal.chat_sessions " +
             "(project_id, issue_id, session_id, created_at, participants) " +

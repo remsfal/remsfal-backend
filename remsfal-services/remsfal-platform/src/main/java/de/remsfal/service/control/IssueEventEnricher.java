@@ -43,7 +43,7 @@ public class IssueEventEnricher {
     @Outgoing(IssueEventJson.TOPIC_ENRICHED)
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
-        UserJson enrichedOwner = enrichOwner(event.getOwner());
+        UserJson enrichedAssignee = enrichAssignee(event.getAssignee());
         ProjectEventJson project = enrichProject(event);
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
             .issueEventType(event.getIssueEventType())
@@ -56,13 +56,15 @@ public class IssueEventEnricher {
             .status(event.getStatus())
             .reporterId(event.getReporterId())
             .tenancyId(event.getTenancyId())
-            .ownerId(event.getOwnerId())
+            .assigneeId(event.getAssigneeId())
             .description(event.getDescription())
+            .parentIssue(event.getParentIssue())
+            .childrenIssues(event.getChildrenIssues())
             .blockedBy(event.getBlockedBy())
             .relatedTo(event.getRelatedTo())
             .duplicateOf(event.getDuplicateOf())
             .user(event.getUser())
-            .owner(enrichedOwner)
+            .assignee(enrichedAssignee)
             .mentionedUser(event.getMentionedUser())
             .build();
         logger.infov("Enriched issue event (issueId={0}, projectId={1})", event.getIssueId(), event.getProjectId());
@@ -91,13 +93,13 @@ public class IssueEventEnricher {
             .build();
     }
 
-    private UserJson enrichOwner(final UserJson owner) {
-        if (owner == null || owner.getId() == null) {
-            return owner;
+    private UserJson enrichAssignee(final UserJson assignee) {
+        if (assignee == null || assignee.getId() == null) {
+            return assignee;
         }
-        Optional<UserEntity> entity = userRepository.findByIdOptional(owner.getId());
+        Optional<UserEntity> entity = userRepository.findByIdOptional(assignee.getId());
         if (entity.isEmpty()) {
-            return owner;
+            return assignee;
         }
         UserEntity user = entity.get();
         return ImmutableUserJson.builder()

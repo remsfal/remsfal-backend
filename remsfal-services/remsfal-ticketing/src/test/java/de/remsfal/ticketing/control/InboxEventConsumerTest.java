@@ -8,6 +8,8 @@ import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.entity.dao.InboxMessageRepository;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 
@@ -70,7 +72,7 @@ class InboxEventConsumerTest {
 
     @Test
     void testConsume_issueCreatedEvent_storesInboxMessage() {
-        UUID ownerId = UUID.randomUUID();
+        UUID assigneeId = UUID.randomUUID();
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
 
@@ -79,103 +81,16 @@ class InboxEventConsumerTest {
             .issueId(issueId)
             .projectId(projectId)
             .title("New Issue Created")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.OPEN)
             .description("Test description")
             .link("/api/issues/" + issueId)
             .user(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
                 .email("actor@example.com")
                 .build())
-            .owner(ImmutableUserJson.builder()
-                .id(ownerId)
-                .email("owner@example.com")
-                .build())
-            .build();
-
-        companion.produce(ImmutableIssueEventJson.class)
-            .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
-            .awaitCompletion();
-
-        Awaitility.await()
-            .atMost(Duration.ofSeconds(10))
-            .untilAsserted(() -> {
-                List<InboxMessageEntity> messages = repository.findByUserId(ownerId.toString());
-                assertEquals(1, messages.size());
-
-                InboxMessageEntity stored = messages.get(0);
-                assertEquals(ownerId.toString(), stored.getKey().getUserId());
-                assertEquals(issueId.toString(), stored.getIssueId());
-                assertEquals("New Issue Created", stored.getTitle());
-                assertEquals("TASK", stored.getIssueType());
-                assertEquals("OPEN", stored.getStatus());
-                assertEquals("Test description", stored.getDescription());
-                assertEquals("/api/issues/" + issueId, stored.getLink());
-                assertEquals("ISSUE_CREATED", stored.getEventType());
-                assertEquals("actor@example.com", stored.getActorEmail());
-                assertEquals("owner@example.com", stored.getOwnerEmail());
-                assertFalse(stored.getRead());
-                assertNotNull(stored.getCreatedAt());
-            });
-    }
-
-    @Test
-    void testConsume_issueUpdatedEvent_storesInboxMessage() {
-        UUID ownerId = UUID.randomUUID();
-        UUID issueId = UUID.randomUUID();
-
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventType.ISSUE_UPDATED)
-            .issueId(issueId)
-            .projectId(UUID.randomUUID())
-            .title("Issue Updated")
-            .issueType(IssueModel.Type.DEFECT)
-            .status(IssueModel.Status.IN_PROGRESS)
-            .link("/api/issues/" + issueId)
-            .user(ImmutableUserJson.builder()
-                .id(UUID.randomUUID())
-                .email("updater@example.com")
-                .build())
-            .owner(ImmutableUserJson.builder()
-                .id(ownerId)
-                .email("owner@example.com")
-                .build())
-            .build();
-
-        companion.produce(ImmutableIssueEventJson.class)
-            .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
-            .awaitCompletion();
-
-        Awaitility.await()
-            .atMost(Duration.ofSeconds(10))
-            .untilAsserted(() -> {
-                List<InboxMessageEntity> messages = repository.findByUserId(ownerId.toString());
-                assertEquals(1, messages.size());
-                assertEquals("ISSUE_UPDATED", messages.get(0).getEventType());
-                assertEquals("DEFECT", messages.get(0).getIssueType());
-                assertEquals("IN_PROGRESS", messages.get(0).getStatus());
-            });
-    }
-
-    @Test
-    void testConsume_issueAssignedEvent_storesInboxMessage() {
-        UUID ownerId = UUID.randomUUID();
-        UUID issueId = UUID.randomUUID();
-
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventType.ISSUE_ASSIGNED)
-            .issueId(issueId)
-            .projectId(UUID.randomUUID())
-            .title("Issue Assigned")
-            .issueType(IssueModel.Type.MAINTENANCE)
-            .status(IssueModel.Status.OPEN)
-            .link("/api/issues/" + issueId)
-            .user(ImmutableUserJson.builder()
-                .id(UUID.randomUUID())
-                .email("assigner@example.com")
-                .build())
-            .owner(ImmutableUserJson.builder()
-                .id(ownerId)
+            .assignee(ImmutableUserJson.builder()
+                .id(assigneeId)
                 .email("assignee@example.com")
                 .build())
             .build();
@@ -187,7 +102,94 @@ class InboxEventConsumerTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> {
-                List<InboxMessageEntity> messages = repository.findByUserId(ownerId.toString());
+                List<InboxMessageEntity> messages = repository.findByUserId(assigneeId.toString());
+                assertEquals(1, messages.size());
+
+                InboxMessageEntity stored = messages.get(0);
+                assertEquals(assigneeId.toString(), stored.getKey().getUserId());
+                assertEquals(issueId.toString(), stored.getIssueId());
+                assertEquals("New Issue Created", stored.getTitle());
+                assertEquals("TASK", stored.getIssueType());
+                assertEquals("OPEN", stored.getStatus());
+                assertEquals("Test description", stored.getDescription());
+                assertEquals("/api/issues/" + issueId, stored.getLink());
+                assertEquals("ISSUE_CREATED", stored.getEventType());
+                assertEquals("actor@example.com", stored.getActorEmail());
+                assertEquals("assignee@example.com", stored.getAssigneeEmail());
+                assertFalse(stored.getRead());
+                assertNotNull(stored.getCreatedAt());
+            });
+    }
+
+    @Test
+    void testConsume_issueUpdatedEvent_storesInboxMessage() {
+        UUID assigneeId = UUID.randomUUID();
+        UUID issueId = UUID.randomUUID();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
+            .issueId(issueId)
+            .projectId(UUID.randomUUID())
+            .title("Issue Updated")
+            .issueType(IssueType.DEFECT)
+            .status(IssueStatus.IN_PROGRESS)
+            .link("/api/issues/" + issueId)
+            .user(ImmutableUserJson.builder()
+                .id(UUID.randomUUID())
+                .email("updater@example.com")
+                .build())
+            .assignee(ImmutableUserJson.builder()
+                .id(assigneeId)
+                .email("assignee@example.com")
+                .build())
+            .build();
+
+        companion.produce(ImmutableIssueEventJson.class)
+            .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
+            .awaitCompletion();
+
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(10))
+            .untilAsserted(() -> {
+                List<InboxMessageEntity> messages = repository.findByUserId(assigneeId.toString());
+                assertEquals(1, messages.size());
+                assertEquals("ISSUE_UPDATED", messages.get(0).getEventType());
+                assertEquals("DEFECT", messages.get(0).getIssueType());
+                assertEquals("IN_PROGRESS", messages.get(0).getStatus());
+            });
+    }
+
+    @Test
+    void testConsume_issueAssignedEvent_storesInboxMessage() {
+        UUID assigneeId = UUID.randomUUID();
+        UUID issueId = UUID.randomUUID();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ISSUE_ASSIGNED)
+            .issueId(issueId)
+            .projectId(UUID.randomUUID())
+            .title("Issue Assigned")
+            .issueType(IssueType.MAINTENANCE)
+            .status(IssueStatus.OPEN)
+            .link("/api/issues/" + issueId)
+            .user(ImmutableUserJson.builder()
+                .id(UUID.randomUUID())
+                .email("assigner@example.com")
+                .build())
+            .assignee(ImmutableUserJson.builder()
+                .id(assigneeId)
+                .email("assignee@example.com")
+                .build())
+            .build();
+
+        companion.produce(ImmutableIssueEventJson.class)
+            .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
+            .awaitCompletion();
+
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(10))
+            .untilAsserted(() -> {
+                List<InboxMessageEntity> messages = repository.findByUserId(assigneeId.toString());
                 assertEquals(1, messages.size());
                 assertEquals("ISSUE_ASSIGNED", messages.get(0).getEventType());
                 assertEquals("MAINTENANCE", messages.get(0).getIssueType());
@@ -201,8 +203,8 @@ class InboxEventConsumerTest {
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("No Owner Issue")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.OPEN)
             .link("/api/issues/test")
             .user(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
@@ -231,15 +233,15 @@ class InboxEventConsumerTest {
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("No Owner ID")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.OPEN)
             .link("/api/issues/test")
             .user(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
                 .email("actor@example.com")
                 .build())
-            .owner(ImmutableUserJson.builder()
-                .email("owner@example.com")
+            .assignee(ImmutableUserJson.builder()
+                .email("assignee@example.com")
                 .build())
             .build();
 
@@ -259,19 +261,19 @@ class InboxEventConsumerTest {
 
     @Test
     void testConsume_multipleEventsForSameUser_allStored() {
-        UUID ownerId = UUID.randomUUID();
+        UUID assigneeId = UUID.randomUUID();
 
         ImmutableIssueEventJson event1 = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("First Issue")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.OPEN)
             .link("/api/issues/1")
-            .owner(ImmutableUserJson.builder()
-                .id(ownerId)
-                .email("owner@example.com")
+            .assignee(ImmutableUserJson.builder()
+                .id(assigneeId)
+                .email("assignee@example.com")
                 .build())
             .build();
 
@@ -280,12 +282,12 @@ class InboxEventConsumerTest {
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("Second Issue")
-            .issueType(IssueModel.Type.DEFECT)
-            .status(IssueModel.Status.CLOSED)
+            .issueType(IssueType.DEFECT)
+            .status(IssueStatus.CLOSED)
             .link("/api/issues/2")
-            .owner(ImmutableUserJson.builder()
-                .id(ownerId)
-                .email("owner@example.com")
+            .assignee(ImmutableUserJson.builder()
+                .id(assigneeId)
+                .email("assignee@example.com")
                 .build())
             .build();
 
@@ -299,14 +301,14 @@ class InboxEventConsumerTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> {
-                List<InboxMessageEntity> messages = repository.findByUserId(ownerId.toString());
+                List<InboxMessageEntity> messages = repository.findByUserId(assigneeId.toString());
                 assertEquals(2, messages.size());
             });
     }
 
     @Test
     void testConsume_eventWithNullDescription_storedAsEmpty() {
-        UUID ownerId = UUID.randomUUID();
+        UUID assigneeId = UUID.randomUUID();
         UUID issueId = UUID.randomUUID();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -314,12 +316,12 @@ class InboxEventConsumerTest {
             .issueId(issueId)
             .projectId(UUID.randomUUID())
             .title("No Description")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.OPEN)
             .link("/api/issues/" + issueId)
-            .owner(ImmutableUserJson.builder()
-                .id(ownerId)
-                .email("owner@example.com")
+            .assignee(ImmutableUserJson.builder()
+                .id(assigneeId)
+                .email("assignee@example.com")
                 .build())
             .build();
 
@@ -330,7 +332,7 @@ class InboxEventConsumerTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> {
-                List<InboxMessageEntity> messages = repository.findByUserId(ownerId.toString());
+                List<InboxMessageEntity> messages = repository.findByUserId(assigneeId.toString());
                 assertEquals(1, messages.size());
                 assertEquals("", messages.get(0).getDescription());
             });
@@ -338,7 +340,7 @@ class InboxEventConsumerTest {
 
     @Test
     void testConsume_eventWithNullUser_noActorEmail() {
-        UUID ownerId = UUID.randomUUID();
+        UUID assigneeId = UUID.randomUUID();
         UUID issueId = UUID.randomUUID();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -346,12 +348,12 @@ class InboxEventConsumerTest {
             .issueId(issueId)
             .projectId(UUID.randomUUID())
             .title("No User Actor")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.OPEN)
             .link("/api/issues/" + issueId)
-            .owner(ImmutableUserJson.builder()
-                .id(ownerId)
-                .email("owner@example.com")
+            .assignee(ImmutableUserJson.builder()
+                .id(assigneeId)
+                .email("assignee@example.com")
                 .build())
             .build();
 
@@ -362,7 +364,7 @@ class InboxEventConsumerTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> {
-                List<InboxMessageEntity> messages = repository.findByUserId(ownerId.toString());
+                List<InboxMessageEntity> messages = repository.findByUserId(assigneeId.toString());
                 assertEquals(1, messages.size());
                 assertEquals("", messages.get(0).getActorEmail());
             });
@@ -370,20 +372,20 @@ class InboxEventConsumerTest {
 
     @Test
     void testConsume_differentUsersGetDifferentMessages() {
-        UUID owner1 = UUID.randomUUID();
-        UUID owner2 = UUID.randomUUID();
+        UUID assignee1 = UUID.randomUUID();
+        UUID assignee2 = UUID.randomUUID();
 
         ImmutableIssueEventJson event1 = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("Issue for Owner 1")
-            .issueType(IssueModel.Type.TASK)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.TASK)
+            .status(IssueStatus.OPEN)
             .link("/api/issues/1")
-            .owner(ImmutableUserJson.builder()
-                .id(owner1)
-                .email("owner1@example.com")
+            .assignee(ImmutableUserJson.builder()
+                .id(assignee1)
+                .email("assignee1@example.com")
                 .build())
             .build();
 
@@ -392,12 +394,12 @@ class InboxEventConsumerTest {
             .issueId(UUID.randomUUID())
             .projectId(UUID.randomUUID())
             .title("Issue for Owner 2")
-            .issueType(IssueModel.Type.DEFECT)
-            .status(IssueModel.Status.OPEN)
+            .issueType(IssueType.DEFECT)
+            .status(IssueStatus.OPEN)
             .link("/api/issues/2")
-            .owner(ImmutableUserJson.builder()
-                .id(owner2)
-                .email("owner2@example.com")
+            .assignee(ImmutableUserJson.builder()
+                .id(assignee2)
+                .email("assignee2@example.com")
                 .build())
             .build();
 
@@ -411,13 +413,13 @@ class InboxEventConsumerTest {
         Awaitility.await()
             .atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> {
-                List<InboxMessageEntity> owner1Messages = repository.findByUserId(owner1.toString());
-                assertEquals(1, owner1Messages.size());
-                assertEquals("Issue for Owner 1", owner1Messages.get(0).getTitle());
+                List<InboxMessageEntity> assignee1Messages = repository.findByUserId(assignee1.toString());
+                assertEquals(1, assignee1Messages.size());
+                assertEquals("Issue for Owner 1", assignee1Messages.get(0).getTitle());
 
-                List<InboxMessageEntity> owner2Messages = repository.findByUserId(owner2.toString());
-                assertEquals(1, owner2Messages.size());
-                assertEquals("Issue for Owner 2", owner2Messages.get(0).getTitle());
+                List<InboxMessageEntity> assignee2Messages = repository.findByUserId(assignee2.toString());
+                assertEquals(1, assignee2Messages.size());
+                assertEquals("Issue for Owner 2", assignee2Messages.get(0).getTitle());
             });
     }
 }

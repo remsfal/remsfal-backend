@@ -24,7 +24,7 @@
             link TEXT,
             event_type TEXT,
             actor_email TEXT,
-            owner_email TEXT,
+            assignee_email TEXT,
             created_at TIMESTAMP,
             read BOOLEAN,
             PRIMARY KEY ((user_id), id)
