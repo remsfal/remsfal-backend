@@ -1,13 +1,13 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectModel;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;

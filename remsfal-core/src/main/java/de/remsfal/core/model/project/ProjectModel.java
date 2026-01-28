@@ -1,4 +1,4 @@
-package de.remsfal.core.model;
+package de.remsfal.core.model.project;
 
 import java.util.Set;
 import java.util.UUID;

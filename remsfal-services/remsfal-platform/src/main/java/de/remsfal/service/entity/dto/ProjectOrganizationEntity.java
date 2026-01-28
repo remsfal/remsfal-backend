@@ -13,8 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
-
-import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectOrganizationModel;
 import de.remsfal.service.entity.dto.embeddable.ProjectOrganizationKey;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;

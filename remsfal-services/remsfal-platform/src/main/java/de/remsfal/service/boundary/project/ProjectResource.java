@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.project;
 
 import java.net.URI;
 import java.util.List;
@@ -7,34 +7,16 @@ import java.util.UUID;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.container.ResourceContext;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.jboss.logging.Logger;
 
-import de.remsfal.core.api.ProjectEndpoint;
-import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.core.json.ProjectJson;
-import de.remsfal.core.json.ProjectListJson;
-import de.remsfal.core.model.ProjectModel;
-
+import de.remsfal.core.api.project.ProjectEndpoint;
+import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.project.ProjectListJson;
+import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.service.control.ProjectController;
-
-import de.remsfal.service.boundary.project.ProjectTenancyResource;
-import de.remsfal.service.boundary.project.MemberResource;
-import de.remsfal.service.boundary.project.ProjectOrganizationResource;
-import de.remsfal.service.boundary.project.PropertyResource;
-import de.remsfal.service.boundary.project.SiteResource;
-import de.remsfal.service.boundary.project.BuildingResource;
-import de.remsfal.service.boundary.project.ApartmentResource;
-import de.remsfal.service.boundary.project.CommercialResource;
-import de.remsfal.service.boundary.project.StorageResource;
-import de.remsfal.service.boundary.project.ContractorResource;
-import de.remsfal.service.boundary.project.TenantResource;
 
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
@@ -42,19 +24,7 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Authenticated
-public class ProjectResource implements ProjectEndpoint {
-
-    @Context
-    UriInfo uri;
-
-    @Context
-    ResourceContext resourceContext;
-
-    @Inject
-    RemsfalPrincipal principal;
-
-    @Inject
-    Logger logger;
+public class ProjectResource extends AbstractProjectResource implements ProjectEndpoint {
 
     @Inject
     ProjectController controller;
@@ -113,6 +83,7 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     @Timed(name = "GetSingleProjectTimer", unit = MetricUnits.MILLISECONDS)
     public ProjectJson getProject(final UUID projectId) {
+        checkProjectReadPermissions(projectId);
         final ProjectModel model = controller.getProject(principal, projectId);
         return ProjectJson.valueOf(model);
     }
@@ -120,6 +91,7 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     @Timed(name = "UpdateProjectTimer", unit = MetricUnits.MILLISECONDS)
     public ProjectJson updateProject(final UUID projectId, final ProjectJson project) {
+        checkOwnerPermissions(projectId);
         final ProjectModel model = controller.updateProject(principal, projectId, project);
         return ProjectJson.valueOf(model);
     }
@@ -127,6 +99,7 @@ public class ProjectResource implements ProjectEndpoint {
     @Override
     @Timed(name = "deleteProjectTimer", unit = MetricUnits.MILLISECONDS)
     public void deleteProject(final UUID projectId) {
+        checkOwnerPermissions(projectId);
         controller.deleteProject(principal, projectId);
     }
 

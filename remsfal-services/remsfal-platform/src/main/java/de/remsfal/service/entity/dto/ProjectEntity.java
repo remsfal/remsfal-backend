@@ -11,11 +11,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
-import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectModel;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

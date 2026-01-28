@@ -35,7 +35,7 @@ import de.remsfal.core.model.CustomerModel;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class UserJson implements CustomerModel {
 
-    public enum UserRole {
+    public enum UserContext {
         MANAGER,   // Verwalter
         TENANT,    // Mieter
         CONTRACTOR // Auftragnehmer
@@ -48,7 +48,7 @@ public abstract class UserJson implements CustomerModel {
 
     @Null
     @Nullable
-    public abstract Set<UserRole> getUserRoles();
+    public abstract Set<UserContext> getUserContexts();
 
     @Email
     @Nullable
@@ -132,9 +132,9 @@ public abstract class UserJson implements CustomerModel {
                 .build();
     }
 
-    public static UserJson valueOf(final CustomerModel model, final Set<UserRole> userRoles) {
+    public static UserJson valueOf(final CustomerModel model, final Set<UserContext> userContexts) {
         return UserJson.valueOf(model)
-            .withUserRoles(userRoles);
+            .withUserContexts(userContexts);
     }
 
 }

@@ -16,14 +16,14 @@ import java.util.stream.Collectors;
 
 
 @RequestScoped
-public class TenantResource extends ProjectSubResource implements TenantEndpoint {
+public class TenantResource extends AbstractProjectResource implements TenantEndpoint {
 
     @Inject
     TenantController controller;
 
     @Override
     public Response createTenant(final UUID projectId, final UserJson tenant) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         final CustomerModel model = controller.createTenant(projectId, tenant);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -34,7 +34,7 @@ public class TenantResource extends ProjectSubResource implements TenantEndpoint
 
     @Override
     public List<UserJson> getTenants(final UUID projectId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         List<CustomerModel> tenants = controller.getTenants(projectId);
         return tenants.stream()
                 .map(UserJson::valueOf)
@@ -43,21 +43,21 @@ public class TenantResource extends ProjectSubResource implements TenantEndpoint
 
     @Override
     public UserJson getTenant(final UUID projectId, final UUID tenantId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final CustomerModel model = controller.getTenant(projectId, tenantId);
         return UserJson.valueOf(model);
     }
 
     @Override
     public UserJson updateTenant(final UUID projectId, final UUID tenantId, UserJson tenant) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         final CustomerModel model = controller.updateTenant(projectId, tenantId, tenant);
         return UserJson.valueOf(model);
     }
 
     @Override
     public Response deleteTenant(UUID projectId, UUID tenantId) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         controller.deleteTenant(projectId, tenantId);
         return Response.noContent().build();
     }

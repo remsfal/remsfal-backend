@@ -1,58 +1,45 @@
 package de.remsfal.ticketing.boundary;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.core.json.UserJson.UserRole;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
-import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.ticketing.control.IssueController;
-import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.container.ResourceContext;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.UriInfo;
 
 import java.util.Map;
 import java.util.UUID;
+
+import de.remsfal.common.boundary.AbstractResource;
+import de.remsfal.core.json.UserJson.UserContext;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.control.IssueController;
+import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Authenticated
 @RequestScoped
-public class AbstractResource {
-
-    @Context
-    protected UriInfo uri;
-
-    @Context
-    protected ResourceContext resourceContext;
-
-    @Inject
-    protected RemsfalPrincipal principal;
+public class AbstractTicketingResource extends AbstractResource {
 
     @Inject
     protected IssueController issueController;
 
     @Inject
-    IssueParticipantRepository issueParticipantRepository;
+    protected IssueParticipantRepository issueParticipantRepository;
 
-    public UserRole getPrincipalRole(@NotNull final UUID projectId) {
+    public UserContext getUserContext(final UUID projectId) {
         Map<UUID, MemberRole> roles = principal.getProjectRoles();
         if (roles.containsKey(projectId)) {
-            return UserRole.MANAGER;
+            return UserContext.MANAGER;
         }
         Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
         if (tenancyProjects.containsValue(projectId)) {
-            return UserRole.TENANT;
+            return UserContext.TENANT;
         }
-        // return null if no role found
+        // return null if no context found
         return null;
     }
-
 
     public UUID checkReadPermissions(final UUID issueId) {
         IssueModel issue = issueController.getIssue(issueId);
@@ -65,7 +52,7 @@ public class AbstractResource {
             return issue.getProjectId();
         }
 
-        throw new ForbiddenException("Inadequate user rights");
+        throw new ForbiddenException(FORBIDDEN_MESSAGE);
     }
 
     public UUID checkWritePermissions(final UUID issueId) {
@@ -74,7 +61,7 @@ public class AbstractResource {
         if (role != null && role.isPrivileged()) {
             return issue.getProjectId();
         }
-        throw new ForbiddenException("Inadequate user rights");
+        throw new ForbiddenException(FORBIDDEN_MESSAGE);
     }
 
 }

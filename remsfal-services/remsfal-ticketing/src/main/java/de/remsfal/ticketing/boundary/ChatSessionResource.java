@@ -27,7 +27,7 @@ import jakarta.ws.rs.core.Response;
  */
 @Authenticated
 @RequestScoped
-public class ChatSessionResource extends AbstractResource implements ChatSessionEndpoint {
+public class ChatSessionResource extends AbstractTicketingResource implements ChatSessionEndpoint {
 
     @Inject
     ChatSessionController chatSessionController;

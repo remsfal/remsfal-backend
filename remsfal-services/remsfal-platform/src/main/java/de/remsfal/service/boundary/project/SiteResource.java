@@ -17,14 +17,14 @@ import java.util.UUID;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class SiteResource extends ProjectSubResource implements SiteEndpoint {
+public class SiteResource extends AbstractProjectResource implements SiteEndpoint {
 
     @Inject
     SiteController controller;
 
     @Override
     public Response createSite(final UUID projectId, final UUID propertyId, final SiteJson site) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final SiteModel model = controller.createSite(projectId, propertyId, site);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -35,20 +35,20 @@ public class SiteResource extends ProjectSubResource implements SiteEndpoint {
 
     @Override
     public SiteJson getSite(final UUID projectId, final UUID siteId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final SiteModel model = controller.getSite(projectId, siteId);
         return SiteJson.valueOf(model);
     }
 
     @Override
     public SiteJson updateSite(final UUID projectId, final UUID siteId, final SiteJson site) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         return SiteJson.valueOf(controller.updateSite(projectId, siteId, site));
     }
 
     @Override
     public void deleteSite(final UUID projectId, final UUID siteId) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         controller.deleteSite(projectId, siteId);
     }
 

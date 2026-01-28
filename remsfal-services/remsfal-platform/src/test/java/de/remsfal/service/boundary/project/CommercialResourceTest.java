@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.time.Duration;
-
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -45,7 +43,7 @@ class CommercialResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
@@ -65,7 +63,7 @@ class CommercialResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
@@ -93,7 +91,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
@@ -110,7 +108,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
@@ -127,7 +125,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .delete(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()
@@ -135,7 +133,7 @@ class CommercialResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH + "/{commercialId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.COMMERCIAL_ID)
             .then()

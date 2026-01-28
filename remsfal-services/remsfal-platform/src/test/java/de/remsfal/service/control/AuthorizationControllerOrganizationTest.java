@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;

@@ -16,14 +16,14 @@ import java.util.UUID;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class StorageResource extends ProjectSubResource implements StorageEndpoint {
+public class StorageResource extends AbstractProjectResource implements StorageEndpoint {
 
     @Inject
     StorageController controller;
 
     @Override
     public Response createStorage(final UUID projectId, final UUID buildingId, final StorageJson storage) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final StorageModel model = controller.createStorage(projectId, buildingId, storage);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -34,21 +34,21 @@ public class StorageResource extends ProjectSubResource implements StorageEndpoi
 
     @Override
     public StorageJson getStorage(final UUID projectId, final UUID storageId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final StorageModel model = controller.getStorage(projectId, storageId);
         return StorageJson.valueOf(model);
     }
 
     @Override
     public StorageJson updateStorage(final UUID projectId, final UUID storageId, final StorageJson storage) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final StorageModel model = controller.updateStorage(projectId, storageId, storage);
         return StorageJson.valueOf(model);
     }
 
     @Override
     public void deleteStorage(final UUID projectId, final UUID storageId) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         controller.deleteStorage(projectId, storageId);
     }
 

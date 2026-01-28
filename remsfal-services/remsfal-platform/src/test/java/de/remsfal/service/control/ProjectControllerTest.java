@@ -18,12 +18,12 @@ import jakarta.ws.rs.NotFoundException;
 
 import org.junit.jupiter.api.Test;
 
-import de.remsfal.core.json.ImmutableProjectJson;
-import de.remsfal.core.json.ImmutableProjectMemberJson;
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
-import de.remsfal.core.model.ProjectModel;
+import de.remsfal.core.json.project.ImmutableProjectJson;
+import de.remsfal.core.json.project.ImmutableProjectMemberJson;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectModel;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.test.TestData;
@@ -72,7 +72,7 @@ class ProjectControllerTest extends AbstractServiceTest {
             .setParameter("userId", userId)
             .getSingleResult()
             .toString();
-        assertEquals("MANAGER", userRole);
+        assertEquals("PROPRIETOR", userRole);
     }
 
     @Test

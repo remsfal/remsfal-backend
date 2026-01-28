@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ImmutableContractorJson;
+import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
@@ -51,7 +52,7 @@ class ContractorControllerTest extends AbstractServiceTest {
         
         // Create a test project
         ProjectEntity project = (ProjectEntity) projectController.createProject(user,
-                de.remsfal.core.json.ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+                ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         projectId = project.getId();
     }
 

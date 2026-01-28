@@ -9,11 +9,11 @@ import jakarta.ws.rs.NotFoundException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jboss.logging.Logger;
 
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
-import de.remsfal.core.model.ProjectModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectOrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
@@ -75,7 +75,7 @@ public class ProjectController {
         ProjectEntity entity = new ProjectEntity();
         entity.generateId();
         entity.setTitle(project.getTitle());
-        entity.addMember(userEntity, MemberRole.MANAGER);
+        entity.addMember(userEntity, MemberRole.PROPRIETOR);
         projectRepository.persistAndFlush(entity);
         return entity;
     }
@@ -111,9 +111,9 @@ public class ProjectController {
         }
     }
 
-    public MemberRole getProjectMemberRole(final UserModel user, final UUID projectId) {
-        logger.infov("Retrieving project member role (user={0}, project={1})", user.getId(), projectId);
-        return projectRepository.findMembershipByUserIdAndProjectId(user.getId(), projectId)
+    public MemberRole getProjectMemberRole(final UUID userId, final UUID projectId) {
+        logger.infov("Retrieving project member role (user={0}, project={1})", userId, projectId);
+        return projectRepository.findMembershipByUserIdAndProjectId(userId, projectId)
             .map(ProjectMembershipEntity::getRole)
             .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
     }
@@ -158,6 +158,14 @@ public class ProjectController {
         logger.infov("Removing a project membership (projectId={0}, memberId={1})",
             projectId, memberId);
         return projectRepository.removeMembershipByUserIdAndProjectId(memberId, projectId);
+    }
+
+    public MemberRole getProjectOrganizationRole(final UUID organizationId, final UUID projectId) {
+        logger.infov("Retrieving project organization role (organizationId={0}, project={1})",
+            organizationId, projectId);
+        return projectOrganizationRepository.findByProjectIdAndOrganizationId(projectId, organizationId)
+            .map(ProjectOrganizationEntity::getRole)
+            .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
     }
 
     public Set<? extends ProjectOrganizationModel> getProjectOrganizations(final UserModel user, final UUID projectId) {

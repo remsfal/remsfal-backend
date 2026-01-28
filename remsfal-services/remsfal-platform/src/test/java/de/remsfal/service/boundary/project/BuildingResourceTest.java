@@ -31,7 +31,7 @@ class BuildingResourceTest extends AbstractResourceTest {
     void getBuilding_FAILED_buildingDoesNotExist() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"description\":\"" + TestData.BUILDING_DESCRIPTION_1 + "\"," +
                 " \"livingSpace\":\"" + TestData.APARTMENT_LIVING_SPACE_1 + "\"," +
@@ -52,7 +52,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + TestData.BUILDING_ID_1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -84,7 +84,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + user1building1, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID)
             .then()
@@ -306,7 +306,7 @@ class BuildingResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get("/api/v1/projects/{projectId}/buildings/" + user1building1, TestData.PROJECT_ID.toString())
             .then()

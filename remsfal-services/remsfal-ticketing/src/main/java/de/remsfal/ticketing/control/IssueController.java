@@ -46,23 +46,11 @@ public class IssueController {
         entity.setTitle(issue.getTitle());
         entity.setStatus(initialStatus);
         entity.setDescription(issue.getDescription());
+        entity.setReporterId(user.getId());
+        // Relations are managed through separate endpoints (PUT/POST/DELETE)
+        // and should not be updated via POST
 
         entity = repository.insert(entity);
-
-        boolean hasRelations = java.util.stream.Stream.of(
-            issue.getBlocks(),
-            issue.getBlockedBy(),
-            issue.getRelatedTo(),
-            issue.getDuplicateOf()
-        ).anyMatch(set -> set != null && !set.isEmpty())
-            || issue.getParentIssue() != null
-            || (issue.getChildrenIssues() != null && !issue.getChildrenIssues().isEmpty());
-
-        if (hasRelations) {
-            updateRelations(entity, issue);
-            entity = repository.update(entity);
-        }
-
         return entity;
     }
 
@@ -109,8 +97,7 @@ public class IssueController {
         if (issue.getDescription() != null) {
             entity.setDescription(issue.getDescription());
         }
-
-        // Relations are now managed through separate endpoints (PUT/POST/DELETE)
+        // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via PATCH
 
         return repository.update(entity);
@@ -134,51 +121,6 @@ public class IssueController {
             e.setStatus(IssueStatus.CLOSED);
             repository.update(e);
         });
-    }
-
-    /**
-     * Apply bidirectional relation writes via repository (Cassandra set +/- in UNLOGGED BATCH),
-     * AND keep the local entity sets in sync to avoid overwriting with stale values on repository.update(entity).
-     */
-    private void updateRelations(IssueEntity entity, IssueModel patch) {
-        UUID projectId = entity.getProjectId();
-        UUID sourceId = entity.getId();
-
-        // blocks -> target.blocked_by_set
-        if (patch.getBlocks() != null && !patch.getBlocks().isEmpty()) {
-            repository.addBlocks(projectId, sourceId, patch.getBlocks());
-            entity.setBlocks(merge(entity.getBlocks(), patch.getBlocks(), sourceId));
-        }
-
-        // blocked_by -> target.blocks_set
-        if (patch.getBlockedBy() != null && !patch.getBlockedBy().isEmpty()) {
-            repository.addBlockedBy(projectId, sourceId, patch.getBlockedBy());
-            entity.setBlockedBy(merge(entity.getBlockedBy(), patch.getBlockedBy(), sourceId));
-        }
-
-        // related_to
-        if (patch.getRelatedTo() != null && !patch.getRelatedTo().isEmpty()) {
-            repository.addRelatedTo(projectId, sourceId, patch.getRelatedTo());
-            entity.setRelatedTo(merge(entity.getRelatedTo(), patch.getRelatedTo(), sourceId));
-        }
-
-        // duplicate_of
-        if (patch.getDuplicateOf() != null && !patch.getDuplicateOf().isEmpty()) {
-            repository.addDuplicateOf(projectId, sourceId, patch.getDuplicateOf());
-            entity.setDuplicateOf(merge(entity.getDuplicateOf(), patch.getDuplicateOf(), sourceId));
-        }
-
-        // parent_issue -> target.children_issues_set
-        if (patch.getParentIssue() != null) {
-            repository.addParentIssue(projectId, sourceId, patch.getParentIssue());
-            entity.setParentIssue(patch.getParentIssue());
-        }
-
-        // children_issues -> target.parent_issue
-        if (patch.getChildrenIssues() != null && !patch.getChildrenIssues().isEmpty()) {
-            repository.addChildrenIssues(projectId, sourceId, patch.getChildrenIssues());
-            entity.setChildrenIssues(merge(entity.getChildrenIssues(), patch.getChildrenIssues(), sourceId));
-        }
     }
 
     public IssueModel setParentIssue(IssueEntity entity, UUID parentIssueId) {

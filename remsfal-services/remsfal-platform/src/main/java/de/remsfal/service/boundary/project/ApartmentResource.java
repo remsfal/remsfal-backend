@@ -16,7 +16,7 @@ import java.util.UUID;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class ApartmentResource extends ProjectSubResource implements ApartmentEndpoint {
+public class ApartmentResource extends AbstractProjectResource implements ApartmentEndpoint {
 
     @Inject
     ApartmentController controller;
@@ -24,7 +24,7 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     @Override
     public Response createApartment(final UUID projectId, final UUID buildingId,
         final ApartmentJson apartment) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final ApartmentModel model = controller.createApartment(projectId, buildingId, apartment);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -35,7 +35,7 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
 
     @Override
     public ApartmentJson getApartment(final UUID projectId, final UUID apartmentId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final ApartmentModel model = controller.getApartment(projectId, apartmentId);
 
         return ApartmentJson.valueOf(model);
@@ -44,14 +44,14 @@ public class ApartmentResource extends ProjectSubResource implements ApartmentEn
     @Override
     public ApartmentJson updateApartment(final UUID projectId, final UUID apartmentId,
         final ApartmentJson apartment) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         return ApartmentJson
             .valueOf(controller.updateApartment(projectId, apartmentId, apartment));
     }
 
     @Override
     public void deleteApartment(final UUID projectId, final UUID apartmentId) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         controller.deleteApartment(projectId, apartmentId);
     }
 

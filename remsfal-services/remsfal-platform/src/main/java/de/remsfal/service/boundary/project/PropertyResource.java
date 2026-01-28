@@ -21,7 +21,7 @@ import java.util.UUID;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class PropertyResource extends ProjectSubResource implements PropertyEndpoint {
+public class PropertyResource extends AbstractProjectResource implements PropertyEndpoint {
 
     @Inject
     PropertyController controller;
@@ -34,7 +34,7 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public PropertyListJson getProperties(final UUID projectId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         List<RentalUnitTreeNodeJson> treeNodes = controller.getPropertyTree(projectId);
 
         return ImmutablePropertyListJson
@@ -45,7 +45,7 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public Response createProperty(final UUID projectId, final PropertyJson property) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final PropertyModel model = controller.createProperty(projectId, property);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -56,20 +56,20 @@ public class PropertyResource extends ProjectSubResource implements PropertyEndp
 
     @Override
     public PropertyJson getProperty(final UUID projectId, final UUID propertyId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final PropertyModel model = controller.getProperty(projectId, propertyId);
         return PropertyJson.valueOf(model);
     }
 
     @Override
     public PropertyJson updateProperty(final UUID projectId, final UUID propertyId, final PropertyJson property) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         return PropertyJson.valueOf(controller.updateProperty(projectId, propertyId, property));
     }
 
     @Override
     public void deleteProperty(final UUID projectId, final UUID propertyId) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         controller.deleteProperty(projectId, propertyId);
     }
 

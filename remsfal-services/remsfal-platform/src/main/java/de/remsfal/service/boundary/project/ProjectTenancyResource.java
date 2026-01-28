@@ -17,28 +17,28 @@ import de.remsfal.service.control.TenancyController;
 import java.util.List;
 
 @RequestScoped
-public class ProjectTenancyResource extends ProjectSubResource implements ProjectTenancyEndpoint {
+public class ProjectTenancyResource extends AbstractProjectResource implements ProjectTenancyEndpoint {
 
     @Inject
     TenancyController tenancyController;
 
     @Override
     public TenancyInfoJson getTenancy(final UUID projectId, final UUID tenancyId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final TenancyModel tenancy = tenancyController.getTenancyByProject(projectId, tenancyId);
         return TenancyInfoJson.valueOf(tenancy);
     }
 
     @Override
     public ProjectTenancyListJson getTenancies(final UUID projectId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final List<? extends TenancyModel> tenancies = tenancyController.getTenanciesByProject(projectId);
         return ProjectTenancyListJson.valueOf(tenancies);
     }
 
     @Override
     public Response createTenancy(final UUID projectId, final TenancyInfoJson tenancy) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         final TenancyModel entity = tenancyController.createTenancy(projectId, tenancy);
         final URI location = uri.getAbsolutePathBuilder().path(String.valueOf(entity.getId())).build();
         return Response.created(location)
@@ -49,7 +49,7 @@ public class ProjectTenancyResource extends ProjectSubResource implements Projec
 
     @Override
     public TenancyInfoJson updateTenancy(final UUID projectId, final UUID tenancyId, final TenancyInfoJson tenancy) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         final TenancyModel entity = tenancyController.updateTenancy(projectId, tenancyId, tenancy);
         return TenancyInfoJson.valueOf(entity);
     }

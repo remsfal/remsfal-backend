@@ -1,4 +1,6 @@
-package de.remsfal.core.model;
+package de.remsfal.core.model.project;
+
+import de.remsfal.core.model.UserModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -23,7 +25,11 @@ public interface ProjectMemberModel extends UserModel {
         }
 
         public boolean isPrivileged() {
-            return leadership <= 25;
+            return isPrivileged(MemberRole.MANAGER);
+        }
+
+        public boolean isPrivileged(MemberRole minimumRole) {
+            return leadership <= minimumRole.getLeadershipLevel();
         }
     }
 

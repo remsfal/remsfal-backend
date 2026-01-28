@@ -30,6 +30,7 @@ public class TestData {
     public static final String USER_EMAIL = TestData.USER_EMAIL_1;
     public static final String USER_FIRST_NAME = TestData.USER_FIRST_NAME_1;
     public static final String USER_LAST_NAME = TestData.USER_LAST_NAME_1;
+    public static final String USER_NAME = TestData.USER_FIRST_NAME_1 + " " + TestData.USER_LAST_NAME_1;
 
     // Test user 2
     public static final UUID USER_ID_2 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000002");

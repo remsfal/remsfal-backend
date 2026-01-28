@@ -19,21 +19,21 @@ import java.util.UUID;
  * Resource for contractor management.
  */
 @RequestScoped
-public class ContractorResource extends ProjectSubResource implements ContractorEndpoint {
+public class ContractorResource extends AbstractProjectResource implements ContractorEndpoint {
 
     @Inject
     ContractorController controller;
 
     @Override
     public ContractorListJson getContractors(final UUID projectId, final Integer offset, final Integer limit) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         List<? extends ContractorModel> contractors = controller.getContractors(projectId, offset, limit);
         return ContractorListJson.valueOf(contractors, offset, controller.countContractors(principal, projectId));
     }
 
     @Override
     public Response createContractor(final UUID projectId, final ContractorJson contractor) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         ContractorModel model = controller.createContractor(principal, projectId, contractor);
         URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -44,26 +44,22 @@ public class ContractorResource extends ProjectSubResource implements Contractor
 
     @Override
     public ContractorJson getContractor(final UUID projectId, final UUID contractorId) {
-        checkReadPermissions(projectId);
-        try {
-            ContractorModel model = controller.getContractor(principal, projectId, contractorId);
-            return ContractorJson.valueOf(model);
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Contractor not found");
-        }
+        checkProjectReadPermissions(projectId);
+        ContractorModel model = controller.getContractor(principal, projectId, contractorId);
+        return ContractorJson.valueOf(model);
     }
 
     @Override
     public ContractorJson updateContractor(final UUID projectId, final UUID contractorId,
         final ContractorJson contractor) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         ContractorModel model = controller.updateContractor(principal, projectId, contractorId, contractor);
         return ContractorJson.valueOf(model);
     }
 
     @Override
     public void deleteContractor(final UUID projectId, final UUID contractorId) {
-        checkWritePermissions(projectId);
+        checkTenancyWritePermissions(projectId);
         if (!controller.deleteContractor(principal, projectId, contractorId)) {
             throw new NotFoundException("Contractor not found");
         }

@@ -18,7 +18,7 @@ import java.util.List;
 
 @Authenticated
 @RequestScoped
-public class InboxResource extends AbstractResource implements InboxEndpoint {
+public class InboxResource extends AbstractTicketingResource implements InboxEndpoint {
 
     @Inject
     InboxController controller;

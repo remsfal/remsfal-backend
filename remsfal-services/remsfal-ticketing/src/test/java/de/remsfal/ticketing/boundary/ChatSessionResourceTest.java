@@ -19,6 +19,7 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ChatSessionRepository.ParticipantRole;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -29,7 +30,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class ChatSessionResourceTest extends AbstractResourceTest {
+class ChatSessionResourceTest extends AbstractTicketingTest {
 
     @Inject
     CqlSession cqlSession;
@@ -96,7 +97,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_2, TicketingTestData.USER_EMAIL_2,
                     nameOf(TicketingTestData.USER_FIRST_NAME_2, TicketingTestData.USER_LAST_NAME_2), true,
-                    rolesNone(), rolesNone(), Duration.ofMinutes(10)))
+                    rolesNone(), rolesNone(), rolesNone(), Duration.ofMinutes(10)))
             .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
@@ -106,9 +107,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatSession_INVALID_INPUT() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie(rolesManagerP1()))
             .delete(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
@@ -120,9 +119,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
         String nonExistingSessionId = UUID.randomUUID().toString();
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie(rolesManagerP1()))
             .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1, nonExistingSessionId)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
@@ -132,9 +129,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void createChatSession_OnTask_SUCCESS() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie(rolesManagerP1()))
             .contentType(ContentType.JSON)
             .post(CHAT_SESSION_PATH, TicketingTestData.ISSUE_ID_1.toString())
             .then()
@@ -149,9 +144,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSession_SUCCESS() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie(rolesManagerP1()))
             .get(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -163,9 +156,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void deleteChatSession_SUCCESS() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie(rolesManagerP1()))
             .delete(CHAT_SESSION_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
@@ -175,9 +166,7 @@ class ChatSessionResourceTest extends AbstractResourceTest {
     void getChatSessions_SUCCESS() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                    nameOf(TicketingTestData.USER_FIRST_NAME, TicketingTestData.USER_LAST_NAME), true,
-                    rolesManagerP1(), rolesNone(), Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie(rolesManagerP1()))
             .get(CHAT_SESSION_PATH, TicketingTestData.ISSUE_ID_1)
             .then()
             .statusCode(Status.OK.getStatusCode())

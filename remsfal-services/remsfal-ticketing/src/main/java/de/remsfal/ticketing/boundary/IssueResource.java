@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
-import de.remsfal.core.json.UserJson.UserRole;
+import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
@@ -34,7 +34,7 @@ import io.quarkus.security.Authenticated;
  */
 @Authenticated
 @RequestScoped
-public class IssueResource extends AbstractResource implements IssueEndpoint {
+public class IssueResource extends AbstractTicketingResource implements IssueEndpoint {
 
     @Inject
     Logger logger;
@@ -138,16 +138,16 @@ public class IssueResource extends AbstractResource implements IssueEndpoint {
 
     @Override
     public Response createIssue(final IssueJson issue) {
-        UserRole principalRole = getPrincipalRole(issue.getProjectId());
+        UserContext principalRole = getUserContext(issue.getProjectId());
         if (principalRole == null) {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
         final IssueJson response;
         final IssueModel createdIssue;
-        if (principalRole == UserRole.MANAGER) {
+        if (principalRole == UserContext.MANAGER) {
             createdIssue = issueController.createIssue(principal, issue);
             response = IssueJson.valueOf(createdIssue);
-        } else if (principalRole == UserRole.TENANT) {
+        } else if (principalRole == UserContext.TENANT) {
             createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
             response = IssueJson.valueOfFiltered(createdIssue);
         } else {

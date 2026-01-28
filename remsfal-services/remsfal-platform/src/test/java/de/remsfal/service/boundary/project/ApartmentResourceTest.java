@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.time.Duration;
-
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -45,7 +43,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
@@ -66,7 +64,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
         setupTestBuildings();
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID, TestData.BUILDING_ID_2)
@@ -93,7 +91,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .delete(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
@@ -101,7 +99,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
             .then()
@@ -115,7 +113,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
@@ -133,7 +131,7 @@ class ApartmentResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/{apartmentId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID,
                 TestData.BUILDING_ID, TestData.APARTMENT_ID)
