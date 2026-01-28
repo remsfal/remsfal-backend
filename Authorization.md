@@ -108,7 +108,7 @@ public enum MemberRole {
 | STAFF        | 40 | - | -  | - | - | ✓ | ✓ |
 | COLLABORATOR | 50 | - | -  | - | - | - | ✓ |
 
-*MANAGER can add/change members but cannot remove PROPRIETOR or change/upgrade their own role
+*MANAGER can add/change/remove members but cannot remove PROPRIETOR or change/upgrade their own role
 
 Linking a user as project member with the corresponding role is done via the project_memberships table.
 

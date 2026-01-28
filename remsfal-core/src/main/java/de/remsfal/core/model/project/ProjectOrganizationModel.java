@@ -1,7 +1,5 @@
 package de.remsfal.core.model.project;
 
-import de.remsfal.core.model.ProjectMemberModel;
-
 import java.util.UUID;
 
 /**

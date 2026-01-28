@@ -2,9 +2,9 @@ package de.remsfal.ticketing.architecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.nosql.Embeddable;
+import jakarta.nosql.Entity;
+import jakarta.nosql.MappedSuperclass;
 import jakarta.ws.rs.*;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;

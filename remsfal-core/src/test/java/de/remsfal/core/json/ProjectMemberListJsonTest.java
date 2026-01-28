@@ -1,7 +1,9 @@
 package de.remsfal.core.json;
 
-import de.remsfal.core.model.ProjectMemberModel;
 import org.junit.jupiter.api.Test;
+
+import de.remsfal.core.json.project.ProjectMemberListJson;
+import de.remsfal.core.model.project.ProjectMemberModel;
 
 import java.util.HashSet;
 import java.util.Set;

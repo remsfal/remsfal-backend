@@ -7,7 +7,7 @@ import jakarta.ws.rs.NotFoundException;
 import de.remsfal.core.api.UserEndpoint;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.json.UserJson.UserRole;
+import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.control.ContractorController;
@@ -47,20 +47,20 @@ public class UserResource implements UserEndpoint {
     @Timed(name = "GetUserTimer", unit = MetricUnits.MILLISECONDS)
     public UserJson getUser() {
         final CustomerModel user = userController.getUser(principal.getId());
-        final Set<UserRole> userRoles = getUserRoles(user);
+        final Set<UserContext> userRoles = getUserContexts(user);
         return UserJson.valueOf(user, userRoles);
     }
 
-    private Set<UserRole> getUserRoles(final UserModel user) {
-        final Set<UserRole> userRoles = new HashSet<>();
+    private Set<UserContext> getUserContexts(final UserModel user) {
+        final Set<UserContext> userRoles = new HashSet<>();
         if (!projectController.getProjects(user, 0, 1).isEmpty()) {
-            userRoles.add(UserRole.MANAGER);
+            userRoles.add(UserContext.MANAGER);
         }
         if (!contractorController.getOrganizations(user).isEmpty()) {
-            userRoles.add(UserRole.CONTRACTOR);
+            userRoles.add(UserContext.CONTRACTOR);
         }
         if (!tenancyController.getTenancies(user).isEmpty()) {
-            userRoles.add(UserRole.TENANT);
+            userRoles.add(UserContext.TENANT);
         }
         return userRoles;
     }

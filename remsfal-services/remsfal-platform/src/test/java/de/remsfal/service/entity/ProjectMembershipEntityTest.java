@@ -1,6 +1,6 @@
 package de.remsfal.service.entity;
 
-import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.UserEntity;

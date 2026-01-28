@@ -1,6 +1,6 @@
 package de.remsfal.service.boundary.organization;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
+import de.remsfal.common.boundary.AbstractResource;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.service.control.OrganizationController;
 import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
@@ -8,8 +8,6 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
 import java.util.UUID;
@@ -19,13 +17,7 @@ import java.util.UUID;
  */
 @Authenticated
 @RequestScoped
-public class OrganizationSubResource {
-
-    @Context
-    protected UriInfo uri;
-
-    @Inject
-    protected RemsfalPrincipal principal;
+public class OrganizationSubResource extends AbstractResource {
 
     @Inject
     protected OrganizationController  controller;

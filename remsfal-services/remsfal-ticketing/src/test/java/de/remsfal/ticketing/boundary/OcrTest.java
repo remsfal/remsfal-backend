@@ -26,8 +26,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.test.TestData;
+import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.control.ChatMessageController;
 import de.remsfal.ticketing.control.FileStorageController;
@@ -52,7 +53,7 @@ import jakarta.ws.rs.core.Response;
 @QuarkusTestResource(OcrServiceResource.class)
 @QuarkusTestResource(CassandraTestResource.class)
 @TestSecurity(user = "test-user")
-public class OcrTest extends AbstractResourceTest {
+public class OcrTest extends AbstractTicketingTest {
 
     @InjectSpy
     ChatMessageController chatMessageController;

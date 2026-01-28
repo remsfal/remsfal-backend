@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RequestScoped
-public class BuildingResource extends ProjectSubResource implements BuildingEndpoint {
+public class BuildingResource extends AbstractProjectResource implements BuildingEndpoint {
 
     @Inject
     BuildingController controller;
@@ -30,7 +30,7 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Override
     public Response createBuilding(final UUID projectId, final UUID propertyId, final BuildingJson building) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -41,7 +41,7 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Override
     public BuildingJson getBuilding(final UUID projectId, final UUID buildingId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         final BuildingModel model = controller.getBuilding(projectId, buildingId);
 
         return BuildingJson.valueOf(model);
@@ -49,14 +49,14 @@ public class BuildingResource extends ProjectSubResource implements BuildingEndp
 
     @Override
     public BuildingJson updateBuilding(final UUID projectId, final UUID buildingId, final BuildingJson building) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final BuildingModel model = controller.updateBuilding(projectId, buildingId, building);
         return BuildingJson.valueOf(model);
     }
 
     @Override
     public void deleteBuilding(final UUID projectId, final UUID buildingId) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         controller.deleteBuilding(projectId, buildingId);
     }
 

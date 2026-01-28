@@ -7,17 +7,10 @@ import java.util.UUID;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.authentication.SessionManager;
 import de.remsfal.test.TestData;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Cookie;
 import jakarta.inject.Inject;
 
 public abstract class AbstractResourceTest extends AbstractServiceTest {
-
-    static {
-        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
-    }
 
     @Inject
     SessionManager sessionManager;
@@ -354,6 +347,18 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
             .executeUpdate());
     }
 
+    @Override
+    protected Cookie buildManagerCookie() {
+        return buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10));
+    }
+
+    @Override
+    protected Cookie buildManagerCookie(final Map<String, String> projectRoles) {
+        // For platform tests, we ignore the projectRoles parameter since the SessionManager
+        // will fetch the actual roles from the database based on the user setup
+        return buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10));
+    }
+
     protected Cookie buildAccessTokenCookie(final UUID userId, final String userEmail, final Duration ttl) {
         String accessToken;
         try {
@@ -380,7 +385,7 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
         return cookieBuilder.build();
     }
 
-    protected Map<String, ?> buildCookies (final UUID userId, final String userEmail, final Duration ttl) {
+    protected Map<String, ?> buildCookies(final UUID userId, final String userEmail, final Duration ttl) {
         return Map.of(
                 SessionManager.ACCESS_COOKIE_NAME, buildAccessTokenCookie(userId, userEmail, ttl).getValue(),
                 SessionManager.REFRESH_COOKIE_NAME, buildRefreshTokenCookie(userId, userEmail, ttl).getValue()

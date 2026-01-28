@@ -1,7 +1,7 @@
 package de.remsfal.core.api.project;
 
-import de.remsfal.core.json.ProjectMemberJson;
-import de.remsfal.core.json.ProjectMemberListJson;
+import de.remsfal.core.json.project.ProjectMemberJson;
+import de.remsfal.core.json.project.ProjectMemberListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import jakarta.validation.Valid;

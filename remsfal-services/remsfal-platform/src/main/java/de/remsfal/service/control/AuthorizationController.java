@@ -24,7 +24,7 @@ import de.remsfal.service.entity.dao.TenancyRepository;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.ProjectOrganizationEntity;

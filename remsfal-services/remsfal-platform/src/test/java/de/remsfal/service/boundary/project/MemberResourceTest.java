@@ -160,7 +160,7 @@ class MemberResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{\"role\":\"PROPRIETOR\"}")
+            .body("{\"role\":\"STAFF\"}")
             .patch(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -168,7 +168,20 @@ class MemberResourceTest extends AbstractResourceTest {
             .and().body("id", Matchers.equalTo(TestData.USER_ID_1.toString()))
             .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_1))
             .and().body("active", Matchers.is(true))
-            .and().body("role", Matchers.equalTo("PROPRIETOR"));
+            .and().body("role", Matchers.equalTo("STAFF"));
+    }
+
+    @Test
+    void updateProjectMember_FAILED_upgradeToProprietorNotAllowed() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{\"role\":\"PROPRIETOR\"}")
+            .patch(MEMBER_PATH, TestData.PROJECT_ID.toString(), TestData.USER_ID_1.toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -204,8 +217,8 @@ class MemberResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
                 .and().body("id", Matchers.equalTo(TestData.USER_ID.toString()))
                 .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
-                .and().body("userRoles.size()", Matchers.equalTo(1))
-                .and().body("userRoles[0]", Matchers.equalTo("MANAGER"));
+                .and().body("userContexts.size()", Matchers.equalTo(1))
+                .and().body("userContexts[0]", Matchers.equalTo("MANAGER"));
     }
 
 }

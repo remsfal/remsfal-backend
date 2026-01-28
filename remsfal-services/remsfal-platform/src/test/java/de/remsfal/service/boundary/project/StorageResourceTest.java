@@ -11,8 +11,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
@@ -51,7 +49,7 @@ class StorageResourceTest extends AbstractResourceTest {
     private String createProject() {
         return given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body(PROJECT_JSON)
             .post(BASE_PATH)
@@ -63,7 +61,7 @@ class StorageResourceTest extends AbstractResourceTest {
     private String createProperty(String projectId) {
         return given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body(PROPERTY_JSON)
             .post(BASE_PATH + "/" + projectId + "/properties")
@@ -75,7 +73,7 @@ class StorageResourceTest extends AbstractResourceTest {
     private String createBuilding(String projectId, String propertyId) {
         return given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(BUILDING_JSON)
             .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
@@ -91,7 +89,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId +
                 "/buildings/building1/storages/nonExistingStorage")
@@ -107,7 +105,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         final String storageId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(STORAGE_JSON)
             .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
@@ -117,7 +115,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
                 storageId)
@@ -134,7 +132,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(STORAGE_JSON)
             .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
@@ -154,7 +152,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         final String storageId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(STORAGE_JSON)
             .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
@@ -169,7 +167,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(updatedStorageJson)
             .patch(
@@ -180,7 +178,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
                 storageId)
@@ -200,7 +198,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         final String storageId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(STORAGE_JSON)
             .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages")
@@ -210,7 +208,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .delete(
                 BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
@@ -220,7 +218,7 @@ class StorageResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .get(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings/" + buildingId + "/storages/" +
                 storageId)

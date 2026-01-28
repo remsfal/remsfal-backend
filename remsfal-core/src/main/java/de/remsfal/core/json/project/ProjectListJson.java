@@ -1,8 +1,10 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import java.util.List;
 
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectModel;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -11,7 +13,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ProjectModel;
 
 /**
  * A list of projects

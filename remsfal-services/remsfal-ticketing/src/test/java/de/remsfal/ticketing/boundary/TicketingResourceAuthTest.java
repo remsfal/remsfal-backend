@@ -20,7 +20,8 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
+import de.remsfal.common.boundary.AbstractResource;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.ChatSessionModel;
 import de.remsfal.test.TestData;
 import de.remsfal.ticketing.control.ChatSessionController;
@@ -66,8 +67,8 @@ class TicketingResourceAuthTest {
         when(controller.createChatSession(TestData.PROJECT_ID, issueId, TestData.USER_ID)).thenReturn(session);
 
         ChatSessionResource resource = new ChatSessionResource();
-        setField(resource, AbstractResource.class, "issueController", issueController);
         setField(resource, AbstractResource.class, "principal", principalWithRole(TestData.PROJECT_ID, MemberRole.PROPRIETOR.name()));
+        setField(resource, AbstractTicketingResource.class, "issueController", issueController);
         setField(resource, ChatSessionResource.class, "chatSessionController", controller);
         UriInfo uriInfo = mock(UriInfo.class);
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri(URI.create("http://localhost")));

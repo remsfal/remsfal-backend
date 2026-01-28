@@ -1,7 +1,7 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;

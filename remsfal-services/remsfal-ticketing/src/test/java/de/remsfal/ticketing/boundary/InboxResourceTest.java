@@ -4,6 +4,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
+import de.remsfal.common.boundary.AbstractResource;
 import de.remsfal.ticketing.control.InboxController;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 import de.remsfal.ticketing.entity.dto.InboxMessageKey;
@@ -15,6 +16,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,10 +39,15 @@ class InboxResourceTest {
     InboxResource resource;
 
     @BeforeEach
-    void setup() {
+    void setup() throws Exception {
         resource = new InboxResource();
-        resource.controller = controller;
-        resource.principal = principal;
+        Field principalField = AbstractResource.class.getDeclaredField("principal");
+        principalField.setAccessible(true);
+        principalField.set(resource, principal);
+
+        Field controllerField = InboxResource.class.getDeclaredField("controller");
+        controllerField.setAccessible(true);
+        controllerField.set(resource, controller);
 
         when(principal.getJwt()).thenReturn(jwt);
         when(jwt.getSubject()).thenReturn("11111111-1111-1111-1111-111111111111");

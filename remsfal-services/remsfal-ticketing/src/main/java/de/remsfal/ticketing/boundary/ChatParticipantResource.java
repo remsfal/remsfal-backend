@@ -28,7 +28,7 @@ import java.util.List;
  */
 @Authenticated
 @RequestScoped
-public class ChatParticipantResource extends AbstractResource implements ChatParticipantEndpoint {
+public class ChatParticipantResource extends AbstractTicketingResource implements ChatParticipantEndpoint {
 
     @Inject
     ChatSessionController chatSessionController;

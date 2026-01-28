@@ -13,8 +13,8 @@ import jakarta.json.JsonObject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 
 @RequestScoped
 public class RemsfalPrincipal implements Principal, UserModel {
@@ -44,6 +44,21 @@ public class RemsfalPrincipal implements Principal, UserModel {
 
     public JsonWebToken getJwt() {
         return jwt;
+    }
+
+    public MemberRole getProjectRole(final UUID projectId) {
+        Map<UUID, MemberRole> roles = getProjectRoles();
+        return roles.get(projectId);
+    }
+
+    public EmployeeRole getOrganizationRole(final UUID organizationId) {
+        Map<UUID, EmployeeRole> roles = getOrganizationRoles();
+        return roles.get(organizationId);
+    }
+
+    public UUID getTenancyProject(final UUID tenancyId) {
+        Map<UUID, UUID> tenancyProjects = getTenancyProjects();
+        return tenancyProjects.get(tenancyId);
     }
 
     public Map<UUID, MemberRole> getProjectRoles() {

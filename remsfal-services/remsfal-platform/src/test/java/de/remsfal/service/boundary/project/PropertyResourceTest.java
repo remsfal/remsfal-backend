@@ -13,8 +13,6 @@ import de.remsfal.test.TestData;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.Duration;
-
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import org.hamcrest.Matchers;
@@ -45,7 +43,7 @@ class PropertyResourceTest extends AbstractResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROPERTY_TITLE + "\"}";
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -69,7 +67,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             + "\"id\":\"anyId\"}";
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -81,7 +79,7 @@ class PropertyResourceTest extends AbstractResourceTest {
     void createProperty_FAILED_noTitle() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -96,7 +94,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -156,14 +154,14 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .delete(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
@@ -183,7 +181,7 @@ class PropertyResourceTest extends AbstractResourceTest {
             + "\"plotArea\":\"" + TestData.PROPERTY_PLOT_AREA_2 + "\"}";
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .patch(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
@@ -198,7 +196,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH + "/{projectId}/properties/{propertyId}", TestData.PROJECT_ID.toString(), TestData.PROPERTY_ID_1)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -219,7 +217,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         final Response res = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH + "/{projectId}/properties", TestData.PROJECT_ID.toString())
@@ -242,7 +240,7 @@ class PropertyResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(propertyUrl)
             .then()
             .statusCode(Status.OK.getStatusCode())

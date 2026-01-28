@@ -102,7 +102,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
         String contractorId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
@@ -121,7 +121,7 @@ class ContractorResourceTest extends AbstractResourceTest {
         // Verify the contractor was created
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(BASE_PATH, TestData.PROJECT_ID_1.toString())
             .then()
@@ -139,7 +139,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
         String contractorId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
@@ -161,7 +161,7 @@ class ContractorResourceTest extends AbstractResourceTest {
         // Verify the contractor was created with address
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), contractorId)
             .then()
@@ -175,7 +175,7 @@ class ContractorResourceTest extends AbstractResourceTest {
     void getContractors_SUCCESS_emptyList() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(BASE_PATH, TestData.PROJECT_ID_1.toString())
             .then()
@@ -193,7 +193,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
         String contractorId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
@@ -205,7 +205,7 @@ class ContractorResourceTest extends AbstractResourceTest {
         // Get the contractor
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), contractorId)
             .then()
@@ -222,7 +222,7 @@ class ContractorResourceTest extends AbstractResourceTest {
     void getContractor_FAILED_contractorNotFound() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), "b9440c43-b5c0-4951-9c29-000000000099")
             .then()
@@ -236,7 +236,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
         String contractorId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
@@ -250,7 +250,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(updateJson)
@@ -267,7 +267,7 @@ class ContractorResourceTest extends AbstractResourceTest {
         // Verify the contractor was updated
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), contractorId)
             .then()
@@ -282,7 +282,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(updateJson)
@@ -298,7 +298,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
         String contractorId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
@@ -310,7 +310,7 @@ class ContractorResourceTest extends AbstractResourceTest {
         // Delete the contractor
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .delete(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), contractorId)
             .then()
@@ -319,7 +319,7 @@ class ContractorResourceTest extends AbstractResourceTest {
         // Verify the contractor was deleted
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), contractorId)
             .then()
@@ -330,7 +330,7 @@ class ContractorResourceTest extends AbstractResourceTest {
     void deleteContractor_FAILED_contractorNotFound() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .delete(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), "b9440c43-b5c0-4951-9c29-000000000099")
             .then()

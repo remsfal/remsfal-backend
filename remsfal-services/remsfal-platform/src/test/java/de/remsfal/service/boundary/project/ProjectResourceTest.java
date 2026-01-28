@@ -1,4 +1,4 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.project;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -9,6 +9,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.service.boundary.AbstractResourceTest;
 import de.remsfal.test.TestData;
 
 import static org.hamcrest.Matchers.containsString;
@@ -31,7 +32,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     private String createProperty(final String projectId) {
         return given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Property\"}")
                 .post(BASE_PATH + "/" + projectId + "/properties")
@@ -54,7 +55,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         final String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH)
@@ -65,7 +66,7 @@ class ProjectResourceTest extends AbstractResourceTest {
             .and().body("id", Matchers.notNullValue())
             .and().body("title", Matchers.equalTo(TestData.PROJECT_TITLE))
             .and().body("members.id", Matchers.hasItem(TestData.USER_ID.toString()))
-            .and().body("members.role", Matchers.hasItem("MANAGER"));
+            .and().body("members.role", Matchers.hasItem("PROPRIETOR"));
 
         long enties = entityManager
             .createQuery("SELECT count(project) FROM ProjectEntity project where project.title = :title", Long.class)
@@ -80,7 +81,7 @@ class ProjectResourceTest extends AbstractResourceTest {
             + "\"id\":\"anyId\"}";
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH)
@@ -103,7 +104,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void createProject_FAILED_noTitle() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body("{ \"title\":\" \"}")
             .post(BASE_PATH)
@@ -117,7 +118,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final Response res = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
             .post(BASE_PATH)
@@ -135,7 +136,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(projectUrl)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -148,7 +149,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void getProjects_FAILED_requestedNumberToHigh() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .queryParam("limit", 120)
             .get(BASE_PATH)
             .then()
@@ -159,7 +160,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void getProjects_FAILED_negativeOffset() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .queryParam("offset", -3)
             .get(BASE_PATH)
             .then()
@@ -170,7 +171,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void getProjects_FAILED_negativeLimit() {
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .queryParam("limit", -12)
             .get(BASE_PATH)
             .then()
@@ -182,7 +183,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         for (int i = 0; i < 20; i++) {
             given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"" + TestData.PROJECT_TITLE + i + "\"}")
                 .post(BASE_PATH)
@@ -192,7 +193,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .get(BASE_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
@@ -204,7 +205,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .queryParam("offset", 6)
             .queryParam("limit", 12)
             .get(BASE_PATH)
@@ -221,7 +222,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void getProjects_SUCCESS_multiUser() {
         final String user1projectId1 = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
@@ -232,7 +233,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String user1projectId2 = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_2 + "\"}")
@@ -254,7 +255,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .get(BASE_PATH)
             .then()
@@ -266,7 +267,7 @@ class ProjectResourceTest extends AbstractResourceTest {
             .and().body("projects.size()", Matchers.is(2))
             .and().body("projects.id", Matchers.hasItems(user1projectId1, user1projectId2))
             .and().body("projects.name", Matchers.hasItems(TestData.PROJECT_TITLE_1, TestData.PROJECT_TITLE_2))
-            .and().body("projects.memberRole", Matchers.hasItems("MANAGER", "MANAGER"));
+            .and().body("projects.memberRole", Matchers.hasItems("PROPRIETOR", "PROPRIETOR"));
 
         given()
             .when()
@@ -288,7 +289,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void updateProject_SUCCESS_changedTitle() {
         final String projectId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
@@ -299,7 +300,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE_2 + "\"}")
             .patch(BASE_PATH + "/" + projectId)
@@ -314,7 +315,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void deleteProject_SUCCESS_singleProject() {
         final String projectId = given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
@@ -325,7 +326,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
             .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .delete(BASE_PATH + "/" + projectId)
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
@@ -340,7 +341,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     @Test
     void metricGenerated_afterGetProjectsList() {
         given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .when().get(BASE_PATH)
             .then().statusCode(Status.OK.getStatusCode());
         given()
@@ -353,7 +354,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void metricGenerated_afterCreateProject() {
         String json = "{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}";
         given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body(json)
             .when().post(BASE_PATH)
@@ -367,14 +368,14 @@ class ProjectResourceTest extends AbstractResourceTest {
     @Test
     void metricGenerated_afterGetSingleProject() {
         String projectId = given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
             .when().post(BASE_PATH)
             .then().statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
         given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .when().get(BASE_PATH + "/" + projectId)
             .then().statusCode(Status.OK.getStatusCode());
         given()
@@ -386,14 +387,14 @@ class ProjectResourceTest extends AbstractResourceTest {
     @Test
     void metricGenerated_afterUpdateProject() {
         String projectId = given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
             .when().post(BASE_PATH)
             .then().statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
         given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body("{ \"title\":\"updated\"}")
             .when().patch(BASE_PATH + "/" + projectId)
@@ -407,14 +408,14 @@ class ProjectResourceTest extends AbstractResourceTest {
     @Test
     void metricGenerated_afterDeleteProject() {
         String projectId = given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .contentType(ContentType.JSON)
             .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
             .when().post(BASE_PATH)
             .then().statusCode(Status.CREATED.getStatusCode())
             .extract().path("id");
         given()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .cookie(buildManagerCookie())
             .when().delete(BASE_PATH + "/" + projectId)
             .then().statusCode(Status.NO_CONTENT.getStatusCode());
         given()
@@ -426,7 +427,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void createApartmentResource_SUCCESS_resourceIsInitialized() {
         final String projectId = given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
                 .post(BASE_PATH)
@@ -437,7 +438,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String buildingId = given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Building\"}")
                 .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
@@ -447,7 +448,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Apartment\"}")
                 .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/apartments")
@@ -459,7 +460,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void createCommercialResource_SUCCESS_resourceIsInitialized() {
         final String projectId = given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
                 .post(BASE_PATH)
@@ -471,7 +472,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String buildingId = given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Building\"}")
                 .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
@@ -481,7 +482,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Commercial\"}")
                 .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/commercials")
@@ -493,7 +494,7 @@ class ProjectResourceTest extends AbstractResourceTest {
     void createStorageResource_SUCCESS_resourceIsInitialized() {
         final String projectId = given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"" + TestData.PROJECT_TITLE + "\"}")
                 .post(BASE_PATH)
@@ -505,7 +506,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         final String buildingId = given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Building\"}")
                 .post(BASE_PATH + "/" + projectId + "/properties/" + propertyId + "/buildings")
@@ -515,7 +516,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
         given()
                 .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .cookie(buildManagerCookie())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{ \"title\":\"Test Storage\"}")
                 .post(BASE_PATH + "/" + projectId + "/buildings/" + buildingId + "/storages")

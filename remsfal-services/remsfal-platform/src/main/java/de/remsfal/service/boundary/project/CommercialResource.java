@@ -18,7 +18,7 @@ import java.util.UUID;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class CommercialResource extends ProjectSubResource implements CommercialEndpoint {
+public class CommercialResource extends AbstractProjectResource implements CommercialEndpoint {
 
     @Inject
     CommercialController controller;
@@ -26,7 +26,7 @@ public class CommercialResource extends ProjectSubResource implements Commercial
     @Override
     public Response createCommercial(final UUID projectId, final UUID buildingId,
         final CommercialJson commercial) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         final CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
         final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
         return Response.created(location)
@@ -37,20 +37,20 @@ public class CommercialResource extends ProjectSubResource implements Commercial
 
     @Override
     public CommercialJson getCommercial(final UUID projectId, final UUID commercialId) {
-        checkReadPermissions(projectId);
+        checkProjectReadPermissions(projectId);
         return CommercialJson.valueOf(controller.getCommercial(projectId, commercialId));
     }
 
     @Override
     public CommercialJson updateCommercial(final UUID projectId, final UUID commercialId,
         final CommercialJson commercial) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         return CommercialJson.valueOf(controller.updateCommercial(projectId, commercialId, commercial));
     }
 
     @Override
     public void deleteCommercial(final UUID projectId, final UUID commercialId) {
-        checkWritePermissions(projectId);
+        checkPropertyWritePermissions(projectId);
         controller.deleteCommercial(projectId, commercialId);
     }
 

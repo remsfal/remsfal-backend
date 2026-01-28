@@ -1,4 +1,4 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 
@@ -18,8 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ProjectMemberModel;
-import de.remsfal.core.model.ProjectModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

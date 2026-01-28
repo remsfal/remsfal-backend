@@ -326,8 +326,8 @@ class TenancyResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
                 .and().body("id", Matchers.equalTo(TestData.USER_ID_3.toString()))
                 .and().body("email", Matchers.equalTo(TestData.USER_EMAIL_3))
-                .and().body("userRoles.size()", Matchers.equalTo(1))
-                .and().body("userRoles[0]", Matchers.equalTo("TENANT"));
+                .and().body("userContexts.size()", Matchers.equalTo(1))
+                .and().body("userContexts[0]", Matchers.equalTo("TENANT"));
     }
 
 }
