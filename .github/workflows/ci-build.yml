@@ -6,13 +6,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-permissions:
-  contents: read
-
 jobs:
   run-tests:
     name: JDK ${{ matrix.java }} Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:

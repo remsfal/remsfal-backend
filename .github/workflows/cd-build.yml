@@ -8,10 +8,7 @@ env:
   REGISTRY: ghcr.io
 
 permissions:
-  attestations: write
   contents: read
-  id-token: write
-  packages: write
 
 jobs:
   build-microservices:
@@ -37,6 +34,10 @@ jobs:
     name: "Build and Deploy Docker Image (${{ matrix.microservice }})"
     runs-on: ubuntu-latest
     needs: [build-microservices]
+    permissions:
+      attestations: write
+      id-token: write
+      packages: write
     strategy:
       fail-fast: true
       matrix:
