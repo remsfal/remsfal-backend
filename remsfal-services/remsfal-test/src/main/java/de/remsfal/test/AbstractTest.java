@@ -62,7 +62,8 @@ public abstract class AbstractTest {
     protected Cookie buildCookie(final UUID userId, final String userEmail, final String userName,
         final Map<String, String> projectRoles, final Map<String, String> organizationRoles,
         final Map<String, String> tenancyProjects) {
-        return buildCookie(userId, userEmail, userName, true, projectRoles, organizationRoles, tenancyProjects, Duration.ofMinutes(10));
+        return buildCookie(userId, userEmail, userName, true, projectRoles,
+            organizationRoles, tenancyProjects, Duration.ofMinutes(10));
     }
 
     protected Cookie buildCookie(final UUID userId, final String userEmail, final String userName,

@@ -161,7 +161,8 @@ public class ProjectController {
     }
 
     public MemberRole getProjectOrganizationRole(final UUID organizationId, final UUID projectId) {
-        logger.infov("Retrieving project organization role (organizationId={0}, project={1})", organizationId, projectId);
+        logger.infov("Retrieving project organization role (organizationId={0}, project={1})",
+            organizationId, projectId);
         return projectOrganizationRepository.findByProjectIdAndOrganizationId(projectId, organizationId)
             .map(ProjectOrganizationEntity::getRole)
             .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
