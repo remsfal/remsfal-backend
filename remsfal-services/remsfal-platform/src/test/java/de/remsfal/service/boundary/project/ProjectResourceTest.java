@@ -24,6 +24,7 @@ class ProjectResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects";
 
+    @Override
     @BeforeEach
     protected void setupTestUsers() {
         super.setupTestUsers();

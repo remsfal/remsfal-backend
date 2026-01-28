@@ -28,7 +28,7 @@ public class AbstractResource {
     @Inject
     protected RemsfalPrincipal principal;
 
-    protected final static String FORBIDDEN_MESSAGE = "Inadequate user rights";
+    protected static final String FORBIDDEN_MESSAGE = "Inadequate user rights";
 
     public MemberRole checkProjectReadPermissions(final UUID projectId) {
         if(principal.getProjectRole(projectId) == null) {
