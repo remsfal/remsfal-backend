@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.1-issue-attachments" author="copilot">
+        <comment>Create issue attachments table for storing file references from MinIO</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.issue_attachments (
+                issue_id UUID,
+                attachment_id UUID,
+                file_name TEXT,
+                content_type TEXT,
+                bucket TEXT,
+                object_name TEXT,
+                file_size BIGINT,
+                uploaded_by UUID,
+                created_at TIMESTAMP,
+                PRIMARY KEY (issue_id, attachment_id)
+            ) WITH CLUSTERING ORDER BY (attachment_id DESC);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS issue_attachments_attachment_id_idx ON REMSFAL.issue_attachments (attachment_id);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.issue_attachments;</sql>
+            <sql>DROP INDEX IF EXISTS issue_attachments_attachment_id_idx;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

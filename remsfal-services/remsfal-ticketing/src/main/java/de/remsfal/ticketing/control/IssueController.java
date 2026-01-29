@@ -9,9 +9,12 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
+import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 
@@ -29,6 +32,9 @@ public class IssueController {
 
     @Inject
     IssueRepository repository;
+
+    @Inject
+    IssueAttachmentRepository attachmentRepository;
 
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
@@ -326,5 +332,38 @@ public class IssueController {
     private void removeFrom(Set<UUID> set, UUID id) {
         if (set == null || id == null) return;
         set.remove(id);
+    }
+
+    public IssueAttachmentEntity addAttachment(UUID issueId, String fileName, String contentType,
+                                                String bucket, String objectName, Long fileSize,
+                                                UUID uploadedBy) {
+        logger.infov("Adding attachment to issue (issueId={0}, fileName={1})", issueId, fileName);
+        
+        IssueAttachmentEntity attachment = new IssueAttachmentEntity();
+        attachment.setIssueId(issueId);
+        attachment.generateId();
+        attachment.setFileName(fileName);
+        attachment.setContentType(contentType);
+        attachment.setBucket(bucket);
+        attachment.setObjectName(objectName);
+        attachment.setFileSize(fileSize);
+        attachment.setUploadedBy(uploadedBy);
+        
+        return attachmentRepository.insert(attachment);
+    }
+
+    public List<? extends IssueAttachmentModel> getAttachments(UUID issueId) {
+        logger.infov("Retrieving attachments for issue (issueId={0})", issueId);
+        return attachmentRepository.findByIssueId(issueId);
+    }
+
+    public void deleteAttachment(UUID issueId, UUID attachmentId) {
+        logger.infov("Deleting attachment (issueId={0}, attachmentId={1})", issueId, attachmentId);
+        attachmentRepository.delete(new de.remsfal.ticketing.entity.dto.IssueAttachmentKey(issueId, attachmentId));
+    }
+
+    public void deleteAllAttachments(UUID issueId) {
+        logger.infov("Deleting all attachments for issue (issueId={0})", issueId);
+        attachmentRepository.deleteByIssueId(issueId);
     }
 }

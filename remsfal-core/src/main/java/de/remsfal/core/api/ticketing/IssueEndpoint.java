@@ -34,6 +34,7 @@ import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -76,6 +77,19 @@ public interface IssueEndpoint {
     Response createIssue(
         @Parameter(description = "Issue information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
+
+    @POST
+    @Path("/with-attachments")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Create a new issue with multiple image attachments.")
+    @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
+        headers = @Header(name = "Location", description = "URL of the new issue"))
+    @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    Response createIssueWithAttachments(
+        @Parameter(description = "Multipart form data containing issue information and image files", required = true)
+        MultipartFormDataInput input);
 
     @GET
     @Path("/{issueId}")
