@@ -250,16 +250,6 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
                         .build();
                 }
 
-                String contentType = inputPart.getMediaType().toString();
-                if (!isContentTypeValid(contentType)) {
-                    logger.error("Invalid file type: " + contentType);
-                    return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
-                        .entity("{\"message\": \"Unsupported Media Type: "
-                            + contentType + "\"}")
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
-                }
-
                 try (InputStream fileStream = inputPart.getBody(InputStream.class, null)) {
                     if (fileStream == null || fileStream.available() == 0) {
                         logger.error("File stream is null or empty");
@@ -330,16 +320,6 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
             return false;
         }
         return fileName.matches("^[\\w\\-. ]+$");
-    }
-
-    private boolean isContentTypeValid(String contentType) {
-        if (contentType == null) {
-            return false;
-        }
-        // Normalize content type (remove charset if present)
-        String normalizedContentType = contentType.split(";")[0].trim();
-        Set<String> allowedTypes = fileStorageController.getAllowedTypes();
-        return allowedTypes.contains(normalizedContentType);
     }
 
     public String extractFileNameFromUrl(String fileUrl) {

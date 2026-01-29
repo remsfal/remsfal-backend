@@ -38,13 +38,25 @@ public class FileStorageController {
     /**
      * Uploads a file to storage.
      *
-     * @param inputStream the file content as an input stream
-     * @param fileName the original file name
-     * @param contentType the media type of the file
+     * @param inputStream the file content as an input stream (must not be null)
+     * @param fileName the original file name (must not be null or blank)
+     * @param contentType the media type of the file (must not be null)
      * @return the URL or identifier of the uploaded file
-     * @throws BadRequestException if the content type is invalid
+     * @throws BadRequestException if the content type is invalid, or if inputStream or fileName are invalid
      */
     public String uploadFile(final InputStream inputStream, final String fileName, final MediaType contentType) {
+        if (inputStream == null) {
+            logger.error("Input stream is null");
+            throw new BadRequestException("Input stream cannot be null");
+        }
+        if (fileName == null || fileName.isBlank()) {
+            logger.error("File name is null or blank");
+            throw new BadRequestException("File name cannot be null or blank");
+        }
+        if (contentType == null) {
+            logger.error("Content type is null");
+            throw new BadRequestException("Content type cannot be null");
+        }
         if (!isValidContentType(contentType.toString())) {
             logger.error("Invalid file type: " + contentType);
             throw new BadRequestException("Invalid file type: " + contentType.toString());

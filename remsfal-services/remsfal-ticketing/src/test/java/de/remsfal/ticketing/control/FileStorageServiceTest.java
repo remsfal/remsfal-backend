@@ -132,4 +132,47 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         assertFalse(fileStorageController.isValidContentType("application/x-msdownload"));
         assertFalse(fileStorageController.isValidContentType("video/mp4"));
     }
+
+    @Test
+    public void testUploadFile_NullInputStream_Failure() {
+        String fileName = "test.txt";
+        MediaType contentType = MediaType.valueOf("text/plain");
+
+        Exception thrown = assertThrows(RuntimeException.class,
+            () -> fileStorageController.uploadFile(null, fileName, contentType));
+        assertTrue(thrown.getMessage().contains("Input stream cannot be null"));
+    }
+
+    @Test
+    public void testUploadFile_NullFileName_Failure() {
+        byte[] fileContent = "test content".getBytes();
+        InputStream inputStream = new ByteArrayInputStream(fileContent);
+        MediaType contentType = MediaType.valueOf("text/plain");
+
+        Exception thrown = assertThrows(RuntimeException.class,
+            () -> fileStorageController.uploadFile(inputStream, null, contentType));
+        assertTrue(thrown.getMessage().contains("File name cannot be null or blank"));
+    }
+
+    @Test
+    public void testUploadFile_BlankFileName_Failure() {
+        byte[] fileContent = "test content".getBytes();
+        InputStream inputStream = new ByteArrayInputStream(fileContent);
+        MediaType contentType = MediaType.valueOf("text/plain");
+
+        Exception thrown = assertThrows(RuntimeException.class,
+            () -> fileStorageController.uploadFile(inputStream, "  ", contentType));
+        assertTrue(thrown.getMessage().contains("File name cannot be null or blank"));
+    }
+
+    @Test
+    public void testUploadFile_NullContentType_Failure() {
+        byte[] fileContent = "test content".getBytes();
+        InputStream inputStream = new ByteArrayInputStream(fileContent);
+        String fileName = "test.txt";
+
+        Exception thrown = assertThrows(RuntimeException.class,
+            () -> fileStorageController.uploadFile(inputStream, fileName, null));
+        assertTrue(thrown.getMessage().contains("Content type cannot be null"));
+    }
 }
