@@ -269,7 +269,12 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
                             .build();
                     }
 
-                    String fileUrl = fileStorageController.uploadFile(input);
+                    // Pass transport-neutral parameters to control layer
+                    String fileUrl = fileStorageController.uploadFile(
+                        fileStream,
+                        fileName,
+                        inputPart.getMediaType()
+                    );
 
                     ChatMessageEntity fileMetadataEntity = chatMessageController
                         .sendChatMessage(sessionId, principal.getId(), ContentType.FILE.name(), fileUrl);
