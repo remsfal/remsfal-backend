@@ -5,6 +5,7 @@ import io.minio.Result;
 import io.minio.messages.Item;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         InputStream inputStream = new ByteArrayInputStream(fileContent);
 
         fileStorageController.logger = Logger.getLogger(FileStorageController.class);
-        Exception thrown = assertThrows(RuntimeException.class, 
+        Exception thrown = assertThrows(BadRequestException.class, 
             () -> fileStorageController.uploadFile(inputStream, fileName, contentType));
         assertTrue(thrown.getMessage().contains("Invalid file type"));
     }
@@ -138,7 +139,7 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         String fileName = "test.txt";
         MediaType contentType = MediaType.valueOf("text/plain");
 
-        Exception thrown = assertThrows(RuntimeException.class,
+        Exception thrown = assertThrows(BadRequestException.class,
             () -> fileStorageController.uploadFile(null, fileName, contentType));
         assertTrue(thrown.getMessage().contains("Input stream cannot be null"));
     }
@@ -149,7 +150,7 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         InputStream inputStream = new ByteArrayInputStream(fileContent);
         MediaType contentType = MediaType.valueOf("text/plain");
 
-        Exception thrown = assertThrows(RuntimeException.class,
+        Exception thrown = assertThrows(BadRequestException.class,
             () -> fileStorageController.uploadFile(inputStream, null, contentType));
         assertTrue(thrown.getMessage().contains("File name cannot be null or blank"));
     }
@@ -160,7 +161,7 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         InputStream inputStream = new ByteArrayInputStream(fileContent);
         MediaType contentType = MediaType.valueOf("text/plain");
 
-        Exception thrown = assertThrows(RuntimeException.class,
+        Exception thrown = assertThrows(BadRequestException.class,
             () -> fileStorageController.uploadFile(inputStream, "  ", contentType));
         assertTrue(thrown.getMessage().contains("File name cannot be null or blank"));
     }
@@ -171,7 +172,7 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         InputStream inputStream = new ByteArrayInputStream(fileContent);
         String fileName = "test.txt";
 
-        Exception thrown = assertThrows(RuntimeException.class,
+        Exception thrown = assertThrows(BadRequestException.class,
             () -> fileStorageController.uploadFile(inputStream, fileName, null));
         assertTrue(thrown.getMessage().contains("Content type cannot be null"));
     }

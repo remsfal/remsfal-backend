@@ -73,6 +73,14 @@ public class FileStorageController {
         storage.deleteFile(fileName);
     }
 
+    /**
+     * Validates whether the given content type is allowed for file uploads.
+     * The content type is normalized by removing any parameters (e.g., charset)
+     * before checking against the allowed types set.
+     *
+     * @param contentType the content type to validate
+     * @return true if the content type is allowed, false otherwise
+     */
     public boolean isValidContentType(String contentType) {
         logger.infov("Checking if content type {0} is valid", contentType);
         // Normalize the content type to remove parameters (e.g., charset=UTF-8)
