@@ -43,16 +43,19 @@ public abstract class UserJson implements CustomerModel {
 
     @Null(groups = PostValidation.class)
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     public abstract Set<UserContext> getUserContexts();
 
     @Email
     @Nullable
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
+    @Schema(example = "user@example.com")
     @Override
     public abstract String getEmail();
 
@@ -98,6 +101,7 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getLocale();
 
     @Nullable
+    @Schema(example = "[\"test@example.com\", \"info@example.com\"]")
     @Override
     public abstract List<
         @Email
@@ -106,11 +110,13 @@ public abstract class UserJson implements CustomerModel {
 
     @Nullable
     @Null
+    @Schema(readOnly = true)
     @Override
     public abstract LocalDate getRegisteredDate();
 
     @Nullable
     @Null
+    @Schema(readOnly = true)
     @Override
     public abstract LocalDateTime getLastLoginDate();
 
