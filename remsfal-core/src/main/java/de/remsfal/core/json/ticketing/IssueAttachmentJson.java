@@ -1,0 +1,72 @@
+package de.remsfal.core.json.ticketing;
+
+import jakarta.annotation.Nullable;
+
+import java.util.UUID;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Immutable;
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.model.ticketing.IssueAttachmentModel;
+
+/**
+ * @author GitHub Copilot
+ */
+@Immutable
+@ImmutableStyle
+@Schema(description = "An issue attachment")
+@JsonDeserialize(as = ImmutableIssueAttachmentJson.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+public abstract class IssueAttachmentJson implements IssueAttachmentModel {
+
+    @Nullable
+    @Override
+    public abstract UUID getIssueId();
+
+    @Nullable
+    @Override
+    public abstract UUID getAttachmentId();
+
+    @Nullable
+    @Override
+    public abstract String getFileName();
+
+    @Nullable
+    @Override
+    public abstract String getContentType();
+
+    @Nullable
+    @Override
+    public abstract String getBucket();
+
+    @Nullable
+    @Override
+    public abstract String getObjectName();
+
+    @Nullable
+    @Override
+    public abstract Long getFileSize();
+
+    @Nullable
+    @Override
+    public abstract UUID getUploadedBy();
+
+    public static IssueAttachmentJson valueOf(final IssueAttachmentModel model) {
+        return ImmutableIssueAttachmentJson.builder()
+            .issueId(model.getIssueId())
+            .attachmentId(model.getAttachmentId())
+            .fileName(model.getFileName())
+            .contentType(model.getContentType())
+            .bucket(model.getBucket())
+            .objectName(model.getObjectName())
+            .fileSize(model.getFileSize())
+            .uploadedBy(model.getUploadedBy())
+            .build();
+    }
+
+}

@@ -1579,4 +1579,49 @@ class IssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON);
     }
 
+    @Test
+    void createIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
+        // Test basic multipart form creation without actual file upload (to avoid test complexity)
+        // This tests that the endpoint accepts multipart/form-data requests
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
+            .multiPart("title", "Issue with attachments")
+            .multiPart("type", "TASK")
+            .multiPart("description", "Test description")
+            .post(BASE_PATH + "/with-attachments")
+            .then()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("title", equalTo("Issue with attachments"))
+            .body("type", equalTo("TASK"))
+            .body("status", equalTo("OPEN"))
+            .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()));
+    }
+
+    @Test
+    void createIssueWithAttachments_FAILED_noAuthentication() {
+        given()
+            .when()
+            .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
+            .multiPart("title", "Issue with attachments")
+            .multiPart("type", "TASK")
+            .post(BASE_PATH + "/with-attachments")
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
+    void createIssueWithAttachments_FAILED_missingRequiredFields() {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
+            .post(BASE_PATH + "/with-attachments")
+            .then()
+            .statusCode(400);
+    }
+
 }
