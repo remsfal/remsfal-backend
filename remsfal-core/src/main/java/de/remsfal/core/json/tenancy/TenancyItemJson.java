@@ -33,6 +33,9 @@ public abstract class TenancyItemJson {
     @Schema(description = "Title of the node", examples = "Main Building")
     public abstract String getRentalTitle();
 
+    @Schema(description = "Location of the node (address or custom)", examples = "Berliner Str. 123, 12345 Berlin")
+    public abstract String getLocation();
+
     public abstract Boolean isActive();
 
     public static TenancyItemJson valueOf(final TenancyModel tenancyModel, final RentalUnitModel unitModel) {
@@ -41,6 +44,7 @@ public abstract class TenancyItemJson {
             .name(unitModel.getTitle())
             .rentalType(unitModel.getType())
             .rentalTitle(unitModel.getTitle())
+            .location(unitModel.getLocation())
             .active(tenancyModel.isActive())
             .build();
     }
