@@ -18,16 +18,16 @@ import org.jboss.logging.Logger;
 @ApplicationScoped
 public class FileStorageController {
 
-    private final Set<String> allowedTypes = Set.of(
-        "image/jpg",
-        "image/jpeg",
-        "image/png",
-        "image/gif",
-        "text/plain",
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/json");
+    private final Set<MediaType> allowedTypes = Set.of(
+        MediaType.TEXT_PLAIN_TYPE,
+        MediaType.valueOf("image/jpg"),
+        MediaType.valueOf("image/jpeg"),
+        MediaType.valueOf("image/png"),
+        MediaType.valueOf("image/gif"),
+        MediaType.valueOf("application/pdf"),
+        MediaType.APPLICATION_JSON_TYPE,
+        MediaType.APPLICATION_XML_TYPE
+    );
 
     @Inject
     Logger logger;
@@ -57,7 +57,7 @@ public class FileStorageController {
             logger.error("Content type is null");
             throw new BadRequestException("Content type cannot be null");
         }
-        if (!isValidContentType(contentType.toString())) {
+        if (!isContentTypeValid(contentType)) {
             logger.error("Invalid file type: " + contentType);
             throw new BadRequestException("Invalid file type: " + contentType.toString());
         }
@@ -81,18 +81,12 @@ public class FileStorageController {
      * @param contentType the content type to validate
      * @return true if the content type is allowed, false otherwise
      */
-    public boolean isValidContentType(String contentType) {
-        logger.infov("Checking if content type {0} is valid", contentType);
+    public boolean isContentTypeValid(final MediaType contentType) {
+        logger.debugv("Checking if content type {0} is valid", contentType);
         // Normalize the content type to remove parameters (e.g., charset=UTF-8)
-        String normalizedContentType = contentType.split(";")[0].trim();
-        boolean isValid = allowedTypes.contains(normalizedContentType);
-        if (!isValid) {
-            logger.warnv("Content type {0} is not allowed", contentType);
-        }
-        return isValid;
+        return allowedTypes.stream().anyMatch(
+            allowedType -> allowedType.isCompatible(contentType)
+        );
     }
 
-    public Set<String> getAllowedTypes() {
-        return allowedTypes;
-    }
 }

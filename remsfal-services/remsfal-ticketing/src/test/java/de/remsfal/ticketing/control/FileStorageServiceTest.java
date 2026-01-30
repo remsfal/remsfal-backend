@@ -123,15 +123,15 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
 
     @Test
     public void testIsValidContentType_Valid() {
-        assertTrue(fileStorageController.isValidContentType("image/png"));
-        assertTrue(fileStorageController.isValidContentType("application/pdf"));
-        assertTrue(fileStorageController.isValidContentType("text/plain"));
+        assertTrue(fileStorageController.isContentTypeValid(MediaType.valueOf("image/png")));
+        assertTrue(fileStorageController.isContentTypeValid(MediaType.valueOf("application/pdf")));
+        assertTrue(fileStorageController.isContentTypeValid(MediaType.valueOf("text/plain")));
     }
 
     @Test
     public void testIsValidContentType_Invalid() {
-        assertFalse(fileStorageController.isValidContentType("application/x-msdownload"));
-        assertFalse(fileStorageController.isValidContentType("video/mp4"));
+        assertFalse(fileStorageController.isContentTypeValid(MediaType.valueOf("application/x-msdownload")));
+        assertFalse(fileStorageController.isContentTypeValid(MediaType.valueOf("video/mp4")));
     }
 
     @Test

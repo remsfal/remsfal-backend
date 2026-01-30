@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.ws.rs.NotFoundException;
@@ -250,6 +249,14 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
                         .build();
                 }
 
+                if (!fileStorageController.isContentTypeValid(inputPart.getMediaType())) {
+                    logger.error("Invalid file type: " + inputPart.getMediaType());
+                    return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
+                        .entity("{\"message\": \"Unsupported Media Type: "
+                            + inputPart.getMediaType() + "\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+                }
                 try (InputStream fileStream = inputPart.getBody(InputStream.class, null)) {
                     if (fileStream == null || fileStream.available() == 0) {
                         logger.error("File stream is null or empty");
