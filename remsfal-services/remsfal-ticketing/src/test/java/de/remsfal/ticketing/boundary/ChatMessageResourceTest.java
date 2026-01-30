@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -20,8 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
@@ -66,9 +66,11 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
     CqlSession cqlSession;
 
     static final String BASE_PATH = "/ticketing/v1/issues";
-    static final String CHAT_SESSION_PATH = BASE_PATH + "/{issueId}/chats";
-    static final String CHAT_SESSION_ID_PATH = CHAT_SESSION_PATH + "/{sessionId}";
+    static final String CHAT_SESSIONS_PATH = BASE_PATH + "/{issueId}/chats";
+    static final String CHAT_SESSION_ID_PATH = CHAT_SESSIONS_PATH + "/{sessionId}";
     static final String CHAT_MESSAGES_PATH = CHAT_SESSION_ID_PATH + "/messages";
+    static final String CHAT_MESSAGE_ID_PATH = CHAT_MESSAGES_PATH + "/{messageId}";
+    static final String CHAT_UPLOAD_PATH = CHAT_MESSAGES_PATH + "/upload";
 
     static final String CHAT_MESSAGE_JSON_PAYLOAD = "{"
         + "\"session_id\": \"" + TicketingTestData.CHAT_SESSION_ID_1 + "\","
@@ -150,29 +152,27 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
         return first + " " + last;
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_MESSAGES_PATH })
-    void sendMessage_FAILURE_INVALID_PAYLOAD(String path) {
+    @Test
+    void sendMessage_FAILURE_INVALID_PAYLOAD() {
         String largePayload = "{\"content\":\"" + "a".repeat(9000) + "\"}";
         given()
             .body(largePayload)
             .contentType(ContentType.JSON)
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .post(CHAT_MESSAGES_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_MESSAGES_PATH })
-    void sendMessage_INVALID_INPUT(String path) {
+    @Test
+    void sendMessage_INVALID_INPUT() {
         given()
             .body(CHAT_MESSAGE_JSON_PAYLOAD_BLANK_CONTENT)
             .contentType(ContentType.JSON)
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .post(CHAT_MESSAGES_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
 
@@ -181,33 +181,31 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .post(CHAT_MESSAGES_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_MESSAGES_PATH })
-    void sendMessage_SUCCESS(String path) {
+    @Test
+    void sendMessage_SUCCESS() {
         given()
             .body(CHAT_MESSAGE_JSON_PAYLOAD)
             .contentType(ContentType.JSON)
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .post(CHAT_MESSAGES_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.CREATED.getStatusCode())
             .contentType(ContentType.JSON)
             .body("messageId", notNullValue());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_MESSAGES_PATH })
-    void getChatMessages_SUCCESS(String path) {
+    @Test
+    void getChatMessages_SUCCESS() {
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .get(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .get(CHAT_MESSAGES_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -222,13 +220,12 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .body("messages[1].MESSAGE_CONTENT", equalTo("Hello World"));
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/{messageId}" })
-    void getChatMessage_SUCCESS(String path) {
+    @Test
+    void getChatMessage_SUCCESS() {
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .get(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
+            .get(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -241,18 +238,12 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .body("createdAt", notNullValue());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/{messageId}" })
-    void getChatMessage_FILETYPE_SUCCESS(String path) {
-        String resolvedPath = path
-            .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString())
-            .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_3.toString());
-
+    @Test
+    void getChatMessage_FILETYPE_SUCCESS() {
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .get(resolvedPath)
+            .get(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_3)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -260,13 +251,12 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .body(not(emptyString()));
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_MESSAGES_PATH })
-    void getChatMessages_FAILURE(String path) {
+    @Test
+    void getChatMessages_FAILURE() {
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .get(path, TicketingTestData.ISSUE_ID_1, UUID.randomUUID().toString())
+            .get(CHAT_MESSAGES_PATH, TicketingTestData.ISSUE_ID_1, UUID.randomUUID().toString())
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
@@ -275,22 +265,17 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), rolesNone(), Duration.ofMinutes(10)))
-            .get(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .get(CHAT_MESSAGES_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/{messageId}" })
-    void getChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path
-            .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString());
+    @Test
+    void getChatMessage_FAILURE() {
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .get(path_project1_session1
-                .replace("{messageId}", UUID.randomUUID().toString()))
+            .get(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, UUID.randomUUID())
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
 
@@ -299,15 +284,13 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), rolesNone(), Duration.ofMinutes(10)))
-            .get(path_project1_session1
-                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
+            .get(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/{messageId}" })
-    void updateChatMessage_SUCCESS(String path) {
+    @Test
+    void updateChatMessage_SUCCESS() {
         String updatedMessageJson = "{\"content\":\"Updated Hello World\"}";
 
         given()
@@ -315,7 +298,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .put(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
+            .put(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
@@ -328,23 +311,17 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .body("createdAt", notNullValue());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/{messageId}" })
-    void updateChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path
-            .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString());
+    @Test
+    void updateChatMessage_FAILURE() {
         String updatedMessageJsonBlank = "{\"content\":\"\"}";
         String updatedMessageJson = "{\"content\":\"Updated Hello World\"}";
-        String put_request = path_project1_session1
-            .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString());
 
         given()
             .body(updatedMessageJsonBlank)
             .contentType(ContentType.JSON)
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .put(put_request)
+            .put(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
             .contentType(ContentType.JSON);
@@ -356,7 +333,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), rolesNone(), Duration.ofMinutes(10)))
-            .put(put_request)
+            .put(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
@@ -365,34 +342,27 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .put(path_project1_session1
-                .replace("{messageId}", UUID.randomUUID().toString()))
+            .put(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, UUID.randomUUID())
             .then()
             .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/{messageId}" })
-    void deleteChatMessage_SUCCESS(String path) {
+    @Test
+    void deleteChatMessage_SUCCESS() {
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .delete(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
+            .delete(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
     }
 
-    @ParameterizedTest(name = "{displayName} - {arguments}")
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/{messageId}" })
-    void deleteChatMessage_FAILURE(String path) {
-        String path_project1_session1 = path
-            .replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-            .replace("{sessionId}", TicketingTestData.CHAT_SESSION_ID_1.toString());
+    @Test
+    void deleteChatMessage_FAILURE() {
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .delete(path_project1_session1
-                .replace("{messageId}", UUID.randomUUID().toString()))
+            .delete(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, UUID.randomUUID())
             .then()
             .statusCode(Response.Status.NO_CONTENT.getStatusCode());
 
@@ -401,24 +371,20 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .cookie(buildCookie(TicketingTestData.USER_ID_3, TicketingTestData.USER_EMAIL_3,
                     nameOf(TicketingTestData.USER_FIRST_NAME_3, TicketingTestData.USER_LAST_NAME_3), true,
                     rolesNone(), rolesNone(), rolesNone(), Duration.ofMinutes(10)))
-            .delete(path_project1_session1
-                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
+            .delete(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1, TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
 
         given()
             .when()
             .cookie(buildManagerCookie(rolesManagerP1()))
-            .delete(path.replace("{issueId}", TicketingTestData.ISSUE_ID_1.toString())
-                .replace("{sessionId}", UUID.randomUUID().toString())
-                .replace("{messageId}", TicketingTestData.CHAT_MESSAGE_ID_1.toString()))
+            .delete(CHAT_MESSAGE_ID_PATH, TicketingTestData.ISSUE_ID_1, UUID.randomUUID(), TicketingTestData.CHAT_MESSAGE_ID_1)
             .then()
             .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/upload" })
-    void uploadFile_SUCCESS(String path) throws Exception {
+    @Test
+    void uploadFile_SUCCESS() throws Exception {
         Path tempDir = Files.createTempDirectory("test-upload");
         Path tempFile = tempDir.resolve("test-file.txt");
         Files.writeString(tempFile, "This is a test file content");
@@ -430,7 +396,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
                     .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
                     .cookie(buildManagerCookie(rolesManagerP1()))
                     .when()
-                    .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+                    .post(CHAT_UPLOAD_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
                     .then()
                     .statusCode(Response.Status.CREATED.getStatusCode())
                     .contentType(ContentType.JSON)
@@ -476,29 +442,28 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
         assertTrue(fileExists, "Uploaded file should exist in the bucket");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/upload" })
-    void uploadFile_MissingFilePart_FAILURE(String path) {
+    @Test
+    void uploadFile_MissingFilePart_FAILURE() {
         given()
             .multiPart("someField", "someValue") // This ensures a valid multipart request with a boundary
             .cookie(buildManagerCookie(rolesManagerP1()))
             .when()
-            .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .post(CHAT_UPLOAD_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
             .body("message", equalTo("No file part found in the form data"));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/upload" })
-    void uploadFile_InvalidContentType_FAILURE(String path) throws Exception {
+    @Test
+    void uploadFile_InvalidContentType_FAILURE() throws Exception {
         Path tempFile = Files.createTempFile("test-file", ".exe"); // Unsupported file type
+        Files.write(tempFile, "dangerous code".getBytes(StandardCharsets.UTF_8));
         try {
             given()
                 .multiPart("file", tempFile.toFile(), "application/x-msdownload")
                 .cookie(buildManagerCookie(rolesManagerP1()))
                 .when()
-                .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+                .post(CHAT_UPLOAD_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
                 .then()
                 .statusCode(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode())
                 .body("message", containsString("Unsupported Media Type: application/x-msdownload"));
@@ -508,22 +473,20 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/upload" })
-    void uploadFile_EmptyInputStream_FAILURE(String path) {
+    @Test
+    void uploadFile_EmptyInputStream_FAILURE() {
         given()
             .multiPart("file", "", MediaType.TEXT_PLAIN) // Empty file content
             .cookie(buildManagerCookie(rolesManagerP1()))
             .when()
-            .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+            .post(CHAT_UPLOAD_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
             .body("message", equalTo("Failed to read file stream: unknown"));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { CHAT_SESSION_ID_PATH + "/messages/upload" })
-    void uploadFile_ChatSessionClosed_FAILURE(String path) throws Exception {
+    @Test
+    void uploadFile_ChatSessionClosed_FAILURE() throws Exception {
         logger.info("expected session id: " + TicketingTestData.CHAT_SESSION_ID_1);
         logger.info("actual session id: " + TicketingTestData.CHAT_SESSION_ID_1);
         Path tempFile = Files.createTempFile("test-file", ".txt");
@@ -532,7 +495,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
                 .multiPart("file", tempFile.toFile(), MediaType.TEXT_PLAIN)
                 .cookie(buildManagerCookie(rolesManagerP1()))
                 .when()
-                .post(path, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
+                .post(CHAT_UPLOAD_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
         } finally {
