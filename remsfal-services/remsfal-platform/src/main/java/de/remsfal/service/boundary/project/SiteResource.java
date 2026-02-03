@@ -10,7 +10,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.util.UUID;
 
 /**
@@ -26,8 +25,7 @@ public class SiteResource extends AbstractProjectResource implements SiteEndpoin
     public Response createSite(final UUID projectId, final UUID propertyId, final SiteJson site) {
         checkPropertyWritePermissions(projectId);
         final SiteModel model = controller.createSite(projectId, propertyId, site);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
-        return Response.created(location)
+        return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(SiteJson.valueOf(model))
             .build();

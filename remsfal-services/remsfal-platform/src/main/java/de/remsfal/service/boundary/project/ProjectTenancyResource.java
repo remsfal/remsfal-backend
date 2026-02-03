@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.project;
 
-import java.net.URI;
 import java.util.UUID;
 
 import jakarta.enterprise.context.RequestScoped;
@@ -39,19 +38,18 @@ public class ProjectTenancyResource extends AbstractProjectResource implements P
     @Override
     public Response createTenancy(final UUID projectId, final TenancyInfoJson tenancy) {
         checkTenancyWritePermissions(projectId);
-        final TenancyModel entity = tenancyController.createTenancy(projectId, tenancy);
-        final URI location = uri.getAbsolutePathBuilder().path(String.valueOf(entity.getId())).build();
-        return Response.created(location)
+        final TenancyModel model = tenancyController.createTenancy(projectId, tenancy);
+        return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(TenancyInfoJson.valueOf(entity))
+            .entity(TenancyInfoJson.valueOf(model))
             .build();
     }
 
     @Override
     public TenancyInfoJson updateTenancy(final UUID projectId, final UUID tenancyId, final TenancyInfoJson tenancy) {
         checkTenancyWritePermissions(projectId);
-        final TenancyModel entity = tenancyController.updateTenancy(projectId, tenancyId, tenancy);
-        return TenancyInfoJson.valueOf(entity);
+        final TenancyModel model = tenancyController.updateTenancy(projectId, tenancyId, tenancy);
+        return TenancyInfoJson.valueOf(model);
     }
 
 }

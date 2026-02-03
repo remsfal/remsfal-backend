@@ -9,7 +9,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.util.UUID;
 
 /**
@@ -28,8 +27,7 @@ public class CommercialResource extends AbstractProjectResource implements Comme
         final CommercialJson commercial) {
         checkPropertyWritePermissions(projectId);
         final CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
-        return Response.created(location)
+        return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(CommercialJson.valueOf(model))
             .build();

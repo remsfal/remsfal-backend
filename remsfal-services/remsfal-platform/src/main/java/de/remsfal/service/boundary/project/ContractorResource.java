@@ -11,7 +11,6 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,8 +34,7 @@ public class ContractorResource extends AbstractProjectResource implements Contr
     public Response createContractor(final UUID projectId, final ContractorJson contractor) {
         checkTenancyWritePermissions(projectId);
         ContractorModel model = controller.createContractor(principal, projectId, contractor);
-        URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
-        return Response.created(location)
+        return getCreatedResponseBuilder(model.getId())
                 .type(MediaType.APPLICATION_JSON)
                 .entity(ContractorJson.valueOf(model))
                 .build();

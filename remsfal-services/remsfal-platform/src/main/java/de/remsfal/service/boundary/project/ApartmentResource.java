@@ -9,7 +9,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.util.UUID;
 
 /**
@@ -26,8 +25,7 @@ public class ApartmentResource extends AbstractProjectResource implements Apartm
         final ApartmentJson apartment) {
         checkPropertyWritePermissions(projectId);
         final ApartmentModel model = controller.createApartment(projectId, buildingId, apartment);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
-        return Response.created(location)
+        return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(ApartmentJson.valueOf(model))
             .build();
