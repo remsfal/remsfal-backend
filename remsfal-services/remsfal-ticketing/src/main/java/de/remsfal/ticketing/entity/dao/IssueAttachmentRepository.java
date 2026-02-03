@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * @author GitHub Copilot
- */
 @ApplicationScoped
 public class IssueAttachmentRepository extends AbstractRepository<IssueAttachmentEntity, IssueAttachmentKey> {
 

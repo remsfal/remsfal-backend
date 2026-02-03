@@ -1,11 +1,10 @@
 package de.remsfal.core.model.ticketing;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
  * Represents an attachment associated with an issue.
- *
- * @author GitHub Copilot
  */
 public interface IssueAttachmentModel {
 
@@ -17,12 +16,10 @@ public interface IssueAttachmentModel {
 
     String getContentType();
 
-    String getBucket();
-
     String getObjectName();
 
-    Long getFileSize();
-
     UUID getUploadedBy();
+
+    Instant getCreatedAt();
 
 }

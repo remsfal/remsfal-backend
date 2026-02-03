@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.boundary;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
@@ -17,15 +18,12 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
+import de.remsfal.common.model.FileUploadData;
+import de.remsfal.common.validation.MediaTypeValidator;
 import de.remsfal.core.api.ticketing.ChatMessageEndpoint;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
-import de.remsfal.core.json.ticketing.FileUploadJson;
-import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.ticketing.control.ChatMessageController;
 import de.remsfal.ticketing.control.ChatSessionController;
-import de.remsfal.ticketing.control.FileStorageController;
-import de.remsfal.ticketing.control.OcrEventProducer;
-import de.remsfal.ticketing.entity.storage.FileStorage;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
 import io.quarkus.security.Authenticated;
@@ -50,12 +48,6 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
 
     @Inject
     Logger logger;
-
-    @Inject
-    FileStorageController fileStorageController;
-
-    @Inject
-    OcrEventProducer ocrEventProducer;
 
     private static final String NOT_FOUND_SESSION_MESSAGE = "Chat session not found";
 
@@ -143,8 +135,8 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
                 String fileUrl = chatMessageEntity.getUrl();
                 String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
 
-                // Download the file from the storage service
-                InputStream fileStream = fileStorageController.downloadFile(fileName);
+                // Download the file from the storage service via controller
+                InputStream fileStream = chatMessageController.downloadFile(sessionId, messageId);
                 // Stream the file content to the client as a binary response
                 return Response.ok((StreamingOutput) output -> {
                     byte[] buffer = new byte[8192];
@@ -249,15 +241,19 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
                         .build();
                 }
 
-                if (!fileStorageController.isContentTypeValid(inputPart.getMediaType())) {
-                    logger.error("Invalid file type: " + inputPart.getMediaType());
+                // Validate content type before processing
+                MediaType contentType = inputPart.getMediaType();
+                if (!MediaTypeValidator.isValid(contentType)) {
+                    logger.error("Invalid file type: " + contentType);
                     return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
-                        .entity("{\"message\": \"Unsupported Media Type: "
-                            + inputPart.getMediaType() + "\"}")
+                        .entity("{\"message\": \"Unsupported Media Type: " + contentType + "\"}")
                         .type(MediaType.APPLICATION_JSON)
                         .build();
                 }
-                try (InputStream fileStream = inputPart.getBody(InputStream.class, null)) {
+
+                // Extract file data from InputPart and create transport-neutral wrapper
+                try {
+                    InputStream fileStream = inputPart.getBody(InputStream.class, null);
                     if (fileStream == null || fileStream.available() == 0) {
                         logger.error("File stream is null or empty");
                         return Response.status(Response.Status.BAD_REQUEST)
@@ -266,24 +262,13 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
                             .build();
                     }
 
-                    // Pass transport-neutral parameters to control layer
-                    String fileUrl = fileStorageController.uploadFile(
-                        fileStream,
-                        fileName,
-                        inputPart.getMediaType()
-                    );
+                    FileUploadData fileData = new FileUploadData(fileStream, fileName, contentType);
 
-                    ChatMessageEntity fileMetadataEntity = chatMessageController
-                        .sendChatMessage(sessionId, principal.getId(), ContentType.FILE.name(), fileUrl);
+                    // Upload file via controller
+                    ChatMessageEntity fileMetadataEntity =
+                        chatMessageController.uploadFile(principal, sessionId, fileData);
 
-                    FileUploadJson uploadedFile = ImmutableFileUploadJson.builder()
-                        .sessionId(sessionId)
-                        .messageId(fileMetadataEntity.getMessageId())
-                        .senderId(principal.getId())
-                        .bucket(FileStorage.DEFAULT_BUCKET_NAME)
-                        .fileName(extractFileNameFromUrl(fileUrl))
-                        .build();
-                    ocrEventProducer.sendOcrRequest(uploadedFile);
+                    String fileUrl = fileMetadataEntity.getUrl();
                     String mergedJson = String.format(
                         "{\"fileId\": \"%s\", \"fileUrl\": \"%s\", \"sessionId\":" +
                         " \"%s\", \"createdAt\": \"%s\", \"sender\": \"%s\"}",
@@ -295,6 +280,12 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
 
                     return Response.status(Response.Status.CREATED)
                         .entity(mergedJson)
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+                } catch (IOException e) {
+                    logger.error("Error reading input part", e);
+                    return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"message\": \"Failed to read file data\"}")
                         .type(MediaType.APPLICATION_JSON)
                         .build();
                 }
@@ -329,17 +320,4 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
         return fileName.matches("^[\\w\\-. ]+$");
     }
 
-    public String extractFileNameFromUrl(String fileUrl) {
-        if (fileUrl == null || fileUrl.isBlank()) {
-            throw new IllegalArgumentException("File URL cannot be null or empty");
-        }
-        int lastSlashIndex = fileUrl.lastIndexOf('/');
-        if (lastSlashIndex == -1) {
-            return fileUrl;
-        }
-        if (lastSlashIndex == fileUrl.length() - 1) {
-            throw new IllegalArgumentException("Invalid file URL format: " + fileUrl);
-        }
-        return fileUrl.substring(lastSlashIndex + 1);
-    }
 }

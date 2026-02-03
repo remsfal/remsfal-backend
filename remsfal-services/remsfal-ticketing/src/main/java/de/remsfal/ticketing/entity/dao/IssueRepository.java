@@ -12,18 +12,23 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import jakarta.ws.rs.BadRequestException;
-
 
 import java.time.Instant;
 import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
-import java.util.HashSet;
 
 @ApplicationScoped
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
+
+    // ---- Relation columns ----
+    static final String BLOCKS_IDS         = "blocks_issue_ids";
+    static final String BLOCKED_BY_IDS     = "blocked_by_issue_ids";
+    static final String RELATED_TO_IDS     = "related_to_issue_ids";
+    static final String DUPLICATE_OF_IDS   = "duplicate_of_issue_ids";
+    static final String PARENT_ISSUE_ID    = "parent_issue_id";
+    static final String CHILDREN_ISSUE_IDS = "children_issue_ids";
 
     @Inject
     CqlSession session;
@@ -96,162 +101,168 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             .execute();
     }
 
-    // ---- Relation columns (Cassandra) ----
-    private static final String COL_BLOCKS = "blocks_issue_ids";
-    private static final String COL_BLOCKED_BY = "blocked_by_issue_ids";
-    private static final String COL_RELATED_TO = "related_to_issue_ids";
-    private static final String COL_DUPLICATE_OF = "duplicate_of_issue_ids";
-    private static final String COL_PARENT_ISSUE = "parent_issue_id";
-    private static final String COL_CHILDREN_ISSUES = "children_issue_ids";
-
-    // ---- CQL templates ----
-    private static final String UPDATE_SET_TEMPLATE =
-        "UPDATE remsfal.issues SET %s = %s %s ? WHERE project_id = ? AND issue_id = ?";
-
-    // '+' add / '-' remove
-    private SimpleStatement setUpdate(String column, boolean add, UUID projectId, UUID issueId, UUID deltaId) {
-        String op = add ? "+" : "-";
-        String cql = String.format(UPDATE_SET_TEMPLATE, column, column, op);
-        return SimpleStatement.newInstance(cql, Set.of(deltaId), projectId, issueId);
+    public void addBlocks(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        addBidirectionalRelation(BLOCKS_IDS, BLOCKED_BY_IDS, projectId, sourceId, targetId);
     }
 
-    /**
-     * Apply a single bidirectional relation update as UNLOGGED BATCH.
-     */
-    private void applyBidirectional(UUID projectId,
-        UUID sourceId,
-        UUID targetId,
-        boolean add,
-        String sourceColumn,
-        String targetColumn) {
-        if (projectId == null || sourceId == null || targetId == null) return;
-        if (sourceId.equals(targetId)) return;
+    public void removeBlocks(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        removeBidirectionalRelation(BLOCKS_IDS, BLOCKED_BY_IDS, projectId, sourceId, targetId);
+    }
 
+    public void addBlockedBy(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        addBidirectionalRelation(BLOCKED_BY_IDS, BLOCKS_IDS, projectId, sourceId, targetId);
+    }
+
+    public void removeBlockedBy(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        removeBidirectionalRelation(BLOCKED_BY_IDS, BLOCKS_IDS, projectId, sourceId, targetId);
+    }
+
+    public void addRelatedTo(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        addBidirectionalRelation(RELATED_TO_IDS, RELATED_TO_IDS, projectId, sourceId, targetId);
+    }
+
+    public void removeRelatedTo(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        removeBidirectionalRelation(RELATED_TO_IDS, RELATED_TO_IDS, projectId, sourceId, targetId);
+    }
+
+    public void addDuplicateOf(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        addBidirectionalRelation(DUPLICATE_OF_IDS, DUPLICATE_OF_IDS, projectId, sourceId, targetId);
+    }
+
+    public void removeDuplicateOf(final UUID projectId, final UUID sourceId, final UUID targetId) {
+        removeBidirectionalRelation(DUPLICATE_OF_IDS, DUPLICATE_OF_IDS, projectId, sourceId, targetId);
+    }
+
+    public void setParentIssue(final UUID projectId, final UUID childrenId, final UUID parentId) {
         BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
-            .addStatement(setUpdate(sourceColumn, add, projectId, sourceId, targetId))
-            .addStatement(setUpdate(targetColumn, add, projectId, targetId, sourceId))
-            .build();
-
-        session.execute(batch);
-    }
-
-    private void applyBidirectionalMany(UUID projectId,
-        UUID sourceId,
-        Set<UUID> targets,
-        boolean add,
-        String sourceColumn,
-        String targetColumn) {
-        if (targets == null || targets.isEmpty()) return;
-        for (UUID t : new HashSet<>(targets)) {
-            if (t == null) continue;
-            applyBidirectional(projectId, sourceId, t, add, sourceColumn, targetColumn);
-        }
-    }
-
-    // ---- Public API used by Controller ----
-
-    public void addBlocks(UUID projectId, UUID sourceId, Set<UUID> targets) {
-        applyBidirectionalMany(projectId, sourceId, targets, true, COL_BLOCKS, COL_BLOCKED_BY);
-    }
-
-    public void addBlockedBy(UUID projectId, UUID sourceId, Set<UUID> targets) {
-        applyBidirectionalMany(projectId, sourceId, targets, true, COL_BLOCKED_BY, COL_BLOCKS);
-    }
-
-    public void addRelatedTo(UUID projectId, UUID sourceId, Set<UUID> targets) {
-        applyBidirectionalMany(projectId, sourceId, targets, true, COL_RELATED_TO, COL_RELATED_TO);
-    }
-
-    public void addDuplicateOf(UUID projectId, UUID sourceId, Set<UUID> targets) {
-        applyBidirectionalMany(projectId, sourceId, targets, true, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
-    }
-
-    public void addParentIssue(UUID projectId, UUID sourceId, UUID parentId) {
-        if (projectId == null || sourceId == null || parentId == null) return;
-        if (sourceId.equals(parentId)) return;
-
-        // source.parent_issue_id = parentId, parent.children_issue_ids += sourceId
-        BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
-            .addStatement(SimpleStatement.newInstance(
-                "UPDATE remsfal.issues SET parent_issue_id = ? WHERE project_id = ? AND issue_id = ?",
-                parentId, projectId, sourceId))
-            .addStatement(setUpdate(COL_CHILDREN_ISSUES, true, projectId, parentId, sourceId))
+            .addStatement(buildSetParentStatement(projectId, childrenId, parentId))
+            .addStatement(buildAddElementStatement(CHILDREN_ISSUE_IDS, projectId, parentId, childrenId))
             .build();
         session.execute(batch);
     }
 
-    public void addChildrenIssues(UUID projectId, UUID sourceId, Set<UUID> childrenIds) {
-        if (childrenIds == null || childrenIds.isEmpty()) return;
-        for (UUID childId : new HashSet<>(childrenIds)) {
-            if (childId == null || childId.equals(sourceId)) continue;
-
-            // source.children_issue_ids += childId, child.parent_issue_id = sourceId
-            BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
-                .addStatement(setUpdate(COL_CHILDREN_ISSUES, true, projectId, sourceId, childId))
-                .addStatement(SimpleStatement.newInstance(
-                    "UPDATE remsfal.issues SET parent_issue_id = ? WHERE project_id = ? AND issue_id = ?",
-                    sourceId, projectId, childId))
-                .build();
-            session.execute(batch);
-        }
+    public void removeParentIssue(final UUID projectId, final UUID childrenId, final UUID parentId) {
+        BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
+            .addStatement(buildSetParentStatement(projectId, childrenId, null))
+            .addStatement(buildRemoveElementStatement(CHILDREN_ISSUE_IDS, projectId, parentId, childrenId))
+            .build();
+        session.execute(batch);
     }
 
-    public void removeRelation(UUID projectId, UUID sourceId, UUID targetId, String type) {
-        if (type == null) throw new BadRequestException("Missing or wrong Relation type");
+    public void addChildrenIssue(final UUID projectId, final UUID parentId, final UUID childrenId) {
+        BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
+            .addStatement(buildAddElementStatement(CHILDREN_ISSUE_IDS, projectId, parentId, childrenId))
+            .addStatement(buildSetParentStatement(projectId, childrenId, parentId))
+            .build();
+        session.execute(batch);
+    }
 
-        switch (type.toLowerCase()) {
-            case "blocks" -> applyBidirectional(projectId, sourceId, targetId,
-                    false, COL_BLOCKS, COL_BLOCKED_BY);
-            case "blocked_by" -> applyBidirectional(projectId, sourceId, targetId,
-                    false, COL_BLOCKED_BY, COL_BLOCKS);
-            case "related_to" -> applyBidirectional(projectId, sourceId, targetId,
-                    false, COL_RELATED_TO, COL_RELATED_TO);
-            case "duplicate_of" -> applyBidirectional(projectId, sourceId, targetId,
-                    false, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
-            case "parent_issue" -> {
-                // Remove source.parent_issue_id and target.children_issue_ids
-                BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
-                    .addStatement(SimpleStatement.newInstance(
-                        "UPDATE remsfal.issues SET parent_issue_id = null WHERE project_id = ? AND issue_id = ?",
-                        projectId, sourceId))
-                    .addStatement(setUpdate(COL_CHILDREN_ISSUES, false, projectId, targetId, sourceId))
-                    .build();
-                session.execute(batch);
-            }
-            case "children_issues" -> {
-                // Remove source.children_issue_ids and target.parent_issue_id
-                BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
-                    .addStatement(setUpdate(COL_CHILDREN_ISSUES, false, projectId, sourceId, targetId))
-                    .addStatement(SimpleStatement.newInstance(
-                        "UPDATE remsfal.issues SET parent_issue_id = null WHERE project_id = ? AND issue_id = ?",
-                        projectId, targetId))
-                    .build();
-                session.execute(batch);
-            }
-            default -> throw new BadRequestException("Missing or wrong Relation type");
-        }
+    public void removeChildrenIssue(final UUID projectId, final UUID parentId, final UUID childrenId) {
+        BatchStatement batch = BatchStatement.builder(DefaultBatchType.UNLOGGED)
+            .addStatement(buildRemoveElementStatement(CHILDREN_ISSUE_IDS, projectId, parentId, childrenId))
+            .addStatement(buildSetParentStatement(projectId, childrenId, null))
+            .build();
+        session.execute(batch);
     }
 
     public void removeAllRelations(IssueEntity entity) {
-        UUID projectId = entity.getProjectId();
-        UUID sourceId = entity.getId();
+        final UUID projectId = entity.getProjectId();
+        final UUID sourceId = entity.getId();
 
-        applyBidirectionalMany(projectId, sourceId, entity.getBlocks(), false, COL_BLOCKS, COL_BLOCKED_BY);
-        applyBidirectionalMany(projectId, sourceId, entity.getBlockedBy(), false, COL_BLOCKED_BY, COL_BLOCKS);
-        applyBidirectionalMany(projectId, sourceId, entity.getRelatedTo(), false, COL_RELATED_TO, COL_RELATED_TO);
-        applyBidirectionalMany(projectId, sourceId, entity.getDuplicateOf(), false, COL_DUPLICATE_OF, COL_DUPLICATE_OF);
-
+        if (entity.getBlocks() != null && !entity.getBlocks().isEmpty()) {
+            removeAllBidirectionalRelation(BLOCKS_IDS, BLOCKED_BY_IDS,
+                projectId, sourceId, entity.getBlocks());
+        }
+        if (entity.getBlockedBy() != null && !entity.getBlockedBy().isEmpty()) {
+            removeAllBidirectionalRelation(BLOCKED_BY_IDS, BLOCKS_IDS,
+                projectId, sourceId, entity.getBlockedBy());
+        }
+        if (entity.getRelatedTo() != null && !entity.getRelatedTo().isEmpty()) {
+            removeAllBidirectionalRelation(RELATED_TO_IDS, RELATED_TO_IDS,
+                projectId, sourceId, entity.getRelatedTo());
+        }
+        if (entity.getDuplicateOf() != null && !entity.getDuplicateOf().isEmpty()) {
+            removeAllBidirectionalRelation(DUPLICATE_OF_IDS, DUPLICATE_OF_IDS,
+                projectId, sourceId, entity.getDuplicateOf());
+        }
         // Remove parent_issue relation
         if (entity.getParentIssue() != null) {
-            removeRelation(projectId, sourceId, entity.getParentIssue(), "parent_issue");
+            removeParentIssue(projectId, sourceId, entity.getParentIssue());
         }
-
         // Remove children_issues relations
-        if (entity.getChildrenIssues() != null) {
-            for (UUID childId : new HashSet<>(entity.getChildrenIssues())) {
-                removeRelation(projectId, sourceId, childId, "children_issues");
+        if (entity.getChildrenIssues() != null && !entity.getChildrenIssues().isEmpty()) {
+            for (UUID childId : entity.getChildrenIssues()) {
+                removeChildrenIssue(projectId, sourceId, childId);
             }
         }
+    }
+
+    /**
+     * Build a SimpleStatement to add/remove a UUID from a Set column.
+     *
+     * @param column The column name
+     * @param add true to add, false to remove
+     * @param projectId The project ID
+     * @param issueId The issue ID
+     * @param deltaId The UUID to add/remove
+     * @return The SimpleStatement query
+     */
+    private SimpleStatement buildSetUpdateStatement(final String column, final boolean add,
+        final UUID projectId, final UUID issueId, final UUID deltaId) {
+        final String updateTemplateQuery =
+            "UPDATE remsfal.issues SET %s = %s %s ?, modified_at = ? WHERE project_id = ? AND issue_id = ?";
+        // '+' add / '-' remove
+        String op = add ? "+" : "-";
+        String cql = String.format(updateTemplateQuery, column, column, op);
+        return SimpleStatement.newInstance(cql, Set.of(deltaId), Instant.now(), projectId, issueId);
+    }
+
+    private SimpleStatement buildAddElementStatement(final String column,
+        final UUID projectId, final UUID issueId, final UUID newId) {
+        return buildSetUpdateStatement(column, true, projectId, issueId, newId);
+    }
+
+    private SimpleStatement buildRemoveElementStatement(final String column,
+        final UUID projectId, final UUID issueId, final UUID removeId) {
+        return buildSetUpdateStatement(column, false, projectId, issueId, removeId);
+    }
+
+    /**
+     * Build a single bidirectional relation update as UNLOGGED BATCH.
+     */
+    private BatchStatement buildBidirectionalBatchStatement(final String sourceColumn, final String targetColumn,
+        final boolean add, final UUID projectId, final UUID sourceId, final UUID targetId) {
+        return BatchStatement.builder(DefaultBatchType.UNLOGGED)
+            .addStatement(buildSetUpdateStatement(sourceColumn, add, projectId, sourceId, targetId))
+            .addStatement(buildSetUpdateStatement(targetColumn, add, projectId, targetId, sourceId))
+            .build();
+    }
+
+    private void addBidirectionalRelation(final String sourceColumn, final String targetColumn,
+        final UUID projectId, final UUID sourceId, final UUID targetId) {
+        BatchStatement batch = buildBidirectionalBatchStatement(sourceColumn, targetColumn,
+            true, projectId, sourceId, targetId);
+        session.execute(batch);
+    }
+
+    private void removeBidirectionalRelation(final String sourceColumn, final String targetColumn,
+        final UUID projectId, final UUID sourceId, final UUID targetId) {
+        BatchStatement batch = buildBidirectionalBatchStatement(sourceColumn, targetColumn,
+            false, projectId, sourceId, targetId);
+        session.execute(batch);
+    }
+
+    private void removeAllBidirectionalRelation(final String sourceColumn, final String targetColumn,
+        final UUID projectId, final UUID sourceId, final Set<UUID> targetIds) {
+        for (UUID target : targetIds) {
+            removeBidirectionalRelation(sourceColumn, targetColumn, projectId, sourceId, target);
+        }
+    }
+
+    private SimpleStatement buildSetParentStatement(final UUID projectId, final UUID issueId, final UUID parentId) {
+        final String setParentQuery =
+            "UPDATE remsfal.issues SET parent_issue_id = ?, modified_at = ? WHERE project_id = ? AND issue_id = ?";
+        return SimpleStatement.newInstance(setParentQuery, parentId, Instant.now(), projectId, issueId);
     }
 
 }

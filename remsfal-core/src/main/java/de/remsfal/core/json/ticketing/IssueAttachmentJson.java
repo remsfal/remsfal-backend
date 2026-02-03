@@ -2,6 +2,7 @@ package de.remsfal.core.json.ticketing;
 
 import jakarta.annotation.Nullable;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -42,19 +43,15 @@ public abstract class IssueAttachmentJson implements IssueAttachmentModel {
 
     @Nullable
     @Override
-    public abstract String getBucket();
-
-    @Nullable
-    @Override
     public abstract String getObjectName();
 
     @Nullable
     @Override
-    public abstract Long getFileSize();
+    public abstract UUID getUploadedBy();
 
     @Nullable
     @Override
-    public abstract UUID getUploadedBy();
+    public abstract Instant getCreatedAt();
 
     public static IssueAttachmentJson valueOf(final IssueAttachmentModel model) {
         return ImmutableIssueAttachmentJson.builder()
@@ -62,10 +59,9 @@ public abstract class IssueAttachmentJson implements IssueAttachmentModel {
             .attachmentId(model.getAttachmentId())
             .fileName(model.getFileName())
             .contentType(model.getContentType())
-            .bucket(model.getBucket())
             .objectName(model.getObjectName())
-            .fileSize(model.getFileSize())
             .uploadedBy(model.getUploadedBy())
+            .createdAt(model.getCreatedAt())
             .build();
     }
 

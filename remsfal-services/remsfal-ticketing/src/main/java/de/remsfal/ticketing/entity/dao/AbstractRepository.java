@@ -14,10 +14,13 @@ import de.remsfal.ticketing.entity.dto.AbstractEntity;
 @ApplicationScoped
 public abstract class AbstractRepository<Entity extends AbstractEntity, Key> {
 
-    public static final String PROJECT_ID = "project_id";
-    public static final String ISSUE_ID   = "issue_id";
-    public static final String SESSION_ID = "session_id";
-    public static final String MESSAGE_ID = "message_id";
+    public static final String CREATED_AT  = "created_at";
+    public static final String MODIFIED_AT = "modified_at";
+
+    public static final String PROJECT_ID  = "project_id";
+    public static final String ISSUE_ID    = "issue_id";
+    public static final String SESSION_ID  = "session_id";
+    public static final String MESSAGE_ID  = "message_id";
 
     @Inject
     @Database(value = DatabaseType.COLUMN)

@@ -5,29 +5,22 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
 
+import de.remsfal.common.model.FileUploadData;
+import de.remsfal.common.validation.MediaTypeValidator;
 import de.remsfal.ticketing.entity.storage.FileStorage;
 
 import java.io.InputStream;
-import java.util.Set;
 
 import org.jboss.logging.Logger;
 
 /**
+ * Controller for handling file storage operations such as upload, download, and delete.
+ * All methods of this class are package-private and intended to be used only by other controllers.
+ *
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
 @ApplicationScoped
 public class FileStorageController {
-
-    private final Set<MediaType> allowedTypes = Set.of(
-        MediaType.TEXT_PLAIN_TYPE,
-        MediaType.valueOf("image/jpg"),
-        MediaType.valueOf("image/jpeg"),
-        MediaType.valueOf("image/png"),
-        MediaType.valueOf("image/gif"),
-        MediaType.valueOf("application/pdf"),
-        MediaType.APPLICATION_JSON_TYPE,
-        MediaType.APPLICATION_XML_TYPE
-    );
 
     @Inject
     Logger logger;
@@ -38,13 +31,29 @@ public class FileStorageController {
     /**
      * Uploads a file to storage.
      *
+     * @param fileData the file upload data wrapper (must not be null)
+     * @param fileName the target file name (must not be null or blank)
+     * @return the final file name or identifier of the uploaded file
+     * @throws BadRequestException if the content type is invalid, or if fileData or fileName are invalid
+     */
+    String uploadFile(final FileUploadData fileData, final String fileName) {
+        if (fileData == null) {
+            logger.error("FileUploadData is null");
+            throw new BadRequestException("FileUploadData cannot be null");
+        }
+        return uploadFile(fileData.getInputStream(), fileName, fileData.getMediaType());
+    }
+
+    /**
+     * Uploads a file to storage.
+     *
      * @param inputStream the file content as an input stream (must not be null)
      * @param fileName the original file name (must not be null or blank)
      * @param contentType the media type of the file (must not be null)
-     * @return the URL or identifier of the uploaded file
+     * @return the final file name or identifier of the uploaded file
      * @throws BadRequestException if the content type is invalid, or if inputStream or fileName are invalid
      */
-    public String uploadFile(final InputStream inputStream, final String fileName, final MediaType contentType) {
+    String uploadFile(final InputStream inputStream, final String fileName, final MediaType contentType) {
         if (inputStream == null) {
             logger.error("Input stream is null");
             throw new BadRequestException("Input stream cannot be null");
@@ -65,28 +74,34 @@ public class FileStorageController {
         return storage.uploadFile(inputStream, fileName, contentType);
     }
 
-    public InputStream downloadFile(final String objectName) {
-        return storage.downloadFile(objectName);
+    /**
+     * Downloads a file from storage.
+     *
+     * @param fileName the name or identifier of the file to download
+     * @return an InputStream of the file content
+     */
+    InputStream downloadFile(final String fileName) {
+        return storage.downloadFile(fileName);
     }
 
-    public void deleteFile(final String fileName) {
+    /**
+     * Deletes a file from storage.
+     *
+     * @param fileName the name or identifier of the file to delete
+     */
+    void deleteFile(final String fileName) {
         storage.deleteFile(fileName);
     }
 
     /**
      * Validates whether the given content type is allowed for file uploads.
-     * The content type is normalized by removing any parameters (e.g., charset)
-     * before checking against the allowed types set.
      *
      * @param contentType the content type to validate
      * @return true if the content type is allowed, false otherwise
      */
-    public boolean isContentTypeValid(final MediaType contentType) {
+    boolean isContentTypeValid(final MediaType contentType) {
         logger.debugv("Checking if content type {0} is valid", contentType);
-        // Normalize the content type to remove parameters (e.g., charset=UTF-8)
-        return allowedTypes.stream().anyMatch(
-            allowedType -> allowedType.isCompatible(contentType)
-        );
+        return MediaTypeValidator.isValid(contentType);
     }
 
 }

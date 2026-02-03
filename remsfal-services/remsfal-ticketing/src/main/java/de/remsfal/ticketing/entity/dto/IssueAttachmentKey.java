@@ -1,21 +1,28 @@
 package de.remsfal.ticketing.entity.dto;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * @author GitHub Copilot
- */
-public class IssueAttachmentKey implements Serializable {
+import jakarta.nosql.Embeddable;
+import jakarta.nosql.Id;
 
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
+@Embeddable
+public class IssueAttachmentKey {
+
+    @Id("issue_id")
     private UUID issueId;
+
+    @Id("attachment_id")
     private UUID attachmentId;
 
     public IssueAttachmentKey() {
+        // Default constructor
     }
 
-    public IssueAttachmentKey(UUID issueId, UUID attachmentId) {
+    public IssueAttachmentKey(final UUID issueId, final UUID attachmentId) {
         this.issueId = issueId;
         this.attachmentId = attachmentId;
     }
@@ -24,7 +31,7 @@ public class IssueAttachmentKey implements Serializable {
         return issueId;
     }
 
-    public void setIssueId(UUID issueId) {
+    public void setIssueId(final UUID issueId) {
         this.issueId = issueId;
     }
 
@@ -32,7 +39,7 @@ public class IssueAttachmentKey implements Serializable {
         return attachmentId;
     }
 
-    public void setAttachmentId(UUID attachmentId) {
+    public void setAttachmentId(final UUID attachmentId) {
         this.attachmentId = attachmentId;
     }
 

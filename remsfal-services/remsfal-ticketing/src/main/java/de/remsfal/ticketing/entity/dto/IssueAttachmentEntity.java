@@ -4,12 +4,13 @@ import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
+import jakarta.ws.rs.core.MediaType;
 
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * @author GitHub Copilot
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity("issue_attachments")
 public class IssueAttachmentEntity extends AbstractEntity implements IssueAttachmentModel {
@@ -23,14 +24,8 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
     @Column("content_type")
     private String contentType;
 
-    @Column("bucket")
-    private String bucket;
-
     @Column("object_name")
     private String objectName;
-
-    @Column("file_size")
-    private Long fileSize;
 
     @Column("uploaded_by")
     private UUID uploadedBy;
@@ -85,13 +80,15 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
         this.contentType = contentType;
     }
 
-    @Override
-    public String getBucket() {
-        return bucket;
+    public MediaType getMediaType() {
+        if (contentType == null) {
+            return null;
+        }
+        return MediaType.valueOf(contentType);
     }
 
-    public void setBucket(String bucket) {
-        this.bucket = bucket;
+    public void setMediaType(MediaType mediaType) {
+        this.contentType = mediaType.toString();
     }
 
     @Override
@@ -101,15 +98,6 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
 
     public void setObjectName(String objectName) {
         this.objectName = objectName;
-    }
-
-    @Override
-    public Long getFileSize() {
-        return fileSize;
-    }
-
-    public void setFileSize(Long fileSize) {
-        this.fileSize = fileSize;
     }
 
     @Override

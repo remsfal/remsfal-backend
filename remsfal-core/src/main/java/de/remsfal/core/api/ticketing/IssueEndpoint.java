@@ -70,7 +70,10 @@ public interface IssueEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new issue.")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Create a new issue.",
+    description = "Creates a new issue based on the provided issue information."
+        + " This method is intended solely for the creation of issues by a property manager.")
     @APIResponse(responseCode = "201", description = "Issue created successfully",
             headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
@@ -79,17 +82,17 @@ public interface IssueEndpoint {
             @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
 
     @POST
-    @Path("/with-attachments")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new issue with multiple image attachments.")
+    @Operation(summary = "Create a new issue with multiple image attachments.",
+    description = "Creates a new issue based on the provided issue information and attaches multiple image files to it."
+        + " This method is intended solely for the creation of issues by a tenant.")
     @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
             headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createIssueWithAttachments(
-            @Parameter(description = "Multipart form data containing issue information and image files",
-                    required = true)
+            @Parameter(description = "Multipart form data containing issue information and image files", required = true)
             MultipartFormDataInput input);
 
     @GET

@@ -3,14 +3,15 @@ package de.remsfal.ticketing.boundary;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,20 +22,15 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
+import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueJson;
-import de.remsfal.core.json.ticketing.ImmutableIssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.IssueModel.IssueType;
-import de.remsfal.ticketing.control.FileStorageController;
-import de.remsfal.ticketing.control.IssueEventProducer;
-import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
-import de.remsfal.ticketing.entity.storage.FileStorage;
 import io.quarkus.security.Authenticated;
 
 /**
@@ -48,13 +44,10 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     Logger logger;
 
     @Inject
+    Validator validator;
+
+    @Inject
     Instance<ChatSessionResource> chatSessionResource;
-
-    @Inject
-    IssueEventProducer issueEventProducer;
-
-    @Inject
-    FileStorage fileStorage;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit,
@@ -164,12 +157,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
-        final URI location = uri.getAbsolutePathBuilder()
-            .path(Objects.requireNonNull(issue.getProjectId())
-            .toString())
-            .build();
-        issueEventProducer.sendIssueCreated(createdIssue, principal);
-        return Response.created(location)
+        return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(response)
             .build();
@@ -177,107 +165,50 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Override
     public Response createIssueWithAttachments(final MultipartFormDataInput input) {
-        try {
-            Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-
-            // Extract issue metadata from form fields
-            String projectIdStr = extractFormField(formDataMap, "projectId");
-            String title = extractFormField(formDataMap, "title");
-            String typeStr = extractFormField(formDataMap, "type");
-            String description = extractFormField(formDataMap, "description");
-
-            if (projectIdStr == null || title == null || typeStr == null) {
-                throw new BadRequestException("Required fields missing: projectId, title, and type are required");
-            }
-
-            UUID projectId = UUID.fromString(projectIdStr);
-            IssueType issueType = IssueType.valueOf(typeStr);
-
-            // Check permissions
-            UserContext principalRole = getUserContext(projectId);
-            if (principalRole == null) {
-                throw new ForbiddenException("User does not have permission to create issues in this project");
-            }
-
-            // Create issue JSON
-            IssueJson issueJson = ImmutableIssueJson.builder()
-                .projectId(projectId)
-                .title(title)
-                .type(issueType)
-                .description(description)
-                .build();
-
-            // Create the issue
-            final IssueModel createdIssue;
-            final IssueJson response;
-            if (principalRole == UserContext.MANAGER) {
-                createdIssue = issueController.createIssue(principal, issueJson);
-                response = IssueJson.valueOf(createdIssue);
-            } else if (principalRole == UserContext.TENANT) {
-                createdIssue = issueController.createIssue(principal, issueJson, IssueStatus.PENDING);
-                response = IssueJson.valueOfFiltered(createdIssue);
-            } else {
-                throw new ForbiddenException("User does not have permission to create issues in this project");
-            }
-
-            // Process attachments if any
-            List<InputPart> fileParts = formDataMap.get("attachments");
-            List<IssueAttachmentEntity> attachments = new ArrayList<>();
-            if (fileParts != null && !fileParts.isEmpty()) {
-                for (InputPart filePart : fileParts) {
-                    String fileName = extractFileName(filePart.getHeaders());
-                    MediaType mediaType = filePart.getMediaType();
-                    String contentType = mediaType.toString();
-
-                    // Validate content type - only allow images
-                    if (!isImageContentType(contentType)) {
-                        logger.warnv("Skipping non-image file: {0} with content type: {1}", fileName, contentType);
-                        continue;
-                    }
-
-                    try (InputStream fileStream = filePart.getBody(InputStream.class, null)) {
-                        if (fileStream == null || fileStream.available() == 0) {
-                            logger.warnv("Skipping empty file: {0}", fileName);
-                            continue;
-                        }
-
-                        long fileSize = fileStream.available();
-
-                        // Upload file directly to storage
-                        String objectName = fileStorage.uploadFile(fileStream, fileName, mediaType);
-
-                        // Store attachment metadata
-                        IssueAttachmentEntity attachment = issueController.addAttachment(
-                            createdIssue.getId(),
-                            fileName,
-                            contentType,
-                            FileStorage.DEFAULT_BUCKET_NAME,
-                            objectName,
-                            fileSize,
-                            principal.getId()
-                        );
-                        attachments.add(attachment);
-                    } catch (Exception e) {
-                        logger.errorv(e, "Failed to upload attachment: {0}", fileName);
-                        // Continue processing other files
-                    }
+        // Extract issue json from multipart form data
+        final IssueJson issue = extractIssueJson(input);
+        // Check permissions
+        checkTenancyIssueCreatePermissions(issue.getProjectId(), issue.getTenancyId());
+        // Create issue
+        IssueModel createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
+        // Process attachments
+        Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
+        List<InputPart> fileParts = formDataMap.get("attachment");
+        if (fileParts != null && !fileParts.isEmpty()) {
+            for (InputPart inputPart : fileParts) {
+                try {
+                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
+                    FileUploadData fileData = new FileUploadData(
+                        inputStream,
+                        inputPart.getFileName(),
+                        inputPart.getMediaType());
+                    issueController.addAttachment(principal, createdIssue.getId(), fileData);
+                } catch (IOException e) {
+                    throw new BadRequestException("Failed to read file data", e);
                 }
             }
+        }
 
-            final URI location = uri.getAbsolutePathBuilder()
-                .path(Objects.requireNonNull(createdIssue.getProjectId()).toString())
-                .build();
-            issueEventProducer.sendIssueCreated(createdIssue, principal);
+        return getCreatedResponseBuilder(createdIssue.getId())
+            .type(MediaType.APPLICATION_JSON)
+            .entity(IssueJson.valueOfFiltered(createdIssue))
+            .build();
+    }
 
-            return Response.created(location)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(response)
-                .build();
-        } catch (BadRequestException | ForbiddenException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error creating issue with attachments", e);
-            throw new BadRequestException("Failed to create issue with attachments: " + e.getMessage());
+    private IssueJson extractIssueJson(final MultipartFormDataInput input) {
+        try {
+            Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
+            List<InputPart> issueParts = formDataMap.get("issue");
+            if (issueParts == null || issueParts.isEmpty()) {
+                throw new BadRequestException("Missing 'issue' part in multipart request");
+            }
+            final IssueJson issue = issueParts.get(0).getBody(IssueJson.class, IssueJson.class);
+            if (issue == null || !validator.validate(issue).isEmpty()) {
+                throw new BadRequestException("Invalid issue data provided");
+            }
+            return issue;
+        } catch (IOException e) {
+            throw new BadRequestException("Failed to parse issue data", e);
         }
     }
 
@@ -300,16 +231,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
-        UUID previousAssignee = entity.getAssigneeId();
-        IssueModel updatedIssue = issueController.updateIssue(entity.getKey(), issue);
-        IssueJson response = IssueJson.valueOf(updatedIssue);
-        UUID newAssignee = updatedIssue.getAssigneeId();
-        if (newAssignee != null && !Objects.equals(previousAssignee, newAssignee)) {
-            issueEventProducer.sendIssueAssigned(updatedIssue, principal, newAssignee);
-        } else {
-            issueEventProducer.sendIssueUpdated(updatedIssue, principal);
-        }
-        return response;
+        return IssueJson.valueOf(issueController.updateIssue(entity.getKey(), issue));
     }
 
     @Override
@@ -331,10 +253,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             throw new ForbiddenException("User does not have permission to update this issue");
         }
 
-        IssueModel updatedIssue = issueController.setParentIssue(entity, parentIssueId);
-        IssueJson response = IssueJson.valueOf(updatedIssue);
-        issueEventProducer.sendIssueUpdated(updatedIssue, principal);
-        return response;
+        return IssueJson.valueOf(issueController.setParentRelation(entity, parentIssueId));
     }
 
     @Override
@@ -345,7 +264,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         }
 
         IssueModel updatedIssue = switch (relationType.toLowerCase()) {
-            case "children" -> issueController.addChildIssue(entity, relatedIssueId);
+            case "children" -> issueController.addChildRelation(entity, relatedIssueId);
             case "blocks" -> issueController.addBlocksRelation(entity, relatedIssueId);
             case "blocked-by" -> issueController.addBlockedByRelation(entity, relatedIssueId);
             case "related-to" -> issueController.addRelatedToRelation(entity, relatedIssueId);
@@ -353,9 +272,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             default -> throw new BadRequestException("Invalid relation type: " + relationType);
         };
 
-        IssueJson response = IssueJson.valueOf(updatedIssue);
-        issueEventProducer.sendIssueUpdated(updatedIssue, principal);
-        return response;
+        return IssueJson.valueOf(updatedIssue);
     }
 
     @Override
@@ -383,53 +300,6 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     private boolean isParticipantInIssue(UUID issueId) {
         return issueParticipantRepository.exists(principal.getId(), issueId);
-    }
-
-    private String extractFormField(Map<String, List<InputPart>> formDataMap, String fieldName) {
-        List<InputPart> parts = formDataMap.get(fieldName);
-        if (parts == null || parts.isEmpty()) {
-            return null;
-        }
-        try {
-            return parts.get(0).getBodyAsString();
-        } catch (Exception e) {
-            logger.warnv(e, "Failed to extract form field: {0}", fieldName);
-            return null;
-        }
-    }
-
-    private String extractFileName(Map<String, List<String>> headers) {
-        List<String> contentDisposition = headers.get("Content-Disposition");
-        if (contentDisposition != null && !contentDisposition.isEmpty()) {
-            for (String part : contentDisposition.get(0).split(";")) {
-                if (part.trim().startsWith("filename")) {
-                    return part.split("=")[1].trim().replaceAll("\"", "");
-                }
-            }
-        }
-        return "unknown";
-    }
-
-    private boolean isImageContentType(String contentType) {
-        if (contentType == null) {
-            return false;
-        }
-        String normalizedContentType = contentType.split(";")[0].trim().toLowerCase();
-        return normalizedContentType.equals("image/jpeg") ||
-               normalizedContentType.equals("image/jpg") ||
-               normalizedContentType.equals("image/png") ||
-               normalizedContentType.equals("image/gif");
-    }
-
-    private String extractFileNameFromUrl(String fileUrl) {
-        if (fileUrl == null || fileUrl.isBlank()) {
-            return "unknown";
-        }
-        int lastSlashIndex = fileUrl.lastIndexOf('/');
-        if (lastSlashIndex == -1 || lastSlashIndex == fileUrl.length() - 1) {
-            return fileUrl;
-        }
-        return fileUrl.substring(lastSlashIndex + 1);
     }
 
 }

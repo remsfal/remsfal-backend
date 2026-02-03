@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.hasItem;
 
+import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -1581,23 +1582,27 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void createIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
-        // Test basic multipart form creation without actual file upload (to avoid test complexity)
-        // This tests that the endpoint accepts multipart/form-data requests
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"tenancyId\":\"" + TicketingTestData.TENANCY_ID + "\","
+            + "\"title\":\"Issue with attachments\","
+            + "\"type\":\"DEFECT\""
+            + "}";
+        InputStream fileStream = getTestImageStream();
+
         given()
             .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
-            .multiPart("title", "Issue with attachments")
-            .multiPart("type", "TASK")
-            .multiPart("description", "Test description")
-            .post(BASE_PATH + "/with-attachments")
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .multiPart("issue", issueJson, MediaType.APPLICATION_JSON)
+            .multiPart("attachment", TicketingTestData.FILE_PNG_PATH, fileStream, TicketingTestData.FILE_PNG_TYPE)
+            .post(BASE_PATH)
             .then()
             .statusCode(201)
             .contentType(ContentType.JSON)
             .body("id", notNullValue())
             .body("title", equalTo("Issue with attachments"))
-            .body("type", equalTo("TASK"))
-            .body("status", equalTo("OPEN"))
+            .body("type", equalTo("DEFECT"))
+            .body("status", equalTo("PENDING"))
             .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()));
     }
 
@@ -1608,7 +1613,7 @@ class IssueResourceTest extends AbstractTicketingTest {
             .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
             .multiPart("title", "Issue with attachments")
             .multiPart("type", "TASK")
-            .post(BASE_PATH + "/with-attachments")
+            .post(BASE_PATH)
             .then()
             .statusCode(401);
     }
@@ -1619,7 +1624,7 @@ class IssueResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
-            .post(BASE_PATH + "/with-attachments")
+            .post(BASE_PATH)
             .then()
             .statusCode(400);
     }

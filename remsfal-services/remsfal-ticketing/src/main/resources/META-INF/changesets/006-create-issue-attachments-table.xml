@@ -15,11 +15,10 @@
                 attachment_id UUID,
                 file_name TEXT,
                 content_type TEXT,
-                bucket TEXT,
                 object_name TEXT,
-                file_size BIGINT,
                 uploaded_by UUID,
                 created_at TIMESTAMP,
+                modified_at TIMESTAMP,
                 PRIMARY KEY (issue_id, attachment_id)
             ) WITH CLUSTERING ORDER BY (attachment_id DESC);
         </sql>

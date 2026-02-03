@@ -4,7 +4,9 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.core.MultivaluedMap;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,6 +29,27 @@ public class AbstractTicketingResource extends AbstractResource {
 
     @Inject
     protected IssueParticipantRepository issueParticipantRepository;
+
+    protected UserContext checkTenancyIssueCreatePermissions(final UUID projectId, final UUID tenancyId) {
+        Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
+        if (tenancyId != null && projectId != null && tenancyProjects.containsKey(tenancyId)
+            && tenancyProjects.get(tenancyId).equals(projectId)) {
+            return UserContext.TENANT;
+        }
+        throw new ForbiddenException(FORBIDDEN_MESSAGE);
+    }
+
+    protected String getFileName(final MultivaluedMap<String, String> headers) {
+        List<String> contentDisposition = headers.get("Content-Disposition");
+        if (contentDisposition != null && !contentDisposition.isEmpty()) {
+            for (String part : contentDisposition.get(0).split(";")) {
+                if (part.trim().startsWith("filename")) {
+                    return part.split("=")[1].trim().replaceAll("\"", "");
+                }
+            }
+        }
+        return "unknown";
+    }
 
     public UserContext getUserContext(final UUID projectId) {
         Map<UUID, MemberRole> roles = principal.getProjectRoles();
