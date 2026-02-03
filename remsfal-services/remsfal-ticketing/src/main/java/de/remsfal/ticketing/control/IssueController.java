@@ -22,6 +22,7 @@ import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -59,12 +60,15 @@ public class IssueController {
 
         IssueEntity entity = new IssueEntity();
         entity.generateId();
-        entity.setType(issue.getType());
         entity.setProjectId(issue.getProjectId());
         entity.setTitle(issue.getTitle());
+        entity.setType(issue.getType());
         entity.setStatus(initialStatus);
+        entity.setPriority(issue.getPriority());
         entity.setDescription(issue.getDescription());
         entity.setReporterId(user.getId());
+        entity.setTenancyId(issue.getTenancyId());
+        entity.setCreatedAt(Instant.now());
         // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via POST
 
@@ -98,6 +102,7 @@ public class IssueController {
         final IssueEntity entity = issueRepository.find(key)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
+        entity.touch();
         if (issue.getTitle() != null) {
             entity.setTitle(issue.getTitle());
         }
@@ -317,6 +322,7 @@ public class IssueController {
         attachment.setFileName(fileData.getFileName());
         attachment.setMediaType(fileData.getMediaType());
         attachment.setUploadedBy(user.getId());
+        attachment.setCreatedAt(Instant.now());
 
         String objectFileName = generateUniqueFileName(
             fileData.getFileName(), issueId, attachment.getAttachmentId());

@@ -57,11 +57,4 @@ public class IssueAttachmentKey {
         return Objects.hash(issueId, attachmentId);
     }
 
-    @Override
-    public String toString() {
-        return "IssueAttachmentKey{" +
-               "issueId=" + issueId +
-               ", attachmentId=" + attachmentId +
-               '}';
-    }
 }

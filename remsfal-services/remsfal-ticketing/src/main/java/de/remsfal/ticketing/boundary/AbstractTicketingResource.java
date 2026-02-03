@@ -44,7 +44,7 @@ public class AbstractTicketingResource extends AbstractResource {
         if (contentDisposition != null && !contentDisposition.isEmpty()) {
             for (String part : contentDisposition.get(0).split(";")) {
                 if (part.trim().startsWith("filename")) {
-                    return part.split("=")[1].trim().replaceAll("\"", "");
+                    return part.split("=")[1].trim().replace("\"", "");
                 }
             }
         }

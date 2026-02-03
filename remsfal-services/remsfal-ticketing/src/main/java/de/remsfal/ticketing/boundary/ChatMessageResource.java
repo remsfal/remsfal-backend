@@ -301,18 +301,6 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
 
     // ---------------------Helper Methods---------------------
 
-    private String getFileName(Map<String, List<String>> headers) {
-        List<String> contentDisposition = headers.get("Content-Disposition");
-        if (contentDisposition != null && !contentDisposition.isEmpty()) {
-            for (String part : contentDisposition.get(0).split(";")) {
-                if (part.trim().startsWith("filename")) {
-                    return part.split("=")[1].trim().replaceAll("\"", "");
-                }
-            }
-        }
-        return "unknown";
-    }
-
     private boolean isFileNameValid(String fileName) {
         if (fileName == null || fileName.isBlank()) {
             return false;

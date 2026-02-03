@@ -388,7 +388,6 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
         Path tempDir = Files.createTempDirectory("test-upload");
         Path tempFile = tempDir.resolve("test-file.txt");
         Files.writeString(tempFile, "This is a test file content");
-        String fileName = tempFile.getFileName().toString();
         String expectedBucketName = FileStorage.DEFAULT_BUCKET_NAME;
         try {
             Map<String, String> response =

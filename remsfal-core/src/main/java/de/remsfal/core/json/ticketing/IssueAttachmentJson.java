@@ -15,9 +15,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 
-/**
- * @author GitHub Copilot
- */
 @Immutable
 @ImmutableStyle
 @Schema(description = "An issue attachment")

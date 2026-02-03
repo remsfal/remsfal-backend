@@ -179,6 +179,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Process attachments
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
+        List<IssueAttachmentJson> attachments = new ArrayList<>();
         if (fileParts != null && !fileParts.isEmpty()) {
             for (InputPart inputPart : fileParts) {
                 try {
@@ -187,7 +188,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
                         inputStream,
                         inputPart.getFileName(),
                         inputPart.getMediaType());
-                    issueController.addAttachment(principal, createdIssue.getId(), fileData);
+                    IssueAttachmentModel attachmentModel = issueController
+                        .addAttachment(principal, createdIssue.getId(), fileData);
+                    attachments.add(IssueAttachmentJson.valueOf(attachmentModel));
                 } catch (IOException e) {
                     throw new BadRequestException("Failed to read file data", e);
                 }
@@ -196,7 +199,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(IssueJson.valueOfFiltered(createdIssue))
+            .entity(IssueJson.valueOfFiltered(createdIssue).withAttachments(attachments))
             .build();
     }
 
