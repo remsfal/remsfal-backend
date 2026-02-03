@@ -15,7 +15,6 @@ import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,11 +43,10 @@ public class OrganizationResource extends OrganizationSubResource implements Org
 
     @Override
     public Response createOrganization(OrganizationJson organization) {
-        OrganizationModel organizationModel = controller.createOrganization(organization, principal);
-        URI location = uri.getAbsolutePathBuilder().path(organizationModel.getId().toString()).build();
-        return Response.created(location)
+        OrganizationModel model = controller.createOrganization(organization, principal);
+        return getCreatedResponseBuilder(model.getId())
                 .type(MediaType.APPLICATION_JSON)
-                .entity(OrganizationJson.valueOf(organizationModel))
+                .entity(OrganizationJson.valueOf(model))
                 .build();
     }
 

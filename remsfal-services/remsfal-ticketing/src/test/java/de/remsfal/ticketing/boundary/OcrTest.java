@@ -108,25 +108,6 @@ public class OcrTest extends AbstractTicketingTest {
                 .updateTextChatMessage(eq(sessionId), eq(UUID.fromString(messageId)), eq("Das hier ist ein Text")));
     }
 
-    @Test
-    void testNullInput_Exception() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatMessageResource.extractFileNameFromUrl(null));
-        assertEquals("File URL cannot be null or empty", ex.getMessage());
-    }
-
-    @Test
-    void testBlankInput_Exception() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatMessageResource.extractFileNameFromUrl(" "));
-        assertEquals("File URL cannot be null or empty", ex.getMessage());
-    }
-
-    @Test
-    void testEndsWithSlash_Exception() {
-        String input = "https://example.com/files/";
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> chatMessageResource.extractFileNameFromUrl(input));
-        assertEquals("Invalid file URL format: " + input, ex.getMessage());
-    }
-
     private MultipartFormDataInput createMultipartFormDataInput(String fileName, String contentType, byte[] content)
         throws Exception {
         MultipartFormDataInput input = mock(MultipartFormDataInput.class);

@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.project;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -73,8 +72,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     @Timed(name = "CreateProjectTimer", unit = MetricUnits.MILLISECONDS)
     public Response createProject(final ProjectJson project) {
         final ProjectModel model = controller.createProject(principal, project);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
-        return Response.created(location)
+        return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(ProjectJson.valueOf(model))
             .build();

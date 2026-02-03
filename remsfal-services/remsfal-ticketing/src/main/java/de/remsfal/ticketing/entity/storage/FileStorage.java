@@ -22,6 +22,10 @@ import org.jboss.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+/**
+ * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
 @ApplicationScoped
 public class FileStorage {
 
@@ -87,12 +91,12 @@ public class FileStorage {
                     .build());
         } catch (ErrorResponseException e) {
             if (e.response().code() == 404) {
-                logger.warnv("Object {0} does not exist in bucket {1}", fileName, bucketName);
+                logger.warnv("File {0} does not exist in bucket {1}", fileName, bucketName);
                 throw new NotFoundException(e);
             }
             throw new InternalServerErrorException("Error occurred while downloading file", e);
         } catch (Exception e) {
-            throw new InternalServerErrorException("Error occurred while downloading file", e);
+            throw new InternalServerErrorException("Error occurred while downloading object", e);
         }
     }
 
@@ -111,20 +115,20 @@ public class FileStorage {
 
     private boolean fileExists(final String fileName) {
         try {
-            logger.infov("Checking if object {0} exists in bucket {1}", fileName, bucketName);
+            logger.debugv("Checking if file name {0} exists in bucket {1}", fileName, bucketName);
             minioClient.statObject(
                 StatObjectArgs.builder()
                 .bucket(bucketName)
                 .object(fileName)
                 .build());
-            logger.infov("Object {0} exists in bucket {1}", fileName, bucketName);
+            logger.infov("File name {0} already exists in bucket {1}", fileName, bucketName);
             return true;
         } catch (ErrorResponseException e) {
             if (e.response().code() == 404) {
-                logger.infov("Object {0} does not exist in bucket {1}", fileName, bucketName);
+                logger.debugv("File name {0} does not exist in bucket {1}", fileName, bucketName);
                 return false;
             }
-            throw new InternalServerErrorException("Error occurred while checking if object exists", e);
+            throw new InternalServerErrorException("Error occurred while checking if file name exists", e);
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while checking if object exists", e);
         }
@@ -134,7 +138,7 @@ public class FileStorage {
         if (!fileExists(fileName)) {
             return fileName;
         }
-        logger.infov("Generating unique file name for {0} in bucket {1}", fileName, bucketName);
+        logger.debugv("Generating unique file name for {0} in bucket {1}", fileName, bucketName);
         int dotIndex = fileName.lastIndexOf('.');
         String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
         String extension = (dotIndex == -1) ? "" : fileName.substring(dotIndex);

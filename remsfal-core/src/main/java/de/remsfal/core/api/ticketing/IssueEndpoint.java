@@ -34,6 +34,7 @@ import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -69,13 +70,30 @@ public interface IssueEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new issue.")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Create a new issue.",
+    description = "Creates a new issue based on the provided issue information."
+        + " This method is intended solely for the creation of issues by a property manager.")
     @APIResponse(responseCode = "201", description = "Issue created successfully",
         headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createIssue(
         @Parameter(description = "Issue information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Create a new issue with multiple image attachments.",
+    description = "Creates a new issue based on the provided issue information and attaches multiple image files"
+        + " to it. This method is intended solely for the creation of issues by a tenant.")
+    @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
+        headers = @Header(name = "Location", description = "URL of the new issue"))
+    @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    Response createIssueWithAttachments(
+        @Parameter(description = "Multipart form data containing issue information and image files", required = true)
+        MultipartFormDataInput input);
 
     @GET
     @Path("/{issueId}")
@@ -159,6 +177,35 @@ public interface IssueEndpoint {
         @Parameter(description = "ID of the related Issue")
         @PathParam("relatedIssueId") @NotNull UUID relatedIssueId
     );
+
+    @GET
+    @Path("/{issueId}/attachments/{attachmentId}/{filename}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Operation(summary = "Download an issue attachment")
+    @APIResponse(responseCode = "200", description = "Attachment downloaded successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to access this attachment")
+    @APIResponse(responseCode = "404", description = "Attachment not found")
+    Response downloadAttachment(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the attachment", required = true)
+        @PathParam("attachmentId") @NotNull UUID attachmentId,
+        @Parameter(description = "Filename of the attachment", required = true)
+        @PathParam("filename") @NotNull String filename);
+
+    @DELETE
+    @Path("/{issueId}/attachments/{attachmentId}")
+    @Operation(summary = "Delete an issue attachment")
+    @APIResponse(responseCode = "204", description = "Attachment deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to delete this attachment")
+    @APIResponse(responseCode = "404", description = "Attachment not found")
+    void deleteAttachment(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the attachment", required = true)
+        @PathParam("attachmentId") @NotNull UUID attachmentId);
 
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();

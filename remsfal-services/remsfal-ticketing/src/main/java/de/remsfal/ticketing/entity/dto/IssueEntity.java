@@ -5,6 +5,7 @@ import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -185,6 +186,13 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         this.childrenIssues = childrenIssues;
     }
 
+    public void addChildrenIssue(UUID childrenIssue) {
+        if (this.childrenIssues == null) {
+            this.childrenIssues = new HashSet<>();
+        }
+        this.childrenIssues.add(childrenIssue);
+    }
+
     @Override
     public Set<UUID> getRelatedTo() {
         return relatedTo;
@@ -192,6 +200,13 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setRelatedTo(Set<UUID> relatedTo) {
         this.relatedTo = relatedTo;
+    }
+
+    public void addRelatedTo(UUID relatedIssue) {
+        if (this.relatedTo == null) {
+            this.relatedTo = new HashSet<>();
+        }
+        this.relatedTo.add(relatedIssue);
     }
 
     @Override
@@ -203,6 +218,13 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         this.duplicateOf = duplicateOf;
     }
 
+    public void addDuplicateOf(UUID duplicateIssue) {
+        if (this.duplicateOf == null) {
+            this.duplicateOf = new HashSet<>();
+        }
+        this.duplicateOf.add(duplicateIssue);
+    }
+
     @Override
     public Set<UUID> getBlockedBy() {
         return blockedBy;
@@ -212,6 +234,13 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         this.blockedBy = blockedBy;
     }
 
+    public void addBlockedBy(UUID blockedByIssue) {
+        if (this.blockedBy == null) {
+            this.blockedBy = new HashSet<>();
+        }
+        this.blockedBy.add(blockedByIssue);
+    }
+
     @Override
     public Set<UUID> getBlocks() {
         return blocks;
@@ -219,6 +248,13 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setBlocks(Set<UUID> blocks) {
         this.blocks = blocks;
+    }
+
+    public void addBlocks(UUID blocksIssue) {
+        if (this.blocks == null) {
+            this.blocks = new HashSet<>();
+        }
+        this.blocks.add(blocksIssue);
     }
 
     public void generateId() {
