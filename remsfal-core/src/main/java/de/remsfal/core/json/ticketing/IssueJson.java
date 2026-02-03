@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -107,6 +108,9 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract Set<UUID> getBlocks();
 
+    @Nullable
+    public abstract List<IssueAttachmentJson> getAttachments();
+
     /**
      * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
      * <p>
@@ -156,5 +160,16 @@ public abstract class IssueJson implements IssueModel {
             // assigneeId, description, blockedBy, relatedTo, duplicateOf are omitted
             .build();
     }
+
+    /**
+     * Creates a new {@link IssueJson} instance with attachments added to an existing issue.
+     * <p>
+     * This method allows adding attachment information to an IssueJson without modifying the core model.
+     * Useful for lazy-loading attachments only when needed.
+     *
+     * @param attachments the list of attachments to add
+     * @return an immutable {@link IssueJson} with attachments included
+     */
+    public abstract IssueJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

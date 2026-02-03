@@ -21,6 +21,7 @@ import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -306,7 +307,7 @@ public class IssueController {
     }
 
     public IssueAttachmentEntity addAttachment(
-            final UserModel user, final UUID issueId, final FileUploadData fileData) {
+        final UserModel user, final UUID issueId, final FileUploadData fileData) {
         logger.infov("Adding attachment to issue (issueId={0}, fileName={1})",
             issueId, fileData.getFileName());
 
@@ -340,8 +341,27 @@ public class IssueController {
         return attachmentRepository.findByIssueId(issueId);
     }
 
+    public IssueAttachmentEntity getAttachment(UUID issueId, UUID attachmentId) {
+        logger.infov("Retrieving attachment (issueId={0}, attachmentId={1})", issueId, attachmentId);
+        return attachmentRepository.findById(new IssueAttachmentKey(issueId, attachmentId))
+            .orElseThrow(() -> new NotFoundException("Attachment not found"));
+    }
+
+    public InputStream downloadAttachment(String objectName) {
+        logger.infov("Downloading attachment from storage (objectName={0})", objectName);
+        return fileStorageController.downloadFile(objectName);
+    }
+
     public void deleteAttachment(UUID issueId, UUID attachmentId) {
         logger.infov("Deleting attachment (issueId={0}, attachmentId={1})", issueId, attachmentId);
+
+        // Retrieve attachment to get objectName
+        IssueAttachmentEntity attachment = getAttachment(issueId, attachmentId);
+
+        // Delete from storage first (fail-fast)
+        fileStorageController.deleteFile(attachment.getObjectName());
+
+        // Delete from database
         attachmentRepository.delete(new IssueAttachmentKey(issueId, attachmentId));
     }
 
