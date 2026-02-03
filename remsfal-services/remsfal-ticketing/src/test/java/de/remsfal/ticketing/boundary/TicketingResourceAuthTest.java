@@ -79,13 +79,4 @@ class TicketingResourceAuthTest {
         assertNotNull(resp.getEntity());
     }
 
-    @Test
-    void testExtractFileNameFromUrl() {
-        ChatMessageResource resource = new ChatMessageResource();
-        assertEquals("file.txt", resource.extractFileNameFromUrl("http://localhost/files/file.txt"));
-        assertEquals("file.txt", resource.extractFileNameFromUrl("file.txt"));
-        assertThrows(IllegalArgumentException.class, () -> resource.extractFileNameFromUrl("http://localhost/files/"));
-        assertThrows(IllegalArgumentException.class, () -> resource.extractFileNameFromUrl(null));
-    }
-
 }

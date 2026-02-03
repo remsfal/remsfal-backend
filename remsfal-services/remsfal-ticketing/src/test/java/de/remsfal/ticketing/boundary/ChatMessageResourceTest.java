@@ -388,8 +388,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
         Path tempDir = Files.createTempDirectory("test-upload");
         Path tempFile = tempDir.resolve("test-file.txt");
         Files.writeString(tempFile, "This is a test file content");
-        String fileName = tempFile.getFileName().toString();
-        String expectedBucketName = "remsfal-chat-files";
+        String expectedBucketName = FileStorage.DEFAULT_BUCKET_NAME;
         try {
             Map<String, String> response =
                 given()
@@ -415,7 +414,9 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             assertEquals(ChatMessageRepository.ContentType.FILE.name(), persistedMessage.getContentType(),
                 "Content type should match");
             assertEquals(fileUrl, persistedMessage.getUrl(), "Persisted URL should match the returned file URL");
-            verifyFileInBucket(expectedBucketName, fileName);
+            // Use the fileUrl as the object name for verification (remove leading slash if present)
+            String objectName = fileUrl.startsWith("/") ? fileUrl.substring(1) : fileUrl;
+            verifyFileInBucket(expectedBucketName, objectName);
 
         } finally {
             Files.deleteIfExists(tempFile);
@@ -425,13 +426,17 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
 
     private void verifyFileInBucket(String bucketName, String fileName) {
         boolean fileExists = false;
+        StringBuilder foundFiles = new StringBuilder("Files in bucket: ");
         try {
             Iterable<Result<Item>> items = minioClient.listObjects(
                 ListObjectsArgs.builder()
-                    .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                    .bucket(bucketName)
+                    .recursive(true)
                     .build());
             for (Result<Item> item : items) {
-                if (item.get().objectName().contains(fileName)) {
+                String objectName = item.get().objectName();
+                foundFiles.append(objectName).append(", ");
+                if (objectName.contains(fileName)) {
                     fileExists = true;
                     break;
                 }
@@ -439,7 +444,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
         } catch (Exception e) {
             fail("Exception occurred while verifying the file in the bucket: " + e.getMessage(), e);
         }
-        assertTrue(fileExists, "Uploaded file should exist in the bucket");
+        assertTrue(fileExists, "Uploaded file should exist in the bucket. " + foundFiles.toString() + " Searching for: " + fileName);
     }
 
     @Test

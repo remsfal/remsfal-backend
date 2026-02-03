@@ -13,7 +13,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,8 +46,7 @@ public class PropertyResource extends AbstractProjectResource implements Propert
     public Response createProperty(final UUID projectId, final PropertyJson property) {
         checkPropertyWritePermissions(projectId);
         final PropertyModel model = controller.createProperty(projectId, property);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
-        return Response.created(location)
+        return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(PropertyJson.valueOf(model))
             .build();

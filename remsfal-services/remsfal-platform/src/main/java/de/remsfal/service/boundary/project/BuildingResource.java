@@ -10,7 +10,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.util.UUID;
 
 @RequestScoped
@@ -32,8 +31,7 @@ public class BuildingResource extends AbstractProjectResource implements Buildin
     public Response createBuilding(final UUID projectId, final UUID propertyId, final BuildingJson building) {
         checkPropertyWritePermissions(projectId);
         final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
-        final URI location = uri.getAbsolutePathBuilder().path(model.getId().toString()).build();
-        return Response.created(location)
+        return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(BuildingJson.valueOf(model))
             .build();

@@ -65,13 +65,18 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute("TRUNCATE inbox_messages");
     }
 
+    protected InputStream getTestImageStream() {
+        InputStream imageStream = getClass().getClassLoader()
+            .getResourceAsStream(TicketingTestData.FILE_PNG_PATH);
+        if (imageStream == null) {
+            throw new IllegalStateException("Ressource " + TicketingTestData.FILE_PNG_PATH
+                + " not found!");
+        }
+        return imageStream;
+    }
+
     protected void setupTestFiles() throws Exception {
-        try (InputStream imageStream = getClass().getClassLoader()
-                .getResourceAsStream(TicketingTestData.FILE_PNG_PATH)) {
-            if (imageStream == null) {
-                throw new IllegalStateException("Ressource " + TicketingTestData.FILE_PNG_PATH
-                    + " not found!");
-            }
+        try (InputStream imageStream = getTestImageStream()) {
             // upload files
             minioClient.putObject(
                 PutObjectArgs.builder()

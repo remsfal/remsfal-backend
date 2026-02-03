@@ -10,7 +10,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.Set;
 
 @Value.Immutable
 @ImmutableStyle

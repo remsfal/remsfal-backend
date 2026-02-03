@@ -3,29 +3,38 @@ package de.remsfal.ticketing.boundary;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
-import java.net.URI;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
+import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.json.UserJson.UserContext;
+import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
+import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.ticketing.control.IssueEventProducer;
+import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
 
@@ -40,10 +49,10 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     Logger logger;
 
     @Inject
-    Instance<ChatSessionResource> chatSessionResource;
+    Validator validator;
 
     @Inject
-    IssueEventProducer issueEventProducer;
+    Instance<ChatSessionResource> chatSessionResource;
 
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit,
@@ -153,28 +162,87 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
-        final URI location = uri.getAbsolutePathBuilder()
-            .path(Objects.requireNonNull(issue.getProjectId())
-            .toString())
-            .build();
-        issueEventProducer.sendIssueCreated(createdIssue, principal);
-        return Response.created(location)
+        return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(response)
             .build();
     }
 
     @Override
+    public Response createIssueWithAttachments(final MultipartFormDataInput input) {
+        // Extract issue json from multipart form data
+        final IssueJson issue = extractIssueJson(input);
+        // Check permissions
+        checkTenancyIssueCreatePermissions(issue.getProjectId(), issue.getTenancyId());
+        // Create issue
+        IssueModel createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
+        // Process attachments
+        Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
+        List<InputPart> fileParts = formDataMap.get("attachment");
+        List<IssueAttachmentJson> attachments = new ArrayList<>();
+        if (fileParts != null && !fileParts.isEmpty()) {
+            for (InputPart inputPart : fileParts) {
+                try {
+                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
+                    FileUploadData fileData = new FileUploadData(
+                        inputStream,
+                        inputPart.getFileName(),
+                        inputPart.getMediaType());
+                    IssueAttachmentModel attachmentModel = issueController
+                        .addAttachment(principal, createdIssue.getId(), fileData);
+                    attachments.add(IssueAttachmentJson.valueOf(attachmentModel));
+                } catch (IOException e) {
+                    throw new BadRequestException("Failed to read file data", e);
+                }
+            }
+        }
+
+        return getCreatedResponseBuilder(createdIssue.getId())
+            .type(MediaType.APPLICATION_JSON)
+            .entity(IssueJson.valueOfFiltered(createdIssue).withAttachments(attachments))
+            .build();
+    }
+
+    private IssueJson extractIssueJson(final MultipartFormDataInput input) {
+        try {
+            Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
+            List<InputPart> issueParts = formDataMap.get("issue");
+            if (issueParts == null || issueParts.isEmpty()) {
+                throw new BadRequestException("Missing 'issue' part in multipart request");
+            }
+            final IssueJson issue = issueParts.get(0).getBody(IssueJson.class, IssueJson.class);
+            if (issue == null || !validator.validate(issue).isEmpty()) {
+                throw new BadRequestException("Invalid issue data provided");
+            }
+            return issue;
+        } catch (IOException e) {
+            throw new BadRequestException("Failed to parse issue data", e);
+        }
+    }
+
+    @Override
     public IssueJson getIssue(final UUID issueId) {
         IssueModel issue = issueController.getIssue(issueId);
+
+        // Create base IssueJson
+        IssueJson issueJson;
         if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
-            return IssueJson.valueOf(issue);
+            issueJson = IssueJson.valueOf(issue);
         } else if (principal.getTenancyProjects().containsKey(issue.getTenancyId())) {
-            return IssueJson.valueOfFiltered(issue);
+            issueJson = IssueJson.valueOfFiltered(issue);
         } else if (isParticipantInIssue(issueId)) {
-            return IssueJson.valueOfFiltered(issue);
+            issueJson = IssueJson.valueOfFiltered(issue);
+        } else {
+            throw new ForbiddenException("User does not have permission to view this issue");
         }
-        throw new ForbiddenException("User does not have permission to view this issue");
+
+        // Lazy-load attachments and add to response
+        List<? extends IssueAttachmentModel> attachments = issueController.getAttachments(issueId);
+        List<IssueAttachmentJson> attachmentJsons = attachments.stream()
+            .map(IssueAttachmentJson::valueOf)
+            .collect(Collectors.toList());
+
+        return issueJson.withAttachments(attachmentJsons);
     }
 
     @Override
@@ -183,16 +251,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
-        UUID previousAssignee = entity.getAssigneeId();
-        IssueModel updatedIssue = issueController.updateIssue(entity.getKey(), issue);
-        IssueJson response = IssueJson.valueOf(updatedIssue);
-        UUID newAssignee = updatedIssue.getAssigneeId();
-        if (newAssignee != null && !Objects.equals(previousAssignee, newAssignee)) {
-            issueEventProducer.sendIssueAssigned(updatedIssue, principal, newAssignee);
-        } else {
-            issueEventProducer.sendIssueUpdated(updatedIssue, principal);
-        }
-        return response;
+        return IssueJson.valueOf(issueController.updateIssue(entity.getKey(), issue));
     }
 
     @Override
@@ -214,10 +273,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             throw new ForbiddenException("User does not have permission to update this issue");
         }
 
-        IssueModel updatedIssue = issueController.setParentIssue(entity, parentIssueId);
-        IssueJson response = IssueJson.valueOf(updatedIssue);
-        issueEventProducer.sendIssueUpdated(updatedIssue, principal);
-        return response;
+        return IssueJson.valueOf(issueController.setParentRelation(entity, parentIssueId));
     }
 
     @Override
@@ -228,7 +284,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         }
 
         IssueModel updatedIssue = switch (relationType.toLowerCase()) {
-            case "children" -> issueController.addChildIssue(entity, relatedIssueId);
+            case "children" -> issueController.addChildRelation(entity, relatedIssueId);
             case "blocks" -> issueController.addBlocksRelation(entity, relatedIssueId);
             case "blocked-by" -> issueController.addBlockedByRelation(entity, relatedIssueId);
             case "related-to" -> issueController.addRelatedToRelation(entity, relatedIssueId);
@@ -236,9 +292,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             default -> throw new BadRequestException("Invalid relation type: " + relationType);
         };
 
-        IssueJson response = IssueJson.valueOf(updatedIssue);
-        issueEventProducer.sendIssueUpdated(updatedIssue, principal);
-        return response;
+        return IssueJson.valueOf(updatedIssue);
     }
 
     @Override
@@ -257,6 +311,47 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             case "duplicate-of" -> issueController.deleteDuplicateOfRelation(entity, relatedIssueId);
             default -> throw new BadRequestException("Invalid relation type: " + relationType);
         }
+    }
+
+    @Override
+    public Response downloadAttachment(UUID issueId, UUID attachmentId, String filename) {
+        // Check read permissions (managers, tenants, participants)
+        IssueModel issue = issueController.getIssue(issueId);
+        if (!principal.getProjectRoles().containsKey(issue.getProjectId())
+            && !principal.getTenancyProjects().containsKey(issue.getTenancyId())
+            && !isParticipantInIssue(issueId)) {
+            throw new ForbiddenException("User does not have permission to access this attachment");
+        }
+
+        // Retrieve attachment metadata
+        IssueAttachmentEntity attachment = issueController.getAttachment(issueId, attachmentId);
+
+        // Download file from storage
+        InputStream fileStream = issueController.downloadAttachment(attachment.getObjectName());
+
+        // Stream response with Content-Disposition header
+        return Response.ok((StreamingOutput) output -> {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fileStream.read(buffer)) != -1) {
+                output.write(buffer, 0, bytesRead);
+            }
+        })
+        .type(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
+        .build();
+    }
+
+    @Override
+    public void deleteAttachment(UUID issueId, UUID attachmentId) {
+        // Check write permissions (managers only)
+        IssueModel issue = issueController.getIssue(issueId);
+        if (!principal.getProjectRoles().containsKey(issue.getProjectId())) {
+            throw new ForbiddenException("User does not have permission to delete this attachment");
+        }
+
+        // Delete attachment (includes storage and database)
+        issueController.deleteAttachment(issueId, attachmentId);
     }
 
     @Override
