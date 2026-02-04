@@ -11,13 +11,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class ProjectTenancyResourceTest extends AbstractResourceTest {
+class RentalAgreementResourceTest extends AbstractResourceTest {
 
-    static final String BASE_PATH = "/api/v1/projects/{projectId}/tenancies";
+    static final String BASE_PATH = "/api/v1/projects/{projectId}/rental-agreements";
     static final String TENANCY_PATH = BASE_PATH + "/{tenancyId}";
 
     @Override
@@ -25,16 +27,15 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     protected void setupTestProperties() {
         super.setupTestUsers();
         super.setupTestProjects();
-        this.setupTestTenancies();
         super.setupTestProperties();
+        this.setupTestRentalAgreements();
     }
 
-    private void setupTestTenancies() {
-        insertTenancy(TestData.TENANCY_ID, TestData.PROJECT_ID, java.time.LocalDate.parse("2021-01-01"), null);
+    private void setupTestRentalAgreements() {
+        insertRentalAgreement(TestData.TENANCY_ID, TestData.PROJECT_ID, LocalDate.parse("2021-01-01"), null);
     }
 
-    private void insertTenancy(java.util.UUID id, java.util.UUID projectId, java.time.LocalDate start,
-            java.time.LocalDate end) {
+    private void insertRentalAgreement(UUID id, UUID projectId, LocalDate start, LocalDate end) {
         runInTransaction(() -> entityManager
             .createNativeQuery(
                 "INSERT INTO tenancies (id, project_id, start_of_rental, end_of_rental) VALUES (?,?,?,?)")
@@ -46,7 +47,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getTenancies_SUCCESS_oneTenancyReturned() {
+    void getRentalAgreements_SUCCESS_oneRentalAgreementReturned() {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -58,7 +59,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getTenancy_SUCCESS_tenancyReturned() {
+    void getRentalAgreement_SUCCESS_tenancyReturned() {
         String tenancyId = given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -78,7 +79,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createTenancy_SUCCESS_newTenancyReturned() {
+    void createRentalAgreement_SUCCESS_newTenancyReturned() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"endOfRental\":\"2023-12-31\"" +
@@ -95,7 +96,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createTenancy_SUCCESS_withoutTenants() {
+    void createRentalAgreement_SUCCESS_withoutTenants() {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +
                 "\"endOfRental\":\"2023-12-31\"" +
@@ -112,7 +113,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_SUCCESS_withTenants() {
+    void updateRentalAgreement_SUCCESS_withTenants() {
         String json = "{" +
                 "\"tenants\": [{\"id\":\"" + TestData.USER_ID_1 + "\"}]" +
                 "}";
@@ -130,7 +131,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_SUCCESS_withDates() {
+    void updateRentalAgreement_SUCCESS_withDates() {
         String json = "{" +
                 "\"startOfRental\":\"2023-06-01\"," +
                 "\"endOfRental\":\"2023-12-31\"" +
@@ -150,7 +151,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_SUCCESS_tenantsFieldMissing() {
+    void updateRentalAgreement_SUCCESS_tenantsFieldMissing() {
         String json = "{ \"startOfRental\": \"2024-01-01\" }"; // no tenants field → null
 
         given()
@@ -164,7 +165,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_SUCCESS_withoutTenants() {
+    void updateRentalAgreement_SUCCESS_withoutTenants() {
         String json = "{ \"tenants\": [] }";
 
         given()
@@ -180,7 +181,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_SUCCESS_noTenantField_keepsOldTenants() {
+    void updateRentalAgreement_SUCCESS_noTenantField_keepsOldTenants() {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -206,7 +207,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createTenancy_FAILURE_userNotFound() {
+    void createRentalAgreement_FAILURE_userNotFound() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"endOfRental\":\"2023-12-31\"," +
@@ -224,7 +225,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_FAILURE_userNotFound() {
+    void updateRentalAgreement_FAILURE_userNotFound() {
         String json = "{" +
             "\"tenants\": [{\"id\":\"" + java.util.UUID.randomUUID() + "\"}]" +
             "}";
@@ -240,7 +241,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createTenancy_FAILURE_missingStartOfRental() {
+    void createRentalAgreement_FAILURE_missingStartOfRental() {
         String json = "{" +
             "\"endOfRental\":\"2023-12-31\"" +
             "}";
@@ -257,7 +258,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
 
 
     @Test
-    void getTenancy_FAILURE_tenancyNotFound() {
+    void getRentalAgreement_FAILURE_tenancyNotFound() {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -267,7 +268,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateTenancy_FAILURE_tenancyNotFound() {
+    void updateRentalAgreement_FAILURE_tenancyNotFound() {
         String json = "{ \"startOfRental\": \"2024-01-01\" }";
         given()
             .when()
@@ -280,7 +281,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createTenancy_FAILURE_projectNotFound() {
+    void createRentalAgreement_FAILURE_projectNotFound() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"endOfRental\":\"2023-12-31\"" +
@@ -297,7 +298,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getTenancies_FAILURE_unauthorized() {
+    void getRentalAgreements_FAILURE_unauthorized() {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
@@ -307,7 +308,7 @@ class ProjectTenancyResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getTenancy_FAILURE_unauthorized() {
+    void getRentalAgreement_FAILURE_unauthorized() {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))

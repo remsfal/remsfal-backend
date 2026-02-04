@@ -139,8 +139,8 @@ public interface ProjectEndpoint {
     @Path("/{projectId}/" + TenantEndpoint.SERVICE)
     TenantEndpoint getTenantResource();
 
-    @Path("/{projectId}/" + ProjectTenancyEndpoint.SERVICE)
-    ProjectTenancyEndpoint getTenancyResource();
+    @Path("/{projectId}/" + RentalAgreementEndpoint.SERVICE)
+    RentalAgreementEndpoint getTenancyResource();
 
     @Path("/{projectId}/" + ProjectOrganizationEndpoint.SERVICE)
     ProjectOrganizationEndpoint getProjectOrganizationResource();

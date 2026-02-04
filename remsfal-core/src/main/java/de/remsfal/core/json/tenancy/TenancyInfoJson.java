@@ -16,18 +16,14 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.project.TenancyModel;
 
 import jakarta.annotation.Nullable;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.groups.ConvertGroup;
 
-import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Carl Rix [carl.rix@student.htw-berlin.de]
  */
-
 @Immutable
 @ImmutableStyle
 @Schema(description = "A tenancy item with information from the manager's view")
@@ -49,9 +45,6 @@ public abstract class TenancyInfoJson implements TenancyModel {
     @Override
     public abstract LocalDate getEndOfRental();
 
-    @Valid
-    @ConvertGroup(from = PostValidation.class, to = PostValidation.class)
-    @ConvertGroup(from = PatchValidation.class, to = PatchValidation.class)
     @Nullable
     @Override
     public abstract List<UserJson> getTenants();
