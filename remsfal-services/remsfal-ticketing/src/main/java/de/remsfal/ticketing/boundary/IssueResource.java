@@ -57,7 +57,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public IssueListJson getIssues(Integer offset, Integer limit,
         UUID projectId, UUID assigneeId,
-        UUID tenancyId, UnitType rentalType,
+        UUID agreementId, UnitType rentalType,
         UUID rentalId, IssueStatus status) {
         logger.info("Yes i was called");
         List<UUID> projectFilter;
@@ -68,25 +68,25 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         }
 
         if (projectFilter.isEmpty()) {
-            return getUnprivilegedIssues(offset, limit, tenancyId, status);
+            return getUnprivilegedIssues(offset, limit, agreementId, status);
         } else {
-            return getProjectIssues(projectFilter, assigneeId, tenancyId, rentalType, rentalId, status);
+            return getProjectIssues(projectFilter, assigneeId, agreementId, rentalType, rentalId, status);
         }
     }
 
     private IssueListJson getProjectIssues(List<UUID> projectFilter, UUID assigneeId,
-        UUID tenancyId, UnitType rentalType, UUID rentalId,
+        UUID agreementId, UnitType rentalType, UUID rentalId,
         IssueStatus status) {
         final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, assigneeId, tenancyId, rentalType, rentalId, status);
+            issueController.getIssues(projectFilter, assigneeId, agreementId, rentalType, rentalId, status);
         return IssueListJson.valueOf(issues, 0, issues.size());
     }
 
-    private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID tenancyId, IssueStatus status) {
+    private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID agreementId, IssueStatus status) {
         List<IssueModel> collected = new ArrayList<>();
 
         // Tenants
-        collectTenancyIssues(collected, tenancyId);
+        collectTenancyIssues(collected, agreementId);
 
         // Participants
         collectParticipantIssues(collected);
@@ -118,15 +118,15 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         return IssueListJson.valueOf(paginatedIssues, actualOffset, totalCount);
     }
 
-    private void collectTenancyIssues(List<IssueModel> collected, UUID tenancyId) {
+    private void collectTenancyIssues(List<IssueModel> collected, UUID agreementId) {
         if (!principal.getTenancyProjects().isEmpty()) {
-            if (tenancyId != null && !principal.getTenancyProjects().containsKey(tenancyId)) {
+            if (agreementId != null && !principal.getTenancyProjects().containsKey(agreementId)) {
                 throw new ForbiddenException("User does not have permission to view issues in this tenancy");
             }
-            if (tenancyId != null) {
-                collected.addAll(issueController.getIssuesOfTenancy(tenancyId));
+            if (agreementId != null) {
+                collected.addAll(issueController.getIssuesOfAgreement(agreementId));
             } else {
-                collected.addAll(issueController.getIssuesOfTenancies(principal.getTenancyProjects().keySet()));
+                collected.addAll(issueController.getIssuesOfAgreements(principal.getTenancyProjects().keySet()));
             }
         }
     }
@@ -173,7 +173,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Extract issue json from multipart form data
         final IssueJson issue = extractIssueJson(input);
         // Check permissions
-        checkTenancyIssueCreatePermissions(issue.getProjectId(), issue.getTenancyId());
+        checkTenancyIssueCreatePermissions(issue.getProjectId(), issue.getAgreementId());
         // Create issue
         IssueModel createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
         // Process attachments
@@ -228,7 +228,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         IssueJson issueJson;
         if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
             issueJson = IssueJson.valueOf(issue);
-        } else if (principal.getTenancyProjects().containsKey(issue.getTenancyId())) {
+        } else if (principal.getTenancyProjects().containsKey(issue.getAgreementId())) {
             issueJson = IssueJson.valueOfFiltered(issue);
         } else if (isParticipantInIssue(issueId)) {
             issueJson = IssueJson.valueOfFiltered(issue);
@@ -259,7 +259,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         IssueEntity entity = issueController.getIssue(issueId);
         if (principal.getProjectRoles().containsKey(entity.getProjectId())) {
             issueController.deleteIssue(entity.getKey());
-        } else if (principal.getTenancyProjects().containsKey(entity.getTenancyId())) {
+        } else if (principal.getTenancyProjects().containsKey(entity.getAgreementId())) {
             issueController.closeIssue(entity.getKey());
         } else {
             throw new ForbiddenException("User does not have permission to delete this issue");
@@ -318,7 +318,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Check read permissions (managers, tenants, participants)
         IssueModel issue = issueController.getIssue(issueId);
         if (!principal.getProjectRoles().containsKey(issue.getProjectId())
-            && !principal.getTenancyProjects().containsKey(issue.getTenancyId())
+            && !principal.getTenancyProjects().containsKey(issue.getAgreementId())
             && !isParticipantInIssue(issueId)) {
             throw new ForbiddenException("User does not have permission to access this attachment");
         }

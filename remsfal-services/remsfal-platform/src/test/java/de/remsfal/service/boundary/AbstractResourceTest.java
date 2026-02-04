@@ -1,6 +1,7 @@
 package de.remsfal.service.boundary;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
@@ -175,17 +176,18 @@ public abstract class AbstractResourceTest extends AbstractServiceTest {
                 .executeUpdate());
     }
 
-    protected void insertTestTenancy(Object... params) {
+    protected void insertRentalAgreement(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO tenancies (id, project_id) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO rental_agreements (id, project_id, start_of_rental) VALUES (?,?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
+                .setParameter(3, LocalDate.parse("2021-01-01"))
                 .executeUpdate());
     }
 
     protected void insertTenant(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO tenants (tenancy_id, user_id) VALUES (?,?)")
+                .createNativeQuery("INSERT INTO tenants (agreement_id, user_id) VALUES (?,?)")
                 .setParameter(1, params[0])
                 .setParameter(2, params[1])
                 .executeUpdate());

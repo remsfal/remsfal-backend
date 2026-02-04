@@ -12,7 +12,7 @@ import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.control.ContractorController;
 import de.remsfal.service.control.ProjectController;
-import de.remsfal.service.control.TenancyController;
+import de.remsfal.service.control.RentalAgreementController;
 import de.remsfal.service.control.UserController;
 
 import org.eclipse.microprofile.metrics.annotation.Timed;
@@ -41,7 +41,7 @@ public class UserResource implements UserEndpoint {
     ContractorController contractorController;
 
     @Inject
-    TenancyController tenancyController;
+    RentalAgreementController rentalAgreementController;
 
     @Override
     @Timed(name = "GetUserTimer", unit = MetricUnits.MILLISECONDS)
@@ -59,7 +59,7 @@ public class UserResource implements UserEndpoint {
         if (!contractorController.getOrganizations(user).isEmpty()) {
             userRoles.add(UserContext.CONTRACTOR);
         }
-        if (!tenancyController.getTenancies(user).isEmpty()) {
+        if (!rentalAgreementController.getRentalAgreements(user).isEmpty()) {
             userRoles.add(UserContext.TENANT);
         }
         return userRoles;

@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.model.project.RentalUnitModel;
-import de.remsfal.core.model.project.TenancyModel;
+import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
@@ -23,10 +23,10 @@ import de.remsfal.core.model.project.RentalUnitModel.UnitType;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A read-only tenancy of a rentable unit from a tenant's perspective")
-@JsonDeserialize(as = ImmutableTenancyJson.class)
+@Schema(description = "A read-only rental agreement of a rentable unit from a tenant's perspective")
+@JsonDeserialize(as = ImmutableRentalAgreementJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TenancyJson {
+public abstract class RentalAgreementJson {
     // Validation is not required because it is read-only for tenants.
 
     public abstract String getId();
@@ -54,14 +54,14 @@ public abstract class TenancyJson {
     @Nullable
     public abstract Float getHeatingCostsPrepayment();
 
-    public static TenancyJson valueOf(final TenancyModel tenancyModel, final RentModel rentModel,
-        final RentalUnitModel unitModel) {
-        return ImmutableTenancyJson.builder()
-            .id(tenancyModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
+    public static RentalAgreementJson valueOf(final RentalAgreementModel rentalAgreementModel,
+            final RentModel rentModel, final RentalUnitModel unitModel) {
+        return ImmutableRentalAgreementJson.builder()
+            .id(rentalAgreementModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
             .rentalType(unitModel.getType())
             .rentalTitle(unitModel.getTitle())
-            .startOfRental(tenancyModel.getStartOfRental())
-            .endOfRental(tenancyModel.getEndOfRental())
+            .startOfRental(rentalAgreementModel.getStartOfRental())
+            .endOfRental(rentalAgreementModel.getEndOfRental())
             .billingCycle(rentModel.getBillingCycle())
             .basicRent(rentModel.getBasicRent())
             .operatingCostsPrepayment(rentModel.getOperatingCostsPrepayment())

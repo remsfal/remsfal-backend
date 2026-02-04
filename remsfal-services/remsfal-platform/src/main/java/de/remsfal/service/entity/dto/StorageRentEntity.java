@@ -28,7 +28,7 @@ public class StorageRentEntity extends RentEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(storageId, getTenancyId());
+        return Objects.hash(storageId, getAgreementId());
     }
 
     @Override

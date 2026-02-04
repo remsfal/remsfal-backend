@@ -18,12 +18,12 @@ import de.remsfal.service.entity.dto.CommercialRentEntity;
 import de.remsfal.service.entity.dto.PropertyRentEntity;
 import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
-import de.remsfal.service.entity.dto.TenancyEntity;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
 
-import de.remsfal.core.json.tenancy.ImmutableTenancyListJson;
-import de.remsfal.core.json.tenancy.TenancyItemJson;
-import de.remsfal.core.json.tenancy.TenancyJson;
-import de.remsfal.core.json.tenancy.TenancyListJson;
+import de.remsfal.core.json.tenancy.ImmutableRentalAgreementListJson;
+import de.remsfal.core.json.tenancy.RentalAgreementItemJson;
+import de.remsfal.core.json.tenancy.RentalAgreementJson;
+import de.remsfal.core.json.tenancy.RentalAgreementListJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -49,43 +49,43 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     StorageController storageController;
 
     @Override
-    public TenancyListJson getTenancies() {
-        final ImmutableTenancyListJson.Builder rentBuilder = ImmutableTenancyListJson.builder();
-        for(TenancyEntity tenancy : tenancyController.getTenancies(principal)) {
-            rentBuilder.addAllTenancies(tenancy.getPropertyRent()
+    public RentalAgreementListJson getTenancies() {
+        final ImmutableRentalAgreementListJson.Builder rentBuilder = ImmutableRentalAgreementListJson.builder();
+        for(RentalAgreementEntity agreement : agreementController.getRentalAgreements(principal)) {
+            rentBuilder.addAllRentalAgreements(agreement.getPropertyRent()
                 .stream().map(rent -> {
-                    return TenancyItemJson.valueOf(tenancy,
-                        propertyController.getProperty(tenancy.getProjectId(), rent.getPropertyId()));
+                    return RentalAgreementItemJson.valueOf(agreement,
+                        propertyController.getProperty(agreement.getProjectId(), rent.getPropertyId()));
                 })
                 .toList());
-            rentBuilder.addAllTenancies(tenancy.getSiteRent()
+            rentBuilder.addAllRentalAgreements(agreement.getSiteRent()
                 .stream().map(rent -> {
-                    return TenancyItemJson.valueOf(tenancy,
-                        siteController.getSite(tenancy.getProjectId(), rent.getSiteId()));
+                    return RentalAgreementItemJson.valueOf(agreement,
+                        siteController.getSite(agreement.getProjectId(), rent.getSiteId()));
                 })
                 .toList());
-            rentBuilder.addAllTenancies(tenancy.getBuildingRent()
+            rentBuilder.addAllRentalAgreements(agreement.getBuildingRent()
                 .stream().map(rent -> {
-                    return TenancyItemJson.valueOf(tenancy,
-                        buildingController.getBuilding(tenancy.getProjectId(), rent.getBuildingId()));
+                    return RentalAgreementItemJson.valueOf(agreement,
+                        buildingController.getBuilding(agreement.getProjectId(), rent.getBuildingId()));
                 })
                 .toList());
-            rentBuilder.addAllTenancies(tenancy.getApartmentRent()
+            rentBuilder.addAllRentalAgreements(agreement.getApartmentRent()
                 .stream().map(rent -> {
-                    return TenancyItemJson.valueOf(tenancy,
-                        apartmentController.getApartment(tenancy.getProjectId(), rent.getApartmentId()));
+                    return RentalAgreementItemJson.valueOf(agreement,
+                        apartmentController.getApartment(agreement.getProjectId(), rent.getApartmentId()));
                 })
                 .toList());
-            rentBuilder.addAllTenancies(tenancy.getStorageRent()
+            rentBuilder.addAllRentalAgreements(agreement.getStorageRent()
                 .stream().map(rent -> {
-                    return TenancyItemJson.valueOf(tenancy,
-                        storageController.getStorage(tenancy.getProjectId(), rent.getStorageId()));
+                    return RentalAgreementItemJson.valueOf(agreement,
+                        storageController.getStorage(agreement.getProjectId(), rent.getStorageId()));
                 })
                 .toList());
-            rentBuilder.addAllTenancies(tenancy.getCommercialRent()
+            rentBuilder.addAllRentalAgreements(agreement.getCommercialRent()
                 .stream().map(rent -> {
-                    return TenancyItemJson.valueOf(tenancy,
-                        commercialController.getCommercial(tenancy.getProjectId(), rent.getCommercialId()));
+                    return RentalAgreementItemJson.valueOf(agreement,
+                        commercialController.getCommercial(agreement.getProjectId(), rent.getCommercialId()));
                 })
                 .toList());
         }
@@ -93,69 +93,74 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     }
 
     @Override
-    public TenancyJson getPropertyTenancy(final UUID tenancyId, final UUID rentalId) {
+    public RentalAgreementJson getPropertyTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
-        final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
-        PropertyRentEntity rent = tenancy.getPropertyRent().stream()
+        final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
+        PropertyRentEntity rent = agreement.getPropertyRent().stream()
             .filter(r -> rentalId.equals(r.getPropertyId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
-        return TenancyJson.valueOf(tenancy, rent, propertyController.getProperty(tenancy.getProjectId(), rentalId));
+        return RentalAgreementJson.valueOf(agreement, rent,
+            propertyController.getProperty(agreement.getProjectId(), rentalId));
     }
 
     @Override
-    public TenancyJson getSiteTenancy(final UUID tenancyId, final UUID rentalId) {
+    public RentalAgreementJson getSiteTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
-        final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
-        SiteRentEntity rent = tenancy.getSiteRent().stream()
+        final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
+        SiteRentEntity rent = agreement.getSiteRent().stream()
             .filter(r -> rentalId.equals(r.getSiteId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
-        return TenancyJson.valueOf(tenancy, rent, siteController.getSite(tenancy.getProjectId(), rentalId));
+        return RentalAgreementJson.valueOf(agreement, rent, siteController.getSite(agreement.getProjectId(), rentalId));
     }
 
     @Override
-    public TenancyJson getBuildingTenancy(final UUID tenancyId, final UUID rentalId) {
+    public RentalAgreementJson getBuildingTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
-        final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
-        BuildingRentEntity rent = tenancy.getBuildingRent().stream()
+        final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
+        BuildingRentEntity rent = agreement.getBuildingRent().stream()
             .filter(r -> rentalId.equals(r.getBuildingId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
-        return TenancyJson.valueOf(tenancy, rent, buildingController.getBuilding(tenancy.getProjectId(), rentalId));
+        return RentalAgreementJson.valueOf(agreement, rent,
+            buildingController.getBuilding(agreement.getProjectId(), rentalId));
     }
 
     @Override
-    public TenancyJson getApartmentTenancy(final UUID tenancyId, final UUID rentalId) {
+    public RentalAgreementJson getApartmentTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
-        final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
-        ApartmentRentEntity rent = tenancy.getApartmentRent().stream()
+        final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
+        ApartmentRentEntity rent = agreement.getApartmentRent().stream()
             .filter(r -> rentalId.equals(r.getApartmentId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
-        return TenancyJson.valueOf(tenancy, rent, apartmentController.getApartment(tenancy.getProjectId(), rentalId));
+        return RentalAgreementJson.valueOf(agreement, rent,
+            apartmentController.getApartment(agreement.getProjectId(), rentalId));
     }
 
     @Override
-    public TenancyJson getStorageTenancy(final UUID tenancyId, final UUID rentalId) {
+    public RentalAgreementJson getStorageTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
-        final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
-        StorageRentEntity rent = tenancy.getStorageRent().stream()
+        final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
+        StorageRentEntity rent = agreement.getStorageRent().stream()
             .filter(r -> rentalId.equals(r.getStorageId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
-        return TenancyJson.valueOf(tenancy, rent, storageController.getStorage(tenancy.getProjectId(), rentalId));
+        return RentalAgreementJson.valueOf(agreement, rent,
+            storageController.getStorage(agreement.getProjectId(), rentalId));
     }
 
     @Override
-    public TenancyJson getCommercialTenancy(final UUID tenancyId, final UUID rentalId) {
+    public RentalAgreementJson getCommercialTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
-        final TenancyEntity tenancy = tenancyController.getTenancy(principal, tenancyId);
-        CommercialRentEntity rent = tenancy.getCommercialRent().stream()
+        final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
+        CommercialRentEntity rent = agreement.getCommercialRent().stream()
             .filter(r -> rentalId.equals(r.getCommercialId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
-        return TenancyJson.valueOf(tenancy, rent, commercialController.getCommercial(tenancy.getProjectId(), rentalId));
+        return RentalAgreementJson.valueOf(agreement, rent,
+            commercialController.getCommercial(agreement.getProjectId(), rentalId));
     }
 
 }

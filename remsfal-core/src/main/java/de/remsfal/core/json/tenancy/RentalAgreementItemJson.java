@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentalUnitModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
-import de.remsfal.core.model.project.TenancyModel;
+import de.remsfal.core.model.project.RentalAgreementModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -17,10 +17,10 @@ import org.immutables.value.Value.Immutable;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A tenancy item with basic information from a tenant's perspective")
-@JsonDeserialize(as = ImmutableTenancyItemJson.class)
+@Schema(description = "A rental agreement item with basic information from a tenant's perspective")
+@JsonDeserialize(as = ImmutableRentalAgreementItemJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TenancyItemJson {
+public abstract class RentalAgreementItemJson {
     // Validation is not required because it is read-only for tenants.
 
     public abstract String getId();
@@ -38,14 +38,15 @@ public abstract class TenancyItemJson {
 
     public abstract Boolean isActive();
 
-    public static TenancyItemJson valueOf(final TenancyModel tenancyModel, final RentalUnitModel unitModel) {
-        return ImmutableTenancyItemJson.builder()
-            .id(tenancyModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
+    public static RentalAgreementItemJson valueOf(final RentalAgreementModel rentalAgreementModel,
+            final RentalUnitModel unitModel) {
+        return ImmutableRentalAgreementItemJson.builder()
+            .id(rentalAgreementModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
             .name(unitModel.getTitle())
             .rentalType(unitModel.getType())
             .rentalTitle(unitModel.getTitle())
             .location(unitModel.getLocation())
-            .active(tenancyModel.isActive())
+            .active(rentalAgreementModel.isActive())
             .build();
     }
 

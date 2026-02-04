@@ -83,7 +83,7 @@ class IssueEventEnricherTest {
             .issueType(IssueType.MAINTENANCE)
             .status(IssueStatus.OPEN)
             .reporterId(reporterId)
-            .tenancyId(tenancyId)
+            .agreementId(tenancyId)
             .assigneeId(assigneeId)
             .description("Fixture broken")
             .blockedBy(blockedBy)
@@ -108,7 +108,7 @@ class IssueEventEnricherTest {
         assertEquals(event.getUser(), enriched.getUser());
         assertEquals(event.getMentionedUser(), enriched.getMentionedUser());
         assertEquals(reporterId, enriched.getReporterId());
-        assertEquals(tenancyId, enriched.getTenancyId());
+        assertEquals(tenancyId, enriched.getAgreementId());
         assertEquals(assigneeId, enriched.getAssigneeId());
         assertEquals("Fixture broken", enriched.getDescription());
         assertEquals(blockedBy, enriched.getBlockedBy());

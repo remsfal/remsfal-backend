@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TenancyModel {
+public interface RentalAgreementModel {
 
     UUID getId();
 

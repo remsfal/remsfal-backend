@@ -9,9 +9,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.4-tenancy" author="alexander.stanik@htw-berlin.de">
-        <comment>Create tenancy schema with tenancies and tenants tables</comment>
+        <comment>Create rental agreement schema with rental_agreements and tenants tables</comment>
 
-        <createTable tableName="tenancies">
+        <createTable tableName="rental_agreements">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -28,13 +28,13 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_tenancy_project_id"
-            baseTableName="tenancies" baseColumnNames="project_id"
+        <addForeignKeyConstraint constraintName="fk_rental_agreement_project_id"
+            baseTableName="rental_agreements" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createTable tableName="tenants">
-            <column name="tenancy_id" type="uuid">
+            <column name="agreement_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="user_id" type="uuid">
@@ -49,11 +49,11 @@
         </createTable>
 
         <addPrimaryKey tableName="tenants" constraintName="pk_tenant"
-                columnNames="tenancy_id,user_id"/>
+                columnNames="agreement_id,user_id"/>
 
-        <addForeignKeyConstraint constraintName="fk_tenant_tenancy_id"
-            baseTableName="tenants" baseColumnNames="tenancy_id"
-            referencedTableName="tenancies" referencedColumnNames="id"
+        <addForeignKeyConstraint constraintName="fk_tenant_agreement_id"
+            baseTableName="tenants" baseColumnNames="agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_tenant_user_id"
@@ -103,7 +103,7 @@
         </createIndex>
 
         <createTable tableName="property_rents">
-            <column name="tenancy_id" type="uuid">
+            <column name="agreement_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="property_id" type="uuid">
@@ -125,9 +125,9 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_property_rent_tenancy_id"
-            baseTableName="property_rents" baseColumnNames="tenancy_id"
-            referencedTableName="tenancies" referencedColumnNames="id"
+        <addForeignKeyConstraint constraintName="fk_property_rent_agreement_id"
+            baseTableName="property_rents" baseColumnNames="agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_property_rent_property_id"
@@ -135,8 +135,8 @@
             referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_property_rent_tenancy_fk" tableName="property_rents">
-            <column name="tenancy_id" type="uuid" />
+        <createIndex indexName="idx_property_rent_agreement_fk" tableName="property_rents">
+            <column name="agreement_id" type="uuid" />
         </createIndex>
     </changeSet>
 

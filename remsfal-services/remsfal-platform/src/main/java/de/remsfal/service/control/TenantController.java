@@ -2,9 +2,9 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
-import de.remsfal.service.entity.dao.TenancyRepository;
+import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
-import de.remsfal.service.entity.dto.TenancyEntity;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -23,7 +23,7 @@ public class TenantController {
     Logger logger;
 
     @Inject
-    TenancyRepository tenancyRepository;
+    RentalAgreementRepository rentalAgreementRepository;
 
     @Inject
     TenantRepository tenantRepository;
@@ -32,15 +32,15 @@ public class TenantController {
     public CustomerModel createTenant(final UUID projectId, final UserJson tenantJson) {
         logger.infov("Creating a new tenant for project {0}", projectId);
 
-        TenancyEntity tenancy = tenancyRepository.find("projectId", projectId).firstResult();
-        if (tenancy == null) {
-            tenancy = new TenancyEntity();
-            tenancy.generateId();
-            tenancy.setProjectId(projectId);
-            tenancy.setTenants(new java.util.ArrayList<>());
-            tenancyRepository.persist(tenancy);
-        } else if (tenancy.getTenants() == null) {
-            tenancy.setTenants(new java.util.ArrayList<>());
+        RentalAgreementEntity agreement = rentalAgreementRepository.find("projectId", projectId).firstResult();
+        if (agreement == null) {
+            agreement = new RentalAgreementEntity();
+            agreement.generateId();
+            agreement.setProjectId(projectId);
+            agreement.setTenants(new java.util.ArrayList<>());
+            rentalAgreementRepository.persist(agreement);
+        } else if (agreement.getTenants() == null) {
+            agreement.setTenants(new java.util.ArrayList<>());
         }
 
         List<UserEntity> existingTenants = tenantRepository.findTenantsByProjectId(projectId);
@@ -53,9 +53,9 @@ public class TenantController {
         UserEntity entity = applyJsonToEntity(tenantJson, new UserEntity());
         entity.generateId();
 
-        tenancy.getTenants().add(entity);
+        agreement.getTenants().add(entity);
 
-        tenancyRepository.mergeAndFlush(tenancy);
+        rentalAgreementRepository.mergeAndFlush(agreement);
 
         UserEntity managedUser = tenantRepository.findById(entity.getId());
 
@@ -105,16 +105,16 @@ public class TenantController {
 
     @Transactional
     public void deleteTenant(final UUID projectId, final UUID tenantIdToRemove) {
-        TenancyEntity tenancy = tenancyRepository.findTenancyByProjectId(projectId)
-            .orElseThrow(() -> new NotFoundException("Tenancy not found for project"));
+        RentalAgreementEntity agreement = rentalAgreementRepository.findRentalAgreementByProjectId(projectId)
+            .orElseThrow(() -> new NotFoundException("Rental agreement not found for project"));
 
-        boolean removed = tenancy.getTenants()
+        boolean removed = agreement.getTenants()
             .removeIf(tenant -> tenant.getId().equals(tenantIdToRemove));
 
         if (!removed) {
-            throw new NotFoundException("Tenant not found in this tenancy.");
+            throw new NotFoundException("Tenant not found in this rental agreement.");
         }
 
-        tenancyRepository.mergeAndFlush(tenancy);
+        rentalAgreementRepository.mergeAndFlush(agreement);
     }
 }

@@ -3,8 +3,8 @@ package de.remsfal.service.control;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.service.AbstractServiceTest;
-import de.remsfal.service.entity.dao.TenancyRepository;
-import de.remsfal.service.entity.dto.TenancyEntity;
+import de.remsfal.service.entity.dao.RentalAgreementRepository;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
@@ -27,7 +27,7 @@ public class TenantControllerTest extends AbstractServiceTest {
     TenantController tenantController;
 
     @Inject
-    TenancyRepository tenancyRepository;
+    RentalAgreementRepository rentalAgreementRepository;
 
     @BeforeEach
     void setupTestData() {
@@ -65,10 +65,10 @@ public class TenantControllerTest extends AbstractServiceTest {
         assertNotNull(tenantModel.getId(), "Tenant ID should be generated");
         assertEquals(newTenantJson.getEmail(), tenantModel.getEmail());
 
-        Optional<TenancyEntity> tenancyOptional = tenancyRepository.findTenancyByProjectId(TestData.PROJECT_ID_1);
+        Optional<RentalAgreementEntity> tenancyOptional = rentalAgreementRepository.findRentalAgreementByProjectId(TestData.PROJECT_ID_1);
         assertTrue(tenancyOptional.isPresent(), "Tenancy must be created for the project.");
 
-        TenancyEntity tenancy = tenancyOptional.get();
+        RentalAgreementEntity tenancy = tenancyOptional.get();
         assertTrue(tenancy.getTenants().stream().anyMatch(t -> t.getId().equals(tenantModel.getId())),
                 "The newly created tenant must be linked to the tenancy.");
     }

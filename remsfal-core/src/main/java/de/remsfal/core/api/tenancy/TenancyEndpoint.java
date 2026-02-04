@@ -13,8 +13,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.tenancy.TenancyJson;
-import de.remsfal.core.json.tenancy.TenancyListJson;
+import de.remsfal.core.json.tenancy.RentalAgreementJson;
+import de.remsfal.core.json.tenancy.RentalAgreementListJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -30,7 +30,7 @@ public interface TenancyEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all tenancies of a lessee.")
     @APIResponse(responseCode = "200", description = "List of tenancies successfully returned")
-    TenancyListJson getTenancies();
+    RentalAgreementListJson getTenancies();
 
     @GET
     @Path("/{tenancyId}/properties/{rentalId}")
@@ -39,7 +39,7 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "200", description = "Property for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyJson getPropertyTenancy(
+    RentalAgreementJson getPropertyTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
@@ -53,7 +53,7 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "200", description = "Site for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyJson getSiteTenancy(
+    RentalAgreementJson getSiteTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
@@ -67,7 +67,7 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "200", description = "Building for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyJson getBuildingTenancy(
+    RentalAgreementJson getBuildingTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
@@ -81,7 +81,7 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "200", description = "Apartment for specified tenancy and rental ID returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyJson getApartmentTenancy(
+    RentalAgreementJson getApartmentTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
@@ -95,7 +95,7 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "200", description = "Storage for specified tenancy and rental ID returned.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyJson getStorageTenancy(
+    RentalAgreementJson getStorageTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)
@@ -109,7 +109,7 @@ public interface TenancyEndpoint {
     @APIResponse(responseCode = "200", description = "Commercial for specified tenancy and rental ID returned.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyJson getCommercialTenancy(
+    RentalAgreementJson getCommercialTenancy(
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("tenancyId") @NotNull UUID tenancyId,
         @Parameter(description = "ID of the rental", required = true)

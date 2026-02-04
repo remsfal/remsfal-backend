@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import de.remsfal.core.model.project.TenancyModel;
+import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -23,8 +23,8 @@ import jakarta.persistence.Table;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Entity
-@Table(name = "tenancies")
-public class TenancyEntity extends AbstractEntity implements TenancyModel {
+@Table(name = "rental_agreements")
+public class RentalAgreementEntity extends AbstractEntity implements RentalAgreementModel {
 
     @Column(name = "project_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID projectId;
@@ -35,7 +35,7 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "tenants",
-        joinColumns = @JoinColumn(name = "tenancy_id", columnDefinition = "uuid"),
+        joinColumns = @JoinColumn(name = "agreement_id", columnDefinition = "uuid"),
         inverseJoinColumns = @JoinColumn(name = "user_id", columnDefinition = "uuid")
     )
     private List<UserEntity> tenants = new ArrayList<>();
@@ -47,32 +47,32 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
     private LocalDate endOfRental;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "tenancy_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<PropertyRentEntity> propertyRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "tenancy_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<SiteRentEntity> siteRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "tenancy_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<BuildingRentEntity> buildingRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "tenancy_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<ApartmentRentEntity> apartmentRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "tenancy_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<StorageRentEntity> storageRent;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "tenancy_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
     @OrderBy("firstPaymentDate")
     private List<CommercialRentEntity> commercialRent;
 
@@ -164,7 +164,7 @@ public class TenancyEntity extends AbstractEntity implements TenancyModel {
         if (this == o) {
             return true;
         }
-        if (o instanceof TenancyEntity e) {
+        if (o instanceof RentalAgreementEntity e) {
             return super.equals(e)
                 && Objects.equals(projectId, e.projectId)
                 && Objects.equals(tenants, e.tenants)

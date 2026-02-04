@@ -1118,13 +1118,13 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void getIssues_FAILED_tenantWithUnauthorizedTenancyId() {
-        UUID unauthorizedTenancyId = UUID.randomUUID();
+        UUID unauthorizedAgreementId = UUID.randomUUID();
 
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
                 TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("tenancyId", unauthorizedTenancyId.toString())
+            .queryParam("agreementId", unauthorizedAgreementId.toString())
             .get(BASE_PATH)
             .then()
             .statusCode(403);
@@ -1268,7 +1268,7 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     }
 
-    void getIssues_FAILED_noTenancyMembership() {
+    void getIssues_FAILED_noAgreementMembership() {
         given()
             .when()
             .cookie(buildCookie(
@@ -1283,8 +1283,8 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getIssues_FAILED_invalidTenancyIdForbidden() {
-        UUID unknownTenancy = UUID.randomUUID();
+    void getIssues_FAILED_invalidAgreementIdForbidden() {
+        UUID unknownAgreement = UUID.randomUUID();
 
         given()
             .when()
@@ -1294,14 +1294,14 @@ class IssueResourceTest extends AbstractTicketingTest {
                 TicketingTestData.USER_FIRST_NAME,
                 Map.of(), Map.of(),
                 TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("tenancyId", unknownTenancy.toString())
+            .queryParam("agreementId", unknownAgreement.toString())
             .get(BASE_PATH)
             .then()
             .statusCode(403);
     }
 
     @Test
-    void getIssues_SUCCESS_tenancyIssuesForMember() {
+    void getIssues_SUCCESS_agreementIssuesForMember() {
         given()
             .when()
             .cookie(buildCookie(
@@ -1310,7 +1310,7 @@ class IssueResourceTest extends AbstractTicketingTest {
                 TicketingTestData.USER_FIRST_NAME,
                 Map.of(), Map.of(),
                 TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("tenancyId", TicketingTestData.TENANCY_ID.toString())
+            .queryParam("agreementId", TicketingTestData.AGREEMENT_ID.toString())
             .get(BASE_PATH)
             .then()
             .statusCode(200)
@@ -1475,9 +1475,9 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getIssues_SUCCESS_tenantWithSpecificTenancyIdGetsIssues() {
+    void getIssues_SUCCESS_tenantWithSpecificAgreementIdGetsIssues() {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Tenancy Specific Issue\","
+            + "\"title\":\"Agreement Specific Issue\","
             + "\"type\":\"TASK\""
             + "}";
 
@@ -1488,13 +1488,13 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body(createJson)
             .post(BASE_PATH);
 
-        UUID tenancyId = UUID.fromString(TicketingTestData.TENANT_PROJECT_ROLES.keySet().iterator().next());
+        UUID agreementId = UUID.fromString(TicketingTestData.TENANT_PROJECT_ROLES.keySet().iterator().next());
 
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
                 TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("tenancyId", tenancyId.toString())
+            .queryParam("agreementId", agreementId.toString())
             .get(BASE_PATH)
             .then()
             .statusCode(200)
@@ -1589,7 +1589,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     @Test
     void createIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"tenancyId\":\"" + TicketingTestData.TENANCY_ID + "\","
+            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"title\":\"Issue with attachments\","
             + "\"type\":\"DEFECT\""
             + "}";
@@ -1895,7 +1895,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     // Uses tenant cookie to create issue (similar to real-world scenario)
     private IssueJson createIssueWithAttachment() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"tenancyId\":\"" + TicketingTestData.TENANCY_ID + "\","
+            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"title\":\"Issue with attachment for testing\","
             + "\"type\":\"DEFECT\""
             + "}";

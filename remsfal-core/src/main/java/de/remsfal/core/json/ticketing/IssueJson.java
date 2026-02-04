@@ -73,7 +73,7 @@ public abstract class IssueJson implements IssueModel {
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
-    public abstract UUID getTenancyId();
+    public abstract UUID getAgreementId();
 
     @Null(groups = PostValidation.class)
     @Nullable
@@ -129,7 +129,7 @@ public abstract class IssueJson implements IssueModel {
             .status(model.getStatus())
             .priority(model.getPriority())
             .reporterId(model.getReporterId())
-            .tenancyId(model.getTenancyId())
+            .agreementId(model.getAgreementId())
             .assigneeId(model.getAssigneeId())
             .description(model.getDescription())
             .parentIssue(model.getParentIssue())

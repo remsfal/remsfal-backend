@@ -30,7 +30,7 @@ public class BuildingRentEntity extends RentEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(buildingId, getTenancyId());
+        return Objects.hash(buildingId, getAgreementId());
     }
 
     @Override

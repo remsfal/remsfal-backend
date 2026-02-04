@@ -27,8 +27,8 @@ public class TenantResourceTest extends AbstractResourceTest {
     protected void setupTestProjects() {
         super.setupTestUsers();
         super.setupTestProjects();
-        insertTestTenancy(TestData.TENANCY_ID_1, TestData.PROJECT_ID_1);
-        insertTenant(TestData.TENANCY_ID_1, TestData.USER_ID_3);
+        insertRentalAgreement(TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1);
+        insertTenant(TestData.AGREEMENT_ID_1, TestData.USER_ID_3);
     }
 
     @Test

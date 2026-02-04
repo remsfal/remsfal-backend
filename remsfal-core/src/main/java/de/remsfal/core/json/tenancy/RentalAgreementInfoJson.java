@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.model.project.TenancyModel;
+import de.remsfal.core.model.project.RentalAgreementModel;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -26,10 +26,10 @@ import de.remsfal.core.validation.PostValidation;
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A tenancy item with information from the manager's view")
-@JsonDeserialize(as = ImmutableTenancyInfoJson.class)
+@Schema(description = "A rental agreement item with information from the manager's view")
+@JsonDeserialize(as = ImmutableRentalAgreementInfoJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TenancyInfoJson implements TenancyModel {
+public abstract class RentalAgreementInfoJson implements RentalAgreementModel {
 
     @Null(groups = PostValidation.class)
     @Nullable
@@ -49,8 +49,8 @@ public abstract class TenancyInfoJson implements TenancyModel {
     @Override
     public abstract List<UserJson> getTenants();
 
-    public static TenancyInfoJson valueOf(TenancyModel model) {
-        return ImmutableTenancyInfoJson.builder()
+    public static RentalAgreementInfoJson valueOf(RentalAgreementModel model) {
+        return ImmutableRentalAgreementInfoJson.builder()
                 .id(model.getId())
                 .startOfRental(model.getStartOfRental())
                 .endOfRental(model.getEndOfRental())

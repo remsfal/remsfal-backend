@@ -16,7 +16,7 @@ import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 @RequestScoped
 public class AbstractProjectResource extends AbstractResource {
 
-    public MemberRole checkTenancyWritePermissions(final UUID projectId) {
+    public MemberRole checkRentalAgreementWritePermissions(final UUID projectId) {
         if(principal.getProjectRole(projectId) == null
             || !principal.getProjectRole(projectId).isPrivileged(MemberRole.LESSOR) ) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);

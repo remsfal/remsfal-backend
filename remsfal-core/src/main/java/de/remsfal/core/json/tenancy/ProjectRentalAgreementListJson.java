@@ -10,24 +10,24 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.TenancyModel;
+import de.remsfal.core.model.project.RentalAgreementModel;
 
 /**
  * @author Carl Rix [carl.rix@student.htw-berlin.de]
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A list of tenancies for a project")
-@JsonDeserialize(as = ImmutableProjectTenancyListJson.class)
+@Schema(description = "A list of rental agreements for a project")
+@JsonDeserialize(as = ImmutableProjectRentalAgreementListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class ProjectTenancyListJson {
+public abstract class ProjectRentalAgreementListJson {
 
-    public abstract List<TenancyInfoJson> getTenancies();
+    public abstract List<RentalAgreementInfoJson> getRentalAgreements();
 
-    public static ProjectTenancyListJson valueOf(final List<? extends TenancyModel> tenancies) {
-        return ImmutableProjectTenancyListJson.builder()
-            .tenancies(tenancies.stream()
-                .map(TenancyInfoJson::valueOf)
+    public static ProjectRentalAgreementListJson valueOf(final List<? extends RentalAgreementModel> rentalAgreements) {
+        return ImmutableProjectRentalAgreementListJson.builder()
+            .rentalAgreements(rentalAgreements.stream()
+                .map(RentalAgreementInfoJson::valueOf)
                 .toList())
             .build();
     }

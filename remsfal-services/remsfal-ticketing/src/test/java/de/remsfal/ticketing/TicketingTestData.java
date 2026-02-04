@@ -74,7 +74,7 @@ public class TicketingTestData extends TestData {
     );
     
     public static final Map<String, String> TENANT_PROJECT_ROLES = Map.of(
-        TENANCY_ID.toString(), PROJECT_ID.toString()
+        AGREEMENT_ID.toString(), PROJECT_ID.toString()
     );
 
     // Chat session test data

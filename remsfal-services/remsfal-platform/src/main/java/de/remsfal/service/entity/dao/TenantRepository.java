@@ -12,13 +12,13 @@ import java.util.UUID;
 public class TenantRepository extends AbstractRepository<UserEntity> {
 
     public List<UserEntity> findTenantsByProjectId(final UUID projectId) {
-        return list("SELECT DISTINCT u FROM TenancyEntity t JOIN t.tenants u " +
+        return list("SELECT DISTINCT u FROM RentalAgreementEntity t JOIN t.tenants u " +
                         "WHERE t.projectId = :projectId",
                 Parameters.with("projectId", projectId));
     }
 
     public Optional<UserEntity> findTenantByProjectId(final UUID projectId, final UUID tenantId) {
-        return find("SELECT u FROM TenancyEntity t JOIN t.tenants u " +
+        return find("SELECT u FROM RentalAgreementEntity t JOIN t.tenants u " +
                         "WHERE t.projectId = :projectId and u.id = :tenantId",
                 Parameters.with("projectId", projectId).and("tenantId", tenantId))
                 .singleResultOptional();

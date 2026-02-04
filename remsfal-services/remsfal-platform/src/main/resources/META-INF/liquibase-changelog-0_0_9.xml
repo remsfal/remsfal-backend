@@ -58,7 +58,7 @@
         </createIndex>
 
         <createTable tableName="commercial_rents">
-            <column name="TENANCY_ID" type="uuid">
+            <column name="AGREEMENT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="COMMERCIAL_ID" type="uuid">
@@ -80,9 +80,9 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_commercial_rent_tenancy_id"
-            baseTableName="commercial_rents" baseColumnNames="TENANCY_ID"
-            referencedTableName="tenancies" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_commercial_rent_agreement_id"
+            baseTableName="commercial_rents" baseColumnNames="AGREEMENT_ID"
+            referencedTableName="rental_agreements" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_commercial_rent_commercial_id"
@@ -90,8 +90,8 @@
             referencedTableName="commercials" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_commercial_rent_tenancy_fk" tableName="commercial_rents">
-            <column name="TENANCY_ID" type="uuid" />
+        <createIndex indexName="idx_commercial_rent_agreement_fk" tableName="commercial_rents">
+            <column name="AGREEMENT_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

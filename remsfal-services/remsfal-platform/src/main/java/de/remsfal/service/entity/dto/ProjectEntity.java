@@ -33,7 +33,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     private Set<ProjectOrganizationEntity> organizations;
 
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
-    private Set<TenancyEntity> tenancies;
+    private Set<RentalAgreementEntity> rentalAgreements;
     
     @Override
     public String getTitle() {

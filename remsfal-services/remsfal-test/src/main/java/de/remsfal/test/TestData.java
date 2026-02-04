@@ -11,7 +11,7 @@ import de.remsfal.core.json.project.ImmutableCommercialJson;
 import de.remsfal.core.json.project.ImmutablePropertyJson;
 import de.remsfal.core.json.project.ImmutableSiteJson;
 import de.remsfal.core.json.project.ImmutableStorageJson;
-import de.remsfal.core.json.project.ImmutableTenancyJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
 
 public class TestData {
 
@@ -715,42 +715,43 @@ public class TestData {
                 .address(addressBuilder1().build()); // Fügt eine Standardadresse hinzu
     }
 
-    // Test tenancy 1
-    public static final UUID TENANCY_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
-    public static final LocalDate TENANCY_START_1 = LocalDate.of(2007, 12, 1);
-    public static final LocalDate TENANCY_END_1 = LocalDate.of(2025, 1, 30);
+    // Test rental agreement 1
+    public static final UUID AGREEMENT_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
+    public static final LocalDate AGREEMENT_START_1 = LocalDate.of(2007, 12, 1);
+    public static final LocalDate AGREEMENT_END_1 = LocalDate.of(2025, 1, 30);
 
-    // Default test tenancy
-    public static final UUID TENANCY_ID = TestData.TENANCY_ID_1;
-    public static final LocalDate TENANCY_START = TestData.TENANCY_START_1;
-    public static final LocalDate TENANCY_END = TestData.TENANCY_END_1;
+    // Default test rental agreement
+    public static final UUID AGREEMENT_ID = TestData.AGREEMENT_ID_1;
+    public static final LocalDate AGREEMENT_START = TestData.AGREEMENT_START_1;
+    public static final LocalDate AGREEMENT_END = TestData.AGREEMENT_END_1;
 
-    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
-        return tenancyBuilder1();
+    public static final ImmutableRentalAgreementJson.Builder rentalAgreementBuilder() {
+        return rentalAgreementBuilder1();
     }
 
-    // Test tenancy 2
-    public static final UUID TENANCY_ID_2 = UUID.fromString("bbbbbc43-b5c0-4951-9c22-000000000002");
-    public static final LocalDate TENANCY_START_2 = LocalDate.of(2010, 5, 15);
-    public static final LocalDate TENANCY_END_2 = LocalDate.of(2030, 4, 23);
+    // Test rental agreement 2
+    public static final UUID AGREEMENT_ID_2 = UUID.fromString("bbbbbc43-b5c0-4951-9c22-000000000002");
+    public static final LocalDate AGREEMENT_START_2 = LocalDate.of(2010, 5, 15);
+    public static final LocalDate AGREEMENT_END_2 = LocalDate.of(2030, 4, 23);
 
-    // Test tenancy 3
-    public static final UUID TENANCY_ID_3 = UUID.fromString("cccccc43-b5c0-4951-9c22-000000000003");
-    public static final LocalDate TENANCY_START_3 = LocalDate.of(2016, 7, 1);
-    public static final LocalDate TENANCY_END_3 = LocalDate.of(2022, 12, 31);
+    // Test rental agreement 3
+    public static final UUID AGREEMENT_ID_3 = UUID.fromString("cccccc43-b5c0-4951-9c22-000000000003");
+    public static final LocalDate AGREEMENT_START_3 = LocalDate.of(2016, 7, 1);
+    public static final LocalDate AGREEMENT_END_3 = LocalDate.of(2022, 12, 31);
 
-    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
-        return ImmutableTenancyJson
+    // Builder methods for creating test rental agreement JSON objects
+    public static final ImmutableRentalAgreementJson.Builder rentalAgreementBuilder1() {
+        return ImmutableRentalAgreementJson
                 .builder()
-                .startOfRental(TENANCY_START_1)
-                .endOfRental(TENANCY_END_1);
+                .startOfRental(AGREEMENT_START_1)
+                .endOfRental(AGREEMENT_END_1);
     }
 
-    public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
-        return ImmutableTenancyJson
+    public static final ImmutableRentalAgreementJson.Builder rentalAgreementBuilder2() {
+        return ImmutableRentalAgreementJson
                 .builder()
-                .startOfRental(TENANCY_START_2)
-                .endOfRental(TENANCY_END_2);
+                .startOfRental(AGREEMENT_START_2)
+                .endOfRental(AGREEMENT_END_2);
     }
 
     // Test task 1

@@ -11,8 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.time.LocalDate;
-import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
@@ -20,7 +18,7 @@ import static io.restassured.RestAssured.given;
 class RentalAgreementResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/rental-agreements";
-    static final String TENANCY_PATH = BASE_PATH + "/{tenancyId}";
+    static final String AGREEMENT_PATH = BASE_PATH + "/{agreementId}";
 
     @Override
     @BeforeEach
@@ -32,18 +30,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     }
 
     private void setupTestRentalAgreements() {
-        insertRentalAgreement(TestData.TENANCY_ID, TestData.PROJECT_ID, LocalDate.parse("2021-01-01"), null);
-    }
-
-    private void insertRentalAgreement(UUID id, UUID projectId, LocalDate start, LocalDate end) {
-        runInTransaction(() -> entityManager
-            .createNativeQuery(
-                "INSERT INTO tenancies (id, project_id, start_of_rental, end_of_rental) VALUES (?,?,?,?)")
-            .setParameter(1, id)
-            .setParameter(2, projectId)
-            .setParameter(3, start)
-            .setParameter(4, end)
-            .executeUpdate());
+        insertRentalAgreement(TestData.AGREEMENT_ID, TestData.PROJECT_ID);
     }
 
     @Test
@@ -55,31 +42,31 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("tenancies.size()", Matchers.equalTo(1));
+            .and().body("rentalAgreements.size()", Matchers.equalTo(1));
     }
 
     @Test
-    void getRentalAgreement_SUCCESS_tenancyReturned() {
-        String tenancyId = given()
+    void getRentalAgreement_SUCCESS_agreementReturned() {
+        String agreementId = given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .get(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode())
-            .extract().path("tenancies[0].id");
+            .extract().path("rentalAgreements[0].id");
 
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .get(TENANCY_PATH, TestData.PROJECT_ID.toString(), tenancyId)
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), agreementId)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("id", Matchers.equalTo(tenancyId));
+            .and().body("id", Matchers.equalTo(agreementId));
     }
 
     @Test
-    void createRentalAgreement_SUCCESS_newTenancyReturned() {
+    void createRentalAgreement_SUCCESS_newAgreementReturned() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"endOfRental\":\"2023-12-31\"" +
@@ -123,7 +110,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .log().ifValidationFails()
             .statusCode(Status.OK.getStatusCode())
@@ -142,7 +129,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .log().ifValidationFails()
             .statusCode(Status.OK.getStatusCode())
@@ -158,7 +145,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
            .contentType(MediaType.APPLICATION_JSON)
            .body(json)
-           .patch(TENANCY_PATH, TestData.PROJECT_ID, TestData.TENANCY_ID)
+           .patch(AGREEMENT_PATH, TestData.PROJECT_ID, TestData.AGREEMENT_ID)
            .then()
            .statusCode(Status.OK.getStatusCode())
            .body("tenants", Matchers.notNullValue()); // stays unchanged
@@ -173,7 +160,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .log().ifValidationFails()
             .statusCode(Status.OK.getStatusCode())
@@ -187,7 +174,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body("{\"tenants\": [{\"id\":\"" + TestData.USER_ID_1 + "\"}]}")
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode());
 
@@ -198,7 +185,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .log().ifValidationFails()
             .statusCode(Status.OK.getStatusCode())
@@ -235,7 +222,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
@@ -262,7 +249,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .get(TENANCY_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
     }
@@ -275,7 +262,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(TENANCY_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
     }
@@ -312,7 +299,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-            .get(TENANCY_PATH, TestData.PROJECT_ID.toString(), TestData.TENANCY_ID.toString())
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }

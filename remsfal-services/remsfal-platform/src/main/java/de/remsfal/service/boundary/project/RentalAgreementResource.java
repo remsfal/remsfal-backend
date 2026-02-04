@@ -8,10 +8,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import de.remsfal.core.api.project.RentalAgreementEndpoint;
-import de.remsfal.core.json.tenancy.ProjectTenancyListJson;
-import de.remsfal.core.json.tenancy.TenancyInfoJson;
-import de.remsfal.core.model.project.TenancyModel;
-import de.remsfal.service.control.TenancyController;
+import de.remsfal.core.json.tenancy.ProjectRentalAgreementListJson;
+import de.remsfal.core.json.tenancy.RentalAgreementInfoJson;
+import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.service.control.RentalAgreementController;
 
 import java.util.List;
 
@@ -19,37 +19,41 @@ import java.util.List;
 public class RentalAgreementResource extends AbstractProjectResource implements RentalAgreementEndpoint {
 
     @Inject
-    TenancyController tenancyController;
+    RentalAgreementController rentalAgreementController;
 
     @Override
-    public TenancyInfoJson getRentalAgreement(final UUID projectId, final UUID agreementId) {
+    public RentalAgreementInfoJson getRentalAgreement(final UUID projectId, final UUID agreementId) {
         checkProjectReadPermissions(projectId);
-        final TenancyModel tenancy = tenancyController.getTenancyByProject(projectId, agreementId);
-        return TenancyInfoJson.valueOf(tenancy);
+        final RentalAgreementModel agreement =
+            rentalAgreementController.getRentalAgreementByProject(projectId, agreementId);
+        return RentalAgreementInfoJson.valueOf(agreement);
     }
 
     @Override
-    public ProjectTenancyListJson getRentalAgreements(final UUID projectId) {
+    public ProjectRentalAgreementListJson getRentalAgreements(final UUID projectId) {
         checkProjectReadPermissions(projectId);
-        final List<? extends TenancyModel> tenancies = tenancyController.getTenanciesByProject(projectId);
-        return ProjectTenancyListJson.valueOf(tenancies);
+        final List<? extends RentalAgreementModel> agreements =
+            rentalAgreementController.getRentalAgreementsByProject(projectId);
+        return ProjectRentalAgreementListJson.valueOf(agreements);
     }
 
     @Override
-    public Response createRentalAgreement(final UUID projectId, final TenancyInfoJson tenancy) {
-        checkTenancyWritePermissions(projectId);
-        final TenancyModel model = tenancyController.createTenancy(projectId, tenancy);
+    public Response createRentalAgreement(final UUID projectId, final RentalAgreementInfoJson agreement) {
+        checkRentalAgreementWritePermissions(projectId);
+        final RentalAgreementModel model = rentalAgreementController.createRentalAgreement(projectId, agreement);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(TenancyInfoJson.valueOf(model))
+            .entity(RentalAgreementInfoJson.valueOf(model))
             .build();
     }
 
     @Override
-    public TenancyInfoJson updateRentalAgreement(final UUID projectId, final UUID agreementId, final TenancyInfoJson tenancy) {
-        checkTenancyWritePermissions(projectId);
-        final TenancyModel model = tenancyController.updateTenancy(projectId, agreementId, tenancy);
-        return TenancyInfoJson.valueOf(model);
+    public RentalAgreementInfoJson updateRentalAgreement(final UUID projectId, final UUID agreementId,
+            final RentalAgreementInfoJson agreement) {
+        checkRentalAgreementWritePermissions(projectId);
+        final RentalAgreementModel model =
+            rentalAgreementController.updateRentalAgreement(projectId, agreementId, agreement);
+        return RentalAgreementInfoJson.valueOf(model);
     }
 
 }

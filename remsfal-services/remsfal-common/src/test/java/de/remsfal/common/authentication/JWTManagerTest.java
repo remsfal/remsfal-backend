@@ -63,8 +63,8 @@ class JWTManagerTest extends AbstractTest {
             TestData.ORGANIZATION_ID_2.toString(), "STAFF"
         );
         Map<String, String> tenancyProjects = Map.of(
-            TestData.TENANCY_ID_1.toString(), TestData.PROJECT_ID_3.toString(),
-            TestData.TENANCY_ID_2.toString(), TestData.PROJECT_ID_4.toString()
+            TestData.AGREEMENT_ID_1.toString(), TestData.PROJECT_ID_3.toString(),
+            TestData.AGREEMENT_ID_2.toString(), TestData.PROJECT_ID_4.toString()
         );
 
         String token = jwtManager.createAccessToken(user, projectRoles, organizationRoles, tenancyProjects, 3600);

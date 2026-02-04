@@ -32,7 +32,7 @@ public class ContractorResource extends AbstractProjectResource implements Contr
 
     @Override
     public Response createContractor(final UUID projectId, final ContractorJson contractor) {
-        checkTenancyWritePermissions(projectId);
+        checkRentalAgreementWritePermissions(projectId);
         ContractorModel model = controller.createContractor(principal, projectId, contractor);
         return getCreatedResponseBuilder(model.getId())
                 .type(MediaType.APPLICATION_JSON)
@@ -50,14 +50,14 @@ public class ContractorResource extends AbstractProjectResource implements Contr
     @Override
     public ContractorJson updateContractor(final UUID projectId, final UUID contractorId,
         final ContractorJson contractor) {
-        checkTenancyWritePermissions(projectId);
+        checkRentalAgreementWritePermissions(projectId);
         ContractorModel model = controller.updateContractor(principal, projectId, contractorId, contractor);
         return ContractorJson.valueOf(model);
     }
 
     @Override
     public void deleteContractor(final UUID projectId, final UUID contractorId) {
-        checkTenancyWritePermissions(projectId);
+        checkRentalAgreementWritePermissions(projectId);
         if (!controller.deleteContractor(principal, projectId, contractorId)) {
             throw new NotFoundException("Contractor not found");
         }

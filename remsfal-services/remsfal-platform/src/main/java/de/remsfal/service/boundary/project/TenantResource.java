@@ -21,7 +21,7 @@ public class TenantResource extends AbstractProjectResource implements TenantEnd
 
     @Override
     public Response createTenant(final UUID projectId, final UserJson tenant) {
-        checkTenancyWritePermissions(projectId);
+        checkRentalAgreementWritePermissions(projectId);
         final CustomerModel model = controller.createTenant(projectId, tenant);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
@@ -47,14 +47,14 @@ public class TenantResource extends AbstractProjectResource implements TenantEnd
 
     @Override
     public UserJson updateTenant(final UUID projectId, final UUID tenantId, UserJson tenant) {
-        checkTenancyWritePermissions(projectId);
+        checkRentalAgreementWritePermissions(projectId);
         final CustomerModel model = controller.updateTenant(projectId, tenantId, tenant);
         return UserJson.valueOf(model);
     }
 
     @Override
     public Response deleteTenant(UUID projectId, UUID tenantId) {
-        checkTenancyWritePermissions(projectId);
+        checkRentalAgreementWritePermissions(projectId);
         controller.deleteTenant(projectId, tenantId);
         return Response.noContent().build();
     }

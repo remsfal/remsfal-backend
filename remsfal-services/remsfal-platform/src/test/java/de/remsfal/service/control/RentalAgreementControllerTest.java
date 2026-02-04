@@ -2,9 +2,9 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.json.tenancy.ImmutableTenancyInfoJson;
-import de.remsfal.core.json.tenancy.TenancyInfoJson;
-import de.remsfal.service.entity.dto.TenancyEntity;
+import de.remsfal.core.json.tenancy.ImmutableRentalAgreementInfoJson;
+import de.remsfal.core.json.tenancy.RentalAgreementInfoJson;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import jakarta.inject.Inject;
@@ -21,10 +21,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-class TenancyControllerTest extends AbstractServiceTest {
+class RentalAgreementControllerTest extends AbstractServiceTest {
 
   @Inject
-  TenancyController controller;
+  RentalAgreementController controller;
 
     @BeforeEach
     void setupTestProjects() {
@@ -72,82 +72,82 @@ class TenancyControllerTest extends AbstractServiceTest {
   }
 
     @Test
-    void createTenancy_FAILED_noProject() {
-        final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+    void createRentalAgreement_FAILED_noProject() {
+        final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
             .startOfRental(LocalDate.now())
             .build();
         final UUID projectId = UUID.randomUUID();
 
         assertThrows(NotFoundException.class,
-            () -> controller.createTenancy(projectId, tenancy));
+            () -> controller.createRentalAgreement(projectId, agreement));
     }
 
     @Test
-    void createTenancy_Success_idGenerated() {
+    void createRentalAgreement_Success_idGenerated() {
         final UUID projectId = TestData.PROJECT_ID_1;
-        final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+        final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
             .startOfRental(LocalDate.now())
             .build();
 
-        TenancyEntity result = controller.createTenancy(projectId, tenancy);
+        RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
 
         assertNotNull(result.getId());
         assertEquals(projectId, result.getProjectId());
-        assertEquals(tenancy.getStartOfRental(), result.getStartOfRental());
+        assertEquals(agreement.getStartOfRental(), result.getStartOfRental());
 
-        TenancyEntity entity = entityManager.find(TenancyEntity.class, result.getId());
-        assertTenancy(result, entity);
+        RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
+        assertRentalAgreement(result, entity);
     }
 
     @Test
-    void getTenancy_SUCCESS_tenancyRetrieved() {
+    void getRentalAgreement_SUCCESS_agreementRetrieved() {
         final UUID projectId = TestData.PROJECT_ID_1;
-        final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+        final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
             .startOfRental(LocalDate.now())
             .build();
-        TenancyEntity created = controller.createTenancy(projectId, tenancy);
+        RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
 
-        TenancyEntity retrieved = controller.getTenancyByProject(projectId, created.getId());
+        RentalAgreementEntity retrieved = controller.getRentalAgreementByProject(projectId, created.getId());
 
         assertEquals(created.getId(), retrieved.getId());
-        assertTenancy(created, retrieved);
+        assertRentalAgreement(created, retrieved);
     }
 
     @Test
-    void getTenancy_FAILED_tenancyNotFound() {
+    void getRentalAgreement_FAILED_agreementNotFound() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final UUID tenancyId = UUID.randomUUID();
+      final UUID agreementId = UUID.randomUUID();
 
       assertThrows(NotFoundException.class,
-          () -> controller.getTenancyByProject(projectId, tenancyId));
+          () -> controller.getRentalAgreementByProject(projectId, agreementId));
     }
 
     @Test
-    void updateTenancy_SUCCESS_correctlyUpdated() {
+    void updateRentalAgreement_SUCCESS_correctlyUpdated() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+      final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
           .startOfRental(LocalDate.now())
           .build();
-      TenancyEntity created = controller.createTenancy(projectId, tenancy);
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
 
-      TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
+      RentalAgreementInfoJson updateJson = ImmutableRentalAgreementInfoJson.builder()
           .startOfRental(LocalDate.of(2025, 1, 1))
           .endOfRental(LocalDate.of(2026, 1, 1))
           .build();
 
-      TenancyEntity updated = controller.updateTenancy(projectId, created.getId(), updateJson);
+      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
 
       assertEquals(created.getId(), updated.getId());
-      assertEquals(tenancy.getStartOfRental(), created.getStartOfRental()); // Helper check on original
+      assertEquals(agreement.getStartOfRental(), created.getStartOfRental()); // Helper check on original
       assertEquals(updateJson.getStartOfRental(), updated.getStartOfRental());
       assertEquals(updateJson.getEndOfRental(), updated.getEndOfRental());
 
-      TenancyEntity entity = entityManager.find(TenancyEntity.class, updated.getId());
-      assertTenancy(updated, entity);
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
+      assertRentalAgreement(updated, entity);
     }
 
     @Test
-    void createTenancy_SUCCESS_withTenants() {
+    void createRentalAgreement_SUCCESS_withTenants() {
       final UUID projectId = TestData.PROJECT_ID_1;
       final UserJson tenantUser = ImmutableUserJson.builder()
           .id(TestData.USER_ID_1)
@@ -156,29 +156,29 @@ class TenancyControllerTest extends AbstractServiceTest {
           .lastName(TestData.USER_LAST_NAME_1)
           .build();
 
-      final TenancyInfoJson tenancy = ImmutableTenancyInfoJson.builder()
+      final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
           .startOfRental(LocalDate.now())
           .addTenants(tenantUser)
           .build();
 
-      TenancyEntity result = controller.createTenancy(projectId, tenancy);
+      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getTenants().size());
       assertEquals(TestData.USER_ID_1, result.getTenants().get(0).getId());
 
       // Verify in DB
-      TenancyEntity entity = entityManager.find(TenancyEntity.class, result.getId());
-      assertTenancy(result, entity);
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
+      assertRentalAgreement(result, entity);
     }
 
     @Test
-    void updateTenancy_SUCCESS_tenantsUpdated() {
+    void updateRentalAgreement_SUCCESS_tenantsUpdated() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final TenancyInfoJson startTenancy = ImmutableTenancyInfoJson.builder()
+      final RentalAgreementInfoJson startAgreement = ImmutableRentalAgreementInfoJson.builder()
           .startOfRental(LocalDate.now())
           .build();
-      TenancyEntity created = controller.createTenancy(projectId, startTenancy);
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final UserJson tenantUser = ImmutableUserJson.builder()
           .id(TestData.USER_ID_1)
@@ -186,33 +186,33 @@ class TenancyControllerTest extends AbstractServiceTest {
           .firstName(TestData.USER_FIRST_NAME_1)
           .lastName(TestData.USER_LAST_NAME_1)
           .build();
-      TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
+      RentalAgreementInfoJson updateJson = ImmutableRentalAgreementInfoJson.builder()
           .startOfRental(LocalDate.now())
           .addTenants(tenantUser)
           .build();
 
-      TenancyEntity updated = controller.updateTenancy(projectId, created.getId(), updateJson);
+      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
 
       assertEquals(1, updated.getTenants().size());
       assertEquals(TestData.USER_ID_1, updated.getTenants().get(0).getId());
 
-      TenancyEntity entity = entityManager.find(TenancyEntity.class, updated.getId());
-      assertTenancy(updated, entity);
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
+      assertRentalAgreement(updated, entity);
     }
 
     @Test
-    void updateTenancy_FAILED_tenancyNotFound() {
+    void updateRentalAgreement_FAILED_agreementNotFound() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final TenancyInfoJson updateJson = ImmutableTenancyInfoJson.builder()
+      final RentalAgreementInfoJson updateJson = ImmutableRentalAgreementInfoJson.builder()
           .startOfRental(LocalDate.now())
           .build();
-      final UUID tenancyId = UUID.randomUUID();
+      final UUID agreementId = UUID.randomUUID();
 
       assertThrows(NotFoundException.class,
-          () -> controller.updateTenancy(projectId, tenancyId, updateJson));
+          () -> controller.updateRentalAgreement(projectId, agreementId, updateJson));
     }
 
-    private void assertTenancy(TenancyEntity expected, TenancyEntity actual) {
+    private void assertRentalAgreement(RentalAgreementEntity expected, RentalAgreementEntity actual) {
       assertEquals(expected.getId(), actual.getId());
       assertEquals(expected.getProjectId(), actual.getProjectId());
       assertEquals(expected.getStartOfRental(), actual.getStartOfRental());
