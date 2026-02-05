@@ -77,7 +77,7 @@ public class IssueEventProducer {
             .issueType(issue.getType())
             .status(issue.getStatus())
             .reporterId(issue.getReporterId())
-            .tenancyId(issue.getTenancyId())
+            .agreementId(issue.getAgreementId())
             .assigneeId(issue.getAssigneeId())
             .description(issue.getDescription())
             .parentIssue(issue.getParentIssue())

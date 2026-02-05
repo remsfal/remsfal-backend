@@ -55,7 +55,7 @@ public class IssueEventEnricher {
             .issueType(event.getIssueType())
             .status(event.getStatus())
             .reporterId(event.getReporterId())
-            .tenancyId(event.getTenancyId())
+            .agreementId(event.getAgreementId())
             .assigneeId(event.getAssigneeId())
             .description(event.getDescription())
             .parentIssue(event.getParentIssue())

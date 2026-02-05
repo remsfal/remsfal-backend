@@ -55,7 +55,7 @@
         </createIndex>
 
         <createTable tableName="storage_rents">
-            <column name="TENANCY_ID" type="uuid">
+            <column name="AGREEMENT_ID" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="STORAGE_ID" type="uuid">
@@ -77,9 +77,9 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_storage_rent_tenancy_id"
-            baseTableName="storage_rents" baseColumnNames="TENANCY_ID"
-            referencedTableName="tenancies" referencedColumnNames="ID"
+        <addForeignKeyConstraint constraintName="fk_storage_rent_agreement_id"
+            baseTableName="storage_rents" baseColumnNames="AGREEMENT_ID"
+            referencedTableName="rental_agreements" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_storage_rent_storage_id"
@@ -87,8 +87,8 @@
             referencedTableName="storages" referencedColumnNames="ID"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_storage_rent_tenancy_fk" tableName="storage_rents">
-            <column name="TENANCY_ID" type="uuid" />
+        <createIndex indexName="idx_storage_rent_agreement_fk" tableName="storage_rents">
+            <column name="AGREEMENT_ID" type="uuid" />
         </createIndex>
     </changeSet>
 

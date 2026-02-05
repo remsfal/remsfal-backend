@@ -1,8 +1,8 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.TenantEndpoint;
-import de.remsfal.core.json.UserJson;
-import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.json.project.TenantJson;
+import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.control.TenantController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -20,41 +20,41 @@ public class TenantResource extends AbstractProjectResource implements TenantEnd
     TenantController controller;
 
     @Override
-    public Response createTenant(final UUID projectId, final UserJson tenant) {
-        checkTenancyWritePermissions(projectId);
-        final CustomerModel model = controller.createTenant(projectId, tenant);
+    public Response createTenant(final UUID projectId, final TenantJson tenant) {
+        checkRentalAgreementWritePermissions(projectId);
+        final TenantModel model = controller.createTenant(projectId, tenant);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(UserJson.valueOf(model))
+            .entity(TenantJson.valueOf(model))
             .build();
     }
 
     @Override
-    public List<UserJson> getTenants(final UUID projectId) {
+    public List<TenantJson> getTenants(final UUID projectId) {
         checkProjectReadPermissions(projectId);
-        List<CustomerModel> tenants = controller.getTenants(projectId);
+        List<TenantModel> tenants = controller.getTenants(projectId);
         return tenants.stream()
-            .map(UserJson::valueOf)
+            .map(TenantJson::valueOf)
             .collect(Collectors.toList());
     }
 
     @Override
-    public UserJson getTenant(final UUID projectId, final UUID tenantId) {
+    public TenantJson getTenant(final UUID projectId, final UUID tenantId) {
         checkProjectReadPermissions(projectId);
-        final CustomerModel model = controller.getTenant(projectId, tenantId);
-        return UserJson.valueOf(model);
+        final TenantModel model = controller.getTenant(projectId, tenantId);
+        return TenantJson.valueOf(model);
     }
 
     @Override
-    public UserJson updateTenant(final UUID projectId, final UUID tenantId, UserJson tenant) {
-        checkTenancyWritePermissions(projectId);
-        final CustomerModel model = controller.updateTenant(projectId, tenantId, tenant);
-        return UserJson.valueOf(model);
+    public TenantJson updateTenant(final UUID projectId, final UUID tenantId, TenantJson tenant) {
+        checkRentalAgreementWritePermissions(projectId);
+        final TenantModel model = controller.updateTenant(projectId, tenantId, tenant);
+        return TenantJson.valueOf(model);
     }
 
     @Override
     public Response deleteTenant(UUID projectId, UUID tenantId) {
-        checkTenancyWritePermissions(projectId);
+        checkRentalAgreementWritePermissions(projectId);
         controller.deleteTenant(projectId, tenantId);
         return Response.noContent().build();
     }

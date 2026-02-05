@@ -75,7 +75,7 @@ class IssueEventProducerTest {
         assertEquals(issue.getType(), event.getIssueType());
         assertEquals(issue.getStatus(), event.getStatus());
         assertEquals(issue.getReporterId(), event.getReporterId());
-        assertEquals(issue.getTenancyId(), event.getTenancyId());
+        assertEquals(issue.getAgreementId(), event.getAgreementId());
         assertEquals(issue.getAssigneeId(), event.getAssigneeId());
         assertEquals(issue.getDescription(), event.getDescription());
         assertEquals(issue.getBlockedBy(), event.getBlockedBy());
@@ -240,7 +240,7 @@ class IssueEventProducerTest {
         issue.setType(IssueType.TASK);
         issue.setStatus(IssueStatus.OPEN);
         issue.setReporterId(TestData.USER_ID);
-        issue.setTenancyId(TestData.TENANCY_ID);
+        issue.setAgreementId(TestData.AGREEMENT_ID);
         issue.setAssigneeId(TestData.USER_ID_2);
         issue.setDescription(TicketingTestData.ISSUE_DESCRIPTION_1);
         issue.setBlockedBy(TicketingTestData.ISSUE_ID_SET_2);

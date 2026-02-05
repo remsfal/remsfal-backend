@@ -20,7 +20,7 @@ import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.control.event.AuthenticationEvent;
 import de.remsfal.service.entity.dao.ProjectRepository;
-import de.remsfal.service.entity.dao.TenancyRepository;
+import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
@@ -28,7 +28,7 @@ import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.ProjectOrganizationEntity;
-import de.remsfal.service.entity.dto.TenancyEntity;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 
@@ -54,7 +54,7 @@ public class AuthorizationController {
     ProjectRepository projectRepository;
 
     @Inject
-    TenancyRepository tenancyRepository;
+    RentalAgreementRepository rentalAgreementRepository;
 
     @Inject
     de.remsfal.service.entity.dao.OrganizationRepository organizationRepository;
@@ -210,10 +210,10 @@ public class AuthorizationController {
     }
 
     public Map<String, String> getTenancyAuthorization(final UUID userId) {
-        List<TenancyEntity> tenancies = tenancyRepository.findTenanciesByTenant(userId);
-        return tenancies.stream().collect(Collectors.toMap(
-            t -> t.getId().toString(),
-            t -> t.getProjectId().toString()
+        List<RentalAgreementEntity> agreements = rentalAgreementRepository.findRentalAgreementsByTenant(userId);
+        return agreements.stream().collect(Collectors.toMap(
+            a -> a.getId().toString(),
+            a -> a.getProjectId().toString()
         ));
     }
 

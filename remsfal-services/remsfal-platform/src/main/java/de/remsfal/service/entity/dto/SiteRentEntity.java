@@ -28,7 +28,7 @@ public class SiteRentEntity extends RentEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(siteId, getTenancyId());
+        return Objects.hash(siteId, getAgreementId());
     }
 
     @Override

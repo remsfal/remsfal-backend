@@ -29,6 +29,7 @@ public abstract class OrganizationEmployeeJson implements OrganizationEmployeeMo
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 

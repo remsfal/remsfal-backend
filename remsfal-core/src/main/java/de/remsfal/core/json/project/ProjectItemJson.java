@@ -26,6 +26,7 @@ import org.immutables.value.Value.Immutable;
 public abstract class ProjectItemJson {
 
     @NotNull
+    @Schema(readOnly = true)
     public abstract UUID getId();
 
     @NotNull

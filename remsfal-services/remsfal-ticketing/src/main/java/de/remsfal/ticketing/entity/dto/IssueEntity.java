@@ -32,8 +32,8 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("reporter_id")
     private UUID reporterId;
 
-    @Column("tenancy_id")
-    private UUID tenancyId;
+    @Column("agreement_id")
+    private UUID agreementId;
 
     @Column("assignee_id")
     private UUID assigneeId;
@@ -142,12 +142,12 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public UUID getTenancyId() {
-        return tenancyId;
+    public UUID getAgreementId() {
+        return agreementId;
     }
 
-    public void setTenancyId(UUID tenancyId) {
-        this.tenancyId = tenancyId;
+    public void setAgreementId(UUID agreementId) {
+        this.agreementId = agreementId;
     }
 
     @Override

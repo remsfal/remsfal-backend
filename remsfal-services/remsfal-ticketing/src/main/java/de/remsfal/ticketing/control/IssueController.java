@@ -67,7 +67,7 @@ public class IssueController {
         entity.setPriority(issue.getPriority());
         entity.setDescription(issue.getDescription());
         entity.setReporterId(user.getId());
-        entity.setTenancyId(issue.getTenancyId());
+        entity.setAgreementId(issue.getAgreementId());
         entity.setCreatedAt(Instant.now());
         // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via POST
@@ -83,17 +83,17 @@ public class IssueController {
                 .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
-    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID assigneeId, UUID tenancyId,
+    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID assigneeId, UUID agreementId,
         UnitType rentalType, UUID rentalId, IssueStatus status) {
-        return issueRepository.findByQuery(projectFilter, assigneeId, tenancyId, rentalType, rentalId, status);
+        return issueRepository.findByQuery(projectFilter, assigneeId, agreementId, rentalType, rentalId, status);
     }
 
-    public List<? extends IssueModel> getIssuesOfTenancy(UUID tenancyId) {
-        return issueRepository.findByTenancyId(tenancyId);
+    public List<? extends IssueModel> getIssuesOfAgreement(UUID agreementId) {
+        return issueRepository.findByAgreementId(agreementId);
     }
 
-    public List<? extends IssueModel> getIssuesOfTenancies(Set<UUID> keySet) {
-        return issueRepository.findByTenancyIds(keySet);
+    public List<? extends IssueModel> getIssuesOfAgreements(Set<UUID> keySet) {
+        return issueRepository.findByAgreementIds(keySet);
     }
 
     public IssueModel updateIssue(final IssueKey key, final IssueModel issue) {

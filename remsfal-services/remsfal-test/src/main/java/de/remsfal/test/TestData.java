@@ -11,7 +11,8 @@ import de.remsfal.core.json.project.ImmutableCommercialJson;
 import de.remsfal.core.json.project.ImmutablePropertyJson;
 import de.remsfal.core.json.project.ImmutableSiteJson;
 import de.remsfal.core.json.project.ImmutableStorageJson;
-import de.remsfal.core.json.project.ImmutableTenancyJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
+import de.remsfal.core.json.project.ImmutableTenantJson;
 
 public class TestData {
 
@@ -52,6 +53,99 @@ public class TestData {
     public static final String USER_EMAIL_4 = "l.m.r.d-d.s.w.j@simsons.org";
     public static final String USER_FIRST_NAME_4 = "Lassmiranda";
     public static final String USER_LAST_NAME_4 = "Dennsiewillja";
+
+    // Test user 5 (for tenant tests)
+    public static final UUID USER_ID_5 = UUID.fromString("b9440c43-b5c0-4951-9c29-000000000005");
+    public static final String USER_TOKEN_5 = "tokenOfHansZimmer";
+    public static final String USER_EMAIL_5 = "hans.zimmer@example.org";
+    public static final String USER_FIRST_NAME_5 = "Hans";
+    public static final String USER_LAST_NAME_5 = "Zimmer";
+
+    // Test tenant 1 (based on USER 1)
+    public static final UUID TENANT_ID_1 = UUID.fromString("aaaaaaaa-b5c0-4951-9c29-000000000001");
+    public static final String TENANT_FIRST_NAME_1 = USER_FIRST_NAME_1;
+    public static final String TENANT_LAST_NAME_1 = USER_LAST_NAME_1;
+    public static final String TENANT_EMAIL_1 = USER_EMAIL_1;
+    public static final String TENANT_MOBILE_1 = "+491601234567";
+
+    // Test tenant 2 (based on USER 2)
+    public static final UUID TENANT_ID_2 = UUID.fromString("aaaaaaaa-b5c0-4951-9c29-000000000002");
+    public static final String TENANT_FIRST_NAME_2 = USER_FIRST_NAME_2;
+    public static final String TENANT_LAST_NAME_2 = USER_LAST_NAME_2;
+    public static final String TENANT_EMAIL_2 = USER_EMAIL_2;
+    public static final String TENANT_MOBILE_2 = "+491602345678";
+
+    // Test tenant 3 (based on USER 3)
+    public static final UUID TENANT_ID_3 = UUID.fromString("aaaaaaaa-b5c0-4951-9c29-000000000003");
+    public static final String TENANT_FIRST_NAME_3 = USER_FIRST_NAME_3;
+    public static final String TENANT_LAST_NAME_3 = USER_LAST_NAME_3;
+    public static final String TENANT_EMAIL_3 = USER_EMAIL_3;
+    public static final String TENANT_MOBILE_3 = "+491603456789";
+
+    // Test tenant 4 (based on USER 4)
+    public static final UUID TENANT_ID_4 = UUID.fromString("aaaaaaaa-b5c0-4951-9c29-000000000004");
+    public static final String TENANT_FIRST_NAME_4 = USER_FIRST_NAME_4;
+    public static final String TENANT_LAST_NAME_4 = USER_LAST_NAME_4;
+    public static final String TENANT_EMAIL_4 = USER_EMAIL_4;
+    public static final String TENANT_BUSINESS_4 = "+491604567890";
+
+    // Test tenant 5 (based on USER 5)
+    public static final UUID TENANT_ID_5 = UUID.fromString("aaaaaaaa-b5c0-4951-9c29-000000000005");
+    public static final String TENANT_FIRST_NAME_5 = USER_FIRST_NAME_5;
+    public static final String TENANT_LAST_NAME_5 = USER_LAST_NAME_5;
+    public static final String TENANT_EMAIL_5 = USER_EMAIL_5;
+    public static final String TENANT_PRIVATE_5 = "+491605678901";
+
+    // Default test tenant
+    public static final UUID TENANT_ID = TENANT_ID_1;
+    public static final String TENANT_FIRST_NAME = TENANT_FIRST_NAME_1;
+    public static final String TENANT_LAST_NAME = TENANT_LAST_NAME_1;
+    public static final String TENANT_EMAIL = TENANT_EMAIL_1;
+
+    // Tenant builder methods
+    public static final ImmutableTenantJson.Builder tenantBuilder() {
+        return tenantBuilder1();
+    }
+
+    public static final ImmutableTenantJson.Builder tenantBuilder1() {
+        return ImmutableTenantJson.builder()
+                .firstName(TENANT_FIRST_NAME_1)
+                .lastName(TENANT_LAST_NAME_1)
+                .email(TENANT_EMAIL_1)
+                .mobilePhoneNumber(TENANT_MOBILE_1);
+    }
+
+    public static final ImmutableTenantJson.Builder tenantBuilder2() {
+        return ImmutableTenantJson.builder()
+                .firstName(TENANT_FIRST_NAME_2)
+                .lastName(TENANT_LAST_NAME_2)
+                .email(TENANT_EMAIL_2)
+                .mobilePhoneNumber(TENANT_MOBILE_2);
+    }
+
+    public static final ImmutableTenantJson.Builder tenantBuilder3() {
+        return ImmutableTenantJson.builder()
+                .firstName(TENANT_FIRST_NAME_3)
+                .lastName(TENANT_LAST_NAME_3)
+                .email(TENANT_EMAIL_3)
+                .mobilePhoneNumber(TENANT_MOBILE_3);
+    }
+
+    public static final ImmutableTenantJson.Builder tenantBuilder4() {
+        return ImmutableTenantJson.builder()
+                .firstName(TENANT_FIRST_NAME_4)
+                .lastName(TENANT_LAST_NAME_4)
+                .email(TENANT_EMAIL_4)
+                .businessPhoneNumber(TENANT_BUSINESS_4);
+    }
+
+    public static final ImmutableTenantJson.Builder tenantBuilder5() {
+        return ImmutableTenantJson.builder()
+                .firstName(TENANT_FIRST_NAME_5)
+                .lastName(TENANT_LAST_NAME_5)
+                .email(TENANT_EMAIL_5)
+                .privatePhoneNumber(TENANT_PRIVATE_5);
+    }
 
     // Test address 1
     public static final UUID ADDRESS_ID_1 = UUID.fromString("00550c43-b5c0-4951-9c29-000000000001");
@@ -715,79 +809,44 @@ public class TestData {
                 .address(addressBuilder1().build()); // Fügt eine Standardadresse hinzu
     }
 
-    // Test tenancy 1
-    public static final UUID TENANCY_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
-    public static final LocalDate TENANCY_START_1 = LocalDate.of(2007, 12, 1);
-    public static final LocalDate TENANCY_END_1 = LocalDate.of(2025, 1, 30);
+    // Test rental agreement 1
+    public static final UUID AGREEMENT_ID_1 = UUID.fromString("aaaaac43-b5c0-4951-9c22-000000000001");
+    public static final LocalDate AGREEMENT_START_1 = LocalDate.of(2007, 12, 1);
+    public static final LocalDate AGREEMENT_END_1 = LocalDate.of(2025, 1, 30);
 
-    // Default test tenancy
-    public static final UUID TENANCY_ID = TestData.TENANCY_ID_1;
-    public static final LocalDate TENANCY_START = TestData.TENANCY_START_1;
-    public static final LocalDate TENANCY_END = TestData.TENANCY_END_1;
+    // Default test rental agreement
+    public static final UUID AGREEMENT_ID = TestData.AGREEMENT_ID_1;
+    public static final LocalDate AGREEMENT_START = TestData.AGREEMENT_START_1;
+    public static final LocalDate AGREEMENT_END = TestData.AGREEMENT_END_1;
 
-    public static final ImmutableTenancyJson.Builder tenancyBuilder() {
-        return tenancyBuilder1();
+    public static final ImmutableRentalAgreementJson.Builder rentalAgreementBuilder() {
+        return rentalAgreementBuilder1();
     }
 
-    // Test tenancy 2
-    public static final UUID TENANCY_ID_2 = UUID.fromString("bbbbbc43-b5c0-4951-9c22-000000000002");
-    public static final LocalDate TENANCY_START_2 = LocalDate.of(2010, 5, 15);
-    public static final LocalDate TENANCY_END_2 = LocalDate.of(2030, 4, 23);
+    // Test rental agreement 2
+    public static final UUID AGREEMENT_ID_2 = UUID.fromString("bbbbbc43-b5c0-4951-9c22-000000000002");
+    public static final LocalDate AGREEMENT_START_2 = LocalDate.of(2010, 5, 15);
+    public static final LocalDate AGREEMENT_END_2 = LocalDate.of(2030, 4, 23);
 
-    // Test tenancy 3
-    public static final UUID TENANCY_ID_3 = UUID.fromString("cccccc43-b5c0-4951-9c22-000000000003");
-    public static final LocalDate TENANCY_START_3 = LocalDate.of(2016, 7, 1);
-    public static final LocalDate TENANCY_END_3 = LocalDate.of(2022, 12, 31);
+    // Test rental agreement 3
+    public static final UUID AGREEMENT_ID_3 = UUID.fromString("cccccc43-b5c0-4951-9c22-000000000003");
+    public static final LocalDate AGREEMENT_START_3 = LocalDate.of(2016, 7, 1);
+    public static final LocalDate AGREEMENT_END_3 = LocalDate.of(2022, 12, 31);
 
-    public static final ImmutableTenancyJson.Builder tenancyBuilder1() {
-        return ImmutableTenancyJson
+    // Builder methods for creating test rental agreement JSON objects
+    public static final ImmutableRentalAgreementJson.Builder rentalAgreementBuilder1() {
+        return ImmutableRentalAgreementJson
                 .builder()
-                .startOfRental(TENANCY_START_1)
-                .endOfRental(TENANCY_END_1);
+                .startOfRental(AGREEMENT_START_1)
+                .endOfRental(AGREEMENT_END_1);
     }
 
-    public static final ImmutableTenancyJson.Builder tenancyBuilder2() {
-        return ImmutableTenancyJson
+    public static final ImmutableRentalAgreementJson.Builder rentalAgreementBuilder2() {
+        return ImmutableRentalAgreementJson
                 .builder()
-                .startOfRental(TENANCY_START_2)
-                .endOfRental(TENANCY_END_2);
+                .startOfRental(AGREEMENT_START_2)
+                .endOfRental(AGREEMENT_END_2);
     }
-
-    // Test task 1
-    public static final String TASK_TITLE_1 = "Heizung funktioniert nicht";
-    public static final String TASK_DESCRIPTION_1 = "Sehr geehrte Damen und Herren,\\n"
-        + "\\n"
-        + "hiermit möchte ich einen dringenden Heizungsausfall in meiner Wohnung melden. "
-        + "Seit dem 23.12.2023 funktioniert die Heizung nicht mehr, "
-        + "und die Wohnung wird nicht mehr ausreichend beheizt. Dies ist besonders kritisch, "
-        + "da die Außentemperaturen derzeit sehr niedrig sind und die Wohnung ohne funktionierende "
-        + "Heizung unangenehm kalt ist.Ich bitte Sie daher dringend, einen Techniker zu schicken, "
-        + "um das Problem so schnell wie möglich zu beheben. Ein schneller Eingriff ist notwendig, "
-        + "um die Heizung wieder in Betrieb zu nehmen und weiteren Schaden zu vermeiden.\\n"
-        + "\\n"
-        + "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Bitte lassen Sie mich wissen, "
-        + "wann der Techniker kommen kann.\\n"
-        + "\\n"
-        + "Vielen Dank für Ihre schnelle Hilfe.\\n"
-        + "\\n"
-        + "Mit freundlichen Grüßen";
-
-    // Test task 2
-    public static final String TASK_TITLE_2 = "Licht im Treppenhaus defekt";
-    public static final String TASK_DESCRIPTION_2 = "Sehr geehrte Damen und Herren,\\n"
-        + "\\n"
-        + "hiermit möchte ich einen dringenden Ausfall der Beleuchtung im Treppenhaus unseres Gebäudes melden. "
-        + "Seit dem 8.Mai 2023 funktioniert das Licht im Treppenhaus nicht mehr, was zu erheblichen Unannehmlichkeiten "
-        + "und Sicherheitsrisiken für alle Bewohner führt. Ich bitte Sie daher dringend, einen Techniker zu schicken, "
-        + "um den Beleuchtungsausfall so schnell wie möglich zu beheben.\\n"
-        + "\\n"
-        + "Vielen Dank im Voraus.\\n"
-        + "\\n"
-        + "Mit freundlichen Grüßen";
-
-    // Default test task
-    public static final String TASK_TITLE = TestData.TASK_TITLE_1;
-    public static final String TASK_DESCRIPTION = TestData.TASK_DESCRIPTION_1;
 
     // Test organization 1
     public static final UUID ORGANIZATION_ID_1 = UUID.fromString("00000000-A1bA-8235-e751-a2Dcac9D78De");

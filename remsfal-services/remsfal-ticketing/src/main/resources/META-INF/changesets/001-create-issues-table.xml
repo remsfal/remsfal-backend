@@ -18,7 +18,7 @@
                 status TEXT,
                 priority TEXT,
                 reporter_id UUID,
-                tenancy_id UUID,
+                agreement_id UUID,
                 assignee_id UUID,
                 description TEXT,
                 parent_issue_id UUID,

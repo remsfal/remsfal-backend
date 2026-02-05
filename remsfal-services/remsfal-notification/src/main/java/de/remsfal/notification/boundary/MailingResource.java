@@ -146,7 +146,7 @@ public class MailingResource {
             .issueType(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
-            .tenancyId(UUID.randomUUID())
+            .agreementId(UUID.randomUUID())
             .assigneeId(assignee.getId())
             .description("Das ist eine Test Issue")
             .user(actor)

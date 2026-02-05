@@ -30,6 +30,7 @@ public abstract class CommercialJson implements CommercialModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 

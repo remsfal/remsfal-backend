@@ -192,14 +192,14 @@ class SiteResourceTest extends AbstractResourceTest {
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION));
     }
 
-    void updateSite_SUCCESS_tenancyCorrectlyUpdated() {
+    void updateSite_SUCCESS_rentalAgreementCorrectlyUpdated() {
         setupTestSites();
-        final String json = "{ \"tenancy\":{"
-            + "\"startOfRental\":\"" + TestData.TENANCY_START.toString() + "\","
-            + "\"endOfRental\":\"" + TestData.TENANCY_END.toString() + "\","
+        final String json = "{ \"rentalAgreement\":{"
+            + "\"startOfRental\":\"" + TestData.AGREEMENT_START.toString() + "\","
+            + "\"endOfRental\":\"" + TestData.AGREEMENT_END.toString() + "\","
             + "\"rent\":[{\"billingCycle\":\"MONTHLY\",\"firstPaymentDate\":\""
-            + TestData.TENANCY_START.toString() + "\","
-            + "\"lastPaymentDate\":\"" + TestData.TENANCY_END.toString() + "\", \"basicRent\":523.89,"
+            + TestData.AGREEMENT_START.toString() + "\","
+            + "\"lastPaymentDate\":\"" + TestData.AGREEMENT_END.toString() + "\", \"basicRent\":523.89,"
             + "\"operatingCostsPrepayment\":123.66, \"heatingCostsPrepayment\":210.02}],"
             + "\"tenant\":{ \"firstName\":\"" + TestData.USER_FIRST_NAME_3 + "\","
             + "\"lastName\":\"" + TestData.USER_LAST_NAME_3 + "\","
@@ -227,22 +227,22 @@ class SiteResourceTest extends AbstractResourceTest {
             .and().body("address.countryCode", Matchers.equalTo("DE"))
             .and().body("address.country", Matchers.nullValue())
             .and().body("description", Matchers.equalTo(TestData.SITE_DESCRIPTION))
-            // TODO: test tenancy
-//            .and().body("tenancy.id", Matchers.notNullValue())
-//            .and().body("tenancy.startOfRental", Matchers.equalTo(TestData.TENANCY_START))
-//            .and().body("tenancy.endOfRental", Matchers.equalTo(TestData.TENANCY_END))
-//            .and().body("tenancy.rent.billingCycle", Matchers.hasItems("MONTHLY"))
-//            .and().body("tenancy.rent.firstPaymentDate", Matchers.hasItems(TestData.TENANCY_START))
-//            .and().body("tenancy.rent.lastPaymentDate", Matchers.hasItems(TestData.TENANCY_END))
-//            .and().body("tenancy.rent.basicRent", Matchers.hasItems(523.89f))
-//            .and().body("tenancy.rent.operatingCostsPrepayment", Matchers.hasItems(123.66f))
-//            .and().body("tenancy.rent.heatingCostsPrepayment", Matchers.hasItems(210.02f))
-//            .and().body("tenancy.tenant.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME_3))
-//            .and().body("tenancy.tenant.lastName", Matchers.equalTo(TestData.USER_LAST_NAME_3))
-//            .and().body("tenancy.tenant.email", Matchers.equalTo(TestData.USER_EMAIL_3))
-//            .and().body("tenancy.tenant.mobilePhoneNumber", Matchers.equalTo("+491773289245"))
-//            .and().body("tenancy.tenant.businessPhoneNumber", Matchers.equalTo("+49302278349"))
-//            .and().body("tenancy.tenant.privatePhoneNumber", Matchers.equalTo("+4933012345611"))
+            // TODO: test rentalAgreement
+//            .and().body("rentalAgreement.id", Matchers.notNullValue())
+//            .and().body("rentalAgreement.startOfRental", Matchers.equalTo(TestData.AGREEMENT_START))
+//            .and().body("rentalAgreement.endOfRental", Matchers.equalTo(TestData.AGREEMENT_END))
+//            .and().body("rentalAgreement.rent.billingCycle", Matchers.hasItems("MONTHLY"))
+//            .and().body("rentalAgreement.rent.firstPaymentDate", Matchers.hasItems(TestData.AGREEMENT_START))
+//            .and().body("rentalAgreement.rent.lastPaymentDate", Matchers.hasItems(TestData.AGREEMENT_END))
+//            .and().body("rentalAgreement.rent.basicRent", Matchers.hasItems(523.89f))
+//            .and().body("rentalAgreement.rent.operatingCostsPrepayment", Matchers.hasItems(123.66f))
+//            .and().body("rentalAgreement.rent.heatingCostsPrepayment", Matchers.hasItems(210.02f))
+//            .and().body("rentalAgreement.tenant.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME_3))
+//            .and().body("rentalAgreement.tenant.lastName", Matchers.equalTo(TestData.USER_LAST_NAME_3))
+//            .and().body("rentalAgreement.tenant.email", Matchers.equalTo(TestData.USER_EMAIL_3))
+//            .and().body("rentalAgreement.tenant.mobilePhoneNumber", Matchers.equalTo("+491773289245"))
+//            .and().body("rentalAgreement.tenant.businessPhoneNumber", Matchers.equalTo("+49302278349"))
+//            .and().body("rentalAgreement.tenant.privatePhoneNumber", Matchers.equalTo("+4933012345611"))
             .and().body("outdoorArea", Matchers.equalTo(51.99f));
 
         given()
@@ -254,21 +254,21 @@ class SiteResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(TestData.SITE_ID.toString()))
             // TODO
-//            .and().body("tenancy.id", Matchers.notNullValue())
-//            .and().body("tenancy.startOfRental", Matchers.equalTo(TestData.TENANCY_START))
-//            .and().body("tenancy.endOfRental", Matchers.equalTo(TestData.TENANCY_END))
-//            .and().body("tenancy.rent.billingCycle", Matchers.hasItems("MONTHLY"))
-//            .and().body("tenancy.rent.firstPaymentDate", Matchers.hasItems(TestData.TENANCY_START))
-//            .and().body("tenancy.rent.lastPaymentDate", Matchers.hasItems(TestData.TENANCY_END))
-//            .and().body("tenancy.rent.basicRent", Matchers.hasItems(523.89f))
-//            .and().body("tenancy.rent.operatingCostsPrepayment", Matchers.hasItems(123.66f))
-//            .and().body("tenancy.rent.heatingCostsPrepayment", Matchers.hasItems(210.02f))
-//            .and().body("tenancy.tenant.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME_3))
-//            .and().body("tenancy.tenant.lastName", Matchers.equalTo(TestData.USER_LAST_NAME_3))
-//            .and().body("tenancy.tenant.email", Matchers.equalTo(TestData.USER_EMAIL_3))
-//            .and().body("tenancy.tenant.mobilePhoneNumber", Matchers.equalTo("+491773289245"))
-//            .and().body("tenancy.tenant.businessPhoneNumber", Matchers.equalTo("+49302278349"))
-//            .and().body("tenancy.tenant.privatePhoneNumber", Matchers.equalTo("+4933012345611"))
+//            .and().body("rentalAgreement.id", Matchers.notNullValue())
+//            .and().body("rentalAgreement.startOfRental", Matchers.equalTo(TestData.AGREEMENT_START))
+//            .and().body("rentalAgreement.endOfRental", Matchers.equalTo(TestData.AGREEMENT_END))
+//            .and().body("rentalAgreement.rent.billingCycle", Matchers.hasItems("MONTHLY"))
+//            .and().body("rentalAgreement.rent.firstPaymentDate", Matchers.hasItems(TestData.AGREEMENT_START))
+//            .and().body("rentalAgreement.rent.lastPaymentDate", Matchers.hasItems(TestData.AGREEMENT_END))
+//            .and().body("rentalAgreement.rent.basicRent", Matchers.hasItems(523.89f))
+//            .and().body("rentalAgreement.rent.operatingCostsPrepayment", Matchers.hasItems(123.66f))
+//            .and().body("rentalAgreement.rent.heatingCostsPrepayment", Matchers.hasItems(210.02f))
+//            .and().body("rentalAgreement.tenant.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME_3))
+//            .and().body("rentalAgreement.tenant.lastName", Matchers.equalTo(TestData.USER_LAST_NAME_3))
+//            .and().body("rentalAgreement.tenant.email", Matchers.equalTo(TestData.USER_EMAIL_3))
+//            .and().body("rentalAgreement.tenant.mobilePhoneNumber", Matchers.equalTo("+491773289245"))
+//            .and().body("rentalAgreement.tenant.businessPhoneNumber", Matchers.equalTo("+49302278349"))
+//            .and().body("rentalAgreement.tenant.privatePhoneNumber", Matchers.equalTo("+4933012345611"))
             .and().body("outdoorArea", Matchers.equalTo(51.99f));
     }
 

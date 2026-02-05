@@ -30,12 +30,9 @@ class StorageControllerTest extends AbstractServiceTest {
     StorageController storageController;
 
     @BeforeEach
-    void setupTestProjects() {
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")
-                .setParameter(1, TestData.PROJECT_ID)
-                .setParameter(2, TestData.PROJECT_TITLE)
-                .executeUpdate());
+    void setup() {
+        super.setupTestUsers();
+        super.setupTestProjects();
     }
 
     private PropertyModel createTestProperty() {

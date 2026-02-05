@@ -1,6 +1,6 @@
 package de.remsfal.core.api.project;
 
-import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import jakarta.validation.Valid;
@@ -35,7 +35,7 @@ public interface TenantEndpoint {
     @Operation(summary = "Retrieve information for all tenants")
     @APIResponse(responseCode = "200", description = "A list of tenants was successfully returned")
     @APIResponse(responseCode = "404", description = "The tenant does not exist")
-    List<UserJson> getTenants(
+    List<TenantJson> getTenants(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId
     );
@@ -46,7 +46,7 @@ public interface TenantEndpoint {
     @Operation(summary = "Retrieve information of a specific tenant")
     @APIResponse(responseCode = "200", description = "The specific tenant was successfully returned")
     @APIResponse(responseCode = "404", description = "The tenant you are looking for does not exist")
-    UserJson getTenant(
+    TenantJson getTenant(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the tenant", required = true)
@@ -62,14 +62,14 @@ public interface TenantEndpoint {
         headers = @Header(name = "Location", description = "URL of the new tenant"),
         content = @Content(
         mediaType = MediaType.APPLICATION_JSON,
-        schema    = @Schema(implementation = UserJson.class)
+        schema    = @Schema(implementation = TenantJson.class)
         )
     )
     Response createTenant(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Tenant information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) UserJson tenant
+        @Valid @ConvertGroup(to = PostValidation.class) TenantJson tenant
     );
 
     @PATCH
@@ -80,13 +80,13 @@ public interface TenantEndpoint {
     @APIResponse(responseCode = "200", description = "An existing tenant was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The tenant does not exist")
-    UserJson updateTenant(
+    TenantJson updateTenant(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the tenant", required = true)
         @PathParam("tenantId") @NotNull UUID tenantId,
         @Parameter(description = "Tenant object with information", required = true)
-        @Valid @ConvertGroup(to = PatchValidation.class) UserJson tenant
+        @Valid @ConvertGroup(to = PatchValidation.class) TenantJson tenant
     );
 
     @DELETE

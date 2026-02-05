@@ -93,11 +93,11 @@ class IssueRepositoryTest extends AbstractTicketingTest {
             IssuePriority.MEDIUM, UUID.randomUUID(), tenancyId1, null, null);
 
         // Test: Filter by tenancyId1
-        List<? extends IssueModel> tenancyIssues = repository.findByTenancyId(tenancyId1);
+        List<? extends IssueModel> tenancyIssues = repository.findByAgreementId(tenancyId1);
 
         // Verify: Should return 2 issues for tenancyId1
         assertNotNull(tenancyIssues);
         assertEquals(2, tenancyIssues.size());
-        tenancyIssues.forEach(issue -> assertEquals(tenancyId1, issue.getTenancyId()));
+        tenancyIssues.forEach(issue -> assertEquals(tenancyId1, issue.getAgreementId()));
     }
 }
