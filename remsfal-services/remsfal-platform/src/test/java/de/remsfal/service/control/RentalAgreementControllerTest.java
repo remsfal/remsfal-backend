@@ -2,8 +2,8 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.json.tenancy.ImmutableRentalAgreementInfoJson;
-import de.remsfal.core.json.tenancy.RentalAgreementInfoJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -73,7 +73,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
 
     @Test
     void createRentalAgreement_FAILED_noProject() {
-        final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
+        final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
             .startOfRental(LocalDate.now())
             .build();
         final UUID projectId = UUID.randomUUID();
@@ -85,7 +85,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void createRentalAgreement_Success_idGenerated() {
         final UUID projectId = TestData.PROJECT_ID_1;
-        final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
+        final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
             .startOfRental(LocalDate.now())
             .build();
 
@@ -102,7 +102,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void getRentalAgreement_SUCCESS_agreementRetrieved() {
         final UUID projectId = TestData.PROJECT_ID_1;
-        final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
+        final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
             .startOfRental(LocalDate.now())
             .build();
         RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
@@ -125,12 +125,12 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void updateRentalAgreement_SUCCESS_correctlyUpdated() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.now())
           .build();
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
 
-      RentalAgreementInfoJson updateJson = ImmutableRentalAgreementInfoJson.builder()
+      RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.of(2025, 1, 1))
           .endOfRental(LocalDate.of(2026, 1, 1))
           .build();
@@ -156,7 +156,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .lastName(TestData.USER_LAST_NAME_1)
           .build();
 
-      final RentalAgreementInfoJson agreement = ImmutableRentalAgreementInfoJson.builder()
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.now())
           .addTenants(tenantUser)
           .build();
@@ -175,7 +175,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void updateRentalAgreement_SUCCESS_tenantsUpdated() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final RentalAgreementInfoJson startAgreement = ImmutableRentalAgreementInfoJson.builder()
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.now())
           .build();
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
@@ -186,7 +186,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .firstName(TestData.USER_FIRST_NAME_1)
           .lastName(TestData.USER_LAST_NAME_1)
           .build();
-      RentalAgreementInfoJson updateJson = ImmutableRentalAgreementInfoJson.builder()
+      RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.now())
           .addTenants(tenantUser)
           .build();
@@ -203,7 +203,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void updateRentalAgreement_FAILED_agreementNotFound() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final RentalAgreementInfoJson updateJson = ImmutableRentalAgreementInfoJson.builder()
+      final RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.now())
           .build();
       final UUID agreementId = UUID.randomUUID();

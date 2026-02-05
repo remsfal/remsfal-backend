@@ -32,6 +32,7 @@ public abstract class SiteJson implements SiteModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 

@@ -31,6 +31,7 @@ public abstract class BuildingJson implements BuildingModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 

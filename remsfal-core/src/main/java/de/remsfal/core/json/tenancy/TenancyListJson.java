@@ -18,12 +18,12 @@ import de.remsfal.core.ImmutableStyle;
 @Immutable
 @ImmutableStyle
 @Schema(description = "A list of rental agreements from a tenant's perspective")
-@JsonDeserialize(as = ImmutableRentalAgreementListJson.class)
+@JsonDeserialize(as = ImmutableTenancyListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class RentalAgreementListJson {
+public abstract class TenancyListJson {
     // Validation is not required, because it is read-only for tenants.
 
     @JsonProperty("agreements")
-    public abstract List<RentalAgreementItemJson> getRentalAgreements();
+    public abstract List<TenancyItemJson> getRentalAgreements();
 
 }

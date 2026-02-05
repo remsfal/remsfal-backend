@@ -18,9 +18,9 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 @ImmutableStyle
 @Schema(description = "A rental agreement item with basic information from a tenant's perspective")
-@JsonDeserialize(as = ImmutableRentalAgreementItemJson.class)
+@JsonDeserialize(as = ImmutableTenancyItemJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class RentalAgreementItemJson {
+public abstract class TenancyItemJson {
     // Validation is not required because it is read-only for tenants.
 
     public abstract String getId();
@@ -38,9 +38,9 @@ public abstract class RentalAgreementItemJson {
 
     public abstract Boolean isActive();
 
-    public static RentalAgreementItemJson valueOf(final RentalAgreementModel rentalAgreementModel,
+    public static TenancyItemJson valueOf(final RentalAgreementModel rentalAgreementModel,
             final RentalUnitModel unitModel) {
-        return ImmutableRentalAgreementItemJson.builder()
+        return ImmutableTenancyItemJson.builder()
             .id(rentalAgreementModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
             .name(unitModel.getTitle())
             .rentalType(unitModel.getType())

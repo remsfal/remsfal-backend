@@ -41,7 +41,7 @@ public class UserResource implements UserEndpoint {
     ContractorController contractorController;
 
     @Inject
-    RentalAgreementController rentalAgreementController;
+    RentalAgreementController agreementController;
 
     @Override
     @Timed(name = "GetUserTimer", unit = MetricUnits.MILLISECONDS)
@@ -52,17 +52,17 @@ public class UserResource implements UserEndpoint {
     }
 
     private Set<UserContext> getUserContexts(final UserModel user) {
-        final Set<UserContext> userRoles = new HashSet<>();
+        final Set<UserContext> userContexts = new HashSet<>();
         if (!projectController.getProjects(user, 0, 1).isEmpty()) {
-            userRoles.add(UserContext.MANAGER);
+            userContexts.add(UserContext.MANAGER);
         }
         if (!contractorController.getOrganizations(user).isEmpty()) {
-            userRoles.add(UserContext.CONTRACTOR);
+            userContexts.add(UserContext.CONTRACTOR);
         }
-        if (!rentalAgreementController.getRentalAgreements(user).isEmpty()) {
-            userRoles.add(UserContext.TENANT);
+        if (!agreementController.getRentalAgreements(user).isEmpty()) {
+            userContexts.add(UserContext.TENANT);
         }
-        return userRoles;
+        return userContexts;
     }
 
     @Override

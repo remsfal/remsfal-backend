@@ -1,4 +1,4 @@
-package de.remsfal.core.json.tenancy;
+package de.remsfal.core.json.project;
 
 import java.util.List;
 
@@ -18,16 +18,16 @@ import de.remsfal.core.model.project.RentalAgreementModel;
 @Immutable
 @ImmutableStyle
 @Schema(description = "A list of rental agreements for a project")
-@JsonDeserialize(as = ImmutableProjectRentalAgreementListJson.class)
+@JsonDeserialize(as = ImmutableRentalAgreementListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class ProjectRentalAgreementListJson {
+public abstract class RentalAgreementListJson {
 
-    public abstract List<RentalAgreementInfoJson> getRentalAgreements();
+    public abstract List<RentalAgreementJson> getRentalAgreements();
 
-    public static ProjectRentalAgreementListJson valueOf(final List<? extends RentalAgreementModel> rentalAgreements) {
-        return ImmutableProjectRentalAgreementListJson.builder()
+    public static RentalAgreementListJson valueOf(final List<? extends RentalAgreementModel> rentalAgreements) {
+        return ImmutableRentalAgreementListJson.builder()
             .rentalAgreements(rentalAgreements.stream()
-                .map(RentalAgreementInfoJson::valueOf)
+                .map(RentalAgreementJson::valueOf)
                 .toList())
             .build();
     }

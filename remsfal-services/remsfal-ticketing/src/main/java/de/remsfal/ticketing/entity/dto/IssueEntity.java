@@ -150,16 +150,6 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         this.agreementId = agreementId;
     }
 
-    @Deprecated
-    public UUID getTenancyId() {
-        return getAgreementId();
-    }
-
-    @Deprecated
-    public void setTenancyId(UUID tenancyId) {
-        setAgreementId(tenancyId);
-    }
-
     @Override
     public UUID getAssigneeId() {
         return assigneeId;

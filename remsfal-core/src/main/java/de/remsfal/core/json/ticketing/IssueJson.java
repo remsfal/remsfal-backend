@@ -35,6 +35,7 @@ public abstract class IssueJson implements IssueModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 

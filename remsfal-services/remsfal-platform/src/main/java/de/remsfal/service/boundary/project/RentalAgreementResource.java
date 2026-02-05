@@ -8,8 +8,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import de.remsfal.core.api.project.RentalAgreementEndpoint;
-import de.remsfal.core.json.tenancy.ProjectRentalAgreementListJson;
-import de.remsfal.core.json.tenancy.RentalAgreementInfoJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.core.json.project.RentalAgreementListJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.service.control.RentalAgreementController;
 
@@ -22,38 +22,38 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     RentalAgreementController rentalAgreementController;
 
     @Override
-    public RentalAgreementInfoJson getRentalAgreement(final UUID projectId, final UUID agreementId) {
+    public RentalAgreementJson getRentalAgreement(final UUID projectId, final UUID agreementId) {
         checkProjectReadPermissions(projectId);
         final RentalAgreementModel agreement =
             rentalAgreementController.getRentalAgreementByProject(projectId, agreementId);
-        return RentalAgreementInfoJson.valueOf(agreement);
+        return RentalAgreementJson.valueOf(agreement);
     }
 
     @Override
-    public ProjectRentalAgreementListJson getRentalAgreements(final UUID projectId) {
+    public RentalAgreementListJson getRentalAgreements(final UUID projectId) {
         checkProjectReadPermissions(projectId);
         final List<? extends RentalAgreementModel> agreements =
             rentalAgreementController.getRentalAgreementsByProject(projectId);
-        return ProjectRentalAgreementListJson.valueOf(agreements);
+        return RentalAgreementListJson.valueOf(agreements);
     }
 
     @Override
-    public Response createRentalAgreement(final UUID projectId, final RentalAgreementInfoJson agreement) {
+    public Response createRentalAgreement(final UUID projectId, final RentalAgreementJson agreement) {
         checkRentalAgreementWritePermissions(projectId);
         final RentalAgreementModel model = rentalAgreementController.createRentalAgreement(projectId, agreement);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(RentalAgreementInfoJson.valueOf(model))
+            .entity(RentalAgreementJson.valueOf(model))
             .build();
     }
 
     @Override
-    public RentalAgreementInfoJson updateRentalAgreement(final UUID projectId, final UUID agreementId,
-            final RentalAgreementInfoJson agreement) {
+    public RentalAgreementJson updateRentalAgreement(final UUID projectId, final UUID agreementId,
+            final RentalAgreementJson agreement) {
         checkRentalAgreementWritePermissions(projectId);
         final RentalAgreementModel model =
             rentalAgreementController.updateRentalAgreement(projectId, agreementId, agreement);
-        return RentalAgreementInfoJson.valueOf(model);
+        return RentalAgreementJson.valueOf(model);
     }
 
 }

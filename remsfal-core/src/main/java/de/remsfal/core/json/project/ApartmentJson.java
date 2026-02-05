@@ -30,6 +30,7 @@ public abstract class ApartmentJson implements ApartmentModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 

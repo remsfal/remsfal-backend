@@ -55,7 +55,7 @@ public abstract class UserJson implements CustomerModel {
     @Email
     @Nullable
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
-    @Schema(example = "user@example.com")
+    @Schema(examples = {"user@example.com"})
     @Override
     public abstract String getEmail();
 
@@ -101,7 +101,7 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getLocale();
 
     @Nullable
-    @Schema(example = "[\"test@example.com\", \"info@example.com\"]")
+    @Schema(examples = {"[\"test@example.com\", \"info@example.com\"]"})
     @Override
     public abstract List<
         @Email

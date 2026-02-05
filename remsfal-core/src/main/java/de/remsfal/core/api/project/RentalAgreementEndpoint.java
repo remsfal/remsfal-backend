@@ -1,7 +1,7 @@
 package de.remsfal.core.api.project;
 
-import de.remsfal.core.json.tenancy.ProjectRentalAgreementListJson;
-import de.remsfal.core.json.tenancy.RentalAgreementInfoJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.core.json.project.RentalAgreementListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -36,7 +36,7 @@ public interface RentalAgreementEndpoint {
     @Operation(summary = "Retrieve information of all tenancies")
     @APIResponse(responseCode = "200", description = "The requested tenancies were successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    ProjectRentalAgreementListJson getRentalAgreements(
+    RentalAgreementListJson getRentalAgreements(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId);
 
@@ -50,7 +50,7 @@ public interface RentalAgreementEndpoint {
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Tenancy Information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) RentalAgreementInfoJson tenancy);
+        @Valid @ConvertGroup(to = PostValidation.class) RentalAgreementJson tenancy);
 
     @GET
     @Path("/{agreementId}")
@@ -59,7 +59,7 @@ public interface RentalAgreementEndpoint {
     @APIResponse(responseCode = "200", description = "The requested rental agreement was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided session cookie")
     @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
-    RentalAgreementInfoJson getRentalAgreement(
+    RentalAgreementJson getRentalAgreement(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the tenancy", required = true)
@@ -73,11 +73,11 @@ public interface RentalAgreementEndpoint {
     @APIResponse(responseCode = "200", description = "The rental agreement was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
-    RentalAgreementInfoJson updateRentalAgreement(
+    RentalAgreementJson updateRentalAgreement(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the tenancy", required = true)
         @PathParam("agreementId") @NotNull UUID agreementId,
         @Parameter(description = "Tenancy information", required = true)
-        @Valid @NotNull @ConvertGroup(to = PatchValidation.class) RentalAgreementInfoJson tenancy);
+        @Valid @NotNull @ConvertGroup(to = PatchValidation.class) RentalAgreementJson tenancy);
 }

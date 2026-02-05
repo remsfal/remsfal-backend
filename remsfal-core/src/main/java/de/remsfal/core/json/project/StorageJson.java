@@ -30,6 +30,7 @@ public abstract class StorageJson implements StorageModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 

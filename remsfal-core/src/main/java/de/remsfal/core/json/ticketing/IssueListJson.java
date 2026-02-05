@@ -24,11 +24,11 @@ public abstract class IssueListJson {
     // Validation is not required, because it is read-only.
 
     @Schema(description = "Index of the first element in list of total available entries, starting at 1",
-        required = true, examples = "1")
+        readOnly = true, required = true, examples = "1")
     public abstract Integer getFirst();
 
     @Schema(description = "Number of elements in list", minimum = "1", maximum = "100",
-        defaultValue = "10", required = true)
+        readOnly = true, defaultValue = "10", required = true)
     public abstract Integer getSize();
 
     @Schema(description = "Total number of available elements", required = true)

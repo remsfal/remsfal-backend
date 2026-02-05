@@ -24,9 +24,9 @@ import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 @Immutable
 @ImmutableStyle
 @Schema(description = "A read-only rental agreement of a rentable unit from a tenant's perspective")
-@JsonDeserialize(as = ImmutableRentalAgreementJson.class)
+@JsonDeserialize(as = ImmutableTenancyJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class RentalAgreementJson {
+public abstract class TenancyJson {
     // Validation is not required because it is read-only for tenants.
 
     public abstract String getId();
@@ -54,9 +54,9 @@ public abstract class RentalAgreementJson {
     @Nullable
     public abstract Float getHeatingCostsPrepayment();
 
-    public static RentalAgreementJson valueOf(final RentalAgreementModel rentalAgreementModel,
+    public static TenancyJson valueOf(final RentalAgreementModel rentalAgreementModel,
             final RentModel rentModel, final RentalUnitModel unitModel) {
-        return ImmutableRentalAgreementJson.builder()
+        return ImmutableTenancyJson.builder()
             .id(rentalAgreementModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
             .rentalType(unitModel.getType())
             .rentalTitle(unitModel.getTitle())

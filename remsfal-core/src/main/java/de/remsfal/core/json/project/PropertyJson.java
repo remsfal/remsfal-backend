@@ -30,6 +30,7 @@ public abstract class PropertyJson implements PropertyModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract UUID getId();
 
