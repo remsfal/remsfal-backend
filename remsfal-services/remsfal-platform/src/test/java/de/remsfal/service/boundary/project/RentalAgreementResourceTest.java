@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
@@ -66,10 +67,11 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createRentalAgreement_SUCCESS_newAgreementReturned() {
+    void createRentalAgreement_SUCCESS_withTenantsAndUnits() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
-            "\"endOfRental\":\"2023-12-31\"" +
+            "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
+            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -79,14 +81,18 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
-            .statusCode(Status.CREATED.getStatusCode());
+            .statusCode(Status.CREATED.getStatusCode())
+            .body("tenants.size()", Matchers.equalTo(1))
+            .body("tenants[0].firstName", Matchers.equalTo("Max"))
+            .body("tenants[0].lastName", Matchers.equalTo("Mustermann"));
     }
 
     @Test
-    void createRentalAgreement_SUCCESS_withoutTenants() {
+    void createRentalAgreement_SUCCESS_tenantLinkedToExistingUser() {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +
-                "\"endOfRental\":\"2023-12-31\"" +
+                "\"tenants\": [{\"firstName\":\"John\", \"lastName\":\"Doe\", \"email\":\"" + TestData.USER_EMAIL_1 + "\"}]," +
+                "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
                 "}";
 
         given()
@@ -96,13 +102,36 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .body(json)
             .post(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
-            .statusCode(Status.CREATED.getStatusCode());
+            .statusCode(Status.CREATED.getStatusCode())
+            .body("tenants.size()", Matchers.equalTo(1))
+            .body("tenants[0].email", Matchers.equalTo(TestData.USER_EMAIL_1));
     }
 
     @Test
-    void updateRentalAgreement_SUCCESS_withTenants() {
+    void createRentalAgreement_SUCCESS_tenantsWithoutEmail() {
         String json = "{" +
-                "\"tenants\": [{\"id\":\"" + TestData.USER_ID_1 + "\"}]" +
+                "\"startOfRental\":\"2023-01-01\"," +
+                "\"tenants\": [{\"firstName\":\"Jane\", \"lastName\":\"Smith\"}]," +
+                "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+                "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .body("tenants.size()", Matchers.equalTo(1))
+            .body("tenants[0].firstName", Matchers.equalTo("Jane"))
+            .body("tenants[0].email", Matchers.nullValue());
+    }
+
+    @Test
+    void updateRentalAgreement_SUCCESS_replaceTenants() {
+        String json = "{" +
+                "\"tenants\": [{\"firstName\":\"Updated\", \"lastName\":\"Tenant\"}]" +
                 "}";
 
         given()
@@ -114,7 +143,32 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .then()
             .log().ifValidationFails()
             .statusCode(Status.OK.getStatusCode())
-            .body("tenants.size()", Matchers.equalTo(1));
+            .body("tenants.size()", Matchers.equalTo(1))
+            .body("tenants[0].firstName", Matchers.equalTo("Updated"));
+    }
+
+    @Test
+    void updateRentalAgreement_SUCCESS_addOptionalTenantFields() {
+        String json = "{" +
+                "\"tenants\": [{" +
+                "\"firstName\":\"Max\"," +
+                "\"lastName\":\"Mustermann\"," +
+                "\"email\":\"max@example.com\"," +
+                "\"mobilePhoneNumber\":\"+491234567890\"" +
+                "}]" +
+                "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .log().ifValidationFails()
+            .statusCode(Status.OK.getStatusCode())
+            .body("tenants[0].email", Matchers.equalTo("max@example.com"))
+            .body("tenants[0].mobilePhoneNumber", Matchers.equalTo("+491234567890"));
     }
 
     @Test
@@ -173,7 +227,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{\"tenants\": [{\"id\":\"" + TestData.USER_ID_1 + "\"}]}")
+            .body("{\"tenants\": [{\"firstName\":\"Keep\", \"lastName\":\"Me\"}]}")
             .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .statusCode(Status.OK.getStatusCode());
@@ -194,11 +248,11 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void createRentalAgreement_FAILURE_userNotFound() {
+    void createRentalAgreement_FAILURE_missingFirstName() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
-            "\"endOfRental\":\"2023-12-31\"," +
-            "\"tenants\": [{\"id\":\"" + java.util.UUID.randomUUID() + "\"}]" +
+            "\"tenants\": [{\"lastName\":\"Doe\"}]," +
+            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -212,9 +266,11 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateRentalAgreement_FAILURE_userNotFound() {
+    void createRentalAgreement_FAILURE_missingLastName() {
         String json = "{" +
-            "\"tenants\": [{\"id\":\"" + java.util.UUID.randomUUID() + "\"}]" +
+            "\"startOfRental\":\"2023-01-01\"," +
+            "\"tenants\": [{\"firstName\":\"John\"}]," +
+            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -222,7 +278,41 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void createRentalAgreement_FAILURE_missingTenants() {
+        String json = "{" +
+            "\"startOfRental\":\"2023-01-01\"," +
+            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void createRentalAgreement_FAILURE_missingUnits() {
+        String json = "{" +
+            "\"startOfRental\":\"2023-01-01\"," +
+            "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]" +
+            "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
@@ -249,7 +339,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), UUID.randomUUID().toString())
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
     }
@@ -262,7 +352,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), java.util.UUID.randomUUID().toString())
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), UUID.randomUUID().toString())
             .then()
             .statusCode(Status.NOT_FOUND.getStatusCode());
     }
@@ -271,7 +361,8 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     void createRentalAgreement_FAILURE_projectNotFound() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
-            "\"endOfRental\":\"2023-12-31\"" +
+            "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
+            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -279,7 +370,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json)
-            .post(BASE_PATH, java.util.UUID.randomUUID().toString())
+            .post(BASE_PATH, UUID.randomUUID().toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }

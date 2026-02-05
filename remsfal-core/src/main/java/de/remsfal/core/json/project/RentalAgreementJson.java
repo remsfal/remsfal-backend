@@ -2,6 +2,7 @@ package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
@@ -17,8 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.core.validation.AtLeastOneRentUnit;
 import de.remsfal.core.validation.PostValidation;
 
 /**
@@ -29,6 +30,7 @@ import de.remsfal.core.validation.PostValidation;
 @Schema(description = "A rental agreement for rentable units")
 @JsonDeserialize(as = ImmutableRentalAgreementJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+@AtLeastOneRentUnit(groups = PostValidation.class)
 public abstract class RentalAgreementJson implements RentalAgreementModel {
 
     @Null
@@ -37,10 +39,11 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
     @Override
     public abstract UUID getId();
 
-    @NotNull(groups = PostValidation.class)
+    @NotNull(groups = PostValidation.class, message = "Tenants list is required")
+    @NotEmpty(groups = PostValidation.class, message = "At least one tenant is required")
     @Nullable
     @Override
-    public abstract List<@Valid UserJson> getTenants();
+    public abstract List<@Valid TenantJson> getTenants();
 
     @NotNull(groups = PostValidation.class)
     @Nullable
@@ -51,6 +54,30 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
     @Override
     public abstract LocalDate getEndOfRental();
 
+    @Nullable
+    @Schema(description = "List of apartment rents")
+    public abstract List<@Valid ApartmentRentJson> getApartmentRents();
+
+    @Nullable
+    @Schema(description = "List of building rents")
+    public abstract List<@Valid BuildingRentJson> getBuildingRents();
+
+    @Nullable
+    @Schema(description = "List of property rents")
+    public abstract List<@Valid PropertyRentJson> getPropertyRents();
+
+    @Nullable
+    @Schema(description = "List of site rents")
+    public abstract List<@Valid SiteRentJson> getSiteRents();
+
+    @Nullable
+    @Schema(description = "List of storage rents")
+    public abstract List<@Valid StorageRentJson> getStorageRents();
+
+    @Nullable
+    @Schema(description = "List of commercial rents")
+    public abstract List<@Valid CommercialRentJson> getCommercialRents();
+
     public static RentalAgreementJson valueOf(final RentalAgreementModel model) {
         if(model == null) {
             return null;
@@ -58,7 +85,7 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
         return ImmutableRentalAgreementJson.builder()
             .id(model.getId())
             .tenants(model.getTenants() != null ? model.getTenants().stream()
-                    .map(UserJson::valueOf)
+                    .map(TenantJson::valueOf)
                     .toList() : null)
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())

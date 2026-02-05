@@ -13,7 +13,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
@@ -33,12 +32,10 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
     @JoinColumn(name = "project_id", insertable = false, updatable = false)
     private ProjectEntity project;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinTable(name = "tenants",
-        joinColumns = @JoinColumn(name = "agreement_id", columnDefinition = "uuid"),
-        inverseJoinColumns = @JoinColumn(name = "user_id", columnDefinition = "uuid")
-    )
-    private List<UserEntity> tenants = new ArrayList<>();
+    @OneToMany(mappedBy = "agreement", cascade = CascadeType.ALL,
+               orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("lastName, firstName")
+    private List<TenantEntity> tenants = new ArrayList<>();
 
     @Column(name = "start_of_rental", columnDefinition = "date")
     private LocalDate startOfRental;
@@ -85,11 +82,11 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
     }
 
     @Override
-    public List<UserEntity> getTenants() {
+    public List<TenantEntity> getTenants() {
         return tenants;
     }
 
-    public void setTenants(final List<UserEntity> tenants) {
+    public void setTenants(final List<TenantEntity> tenants) {
         this.tenants = tenants;
     }
 

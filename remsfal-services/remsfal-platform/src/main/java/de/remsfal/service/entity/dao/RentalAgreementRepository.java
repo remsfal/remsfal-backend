@@ -16,13 +16,13 @@ import io.quarkus.panache.common.Parameters;
 public class RentalAgreementRepository extends AbstractRepository<RentalAgreementEntity> {
 
     public List<RentalAgreementEntity> findRentalAgreementsByTenant(final UUID tenantId) {
-        return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant WHERE tenant.id = :userId",
+        return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant WHERE tenant.user.id = :userId",
             Parameters.with(PARAM_USER_ID, tenantId)).list();
     }
 
     public Optional<RentalAgreementEntity> findRentalAgreementByTenant(final UUID tenantId, final UUID agreementId) {
         return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant "
-                + "WHERE a.id = :id and tenant.id = :userId",
+                + "WHERE a.id = :id and tenant.user.id = :userId",
             Parameters.with(PARAM_ID, agreementId).and(PARAM_USER_ID, tenantId))
             .singleResultOptional();
     }
@@ -36,8 +36,8 @@ public class RentalAgreementRepository extends AbstractRepository<RentalAgreemen
     }
 
     public Optional<RentalAgreementEntity> findRentalAgreementByProject(final UUID projectId, final UUID agreementId) {
-        return find("SELECT a FROM RentalAgreementEntity a LEFT JOIN FETCH a.tenants u " +
-            "LEFT JOIN FETCH u.additionalEmails WHERE a.id = :id and a.projectId = :projectId",
+        return find("SELECT a FROM RentalAgreementEntity a LEFT JOIN FETCH a.tenants t " +
+            "LEFT JOIN FETCH t.user u LEFT JOIN FETCH t.address WHERE a.id = :id and a.projectId = :projectId",
             Parameters.with(PARAM_ID, agreementId).and(PARAM_PROJECT_ID, projectId))
             .singleResultOptional();
     }

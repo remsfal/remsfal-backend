@@ -1,7 +1,5 @@
 package de.remsfal.core.model.project;
 
-import de.remsfal.core.model.CustomerModel;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +11,7 @@ public interface RentalAgreementModel {
 
     UUID getId();
 
-    List<? extends CustomerModel> getTenants();
+    List<? extends TenantModel> getTenants();
 
     LocalDate getStartOfRental();
 
