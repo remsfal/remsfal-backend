@@ -1,11 +1,5 @@
 package de.remsfal.core.json.project;
 
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Null;
-
-import java.util.UUID;
-
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -15,8 +9,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.CommercialModel;
-import de.remsfal.core.validation.PostValidation;
-import de.remsfal.core.validation.Title;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -26,19 +18,7 @@ import de.remsfal.core.validation.Title;
 @Schema(description = "An commercial inside a building")
 @JsonDeserialize(as = ImmutableCommercialJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class CommercialJson implements CommercialModel {
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UUID getId();
-
-    @Title
-    @NotBlank(groups = PostValidation.class)
-    @Nullable
-    @Override
-    public abstract String getTitle();
+public abstract class CommercialJson extends RentalUnitJson implements CommercialModel {
 
     /**
      * Converts a {@link CommercialModel} to a {@link CommercialJson}.
@@ -48,16 +28,16 @@ public abstract class CommercialJson implements CommercialModel {
      */
     public static CommercialJson valueOf(final CommercialModel model) {
         return model == null ? null : ImmutableCommercialJson.builder()
-                .id(model.getId())
-                .title(model.getTitle())
-                .location(model.getLocation())
-                .description(model.getDescription())
-                .netFloorArea(model.getNetFloorArea())
-                .usableFloorArea(model.getUsableFloorArea())
-                .technicalServicesArea(model.getTechnicalServicesArea())
-                .trafficArea(model.getTrafficArea())
-                .heatingSpace(model.getHeatingSpace())
-                .build();
+            .id(model.getId())
+            .title(model.getTitle())
+            .location(model.getLocation())
+            .description(model.getDescription())
+            .netFloorArea(model.getNetFloorArea())
+            .usableFloorArea(model.getUsableFloorArea())
+            .technicalServicesArea(model.getTechnicalServicesArea())
+            .trafficArea(model.getTrafficArea())
+            .heatingSpace(model.getHeatingSpace())
+            .build();
     }
 
 }
