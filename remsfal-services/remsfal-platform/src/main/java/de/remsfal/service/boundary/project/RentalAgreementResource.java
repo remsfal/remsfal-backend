@@ -22,19 +22,19 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     RentalAgreementController rentalAgreementController;
 
     @Override
-    public RentalAgreementJson getRentalAgreement(final UUID projectId, final UUID agreementId) {
-        checkProjectReadPermissions(projectId);
-        final RentalAgreementModel agreement =
-            rentalAgreementController.getRentalAgreementByProject(projectId, agreementId);
-        return RentalAgreementJson.valueOf(agreement);
-    }
-
-    @Override
     public RentalAgreementListJson getRentalAgreements(final UUID projectId) {
         checkProjectReadPermissions(projectId);
         final List<? extends RentalAgreementModel> agreements =
             rentalAgreementController.getRentalAgreementsByProject(projectId);
         return RentalAgreementListJson.valueOf(agreements);
+    }
+
+    @Override
+    public RentalAgreementJson getRentalAgreement(final UUID projectId, final UUID agreementId) {
+        checkProjectReadPermissions(projectId);
+        final RentalAgreementModel agreement =
+            rentalAgreementController.getRentalAgreementByProject(projectId, agreementId);
+        return RentalAgreementJson.valueOf(agreement);
     }
 
     @Override

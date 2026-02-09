@@ -17,6 +17,18 @@ public interface RentalAgreementModel {
 
     LocalDate getEndOfRental();
 
+    List<? extends RentModel> getPropertyRents();
+
+    List<? extends RentModel> getSiteRents();
+
+    List<? extends RentModel> getBuildingRents();
+
+    List<? extends RentModel> getApartmentRents();
+
+    List<? extends RentModel> getStorageRents();
+
+    List<? extends RentModel> getCommercialRents();
+
     public default Boolean isActive() {
         if (this.getEndOfRental() == null) {
             return true;

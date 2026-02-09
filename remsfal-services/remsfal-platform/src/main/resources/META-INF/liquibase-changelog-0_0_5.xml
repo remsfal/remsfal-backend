@@ -61,7 +61,9 @@
             <column name="site_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="first_payment" type="date" />
+            <column name="first_payment" type="date">
+                <constraints nullable="false" />
+            </column>
             <column name="last_payment" type="date" />
             <column name="billing_cycle" type="varchar(20)" defaultValue="MONTHLY">
                 <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
@@ -76,6 +78,10 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
+
+        <addPrimaryKey constraintName="pk_site_rents"
+            tableName="site_rents"
+            columnNames="site_id,first_payment" />
 
         <addForeignKeyConstraint constraintName="fk_site_rent_agreement_id"
             baseTableName="site_rents" baseColumnNames="agreement_id"

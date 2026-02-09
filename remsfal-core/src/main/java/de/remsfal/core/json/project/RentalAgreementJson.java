@@ -55,40 +55,64 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
     public abstract LocalDate getEndOfRental();
 
     @Nullable
-    @Schema(description = "List of apartment rents")
-    public abstract List<@Valid ApartmentRentJson> getApartmentRents();
-
-    @Nullable
-    @Schema(description = "List of building rents")
-    public abstract List<@Valid BuildingRentJson> getBuildingRents();
-
-    @Nullable
     @Schema(description = "List of property rents")
-    public abstract List<@Valid PropertyRentJson> getPropertyRents();
+    @Override
+    public abstract List<@Valid RentJson> getPropertyRents();
 
     @Nullable
     @Schema(description = "List of site rents")
-    public abstract List<@Valid SiteRentJson> getSiteRents();
+    @Override
+    public abstract List<@Valid RentJson> getSiteRents();
+
+    @Nullable
+    @Schema(description = "List of building rents")
+    @Override
+    public abstract List<@Valid RentJson> getBuildingRents();
+
+    @Nullable
+    @Schema(description = "List of apartment rents")
+    @Override
+    public abstract List<@Valid RentJson> getApartmentRents();
 
     @Nullable
     @Schema(description = "List of storage rents")
-    public abstract List<@Valid StorageRentJson> getStorageRents();
+    @Override
+    public abstract List<@Valid RentJson> getStorageRents();
 
     @Nullable
     @Schema(description = "List of commercial rents")
-    public abstract List<@Valid CommercialRentJson> getCommercialRents();
+    @Override
+    public abstract List<@Valid RentJson> getCommercialRents();
 
     public static RentalAgreementJson valueOf(final RentalAgreementModel model) {
-        if(model == null) {
+        if (model == null) {
             return null;
         }
         return ImmutableRentalAgreementJson.builder()
             .id(model.getId())
             .tenants(model.getTenants() != null ? model.getTenants().stream()
-                    .map(TenantJson::valueOf)
-                    .toList() : null)
+                .map(TenantJson::valueOf)
+                .toList() : null)
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
+            .propertyRents(model.getPropertyRents() != null ? model.getPropertyRents().stream()
+                .map(RentJson::valueOf)
+                .toList() : null)
+            .siteRents(model.getSiteRents() != null ? model.getSiteRents().stream()
+                .map(RentJson::valueOf)
+                .toList() : null)
+            .buildingRents(model.getBuildingRents() != null ? model.getBuildingRents().stream()
+                .map(RentJson::valueOf)
+                .toList() : null)
+            .apartmentRents(model.getApartmentRents() != null ? model.getApartmentRents().stream()
+                .map(RentJson::valueOf)
+                .toList() : null)
+            .storageRents(model.getStorageRents() != null ? model.getStorageRents().stream()
+                .map(RentJson::valueOf)
+                .toList() : null)
+            .commercialRents(model.getCommercialRents() != null ? model.getCommercialRents().stream()
+                .map(RentJson::valueOf)
+                .toList() : null)
             .build();
     }
 

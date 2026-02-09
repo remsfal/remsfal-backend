@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.core.model.project.RentalUnitModel;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.Title;

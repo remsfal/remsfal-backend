@@ -21,13 +21,14 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/projects/{projectId}/rental-agreements";
     static final String AGREEMENT_PATH = BASE_PATH + "/{agreementId}";
 
-    @Override
     @BeforeEach
-    protected void setupTestProperties() {
-        super.setupTestUsers();
-        super.setupTestProjects();
-        super.setupTestProperties();
-        this.setupTestRentalAgreements();
+    protected void setupTests() {
+        setupTestUsers();
+        setupTestProjects();
+        setupTestProperties();
+        setupTestSites();
+        setupTestBuildings();
+        setupTestRentalAgreements();
     }
 
     private void setupTestRentalAgreements() {

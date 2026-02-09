@@ -52,37 +52,37 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     public TenancyListJson getTenancies() {
         final ImmutableTenancyListJson.Builder rentBuilder = ImmutableTenancyListJson.builder();
         for(RentalAgreementEntity agreement : agreementController.getRentalAgreements(principal)) {
-            rentBuilder.addAllRentalAgreements(agreement.getPropertyRent()
+            rentBuilder.addAllRentalAgreements(agreement.getPropertyRents()
                 .stream().map(rent -> {
                     return TenancyItemJson.valueOf(agreement,
                         propertyController.getProperty(agreement.getProjectId(), rent.getPropertyId()));
                 })
                 .toList());
-            rentBuilder.addAllRentalAgreements(agreement.getSiteRent()
+            rentBuilder.addAllRentalAgreements(agreement.getSiteRents()
                 .stream().map(rent -> {
                     return TenancyItemJson.valueOf(agreement,
                         siteController.getSite(agreement.getProjectId(), rent.getSiteId()));
                 })
                 .toList());
-            rentBuilder.addAllRentalAgreements(agreement.getBuildingRent()
+            rentBuilder.addAllRentalAgreements(agreement.getBuildingRents()
                 .stream().map(rent -> {
                     return TenancyItemJson.valueOf(agreement,
                         buildingController.getBuilding(agreement.getProjectId(), rent.getBuildingId()));
                 })
                 .toList());
-            rentBuilder.addAllRentalAgreements(agreement.getApartmentRent()
+            rentBuilder.addAllRentalAgreements(agreement.getApartmentRents()
                 .stream().map(rent -> {
                     return TenancyItemJson.valueOf(agreement,
                         apartmentController.getApartment(agreement.getProjectId(), rent.getApartmentId()));
                 })
                 .toList());
-            rentBuilder.addAllRentalAgreements(agreement.getStorageRent()
+            rentBuilder.addAllRentalAgreements(agreement.getStorageRents()
                 .stream().map(rent -> {
                     return TenancyItemJson.valueOf(agreement,
                         storageController.getStorage(agreement.getProjectId(), rent.getStorageId()));
                 })
                 .toList());
-            rentBuilder.addAllRentalAgreements(agreement.getCommercialRent()
+            rentBuilder.addAllRentalAgreements(agreement.getCommercialRents()
                 .stream().map(rent -> {
                     return TenancyItemJson.valueOf(agreement,
                         commercialController.getCommercial(agreement.getProjectId(), rent.getCommercialId()));
@@ -96,7 +96,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     public TenancyJson getPropertyTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
-        PropertyRentEntity rent = agreement.getPropertyRent().stream()
+        PropertyRentEntity rent = agreement.getPropertyRents().stream()
             .filter(r -> rentalId.equals(r.getPropertyId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
@@ -108,7 +108,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     public TenancyJson getSiteTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
-        SiteRentEntity rent = agreement.getSiteRent().stream()
+        SiteRentEntity rent = agreement.getSiteRents().stream()
             .filter(r -> rentalId.equals(r.getSiteId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
@@ -119,7 +119,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     public TenancyJson getBuildingTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
-        BuildingRentEntity rent = agreement.getBuildingRent().stream()
+        BuildingRentEntity rent = agreement.getBuildingRents().stream()
             .filter(r -> rentalId.equals(r.getBuildingId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
@@ -131,7 +131,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     public TenancyJson getApartmentTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
-        ApartmentRentEntity rent = agreement.getApartmentRent().stream()
+        ApartmentRentEntity rent = agreement.getApartmentRents().stream()
             .filter(r -> rentalId.equals(r.getApartmentId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
@@ -143,7 +143,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     public TenancyJson getStorageTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
-        StorageRentEntity rent = agreement.getStorageRent().stream()
+        StorageRentEntity rent = agreement.getStorageRents().stream()
             .filter(r -> rentalId.equals(r.getStorageId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
@@ -155,7 +155,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
     public TenancyJson getCommercialTenancy(final UUID tenancyId, final UUID rentalId) {
         checkReadPermissions(tenancyId);
         final RentalAgreementEntity agreement = agreementController.getRentalAgreement(principal, tenancyId);
-        CommercialRentEntity rent = agreement.getCommercialRent().stream()
+        CommercialRentEntity rent = agreement.getCommercialRents().stream()
             .filter(r -> rentalId.equals(r.getCommercialId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException("Unable to find rent"));
