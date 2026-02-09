@@ -17,7 +17,7 @@
 
     <properties>
         <resources-plugin.version>3.4.0</resources-plugin.version>
-        <dependency-plugin.version>3.9.0</dependency-plugin.version>
+        <dependency-plugin.version>3.10.0</dependency-plugin.version>
         <compiler-plugin.version>3.15.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
