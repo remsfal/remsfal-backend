@@ -22,6 +22,7 @@ import java.util.List;
 public abstract class PropertyListJson {
     // Validation is not required, because it is read-only.
 
+    @Schema(readOnly = true)
     public abstract List<RentalUnitTreeNodeJson> getProperties();
 
 }

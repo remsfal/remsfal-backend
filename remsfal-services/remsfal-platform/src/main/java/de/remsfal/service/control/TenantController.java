@@ -1,11 +1,11 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.UserJson;
-import de.remsfal.core.model.CustomerModel;
-import de.remsfal.service.entity.dao.TenancyRepository;
+import de.remsfal.core.json.project.TenantJson;
+import de.remsfal.core.model.project.TenantModel;
+import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
-import de.remsfal.service.entity.dto.TenancyEntity;
-import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
+import de.remsfal.service.entity.dto.TenantEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -23,54 +23,56 @@ public class TenantController {
     Logger logger;
 
     @Inject
-    TenancyRepository tenancyRepository;
+    RentalAgreementRepository rentalAgreementRepository;
 
     @Inject
     TenantRepository tenantRepository;
 
     @Transactional
-    public CustomerModel createTenant(final UUID projectId, final UserJson tenantJson) {
+    public TenantModel createTenant(final UUID projectId, final TenantJson tenantJson) {
         logger.infov("Creating a new tenant for project {0}", projectId);
 
-        TenancyEntity tenancy = tenancyRepository.find("projectId", projectId).firstResult();
-        if (tenancy == null) {
-            tenancy = new TenancyEntity();
-            tenancy.generateId();
-            tenancy.setProjectId(projectId);
-            tenancy.setTenants(new java.util.ArrayList<>());
-            tenancyRepository.persist(tenancy);
-        } else if (tenancy.getTenants() == null) {
-            tenancy.setTenants(new java.util.ArrayList<>());
+        RentalAgreementEntity agreement = rentalAgreementRepository.find("projectId", projectId).firstResult();
+        if (agreement == null) {
+            agreement = new RentalAgreementEntity();
+            agreement.generateId();
+            agreement.setProjectId(projectId);
+            agreement.setStartOfRental(java.time.LocalDate.now());
+            agreement.setTenants(new java.util.ArrayList<>());
+            rentalAgreementRepository.persist(agreement);
+        } else if (agreement.getTenants() == null) {
+            agreement.setTenants(new java.util.ArrayList<>());
         }
 
-        List<UserEntity> existingTenants = tenantRepository.findTenantsByProjectId(projectId);
+        List<TenantEntity> existingTenants = tenantRepository.findTenantsByProjectId(projectId);
         boolean duplicate = existingTenants.stream()
-            .anyMatch(t -> t.getEmail().equalsIgnoreCase(tenantJson.getEmail()));
+            .anyMatch(t -> t.getEmail() != null && t.getEmail().equalsIgnoreCase(tenantJson.getEmail()));
         if (duplicate) {
             throw new BadRequestException("A tenant with this email already exists in the project");
         }
 
-        UserEntity entity = applyJsonToEntity(tenantJson, new UserEntity());
+        TenantEntity entity = applyJsonToEntity(tenantJson, new TenantEntity());
         entity.generateId();
+        entity.setAgreement(agreement);
 
-        tenancy.getTenants().add(entity);
+        agreement.getTenants().add(entity);
 
-        tenancyRepository.mergeAndFlush(tenancy);
+        rentalAgreementRepository.mergeAndFlush(agreement);
 
-        UserEntity managedUser = tenantRepository.findById(entity.getId());
+        TenantEntity managedTenant = tenantRepository.findById(entity.getId());
 
-        return getTenant(projectId, managedUser.getId());
+        return getTenant(projectId, managedTenant.getId());
     }
 
-    public List<CustomerModel> getTenants(final UUID projectId) {
+    public List<TenantModel> getTenants(final UUID projectId) {
         logger.infov("Retrieving tenants for project {0}", projectId);
-        List<UserEntity> entities = tenantRepository.findTenantsByProjectId(projectId);
+        List<TenantEntity> entities = tenantRepository.findTenantsByProjectId(projectId);
         return entities.stream()
-                .map(CustomerModel.class::cast)
+                .map(TenantModel.class::cast)
                 .collect(Collectors.toList());
     }
 
-    public CustomerModel getTenant(final UUID projectId, final UUID tenantId) {
+    public TenantModel getTenant(final UUID projectId, final UUID tenantId) {
         logger.infov("Retrieving a tenant (projectId={0}, tenantId={1})",
             projectId, tenantId);
         return tenantRepository.findTenantByProjectId(projectId, tenantId)
@@ -78,10 +80,10 @@ public class TenantController {
     }
 
     @Transactional
-    public CustomerModel updateTenant(final UUID projectId, final UUID tenantId, final UserJson tenantJson) {
+    public TenantModel updateTenant(final UUID projectId, final UUID tenantId, final TenantJson tenantJson) {
         logger.infov("Updating tenant (projectId={0}, tenantId={1})", projectId, tenantId);
 
-        UserEntity entity = tenantRepository.findTenantByProjectId(projectId, tenantId)
+        TenantEntity entity = tenantRepository.findTenantByProjectId(projectId, tenantId)
             .orElseThrow(() -> new NotFoundException("Tenant not found"));
 
         applyJsonToEntity(tenantJson, entity);
@@ -92,29 +94,37 @@ public class TenantController {
         return getTenant(projectId, tenantId);
     }
 
-    private UserEntity applyJsonToEntity(final UserJson json, final UserEntity entity) {
-        entity.setEmail(json.getEmail());
+    private TenantEntity applyJsonToEntity(final TenantJson json, final TenantEntity entity) {
+        if (json.getEmail() != null) {
+            entity.setEmail(json.getEmail());
+        }
         entity.setFirstName(json.getFirstName());
         entity.setLastName(json.getLastName());
 
         if (json.getMobilePhoneNumber() != null) {
             entity.setMobilePhoneNumber(json.getMobilePhoneNumber());
         }
+        if (json.getBusinessPhoneNumber() != null) {
+            entity.setBusinessPhoneNumber(json.getBusinessPhoneNumber());
+        }
+        if (json.getPrivatePhoneNumber() != null) {
+            entity.setPrivatePhoneNumber(json.getPrivatePhoneNumber());
+        }
         return entity;
     }
 
     @Transactional
     public void deleteTenant(final UUID projectId, final UUID tenantIdToRemove) {
-        TenancyEntity tenancy = tenancyRepository.findTenancyByProjectId(projectId)
-            .orElseThrow(() -> new NotFoundException("Tenancy not found for project"));
+        RentalAgreementEntity agreement = rentalAgreementRepository.findRentalAgreementByProjectId(projectId)
+            .orElseThrow(() -> new NotFoundException("Rental agreement not found for project"));
 
-        boolean removed = tenancy.getTenants()
+        boolean removed = agreement.getTenants()
             .removeIf(tenant -> tenant.getId().equals(tenantIdToRemove));
 
         if (!removed) {
-            throw new NotFoundException("Tenant not found in this tenancy.");
+            throw new NotFoundException("Tenant not found in this rental agreement.");
         }
 
-        tenancyRepository.mergeAndFlush(tenancy);
+        rentalAgreementRepository.mergeAndFlush(agreement);
     }
 }

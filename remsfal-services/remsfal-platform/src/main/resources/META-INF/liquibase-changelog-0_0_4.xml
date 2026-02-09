@@ -9,16 +9,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="remsfal-backend-0.0.4-tenancy" author="alexander.stanik@htw-berlin.de">
-        <comment>Create tenancy schema with tenancies and tenants tables</comment>
+        <comment>Create rental agreement schema with rental_agreements and tenants tables</comment>
 
-        <createTable tableName="tenancies">
+        <createTable tableName="rental_agreements">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="start_of_rental" type="date" />
+            <column name="start_of_rental" type="date">
+                <constraints nullable="false" />
+            </column>
             <column name="end_of_rental" type="date" />
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
@@ -28,18 +30,32 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_tenancy_project_id"
-            baseTableName="tenancies" baseColumnNames="project_id"
+        <addForeignKeyConstraint constraintName="fk_rental_agreement_project_id"
+            baseTableName="rental_agreements" baseColumnNames="project_id"
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <createTable tableName="tenants">
-            <column name="tenancy_id" type="uuid">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="agreement_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="user_id" type="uuid">
+            <column name="user_id" type="uuid" />
+            <column name="first_name" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
+            <column name="last_name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="email" type="varchar(255)" />
+            <column name="mobile_phone_number" type="varchar(15)" />
+            <column name="business_phone_number" type="varchar(15)" />
+            <column name="private_phone_number" type="varchar(15)" />
+            <column name="address_id" type="uuid" />
+            <column name="place_of_birth" type="varchar(255)" />
+            <column name="date_of_birth" type="date" />
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
@@ -48,18 +64,39 @@
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="tenants" constraintName="pk_tenant"
-                columnNames="tenancy_id,user_id"/>
-
-        <addForeignKeyConstraint constraintName="fk_tenant_tenancy_id"
-            baseTableName="tenants" baseColumnNames="tenancy_id"
-            referencedTableName="tenancies" referencedColumnNames="id"
+        <addForeignKeyConstraint constraintName="fk_tenant_agreement_id"
+            baseTableName="tenants" baseColumnNames="agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_tenant_user_id"
             baseTableName="tenants" baseColumnNames="user_id"
             referencedTableName="users" referencedColumnNames="id"
-            onDelete="CASCADE" onUpdate="RESTRICT" />
+            onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_tenant_address_id"
+            baseTableName="tenants" baseColumnNames="address_id"
+            referencedTableName="addresses" referencedColumnNames="id"
+            onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <!-- Unique constraint for (agreement_id, user_id) where user_id is not null -->
+        <sql>
+            CREATE UNIQUE INDEX idx_tenant_agreement_user_unique
+            ON tenants (agreement_id, user_id)
+            WHERE user_id IS NOT NULL
+        </sql>
+
+        <createIndex indexName="idx_tenant_agreement_fk" tableName="tenants">
+            <column name="agreement_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_tenant_user_fk" tableName="tenants">
+            <column name="user_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_tenant_email_lookup" tableName="tenants">
+            <column name="email" type="varchar(255)" />
+        </createIndex>
     </changeSet>
 
     <changeSet id="remsfal-backend-0.0.4-property" author="alexander.stanik@htw-berlin.de">
@@ -103,13 +140,15 @@
         </createIndex>
 
         <createTable tableName="property_rents">
-            <column name="tenancy_id" type="uuid">
+            <column name="agreement_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="property_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="first_payment" type="date" />
+            <column name="first_payment" type="date">
+                <constraints nullable="false" />
+            </column>
             <column name="last_payment" type="date" />
             <column name="billing_cycle" type="varchar(20)" defaultValue="MONTHLY">
                 <constraints nullable="false" checkConstraint="billing_cycle IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
@@ -125,9 +164,13 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_property_rent_tenancy_id"
-            baseTableName="property_rents" baseColumnNames="tenancy_id"
-            referencedTableName="tenancies" referencedColumnNames="id"
+        <addPrimaryKey constraintName="pk_property_rents"
+            tableName="property_rents"
+            columnNames="property_id,first_payment" />
+
+        <addForeignKeyConstraint constraintName="fk_property_rent_agreement_id"
+            baseTableName="property_rents" baseColumnNames="agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_property_rent_property_id"
@@ -135,9 +178,8 @@
             referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_property_rent_tenancy_fk" tableName="property_rents">
-            <column name="tenancy_id" type="uuid" />
+        <createIndex indexName="idx_property_rent_agreement_fk" tableName="property_rents">
+            <column name="agreement_id" type="uuid" />
         </createIndex>
     </changeSet>
-
 </databaseChangeLog>

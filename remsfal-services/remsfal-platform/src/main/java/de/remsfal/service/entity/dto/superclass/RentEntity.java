@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import de.remsfal.core.model.project.RentModel;
 import jakarta.persistence.Column;
@@ -19,10 +18,6 @@ import jakarta.persistence.MappedSuperclass;
  */
 @MappedSuperclass
 public abstract class RentEntity extends MetaDataEntity implements RentModel {
-
-    @Id
-    @Column(name = "tenancy_id", nullable = false, updatable = false, columnDefinition = "uuid")
-    private UUID tenancyId;
 
     @Id
     @Column(name = "first_payment", columnDefinition = "date", nullable = false)
@@ -43,14 +38,6 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Column(name = "heating_costs_prepayment", columnDefinition = "numeric(6,2)",  precision=6, scale=2)
     private BigDecimal heatingCostsPrepayment;
-
-    public UUID getTenancyId() {
-        return tenancyId;
-    }
-
-    public void setTenancyId(final UUID tenancyId) {
-        this.tenancyId = tenancyId;
-    }
 
     @Override
     public LocalDate getFirstPaymentDate() {
@@ -119,7 +106,6 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
         }
         if (o instanceof RentEntity e) {
             return super.equals(e)
-                && Objects.equals(tenancyId, e.tenancyId)
                 && Objects.equals(firstPaymentDate, e.firstPaymentDate)
                 && Objects.equals(lastPaymentDate, e.lastPaymentDate)
                 && Objects.equals(billingCycle, e.billingCycle)

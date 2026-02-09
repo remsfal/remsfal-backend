@@ -55,13 +55,15 @@
         </createIndex>
 
         <createTable tableName="site_rents">
-            <column name="tenancy_id" type="uuid">
+            <column name="agreement_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="site_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="first_payment" type="date" />
+            <column name="first_payment" type="date">
+                <constraints nullable="false" />
+            </column>
             <column name="last_payment" type="date" />
             <column name="billing_cycle" type="varchar(20)" defaultValue="MONTHLY">
                 <constraints nullable="false" checkConstraint="BILLING_CYCLE IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
@@ -77,9 +79,13 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_site_rent_tenancy_id"
-            baseTableName="site_rents" baseColumnNames="tenancy_id"
-            referencedTableName="tenancies" referencedColumnNames="id"
+        <addPrimaryKey constraintName="pk_site_rents"
+            tableName="site_rents"
+            columnNames="site_id,first_payment" />
+
+        <addForeignKeyConstraint constraintName="fk_site_rent_agreement_id"
+            baseTableName="site_rents" baseColumnNames="agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_site_rent_site_id"
@@ -87,8 +93,8 @@
             referencedTableName="sites" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_site_rent_tenancy_fk" tableName="site_rents">
-            <column name="tenancy_id" type="uuid" />
+        <createIndex indexName="idx_site_rent_agreement_fk" tableName="site_rents">
+            <column name="agreement_id" type="uuid" />
         </createIndex>
     </changeSet>
 

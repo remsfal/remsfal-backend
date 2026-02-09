@@ -60,7 +60,7 @@ public interface IssueEndpoint {
         @Parameter(description = "Filter to return only issues of a specific user")
         @QueryParam("owner") UUID ownerId,
         @Parameter(description = "Filter to return only issuesfor a specific tenancy")
-        @QueryParam("tenancyId") UUID tenancyId,
+        @QueryParam("agreementId") UUID agreementId,
         @Parameter(description = "Filter to return only issuesfor a specific rental type")
         @QueryParam("rentalType") UnitType rentalType,
         @Parameter(description = "Filter to return only issuesfor a specific rental")

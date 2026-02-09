@@ -56,13 +56,15 @@
         </createIndex>
 
         <createTable tableName="apartment_rents">
-            <column name="tenancy_id" type="uuid">
+            <column name="agreement_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="apartment_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="first_payment" type="date" />
+            <column name="first_payment" type="date">
+                <constraints nullable="false" />
+            </column>
             <column name="last_payment" type="date" />
             <column name="billing_cycle" type="varchar(20)" defaultValue="MONTHLY">
                 <constraints nullable="false" checkConstraint="billing_cycle IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
@@ -78,9 +80,13 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_apartment_rent_tenancy_id"
-            baseTableName="apartment_rents" baseColumnNames="tenancy_id"
-            referencedTableName="tenancies" referencedColumnNames="id"
+        <addPrimaryKey constraintName="pk_apartment_rents"
+            tableName="apartment_rents"
+            columnNames="apartment_id,first_payment" />
+
+        <addForeignKeyConstraint constraintName="fk_apartment_rent_agreement_id"
+            baseTableName="apartment_rents" baseColumnNames="agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_apartment_rent_apartment_id"
@@ -88,8 +94,8 @@
             referencedTableName="apartments" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_apartment_rent_tenancy_fk" tableName="apartment_rents">
-            <column name="tenancy_id" type="uuid" />
+        <createIndex indexName="idx_apartment_rent_agreement_fk" tableName="apartment_rents">
+            <column name="agreement_id" type="uuid" />
         </createIndex>
     </changeSet>
 

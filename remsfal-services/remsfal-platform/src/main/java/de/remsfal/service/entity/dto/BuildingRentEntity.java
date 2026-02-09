@@ -20,6 +20,11 @@ public class BuildingRentEntity extends RentEntity {
     @Column(name = "building_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID buildingId;
 
+    @Override
+    public UUID getUnitId() {
+        return buildingId;
+    }
+
     public UUID getBuildingId() {
         return buildingId;
     }
@@ -30,7 +35,7 @@ public class BuildingRentEntity extends RentEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(buildingId, getTenancyId());
+        return Objects.hash(buildingId, getFirstPaymentDate());
     }
 
     @Override

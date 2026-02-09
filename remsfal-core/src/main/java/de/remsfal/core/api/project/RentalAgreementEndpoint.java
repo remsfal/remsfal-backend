@@ -1,7 +1,7 @@
 package de.remsfal.core.api.project;
 
-import de.remsfal.core.json.tenancy.ProjectTenancyListJson;
-import de.remsfal.core.json.tenancy.TenancyInfoJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.core.json.project.RentalAgreementListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -27,29 +27,16 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 /**
  * @author Carl Rix [Carl.Rix@student.htw-berlin.de]
  */
-public interface ProjectTenancyEndpoint {
+public interface RentalAgreementEndpoint {
 
-    String SERVICE = "tenancies";
-
-    @GET
-    @Path("/{tenancyId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve Information of a tenancy.")
-    @APIResponse(responseCode = "200", description = "The requested tenancy was successfully returned")
-    @APIResponse(responseCode = "401", description = "No user authentication provided session cookie")
-    @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyInfoJson getTenancy(
-        @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull UUID projectId,
-        @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull UUID tenancyId);
+    String SERVICE = "rental-agreements";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of all tenancies")
     @APIResponse(responseCode = "200", description = "The requested tenancies were successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    ProjectTenancyListJson getTenancies(
+    RentalAgreementListJson getRentalAgreements(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId);
 
@@ -59,25 +46,38 @@ public interface ProjectTenancyEndpoint {
     @APIResponse(responseCode = "201", description = "Tenancy created successfully")
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createTenancy(
+    Response createRentalAgreement(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Tenancy Information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) TenancyInfoJson tenancy);
+        @Valid @ConvertGroup(to = PostValidation.class) RentalAgreementJson tenancy);
 
-    @PATCH
-    @Path("/{tenancyId}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @GET
+    @Path("/{agreementId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a tenancy")
-    @APIResponse(responseCode = "200", description = "The tenancy was successfully updated")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "The tenancy does not exist")
-    TenancyInfoJson updateTenancy(
+    @Operation(summary = "Retrieve Information of a tenancy.")
+    @APIResponse(responseCode = "200", description = "The requested rental agreement was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided session cookie")
+    @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
+    RentalAgreementJson getRentalAgreement(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the tenancy", required = true)
-        @PathParam("tenancyId") @NotNull UUID tenancyId,
+        @PathParam("agreementId") @NotNull UUID agreementId);
+
+    @PATCH
+    @Path("/{agreementId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Update information of a tenancy")
+    @APIResponse(responseCode = "200", description = "The rental agreement was successfully updated")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
+    RentalAgreementJson updateRentalAgreement(
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("agreementId") @NotNull UUID agreementId,
         @Parameter(description = "Tenancy information", required = true)
-        @Valid @NotNull @ConvertGroup(to = PatchValidation.class) TenancyInfoJson tenancy);
+        @Valid @NotNull @ConvertGroup(to = PatchValidation.class) RentalAgreementJson tenancy);
 }

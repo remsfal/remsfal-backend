@@ -59,7 +59,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     Instance<TenantResource> tenantResource;
   
     @Inject
-    Instance<ProjectTenancyResource> tenancyResource;
+    Instance<RentalAgreementResource> tenancyResource;
 
     @Override
     @Timed(name = "GetProjectsListTimer", unit = MetricUnits.MILLISECONDS)
@@ -147,7 +147,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    public ProjectTenancyResource getTenancyResource() {
+    public RentalAgreementResource getTenancyResource() {
         return resourceContext.initResource(tenancyResource.get());
     }
 

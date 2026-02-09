@@ -1,11 +1,14 @@
 package de.remsfal.core.model.project;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 public interface RentModel {
+
+    UUID getUnitId();
 
     LocalDate getFirstPaymentDate();
 

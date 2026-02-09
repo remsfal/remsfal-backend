@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.util.UUID;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.service.control.TenancyController;
+import de.remsfal.service.control.RentalAgreementController;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -24,10 +24,10 @@ public class AbstractTenancyResource {
     protected RemsfalPrincipal principal;
 
     @Inject
-    protected TenancyController tenancyController;
+    protected RentalAgreementController agreementController;
 
     public boolean checkReadPermissions(final UUID tenancyId) {
-        if (tenancyController.getTenancy(principal, tenancyId) == null) {
+        if (agreementController.getRentalAgreement(principal, tenancyId) == null) {
             throw new NotFoundException("Unable to find tenancy for tenant");
         } else {
             return true;

@@ -22,10 +22,6 @@ public class TicketingTestData extends TestData {
     public static final Set<UUID> ISSUE_ID_SET_2 = Set.of(ISSUE_ID_2);
     public static final Set<UUID> ISSUE_ID_SET_3 = Set.of(ISSUE_ID_3);
 
-    // Default test issue
-    public static final String ISSUE_TITLE = TicketingTestData.ISSUE_TITLE_1;
-    public static final String ISSUE_DESCRIPTION = TicketingTestData.ISSUE_DESCRIPTION_1;
-    
     // Test issue 1
     public static final String ISSUE_TITLE_1 = "Heizung funktioniert nicht";
     public static final String ISSUE_DESCRIPTION_1 = "Sehr geehrte Damen und Herren,\\n"
@@ -38,12 +34,17 @@ public class TicketingTestData extends TestData {
         + "um das Problem so schnell wie möglich zu beheben. Ein schneller Eingriff ist notwendig, "
         + "um die Heizung wieder in Betrieb zu nehmen und weiteren Schaden zu vermeiden.\\n"
         + "\\n"
-        + "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Bitte lassen Sie mich wissen, wann der Techniker kommen kann.\\n"
+        + "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Bitte lassen Sie mich wissen, "
+        + "wann der Techniker kommen kann.\\n"
         + "\\n"
         + "Vielen Dank für Ihre schnelle Hilfe.\\n"
         + "\\n"
         + "Mit freundlichen Grüßen";
 
+    // Default test issue
+    public static final String ISSUE_TITLE = TicketingTestData.ISSUE_TITLE_1;
+    public static final String ISSUE_DESCRIPTION = TicketingTestData.ISSUE_DESCRIPTION_1;
+    
     // Test issue 2
     public static final String ISSUE_TITLE_2 = "Licht im Treppenhaus defekt";
     public static final String ISSUE_DESCRIPTION_2 = "Sehr geehrte Damen und Herren,\\n"
@@ -74,7 +75,7 @@ public class TicketingTestData extends TestData {
     );
     
     public static final Map<String, String> TENANT_PROJECT_ROLES = Map.of(
-        TENANCY_ID.toString(), PROJECT_ID.toString()
+        AGREEMENT_ID.toString(), PROJECT_ID.toString()
     );
 
     // Chat session test data

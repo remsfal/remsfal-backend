@@ -96,7 +96,7 @@ public interface IssueEventJson {
     UUID getReporterId();
 
     @Nullable
-    UUID getTenancyId();
+    UUID getAgreementId();
 
     @Nullable
     UUID getAssigneeId();

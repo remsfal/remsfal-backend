@@ -1,7 +1,5 @@
 package de.remsfal.core.model.project;
 
-import de.remsfal.core.model.CustomerModel;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -9,15 +7,27 @@ import java.util.UUID;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TenancyModel {
+public interface RentalAgreementModel {
 
     UUID getId();
 
-    List<? extends CustomerModel> getTenants();
+    List<? extends TenantModel> getTenants();
 
     LocalDate getStartOfRental();
 
     LocalDate getEndOfRental();
+
+    List<? extends RentModel> getPropertyRents();
+
+    List<? extends RentModel> getSiteRents();
+
+    List<? extends RentModel> getBuildingRents();
+
+    List<? extends RentModel> getApartmentRents();
+
+    List<? extends RentModel> getStorageRents();
+
+    List<? extends RentModel> getCommercialRents();
 
     public default Boolean isActive() {
         if (this.getEndOfRental() == null) {

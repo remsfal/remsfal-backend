@@ -5,8 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -17,22 +16,28 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentModel;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "A rent of a tenancy")
+@Schema(description = "Rent information for a rentable unit")
 @JsonDeserialize(as = ImmutableRentJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class RentJson implements RentModel {
 
-    @NotNull
+    @NotNull(groups = PostValidation.class, message = "Unit ID is required")
+    @Schema(required = true)
+    @Override
+    public abstract UUID getUnitId();
+
+    @Nullable
     @Override
     public abstract BillingCycle getBillingCycle();
 
-    @NotNull
+    @Nullable
     @Override
     public abstract LocalDate getFirstPaymentDate();
 
@@ -56,21 +61,21 @@ public abstract class RentJson implements RentModel {
     public abstract Float getHeatingCostsPrepayment();
 
     public static RentJson valueOf(final RentModel model) {
-        return model == null ? null : ImmutableRentJson.builder()
+        if (model == null) {
+            return null;
+        }
+        return ImmutableRentJson.builder()
+            .unitId(model.getUnitId())
             .billingCycle(model.getBillingCycle())
             .firstPaymentDate(model.getFirstPaymentDate())
             .lastPaymentDate(model.getLastPaymentDate())
-            .basicRent(model.getBasicRent())
-            .operatingCostsPrepayment(model.getOperatingCostsPrepayment())
-            .heatingCostsPrepayment(model.getHeatingCostsPrepayment())
+            .basicRent(
+                model.getBasicRent() != null ? model.getBasicRent().floatValue() : null)
+            .operatingCostsPrepayment(
+                model.getOperatingCostsPrepayment() != null ? model.getOperatingCostsPrepayment().floatValue() : null)
+            .heatingCostsPrepayment(
+                model.getHeatingCostsPrepayment() != null ? model.getHeatingCostsPrepayment().floatValue() : null)
             .build();
-    }
-
-    public static List<RentJson> valueOfList(List<? extends RentModel> rentList) {
-        if(rentList == null || rentList.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return rentList.stream().map(RentJson::valueOf).toList();
     }
 
 }

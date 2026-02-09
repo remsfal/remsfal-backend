@@ -45,7 +45,7 @@ public interface IssueModel {
 
     UUID getReporterId();
 
-    UUID getTenancyId();
+    UUID getAgreementId();
 
     UUID getAssigneeId();
 

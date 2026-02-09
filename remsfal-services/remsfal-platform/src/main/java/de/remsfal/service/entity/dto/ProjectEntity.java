@@ -32,9 +32,6 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ProjectOrganizationEntity> organizations;
 
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
-    private Set<TenancyEntity> tenancies;
-    
     @Override
     public String getTitle() {
         return title;

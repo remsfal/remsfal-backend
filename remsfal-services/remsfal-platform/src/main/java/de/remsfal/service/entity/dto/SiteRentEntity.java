@@ -6,6 +6,7 @@ import java.util.UUID;
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
@@ -15,8 +16,14 @@ import jakarta.persistence.Table;
 @Table(name = "site_rents")
 public class SiteRentEntity extends RentEntity {
 
+    @Id
     @Column(name = "site_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID siteId;
+
+    @Override
+    public UUID getUnitId() {
+        return siteId;
+    }
 
     public UUID getSiteId() {
         return siteId;
@@ -28,7 +35,7 @@ public class SiteRentEntity extends RentEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(siteId, getTenancyId());
+        return Objects.hash(siteId, getFirstPaymentDate());
     }
 
     @Override
