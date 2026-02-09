@@ -161,7 +161,7 @@ public class RentalAgreementController {
                 if (user != null) {
                     tenant.setUser(user);
                     logger.infov("Linking tenant {0} {1} to user {2}",
-                            tenantInput.getFirstName(), tenantInput.getLastName(), user.getId());
+                        tenantInput.getFirstName(), tenantInput.getLastName(), user.getId());
                 }
             }
 

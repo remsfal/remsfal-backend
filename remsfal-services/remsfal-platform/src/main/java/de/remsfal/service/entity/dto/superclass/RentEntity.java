@@ -19,9 +19,6 @@ import jakarta.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
-//    @Column(name = "agreement_id", nullable = false, updatable = false, columnDefinition = "uuid")
-//    private UUID agreementId;
-
     @Id
     @Column(name = "first_payment", columnDefinition = "date", nullable = false)
     private LocalDate firstPaymentDate;
@@ -41,14 +38,6 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
 
     @Column(name = "heating_costs_prepayment", columnDefinition = "numeric(6,2)",  precision=6, scale=2)
     private BigDecimal heatingCostsPrepayment;
-
-//    public UUID getAgreementId() {
-//        return agreementId;
-//    }
-
-//    public void setAgreementId(final UUID agreementId) {
-//        this.agreementId = agreementId;
-//    }
 
     @Override
     public LocalDate getFirstPaymentDate() {

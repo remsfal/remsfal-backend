@@ -65,14 +65,17 @@ public abstract class RentJson implements RentModel {
             return null;
         }
         return ImmutableRentJson.builder()
-                .unitId(model.getUnitId())
-                .billingCycle(model.getBillingCycle())
-                .firstPaymentDate(model.getFirstPaymentDate())
-                .lastPaymentDate(model.getLastPaymentDate())
-                .basicRent(model.getBasicRent() != null ? model.getBasicRent().floatValue() : null)
-                .operatingCostsPrepayment(model.getOperatingCostsPrepayment() != null ? model.getOperatingCostsPrepayment().floatValue() : null)
-                .heatingCostsPrepayment(model.getHeatingCostsPrepayment() != null ? model.getHeatingCostsPrepayment().floatValue() : null)
-                .build();
+            .unitId(model.getUnitId())
+            .billingCycle(model.getBillingCycle())
+            .firstPaymentDate(model.getFirstPaymentDate())
+            .lastPaymentDate(model.getLastPaymentDate())
+            .basicRent(
+                model.getBasicRent() != null ? model.getBasicRent().floatValue() : null)
+            .operatingCostsPrepayment(
+                model.getOperatingCostsPrepayment() != null ? model.getOperatingCostsPrepayment().floatValue() : null)
+            .heatingCostsPrepayment(
+                model.getHeatingCostsPrepayment() != null ? model.getHeatingCostsPrepayment().floatValue() : null)
+            .build();
     }
 
 }
