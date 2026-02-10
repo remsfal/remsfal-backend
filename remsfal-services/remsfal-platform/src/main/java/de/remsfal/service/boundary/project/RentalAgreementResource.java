@@ -1,5 +1,7 @@
 package de.remsfal.service.boundary.project;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import jakarta.enterprise.context.RequestScoped;
@@ -10,10 +12,10 @@ import jakarta.ws.rs.core.Response;
 import de.remsfal.core.api.project.RentalAgreementEndpoint;
 import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.RentalAgreementListJson;
+import de.remsfal.core.json.project.RentalUnitJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.service.control.PropertyController;
 import de.remsfal.service.control.RentalAgreementController;
-
-import java.util.List;
 
 @RequestScoped
 public class RentalAgreementResource extends AbstractProjectResource implements RentalAgreementEndpoint {
@@ -21,12 +23,17 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     @Inject
     RentalAgreementController rentalAgreementController;
 
+    @Inject
+    PropertyController propertyController;
+
     @Override
     public RentalAgreementListJson getRentalAgreements(final UUID projectId) {
         checkProjectReadPermissions(projectId);
         final List<? extends RentalAgreementModel> agreements =
             rentalAgreementController.getRentalAgreementsByProject(projectId);
-        return RentalAgreementListJson.valueOf(agreements);
+        final Map<UUID, RentalUnitJson> rentalUnitsMap =
+            propertyController.getRentalUnitsMapForProject(projectId);
+        return RentalAgreementListJson.valueOf(agreements, rentalUnitsMap);
     }
 
     @Override

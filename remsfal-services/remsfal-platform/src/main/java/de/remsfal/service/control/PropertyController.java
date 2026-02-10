@@ -1,8 +1,15 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.project.ApartmentJson;
+import de.remsfal.core.json.project.BuildingJson;
+import de.remsfal.core.json.project.CommercialJson;
 import de.remsfal.core.json.project.ImmutableRentalUnitTreeNodeJson;
+import de.remsfal.core.json.project.PropertyJson;
+import de.remsfal.core.json.project.RentalUnitJson;
 import de.remsfal.core.json.project.RentalUnitNodeDataJson;
 import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
+import de.remsfal.core.json.project.SiteJson;
+import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
@@ -18,7 +25,9 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -168,19 +177,19 @@ public class PropertyController {
             .stream()
             .map(unit -> RentalUnitTreeNodeJson.valueOf(unit))
             .toList();
-        
+
         List<RentalUnitTreeNodeJson> commercialTree = commercialRepository
             .findAllCommercials(building.getProjectId(), building.getId())
             .stream()
             .map(unit -> RentalUnitTreeNodeJson.valueOf(unit))
             .toList();
-        
+
         List<RentalUnitTreeNodeJson> storageTree = storageRepository
             .findAllStorages(building.getProjectId(), building.getId())
             .stream()
             .map(unit -> RentalUnitTreeNodeJson.valueOf(unit))
             .toList();
-        
+
         return ImmutableRentalUnitTreeNodeJson.builder()
             .key(building.getId())
             .data(data)
@@ -188,6 +197,52 @@ public class PropertyController {
             .addAllChildren(commercialTree)
             .addAllChildren(storageTree)
             .build();
+    }
+
+    /**
+     * Loads all rental units for a project and returns them as a map indexed by unit ID.
+     * This is useful for efficiently resolving rental units from rental agreements.
+     *
+     * @param projectId the project ID
+     * @return map of unit ID to RentalUnitJson
+     */
+    public Map<UUID, RentalUnitJson> getRentalUnitsMapForProject(final UUID projectId) {
+        logger.infov("Loading all rental units for project (projectId = {0})", projectId);
+
+        Map<UUID, RentalUnitJson> unitsMap = new HashMap<>();
+
+        // Load all properties
+        propertyRepository.findPropertiesByProjectId(projectId).forEach(property -> {
+            unitsMap.put(property.getId(), PropertyJson.valueOf(property));
+
+            // Load all sites for this property
+            siteRepository.findAllSites(projectId, property.getId()).forEach(site -> {
+                unitsMap.put(site.getId(), SiteJson.valueOf(site));
+            });
+
+            // Load all buildings for this property
+            buildingRepository.findAllBuildings(projectId, property.getId()).forEach(building -> {
+                unitsMap.put(building.getId(), BuildingJson.valueOf(building));
+
+                // Load all apartments for this building
+                apartmentRepository.findAllApartments(projectId, building.getId()).forEach(apartment -> {
+                    unitsMap.put(apartment.getId(), ApartmentJson.valueOf(apartment));
+                });
+
+                // Load all commercials for this building
+                commercialRepository.findAllCommercials(projectId, building.getId()).forEach(commercial -> {
+                    unitsMap.put(commercial.getId(), CommercialJson.valueOf(commercial));
+                });
+
+                // Load all storages for this building
+                storageRepository.findAllStorages(projectId, building.getId()).forEach(storage -> {
+                    unitsMap.put(storage.getId(), StorageJson.valueOf(storage));
+                });
+            });
+        });
+
+        logger.infov("Loaded {0} rental units for project {1}", unitsMap.size(), projectId);
+        return unitsMap;
     }
 
 }

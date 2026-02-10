@@ -48,6 +48,152 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void getRentalAgreements_SUCCESS_containsAggregatedFields() {
+        // Add some rents with different values
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+        insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 300.00, 50.00, 25.00);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .body("rentalAgreements.size()", Matchers.equalTo(1))
+            .body("rentalAgreements[0].id", Matchers.notNullValue())
+            .body("rentalAgreements[0].startOfRental", Matchers.notNullValue())
+            .body("rentalAgreements[0].tenants", Matchers.notNullValue())
+            .body("rentalAgreements[0].rentalUnits", Matchers.notNullValue())
+            .body("rentalAgreements[0].rentalUnits.size()", Matchers.greaterThanOrEqualTo(1))
+            .body("rentalAgreements[0].basicRent", Matchers.notNullValue())
+            .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.notNullValue())
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.notNullValue());
+    }
+
+    @Test
+    void getRentalAgreements_SUCCESS_calculatesRentSumsCorrectly() {
+        // Add multiple active rents
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+        insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 300.00, 50.00, 25.00);
+
+        // Expected sums: basicRent = 800.00, operatingCosts = 150.00, heatingCosts = 75.00
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .body("rentalAgreements[0].basicRent", Matchers.equalTo(800.0f))
+            .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.equalTo(150.0f))
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(75.0f));
+    }
+
+    @Test
+    void getRentalAgreements_SUCCESS_excludesInactiveRentsFromSum() {
+        // Add active rent (no lastPaymentDate)
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+
+        // Add inactive rent (lastPaymentDate in the past)
+        insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 300.00, 50.00, 25.00,
+            java.time.LocalDate.parse("2022-12-31"));
+
+        // Only the active rent should be included in sums
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .body("rentalAgreements[0].basicRent", Matchers.equalTo(500.0f))
+            .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.equalTo(100.0f))
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(50.0f));
+    }
+
+    @Test
+    void getRentalAgreements_SUCCESS_includesFutureRentsInSum() {
+        // Add active rent with lastPaymentDate in the future
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00,
+            java.time.LocalDate.now().plusMonths(6));
+
+        // Should be included in sums since lastPaymentDate is in the future
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .body("rentalAgreements[0].basicRent", Matchers.equalTo(500.0f))
+            .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.equalTo(100.0f))
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(50.0f));
+    }
+
+    @Test
+    void getRentalAgreements_SUCCESS_rentalUnitsListContainsCorrectUnits() {
+        // Add rents for different unit types
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+        insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 300.00, 50.00, 25.00);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .body("rentalAgreements[0].rentalUnits.size()", Matchers.equalTo(2))
+            .body("rentalAgreements[0].rentalUnits.id", Matchers.hasItems(
+                TestData.APARTMENT_ID.toString(),
+                TestData.PROPERTY_ID.toString()));
+    }
+
+    @Test
+    void getRentalAgreements_SUCCESS_nullSumsWhenNoRents() {
+        // No rents inserted, so sums should be null
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .body("rentalAgreements[0].basicRent", Matchers.nullValue())
+            .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.nullValue())
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.nullValue())
+            .body("rentalAgreements[0].rentalUnits.size()", Matchers.equalTo(0));
+    }
+
+    @Test
+    void getRentalAgreements_SUCCESS_handlesPartialRentValues() {
+        // Add rent with only basicRent set
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, null, null);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .body("rentalAgreements[0].basicRent", Matchers.equalTo(500.0f))
+            .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.nullValue())
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.nullValue());
+    }
+
+    @Test
     void getRentalAgreement_SUCCESS_agreementReturned() {
         String agreementId = given()
             .when()

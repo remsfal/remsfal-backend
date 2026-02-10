@@ -1,6 +1,8 @@
 package de.remsfal.core.json.project;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -22,12 +24,14 @@ import de.remsfal.core.model.project.RentalAgreementModel;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class RentalAgreementListJson {
 
-    public abstract List<RentalAgreementJson> getRentalAgreements();
+    public abstract List<RentalAgreementItemJson> getRentalAgreements();
 
-    public static RentalAgreementListJson valueOf(final List<? extends RentalAgreementModel> rentalAgreements) {
+    public static RentalAgreementListJson valueOf(
+            final List<? extends RentalAgreementModel> rentalAgreements,
+            final Map<UUID, RentalUnitJson> rentalUnitsMap) {
         return ImmutableRentalAgreementListJson.builder()
             .rentalAgreements(rentalAgreements.stream()
-                .map(RentalAgreementJson::valueOf)
+                .map(agreement -> RentalAgreementItemJson.valueOf(agreement, rentalUnitsMap))
                 .toList())
             .build();
     }

@@ -424,6 +424,111 @@ public abstract class AbstractServiceTest extends AbstractTest {
     }
 
     /**
+     * Insert an apartment rent entry.
+     * @param params apartment_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment, last_payment (optional)
+     */
+    protected void insertApartmentRent(Object... params) {
+        runInTransaction(() -> {
+            if (params.length == 8) {
+                entityManager
+                    .createNativeQuery("INSERT INTO apartment_rents (apartment_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment, last_payment) VALUES (?,?,?,?,?,?,?,?)")
+                    .setParameter(1, params[0])
+                    .setParameter(2, params[1])
+                    .setParameter(3, params[2])
+                    .setParameter(4, params[3])
+                    .setParameter(5, params[4])
+                    .setParameter(6, params[5])
+                    .setParameter(7, params[6])
+                    .setParameter(8, params[7])
+                    .executeUpdate();
+            } else if (params.length == 7) {
+                entityManager
+                    .createNativeQuery("INSERT INTO apartment_rents (apartment_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment) VALUES (?,?,?,?,?,?,?)")
+                    .setParameter(1, params[0])
+                    .setParameter(2, params[1])
+                    .setParameter(3, params[2])
+                    .setParameter(4, params[3])
+                    .setParameter(5, params[4])
+                    .setParameter(6, params[5])
+                    .setParameter(7, params[6])
+                    .executeUpdate();
+            } else {
+                throw new IllegalArgumentException("insertApartmentRent requires 7 or 8 parameters");
+            }
+        });
+    }
+
+    /**
+     * Insert a property rent entry.
+     * @param params property_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment, last_payment (optional)
+     */
+    protected void insertPropertyRent(Object... params) {
+        runInTransaction(() -> {
+            if (params.length == 8) {
+                entityManager
+                    .createNativeQuery("INSERT INTO property_rents (property_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment, last_payment) VALUES (?,?,?,?,?,?,?,?)")
+                    .setParameter(1, params[0])
+                    .setParameter(2, params[1])
+                    .setParameter(3, params[2])
+                    .setParameter(4, params[3])
+                    .setParameter(5, params[4])
+                    .setParameter(6, params[5])
+                    .setParameter(7, params[6])
+                    .setParameter(8, params[7])
+                    .executeUpdate();
+            } else if (params.length == 7) {
+                entityManager
+                    .createNativeQuery("INSERT INTO property_rents (property_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment) VALUES (?,?,?,?,?,?,?)")
+                    .setParameter(1, params[0])
+                    .setParameter(2, params[1])
+                    .setParameter(3, params[2])
+                    .setParameter(4, params[3])
+                    .setParameter(5, params[4])
+                    .setParameter(6, params[5])
+                    .setParameter(7, params[6])
+                    .executeUpdate();
+            } else {
+                throw new IllegalArgumentException("insertPropertyRent requires 7 or 8 parameters");
+            }
+        });
+    }
+
+    /**
+     * Insert a site rent entry.
+     * @param params site_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment, last_payment (optional)
+     */
+    protected void insertSiteRent(Object... params) {
+        runInTransaction(() -> {
+            if (params.length == 8) {
+                entityManager
+                    .createNativeQuery("INSERT INTO site_rents (site_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment, last_payment) VALUES (?,?,?,?,?,?,?,?)")
+                    .setParameter(1, params[0])
+                    .setParameter(2, params[1])
+                    .setParameter(3, params[2])
+                    .setParameter(4, params[3])
+                    .setParameter(5, params[4])
+                    .setParameter(6, params[5])
+                    .setParameter(7, params[6])
+                    .setParameter(8, params[7])
+                    .executeUpdate();
+            } else if (params.length == 7) {
+                entityManager
+                    .createNativeQuery("INSERT INTO site_rents (site_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment) VALUES (?,?,?,?,?,?,?)")
+                    .setParameter(1, params[0])
+                    .setParameter(2, params[1])
+                    .setParameter(3, params[2])
+                    .setParameter(4, params[3])
+                    .setParameter(5, params[4])
+                    .setParameter(6, params[5])
+                    .setParameter(7, params[6])
+                    .executeUpdate();
+            } else {
+                throw new IllegalArgumentException("insertSiteRent requires 7 or 8 parameters");
+            }
+        });
+    }
+
+    /**
      * Wrap a call in a database transaction
      *
      * @param supplier function that returns a value
