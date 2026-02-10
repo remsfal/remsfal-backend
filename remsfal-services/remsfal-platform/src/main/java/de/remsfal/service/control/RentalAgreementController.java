@@ -27,8 +27,11 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
 
@@ -65,6 +68,31 @@ public class RentalAgreementController {
     public List<RentalAgreementEntity> getRentalAgreementsByProject(final UUID projectId) {
         logger.infov("Retrieving all rental agreements (projectId = {0})", projectId);
         return rentalAgreementRepository.findRentalAgreementByProject(projectId);
+    }
+
+    /**
+     * Retrieves all rental agreements for a project grouped by tenant ID.
+     * Each tenant ID maps to a list of rental agreements they are part of.
+     *
+     * @param projectId the project ID
+     * @return map of tenant ID to their rental agreements
+     */
+    public Map<UUID, List<RentalAgreementEntity>> getRentalAgreementsByTenant(final UUID projectId) {
+        logger.infov("Retrieving all rental agreements grouped by tenant (projectId = {0})", projectId);
+        List<RentalAgreementEntity> agreements = rentalAgreementRepository.findRentalAgreementByProject(projectId);
+
+        Map<UUID, List<RentalAgreementEntity>> agreementsByTenant = new HashMap<>();
+        for (RentalAgreementEntity agreement : agreements) {
+            if (agreement.getTenants() != null) {
+                for (TenantModel tenant : agreement.getTenants()) {
+                    agreementsByTenant
+                        .computeIfAbsent(tenant.getId(), k -> new ArrayList<>())
+                        .add(agreement);
+                }
+            }
+        }
+
+        return agreementsByTenant;
     }
 
     public RentalAgreementEntity getRentalAgreementByProject(final UUID projectId, final UUID agreementId) {
