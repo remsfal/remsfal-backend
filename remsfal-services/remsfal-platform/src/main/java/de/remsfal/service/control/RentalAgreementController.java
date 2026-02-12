@@ -8,6 +8,7 @@ import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
+import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
@@ -52,6 +53,9 @@ public class RentalAgreementController {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    TenantRepository tenantRepository;
 
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
@@ -118,7 +122,7 @@ public class RentalAgreementController {
         // Process tenants
         final List<? extends TenantModel> tenants = agreement.getTenants();
         if (tenants != null && !tenants.isEmpty()) {
-            List<TenantEntity> tenantEntities = processTenants(entity.getId(), tenants);
+            List<TenantEntity> tenantEntities = processTenants(projectId, entity.getId(), tenants);
             // Set bidirectional relationship
             tenantEntities.forEach(tenant -> tenant.setAgreement(entity));
             entity.setTenants(tenantEntities);
@@ -150,7 +154,7 @@ public class RentalAgreementController {
         final List<? extends TenantModel> tenants = agreement.getTenants();
         if (tenants != null && !tenants.isEmpty()) {
             entity.getTenants().clear(); // Triggers orphanRemoval
-            List<TenantEntity> tenantEntities = processTenants(agreementId, tenants);
+            List<TenantEntity> tenantEntities = processTenants(projectId, agreementId, tenants);
             // Set bidirectional relationship
             tenantEntities.forEach(tenant -> tenant.setAgreement(entity));
             entity.getTenants().addAll(tenantEntities);
@@ -163,17 +167,31 @@ public class RentalAgreementController {
     }
 
     /**
-     * Process tenant models and create tenant entities.
+     * Process tenant models and create tenant entities, avoiding duplicates.
      * If a tenant has an email, attempts to link to an existing user account.
+     * If the same tenant appears multiple times in the input list (based on business equality),
+     * only the first occurrence is processed and duplicates are skipped.
      *
-     * @param agreementId the agreement ID
+     * @param projectId the project ID (currently unused but kept for future enhancements)
+     * @param agreementId the agreement ID (currently unused but kept for future enhancements)
      * @param tenantsInput the tenant models from the request
-     * @return list of tenant entities
+     * @return list of tenant entities without duplicates
      */
-    private List<TenantEntity> processTenants(final UUID agreementId, final List<? extends TenantModel> tenantsInput) {
+    private List<TenantEntity> processTenants(final UUID projectId, final UUID agreementId, final List<? extends TenantModel> tenantsInput) {
         List<TenantEntity> tenantEntities = new ArrayList<>();
 
         for (TenantModel tenantInput : tenantsInput) {
+            // Check if we already processed an identical tenant in this batch
+            TenantEntity alreadyProcessed = findMatchingTenant(tenantInput, tenantEntities);
+
+            if (alreadyProcessed != null) {
+                // Skip duplicate tenant in the same agreement
+                logger.infov("Skipping duplicate tenant {0} {1} in the same rental agreement",
+                    tenantInput.getFirstName(), tenantInput.getLastName());
+                continue;
+            }
+
+            // Create new tenant
             TenantEntity tenant = new TenantEntity();
             tenant.generateId();
 
@@ -229,6 +247,61 @@ public class RentalAgreementController {
         }
 
         return tenantEntities;
+    }
+
+    /**
+     * Finds a matching tenant from the list of existing tenants based on business equality.
+     * Two tenants are considered equal if they have the same:
+     * - First name
+     * - Last name
+     * - Email (if both have email)
+     * - Date of birth (if both have date of birth)
+     *
+     * @param input the tenant input from the POST request
+     * @param existingTenants list of existing tenants in the project
+     * @return matching tenant or null if no match found
+     */
+    private TenantEntity findMatchingTenant(final TenantModel input, final List<TenantEntity> existingTenants) {
+        for (TenantEntity existing : existingTenants) {
+            if (tenantsMatch(input, existing)) {
+                return existing;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks if two tenants match based on business equality (not ID).
+     * Compares first name, last name, email, and date of birth.
+     *
+     * @param input the tenant input from the POST request
+     * @param existing the existing tenant entity
+     * @return true if tenants match, false otherwise
+     */
+    private boolean tenantsMatch(final TenantModel input, final TenantEntity existing) {
+        // First name and last name must match (case-insensitive)
+        if (!input.getFirstName().equalsIgnoreCase(existing.getFirstName())) {
+            return false;
+        }
+        if (!input.getLastName().equalsIgnoreCase(existing.getLastName())) {
+            return false;
+        }
+
+        // If both have email, they must match (case-insensitive)
+        if (input.getEmail() != null && existing.getEmail() != null) {
+            if (!input.getEmail().equalsIgnoreCase(existing.getEmail())) {
+                return false;
+            }
+        }
+
+        // If both have date of birth, they must match
+        if (input.getDateOfBirth() != null && existing.getDateOfBirth() != null) {
+            if (!input.getDateOfBirth().equals(existing.getDateOfBirth())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
