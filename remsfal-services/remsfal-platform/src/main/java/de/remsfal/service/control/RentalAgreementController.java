@@ -8,7 +8,6 @@ import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
-import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
@@ -53,9 +52,6 @@ public class RentalAgreementController {
 
     @Inject
     ProjectRepository projectRepository;
-
-    @Inject
-    TenantRepository tenantRepository;
 
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
@@ -272,7 +268,11 @@ public class RentalAgreementController {
 
     /**
      * Checks if two tenants match based on business equality (not ID).
-     * Compares first name, last name, email, and date of birth.
+     * Two tenants match if they have the same first name, last name, and:
+     * - Same email (if at least one has an email)
+     * - Same date of birth (if at least one has a date of birth)
+     * 
+     * If either email or date of birth differs, the tenants are considered different.
      * First name and last name are required fields and cannot be null.
      *
      * @param input the tenant input from the POST request
@@ -296,16 +296,30 @@ public class RentalAgreementController {
             return false;
         }
 
-        // If both have email, they must match (case-insensitive)
-        if (input.getEmail() != null && existing.getEmail() != null) {
-            if (!input.getEmail().equalsIgnoreCase(existing.getEmail())) {
+        // If at least one has an email, they must match (or both must be null/empty)
+        String inputEmail = input.getEmail();
+        String existingEmail = existing.getEmail();
+        if (inputEmail != null || existingEmail != null) {
+            // At least one has an email - they must match
+            if (inputEmail == null || existingEmail == null) {
+                // One has email, the other doesn't - not a match
+                return false;
+            }
+            if (!inputEmail.equalsIgnoreCase(existingEmail)) {
+                // Different emails - not a match
                 return false;
             }
         }
 
-        // If both have date of birth, they must match
-        if (input.getDateOfBirth() != null && existing.getDateOfBirth() != null) {
+        // If at least one has a date of birth, they must match
+        if (input.getDateOfBirth() != null || existing.getDateOfBirth() != null) {
+            // At least one has a date of birth - they must match
+            if (input.getDateOfBirth() == null || existing.getDateOfBirth() == null) {
+                // One has date of birth, the other doesn't - not a match
+                return false;
+            }
             if (!input.getDateOfBirth().equals(existing.getDateOfBirth())) {
+                // Different dates of birth - not a match
                 return false;
             }
         }
