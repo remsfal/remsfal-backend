@@ -250,7 +250,7 @@ public class RentalAgreementController {
     }
 
     /**
-     * Finds a matching tenant from the list of existing tenants based on business equality.
+     * Finds a matching tenant from the list of tenants already processed in this request.
      * Two tenants are considered equal if they have the same:
      * - First name
      * - Last name
@@ -258,13 +258,13 @@ public class RentalAgreementController {
      * - Date of birth (if both have date of birth)
      *
      * @param input the tenant input from the POST request
-     * @param existingTenants list of existing tenants in the project
+     * @param processedTenants list of tenants already processed in the current request
      * @return matching tenant or null if no match found
      */
-    private TenantEntity findMatchingTenant(final TenantModel input, final List<TenantEntity> existingTenants) {
-        for (TenantEntity existing : existingTenants) {
-            if (tenantsMatch(input, existing)) {
-                return existing;
+    private TenantEntity findMatchingTenant(final TenantModel input, final List<TenantEntity> processedTenants) {
+        for (TenantEntity processed : processedTenants) {
+            if (tenantsMatch(input, processed)) {
+                return processed;
             }
         }
         return null;
@@ -273,14 +273,23 @@ public class RentalAgreementController {
     /**
      * Checks if two tenants match based on business equality (not ID).
      * Compares first name, last name, email, and date of birth.
+     * First name and last name are required fields and cannot be null.
      *
      * @param input the tenant input from the POST request
      * @param existing the existing tenant entity
      * @return true if tenants match, false otherwise
      */
     private boolean tenantsMatch(final TenantModel input, final TenantEntity existing) {
-        // First name and last name must match (case-insensitive)
+        // First name and last name are required fields (validated at API level)
+        // They must match (case-insensitive)
+        if (input.getFirstName() == null || existing.getFirstName() == null) {
+            return false;
+        }
         if (!input.getFirstName().equalsIgnoreCase(existing.getFirstName())) {
+            return false;
+        }
+        
+        if (input.getLastName() == null || existing.getLastName() == null) {
             return false;
         }
         if (!input.getLastName().equalsIgnoreCase(existing.getLastName())) {
