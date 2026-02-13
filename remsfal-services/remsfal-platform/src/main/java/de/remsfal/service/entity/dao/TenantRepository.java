@@ -35,13 +35,13 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      */
     public Optional<TenantEntity> findTenantByProjectId(final UUID projectId, final UUID tenantId) {
         return find("projectId = :projectId and id = :tenantId",
-                Parameters.with("projectId", projectId).and("tenantId", tenantId))
+            Parameters.with("projectId", projectId).and("tenantId", tenantId))
                 .singleResultOptional();
     }
 
     /**
-     * Find tenants by first name and last name within a specific project.
-     * Used for deduplication when creating rental agreements.
+     * Find tenants by first name and last name within a specific project. Used for deduplication when creating rental
+     * agreements.
      *
      * @param projectId the project ID
      * @param firstName the first name (case-insensitive)
@@ -49,11 +49,12 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      * @return list of matching tenants
      */
     public List<TenantEntity> findByNameInProject(final UUID projectId, final String firstName, final String lastName) {
-        return find("LOWER(firstName) = LOWER(:firstName) AND LOWER(lastName) = LOWER(:lastName) AND projectId = :projectId",
-                Parameters.with("firstName", firstName)
-                        .and("lastName", lastName)
-                        .and("projectId", projectId))
-                .list();
+        return find(
+            "LOWER(firstName) = LOWER(:firstName) AND LOWER(lastName) = LOWER(:lastName) AND projectId = :projectId",
+            Parameters.with("firstName", firstName)
+                .and("lastName", lastName)
+                .and("projectId", projectId))
+                    .list();
     }
 
     /**
@@ -75,7 +76,7 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      */
     public List<TenantEntity> findByEmailAndProjectId(String email, UUID projectId) {
         return find("email = :email and projectId = :projectId",
-                Parameters.with("email", email).and("projectId", projectId))
+            Parameters.with("email", email).and("projectId", projectId))
                 .list();
     }
 }

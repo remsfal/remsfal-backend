@@ -263,7 +263,7 @@ public class RentalAgreementController {
      * Two tenants match if they have the same first name, last name, and:
      * - Same email (if at least one has an email)
      * - Same date of birth (if at least one has a date of birth)
-     * 
+     *
      * If either email or date of birth differs, the tenants are considered different.
      * First name and last name are required fields and cannot be null.
      *
