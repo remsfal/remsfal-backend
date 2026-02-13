@@ -357,7 +357,6 @@ public class RentalAgreementController {
 
     /**
      * Finds a matching tenant from a list of candidate tenant entities using business equality.
-     * Uses TenantEntity.equals() method but treats null IDs as equivalent (for new tenants).
      * This is the key method for tenant deduplication across the project.
      *
      * @param input the tenant input from the POST request
@@ -365,14 +364,6 @@ public class RentalAgreementController {
      * @return matching tenant entity or null if no match found
      */
     private TenantEntity findMatchingTenantEntity(final TenantModel input, final List<TenantEntity> candidates) {
-        // Create a temporary entity from input for comparison
-        TenantEntity inputEntity = new TenantEntity();
-        inputEntity.setFirstName(input.getFirstName());
-        inputEntity.setLastName(input.getLastName());
-        inputEntity.setEmail(input.getEmail());
-        inputEntity.setDateOfBirth(input.getDateOfBirth());
-        // ID is left as null
-
         for (TenantEntity candidate : candidates) {
             // Use business equality check (ignoring IDs)
             if (tenantsMatch(input, candidate)) {

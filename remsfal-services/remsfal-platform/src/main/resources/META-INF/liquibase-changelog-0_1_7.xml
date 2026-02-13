@@ -91,9 +91,7 @@
         </sql>
 
         <!-- Drop the unique constraint on (agreement_id, user_id) -->
-        <sql>
-            DROP INDEX IF EXISTS idx_tenant_agreement_user_unique
-        </sql>
+        <dropIndex tableName="tenants" indexName="idx_tenant_agreement_user_unique" />
 
         <!-- Drop the foreign key constraint on agreement_id -->
         <dropForeignKeyConstraint baseTableName="tenants" constraintName="fk_tenant_agreement_id" />
