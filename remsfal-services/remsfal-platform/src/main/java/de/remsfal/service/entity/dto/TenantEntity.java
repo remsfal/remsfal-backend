@@ -26,9 +26,8 @@ import jakarta.persistence.Table;
 @Table(name = "tenants")
 public class TenantEntity extends AbstractEntity implements TenantModel {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
-    private RentalAgreementEntity agreement;
+    @Column(name = "project_id", nullable = false, columnDefinition = "uuid")
+    private UUID projectId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", columnDefinition = "uuid")
@@ -62,12 +61,12 @@ public class TenantEntity extends AbstractEntity implements TenantModel {
     @Column(name = "date_of_birth", columnDefinition = "date")
     private LocalDate dateOfBirth;
 
-    public RentalAgreementEntity getAgreement() {
-        return agreement;
+    public UUID getProjectId() {
+        return projectId;
     }
 
-    public void setAgreement(RentalAgreementEntity agreement) {
-        this.agreement = agreement;
+    public void setProjectId(UUID projectId) {
+        this.projectId = projectId;
     }
 
     public UserEntity getUser() {
@@ -218,8 +217,7 @@ public class TenantEntity extends AbstractEntity implements TenantModel {
         }
         if (o instanceof TenantEntity e) {
             return super.equals(e)
-                && Objects.equals(agreement != null ? agreement.getId() : null,
-                                  e.agreement != null ? e.agreement.getId() : null)
+                && Objects.equals(projectId, e.projectId)
                 && Objects.equals(user != null ? user.getId() : null,
                                   e.user != null ? e.user.getId() : null);
         }
@@ -229,7 +227,7 @@ public class TenantEntity extends AbstractEntity implements TenantModel {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(),
-                           agreement != null ? agreement.getId() : null,
+                           projectId,
                            user != null ? user.getId() : null);
     }
 }

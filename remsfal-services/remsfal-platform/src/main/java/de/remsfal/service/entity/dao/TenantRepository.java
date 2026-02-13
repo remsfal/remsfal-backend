@@ -17,25 +17,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class TenantRepository extends AbstractRepository<TenantEntity> {
 
     /**
-     * Find all tenants for a specific rental agreement.
-     *
-     * @param agreementId the agreement ID
-     * @return list of tenants
-     */
-    public List<TenantEntity> findByAgreementId(UUID agreementId) {
-        return find("agreement.id", agreementId).list();
-    }
-
-    /**
-     * Find all tenants for a specific project (across all agreements).
+     * Find all tenants for a specific project.
      *
      * @param projectId the project ID
      * @return list of tenants
      */
     public List<TenantEntity> findTenantsByProjectId(final UUID projectId) {
-        return list("SELECT DISTINCT t FROM TenantEntity t JOIN t.agreement a " +
-                        "WHERE a.projectId = :projectId",
-                Parameters.with("projectId", projectId));
+        return find("projectId", projectId).list();
     }
 
     /**
@@ -46,22 +34,26 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      * @return optional tenant
      */
     public Optional<TenantEntity> findTenantByProjectId(final UUID projectId, final UUID tenantId) {
-        return find("SELECT t FROM TenantEntity t JOIN t.agreement a " +
-                        "WHERE a.projectId = :projectId and t.id = :tenantId",
+        return find("projectId = :projectId and id = :tenantId",
                 Parameters.with("projectId", projectId).and("tenantId", tenantId))
                 .singleResultOptional();
     }
 
     /**
-     * Find a specific tenant by ID within a rental agreement.
+     * Find tenants by first name and last name within a specific project.
+     * Used for deduplication when creating rental agreements.
      *
-     * @param tenantId the tenant ID
-     * @param agreementId the agreement ID
-     * @return optional tenant
+     * @param projectId the project ID
+     * @param firstName the first name (case-insensitive)
+     * @param lastName the last name (case-insensitive)
+     * @return list of matching tenants
      */
-    public Optional<TenantEntity> findByIdAndAgreementId(UUID tenantId, UUID agreementId) {
-        return find("id = ?1 and agreement.id = ?2", tenantId, agreementId)
-                .singleResultOptional();
+    public List<TenantEntity> findByNameInProject(final UUID projectId, final String firstName, final String lastName) {
+        return find("LOWER(firstName) = LOWER(:firstName) AND LOWER(lastName) = LOWER(:lastName) AND projectId = :projectId",
+                Parameters.with("firstName", firstName)
+                        .and("lastName", lastName)
+                        .and("projectId", projectId))
+                .list();
     }
 
     /**
@@ -75,14 +67,15 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
     }
 
     /**
-     * Find a tenant by email within a specific rental agreement.
+     * Find tenants by email within a specific project.
      *
      * @param email the email address
-     * @param agreementId the agreement ID
-     * @return optional tenant
+     * @param projectId the project ID
+     * @return list of tenants
      */
-    public Optional<TenantEntity> findByEmailAndAgreementId(String email, UUID agreementId) {
-        return find("email = ?1 and agreement.id = ?2", email, agreementId)
-                .singleResultOptional();
+    public List<TenantEntity> findByEmailAndProjectId(String email, UUID projectId) {
+        return find("email = :email and projectId = :projectId",
+                Parameters.with("email", email).and("projectId", projectId))
+                .list();
     }
 }

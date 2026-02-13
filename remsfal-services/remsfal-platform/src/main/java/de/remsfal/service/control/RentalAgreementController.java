@@ -8,6 +8,7 @@ import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
+import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
@@ -52,6 +53,9 @@ public class RentalAgreementController {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    TenantRepository tenantRepository;
 
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
@@ -118,9 +122,7 @@ public class RentalAgreementController {
         // Process tenants
         final List<? extends TenantModel> tenants = agreement.getTenants();
         if (tenants != null && !tenants.isEmpty()) {
-            List<TenantEntity> tenantEntities = processTenants(projectId, entity.getId(), tenants);
-            // Set bidirectional relationship
-            tenantEntities.forEach(tenant -> tenant.setAgreement(entity));
+            List<TenantEntity> tenantEntities = processTenants(projectId, tenants);
             entity.setTenants(tenantEntities);
         }
 
@@ -146,13 +148,11 @@ public class RentalAgreementController {
             entity.setEndOfRental(agreement.getEndOfRental());
         }
 
-        // Update tenants (replace entire list due to orphanRemoval)
+        // Update tenants (replace entire list)
         final List<? extends TenantModel> tenants = agreement.getTenants();
         if (tenants != null && !tenants.isEmpty()) {
-            entity.getTenants().clear(); // Triggers orphanRemoval
-            List<TenantEntity> tenantEntities = processTenants(projectId, agreementId, tenants);
-            // Set bidirectional relationship
-            tenantEntities.forEach(tenant -> tenant.setAgreement(entity));
+            entity.getTenants().clear();
+            List<TenantEntity> tenantEntities = processTenants(projectId, tenants);
             entity.getTenants().addAll(tenantEntities);
         }
 
@@ -163,86 +163,114 @@ public class RentalAgreementController {
     }
 
     /**
-     * Process tenant models and create tenant entities, avoiding duplicates.
-     * If a tenant has an email, attempts to link to an existing user account.
-     * If the same tenant appears multiple times in the input list (based on business equality),
-     * only the first occurrence is processed and duplicates are skipped.
+     * Process tenant models and create or reuse tenant entities.
+     * If a tenant matches an existing tenant in the project (based on business equality),
+     * the existing tenant is reused. If a tenant has an email, attempts to link to an existing user account.
      *
-     * @param projectId the project ID (currently unused but kept for future enhancements)
-     * @param agreementId the agreement ID (currently unused but kept for future enhancements)
+     * @param projectId the project ID
      * @param tenantsInput the tenant models from the request
-     * @return list of tenant entities without duplicates
+     * @return list of tenant entities
      */
-    private List<TenantEntity> processTenants(final UUID projectId, final UUID agreementId, final List<? extends TenantModel> tenantsInput) {
+    private List<TenantEntity> processTenants(final UUID projectId, final List<? extends TenantModel> tenantsInput) {
         List<TenantEntity> tenantEntities = new ArrayList<>();
 
         for (TenantModel tenantInput : tenantsInput) {
             // Check if we already processed an identical tenant in this batch
             TenantEntity alreadyProcessed = findMatchingTenant(tenantInput, tenantEntities);
-
+            
             if (alreadyProcessed != null) {
-                // Skip duplicate tenant in the same agreement
-                logger.infov("Skipping duplicate tenant {0} {1} in the same rental agreement",
+                // Skip duplicate tenant in the same request
+                logger.infov("Skipping duplicate tenant {0} {1} within the same request",
                     tenantInput.getFirstName(), tenantInput.getLastName());
                 continue;
             }
 
-            // Create new tenant
-            TenantEntity tenant = new TenantEntity();
-            tenant.generateId();
+            // Look up existing tenants in the project by first and last name
+            List<TenantEntity> candidates = tenantRepository.findByNameInProject(
+                projectId, tenantInput.getFirstName(), tenantInput.getLastName());
 
-            // Set required fields
-            tenant.setFirstName(tenantInput.getFirstName());
-            tenant.setLastName(tenantInput.getLastName());
+            // Try to find a matching tenant using business equality (ignoring ID when null)
+            TenantEntity existingTenant = findMatchingTenantEntity(tenantInput, candidates);
 
-            // Optional: link to existing user by email
-            if (tenantInput.getEmail() != null && !tenantInput.getEmail().isBlank()) {
-                tenant.setEmail(tenantInput.getEmail());
-
-                UserEntity user = userRepository.findByEmail(tenantInput.getEmail()).orElse(null);
-                if (user != null) {
-                    tenant.setUser(user);
-                    logger.infov("Linking tenant {0} {1} to user {2}",
-                        tenantInput.getFirstName(), tenantInput.getLastName(), user.getId());
-                }
+            if (existingTenant != null) {
+                // Reuse existing tenant from the project
+                logger.infov("Reusing existing tenant {0} {1} (id={2}) from project",
+                    existingTenant.getFirstName(), existingTenant.getLastName(), existingTenant.getId());
+                tenantEntities.add(existingTenant);
+            } else {
+                // Create new tenant
+                TenantEntity tenant = createNewTenant(projectId, tenantInput);
+                tenantEntities.add(tenant);
             }
-
-            // Set optional phone numbers
-            if (tenantInput.getMobilePhoneNumber() != null) {
-                tenant.setMobilePhoneNumber(tenantInput.getMobilePhoneNumber());
-            }
-            if (tenantInput.getBusinessPhoneNumber() != null) {
-                tenant.setBusinessPhoneNumber(tenantInput.getBusinessPhoneNumber());
-            }
-            if (tenantInput.getPrivatePhoneNumber() != null) {
-                tenant.setPrivatePhoneNumber(tenantInput.getPrivatePhoneNumber());
-            }
-
-            // Set optional birth information
-            if (tenantInput.getPlaceOfBirth() != null) {
-                tenant.setPlaceOfBirth(tenantInput.getPlaceOfBirth());
-            }
-            if (tenantInput.getDateOfBirth() != null) {
-                tenant.setDateOfBirth(tenantInput.getDateOfBirth());
-            }
-
-            // Handle address if provided
-            if (tenantInput.getAddress() != null) {
-                AddressModel addressModel = tenantInput.getAddress();
-                AddressEntity address = new AddressEntity();
-                address.generateId();
-                address.setStreet(addressModel.getStreet());
-                address.setCity(addressModel.getCity());
-                address.setProvince(addressModel.getProvince());
-                address.setZip(addressModel.getZip());
-                address.setCountry(addressModel.getCountry());
-                tenant.setAddress(address);
-            }
-
-            tenantEntities.add(tenant);
         }
 
         return tenantEntities;
+    }
+
+    /**
+     * Creates a new tenant entity from the input model.
+     *
+     * @param projectId the project ID
+     * @param tenantInput the tenant input model
+     * @return new tenant entity
+     */
+    private TenantEntity createNewTenant(final UUID projectId, final TenantModel tenantInput) {
+        TenantEntity tenant = new TenantEntity();
+        tenant.generateId();
+        tenant.setProjectId(projectId);
+
+        // Set required fields
+        tenant.setFirstName(tenantInput.getFirstName());
+        tenant.setLastName(tenantInput.getLastName());
+
+        // Optional: link to existing user by email
+        if (tenantInput.getEmail() != null && !tenantInput.getEmail().isBlank()) {
+            tenant.setEmail(tenantInput.getEmail());
+
+            UserEntity user = userRepository.findByEmail(tenantInput.getEmail()).orElse(null);
+            if (user != null) {
+                tenant.setUser(user);
+                logger.infov("Linking tenant {0} {1} to user {2}",
+                    tenantInput.getFirstName(), tenantInput.getLastName(), user.getId());
+            }
+        }
+
+        // Set optional phone numbers
+        if (tenantInput.getMobilePhoneNumber() != null) {
+            tenant.setMobilePhoneNumber(tenantInput.getMobilePhoneNumber());
+        }
+        if (tenantInput.getBusinessPhoneNumber() != null) {
+            tenant.setBusinessPhoneNumber(tenantInput.getBusinessPhoneNumber());
+        }
+        if (tenantInput.getPrivatePhoneNumber() != null) {
+            tenant.setPrivatePhoneNumber(tenantInput.getPrivatePhoneNumber());
+        }
+
+        // Set optional birth information
+        if (tenantInput.getPlaceOfBirth() != null) {
+            tenant.setPlaceOfBirth(tenantInput.getPlaceOfBirth());
+        }
+        if (tenantInput.getDateOfBirth() != null) {
+            tenant.setDateOfBirth(tenantInput.getDateOfBirth());
+        }
+
+        // Handle address if provided
+        if (tenantInput.getAddress() != null) {
+            AddressModel addressModel = tenantInput.getAddress();
+            AddressEntity address = new AddressEntity();
+            address.generateId();
+            address.setStreet(addressModel.getStreet());
+            address.setCity(addressModel.getCity());
+            address.setProvince(addressModel.getProvince());
+            address.setZip(addressModel.getZip());
+            address.setCountry(addressModel.getCountry());
+            tenant.setAddress(address);
+        }
+
+        logger.infov("Creating new tenant {0} {1} in project",
+            tenantInput.getFirstName(), tenantInput.getLastName());
+
+        return tenant;
     }
 
     /**
@@ -325,6 +353,33 @@ public class RentalAgreementController {
         }
 
         return true;
+    }
+
+    /**
+     * Finds a matching tenant from a list of candidate tenant entities using business equality.
+     * Uses TenantEntity.equals() method but treats null IDs as equivalent (for new tenants).
+     * This is the key method for tenant deduplication across the project.
+     *
+     * @param input the tenant input from the POST request
+     * @param candidates list of candidate tenant entities from the database
+     * @return matching tenant entity or null if no match found
+     */
+    private TenantEntity findMatchingTenantEntity(final TenantModel input, final List<TenantEntity> candidates) {
+        // Create a temporary entity from input for comparison
+        TenantEntity inputEntity = new TenantEntity();
+        inputEntity.setFirstName(input.getFirstName());
+        inputEntity.setLastName(input.getLastName());
+        inputEntity.setEmail(input.getEmail());
+        inputEntity.setDateOfBirth(input.getDateOfBirth());
+        // ID is left as null
+
+        for (TenantEntity candidate : candidates) {
+            // Use business equality check (ignoring IDs)
+            if (tenantsMatch(input, candidate)) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     /**
