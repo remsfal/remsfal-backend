@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.time.LocalDate;
 
 import static io.restassured.RestAssured.given;
 
@@ -17,17 +18,16 @@ import static io.restassured.RestAssured.given;
 class TenantResourceTest extends AbstractResourceTest {
     static final String BASE_PATH = "/api/v1/projects/{projectId}/tenants";
 
-    @Override
     @BeforeEach
-    protected void setupTestProjects() {
-        super.setupTestUsers();
-        super.setupTestProjects();
-        super.setupTestProperties();
-        super.setupTestSites();
-        super.setupTestBuildings();
+    protected void setup() {
+        setupTestUsers();
+        setupTestProjects();
+        setupTestProperties();
+        setupTestSites();
+        setupTestBuildings();
         insertRentalAgreement(TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1);
         // Insert test tenant 1 (linked to USER_1 via email)
-        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1,
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.TENANT_EMAIL_1);
     }
 
@@ -108,7 +108,7 @@ class TenantResourceTest extends AbstractResourceTest {
     void getTenants_SUCCESS_containsAllFields() {
         // Add a rent for the tenant's agreement
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+            LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
 
         given()
             .when()
@@ -130,7 +130,7 @@ class TenantResourceTest extends AbstractResourceTest {
     void getTenants_SUCCESS_tenantIsActive() {
         // Add a rent for an active agreement (no end date)
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+            LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
 
         given()
             .when()
@@ -146,7 +146,7 @@ class TenantResourceTest extends AbstractResourceTest {
         // Update the agreement to have an end date in the past
         runInTransaction(() -> entityManager
             .createNativeQuery("UPDATE rental_agreements SET end_of_rental = ? WHERE id = ?")
-            .setParameter(1, java.time.LocalDate.parse("2020-12-31"))
+            .setParameter(1, LocalDate.parse("2020-12-31"))
             .setParameter(2, TestData.AGREEMENT_ID_1)
             .executeUpdate());
 
@@ -164,7 +164,7 @@ class TenantResourceTest extends AbstractResourceTest {
         // Update the agreement to have an end date in the future
         runInTransaction(() -> entityManager
             .createNativeQuery("UPDATE rental_agreements SET end_of_rental = ? WHERE id = ?")
-            .setParameter(1, java.time.LocalDate.now().plusMonths(6))
+            .setParameter(1, LocalDate.now().plusMonths(6))
             .setParameter(2, TestData.AGREEMENT_ID_1)
             .executeUpdate());
 
@@ -181,9 +181,9 @@ class TenantResourceTest extends AbstractResourceTest {
     void getTenants_SUCCESS_rentalUnitsListContainsRentedUnits() {
         // Add multiple rents for different unit types
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+            LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
         insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 300.00, 50.00, 25.00);
+            LocalDate.parse("2021-01-01"), "MONTHLY", 300.00, 50.00, 25.00);
 
         given()
             .when()
@@ -201,14 +201,14 @@ class TenantResourceTest extends AbstractResourceTest {
     void getTenants_SUCCESS_rentalUnitsListIncludesHistoricalUnits() {
         // Create a first agreement with apartment rent
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2020-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+            LocalDate.parse("2020-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
 
         // Create a second agreement for the same tenant with a different unit
         insertRentalAgreement(TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_1);
-        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2,
+        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.TENANT_EMAIL_1);
         insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID_2,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 600.00, 120.00, 60.00);
+            LocalDate.parse("2021-01-01"), "MONTHLY", 600.00, 120.00, 60.00);
 
         given()
             .when()
@@ -238,12 +238,12 @@ class TenantResourceTest extends AbstractResourceTest {
     @Test
     void getTenants_SUCCESS_multipleTenantsInSameAgreement() {
         // Add a second tenant to the same agreement
-        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_1,
+        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_2, TestData.TENANT_LAST_NAME_2, TestData.TENANT_EMAIL_2);
 
         // Add a rent
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+            LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
 
         given()
             .when()
@@ -286,11 +286,11 @@ class TenantResourceTest extends AbstractResourceTest {
     void getTenants_SUCCESS_noDuplicateUnitsInList() {
         // Add the same unit twice in different rent entries (edge case)
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2020-01-01"), "MONTHLY", 500.00, 100.00, 50.00,
-            java.time.LocalDate.parse("2020-12-31")); // Ended rent
+            LocalDate.parse("2020-01-01"), "MONTHLY", 500.00, 100.00, 50.00,
+            LocalDate.parse("2020-12-31")); // Ended rent
 
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 550.00, 110.00, 55.00); // New rent for same unit
+            LocalDate.parse("2021-01-01"), "MONTHLY", 550.00, 110.00, 55.00); // New rent for same unit
 
         given()
             .when()

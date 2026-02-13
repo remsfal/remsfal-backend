@@ -30,7 +30,7 @@ class TenancyResourceTest extends AbstractResourceTest {
     protected void setupTestRentalAgreements() {
         insertRentalAgreement(TestData.AGREEMENT_ID_1, TestData.PROJECT_ID,
             TestData.AGREEMENT_START_1, TestData.AGREEMENT_END_1);
-        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.USER_ID_3,
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID, TestData.USER_ID_3,
             TestData.USER_FIRST_NAME_3, TestData.USER_LAST_NAME_3, TestData.USER_EMAIL_3);
         insertApartmentRent(TestData.AGREEMENT_ID_1, TestData.APARTMENT_ID,
             TestData.AGREEMENT_START_1, TestData.AGREEMENT_END_1, 670f, 75f, 120f);
@@ -40,7 +40,7 @@ class TenancyResourceTest extends AbstractResourceTest {
             TestData.AGREEMENT_START_1, TestData.AGREEMENT_END_1, 1030f, 230f, 320f);
         insertRentalAgreement(TestData.AGREEMENT_ID_2, TestData.PROJECT_ID,
             TestData.AGREEMENT_START_2, TestData.AGREEMENT_END_2);
-        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2, TestData.USER_ID_4,
+        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2, TestData.PROJECT_ID, TestData.USER_ID_4,
             TestData.USER_FIRST_NAME_4, TestData.USER_LAST_NAME_4, TestData.USER_EMAIL_4);
         insertSiteRent(TestData.AGREEMENT_ID_2, TestData.SITE_ID_1,
             TestData.AGREEMENT_START_2, TestData.AGREEMENT_END_2, 40f, null, null);
@@ -48,9 +48,9 @@ class TenancyResourceTest extends AbstractResourceTest {
             TestData.AGREEMENT_START_2, TestData.AGREEMENT_END_2, 899f, 150f, 240f);
         insertRentalAgreement(TestData.AGREEMENT_ID_3, TestData.PROJECT_ID,
             TestData.AGREEMENT_START_3, TestData.AGREEMENT_END_3);
-        insertTenant(TestData.TENANT_ID_3, TestData.AGREEMENT_ID_3, TestData.USER_ID_3,
+        insertTenant(TestData.TENANT_ID_3, TestData.AGREEMENT_ID_3, TestData.PROJECT_ID, TestData.USER_ID_3,
             TestData.USER_FIRST_NAME_3, TestData.USER_LAST_NAME_3, TestData.USER_EMAIL_3);
-        insertTenant(TestData.TENANT_ID_4, TestData.AGREEMENT_ID_3, TestData.USER_ID_4,
+        insertTenant(TestData.TENANT_ID_4, TestData.AGREEMENT_ID_3, TestData.PROJECT_ID, TestData.USER_ID_4,
             TestData.USER_FIRST_NAME_4, TestData.USER_LAST_NAME_4, TestData.USER_EMAIL_4);
         insertPropertyRent(TestData.AGREEMENT_ID_3, TestData.PROPERTY_ID_2,
             TestData.AGREEMENT_START_3, TestData.AGREEMENT_END_3, 100f, null, null);

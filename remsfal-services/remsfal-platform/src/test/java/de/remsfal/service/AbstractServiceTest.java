@@ -231,39 +231,44 @@ public abstract class AbstractServiceTest extends AbstractTest {
                 .executeUpdate());
     }
 
-    protected void insertTenant(Object... params) {
-        // params: id, agreement_id, user_id (optional), first_name, last_name, email (optional)
+    protected void insertTenant(UUID tenantId, UUID agreementId, UUID projectId, Object... params) {
+        // params: user_id (optional), first_name, last_name, email (optional)
         runInTransaction(() -> {
-            if (params.length == 6) {
+            if (params.length == 4) {
                 entityManager
-                    .createNativeQuery("INSERT INTO tenants (id, agreement_id, user_id, first_name, last_name, email) VALUES (?,?,?,?,?,?)")
-                    .setParameter(1, params[0])
-                    .setParameter(2, params[1])
-                    .setParameter(3, params[2])
-                    .setParameter(4, params[3])
-                    .setParameter(5, params[4])
-                    .setParameter(6, params[5])
+                    .createNativeQuery("INSERT INTO tenants (id, project_id, user_id, first_name, last_name, email) VALUES (?,?,?,?,?,?)")
+                    .setParameter(1, tenantId)
+                    .setParameter(2, projectId)
+                    .setParameter(3, params[0])
+                    .setParameter(4, params[1])
+                    .setParameter(5, params[2])
+                    .setParameter(6, params[3])
                     .executeUpdate();
-            } else if (params.length == 5) {
+            } else if (params.length == 3) {
                 entityManager
-                    .createNativeQuery("INSERT INTO tenants (id, agreement_id, first_name, last_name, email) VALUES (?,?,?,?,?)")
-                    .setParameter(1, params[0])
-                    .setParameter(2, params[1])
-                    .setParameter(3, params[2])
-                    .setParameter(4, params[3])
-                    .setParameter(5, params[4])
+                    .createNativeQuery("INSERT INTO tenants (id, project_id, first_name, last_name, email) VALUES (?,?,?,?,?)")
+                    .setParameter(1, tenantId)
+                    .setParameter(2, projectId)
+                    .setParameter(3, params[0])
+                    .setParameter(4, params[1])
+                    .setParameter(5, params[2])
                     .executeUpdate();
-            } else if (params.length == 4) {
+            } else if (params.length == 2) {
                 entityManager
-                    .createNativeQuery("INSERT INTO tenants (id, agreement_id, first_name, last_name) VALUES (?,?,?,?)")
-                    .setParameter(1, params[0])
-                    .setParameter(2, params[1])
-                    .setParameter(3, params[2])
-                    .setParameter(4, params[3])
+                    .createNativeQuery("INSERT INTO tenants (id, project_id, first_name, last_name) VALUES (?,?,?,?)")
+                    .setParameter(1, tenantId)
+                    .setParameter(2, projectId)
+                    .setParameter(3, params[0])
+                    .setParameter(4, params[1])
                     .executeUpdate();
             } else {
-                throw new IllegalArgumentException("insertTenant requires 5 or 6 parameters");
+                throw new IllegalArgumentException("insertTenant requires 2, 3 or 4 parameters");
             }
+            entityManager
+                .createNativeQuery("INSERT INTO rental_agreement_tenants (rental_agreement_id, tenant_id) VALUES (?,?)")
+                .setParameter(1, agreementId)
+                .setParameter(2, tenantId)
+                .executeUpdate();
         });
     }
 

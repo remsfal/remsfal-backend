@@ -8,7 +8,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-backend-0.0.4-tenancy" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-backend-0.0.4-agreement" author="alexander.stanik@htw-berlin.de">
         <comment>Create rental agreement schema with rental_agreements and tenants tables</comment>
 
         <createTable tableName="rental_agreements">
@@ -39,7 +39,7 @@
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="agreement_id" type="uuid">
+            <column name="project_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="user_id" type="uuid" />
@@ -64,9 +64,10 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_tenant_agreement_id"
-            baseTableName="tenants" baseColumnNames="agreement_id"
-            referencedTableName="rental_agreements" referencedColumnNames="id"
+        <!-- Add foreign key constraints -->
+        <addForeignKeyConstraint constraintName="fk_tenant_project_id"
+            baseTableName="tenants" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
         <addForeignKeyConstraint constraintName="fk_tenant_user_id"
@@ -79,15 +80,9 @@
             referencedTableName="addresses" referencedColumnNames="id"
             onDelete="SET NULL" onUpdate="RESTRICT" />
 
-        <!-- Unique constraint for (agreement_id, user_id) where user_id is not null -->
-        <sql>
-            CREATE UNIQUE INDEX idx_tenant_agreement_user_unique
-            ON tenants (agreement_id, user_id)
-            WHERE user_id IS NOT NULL
-        </sql>
-
-        <createIndex indexName="idx_tenant_agreement_fk" tableName="tenants">
-            <column name="agreement_id" type="uuid" />
+        <!-- Create index for performance -->
+        <createIndex indexName="idx_tenant_project_fk" tableName="tenants">
+            <column name="project_id" type="uuid" />
         </createIndex>
 
         <createIndex indexName="idx_tenant_user_fk" tableName="tenants">
@@ -96,6 +91,47 @@
 
         <createIndex indexName="idx_tenant_email_lookup" tableName="tenants">
             <column name="email" type="varchar(255)" />
+        </createIndex>
+
+        <!-- Create index on first_name and last_name for tenant lookup -->
+        <createIndex indexName="idx_tenant_name_lookup" tableName="tenants">
+            <column name="first_name" type="varchar(255)" />
+            <column name="last_name" type="varchar(255)" />
+        </createIndex>
+
+        <!-- Create rental_agreement_tenants join table for many-to-many relationship -->
+        <createTable tableName="rental_agreement_tenants">
+            <column name="rental_agreement_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <!-- Add primary key to join table -->
+        <addPrimaryKey constraintName="pk_rental_agreement_tenants"
+            tableName="rental_agreement_tenants"
+            columnNames="rental_agreement_id,tenant_id" />
+
+        <!-- Add foreign key constraints for join table -->
+        <addForeignKeyConstraint constraintName="fk_rat_rental_agreement_id"
+            baseTableName="rental_agreement_tenants" baseColumnNames="rental_agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_rat_tenant_id"
+            baseTableName="rental_agreement_tenants" baseColumnNames="tenant_id"
+            referencedTableName="tenants" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <!-- Create indexes on join table for performance -->
+        <createIndex indexName="idx_rat_rental_agreement_fk" tableName="rental_agreement_tenants">
+            <column name="rental_agreement_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_rat_tenant_fk" tableName="rental_agreement_tenants">
+            <column name="tenant_id" type="uuid" />
         </createIndex>
     </changeSet>
 

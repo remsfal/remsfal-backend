@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
 
@@ -120,11 +119,7 @@ public class RentalAgreementController {
         entity.setEndOfRental(agreement.getEndOfRental());
 
         // Process tenants
-        final List<? extends TenantModel> tenants = agreement.getTenants();
-        if (tenants != null && !tenants.isEmpty()) {
-            List<TenantEntity> tenantEntities = processTenants(projectId, tenants);
-            entity.setTenants(tenantEntities);
-        }
+        entity.setTenants(processTenants(projectId, agreement.getTenants()));
 
         // Process rents
         processRents(entity, agreement);
@@ -175,16 +170,6 @@ public class RentalAgreementController {
         List<TenantEntity> tenantEntities = new ArrayList<>();
 
         for (TenantModel tenantInput : tenantsInput) {
-            // Check if we already processed an identical tenant in this batch
-            TenantEntity alreadyProcessed = findMatchingTenant(tenantInput, tenantEntities);
-            
-            if (alreadyProcessed != null) {
-                // Skip duplicate tenant in the same request
-                logger.infov("Skipping duplicate tenant {0} {1} within the same request",
-                    tenantInput.getFirstName(), tenantInput.getLastName());
-                continue;
-            }
-
             // Look up existing tenants in the project by first and last name
             List<TenantEntity> candidates = tenantRepository.findByNameInProject(
                 projectId, tenantInput.getFirstName(), tenantInput.getLastName());
@@ -271,27 +256,6 @@ public class RentalAgreementController {
             tenantInput.getFirstName(), tenantInput.getLastName());
 
         return tenant;
-    }
-
-    /**
-     * Finds a matching tenant from the list of tenants already processed in this request.
-     * Two tenants are considered equal if they have the same:
-     * - First name
-     * - Last name
-     * - Email (if both have email)
-     * - Date of birth (if both have date of birth)
-     *
-     * @param input the tenant input from the POST request
-     * @param processedTenants list of tenants already processed in the current request
-     * @return matching tenant or null if no match found
-     */
-    private TenantEntity findMatchingTenant(final TenantModel input, final List<TenantEntity> processedTenants) {
-        for (TenantEntity processed : processedTenants) {
-            if (tenantsMatch(input, processed)) {
-                return processed;
-            }
-        }
-        return null;
     }
 
     /**

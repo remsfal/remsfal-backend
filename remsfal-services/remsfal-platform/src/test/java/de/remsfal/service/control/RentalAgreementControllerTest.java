@@ -19,6 +19,7 @@ import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.test.TestData;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,6 +55,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
         final UUID projectId = TestData.PROJECT_ID_1;
         final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
             .startOfRental(LocalDate.now())
+            .tenants(List.of())
             .build();
 
         RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
@@ -71,6 +73,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
         final UUID projectId = TestData.PROJECT_ID_1;
         final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
             .startOfRental(LocalDate.now())
+            .tenants(List.of())
             .build();
         RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
 
@@ -94,6 +97,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       final UUID projectId = TestData.PROJECT_ID_1;
       final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.now())
+          .tenants(List.of())
           .build();
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
 
@@ -143,6 +147,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       final UUID projectId = TestData.PROJECT_ID_1;
       final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.now())
+          .tenants(List.of())
           .build();
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
@@ -773,45 +778,6 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
       assertEquals(RentModel.BillingCycle.WEEKLY, entity.getSiteRents().get(0).getBillingCycle());
-    }
-
-    @Test
-    void createRentalAgreement_SUCCESS_avoidDuplicateTenantsInSameAgreement() {
-      final UUID projectId = TestData.PROJECT_ID_1;
-      
-      // Create a rental agreement with the same tenant listed twice
-      final TenantJson tenant1 = ImmutableTenantJson.builder()
-          .firstName("Max")
-          .lastName("Mustermann")
-          .email("max.mustermann@example.com")
-          .dateOfBirth(LocalDate.of(1990, 1, 15))
-          .build();
-
-      final TenantJson tenant2 = ImmutableTenantJson.builder()
-          .firstName("Max")
-          .lastName("Mustermann")
-          .email("max.mustermann@example.com")
-          .dateOfBirth(LocalDate.of(1990, 1, 15))
-          .build();
-
-      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
-          .startOfRental(LocalDate.of(2024, 1, 1))
-          .endOfRental(LocalDate.of(2024, 12, 31))
-          .addTenants(tenant1)
-          .addTenants(tenant2)  // Duplicate tenant
-          .build();
-
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
-      
-      assertNotNull(result.getId());
-      // Should only have 1 tenant, not 2 (duplicate was skipped)
-      assertEquals(1, result.getTenants().size());
-      assertEquals("Max", result.getTenants().get(0).getFirstName());
-      assertEquals("Mustermann", result.getTenants().get(0).getLastName());
-
-      // Verify in DB
-      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
-      assertEquals(1, entity.getTenants().size());
     }
 
     @Test
