@@ -23,6 +23,9 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("type")
     private String type;
 
+    @Column("category")
+    private String category;
+
     @Column("status")
     private String status;
 
@@ -35,8 +38,14 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("agreement_id")
     private UUID agreementId;
 
+    @Column("is_visable_to_tenants")
+    private Boolean visibleToTenants;
+
     @Column("assignee_id")
     private UUID assigneeId;
+
+    @Column("location")
+    private String location;
 
     @Column("description")
     private String description;
@@ -105,6 +114,20 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
+    public IssueCategory getCategory() {
+        return category != null ? IssueCategory.valueOf(category) : null;
+    }
+
+    public void setCategory(IssueStatus category) {
+        this.category = category != null ? category.name() : null;
+    }
+
+    // Setter for string category for Cassandra mapping
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    @Override
     public IssueStatus getStatus() {
         return status != null ? IssueStatus.valueOf(status) : null;
     }
@@ -151,12 +174,40 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
+    public Boolean isVisibleToTenants() {
+        return visibleToTenants;
+    }
+
+    // Required by JNoSQL Lite for field read access
+    public Boolean getVisibleToTenants() {
+        return visibleToTenants;
+    }
+
+    public void setVisibleToTenants(Boolean visibleToTenants) {
+        this.visibleToTenants = visibleToTenants;
+    }
+
+    // Required by JNoSQL Lite for field write access
+    public void isVisibleToTenants(Boolean visibleToTenants) {
+        this.visibleToTenants = visibleToTenants;
+    }
+
+    @Override
     public UUID getAssigneeId() {
         return assigneeId;
     }
 
     public void setAssigneeId(UUID assigneeId) {
         this.assigneeId = assigneeId;
+    }
+
+    @Override
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     @Override
