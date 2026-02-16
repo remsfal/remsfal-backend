@@ -121,7 +121,7 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body("type", equalTo("DEFECT"))
             .body("status", equalTo("PENDING"))
             .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
-            .body("description", nullValue());
+            .body("description", notNullValue());
     }
 
     @Test
@@ -1410,7 +1410,7 @@ class IssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("id", equalTo(issueId))
             .body("title", equalTo(TicketingTestData.ISSUE_TITLE))
-            .body("description", nullValue());
+            .body("description", notNullValue());
     }
 
     @Test

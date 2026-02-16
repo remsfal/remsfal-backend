@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssueCategory;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -57,6 +58,10 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract IssueType getType();
 
+    @Nullable
+    @Override
+    public abstract IssueCategory getCategory();
+
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
@@ -76,10 +81,18 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getAgreementId();
 
+    @Nullable
+    @Override
+    public abstract Boolean isVisibleToTenants();
+
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
     public abstract UUID getAssigneeId();
+
+    @Nullable
+    @Override
+    public abstract String getLocation();
 
     @Nullable
     @Override
@@ -127,11 +140,14 @@ public abstract class IssueJson implements IssueModel {
             .projectId(model.getProjectId())
             .title(model.getTitle())
             .type(model.getType())
+            .category(model.getCategory())
             .status(model.getStatus())
             .priority(model.getPriority())
             .reporterId(model.getReporterId())
             .agreementId(model.getAgreementId())
+            .visibleToTenants(model.isVisibleToTenants())
             .assigneeId(model.getAssigneeId())
+            .location(model.getLocation())
             .description(model.getDescription())
             .parentIssue(model.getParentIssue())
             .childrenIssues(model.getChildrenIssues())
@@ -157,8 +173,11 @@ public abstract class IssueJson implements IssueModel {
             .projectId(model.getProjectId())
             .title(model.getTitle())
             .type(model.getType())
+            .category(model.getCategory())
             .status(model.getStatus())
-            // assigneeId, description, blockedBy, relatedTo, duplicateOf are omitted
+            .location(model.getLocation())
+            .description(model.getDescription())
+            // assigneeId, blockedBy, relatedTo, duplicateOf are omitted
             .build();
     }
 
