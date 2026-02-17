@@ -210,6 +210,15 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             if (issueParts == null || issueParts.isEmpty()) {
                 throw new BadRequestException("Missing 'issue' part in multipart request");
             }
+            if (issueParts.size() > 1) {
+                throw new BadRequestException("Multiple 'issue' parts found in multipart request");
+            }
+            if (issueParts.get(0) == null) {
+                throw new BadRequestException("Issue part is null");
+            }
+            if (issueParts.get(0).getMediaType() == null || !issueParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
+                throw new BadRequestException("Issue part must be of type application/json");
+            }
             final IssueJson issue = issueParts.get(0).getBody(IssueJson.class, IssueJson.class);
             if (issue == null || !validator.validate(issue).isEmpty()) {
                 throw new BadRequestException("Invalid issue data provided");
