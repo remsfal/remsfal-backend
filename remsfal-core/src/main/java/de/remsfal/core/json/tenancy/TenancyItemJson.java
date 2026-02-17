@@ -9,6 +9,8 @@ import de.remsfal.core.model.project.RentalUnitModel;
 import de.remsfal.core.model.project.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.RentalAgreementModel;
 
+import java.util.UUID;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
@@ -24,6 +26,8 @@ public abstract class TenancyItemJson {
     // Validation is not required because it is read-only for tenants.
 
     public abstract String getId();
+
+    public abstract UUID getAgreementId();
 
     public abstract String getName();
 
@@ -42,6 +46,7 @@ public abstract class TenancyItemJson {
             final RentalUnitModel unitModel) {
         return ImmutableTenancyItemJson.builder()
             .id(rentalAgreementModel.getId() + "/" + unitModel.getType().asResourcePath() + "/" + unitModel.getId())
+            .agreementId(rentalAgreementModel.getId())
             .name(unitModel.getTitle())
             .rentalType(unitModel.getType())
             .rentalTitle(unitModel.getTitle())

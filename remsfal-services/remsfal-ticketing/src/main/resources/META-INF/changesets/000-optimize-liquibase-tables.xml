@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+#
+# Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+#
+# This changeset adds indexes to the Liquibase internal tables to avoid
+# server-side warnings about queries using ALLOW FILTERING.
+#
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.1-changelog_lock" author="alexander.stanik@htw-berlin.de">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="DATABASECHANGELOGLOCK"/>
+        </preConditions>
+        <comment>Add index on LOCKED and LOCKEDBY column to optimize Liquibase lock queries</comment>
+        <ext:createIndex tableName="DATABASECHANGELOGLOCK" indexName="idx_changelog_lock_locked">
+            <ext:column name="LOCKED"/>
+        </ext:createIndex>
+        <ext:createIndex tableName="DATABASECHANGELOGLOCK" indexName="idx_changelog_lock_lockedby">
+            <ext:column name="LOCKEDBY"/>
+        </ext:createIndex>
+    </changeSet>
+</databaseChangeLog>

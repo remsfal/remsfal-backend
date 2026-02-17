@@ -12,6 +12,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+    <include file="META-INF/changesets/000-optimize-liquibase-tables.xml"/>
     <include file="META-INF/changesets/001-create-issues-table.xml"/>
     <include file="META-INF/changesets/002-create-chat-sessions-table.xml"/>
     <include file="META-INF/changesets/003-create-chat-messages-table.xml"/>
