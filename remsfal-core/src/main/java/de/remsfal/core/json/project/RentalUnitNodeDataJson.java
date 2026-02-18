@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.RentalUnitModel;
+import de.remsfal.core.model.RentalUnitModel;
 import jakarta.annotation.Nullable;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;

@@ -30,7 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
-import de.remsfal.core.model.project.RentalUnitModel.UnitType;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;

@@ -1,6 +1,8 @@
 package de.remsfal.core.json.tenancy;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -11,6 +13,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.RentalUnitJson;
+import de.remsfal.core.model.project.RentalAgreementModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -24,6 +28,16 @@ public abstract class TenancyListJson {
     // Validation is not required, because it is read-only for tenants.
 
     @JsonProperty("agreements")
-    public abstract List<TenancyItemJson> getRentalAgreements();
+    public abstract List<TenancyJson> getRentalAgreements();
+
+    public static TenancyListJson valueOf(
+            final List<? extends RentalAgreementModel> agreements,
+            final Map<UUID, RentalUnitJson> rentalUnitsMap) {
+        return ImmutableTenancyListJson.builder()
+            .rentalAgreements(agreements.stream()
+                .map(a -> TenancyJson.valueOf(a, rentalUnitsMap))
+                .toList())
+            .build();
+    }
 
 }

@@ -5,13 +5,13 @@ import java.util.Objects;
 import java.util.UUID;
 
 import de.remsfal.core.model.project.TenantModel;
+import de.remsfal.core.model.tenancy.CoTenantModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -24,7 +24,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "tenants")
-public class TenantEntity extends AbstractEntity implements TenantModel {
+public class TenantEntity extends AbstractEntity implements TenantModel, CoTenantModel {
 
     @Column(name = "project_id", nullable = false, columnDefinition = "uuid")
     private UUID projectId;

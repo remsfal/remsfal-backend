@@ -1,6 +1,6 @@
 package de.remsfal.ticketing.entity.dao;
 
-import de.remsfal.core.model.project.RentalUnitModel.UnitType;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dto.IssueEntity;

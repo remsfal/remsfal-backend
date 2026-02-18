@@ -3,6 +3,8 @@ package de.remsfal.core.model.ticketing;
 import java.util.Set;
 import java.util.UUID;
 
+import de.remsfal.core.model.RentalUnitModel.UnitType;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -82,6 +84,10 @@ public interface IssueModel {
     UUID getAgreementId();
 
     Boolean isVisibleToTenants();
+
+    UUID getRentalUnitId();
+
+    UnitType getRentalUnitType();
 
     UUID getAssigneeId();
 

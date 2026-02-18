@@ -10,9 +10,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import de.remsfal.core.api.project.RentalAgreementEndpoint;
+import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.RentalAgreementListJson;
-import de.remsfal.core.json.project.RentalUnitJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.service.control.PropertyController;
 import de.remsfal.service.control.RentalAgreementController;

@@ -1,10 +1,9 @@
 package de.remsfal.service.entity.dto.superclass;
 
-import de.remsfal.core.model.project.RentalUnitModel;
-
 import java.util.Objects;
 import java.util.UUID;
 
+import de.remsfal.core.model.RentalUnitModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 

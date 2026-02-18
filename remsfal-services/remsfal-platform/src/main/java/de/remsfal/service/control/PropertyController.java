@@ -1,11 +1,11 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.project.ApartmentJson;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.json.project.CommercialJson;
 import de.remsfal.core.json.project.ImmutableRentalUnitTreeNodeJson;
 import de.remsfal.core.json.project.PropertyJson;
-import de.remsfal.core.json.project.RentalUnitJson;
 import de.remsfal.core.json.project.RentalUnitNodeDataJson;
 import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
 import de.remsfal.core.json.project.SiteJson;
