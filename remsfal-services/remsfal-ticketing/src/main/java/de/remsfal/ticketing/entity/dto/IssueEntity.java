@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.entity.dto;
 
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
@@ -40,6 +41,12 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     @Column("is_visable_to_tenants")
     private Boolean visibleToTenants;
+
+    @Column("rental_unit_id")
+    private UUID rentalUnitId;
+
+    @Column("rental_unit_type")
+    private String rentalUnitType;
 
     @Column("assignee_id")
     private UUID assigneeId;
@@ -190,6 +197,29 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     // Required by JNoSQL Lite for field write access
     public void isVisibleToTenants(Boolean visibleToTenants) {
         this.visibleToTenants = visibleToTenants;
+    }
+
+    @Override
+    public UUID getRentalUnitId() {
+        return rentalUnitId;
+    }
+
+    public void setRentalUnitId(UUID rentalUnitId) {
+        this.rentalUnitId = rentalUnitId;
+    }
+
+    @Override
+    public UnitType getRentalUnitType() {
+        return rentalUnitType != null ? UnitType.valueOf(rentalUnitType) : null;
+    }
+
+    public void setRentalUnitType(UnitType rentalUnitType) {
+        this.rentalUnitType = rentalUnitType != null ? rentalUnitType.name() : null;
+    }
+
+    // Setter for string rentalUnitType for Cassandra mapping
+    public void setRentalUnitType(String rentalUnitType) {
+        this.rentalUnitType = rentalUnitType;
     }
 
     @Override

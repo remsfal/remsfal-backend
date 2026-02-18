@@ -1,6 +1,7 @@
 package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -24,6 +25,7 @@ import de.remsfal.core.model.project.BuildingModel;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class BuildingJson extends RentalUnitJson implements BuildingModel {
 
+    @Valid
     @Nullable
     @Override
     public abstract AddressJson getAddress();

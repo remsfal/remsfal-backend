@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PatchValidation;
@@ -84,6 +85,14 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract Boolean isVisibleToTenants();
 
+    @Nullable
+    @Override
+    public abstract UUID getRentalUnitId();
+
+    @Nullable
+    @Override
+    public abstract UnitType getRentalUnitType();
+
     @Null(groups = PostValidation.class)
     @Nullable
     @Override
@@ -145,6 +154,8 @@ public abstract class IssueJson implements IssueModel {
             .reporterId(model.getReporterId())
             .agreementId(model.getAgreementId())
             .visibleToTenants(model.isVisibleToTenants())
+            .rentalUnitId(model.getRentalUnitId())
+            .rentalUnitType(model.getRentalUnitType())
             .assigneeId(model.getAssigneeId())
             .location(model.getLocation())
             .description(model.getDescription())
@@ -174,6 +185,10 @@ public abstract class IssueJson implements IssueModel {
             .type(model.getType())
             .category(model.getCategory())
             .status(model.getStatus())
+            .reporterId(model.getReporterId())
+            .agreementId(model.getAgreementId())
+            .rentalUnitId(model.getRentalUnitId())
+            .rentalUnitType(model.getRentalUnitType())
             .location(model.getLocation())
             .description(model.getDescription())
             // assigneeId, blockedBy, relatedTo, duplicateOf are omitted
