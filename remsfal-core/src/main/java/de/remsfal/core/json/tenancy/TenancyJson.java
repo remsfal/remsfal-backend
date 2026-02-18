@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
@@ -34,14 +35,22 @@ public abstract class TenancyJson implements TenancyModel {
 
     @Override
     @Schema(description = "Unique identifier of the rental agreement", readOnly = true)
-    public abstract UUID getId();
+    public abstract UUID getAgreementId();
+
+    @Nullable
+    @Schema(description = "Title of the project this rental agreement belongs to", readOnly = true)
+    public abstract String getProjectTitle();
+
+    @Nullable
+    @Schema(description = "Address of the building this rental agreement belongs to", readOnly = true)
+    public abstract AddressJson getAddress();
 
     @Override
     @Schema(description = "List of tenants in this rental agreement", readOnly = true)
     public abstract List<CoTenantJson> getTenants();
 
     @Override
-    @Schema(description = "Start date of the rental period", required = true)
+    @Schema(description = "Start date of the rental period", readOnly = true)
     public abstract LocalDate getStartOfRental();
 
     @Nullable
@@ -66,7 +75,9 @@ public abstract class TenancyJson implements TenancyModel {
     public abstract Float getHeatingCostsPrepayment();
 
     public static TenancyJson valueOf(final RentalAgreementModel model,
-        final Map<UUID, RentalUnitJson> rentalUnitsMap) {
+        final Map<UUID, RentalUnitJson> rentalUnitsMap,
+        final Map<UUID, String> projectTitleMap,
+        final Map<UUID, AddressJson> unitAddressMap) {
         if (model == null) {
             return null;
         }
@@ -79,7 +90,9 @@ public abstract class TenancyJson implements TenancyModel {
             .toList();
 
         return ImmutableTenancyJson.builder()
-            .id(model.getId())
+            .agreementId(model.getId())
+            .projectTitle(projectTitleMap != null ? projectTitleMap.get(model.getProjectId()) : null)
+            .address(resolveAddress(model, unitAddressMap))
             .tenants(model.getTenants() != null
                 ? model.getTenants().stream()
                     .map(t -> ImmutableCoTenantJson.builder()
@@ -97,6 +110,38 @@ public abstract class TenancyJson implements TenancyModel {
             .operatingCostsPrepayment(model.getOperatingCostsPrepayment())
             .heatingCostsPrepayment(model.getHeatingCostsPrepayment())
             .build();
+    }
+
+    private static AddressJson resolveAddress(final RentalAgreementModel model,
+            final Map<UUID, AddressJson> unitAddressMap) {
+        if (unitAddressMap == null) {
+            return null;
+        }
+        for (RentModel rent : model.getApartmentRents()) {
+            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            if (addr != null) {
+                return addr;
+            }
+        }
+        for (RentModel rent : model.getCommercialRents()) {
+            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            if (addr != null) {
+                return addr;
+            }
+        }
+        for (RentModel rent : model.getStorageRents()) {
+            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            if (addr != null) {
+                return addr;
+            }
+        }
+        for (RentModel rent : model.getSiteRents()) {
+            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            if (addr != null) {
+                return addr;
+            }
+        }
+        return null;
     }
 
 }
