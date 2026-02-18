@@ -45,15 +45,4 @@ public abstract class CoTenantJson implements CoTenantModel {
     @Override
     public abstract UUID getUserId();
 
-    public static ImmutableCoTenantJson valueOf(final CoTenantModel model) {
-        if (model == null) {
-            return null;
-        }
-        return ImmutableCoTenantJson.builder()
-            .id(model.getId())
-            .firstName(model.getFirstName())
-            .lastName(model.getLastName())
-            .userId(model.getUserId())
-            .build();
-    }
 }

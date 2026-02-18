@@ -2,6 +2,7 @@ package de.remsfal.core.model.project;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -35,7 +36,7 @@ public interface RentalAgreementModel {
         return Stream.of(
             getPropertyRents(), getSiteRents(), getBuildingRents(),
             getApartmentRents(), getStorageRents(), getCommercialRents()
-        ).filter(list -> list != null).flatMap(List::stream).toList();
+        ).filter(Objects::nonNull).flatMap(List::stream).toList();
     }
 
     default Float getBasicRent() {
