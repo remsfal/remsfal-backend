@@ -30,7 +30,7 @@ import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
-import de.remsfal.core.model.project.RentalUnitModel.UnitType;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
@@ -155,10 +155,10 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         final IssueModel createdIssue;
         if (principalRole == UserContext.MANAGER) {
             createdIssue = issueController.createIssue(principal, issue);
-            response = IssueJson.valueOf(createdIssue);
+            response = IssueJson.valueOfProjectIssue(createdIssue);
         } else if (principalRole == UserContext.TENANT) {
             createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
-            response = IssueJson.valueOfFiltered(createdIssue);
+            response = IssueJson.valueOfTenancyIssue(createdIssue);
         } else {
             throw new ForbiddenException("User does not have permission to create issues in this project");
         }
@@ -199,7 +199,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(IssueJson.valueOfFiltered(createdIssue).withAttachments(attachments))
+            .entity(IssueJson.valueOfTenancyIssue(createdIssue).withAttachments(attachments))
             .build();
     }
 
@@ -236,11 +236,11 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Create base IssueJson
         IssueJson issueJson;
         if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
-            issueJson = IssueJson.valueOf(issue);
+            issueJson = IssueJson.valueOfProjectIssue(issue);
         } else if (principal.getTenancyProjects().containsKey(issue.getAgreementId())) {
-            issueJson = IssueJson.valueOfFiltered(issue);
+            issueJson = IssueJson.valueOfTenancyIssue(issue);
         } else if (isParticipantInIssue(issueId)) {
-            issueJson = IssueJson.valueOfFiltered(issue);
+            issueJson = IssueJson.valueOfTenancyIssue(issue);
         } else {
             throw new ForbiddenException("User does not have permission to view this issue");
         }
@@ -260,7 +260,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
             throw new ForbiddenException("User does not have permission to update this issue");
         }
-        return IssueJson.valueOf(issueController.updateIssue(entity.getKey(), issue));
+        return IssueJson.valueOfProjectIssue(issueController.updateIssue(entity.getKey(), issue));
     }
 
     @Override
@@ -282,7 +282,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             throw new ForbiddenException("User does not have permission to update this issue");
         }
 
-        return IssueJson.valueOf(issueController.setParentRelation(entity, parentIssueId));
+        return IssueJson.valueOfProjectIssue(issueController.setParentRelation(entity, parentIssueId));
     }
 
     @Override
@@ -301,7 +301,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             default -> throw new BadRequestException("Invalid relation type: " + relationType);
         };
 
-        return IssueJson.valueOf(updatedIssue);
+        return IssueJson.valueOfProjectIssue(updatedIssue);
     }
 
     @Override

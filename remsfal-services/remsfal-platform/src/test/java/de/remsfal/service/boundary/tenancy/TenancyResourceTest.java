@@ -172,142 +172,17 @@ class TenancyResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
-            .and().body("agreements.size()", Matchers.is(3))
-            .and().body("agreements[0].id", Matchers.equalTo(TestData.AGREEMENT_ID_2 + "/sites/" + TestData.SITE_ID_1))
-            .and().body("agreements[0].name", Matchers.equalTo(TestData.SITE_TITLE_1))
-            .and().body("agreements[0].rentalType", Matchers.equalTo("SITE"))
-            .and().body("agreements[0].rentalTitle", Matchers.equalTo(TestData.SITE_TITLE_1))
-            .and().body("agreements[0].active", Matchers.equalTo(Boolean.TRUE))
-            .and().body("agreements[1].id", Matchers.equalTo(TestData.AGREEMENT_ID_2 + "/buildings/" + TestData.BUILDING_ID_2))
-            .and().body("agreements[1].name", Matchers.equalTo(TestData.BUILDING_TITLE_2))
-            .and().body("agreements[1].rentalType", Matchers.equalTo("BUILDING"))
-            .and().body("agreements[1].rentalTitle", Matchers.equalTo(TestData.BUILDING_TITLE_2))
-            .and().body("agreements[1].active", Matchers.equalTo(Boolean.TRUE))
-            .and().body("agreements[2].id", Matchers.equalTo(TestData.AGREEMENT_ID_3 + "/properties/" + TestData.PROPERTY_ID_2))
-            .and().body("agreements[2].name", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("agreements[2].rentalType", Matchers.equalTo("PROPERTY"))
-            .and().body("agreements[2].rentalTitle", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("agreements[2].active", Matchers.equalTo(Boolean.FALSE));
-    }
-
-    @Test
-    void getPropertyRentalAgreement_SUCCESS_agreementIsReturned() {
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{agreementId}/properties/{rentalId}", TestData.AGREEMENT_ID_3, TestData.PROPERTY_ID_2.toString())
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.AGREEMENT_ID_3 + "/properties/" + TestData.PROPERTY_ID_2))
-            .and().body("rentalType", Matchers.equalTo("PROPERTY"))
-            .and().body("rentalTitle", Matchers.equalTo(TestData.PROPERTY_TITLE_2))
-            .and().body("startOfRental", Matchers.equalTo(TestData.AGREEMENT_START_3.toString()))
-            .and().body("endOfRental", Matchers.equalTo(TestData.AGREEMENT_END_3.toString()))
-            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
-            .and().body("basicRent", Matchers.equalTo(100f))
-            .and().body("operatingCostsPrepayment", Matchers.nullValue())
-            .and().body("heatingCostsPrepayment", Matchers.nullValue());
-    }
-
-    @Test
-    void getSiteRentalAgreement_SUCCESS_agreementIsReturned() {
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{agreementId}/sites/{rentalId}", TestData.AGREEMENT_ID_2.toString(), TestData.SITE_ID_1.toString())
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.AGREEMENT_ID_2 + "/sites/" + TestData.SITE_ID_1))
-            .and().body("rentalType", Matchers.equalTo("SITE"))
-            .and().body("rentalTitle", Matchers.equalTo(TestData.SITE_TITLE_1))
-            .and().body("startOfRental", Matchers.equalTo(TestData.AGREEMENT_START_2.toString()))
-            .and().body("endOfRental", Matchers.equalTo(TestData.AGREEMENT_END_2.toString()))
-            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
-            .and().body("basicRent", Matchers.equalTo(40f))
-            .and().body("operatingCostsPrepayment", Matchers.nullValue())
-            .and().body("heatingCostsPrepayment", Matchers.nullValue());
-    }
-
-    @Test
-    void getBuildingRentalAgreement_SUCCESS_agreementIsReturned() {
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{agreementId}/buildings/{rentalId}", TestData.AGREEMENT_ID_2.toString(), TestData.BUILDING_ID_2.toString())
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.AGREEMENT_ID_2 + "/buildings/" + TestData.BUILDING_ID_2))
-            .and().body("rentalType", Matchers.equalTo("BUILDING"))
-            .and().body("rentalTitle", Matchers.equalTo(TestData.BUILDING_TITLE_2))
-            .and().body("startOfRental", Matchers.equalTo(TestData.AGREEMENT_START_2.toString()))
-            .and().body("endOfRental", Matchers.equalTo(TestData.AGREEMENT_END_2.toString()))
-            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
-            .and().body("basicRent", Matchers.equalTo(899f))
-            .and().body("operatingCostsPrepayment", Matchers.equalTo(150f))
-            .and().body("heatingCostsPrepayment", Matchers.equalTo(240f));
-    }
-
-    @Test
-    void getApartmentRentalAgreement_SUCCESS_agreementIsReturned() {
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{agreementId}/apartments/{rentalId}", TestData.AGREEMENT_ID_1.toString(), TestData.APARTMENT_ID.toString())
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.AGREEMENT_ID_1 + "/apartments/" + TestData.APARTMENT_ID))
-            .and().body("rentalType", Matchers.equalTo("APARTMENT"))
-            .and().body("rentalTitle", Matchers.equalTo(TestData.APARTMENT_TITLE))
-            .and().body("startOfRental", Matchers.equalTo(TestData.AGREEMENT_START_1.toString()))
-            .and().body("endOfRental", Matchers.equalTo(TestData.AGREEMENT_END_1.toString()))
-            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
-            .and().body("basicRent", Matchers.equalTo(670f))
-            .and().body("operatingCostsPrepayment", Matchers.equalTo(75f))
-            .and().body("heatingCostsPrepayment", Matchers.equalTo(120f));
-    }
-
-    @Test
-    void getStorageRentalAgreement_SUCCESS_agreementIsReturned() {
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{agreementId}/storages/{rentalId}", TestData.AGREEMENT_ID_1.toString(), TestData.STORAGE_ID.toString())
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.AGREEMENT_ID_1 + "/storages/" + TestData.STORAGE_ID))
-            .and().body("rentalType", Matchers.equalTo("STORAGE"))
-            .and().body("rentalTitle", Matchers.equalTo(TestData.STORAGE_TITLE))
-            .and().body("startOfRental", Matchers.equalTo(TestData.AGREEMENT_START_1.toString()))
-            .and().body("endOfRental", Matchers.equalTo(TestData.AGREEMENT_END_1.toString()))
-            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
-            .and().body("basicRent", Matchers.equalTo(30f))
-            .and().body("operatingCostsPrepayment", Matchers.nullValue())
-            .and().body("heatingCostsPrepayment", Matchers.nullValue());
-    }
-
-    @Test
-    void getCommercialRentalAgreement_SUCCESS_agreementIsReturned() {
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(BASE_PATH + "/{agreementId}/commercials/{rentalId}", TestData.AGREEMENT_ID_1.toString(), TestData.COMMERCIAL_ID.toString())
-            .then()
-            .statusCode(Response.Status.OK.getStatusCode())
-            .contentType(MediaType.APPLICATION_JSON)
-            .and().body("id", Matchers.equalTo(TestData.AGREEMENT_ID_1 + "/commercials/" + TestData.COMMERCIAL_ID))
-            .and().body("rentalType", Matchers.equalTo("COMMERCIAL"))
-            .and().body("rentalTitle", Matchers.equalTo(TestData.COMMERCIAL_TITLE))
-            .and().body("startOfRental", Matchers.equalTo(TestData.AGREEMENT_START_1.toString()))
-            .and().body("endOfRental", Matchers.equalTo(TestData.AGREEMENT_END_1.toString()))
-            .and().body("billingCycle", Matchers.equalTo("MONTHLY"))
-            .and().body("basicRent", Matchers.equalTo(1030f))
-            .and().body("operatingCostsPrepayment", Matchers.equalTo(230f))
-            .and().body("heatingCostsPrepayment", Matchers.equalTo(320f));
+            .and().body("agreements.size()", Matchers.is(2))
+            .and().body("agreements[0].id", Matchers.equalTo(TestData.AGREEMENT_ID_2.toString()))
+            .and().body("agreements[0].rentalUnits.size()", Matchers.is(2))
+            .and().body("agreements[0].basicRent", Matchers.equalTo(939f))
+            .and().body("agreements[0].operatingCostsPrepayment", Matchers.equalTo(150f))
+            .and().body("agreements[0].heatingCostsPrepayment", Matchers.equalTo(240f))
+            .and().body("agreements[1].id", Matchers.equalTo(TestData.AGREEMENT_ID_3.toString()))
+            .and().body("agreements[1].rentalUnits.size()", Matchers.is(1))
+            .and().body("agreements[1].basicRent", Matchers.nullValue())
+            .and().body("agreements[1].operatingCostsPrepayment", Matchers.nullValue())
+            .and().body("agreements[1].heatingCostsPrepayment", Matchers.nullValue());
     }
 
     @Test

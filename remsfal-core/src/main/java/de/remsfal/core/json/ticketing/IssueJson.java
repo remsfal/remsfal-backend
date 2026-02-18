@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.core.model.ticketing.IssueModel.IssueCategory;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -134,7 +133,7 @@ public abstract class IssueJson implements IssueModel {
      * @param model the source {@link IssueModel}
      * @return an immutable {@link IssueJson} containing all fields
      */
-    public static IssueJson valueOf(final IssueModel model) {
+    public static IssueJson valueOfProjectIssue(final IssueModel model) {
         return ImmutableIssueJson.builder()
             .id(model.getId())
             .projectId(model.getProjectId())
@@ -167,7 +166,7 @@ public abstract class IssueJson implements IssueModel {
      * @param model the source {@link IssueModel}
      * @return an immutable {@link IssueJson} containing only public fields
      */
-    public static IssueJson valueOfFiltered(final IssueModel model) {
+    public static IssueJson valueOfTenancyIssue(final IssueModel model) {
         return ImmutableIssueJson.builder()
             .id(model.getId())
             .projectId(model.getProjectId())

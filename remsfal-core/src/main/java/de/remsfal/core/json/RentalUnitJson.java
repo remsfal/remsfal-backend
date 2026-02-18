@@ -1,4 +1,4 @@
-package de.remsfal.core.json.project;
+package de.remsfal.core.json;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.RentalUnitModel;
+import de.remsfal.core.model.RentalUnitModel;
 import de.remsfal.core.validation.PostValidation;
 import de.remsfal.core.validation.Title;
 

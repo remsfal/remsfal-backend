@@ -1,7 +1,7 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.TenantEndpoint;
-import de.remsfal.core.json.project.RentalUnitJson;
+import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.json.project.TenantListJson;
 import de.remsfal.core.model.project.RentalAgreementModel;

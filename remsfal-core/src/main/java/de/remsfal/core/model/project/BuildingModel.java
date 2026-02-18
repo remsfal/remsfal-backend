@@ -3,6 +3,7 @@ package de.remsfal.core.model.project;
 import org.immutables.value.Value;
 
 import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.model.RentalUnitModel;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.PositiveOrZero;
 

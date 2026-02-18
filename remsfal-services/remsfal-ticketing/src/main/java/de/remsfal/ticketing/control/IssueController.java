@@ -10,7 +10,7 @@ import org.jboss.logging.Logger;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.project.RentalUnitModel.UnitType;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;

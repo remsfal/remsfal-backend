@@ -1,4 +1,4 @@
-package de.remsfal.core.model.project;
+package de.remsfal.core.model;
 
 import jakarta.annotation.Nullable;
 import java.util.UUID;
