@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
 
@@ -32,10 +33,12 @@ public abstract class TenancyListJson {
 
     public static TenancyListJson valueOf(
             final List<? extends RentalAgreementModel> agreements,
-            final Map<UUID, RentalUnitJson> rentalUnitsMap) {
+            final Map<UUID, RentalUnitJson> rentalUnitsMap,
+            final Map<UUID, String> projectTitleMap,
+            final Map<UUID, AddressJson> unitAddressMap) {
         return ImmutableTenancyListJson.builder()
             .rentalAgreements(agreements.stream()
-                .map(a -> TenancyJson.valueOf(a, rentalUnitsMap))
+                .map(a -> TenancyJson.valueOf(a, rentalUnitsMap, projectTitleMap, unitAddressMap))
                 .toList())
             .build();
     }

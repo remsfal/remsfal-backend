@@ -111,6 +111,11 @@ public class ProjectController {
         }
     }
 
+    public String getProjectTitle(final UUID projectId) {
+        ProjectEntity entity = projectRepository.findById(projectId);
+        return entity != null ? entity.getTitle() : null;
+    }
+
     public MemberRole getProjectMemberRole(final UUID userId, final UUID projectId) {
         logger.infov("Retrieving project member role (user={0}, project={1})", userId, projectId);
         return projectRepository.findMembershipByUserIdAndProjectId(userId, projectId)

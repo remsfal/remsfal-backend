@@ -8,10 +8,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import de.remsfal.core.api.tenancy.TenancyEndpoint;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.tenancy.TenancyListJson;
+import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.service.control.ProjectController;
 import de.remsfal.service.control.PropertyController;
-import de.remsfal.service.entity.dto.RentalAgreementEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -19,17 +21,28 @@ import de.remsfal.service.entity.dto.RentalAgreementEntity;
 public class TenancyResource extends AbstractTenancyResource implements TenancyEndpoint {
 
     @Inject
+    ProjectController projectController;
+
+    @Inject
     PropertyController propertyController;
 
     @Override
     public TenancyListJson getTenancies() {
-        final List<RentalAgreementEntity> agreements = agreementController.getRentalAgreements(principal);
+        final List<? extends RentalAgreementModel> agreements = agreementController.getRentalAgreements(principal);
         final Map<UUID, RentalUnitJson> rentalUnitsMap = new HashMap<>();
+        final Map<UUID, String> projectTitleMap = new HashMap<>();
+        final Map<UUID, AddressJson> unitAddressMap = new HashMap<>();
+
         agreements.stream()
-            .map(RentalAgreementEntity::getProjectId)
+            .map(RentalAgreementModel::getProjectId)
             .distinct()
-            .forEach(pid -> rentalUnitsMap.putAll(propertyController.getRentalUnitsMapForProject(pid)));
-        return TenancyListJson.valueOf(agreements, rentalUnitsMap);
+            .forEach(pid -> {
+                rentalUnitsMap.putAll(propertyController.getRentalUnitsMapForProject(pid));
+                unitAddressMap.putAll(propertyController.getUnitAddressMapForProject(pid));
+                projectTitleMap.put(pid, projectController.getProjectTitle(pid));
+            });
+
+        return TenancyListJson.valueOf(agreements, rentalUnitsMap, projectTitleMap, unitAddressMap);
     }
 
 }

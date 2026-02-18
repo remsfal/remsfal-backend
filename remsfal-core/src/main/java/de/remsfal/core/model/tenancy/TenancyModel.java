@@ -11,7 +11,7 @@ import de.remsfal.core.model.RentalUnitModel;
  */
 public interface TenancyModel {
 
-    UUID getId();
+    UUID getAgreementId();
 
     List<? extends CoTenantModel> getTenants();
 

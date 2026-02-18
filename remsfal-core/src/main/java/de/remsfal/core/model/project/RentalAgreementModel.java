@@ -14,6 +14,8 @@ public interface RentalAgreementModel {
 
     UUID getId();
 
+    UUID getProjectId();
+
     List<? extends TenantModel> getTenants();
 
     LocalDate getStartOfRental();

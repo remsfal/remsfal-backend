@@ -1,5 +1,6 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.project.ApartmentJson;
 import de.remsfal.core.json.project.BuildingJson;
@@ -243,6 +244,36 @@ public class PropertyController {
 
         logger.infov("Loaded {0} rental units for project {1}", unitsMap.size(), projectId);
         return unitsMap;
+    }
+
+    /**
+     * Builds a map from rental unit ID to the effective address for each unit.
+     * Sites use their own address; apartments, commercials and storages inherit the building address.
+     *
+     * @param projectId the project ID
+     * @return map of unit ID to AddressJson
+     */
+    public Map<UUID, AddressJson> getUnitAddressMapForProject(final UUID projectId) {
+        logger.infov("Loading address map for project (projectId = {0})", projectId);
+
+        Map<UUID, AddressJson> addressMap = new HashMap<>();
+
+        propertyRepository.findPropertiesByProjectId(projectId).forEach(property -> {
+            siteRepository.findAllSites(projectId, property.getId()).forEach(site ->
+                addressMap.put(site.getId(), AddressJson.valueOf(site.getAddress())));
+
+            buildingRepository.findAllBuildings(projectId, property.getId()).forEach(building -> {
+                AddressJson addr = AddressJson.valueOf(building.getAddress());
+                apartmentRepository.findAllApartments(projectId, building.getId())
+                    .forEach(a -> addressMap.put(a.getId(), addr));
+                commercialRepository.findAllCommercials(projectId, building.getId())
+                    .forEach(c -> addressMap.put(c.getId(), addr));
+                storageRepository.findAllStorages(projectId, building.getId())
+                    .forEach(s -> addressMap.put(s.getId(), addr));
+            });
+        });
+
+        return addressMap;
     }
 
 }
