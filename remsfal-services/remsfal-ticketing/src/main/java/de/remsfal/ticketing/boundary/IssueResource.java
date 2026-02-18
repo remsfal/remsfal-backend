@@ -216,7 +216,8 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             if (issueParts.get(0) == null) {
                 throw new BadRequestException("Issue part is null");
             }
-            if (issueParts.get(0).getMediaType() == null || !issueParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
+            if (issueParts.get(0).getMediaType() == null ||
+                !issueParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
                 throw new BadRequestException("Issue part must be of type application/json");
             }
             final IssueJson issue = issueParts.get(0).getBody(IssueJson.class, IssueJson.class);
