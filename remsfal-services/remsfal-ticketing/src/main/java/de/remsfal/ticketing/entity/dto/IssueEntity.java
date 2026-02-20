@@ -125,7 +125,7 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         return category != null ? IssueCategory.valueOf(category) : null;
     }
 
-    public void setCategory(IssueStatus category) {
+    public void setCategory(IssueCategory category) {
         this.category = category != null ? category.name() : null;
     }
 

@@ -26,8 +26,6 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.core.json.ticketing.IssueAttachmentJson;
-import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -74,7 +72,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createIssue_SUCCESS_issueIsCreated() {
+    void createProjectIssue_SUCCESS_issueIsCreated() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
@@ -101,8 +99,8 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void createIssue_SUCCESS_tenantCreatesPendingIssue() {
-        final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
+        //TODO: FAILED
+        final String json = "{ \"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION_2 + "\","
             + "\"type\":\"DEFECT\""
             + "}";
@@ -120,12 +118,12 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body("title", equalTo(TicketingTestData.ISSUE_TITLE_2))
             .body("type", equalTo("DEFECT"))
             .body("status", equalTo("PENDING"))
-            .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
+            .body("projectId", nullValue())
             .body("description", notNullValue());
     }
 
     @Test
-    void createIssue_FAILED_noAuthentication() {
+    void createProjectIssue_FAILED_noAuthentication() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\""
@@ -141,7 +139,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createIssue_FAILED_noTitle() {
+    void createProjectIssue_FAILED_noTitle() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"type\":\"TASK\""
             + "}";
@@ -157,7 +155,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createIssue_FAILED_noProjectPermission() {
+    void createProjectIssue_FAILED_noProjectPermission() {
         final String json = "{ \"projectId\":\"" + UUID.randomUUID() + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\""
@@ -591,28 +589,36 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteIssue_cleansUpAllRelationsOnOtherIssues() {
-        // Main Issue
-        String mainJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Main\","
-            + "\"type\":\"TASK\" }";
+        setupTestIssues();
+        String mainId = TicketingTestData.ISSUE_ID_1.toString();
+        String blockerId = TicketingTestData.ISSUE_ID_2.toString();
+        String blockedId = TicketingTestData.ISSUE_ID_3.toString();
+        String relatedId = TicketingTestData.ISSUE_ID_4.toString();
+        String duplicateId = TicketingTestData.ISSUE_ID_5.toString();
 
-        String mainId = given()
+        String parentId = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
-            .body(mainJson)
+            .body("{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Parent\","
+                + "\"type\":\"TASK\" }")
             .post(BASE_PATH)
             .then()
             .statusCode(201)
             .extract().path("id");
 
-        // Andere Issues
-        String blockerId = createSimpleIssue("Blocker");
-        String blockedId = createSimpleIssue("Blocked");
-        String relatedId = createSimpleIssue("Related");
-        String duplicateId = createSimpleIssue("Duplicate");
-        String parentId = createSimpleIssue("Parent");
-        String childId = createSimpleIssue("Child");
+        String childId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"Child\","
+                + "\"type\":\"TASK\" }")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
 
         // Main blockt blockedId
         given()
@@ -680,23 +686,6 @@ class IssueResourceTest extends AbstractTicketingTest {
         assertNoRelationsContain(mainId, childId);
     }
 
-    // Helper zum Anlegen eines einfachen Issues
-    private String createSimpleIssue(String title) {
-        String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + title + "\","
-            + "\"type\":\"TASK\" }";
-
-        return given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(json)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .extract().path("id");
-    }
-
     // Helper zum prüfen, dass ein bestimmtes Issue mainId in KEINEM Relationsfeld hat
     private void assertNoRelationsContain(String mainId, String issueId) {
         given()
@@ -715,8 +704,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_blocks_updatesBothSides() {
-        String sourceId = createSimpleIssue("Source");
-        String targetId = createSimpleIssue("Target");
+        setupTestIssues();
+        String sourceId = TicketingTestData.ISSUE_ID_1.toString();
+        String targetId = TicketingTestData.ISSUE_ID_2.toString();
 
         // blocks setzen
         given()
@@ -741,8 +731,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_onNonExistingRelation_isNoOp() {
-        String sourceId = createSimpleIssue("Source");
-        String targetId = createSimpleIssue("Target");
+        setupTestIssues();
+        String sourceId = TicketingTestData.ISSUE_ID_1.toString();
+        String targetId = TicketingTestData.ISSUE_ID_2.toString();
 
         // Keine Relation gesetzt, direkt deleteRelation aufrufen
         given()
@@ -786,7 +777,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createIssue_SUCCESS_withBlocksRelation_bidirectionalOnCreate() {
+    void createRelation_SUCCESS_withBlocksRelation_bidirectionalOnCreate() {
         // Target-Issue zuerst anlegen
         String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Target\","
@@ -908,8 +899,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_blockedBy_updatesBothSides() {
-        String sourceId = createSimpleIssue("Blocked");
-        String targetId = createSimpleIssue("Blocker");
+        setupTestIssues();
+        String sourceId = TicketingTestData.ISSUE_ID_1.toString();
+        String targetId = TicketingTestData.ISSUE_ID_2.toString();
 
         // blockedBy setzen → target.blocks wird gespiegelt
         given()
@@ -947,8 +939,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_relatedTo_updatesBothSides() {
-        String aId = createSimpleIssue("A");
-        String bId = createSimpleIssue("B");
+        setupTestIssues();
+        String aId = TicketingTestData.ISSUE_ID_1.toString();
+        String bId = TicketingTestData.ISSUE_ID_2.toString();
 
         given()
             .when()
@@ -985,8 +978,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_FAILED_unknownType_returnsBadRequest() {
-        String sourceId = createSimpleIssue("Source");
-        String targetId = createSimpleIssue("Target");
+        setupTestIssues();
+        String sourceId = TicketingTestData.ISSUE_ID_1.toString();
+        String targetId = TicketingTestData.ISSUE_ID_2.toString();
 
         given()
             .when()
@@ -998,8 +992,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_duplicateOf_updatesBothSides() {
-        String originalId = createSimpleIssue("Original");
-        String duplicateId = createSimpleIssue("Duplicate");
+        setupTestIssues();
+        String originalId = TicketingTestData.ISSUE_ID_1.toString();
+        String duplicateId = TicketingTestData.ISSUE_ID_2.toString();
 
         // duplicateOf setzen: Original -> Duplicate
         given()
@@ -1038,8 +1033,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_children_updatesBothSides() {
-        String parentId = createSimpleIssue("Parent");
-        String childId = createSimpleIssue("Child");
+        setupTestIssues();
+        String parentId = TicketingTestData.ISSUE_ID_1.toString();
+        String childId = TicketingTestData.ISSUE_ID_2.toString();
 
         // childrenIssues setzen: Parent has Child
         given()
@@ -1078,8 +1074,9 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteRelation_parent_updatesBothSides() {
-        String parentId = createSimpleIssue("Parent 2");
-        String childId = createSimpleIssue("Child 2");
+        setupTestIssues();
+        String parentId = TicketingTestData.ISSUE_ID_1.toString();
+        String childId = TicketingTestData.ISSUE_ID_2.toString();
 
         // parentIssue setzen: Child -> Parent
         given()
@@ -1246,7 +1243,6 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void getIssues_SUCCESS_handlesNullIssuesInDeduplication() {
-
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
@@ -1587,13 +1583,12 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
-        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
+    void createTenancyIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
+        final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"title\":\"Issue with attachments\","
             + "\"type\":\"DEFECT\""
             + "}";
-        InputStream fileStream = getTestImageStream();
+        InputStream fileStream = getTestFileStream(TicketingTestData.FILE_PNG_PATH);
 
         given()
             .when()
@@ -1609,7 +1604,7 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body("title", equalTo("Issue with attachments"))
             .body("type", equalTo("DEFECT"))
             .body("status", equalTo("PENDING"))
-            .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
+            .body("projectId", nullValue())
             .body("attachments", hasSize(1))
             .body("attachments[0].issueId", notNullValue())
             .body("attachments[0].attachmentId", notNullValue())
@@ -1622,7 +1617,32 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createIssueWithAttachments_FAILED_noAuthentication() {
+    void createTenancyIssueWithAttachments_SUCCESS_issueWithoutAttachmentsIsCreated() {
+        final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
+            + "\"title\":\"Issue without attachments\","
+            + "\"type\":\"TERMINATION\""
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .multiPart("issue", issueJson, MediaType.APPLICATION_JSON)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("title", equalTo("Issue without attachments"))
+            .body("type", equalTo("TERMINATION"))
+            .body("status", equalTo("PENDING"))
+            .body("isVisibleForTenant", nullValue())
+            .body("projectId", nullValue())
+            .body("attachments", nullValue());
+    }
+
+    @Test
+    void createTenancyIssueWithAttachments_FAILED_noAuthentication() {
         given()
             .when()
             .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
@@ -1634,7 +1654,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createIssueWithAttachments_FAILED_missingRequiredFields() {
+    void createTenancyIssueWithAttachments_FAILED_missingRequiredFields() {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1645,34 +1665,31 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void downloadAttachment_SUCCESS_managerDownloadsAttachment() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+    void downloadAttachment_SUCCESS_managerDownloadsAttachment() throws Exception {
+        setupTestIssuesWithAttachment();
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId() + "/" + attachment.getFileName())
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
             .then()
             .statusCode(200)
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .header("Content-Disposition", containsString("attachment"))
-            .header("Content-Disposition", containsString(attachment.getFileName()));
+            .header("Content-Disposition", containsString(TicketingTestData.ATTACHMENT_FILE_PATH_1));
     }
 
     @Test
-    void downloadAttachment_SUCCESS_tenantDownloadsAttachment() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+    void downloadAttachment_SUCCESS_tenantDownloadsAttachment() throws Exception {
+        setupTestIssuesWithAttachment();
 
-        // Use the same tenant user who created the issue
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                 TicketingTestData.USER_FIRST_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId() + "/" + attachment.getFileName())
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
             .then()
             .statusCode(200)
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -1681,15 +1698,14 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     @Disabled("Issue participants cannot download attachments until requirement is clarified")
-    void downloadAttachment_SUCCESS_participantDownloadsAttachment() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+    void downloadAttachment_SUCCESS_participantDownloadsAttachment() throws Exception {
+        setupTestIssuesWithAttachment();
         UUID participantId = UUID.randomUUID();
 
         IssueParticipantKey key = new IssueParticipantKey();
         key.setUserId(participantId);
-        key.setIssueId(attachment.getAttachmentId());
-        key.setSessionId(issueWithAttachment.getId());
+        key.setIssueId(TicketingTestData.ISSUE_ID_2);
+        key.setSessionId(UUID.randomUUID());
 
         IssueParticipantEntity participantEntity = new IssueParticipantEntity();
         participantEntity.setKey(key);
@@ -1702,8 +1718,8 @@ class IssueResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(participantId, "participant@test.com",
                 "Participant", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId() + "/" + attachment.getFileName())
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
             .then()
             .statusCode(200)
             .contentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -1711,30 +1727,27 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void downloadAttachment_FAILED_noAuthentication() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+        setupTestIssues();
 
         given()
             .when()
-            .get(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId() + "/" + attachment.getFileName())
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
             .then()
             .statusCode(401);
     }
 
     @Test
     void downloadAttachment_FAILED_noPermission() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
-
+        setupTestIssues();
         UUID unauthorizedUserId = UUID.randomUUID();
 
         given()
             .when()
             .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
                 "Unauthorized", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId() + "/" + attachment.getFileName())
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
             .then()
             .statusCode(403);
     }
@@ -1755,28 +1768,27 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void downloadAttachment_FAILED_attachmentNotFound() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
+        setupTestIssues();
         UUID nonExistentAttachmentId = UUID.randomUUID();
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
                 + nonExistentAttachmentId + "/test.png")
             .then()
             .statusCode(404);
     }
 
     @Test
-    void deleteAttachment_SUCCESS_managerDeletesAttachment() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+    void deleteAttachment_SUCCESS_managerDeletesAttachment() throws Exception {
+        setupTestIssuesWithAttachment();
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .delete(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId())
+            .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1)
             .then()
             .statusCode(204);
 
@@ -1784,50 +1796,46 @@ class IssueResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId() + "/" + attachment.getFileName())
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
             .then()
             .statusCode(404);
     }
 
     @Test
-    void deleteAttachment_FAILED_noAuthentication() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+    void deleteAttachment_FAILED_noAuthentication() throws Exception {
+        setupTestIssuesWithAttachment();
 
         given()
             .when()
-            .delete(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId())
+            .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1)
             .then()
             .statusCode(401);
     }
 
     @Test
-    void deleteAttachment_FAILED_tenantCannotDelete() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+    void deleteAttachment_FAILED_tenantCannotDelete() throws Exception {
+        setupTestIssuesWithAttachment();
 
-        // Tenant who created the issue should not be able to delete attachments
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
                 TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .delete(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId())
+            .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1)
             .then()
             .statusCode(403);
     }
 
     @Test
-    void deleteAttachment_FAILED_participantCannotDelete() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
+    void deleteAttachment_FAILED_participantCannotDelete() throws Exception {
+        setupTestIssuesWithAttachment();
         UUID participantId = UUID.randomUUID();
 
         IssueParticipantKey key = new IssueParticipantKey();
         key.setUserId(participantId);
-        key.setIssueId(attachment.getAttachmentId());
+        key.setIssueId(TicketingTestData.ISSUE_ID_2);
         key.setSessionId(UUID.randomUUID());
 
         IssueParticipantEntity participantEntity = new IssueParticipantEntity();
@@ -1841,8 +1849,8 @@ class IssueResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(participantId, "participant@test.com",
                 "Participant", Map.of(), Map.of(), Map.of()))
-            .delete(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId())
+            .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1)
             .then()
             .statusCode(403);
     }
@@ -1862,54 +1870,122 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteAttachment_FAILED_attachmentNotFound() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
+        setupTestIssues();
         UUID nonExistentAttachmentId = UUID.randomUUID();
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .delete(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
+            .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_1 + "/attachments/"
                 + nonExistentAttachmentId)
             .then()
             .statusCode(404);
     }
 
     @Test
-    void deleteAttachment_FAILED_managerWithoutProjectPermission() {
-        IssueJson issueWithAttachment = createIssueWithAttachment();
-        IssueAttachmentJson attachment = issueWithAttachment.getAttachments().get(0);
-
-        // Different manager without access to this project
+    void deleteAttachment_FAILED_managerWithoutProjectPermission() throws Exception {
+        setupTestIssuesWithAttachment();
         Map<String, String> otherProjectRoles = Map.of(UUID.randomUUID().toString(), "MANAGER");
 
         given()
             .when()
             .cookie(buildManagerCookie(otherProjectRoles))
-            .delete(BASE_PATH + "/" + issueWithAttachment.getId() + "/attachments/"
-                + attachment.getAttachmentId())
+            .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1)
             .then()
             .statusCode(403);
     }
 
-    // Helper method to create an issue with an attachment
-    // Uses tenant cookie to create issue (similar to real-world scenario)
-    private IssueJson createIssueWithAttachment() {
-        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
-            + "\"title\":\"Issue with attachment for testing\","
-            + "\"type\":\"DEFECT\""
-            + "}";
-        InputStream fileStream = getTestImageStream();
+    @Test
+    void uploadAttachments_SUCCESS_managerUploadsSingleAttachment() {
+        setupTestIssues();
+        String issueId = TicketingTestData.ISSUE_ID_1.toString();
+        InputStream fileStream = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1);
 
-        return given()
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1, fileStream,
+                TicketingTestData.ATTACHMENT_FILE_TYPE_1)
+            .post(BASE_PATH + "/" + issueId + "/attachments")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("$", hasSize(1))
+            .body("[0].issueId", equalTo(issueId))
+            .body("[0].attachmentId", notNullValue())
+            .body("[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1))
+            .body("[0].contentType", startsWith(TicketingTestData.ATTACHMENT_FILE_TYPE_1))
+            .body("[0].objectName", startsWith("/issues/"))
+            .body("[0].uploadedBy", notNullValue())
+            .body("[0].createdAt", notNullValue());
+    }
+
+    @Test
+    void uploadAttachments_SUCCESS_managerUploadsMultipleAttachments() {
+        setupTestIssues();
+        String issueId = TicketingTestData.ISSUE_ID_3.toString();
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_2,
+                getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_2),
+                TicketingTestData.ATTACHMENT_FILE_TYPE_2)
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_3,
+                getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_3),
+                TicketingTestData.ATTACHMENT_FILE_TYPE_3)
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_4,
+                getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_4),
+                TicketingTestData.ATTACHMENT_FILE_TYPE_4)
+            .post(BASE_PATH + "/" + issueId + "/attachments")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("$", hasSize(3));
+    }
+
+    @Test
+    void uploadAttachments_FAILED_noAuthentication() {
+        given()
+            .when()
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1,
+                getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1),
+                TicketingTestData.ATTACHMENT_FILE_TYPE_1)
+            .post(BASE_PATH + "/" + UUID.randomUUID() + "/attachments")
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
+    void uploadAttachments_FAILED_tenantForbidden() {
+        setupTestIssues();
+        String issueId = TicketingTestData.ISSUE_ID_1.toString();
+
+        given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_FIRST_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .multiPart("issue", issueJson, MediaType.APPLICATION_JSON)
-            .multiPart("attachment", TicketingTestData.FILE_PNG_PATH, fileStream, TicketingTestData.FILE_PNG_TYPE)
-            .post(BASE_PATH)
-            .thenReturn()
-            .as(IssueJson.class);
+                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1,
+                getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1),
+                TicketingTestData.ATTACHMENT_FILE_TYPE_1)
+            .post(BASE_PATH + "/" + issueId + "/attachments")
+            .then()
+            .statusCode(403);
     }
+
+    @Test
+    void uploadAttachments_FAILED_issueNotFound() {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1,
+                getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1),
+                TicketingTestData.ATTACHMENT_FILE_TYPE_1)
+            .post(BASE_PATH + "/" + UUID.randomUUID() + "/attachments")
+            .then()
+            .statusCode(404);
+    }
+
 
 }

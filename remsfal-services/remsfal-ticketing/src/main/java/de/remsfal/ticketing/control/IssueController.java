@@ -52,23 +52,35 @@ public class IssueController {
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, IssueStatus.OPEN);
+        return createIssue(user, issue, issue.getProjectId() , IssueStatus.OPEN);
     }
 
-    public IssueModel createIssue(final UserModel user, final IssueModel issue, final IssueStatus initialStatus) {
+    public IssueModel createIssue(final UserModel user, final IssueModel issue,
+        final UUID projectId, final IssueStatus initialStatus) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
         IssueEntity entity = new IssueEntity();
         entity.generateId();
-        entity.setProjectId(issue.getProjectId());
+        entity.setProjectId(projectId);
         entity.setTitle(issue.getTitle());
         entity.setType(issue.getType());
+        entity.setCategory(issue.getCategory());
         entity.setStatus(initialStatus);
         entity.setPriority(issue.getPriority());
-        entity.setDescription(issue.getDescription());
         entity.setReporterId(user.getId());
         entity.setAgreementId(issue.getAgreementId());
-        entity.setCreatedAt(Instant.now());
+        if (issue.getAgreementId() != null && issue.isVisibleToTenants() == null) {
+            entity.setVisibleToTenants(true);
+        } else if (issue.isVisibleToTenants() != null) {
+            entity.setVisibleToTenants(issue.isVisibleToTenants());
+        } else {
+            entity.setVisibleToTenants(false);
+        }
+        entity.setRentalUnitId(issue.getRentalUnitId());
+        entity.setRentalUnitType(issue.getRentalUnitType());
+        // Assignee is not set on creation, must be assigned explicitly via update
+        entity.setLocation(issue.getLocation());
+        entity.setDescription(issue.getDescription());
         // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via POST
 

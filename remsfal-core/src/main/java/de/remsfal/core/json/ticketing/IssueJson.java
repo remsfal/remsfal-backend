@@ -180,7 +180,6 @@ public abstract class IssueJson implements IssueModel {
     public static IssueJson valueOfTenancyIssue(final IssueModel model) {
         return ImmutableIssueJson.builder()
             .id(model.getId())
-            .projectId(model.getProjectId())
             .title(model.getTitle())
             .type(model.getType())
             .category(model.getCategory())
@@ -191,7 +190,7 @@ public abstract class IssueJson implements IssueModel {
             .rentalUnitType(model.getRentalUnitType())
             .location(model.getLocation())
             .description(model.getDescription())
-            // assigneeId, blockedBy, relatedTo, duplicateOf are omitted
+            // projectId, assigneeId, blockedBy, relatedTo, duplicateOf are omitted
             .build();
     }
 

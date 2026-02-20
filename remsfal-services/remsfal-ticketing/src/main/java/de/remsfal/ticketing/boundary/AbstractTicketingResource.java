@@ -30,11 +30,10 @@ public class AbstractTicketingResource extends AbstractResource {
     @Inject
     protected IssueParticipantRepository issueParticipantRepository;
 
-    protected UserContext checkTenancyIssueCreatePermissions(final UUID projectId, final UUID tenancyId) {
+    protected UUID checkTenancyIssueCreatePermissions(final UUID tenancyId) {
         Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
-        if (tenancyId != null && projectId != null && tenancyProjects.containsKey(tenancyId)
-            && tenancyProjects.get(tenancyId).equals(projectId)) {
-            return UserContext.TENANT;
+        if (tenancyId != null && tenancyProjects.containsKey(tenancyId)) {
+            return tenancyProjects.get(tenancyId);
         }
         throw new ForbiddenException(FORBIDDEN_MESSAGE);
     }

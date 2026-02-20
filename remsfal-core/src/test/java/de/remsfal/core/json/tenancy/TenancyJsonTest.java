@@ -2,7 +2,6 @@ package de.remsfal.core.json.tenancy;
 
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ImmutableAddressJson;
-import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.TenantModel;

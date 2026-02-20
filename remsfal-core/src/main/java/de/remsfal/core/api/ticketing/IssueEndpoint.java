@@ -77,7 +77,7 @@ public interface IssueEndpoint {
     @APIResponse(responseCode = "201", description = "Issue created successfully",
         headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createIssue(
+    Response createProjectIssue(
         @Parameter(description = "Issue information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
 
@@ -91,7 +91,7 @@ public interface IssueEndpoint {
         headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createIssueWithAttachments(
+    Response createTenancyIssueWithAttachments(
         @Parameter(description = "Multipart form data containing issue information and image files", required = true)
         MultipartFormDataInput input);
 
@@ -206,6 +206,25 @@ public interface IssueEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the attachment", required = true)
         @PathParam("attachmentId") @NotNull UUID attachmentId);
+
+    @POST
+    @Path("/{issueId}/attachments")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Upload one or more attachments to an existing issue.",
+        description = "Uploads one or more image files to an already-existing issue."
+            + " Each file must be provided as a separate 'attachment' part in the multipart request.")
+    @APIResponse(responseCode = "200", description = "Attachments uploaded successfully")
+    @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403",
+        description = "User does not have permission to upload attachments to this issue")
+    @APIResponse(responseCode = "404", description = "Issue not found")
+    Response uploadAttachments(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Multipart form data containing one or more image files", required = true)
+        MultipartFormDataInput input);
 
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
