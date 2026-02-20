@@ -17,11 +17,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
-import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
-import de.remsfal.ticketing.entity.dto.IssueParticipantKey;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
@@ -43,9 +38,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 class IssueResourceTest extends AbstractTicketingTest {
 
     static final String BASE_PATH = "/ticketing/v1/issues";
-
-    @Inject
-    IssueParticipantRepository issueParticipantRepository;
 
     @Test
     void getIssues_FAILED_noAuthentication() {
@@ -1362,54 +1354,6 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getIssue_SUCCESS_participantViewsFilteredIssue() {
-
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        final Response createResponse = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH)
-            .thenReturn();
-
-        final String issueId = createResponse.then()
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract().path("id");
-
-        UUID participantId = UUID.randomUUID();
-
-        IssueParticipantKey key = new IssueParticipantKey();
-        key.setUserId(participantId);
-        key.setIssueId(UUID.fromString(issueId));
-        key.setSessionId(UUID.randomUUID());
-
-        IssueParticipantEntity participantEntity = new IssueParticipantEntity();
-        participantEntity.setKey(key);
-        participantEntity.setProjectId(TicketingTestData.PROJECT_ID);
-        participantEntity.setRole("CONTRACTOR");
-
-        issueParticipantRepository.insert(participantEntity);
-
-        given()
-            .when()
-            .cookie(buildCookie(participantId, "participant@test.com",
-                "Participant", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH + "/" + issueId)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("id", equalTo(issueId))
-            .body("title", equalTo(TicketingTestData.ISSUE_TITLE))
-            .body("description", notNullValue());
-    }
-
-    @Test
     void getIssue_FAILED_noPermission() {
 
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
@@ -1491,91 +1435,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
                 TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
             .queryParam("agreementId", agreementId.toString())
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_participantIssueAddedToCollection() {
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Participant Issue\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        Response createResponse = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH)
-            .thenReturn();
-
-        String issueId = createResponse.then()
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract().path("id");
-
-        UUID participantId = UUID.randomUUID();
-
-        IssueParticipantKey key = new IssueParticipantKey();
-        key.setUserId(participantId);
-        key.setIssueId(UUID.fromString(issueId));
-        key.setSessionId(UUID.randomUUID());
-
-        IssueParticipantEntity participantEntity = new IssueParticipantEntity();
-        participantEntity.setKey(key);
-        participantEntity.setProjectId(TicketingTestData.PROJECT_ID);
-        participantEntity.setRole("CONTRACTOR");
-
-        issueParticipantRepository.insert(participantEntity);
-
-        given()
-            .when()
-            .cookie(buildCookie(participantId, "participant@test.com",
-                "Participant", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("issues", hasSize(1));
-    }
-
-    @Test
-    void getIssues_SUCCESS_deduplicationRemovesDuplicates() {
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Duplicate Test Issue\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        Response createResponse = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH)
-            .thenReturn();
-
-        String issueId = createResponse.then()
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract().path("id");
-
-        IssueParticipantKey key = new IssueParticipantKey();
-        key.setUserId(TicketingTestData.USER_ID_1);
-        key.setIssueId(UUID.fromString(issueId));
-        key.setSessionId(UUID.randomUUID());
-
-        IssueParticipantEntity participantEntity = new IssueParticipantEntity();
-        participantEntity.setKey(key);
-        participantEntity.setProjectId(TicketingTestData.PROJECT_ID);
-        participantEntity.setRole("CONTRACTOR");
-
-        issueParticipantRepository.insert(participantEntity);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
             .get(BASE_PATH)
             .then()
             .statusCode(200)
@@ -1697,35 +1556,6 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    @Disabled("Issue participants cannot download attachments until requirement is clarified")
-    void downloadAttachment_SUCCESS_participantDownloadsAttachment() throws Exception {
-        setupTestIssuesWithAttachment();
-        UUID participantId = UUID.randomUUID();
-
-        IssueParticipantKey key = new IssueParticipantKey();
-        key.setUserId(participantId);
-        key.setIssueId(TicketingTestData.ISSUE_ID_2);
-        key.setSessionId(UUID.randomUUID());
-
-        IssueParticipantEntity participantEntity = new IssueParticipantEntity();
-        participantEntity.setKey(key);
-        participantEntity.setProjectId(TicketingTestData.PROJECT_ID);
-        participantEntity.setRole("CONTRACTOR");
-
-        issueParticipantRepository.insert(participantEntity);
-
-        given()
-            .when()
-            .cookie(buildCookie(participantId, "participant@test.com",
-                "Participant", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
-                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
-            .then()
-            .statusCode(200)
-            .contentType(MediaType.APPLICATION_OCTET_STREAM);
-    }
-
-    @Test
     void downloadAttachment_FAILED_noAuthentication() {
         setupTestIssues();
 
@@ -1829,26 +1659,14 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void deleteAttachment_FAILED_participantCannotDelete() throws Exception {
+    void deleteAttachment_FAILED_noPermission() throws Exception {
         setupTestIssuesWithAttachment();
-        UUID participantId = UUID.randomUUID();
-
-        IssueParticipantKey key = new IssueParticipantKey();
-        key.setUserId(participantId);
-        key.setIssueId(TicketingTestData.ISSUE_ID_2);
-        key.setSessionId(UUID.randomUUID());
-
-        IssueParticipantEntity participantEntity = new IssueParticipantEntity();
-        participantEntity.setKey(key);
-        participantEntity.setProjectId(TicketingTestData.PROJECT_ID);
-        participantEntity.setRole("CONTRACTOR");
-
-        issueParticipantRepository.insert(participantEntity);
+        UUID unauthorizedUserId = UUID.randomUUID();
 
         given()
             .when()
-            .cookie(buildCookie(participantId, "participant@test.com",
-                "Participant", Map.of(), Map.of(), Map.of()))
+            .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
+                "Unauthorized", Map.of(), Map.of(), Map.of()))
             .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
                 + TicketingTestData.ATTACHMENT_ID_1)
             .then()

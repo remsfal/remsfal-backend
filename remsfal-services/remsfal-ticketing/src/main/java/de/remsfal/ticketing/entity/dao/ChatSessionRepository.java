@@ -10,15 +10,12 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 import de.remsfal.ticketing.entity.dto.ChatSessionEntity;
 import de.remsfal.ticketing.entity.dto.ChatSessionKey;
-import de.remsfal.ticketing.entity.dto.IssueParticipantEntity;
-import de.remsfal.ticketing.entity.dto.IssueParticipantKey;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,9 +39,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
     private static final String ERROR_SESSION_FETCH = "An error occurred while fetching the session";
 
     @Inject
-    IssueParticipantRepository issueParticipantRepository;
-
-    @Inject
     Logger logger;
 
     public enum ParticipantRole {
@@ -65,57 +59,7 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
         Instant now = Instant.now();
         session.setCreatedAt(now);
         session.setModifiedAt(now);
-
-        // Create Participants first
-        List<UUID> insertedParticipants = new ArrayList<>();
-        try {
-            for (Map.Entry<UUID, String> entry : participants.entrySet()) {
-                UUID userId = entry.getKey();
-                String role = entry.getValue();
-
-                IssueParticipantEntity p = new IssueParticipantEntity();
-                IssueParticipantKey k = new IssueParticipantKey();
-                k.setUserId(userId);
-                k.setIssueId(issueId);
-                k.setSessionId(sessionId);
-                p.setKey(k);
-                p.setProjectId(projectId);
-                p.setRole(role);
-                p.setCreatedAt(now);
-
-                issueParticipantRepository.insert(p);
-                insertedParticipants.add(userId);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to insert participants for session " + sessionId
-                + ". Rolling back " + insertedParticipants.size() + " participants", e);
-            for (UUID userId : insertedParticipants) {
-                try {
-                    issueParticipantRepository.delete(userId, issueId, sessionId);
-                } catch (Exception rollbackError) {
-                    logger.error("Failed to rollback participant " + userId, rollbackError);
-                }
-            }
-            throw new IllegalStateException("Failed to create chat session participants", e);
-        }
-
-        // create session only if all inserts are successful
-        try {
-            save(session);
-        } catch (Exception e) {
-            // Rollback: delete all participants
-            logger.error("Failed to create chat session after inserting participants. "
-                + "Rolling back all participants for session " + sessionId, e);
-            for (UUID userId : insertedParticipants) {
-                try {
-                    issueParticipantRepository.delete(userId, issueId, sessionId);
-                } catch (Exception rollbackError) {
-                    logger.error("Failed to rollback participant " + userId, rollbackError);
-                }
-            }
-            throw new IllegalStateException("Failed to create chat session", e);
-        }
-
+        save(session);
         return session;
     }
 
@@ -210,17 +154,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             validateParticipantAddition(participants, userId, role);
             addParticipantToDatabase(projectId, sessionId, issueId, userId, role, participants);
 
-            IssueParticipantEntity p = new IssueParticipantEntity();
-            IssueParticipantKey k = new IssueParticipantKey();
-            k.setUserId(userId);
-            k.setIssueId(issueId);
-            k.setSessionId(sessionId);
-            p.setKey(k);
-            p.setProjectId(projectId);
-            p.setRole(role);
-            p.setCreatedAt(Instant.now());
-            issueParticipantRepository.insert(p);
-
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
@@ -245,8 +178,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                 throw new IllegalArgumentException("User is not a participant in this session");
             }
 
-            updateRoleInRepository(userId, issueId, sessionId, newRole);
-
             participants.put(userId, newRole);
             updateParticipantsAfterRoleChange(projectId, sessionId, issueId, participants);
 
@@ -256,21 +187,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             throw new IllegalStateException("An error occurred while changing the participant role", e);
         }
     }
-
-    private void updateRoleInRepository(UUID userId, UUID issueId, UUID sessionId, String newRole) {
-        try {
-            issueParticipantRepository.updateRole(userId, issueId, sessionId, newRole);
-        } catch (IllegalArgumentException e) {
-            logger.error("Participant not found in issue_participants for userId=" + userId
-                + ", sessionId=" + sessionId, e);
-            throw new IllegalStateException("An error occurred while changing the participant role", e);
-        } catch (Exception e) {
-            logger.error("Failed to update role in issue_participants for userId=" + userId
-                + ", sessionId=" + sessionId, e);
-            throw new IllegalStateException("An error occurred while changing the participant role", e);
-        }
-    }
-
 
     private void updateParticipantsAfterRoleChange(UUID projectId, UUID sessionId, UUID issueId,
         Map<UUID, String> participants) {
@@ -300,8 +216,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
                 Map<UUID, String> participants = row.getMap(PARTICIPANTS_COLUMN, UUID.class, String.class);
                 assert participants != null;
 
-                deleteParticipantFromRepository(userId, issueId, sessionId);
-
                 participants.remove(userId);
                 updateParticipantsAfterDeletion(projectId, sessionId, issueId, participants);
             } else {
@@ -311,16 +225,6 @@ public class ChatSessionRepository extends AbstractRepository<ChatSessionEntity,
             throw e;
         } catch (Exception e) {
             throw new IllegalArgumentException("An error occurred while removing the participant", e);
-        }
-    }
-
-    private void deleteParticipantFromRepository(UUID userId, UUID issueId, UUID sessionId) {
-        try {
-            issueParticipantRepository.delete(userId, issueId, sessionId);
-        } catch (Exception e) {
-            logger.error("Failed to delete participant from issue_participants: "
-                + userId + " in session " + sessionId, e);
-            throw new IllegalArgumentException("Failed to remove participant from issue", e);
         }
     }
 

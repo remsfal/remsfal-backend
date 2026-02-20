@@ -22,6 +22,9 @@ import java.util.List;
 @ApplicationScoped
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
+    // ---- Issue columns ----
+    static final String PRIORITY           = "priority";
+    
     // ---- Relation columns ----
     static final String BLOCKS_IDS         = "blocks_issue_ids";
     static final String BLOCKED_BY_IDS     = "blocked_by_issue_ids";
@@ -33,6 +36,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     @Inject
     CqlSession session;
 
+    @Deprecated
     public Optional<IssueEntity> find(final IssueKey key) {
         return template.select(IssueEntity.class)
             .where(PROJECT_ID).eq(key.getProjectId())
@@ -46,26 +50,35 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             .singleResult();
     }
 
-    public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID assigneeId, UUID agreementId,
-        UnitType rentalType, UUID rentalId, IssueStatus status) {
+    public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final Integer offset, final Integer limit) {
+        return findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
+            status, offset + limit).stream().skip(offset).limit(limit).toList();
+    }
+
+    public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final Integer limit) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).in(projectIds);
         if (assigneeId != null) {
             query = query.and("assignee_id").eq(assigneeId);
         }
-        if (agreementId != null) {
-            query = query.and("agreement_id").eq(agreementId);
+        if (agreementIds != null) {
+            query = query.and("agreement_id").in(agreementIds);
         }
         if (rentalType != null) {
-            query = query.and("rental_type").eq(rentalType.name());
+            query = query.and("rental_unit_type").eq(rentalType.name());
         }
         if (rentalId != null) {
-            query = query.and("rental_id").eq(rentalId);
+            query = query.and("rental_unit_id").eq(rentalId);
         }
         if (status != null) {
             query = query.and("status").eq(status.name());
         }
-        return query.result();
+        return query.orderBy(CREATED_AT).asc()
+            .limit(limit).result();
     }
 
     public List<? extends IssueModel> findByAgreementId(UUID agreementId) {

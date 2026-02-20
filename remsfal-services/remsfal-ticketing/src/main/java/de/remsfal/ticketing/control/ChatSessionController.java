@@ -33,26 +33,6 @@ public class ChatSessionController {
         return chatSessionRepository.createChatSession(projectId, issueId, participants);
     }
 
-    public void addParticipant(UUID projectId, UUID issueId,
-        UUID sessionId, UUID userId, ParticipantRole role) {
-        logger.infov("Adding participant to chat session" +
-            " (sessionId={0}, participantId={1})", sessionId, userId);
-        chatSessionRepository.addParticipant(projectId, sessionId, issueId, userId, role.name());
-    }
-
-    public void removeParticipant(UUID projectId, UUID issueId, UUID sessionId, UUID userId) {
-        logger.infov("Removing participant from chat session (sessionId={0}, participantId={1})",
-            sessionId, userId);
-        chatSessionRepository.deleteMember(projectId, sessionId, issueId, userId);
-    }
-
-    public void updateParticipantRole(UUID projectId, UUID issueId,
-        UUID sessionId, UUID userId, ParticipantRole role) {
-        logger.infov("Updating participant role in chat session (sessionId={0}, participantId={1})",
-            sessionId, userId);
-        chatSessionRepository.changeParticipantRole(projectId, sessionId, issueId, userId, role.name());
-    }
-
     public String getChatLogs(UUID projectId, UUID issueId, UUID sessionId) {
         logger.infov("Exporting chat session (sessionId={0})", sessionId);
         return chatMessageRepository.getChatLogsAsJsonString(projectId, sessionId, issueId);
@@ -66,16 +46,6 @@ public class ChatSessionController {
     public Optional<ChatSessionEntity> getChatSession(UUID projectId, UUID issueId, UUID sessionId) {
         logger.infov("Retrieving chat session (sessionId={0})", sessionId);
         return chatSessionRepository.findSessionById(projectId, sessionId, issueId);
-    }
-
-    public Map<UUID, String> getParticipants(UUID projectId, UUID issueId, UUID sessionId) {
-        logger.infov("Retrieving participants (sessionId={0})", sessionId);
-        return chatSessionRepository.findParticipantsById(projectId, sessionId, issueId);
-    }
-
-    public String getParticipantRole(UUID projectId, UUID issueId, UUID sessionId, UUID userId) {
-        logger.infov("Retrieving participant role (sessionId={0}, participantId={1})", sessionId, userId);
-        return chatSessionRepository.findParticipantRole(projectId, sessionId, issueId, userId);
     }
 
     public List<ChatSessionEntity> getChatSessions(UUID projectId, UUID issueId) {

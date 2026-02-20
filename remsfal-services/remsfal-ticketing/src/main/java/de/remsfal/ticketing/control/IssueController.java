@@ -95,23 +95,27 @@ public class IssueController {
                 .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
-    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID assigneeId, UUID agreementId,
-        UnitType rentalType, UUID rentalId, IssueStatus status) {
-        return issueRepository.findByQuery(projectFilter, assigneeId, agreementId, rentalType, rentalId, status);
+    public List<? extends IssueModel> getIssues(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final Integer offset, final Integer limit) {
+        return issueRepository.findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
+            status, offset, limit);
     }
 
+    @Deprecated
     public List<? extends IssueModel> getIssuesOfAgreement(UUID agreementId) {
         return issueRepository.findByAgreementId(agreementId);
     }
 
+    @Deprecated
     public List<? extends IssueModel> getIssuesOfAgreements(Set<UUID> keySet) {
         return issueRepository.findByAgreementIds(keySet);
     }
 
-    public IssueModel updateIssue(final IssueKey key, final IssueModel issue) {
-        logger.infov("Updating issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
+    public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
+        logger.infov("Updating issue (issueId={0})", issueId);
 
-        final IssueEntity entity = issueRepository.find(key)
+        final IssueEntity entity = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         entity.touch();
@@ -387,4 +391,5 @@ public class IssueController {
         logger.infov("Deleting all attachments for issue (issueId={0})", issueId);
         attachmentRepository.deleteByIssueId(issueId);
     }
+
 }

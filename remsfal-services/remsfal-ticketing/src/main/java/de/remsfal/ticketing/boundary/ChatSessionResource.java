@@ -9,7 +9,6 @@ import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.NotFoundException;
 
 import de.remsfal.core.api.ticketing.ChatSessionEndpoint;
-import de.remsfal.core.api.ticketing.ChatParticipantEndpoint;
 import de.remsfal.core.api.ticketing.ChatMessageEndpoint;
 import de.remsfal.core.json.ticketing.ChatSessionJson;
 import de.remsfal.core.json.ticketing.ChatSessionListJson;
@@ -31,9 +30,6 @@ public class ChatSessionResource extends AbstractTicketingResource implements Ch
 
     @Inject
     ChatSessionController chatSessionController;
-
-    @Inject
-    Instance<ChatParticipantResource> chatParticipantResource;
 
     @Inject
     Instance<ChatMessageResource> chatMessageResource;
@@ -83,11 +79,6 @@ public class ChatSessionResource extends AbstractTicketingResource implements Ch
             .type(MediaType.APPLICATION_JSON)
             .entity(ChatSessionListJson.valueOf(sessions))
             .build();
-    }
-
-    @Override
-    public ChatParticipantEndpoint getChatParticipantResource() {
-        return resourceContext.initResource(chatParticipantResource.get());
     }
 
     @Override

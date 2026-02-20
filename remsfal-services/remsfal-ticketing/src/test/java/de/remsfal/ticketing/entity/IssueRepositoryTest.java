@@ -44,7 +44,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            List.of(projectId), null, null, null, null, IssueStatus.OPEN
+            List.of(projectId), null, null, null, null, IssueStatus.OPEN, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 OPEN issues
@@ -69,7 +69,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by assigneeId1
         List<? extends IssueModel> assigneeIssues = repository.findByQuery(
-            List.of(projectId), assigneeId1, null, null, null, null
+            List.of(projectId), assigneeId1, null, null, null, null, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 issues assigned to assigneeId1

@@ -55,16 +55,18 @@ public interface IssueEndpoint {
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
         @Parameter(description = "Maximum number of projects to return")
         @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit,
+        @Parameter(description = "Whether to prefer tenancy issues over project issues")
+        @QueryParam("preferTenancyIssues") @DefaultValue("false") boolean preferTenancyIssues,
         @Parameter(description = "Filter to return only issues of a specific project")
         @QueryParam("projectId") UUID projectId,
-        @Parameter(description = "Filter to return only issues of a specific user")
-        @QueryParam("owner") UUID ownerId,
-        @Parameter(description = "Filter to return only issuesfor a specific tenancy")
+        @Parameter(description = "Filter to return only issues of a assigned user")
+        @QueryParam("assigneeId") UUID assigneeId,
+        @Parameter(description = "Filter to return only issuesfor a specific rental agreement")
         @QueryParam("agreementId") UUID agreementId,
-        @Parameter(description = "Filter to return only issuesfor a specific rental type")
-        @QueryParam("rentalType") UnitType rentalType,
-        @Parameter(description = "Filter to return only issuesfor a specific rental")
-        @QueryParam("rentalId") UUID rentalId,
+        @Parameter(description = "Filter to return only issuesfor a specific unit type")
+        @QueryParam("rentalUnitType") UnitType rentalUnitType,
+        @Parameter(description = "Filter to return only issuesfor a specific rental unit")
+        @QueryParam("rentalUnitId") UUID rentalUnitId,
         @Parameter(description = "Filter to return only issues with a specific status")
         @QueryParam("status") IssueStatus status);
 

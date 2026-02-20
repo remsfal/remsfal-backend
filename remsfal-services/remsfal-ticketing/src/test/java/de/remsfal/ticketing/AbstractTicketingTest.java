@@ -61,7 +61,6 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     void cleanColumnDatabase() {
         cqlSession.execute("TRUNCATE issues");
         cqlSession.execute("TRUNCATE issue_attachments");
-        cqlSession.execute("TRUNCATE issue_participants");
         cqlSession.execute("TRUNCATE chat_sessions");
         cqlSession.execute("TRUNCATE chat_messages");
         cqlSession.execute("TRUNCATE inbox_messages");

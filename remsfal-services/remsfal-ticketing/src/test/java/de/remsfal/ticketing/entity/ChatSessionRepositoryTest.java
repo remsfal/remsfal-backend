@@ -16,7 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -47,20 +49,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
                 TicketingTestData.PROJECT_ID, TASK_ID, SESSION_ID, Instant.now(),
                 Map.of(TicketingTestData.USER_ID_1, "INITIATOR",
                         TicketingTestData.USER_ID_2, "HANDLER"));
-
-        String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
-                "(user_id, issue_id, session_id, project_id, role, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-
-        Instant now = Instant.now();
-
-        cqlSession.execute(insertParticipantCql,
-                TicketingTestData.USER_ID_1, TASK_ID, SESSION_ID,
-                TicketingTestData.PROJECT_ID, "INITIATOR", now);
-
-        cqlSession.execute(insertParticipantCql,
-                TicketingTestData.USER_ID_2, TASK_ID, SESSION_ID,
-                TicketingTestData.PROJECT_ID, "HANDLER", now);
 
         logger.info("Test setup completed");
     }
@@ -446,39 +434,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     }
 
     @Test
-    void changeParticipantRole_PARTICIPANT_NOT_FOUND_IN_ISSUE_PARTICIPANTS() {
-        logger.info("Testing changeParticipantRole when participant not found in issue_participants");
-
-        UUID testProjectId = UUID.randomUUID();
-        UUID testIssueId = UUID.randomUUID();
-        UUID testSessionId = UUID.randomUUID();
-        UUID testUserId = UUID.randomUUID();
-
-        String insertSessionCql = "INSERT INTO remsfal.chat_sessions " +
-                "(project_id, issue_id, session_id, created_at, participants) " +
-                "VALUES (?, ?, ?, ?, ?)";
-
-        cqlSession.execute(insertSessionCql,
-                testProjectId, testIssueId, testSessionId, Instant.now(),
-                Map.of(testUserId, "HANDLER"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                chatSessionRepository.changeParticipantRole(
-                        testProjectId,
-                        testSessionId,
-                        testIssueId,
-                        testUserId,
-                        "OBSERVER"
-                )
-        );
-
-        assertTrue(
-                exception.getMessage().contains("An error occurred while changing the participant role"),
-                "Exception message should contain error about changing participant role"
-        );
-    }
-
-    @Test
     void changeParticipantRole_UPDATE_ROLE_GENERAL_EXCEPTION() {
         logger.info("Testing changeParticipantRole with general exception during updateRole");
 
@@ -494,13 +449,6 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
         cqlSession.execute(insertSessionCql,
                 testProjectId, testIssueId, testSessionId, Instant.now(),
                 Map.of(testUserId, "HANDLER"));
-
-        String insertParticipantCql = "INSERT INTO remsfal.issue_participants " +
-                "(user_id, issue_id, session_id, project_id, role, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-
-        cqlSession.execute(insertParticipantCql,
-                testUserId, testIssueId, testSessionId, testProjectId, "HANDLER", Instant.now());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 chatSessionRepository.changeParticipantRole(
@@ -519,66 +467,5 @@ public class ChatSessionRepositoryTest extends AbstractTicketingTest {
     }
 
 
-        @Test
-        void createChatSession_PARTICIPANT_INSERTION_FAILURE() {
-                logger.info("Testing createChatSession with participant insertion failure");
-
-                UUID testProjectId = UUID.randomUUID();
-                UUID testIssueId = UUID.randomUUID();
-
-                Map<UUID, String> invalidParticipants = new HashMap<>();
-                invalidParticipants.put(null, "INITIATOR");
-                RuntimeException exception = assertThrows(RuntimeException.class,
-                        () -> chatSessionRepository.createChatSession(
-                                testProjectId,
-                                testIssueId,
-                                invalidParticipants));
-
-                logger.info("EXCEPTION ACTUAL: " + exception.getMessage());
-                assertTrue(
-                        exception.getMessage().contains("Failed to create chat session participants"),
-                        "Exception message should contain 'Failed to create chat session participants'");
-        }
-
-
-
-
-        @Test
-        void createChatSession_PARTIAL_PARTICIPANT_INSERTION_WITH_ROLLBACK() {
-                logger.info("Testing createChatSession with partial participant insertion requiring rollback");
-
-                UUID testProjectId = UUID.randomUUID();
-                UUID testIssueId = UUID.randomUUID();
-
-                // Create a map with valid and invalid participants
-                // The invalid one should cause the entire operation to rollback
-                Map<UUID, String> mixedParticipants = new HashMap<>();
-                mixedParticipants.put(TicketingTestData.USER_ID_1, "INITIATOR");
-                mixedParticipants.put(null, "HANDLER"); // This will cause failure
-
-                RuntimeException exception = assertThrows(RuntimeException.class,
-                        () -> chatSessionRepository.createChatSession(
-                                testProjectId,
-                                testIssueId,
-                                mixedParticipants));
-
-                assertTrue(
-                        exception.getMessage().contains("Failed to create chat session participants"),
-                        "Should throw exception about participant creation failure");
-
-                // Verify that the successfully inserted participant was rolled back
-                // by checking it doesn't exist in issue_participants table
-                boolean participantExists = false;
-                try {
-                        String checkCql = "SELECT * FROM remsfal.issue_participants WHERE user_id = ? AND issue_id = ?";
-                        com.datastax.oss.driver.api.core.cql.ResultSet rs = cqlSession.execute(checkCql,
-                                TicketingTestData.USER_ID_1, testIssueId);
-                        participantExists = rs.one() != null;
-                } catch (Exception e) {
-                        logger.info("Error checking participant existence: " + e.getMessage());
-                }
-
-                assertFalse(participantExists,
-                        "Participant should have been rolled back and not exist in database");
-        }
 }
+

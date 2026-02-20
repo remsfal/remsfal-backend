@@ -27,24 +27,28 @@ public abstract class IssueListJson {
         readOnly = true, required = true, examples = "1")
     public abstract Integer getFirst();
 
-    @Schema(description = "Number of elements in list", minimum = "1", maximum = "100",
-        readOnly = true, defaultValue = "10", required = true)
+    @Schema(description = "Number of elements in list", minimum = "1", maximum = "500",
+        readOnly = true, defaultValue = "50", required = true)
     public abstract Integer getSize();
-
-    @Schema(description = "Total number of available elements", required = true)
-    public abstract Integer getTotal();
 
     public abstract List<IssueItemJson> getIssues();
 
-    public static IssueListJson valueOf(final List<? extends IssueModel> issues,
-        final int first, final int total) {
-
+    public static IssueListJson valueOfProjectIssues(final List<? extends IssueModel> issues, final int first) {
         return ImmutableIssueListJson.builder()
             .size(issues.size())
             .first(first)
-            .total(total)
             .issues(issues.stream()
-                .map(IssueItemJson::valueOf)
+                .map(IssueItemJson::valueOfProjectIssue)
+                .toList())
+            .build();
+    }
+
+    public static IssueListJson valueOfTenancyIssues(final List<? extends IssueModel> issues, final int first) {
+        return ImmutableIssueListJson.builder()
+            .size(issues.size())
+            .first(first)
+            .issues(issues.stream()
+                .map(IssueItemJson::valueOfTenancyIssue)
                 .toList())
             .build();
     }

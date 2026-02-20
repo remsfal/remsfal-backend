@@ -15,7 +15,6 @@ import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.IssueController;
-import de.remsfal.ticketing.entity.dao.IssueParticipantRepository;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -27,8 +26,13 @@ public class AbstractTicketingResource extends AbstractResource {
     @Inject
     protected IssueController issueController;
 
-    @Inject
-    protected IssueParticipantRepository issueParticipantRepository;
+    protected MemberRole checkProjectIssueCreatePermissions(final UUID projectId) {
+        if(principal.getProjectRole(projectId) == null
+            || !principal.getProjectRole(projectId).isPrivileged(MemberRole.STAFF) ) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
+        return principal.getProjectRole(projectId);
+    }
 
     protected UUID checkTenancyIssueCreatePermissions(final UUID tenancyId) {
         Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
@@ -36,6 +40,41 @@ public class AbstractTicketingResource extends AbstractResource {
             return tenancyProjects.get(tenancyId);
         }
         throw new ForbiddenException(FORBIDDEN_MESSAGE);
+    }
+
+    protected UserContext checkIssueReadPermissions(final UUID issueId) {
+        final IssueModel issue = issueController.getIssue(issueId);
+        final UserContext context = getUserContext(issue.getProjectId());
+        if(context == null) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        } else if (context == UserContext.TENANT &&
+            (issue.getAgreementId() == null || !issue.isVisibleToTenants()
+            || !principal.getTenancyProjects().containsKey(issue.getAgreementId()))) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
+        return context;
+    }
+
+    protected UserContext getUserContext(final UUID projectId) {
+        Map<UUID, MemberRole> roles = principal.getProjectRoles();
+        if (roles.containsKey(projectId)) {
+            return UserContext.MANAGER;
+        }
+        Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
+        if (tenancyProjects.containsValue(projectId)) {
+            return UserContext.TENANT;
+        }
+        // return null if no context found
+        return null;
+    }
+
+    protected MemberRole checkIssueWritePermissions(final UUID issueId) {
+        final IssueModel issue = issueController.getIssue(issueId);
+        if(principal.getProjectRole(issue.getProjectId()) == null
+            || !principal.getProjectRole(issue.getProjectId()).isPrivileged(MemberRole.LESSOR) ) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
+        return principal.getProjectRole(issue.getProjectId());
     }
 
     protected String getFileName(final MultivaluedMap<String, String> headers) {
@@ -50,19 +89,8 @@ public class AbstractTicketingResource extends AbstractResource {
         return "unknown";
     }
 
-    public UserContext getUserContext(final UUID projectId) {
-        Map<UUID, MemberRole> roles = principal.getProjectRoles();
-        if (roles.containsKey(projectId)) {
-            return UserContext.MANAGER;
-        }
-        Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
-        if (tenancyProjects.containsValue(projectId)) {
-            return UserContext.TENANT;
-        }
-        // return null if no context found
-        return null;
-    }
 
+    @Deprecated
     public UUID checkReadPermissions(final UUID issueId) {
         IssueModel issue = issueController.getIssue(issueId);
 
@@ -70,13 +98,10 @@ public class AbstractTicketingResource extends AbstractResource {
             return issue.getProjectId();
         }
 
-        if (issueParticipantRepository.exists(principal.getId(), issueId)) {
-            return issue.getProjectId();
-        }
-
         throw new ForbiddenException(FORBIDDEN_MESSAGE);
     }
 
+    @Deprecated
     public UUID checkWritePermissions(final UUID issueId) {
         IssueModel issue = issueController.getIssue(issueId);
         MemberRole role = principal.getProjectRoles().get(issue.getProjectId());

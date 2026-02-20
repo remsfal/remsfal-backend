@@ -23,6 +23,7 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
+import de.remsfal.core.validation.TenancyValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -41,32 +42,34 @@ public abstract class IssueJson implements IssueModel {
     public abstract UUID getId();
 
     @NotNull(groups = PostValidation.class)
-    @Null(groups = PatchValidation.class)
+    @Null(groups = {PatchValidation.class, TenancyValidation.class})
     @Nullable
     @Override
     public abstract UUID getProjectId();
 
     @NullOrNotBlank
-    @NotBlank(groups = PostValidation.class)
+    @NotBlank(groups = {PostValidation.class, TenancyValidation.class})
     @Size(max = 255)
     @Nullable
     @Override
     public abstract String getTitle();
 
-    @NotNull(groups = PostValidation.class)
+    @NotNull(groups = {PostValidation.class, TenancyValidation.class})
     @Nullable
     @Override
     public abstract IssueType getType();
 
+    @NotNull(groups = TenancyValidation.class)
     @Nullable
     @Override
     public abstract IssueCategory getCategory();
 
-    @Null(groups = PostValidation.class)
+    @Null(groups = {PostValidation.class, TenancyValidation.class})
     @Nullable
     @Override
     public abstract IssueStatus getStatus();
 
+    @Null(groups = TenancyValidation.class)
     @Nullable
     @Override
     public abstract IssuePriority getPriority();
@@ -77,10 +80,12 @@ public abstract class IssueJson implements IssueModel {
     public abstract UUID getReporterId();
 
     @Null(groups = PostValidation.class)
+    @NotNull(groups = TenancyValidation.class)
     @Nullable
     @Override
     public abstract UUID getAgreementId();
 
+    @Null(groups = TenancyValidation.class)
     @Nullable
     @Override
     public abstract Boolean isVisibleToTenants();
@@ -93,7 +98,7 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UnitType getRentalUnitType();
 
-    @Null(groups = PostValidation.class)
+    @Null(groups = {PostValidation.class, TenancyValidation.class})
     @Nullable
     @Override
     public abstract UUID getAssigneeId();
@@ -102,6 +107,7 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract String getLocation();
 
+    @NotNull(groups = TenancyValidation.class)
     @Nullable
     @Override
     public abstract String getDescription();
