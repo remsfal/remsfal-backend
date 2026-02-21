@@ -13,19 +13,18 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
-import de.remsfal.ticketing.entity.dto.IssueKey;
 
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @RequestScoped
@@ -52,23 +51,39 @@ public class IssueController {
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, IssueStatus.OPEN);
+        return createIssue(user, issue, issue.getProjectId() , IssueStatus.OPEN);
     }
 
-    public IssueModel createIssue(final UserModel user, final IssueModel issue, final IssueStatus initialStatus) {
+    public IssueModel createIssue(final UserModel user, final IssueModel issue,
+        final UUID projectId, final IssueStatus initialStatus) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
         IssueEntity entity = new IssueEntity();
         entity.generateId();
-        entity.setProjectId(issue.getProjectId());
+        entity.setProjectId(projectId);
         entity.setTitle(issue.getTitle());
         entity.setType(issue.getType());
+        entity.setCategory(issue.getCategory());
         entity.setStatus(initialStatus);
-        entity.setPriority(issue.getPriority());
-        entity.setDescription(issue.getDescription());
+        if (issue.getPriority() != null) {
+            entity.setPriority(issue.getPriority());
+        } else {
+            entity.setPriority(IssuePriority.UNCLASSIFIED);
+        }
         entity.setReporterId(user.getId());
         entity.setAgreementId(issue.getAgreementId());
-        entity.setCreatedAt(Instant.now());
+        if (issue.getAgreementId() != null && issue.isVisibleToTenants() == null) {
+            entity.setVisibleToTenants(true);
+        } else if (issue.isVisibleToTenants() != null) {
+            entity.setVisibleToTenants(issue.isVisibleToTenants());
+        } else {
+            entity.setVisibleToTenants(false);
+        }
+        entity.setRentalUnitId(issue.getRentalUnitId());
+        entity.setRentalUnitType(issue.getRentalUnitType());
+        // Assignee is not set on creation, must be assigned explicitly via update
+        entity.setLocation(issue.getLocation());
+        entity.setDescription(issue.getDescription());
         // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via POST
 
@@ -83,23 +98,32 @@ public class IssueController {
                 .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
-    public List<? extends IssueModel> getIssues(List<UUID> projectFilter, UUID assigneeId, UUID agreementId,
-        UnitType rentalType, UUID rentalId, IssueStatus status) {
-        return issueRepository.findByQuery(projectFilter, assigneeId, agreementId, rentalType, rentalId, status);
+    public List<? extends IssueModel> getTenancyIssues(final List<UUID> projectIds,
+        final List<UUID> agreementIds, final IssueStatus status,
+        final Integer offset, final Integer limit) {
+        return getIssues(projectIds, null, agreementIds,
+            null, null, status, true, offset, limit);
     }
 
-    public List<? extends IssueModel> getIssuesOfAgreement(UUID agreementId) {
-        return issueRepository.findByAgreementId(agreementId);
+    public List<? extends IssueModel> getProjectIssues(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final Integer offset, final Integer limit) {
+        return getIssues(projectIds, assigneeId, agreementIds,
+            rentalType, rentalId, status, false, offset, limit);
     }
 
-    public List<? extends IssueModel> getIssuesOfAgreements(Set<UUID> keySet) {
-        return issueRepository.findByAgreementIds(keySet);
+    protected List<? extends IssueModel> getIssues(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final boolean onlyVisibleToTenants,
+        final Integer offset, final Integer limit) {
+        return issueRepository.findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
+            status, onlyVisibleToTenants, offset, limit);
     }
 
-    public IssueModel updateIssue(final IssueKey key, final IssueModel issue) {
-        logger.infov("Updating issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
+    public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
+        logger.infov("Updating issue (issueId={0})", issueId);
 
-        final IssueEntity entity = issueRepository.find(key)
+        final IssueEntity entity = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         entity.touch();
@@ -130,19 +154,19 @@ public class IssueController {
         return issueRepository.update(entity);
     }
 
-    public void deleteIssue(final IssueKey key) {
-        logger.infov("Deleting issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
+    public void deleteIssue(final UUID issueId) {
+        logger.infov("Deleting issue (issueId={0})", issueId);
 
-        IssueEntity entity = issueRepository.find(key)
+        IssueEntity entity = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         issueRepository.removeAllRelations(entity);
-        issueRepository.delete(key);
+        issueRepository.delete(entity.getKey());
     }
 
-    public void closeIssue(final IssueKey key) {
-        logger.infov("Closing issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
-        final Optional<IssueEntity> entity = issueRepository.find(key);
+    public void closeIssue(final UUID issueId) {
+        logger.infov("Closing issue (issueId={0})", issueId);
+        final Optional<IssueEntity> entity = issueRepository.findByIssueId(issueId);
         entity.ifPresent((e) -> {
             e.setStatus(IssueStatus.CLOSED);
             issueRepository.update(e);
@@ -375,4 +399,5 @@ public class IssueController {
         logger.infov("Deleting all attachments for issue (issueId={0})", issueId);
         attachmentRepository.deleteByIssueId(issueId);
     }
+
 }

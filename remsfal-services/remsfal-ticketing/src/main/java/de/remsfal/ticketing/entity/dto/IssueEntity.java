@@ -6,6 +6,8 @@ import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
+import de.remsfal.common.util.UUIDv7;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -125,7 +127,7 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         return category != null ? IssueCategory.valueOf(category) : null;
     }
 
-    public void setCategory(IssueStatus category) {
+    public void setCategory(IssueCategory category) {
         this.category = category != null ? category.name() : null;
     }
 
@@ -338,12 +340,23 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         this.blocks.add(blocksIssue);
     }
 
+    /**
+     * Assigns a new {@link UUIDv7} as the issue ID if none has been set yet.
+     *
+     * <p>UUIDv7 is used instead of the standard random {@link UUID#randomUUID()}
+     * (UUIDv4) because the {@code issue_id} column is the Cassandra clustering key
+     * with {@code CLUSTERING ORDER BY (issue_id DESC)}. UUIDv7 embeds the creation
+     * timestamp in its most significant 48 bits, so the physical row order in
+     * Cassandra matches insertion time — the most recent issues are returned first
+     * without a separate {@code ORDER BY} clause or secondary index on
+     * {@code created_at}.</p>
+     */
     public void generateId() {
         if (this.key == null) {
             this.key = new IssueKey();
         }
         if (this.key.getIssueId() == null) {
-            this.key.setIssueId(UUID.randomUUID());
+            this.key.setIssueId(UUIDv7.randomUUID());
         }
     }
 

@@ -16,6 +16,7 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -44,7 +45,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            List.of(projectId), null, null, null, null, IssueStatus.OPEN
+            List.of(projectId), null, null, null, null, IssueStatus.OPEN, false, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 OPEN issues
@@ -69,7 +70,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by assigneeId1
         List<? extends IssueModel> assigneeIssues = repository.findByQuery(
-            List.of(projectId), assigneeId1, null, null, null, null
+            List.of(projectId), assigneeId1, null, null, null, null, false, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 issues assigned to assigneeId1
@@ -79,25 +80,24 @@ class IssueRepositoryTest extends AbstractTicketingTest {
     }
 
     @Test
-    void testFindByTenancyId() {
-        // Setup: Create issues with different tenancies
+    void testUnicodeCharactersArePreserved() {
         UUID projectId = UUID.randomUUID();
-        UUID tenancyId1 = UUID.randomUUID();
-        UUID tenancyId2 = UUID.randomUUID();
+        UUID issueId = UUID.randomUUID();
+        final String title = "Kündigung der Wohnung – Mängel: Öl-/Wärmeanlage & Schäden (€ 1.200)";
+        final String description = "Sehr geehrte Damen und Herren,\n"
+            + "hiermit kündige ich das Mietverhältnis fristgerecht.\n"
+            + "Bekannte Mängel: Heizöltank, Überflutung im Küchenbereich (€ 800),\n"
+            + "beschädigte Türen (äußere Türdichtung), kaputte Wärmedämmung.\n"
+            + "Bitte bestätigen Sie den Empfang. Schöne Grüße.";
 
-        insertIssue(projectId, UUID.randomUUID(), "Issue 1", IssueType.TASK, IssueStatus.OPEN,
-            IssuePriority.MEDIUM, UUID.randomUUID(), tenancyId1, null, null);
-        insertIssue(projectId, UUID.randomUUID(), "Issue 2", IssueType.TASK, IssueStatus.OPEN,
-            IssuePriority.MEDIUM, UUID.randomUUID(), tenancyId2, null, null);
-        insertIssue(projectId, UUID.randomUUID(), "Issue 3", IssueType.TASK, IssueStatus.OPEN,
-            IssuePriority.MEDIUM, UUID.randomUUID(), tenancyId1, null, null);
+        insertIssue(projectId, issueId, title, IssueType.TERMINATION, IssueStatus.PENDING,
+            IssuePriority.HIGH, UUID.randomUUID(), null, null, description);
 
-        // Test: Filter by tenancyId1
-        List<? extends IssueModel> tenancyIssues = repository.findByAgreementId(tenancyId1);
+        IssueEntity found = repository.findByIssueId(issueId)
+            .orElseThrow(() -> new AssertionError("Issue not found"));
 
-        // Verify: Should return 2 issues for tenancyId1
-        assertNotNull(tenancyIssues);
-        assertEquals(2, tenancyIssues.size());
-        tenancyIssues.forEach(issue -> assertEquals(tenancyId1, issue.getAgreementId()));
+        assertEquals(title, found.getTitle());
+        assertEquals(description, found.getDescription());
     }
+
 }

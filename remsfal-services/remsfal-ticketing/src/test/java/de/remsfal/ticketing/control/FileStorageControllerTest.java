@@ -28,7 +28,7 @@ import org.jboss.logging.Logger;
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  */
 @QuarkusTest
-public class FileStorageServiceTest extends AbstractTicketingTest {
+public class FileStorageControllerTest extends AbstractTicketingTest {
 
     @Inject
     FileStorageController fileStorageController;
@@ -126,12 +126,13 @@ public class FileStorageServiceTest extends AbstractTicketingTest {
         assertTrue(fileStorageController.isContentTypeValid(MediaType.valueOf("image/png")));
         assertTrue(fileStorageController.isContentTypeValid(MediaType.valueOf("application/pdf")));
         assertTrue(fileStorageController.isContentTypeValid(MediaType.valueOf("text/plain")));
+        assertTrue(fileStorageController.isContentTypeValid(MediaType.valueOf("video/mp4")));
     }
 
     @Test
     public void testIsValidContentType_Invalid() {
         assertFalse(fileStorageController.isContentTypeValid(MediaType.valueOf("application/x-msdownload")));
-        assertFalse(fileStorageController.isContentTypeValid(MediaType.valueOf("video/mp4")));
+        assertFalse(fileStorageController.isContentTypeValid(MediaType.valueOf("video/x-msvideo")));
     }
 
     @Test

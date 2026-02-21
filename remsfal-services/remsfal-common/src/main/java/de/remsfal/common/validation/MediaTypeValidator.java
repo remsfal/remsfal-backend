@@ -15,10 +15,10 @@ public final class MediaTypeValidator {
      */
     public static final Set<MediaType> ALLOWED_MEDIA_TYPES = Set.of(
         MediaType.TEXT_PLAIN_TYPE,
-        MediaType.valueOf("image/jpg"),
         MediaType.valueOf("image/jpeg"),
         MediaType.valueOf("image/png"),
         MediaType.valueOf("image/gif"),
+        MediaType.valueOf("video/mp4"),
         MediaType.valueOf("application/pdf"),
         MediaType.APPLICATION_JSON_TYPE,
         MediaType.APPLICATION_XML_TYPE

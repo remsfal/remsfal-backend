@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 
 import io.restassured.RestAssured;
+import io.restassured.config.EncoderConfig;
+import io.restassured.config.MultiPartConfig;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Cookie;
@@ -21,6 +23,9 @@ public abstract class AbstractTest {
 
     static {
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
+        RestAssured.config = RestAssured.config()
+            .encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"))
+            .multiPartConfig(MultiPartConfig.multiPartConfig().defaultCharset("UTF-8"));
     }
 
     private static final String ACCESS_COOKIE_NAME = "remsfal_access_token";

@@ -3,20 +3,19 @@ package de.remsfal.ticketing.boundary;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -34,6 +33,7 @@ import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.validation.TenancyValidation;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
@@ -55,147 +55,83 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     Instance<ChatSessionResource> chatSessionResource;
 
     @Override
-    public IssueListJson getIssues(Integer offset, Integer limit,
-        UUID projectId, UUID assigneeId,
-        UUID agreementId, UnitType rentalType,
-        UUID rentalId, IssueStatus status) {
-        logger.info("Yes i was called");
-        List<UUID> projectFilter;
-        if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
-            projectFilter = List.of(projectId);
+    public IssueListJson getIssues(final Integer offset, final Integer limit, final boolean preferTenancyIssues,
+        final UUID projectId, final UUID assigneeId, final UUID agreementId,
+        final UnitType rentalUnitType, final UUID rentalUnitId, final IssueStatus status) {
+        if (projectId != null && preferTenancyIssues
+            && principal.getTenancyProjects().containsValue(projectId)) {
+            return getTenancyIssues(offset, limit, List.of(projectId), agreementId, status);
+        } else if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
+            return getProjectIssues(offset, limit, List.of(projectId), assigneeId, agreementId,
+                rentalUnitType, rentalUnitId, status);
+        } else if (preferTenancyIssues || principal.getProjectRoles().isEmpty()) {
+            List<UUID> projectFilter = principal.getTenancyProjects().values().stream().toList();
+            return getTenancyIssues(offset, limit, projectFilter, agreementId, status);
         } else {
-            projectFilter = principal.getProjectRoles().keySet().stream().toList();
+            List<UUID> projectFilter = principal.getProjectRoles().keySet().stream().toList();
+            return getProjectIssues(offset, limit, projectFilter, assigneeId, agreementId,
+                rentalUnitType, rentalUnitId, status);
         }
+    }
 
-        if (projectFilter.isEmpty()) {
-            return getUnprivilegedIssues(offset, limit, agreementId, status);
+    private IssueListJson getTenancyIssues(final Integer offset, final Integer limit,
+        final List<UUID> projectIds, final UUID agreementId, final IssueStatus status) {
+        final List<UUID> agreementFilter;
+        if (agreementId != null && principal.getTenancyProjects().containsKey(agreementId)) {
+            agreementFilter = List.of(agreementId);
         } else {
-            return getProjectIssues(projectFilter, assigneeId, agreementId, rentalType, rentalId, status);
+            agreementFilter = principal.getTenancyProjects().keySet().stream().toList();
         }
+        if (projectIds.isEmpty() || agreementFilter.isEmpty()) {
+            return IssueListJson.valueOfTenancyIssues(List.of(), offset);
+        }
+        final List<? extends IssueModel> issues = issueController
+            .getTenancyIssues(projectIds, agreementFilter, status, offset, limit);
+        return IssueListJson.valueOfTenancyIssues(issues, offset);
     }
 
-    private IssueListJson getProjectIssues(List<UUID> projectFilter, UUID assigneeId,
-        UUID agreementId, UnitType rentalType, UUID rentalId,
-        IssueStatus status) {
-        final List<? extends IssueModel> issues =
-            issueController.getIssues(projectFilter, assigneeId, agreementId, rentalType, rentalId, status);
-        return IssueListJson.valueOf(issues, 0, issues.size());
-    }
-
-    private IssueListJson getUnprivilegedIssues(Integer offset, Integer limit, UUID agreementId, IssueStatus status) {
-        List<IssueModel> collected = new ArrayList<>();
-
-        // Tenants
-        collectTenancyIssues(collected, agreementId);
-
-        // Participants
-        collectParticipantIssues(collected);
-
-        Map<UUID, IssueModel> unique = new LinkedHashMap<>();
-        for (IssueModel issue : collected) {
-            if (issue == null || issue.getId() == null) {
-                continue;
-            }
-            unique.put(issue.getId(), issue);
+    private IssueListJson getProjectIssues(final Integer offset, final Integer limit,
+        final List<UUID> projectIds, final UUID assigneeId, final UUID agreementId,
+        final UnitType rentalUnitType, final UUID rentalUnitId, final IssueStatus status) {
+        if (projectIds.isEmpty()) {
+            return IssueListJson.valueOfTenancyIssues(List.of(), offset);
         }
-        List<IssueModel> issues = new ArrayList<>(unique.values());
-
-        if (status != null) {
-            issues = issues.stream()
-                    .filter(i -> Objects.equals(i.getStatus(), status))
-                    .toList();
+        final List<? extends IssueModel> issues;
+        if (agreementId != null) {
+            issues = issueController.getProjectIssues(projectIds, assigneeId, List.of(agreementId),
+                rentalUnitType, rentalUnitId, status, offset, limit);
+        } else {
+            issues = issueController.getProjectIssues(projectIds, assigneeId, null,
+                rentalUnitType, rentalUnitId, status, offset, limit);
         }
-
-        int totalCount = issues.size();
-        int actualOffset = (offset != null) ? offset : 0;
-        int actualLimit = (limit != null) ? limit : totalCount;
-
-        int fromIndex = Math.min(actualOffset, totalCount);
-        int toIndex = Math.min(actualOffset + actualLimit, totalCount);
-
-        List<IssueModel> paginatedIssues = issues.subList(fromIndex, toIndex);
-
-        return IssueListJson.valueOf(paginatedIssues, actualOffset, totalCount);
-    }
-
-    private void collectTenancyIssues(List<IssueModel> collected, UUID agreementId) {
-        if (!principal.getTenancyProjects().isEmpty()) {
-            if (agreementId != null && !principal.getTenancyProjects().containsKey(agreementId)) {
-                throw new ForbiddenException("User does not have permission to view issues in this tenancy");
-            }
-            if (agreementId != null) {
-                collected.addAll(issueController.getIssuesOfAgreement(agreementId));
-            } else {
-                collected.addAll(issueController.getIssuesOfAgreements(principal.getTenancyProjects().keySet()));
-            }
-        }
-    }
-
-    private void collectParticipantIssues(List<IssueModel> collected) {
-        List<UUID> participantIssueIds = issueParticipantRepository.findIssueIdsByParticipant(principal.getId());
-        for (UUID pid : participantIssueIds) {
-            try {
-                collected.add(issueController.getIssue(pid));
-            } catch (NotFoundException ignored) {
-                // Intentionally ignored:
-                // The user may be listed as a participant of an issue that was deleted or closed.
-                // In this case, the issue no longer exists and should simply be skipped
-                // without failing the entire request.
-            }
-        }
+        return IssueListJson.valueOfProjectIssues(issues, offset);
     }
 
     @Override
-    public Response createIssue(final IssueJson issue) {
-        UserContext principalRole = getUserContext(issue.getProjectId());
-        if (principalRole == null) {
-            throw new ForbiddenException("User does not have permission to create issues in this project");
-        }
-        final IssueJson response;
-        final IssueModel createdIssue;
-        if (principalRole == UserContext.MANAGER) {
-            createdIssue = issueController.createIssue(principal, issue);
-            response = IssueJson.valueOfProjectIssue(createdIssue);
-        } else if (principalRole == UserContext.TENANT) {
-            createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
-            response = IssueJson.valueOfTenancyIssue(createdIssue);
-        } else {
-            throw new ForbiddenException("User does not have permission to create issues in this project");
-        }
+    public Response createProjectIssue(final IssueJson issue) {
+        checkProjectIssueCreatePermissions(issue.getProjectId());
+        final IssueModel createdIssue = issueController.createIssue(principal, issue);
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(response)
+            .entity(IssueJson.valueOfProjectIssue(createdIssue))
             .build();
     }
 
     @Override
-    public Response createIssueWithAttachments(final MultipartFormDataInput input) {
+    public Response createTenancyIssueWithAttachments(final MultipartFormDataInput input) {
         // Extract issue json from multipart form data
         final IssueJson issue = extractIssueJson(input);
         // Check permissions
-        checkTenancyIssueCreatePermissions(issue.getProjectId(), issue.getAgreementId());
+        final UUID projectId = checkTenancyIssueCreatePermissions(issue.getAgreementId());
+        if (projectId == null) {
+            throw new ForbiddenException("User does not have permission to create issues in this tenancy");
+        }
         // Create issue
-        IssueModel createdIssue = issueController.createIssue(principal, issue, IssueStatus.PENDING);
+        IssueModel createdIssue = issueController.createIssue(principal, issue, projectId, IssueStatus.PENDING);
         // Process attachments
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
-        List<IssueAttachmentJson> attachments = new ArrayList<>();
-        if (fileParts != null && !fileParts.isEmpty()) {
-            for (InputPart inputPart : fileParts) {
-                try {
-                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
-                    FileUploadData fileData = new FileUploadData(
-                        inputStream,
-                        inputPart.getFileName(),
-                        inputPart.getMediaType());
-                    IssueAttachmentModel attachmentModel = issueController
-                        .addAttachment(principal, createdIssue.getId(), fileData);
-                    attachments.add(IssueAttachmentJson.valueOf(attachmentModel));
-                } catch (IOException e) {
-                    throw new BadRequestException("Failed to read file data", e);
-                }
-            }
-        }
+        List<IssueAttachmentJson> attachments = uploadAttachments(createdIssue.getId(), fileParts);
 
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
@@ -221,8 +157,15 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
                 throw new BadRequestException("Issue part must be of type application/json");
             }
             final IssueJson issue = issueParts.get(0).getBody(IssueJson.class, IssueJson.class);
-            if (issue == null || !validator.validate(issue).isEmpty()) {
-                throw new BadRequestException("Invalid issue data provided");
+            if (issue == null) {
+                throw new BadRequestException("Unable to parse issue data from request");
+            }
+            Set<ConstraintViolation<IssueJson>> violations = validator.validate(issue, TenancyValidation.class);
+            if (!violations.isEmpty()) {
+                String errorMessages = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining("; "));
+                throw new BadRequestException("Invalid issue data provided: " + errorMessages);
             }
             return issue;
         } catch (IOException e) {
@@ -232,15 +175,14 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Override
     public IssueJson getIssue(final UUID issueId) {
+        final UserContext context = checkIssueReadPermissions(issueId);
         IssueModel issue = issueController.getIssue(issueId);
 
         // Create base IssueJson
         IssueJson issueJson;
-        if (principal.getProjectRoles().containsKey(issue.getProjectId())) {
+        if (context == UserContext.MANAGER) {
             issueJson = IssueJson.valueOfProjectIssue(issue);
-        } else if (principal.getTenancyProjects().containsKey(issue.getAgreementId())) {
-            issueJson = IssueJson.valueOfTenancyIssue(issue);
-        } else if (isParticipantInIssue(issueId)) {
+        } else if (context == UserContext.TENANT) {
             issueJson = IssueJson.valueOfTenancyIssue(issue);
         } else {
             throw new ForbiddenException("User does not have permission to view this issue");
@@ -257,20 +199,18 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Override
     public IssueJson updateIssue(final UUID issueId, final IssueJson issue) {
-        IssueEntity entity = issueController.getIssue(issueId);
-        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
-            throw new ForbiddenException("User does not have permission to update this issue");
-        }
-        return IssueJson.valueOfProjectIssue(issueController.updateIssue(entity.getKey(), issue));
+        checkIssueWritePermissions(issueId);
+        IssueModel updatedIssue = issueController.updateIssue(issueId, issue);
+        return IssueJson.valueOfProjectIssue(updatedIssue);
     }
 
     @Override
     public void deleteIssue(final UUID issueId) {
-        IssueEntity entity = issueController.getIssue(issueId);
-        if (principal.getProjectRoles().containsKey(entity.getProjectId())) {
-            issueController.deleteIssue(entity.getKey());
-        } else if (principal.getTenancyProjects().containsKey(entity.getAgreementId())) {
-            issueController.closeIssue(entity.getKey());
+        final UserContext context = checkIssueReadPermissions(issueId);
+        if (context == UserContext.TENANT) {
+            issueController.closeIssue(issueId);
+        } else if (context == UserContext.MANAGER && checkIssueWritePermissions(issueId) != null) {
+            issueController.deleteIssue(issueId);
         } else {
             throw new ForbiddenException("User does not have permission to delete this issue");
         }
@@ -278,20 +218,15 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Override
     public IssueJson setParent(final UUID issueId, final UUID parentIssueId) {
+        checkIssueWritePermissions(issueId);
         IssueEntity entity = issueController.getIssue(issueId);
-        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
-            throw new ForbiddenException("User does not have permission to update this issue");
-        }
-
         return IssueJson.valueOfProjectIssue(issueController.setParentRelation(entity, parentIssueId));
     }
 
     @Override
     public IssueJson createRelation(final UUID issueId, final String relationType, final UUID relatedIssueId) {
+        checkIssueWritePermissions(issueId);
         IssueEntity entity = issueController.getIssue(issueId);
-        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
-            throw new ForbiddenException("User does not have permission to update this issue");
-        }
 
         IssueModel updatedIssue = switch (relationType.toLowerCase()) {
             case "children" -> issueController.addChildRelation(entity, relatedIssueId);
@@ -307,10 +242,8 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Override
     public void deleteRelation(final UUID issueId, final String relationType, final UUID relatedIssueId) {
+        checkIssueWritePermissions(issueId);
         IssueEntity entity = issueController.getIssue(issueId);
-        if (!principal.getProjectRoles().containsKey(entity.getProjectId())) {
-            throw new ForbiddenException("User does not have permission to update this issue");
-        }
 
         switch (relationType.toLowerCase()) {
             case "parent" -> issueController.deleteParentRelation(entity, relatedIssueId);
@@ -325,17 +258,10 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Override
     public Response downloadAttachment(UUID issueId, UUID attachmentId, String filename) {
-        // Check read permissions (managers, tenants, participants)
-        IssueModel issue = issueController.getIssue(issueId);
-        if (!principal.getProjectRoles().containsKey(issue.getProjectId())
-            && !principal.getTenancyProjects().containsKey(issue.getAgreementId())
-            && !isParticipantInIssue(issueId)) {
-            throw new ForbiddenException("User does not have permission to access this attachment");
-        }
+        checkIssueReadPermissions(issueId);
 
         // Retrieve attachment metadata
         IssueAttachmentEntity attachment = issueController.getAttachment(issueId, attachmentId);
-
         // Download file from storage
         InputStream fileStream = issueController.downloadAttachment(attachment.getObjectName());
 
@@ -347,30 +273,59 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
                 output.write(buffer, 0, bytesRead);
             }
         })
-        .type(MediaType.APPLICATION_OCTET_STREAM)
-        .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
-        .build();
+            .type(MediaType.APPLICATION_OCTET_STREAM)
+            .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
+            .build();
     }
 
     @Override
     public void deleteAttachment(UUID issueId, UUID attachmentId) {
-        // Check write permissions (managers only)
-        IssueModel issue = issueController.getIssue(issueId);
-        if (!principal.getProjectRoles().containsKey(issue.getProjectId())) {
-            throw new ForbiddenException("User does not have permission to delete this attachment");
-        }
+        checkIssueWritePermissions(issueId);
 
         // Delete attachment (includes storage and database)
         issueController.deleteAttachment(issueId, attachmentId);
     }
 
     @Override
-    public ChatSessionResource getChatSessionResource() {
-        return resourceContext.initResource(chatSessionResource.get());
+    public Response uploadAttachments(final UUID issueId, final MultipartFormDataInput input) {
+        checkIssueWritePermissions(issueId);
+
+        // Process attachment parts
+        Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
+        List<InputPart> fileParts = formDataMap.get("attachment");
+        List<IssueAttachmentJson> attachments = uploadAttachments(issueId, fileParts);
+
+        return Response.ok()
+            .type(MediaType.APPLICATION_JSON)
+            .entity(attachments)
+            .build();
     }
 
-    private boolean isParticipantInIssue(UUID issueId) {
-        return issueParticipantRepository.exists(principal.getId(), issueId);
+    private List<IssueAttachmentJson> uploadAttachments(final UUID issueId, final List<InputPart> fileParts) {
+        List<IssueAttachmentJson> attachments = new ArrayList<>();
+        if (fileParts != null && !fileParts.isEmpty()) {
+            for (InputPart inputPart : fileParts) {
+                try {
+                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
+                    FileUploadData fileData = new FileUploadData(
+                        inputStream,
+                        inputPart.getFileName(),
+                        inputPart.getMediaType());
+                    IssueAttachmentModel attachmentModel =
+                        issueController.addAttachment(principal, issueId, fileData);
+                    attachments.add(IssueAttachmentJson.valueOf(attachmentModel));
+                } catch (IOException e) {
+                    throw new BadRequestException("Failed to read file data", e);
+                }
+            }
+        }
+
+        return attachments;
+    }
+
+    @Override
+    public ChatSessionResource getChatSessionResource() {
+        return resourceContext.initResource(chatSessionResource.get());
     }
 
 }

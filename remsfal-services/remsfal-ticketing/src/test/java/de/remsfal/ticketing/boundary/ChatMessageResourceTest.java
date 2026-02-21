@@ -94,7 +94,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
     @BeforeEach
     protected void setup() throws Exception {
         logger.info("Setting up test data");
-        super.setupTestFiles();
+        super.setupTestFile();
         logger.info("Setting up issues for chat sessions");
         insertIssue(TicketingTestData.PROJECT_ID_1, TicketingTestData.ISSUE_ID_1,
             "Test Issue 1", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,

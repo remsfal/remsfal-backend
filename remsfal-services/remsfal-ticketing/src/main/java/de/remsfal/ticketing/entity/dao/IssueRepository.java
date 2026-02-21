@@ -1,7 +1,6 @@
 package de.remsfal.ticketing.entity.dao;
 
 import de.remsfal.core.model.RentalUnitModel.UnitType;
-import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
@@ -22,6 +21,11 @@ import java.util.List;
 @ApplicationScoped
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
+    // ---- Issue columns ----
+    static final String PRIORITY           = "priority";
+    static final String STATUS             = "status";
+    static final String AGREEMENT_ID       = "agreement_id";
+    
     // ---- Relation columns ----
     static final String BLOCKS_IDS         = "blocks_issue_ids";
     static final String BLOCKED_BY_IDS     = "blocked_by_issue_ids";
@@ -33,51 +37,47 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     @Inject
     CqlSession session;
 
-    public Optional<IssueEntity> find(final IssueKey key) {
-        return template.select(IssueEntity.class)
-            .where(PROJECT_ID).eq(key.getProjectId())
-            .and(ISSUE_ID).eq(key.getIssueId())
-            .singleResult();
-    }
-
     public Optional<IssueEntity> findByIssueId(final UUID issueId) {
         return template.select(IssueEntity.class)
             .where(ISSUE_ID).eq(issueId)
             .singleResult();
     }
 
-    public List<? extends IssueModel> findByQuery(List<UUID> projectIds, UUID assigneeId, UUID agreementId,
-        UnitType rentalType, UUID rentalId, IssueStatus status) {
+    public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final boolean onlyVisibleToTenants,
+        final Integer offset, final Integer limit) {
+        return findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
+            status, onlyVisibleToTenants, offset + limit).stream().skip(offset).limit(limit).toList();
+    }
+
+    public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final boolean onlyVisibleToTenants, final Integer limit) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).in(projectIds);
         if (assigneeId != null) {
             query = query.and("assignee_id").eq(assigneeId);
         }
-        if (agreementId != null) {
-            query = query.and("agreement_id").eq(agreementId);
+        if (agreementIds != null) {
+            query = query.and(AGREEMENT_ID).in(agreementIds);
         }
         if (rentalType != null) {
-            query = query.and("rental_type").eq(rentalType.name());
+            query = query.and("rental_unit_type").eq(rentalType.name());
         }
         if (rentalId != null) {
-            query = query.and("rental_id").eq(rentalId);
+            query = query.and("rental_unit_id").eq(rentalId);
         }
         if (status != null) {
-            query = query.and("status").eq(status.name());
+            query = query.and(STATUS).eq(status.name());
         }
-        return query.result();
-    }
-
-    public List<? extends IssueModel> findByAgreementId(UUID agreementId) {
-        return template.select(IssueEntity.class)
-            .where("agreement_id").eq(agreementId)
-            .result();
-    }
-
-    public List<? extends IssueModel> findByAgreementIds(Set<UUID> keySet) {
-        return template.select(IssueEntity.class)
-            .where("agreement_id").in(keySet)
-            .result();
+        if (onlyVisibleToTenants) {
+            query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);
+        }
+        // No ORDER BY here: Cassandra does not support ORDER BY with secondary indexes.
+        // The native clustering order (issue_id DESC, UUIDv7) returns newest rows first
+        // for unfiltered partition scans. Filtered queries return rows in clustering order.
+        return query.limit(limit).result();
     }
 
     public IssueEntity insert(final IssueEntity entity) {

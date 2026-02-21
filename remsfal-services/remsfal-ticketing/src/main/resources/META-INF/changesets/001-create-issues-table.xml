@@ -35,7 +35,7 @@
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY (project_id, issue_id)
-            ) WITH CLUSTERING ORDER BY (issue_id ASC);
+            ) WITH CLUSTERING ORDER BY (issue_id DESC);
         </sql>
         <sql>
             CREATE INDEX IF NOT EXISTS issues_issue_id_idx ON REMSFAL.issues (issue_id);

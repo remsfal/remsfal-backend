@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -243,9 +244,9 @@ class IssueEventProducerTest {
         issue.setAgreementId(TestData.AGREEMENT_ID);
         issue.setAssigneeId(TestData.USER_ID_2);
         issue.setDescription(TicketingTestData.ISSUE_DESCRIPTION_1);
-        issue.setBlockedBy(TicketingTestData.ISSUE_ID_SET_2);
-        issue.setRelatedTo(TicketingTestData.ISSUE_ID_SET_3);
-        issue.setDuplicateOf(TicketingTestData.ISSUE_ID_SET_2);
+        issue.setBlockedBy(Set.of(TicketingTestData.ISSUE_ID_2));
+        issue.setRelatedTo(Set.of(TicketingTestData.ISSUE_ID_3));
+        issue.setDuplicateOf(Set.of(TicketingTestData.ISSUE_ID_2));
         return issue;
     }
 }

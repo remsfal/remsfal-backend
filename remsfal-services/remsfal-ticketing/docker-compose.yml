@@ -18,7 +18,7 @@ services:
       - remsfal
 
   cassandra:
-    image: cassandra:4
+    image: cassandra:5
     container_name: cassandra
     environment:
       - CASSANDRA_CLUSTER_NAME=remsfal-cassandra-cluster

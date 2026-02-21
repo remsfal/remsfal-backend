@@ -60,18 +60,6 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
             if (userId == null) {
                 throw new NotAuthorizedException("No user authentication provided via session cookie");
             }
-            Map<UUID, String> participants =
-                chatSessionController.getParticipants(projectId, issueId, sessionId);
-            boolean isParticipant = participants.containsKey(userId);
-            boolean hasWritePermission = false;
-            try {
-                hasWritePermission = true;
-            } catch (NotAuthorizedException | ForbiddenException ignored) {
-                // User does not have write permissions
-            }
-            if (!isParticipant && !hasWritePermission) {
-                throw new ForbiddenException("Inadequate user rights");
-            }
             if (message.getContent() == null || message.getContent().isBlank()) {
                 throw new BadRequestException("Message content cannot be null or empty");
             }
