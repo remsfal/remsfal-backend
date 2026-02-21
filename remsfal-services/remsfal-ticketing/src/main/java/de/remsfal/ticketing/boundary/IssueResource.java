@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
@@ -54,9 +53,6 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Override
     public IssueListJson getIssues(final Integer offset, final Integer limit, final boolean preferTenancyIssues,
@@ -135,23 +131,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Process attachments
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
-        List<IssueAttachmentJson> attachments = new ArrayList<>();
-        if (fileParts != null && !fileParts.isEmpty()) {
-            for (InputPart inputPart : fileParts) {
-                try {
-                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
-                    FileUploadData fileData = new FileUploadData(
-                        inputStream,
-                        inputPart.getFileName(),
-                        inputPart.getMediaType());
-                    IssueAttachmentModel attachmentModel = issueController
-                        .addAttachment(principal, createdIssue.getId(), fileData);
-                    attachments.add(IssueAttachmentJson.valueOf(attachmentModel));
-                } catch (IOException e) {
-                    throw new BadRequestException("Failed to read file data", e);
-                }
-            }
-        }
+        List<IssueAttachmentJson> attachments = uploadAttachments(createdIssue.getId(), fileParts);
 
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
@@ -176,8 +156,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
                 !issueParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
                 throw new BadRequestException("Issue part must be of type application/json");
             }
-            final InputStream stream = issueParts.get(0).getBody(InputStream.class, null);
-            final IssueJson issue = objectMapper.readValue(stream, IssueJson.class);
+            final IssueJson issue = issueParts.get(0).getBody(IssueJson.class, IssueJson.class);
             if (issue == null) {
                 throw new BadRequestException("Unable to parse issue data from request");
             }
@@ -228,11 +207,10 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public void deleteIssue(final UUID issueId) {
         final UserContext context = checkIssueReadPermissions(issueId);
-        IssueEntity entity = issueController.getIssue(issueId);
         if (context == UserContext.TENANT) {
-            issueController.closeIssue(entity.getKey());
+            issueController.closeIssue(issueId);
         } else if (context == UserContext.MANAGER && checkIssueWritePermissions(issueId) != null) {
-            issueController.deleteIssue(entity.getKey());
+            issueController.deleteIssue(issueId);
         } else {
             throw new ForbiddenException("User does not have permission to delete this issue");
         }
@@ -315,6 +293,15 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Process attachment parts
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
+        List<IssueAttachmentJson> attachments = uploadAttachments(issueId, fileParts);
+
+        return Response.ok()
+            .type(MediaType.APPLICATION_JSON)
+            .entity(attachments)
+            .build();
+    }
+
+    private List<IssueAttachmentJson> uploadAttachments(final UUID issueId, final List<InputPart> fileParts) {
         List<IssueAttachmentJson> attachments = new ArrayList<>();
         if (fileParts != null && !fileParts.isEmpty()) {
             for (InputPart inputPart : fileParts) {
@@ -333,10 +320,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             }
         }
 
-        return Response.ok()
-            .type(MediaType.APPLICATION_JSON)
-            .entity(attachments)
-            .build();
+        return attachments;
     }
 
     @Override

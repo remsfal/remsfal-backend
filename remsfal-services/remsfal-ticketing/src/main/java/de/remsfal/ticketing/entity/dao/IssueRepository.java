@@ -1,7 +1,6 @@
 package de.remsfal.ticketing.entity.dao;
 
 import de.remsfal.core.model.RentalUnitModel.UnitType;
-import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
@@ -24,6 +23,8 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     // ---- Issue columns ----
     static final String PRIORITY           = "priority";
+    static final String STATUS             = "status";
+    static final String AGREEMENT_ID       = "agreement_id";
     
     // ---- Relation columns ----
     static final String BLOCKS_IDS         = "blocks_issue_ids";
@@ -35,14 +36,6 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     @Inject
     CqlSession session;
-
-    @Deprecated
-    public Optional<IssueEntity> find(final IssueKey key) {
-        return template.select(IssueEntity.class)
-            .where(PROJECT_ID).eq(key.getProjectId())
-            .and(ISSUE_ID).eq(key.getIssueId())
-            .singleResult();
-    }
 
     public Optional<IssueEntity> findByIssueId(final UUID issueId) {
         return template.select(IssueEntity.class)
@@ -67,7 +60,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             query = query.and("assignee_id").eq(assigneeId);
         }
         if (agreementIds != null) {
-            query = query.and("agreement_id").in(agreementIds);
+            query = query.and(AGREEMENT_ID).in(agreementIds);
         }
         if (rentalType != null) {
             query = query.and("rental_unit_type").eq(rentalType.name());
@@ -76,7 +69,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             query = query.and("rental_unit_id").eq(rentalId);
         }
         if (status != null) {
-            query = query.and("status").eq(status.name());
+            query = query.and(STATUS).eq(status.name());
         }
         if (onlyVisibleToTenants) {
             query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);
@@ -85,18 +78,6 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         // The native clustering order (issue_id DESC, UUIDv7) returns newest rows first
         // for unfiltered partition scans. Filtered queries return rows in clustering order.
         return query.limit(limit).result();
-    }
-
-    public List<? extends IssueModel> findByAgreementId(UUID agreementId) {
-        return template.select(IssueEntity.class)
-            .where("agreement_id").eq(agreementId)
-            .result();
-    }
-
-    public List<? extends IssueModel> findByAgreementIds(Set<UUID> keySet) {
-        return template.select(IssueEntity.class)
-            .where("agreement_id").in(keySet)
-            .result();
     }
 
     public IssueEntity insert(final IssueEntity entity) {

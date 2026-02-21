@@ -22,9 +22,9 @@ import java.util.UUID;
  * │                  unix_ts_ms (48 bits)                           │
  * ├────────┬────────────────────────────────────────────────────────┤
  * │ 0 1 1 1│          rand_a (12 bits)                              │
- * ├──┬─────────────────────────────────────────────────────────────┤
+ * ├───┬─────────────────────────────────────────────────────────────┤
  * │1 0│                rand_b (62 bits)                             │
- * └──────────────────────────────────────────────────────────────────┘
+ * └─────────────────────────────────────────────────────────────────┘
  *
  *  unix_ts_ms : 48-bit big-endian unsigned Unix epoch in milliseconds
  *  ver        :  4-bit version field set to 0b0111 (= 7)
@@ -92,13 +92,13 @@ public final class UUIDv7 {
         // Most significant 64 bits:
         // [48-bit unix_ts_ms][4-bit version = 0111][12-bit rand_a]
         long msb = (timestamp << 16)
-                 | 0x7000L
-                 | (RANDOM.nextLong() & 0x0FFFL);
+            | 0x7000L
+            | (RANDOM.nextLong() & 0x0FFFL);
 
         // Least significant 64 bits:
         // [2-bit variant = 10][62-bit rand_b]
         long lsb = (RANDOM.nextLong() & 0x3FFF_FFFF_FFFF_FFFFL)
-                 | 0x8000_0000_0000_0000L;
+            | 0x8000_0000_0000_0000L;
 
         return new UUID(msb, lsb);
     }

@@ -20,13 +20,11 @@ import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
-import de.remsfal.ticketing.entity.dto.IssueKey;
 
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @RequestScoped
@@ -122,16 +120,6 @@ public class IssueController {
             status, onlyVisibleToTenants, offset, limit);
     }
 
-    @Deprecated
-    public List<? extends IssueModel> getIssuesOfAgreement(UUID agreementId) {
-        return issueRepository.findByAgreementId(agreementId);
-    }
-
-    @Deprecated
-    public List<? extends IssueModel> getIssuesOfAgreements(Set<UUID> keySet) {
-        return issueRepository.findByAgreementIds(keySet);
-    }
-
     public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
         logger.infov("Updating issue (issueId={0})", issueId);
 
@@ -166,19 +154,19 @@ public class IssueController {
         return issueRepository.update(entity);
     }
 
-    public void deleteIssue(final IssueKey key) {
-        logger.infov("Deleting issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
+    public void deleteIssue(final UUID issueId) {
+        logger.infov("Deleting issue (issueId={0})", issueId);
 
-        IssueEntity entity = issueRepository.find(key)
+        IssueEntity entity = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         issueRepository.removeAllRelations(entity);
-        issueRepository.delete(key);
+        issueRepository.delete(entity.getKey());
     }
 
-    public void closeIssue(final IssueKey key) {
-        logger.infov("Closing issue (projectId={0}, issueId={1})", key.getProjectId(), key.getIssueId());
-        final Optional<IssueEntity> entity = issueRepository.find(key);
+    public void closeIssue(final UUID issueId) {
+        logger.infov("Closing issue (issueId={0})", issueId);
+        final Optional<IssueEntity> entity = issueRepository.findByIssueId(issueId);
         entity.ifPresent((e) -> {
             e.setStatus(IssueStatus.CLOSED);
             issueRepository.update(e);

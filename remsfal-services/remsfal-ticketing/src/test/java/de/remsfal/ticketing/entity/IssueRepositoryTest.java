@@ -100,26 +100,4 @@ class IssueRepositoryTest extends AbstractTicketingTest {
         assertEquals(description, found.getDescription());
     }
 
-    @Test
-    void testFindByTenancyId() {
-        // Setup: Create issues with different tenancies
-        UUID projectId = UUID.randomUUID();
-        UUID tenancyId1 = UUID.randomUUID();
-        UUID tenancyId2 = UUID.randomUUID();
-
-        insertIssue(projectId, UUID.randomUUID(), "Issue 1", IssueType.TASK, IssueStatus.OPEN,
-            IssuePriority.MEDIUM, UUID.randomUUID(), tenancyId1, null, null);
-        insertIssue(projectId, UUID.randomUUID(), "Issue 2", IssueType.TASK, IssueStatus.OPEN,
-            IssuePriority.MEDIUM, UUID.randomUUID(), tenancyId2, null, null);
-        insertIssue(projectId, UUID.randomUUID(), "Issue 3", IssueType.TASK, IssueStatus.OPEN,
-            IssuePriority.MEDIUM, UUID.randomUUID(), tenancyId1, null, null);
-
-        // Test: Filter by tenancyId1
-        List<? extends IssueModel> tenancyIssues = repository.findByAgreementId(tenancyId1);
-
-        // Verify: Should return 2 issues for tenancyId1
-        assertNotNull(tenancyIssues);
-        assertEquals(2, tenancyIssues.size());
-        tenancyIssues.forEach(issue -> assertEquals(tenancyId1, issue.getAgreementId()));
-    }
 }
