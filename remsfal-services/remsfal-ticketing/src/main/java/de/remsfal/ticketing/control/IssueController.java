@@ -13,6 +13,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
@@ -66,7 +67,11 @@ public class IssueController {
         entity.setType(issue.getType());
         entity.setCategory(issue.getCategory());
         entity.setStatus(initialStatus);
-        entity.setPriority(issue.getPriority());
+        if (issue.getPriority() != null) {
+            entity.setPriority(issue.getPriority());
+        } else {
+            entity.setPriority(IssuePriority.UNCLASSIFIED);
+        }
         entity.setReporterId(user.getId());
         entity.setAgreementId(issue.getAgreementId());
         if (issue.getAgreementId() != null && issue.isVisibleToTenants() == null) {
@@ -95,11 +100,26 @@ public class IssueController {
                 .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
-    public List<? extends IssueModel> getIssues(final List<UUID> projectIds, final UUID assigneeId,
+    public List<? extends IssueModel> getTenancyIssues(final List<UUID> projectIds,
+        final List<UUID> agreementIds, final IssueStatus status,
+        final Integer offset, final Integer limit) {
+        return getIssues(projectIds, null, agreementIds,
+            null, null, status, true, offset, limit);
+    }
+
+    public List<? extends IssueModel> getProjectIssues(final List<UUID> projectIds, final UUID assigneeId,
         final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
         final IssueStatus status, final Integer offset, final Integer limit) {
+        return getIssues(projectIds, assigneeId, agreementIds,
+            rentalType, rentalId, status, false, offset, limit);
+    }
+
+    protected List<? extends IssueModel> getIssues(final List<UUID> projectIds, final UUID assigneeId,
+        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final boolean onlyVisibleToTenants,
+        final Integer offset, final Integer limit) {
         return issueRepository.findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
-            status, offset, limit);
+            status, onlyVisibleToTenants, offset, limit);
     }
 
     @Deprecated

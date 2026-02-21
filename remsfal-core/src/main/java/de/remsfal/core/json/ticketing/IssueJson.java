@@ -59,7 +59,6 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract IssueType getType();
 
-    @NotNull(groups = TenancyValidation.class)
     @Nullable
     @Override
     public abstract IssueCategory getCategory();
@@ -79,7 +78,6 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getReporterId();
 
-    @Null(groups = PostValidation.class)
     @NotNull(groups = TenancyValidation.class)
     @Nullable
     @Override

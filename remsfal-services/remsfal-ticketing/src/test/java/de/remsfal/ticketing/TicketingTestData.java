@@ -9,7 +9,8 @@ public class TicketingTestData extends TestData {
 
     // Test user credentials with project roles for testing
     public static final Map<String, String> MANAGER_PROJECT_ROLES = Map.of(
-        PROJECT_ID.toString(), "MANAGER"
+        PROJECT_ID_1.toString(), "MANAGER",
+        PROJECT_ID_2.toString(), "MANAGER"
     );
     
     public static final Map<String, String> TENANT_PROJECT_ROLES = Map.of(

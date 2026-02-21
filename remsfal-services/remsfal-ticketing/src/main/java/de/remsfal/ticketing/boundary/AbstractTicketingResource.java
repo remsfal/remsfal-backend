@@ -48,7 +48,7 @@ public class AbstractTicketingResource extends AbstractResource {
         if(context == null) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         } else if (context == UserContext.TENANT &&
-            (issue.getAgreementId() == null || !issue.isVisibleToTenants()
+            (issue.getAgreementId() == null || !Boolean.TRUE.equals(issue.isVisibleToTenants())
             || !principal.getTenancyProjects().containsKey(issue.getAgreementId()))) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }

@@ -154,11 +154,11 @@ public abstract class AbstractTicketingTest extends AbstractTest {
             IssuePriority priority, UUID reporterId, UUID tenancyId, UUID assigneeId, String description) {
         String insertIssueCql = "INSERT INTO remsfal.issues "
             + "(project_id, issue_id, title, type, status, priority, reporter_id, agreement_id, assignee_id,"
-            + " description, created_at, modified_at) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + " description, is_visable_to_tenants, created_at, modified_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertIssueCql,
             projectId, issueId, title, type.name(), status.name(), priority.name(),
-            reporterId, tenancyId, assigneeId, description, Instant.now(), Instant.now());
+            reporterId, tenancyId, assigneeId, description, tenancyId != null, Instant.now(), Instant.now());
     }
 
     protected void insertAttachment(UUID issueId, UUID attachmentId, String fileName,

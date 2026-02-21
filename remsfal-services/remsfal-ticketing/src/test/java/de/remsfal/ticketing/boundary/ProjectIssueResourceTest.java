@@ -5,17 +5,15 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,17 +25,15 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class IssueResourceTest extends AbstractTicketingTest {
+class ProjectIssueResourceTest extends AbstractTicketingTest {
 
     static final String BASE_PATH = "/ticketing/v1/issues";
+
+    // --- List Issues ---
 
     @Test
     void getIssues_FAILED_noAuthentication() {
@@ -59,16 +55,59 @@ class IssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("issues", hasSize(0))
             .body("first", equalTo(0))
-            .body("size", equalTo(0))
-            .body("total", equalTo(0));
+            .body("size", equalTo(0));
     }
+
+    @Test
+    void getIssues_SUCCESS_withFilters() {
+        final String issue1Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID_1 + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_1 + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+
+        final String issue2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID_2 + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
+            + "\"type\":\"DEFECT\""
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issue1Json)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issue2Json)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("projectId", TicketingTestData.PROJECT_ID_1.toString())
+            .get(BASE_PATH)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("issues", hasSize(1))
+            .body("size", equalTo(1));
+    }
+
+    // --- Create Project Issue ---
 
     @Test
     void createProjectIssue_SUCCESS_issueIsCreated() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-            + "\"type\":\"TASK\""
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_5 + "\","
+            + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION_5 + "\","
+            + "\"type\":\"INQUIRY\""
             + "}";
 
         given()
@@ -82,36 +121,20 @@ class IssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .header("location", containsString(BASE_PATH + "/"))
             .body("id", notNullValue())
-            .body("title", equalTo(TicketingTestData.ISSUE_TITLE))
-            .body("description", equalTo(TicketingTestData.ISSUE_DESCRIPTION.replace("\\n", "\n")))
-            .body("type", equalTo("TASK"))
+            .body("title", equalTo(TicketingTestData.ISSUE_TITLE_5))
+            .body("description", equalTo(TicketingTestData.ISSUE_DESCRIPTION_5.replace("\\n", "\n")))
+            .body("type", equalTo("INQUIRY"))
             .body("status", equalTo("OPEN"))
-            .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()));
-    }
-
-    @Test
-    void createIssue_SUCCESS_tenantCreatesPendingIssue() {
-        //TODO: FAILED
-        final String json = "{ \"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
-            + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION_2 + "\","
-            + "\"type\":\"DEFECT\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(json)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .contentType(ContentType.JSON)
-            .body("title", equalTo(TicketingTestData.ISSUE_TITLE_2))
-            .body("type", equalTo("DEFECT"))
-            .body("status", equalTo("PENDING"))
-            .body("projectId", nullValue())
-            .body("description", notNullValue());
+            .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
+            .body("reporterId", equalTo(TicketingTestData.USER_ID.toString()))
+            .body("assigneeId", nullValue())
+            .body("category", nullValue())
+            .body("priority", equalTo("UNCLASSIFIED"))
+            .body("visibleToTenants", equalTo(false))
+            .body("agreementId", nullValue())
+            .body("rentalUnitId", nullValue())
+            .body("rentalUnitType", nullValue())
+            .body("location", nullValue());
     }
 
     @Test
@@ -163,6 +186,8 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(403);
     }
 
+    // --- Get Issue ---
+
     @Test
     void getIssue_SUCCESS_issueIsReturned() {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
@@ -183,7 +208,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .contentType(MediaType.APPLICATION_JSON)
             .extract().path("id");
 
-        // Then retrieve the issue
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -218,8 +242,37 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void getIssue_FAILED_noPermission() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+
+        final Response createResponse = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(BASE_PATH)
+            .thenReturn();
+
+        final String issueId = createResponse.then()
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
+                "Unauthorized", Map.of(), Map.of(), Map.of()))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(403);
+    }
+
+    // --- Update Issue ---
+
+    @Test
     void updateIssue_SUCCESS_issueIsUpdated() {
-        // First create an issue
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
@@ -238,7 +291,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .contentType(MediaType.APPLICATION_JSON)
             .extract().path("id");
 
-        // Then update the issue
         final String updateJson = "{ \"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
             + "\"status\":\"IN_PROGRESS\""
             + "}";
@@ -270,9 +322,10 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(401);
     }
 
+    // --- Delete Issue ---
+
     @Test
     void deleteIssue_SUCCESS_issueIsDeleted() {
-        // First create an issue
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
@@ -291,7 +344,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .contentType(MediaType.APPLICATION_JSON)
             .extract().path("id");
 
-        // Then delete the issue
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -299,7 +351,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // Verify issue is deleted
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -318,51 +369,37 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getIssues_SUCCESS_withFilters() {
-        // Create multiple issues with different statuses
-        final String issue1Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_1 + "\","
+    void deleteIssue_FAILED_noPermissionToDelete() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\""
             + "}";
 
-        final String issue2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
-            + "\"type\":\"DEFECT\""
-            + "}";
-
-        // Create first issue
-        given()
+        final Response createResponse = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
-            .body(issue1Json)
-            .post(BASE_PATH);
+            .body(createJson)
+            .post(BASE_PATH)
+            .thenReturn();
 
-        // Create second issue
+        final String issueId = createResponse.then()
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
+
         given()
             .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(issue2Json)
-            .post(BASE_PATH);
-
-        // Test filtering by project ID
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .queryParam("projectId", TicketingTestData.PROJECT_ID.toString())
-            .get(BASE_PATH)
+            .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
+                "Unauthorized", Map.of(), Map.of(), Map.of()))
+            .delete(BASE_PATH + "/" + issueId)
             .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("issues", hasSize(2))
-            .body("total", equalTo(2));
+            .statusCode(403);
     }
 
-    // Testfälle für das Hinzufügen der N:M-Relationen
+    // --- Issue Relations ---
+
     @Test
-    void relation_blockedBy_blocks_bidirectional() {
-        // Source (wird geblockt)
+    void addBlockedByRelation_SUCCESS_mirroredAsBlocksOnTarget() {
         String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Blocked Source\","
             + "\"type\":\"TASK\" }";
@@ -377,7 +414,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        // Target (blockt)
         String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Blocking Target\","
             + "\"type\":\"TASK\" }";
@@ -392,7 +428,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        // POST: Source wird von Target geblockt
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -402,7 +437,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body("blockedBy", hasSize(1))
             .body("blockedBy[0]", equalTo(targetId));
 
-        // Target muss blocks = Source enthalten
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -414,8 +448,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void relation_blocks_secondPatchDoesNotDuplicate() {
-        // Source
+    void addBlocksRelation_SUCCESS_noDuplicatesOnRepeat() {
         String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Source\","
             + "\"type\":\"TASK\" }";
@@ -430,7 +463,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        // Target
         String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Target\","
             + "\"type\":\"TASK\" }";
@@ -445,7 +477,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        // erster POST
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -453,7 +484,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // zweiter POST mit gleicher Relation
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -461,7 +491,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // prüfen, dass nichts dupliziert wurde
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -480,7 +509,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void relation_relatedTo_isSymmetric() {
+    void addRelatedToRelation_SUCCESS_isSymmetric() {
         String aJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Issue A\","
             + "\"type\":\"TASK\" }";
@@ -518,7 +547,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body("relatedTo", hasSize(1))
             .body("relatedTo[0]", equalTo(bId));
 
-        // B muss auch A verlinken
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -530,7 +558,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void relation_duplicateOf_isSymmetric() {
+    void addDuplicateOfRelation_SUCCESS_isSymmetric() {
         String aJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Original\","
             + "\"type\":\"TASK\" }";
@@ -568,7 +596,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body("duplicateOf", hasSize(1))
             .body("duplicateOf[0]", equalTo(bId));
 
-        // B muss A als duplicateOf haben
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -580,7 +607,120 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void deleteIssue_cleansUpAllRelationsOnOtherIssues() {
+    void addBlocksRelation_SUCCESS_mirroredAsBlockedByOnTarget() {
+        String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"Target\","
+            + "\"type\":\"TASK\" }";
+
+        String targetId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(targetJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"Source with Relation\","
+            + "\"type\":\"TASK\" }";
+
+        String sourceId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(sourceJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .post(BASE_PATH + "/" + sourceId + "/blocks/" + targetId)
+            .then()
+            .statusCode(200)
+            .body("blocks", hasSize(1))
+            .body("blocks[0]", equalTo(targetId));
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + targetId)
+            .then()
+            .statusCode(200)
+            .body("blockedBy", hasSize(1))
+            .body("blockedBy[0]", equalTo(sourceId));
+    }
+
+    @Test
+    void addBlocksRelation_FAILED_nonExistingTargetIssue() {
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"Source\","
+            + "\"type\":\"TASK\" }";
+
+        String sourceId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(sourceJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .post(BASE_PATH + "/" + sourceId + "/blocks/" + UUID.randomUUID())
+            .then()
+            .statusCode(404);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + sourceId)
+            .then()
+            .statusCode(200)
+            .body("blocks", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void addBlocksRelation_FAILED_selfRelation() {
+        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"Self\","
+            + "\"type\":\"TASK\" }";
+
+        String sourceId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(sourceJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .post(BASE_PATH + "/" + sourceId + "/blocks/" + sourceId)
+            .then()
+            .statusCode(400);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + sourceId)
+            .then()
+            .statusCode(200)
+            .body("blocks", anyOf(nullValue(), hasSize(0)));
+    }
+
+    @Test
+    void deleteIssue_SUCCESS_cleansUpAllRelationsOnOtherIssues() {
         setupTestIssues();
         String mainId = TicketingTestData.ISSUE_ID_1.toString();
         String blockerId = TicketingTestData.ISSUE_ID_2.toString();
@@ -612,7 +752,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        // Main blockt blockedId
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -620,7 +759,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Main wird geblockt von blockerId
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -628,7 +766,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Main ist related zu relatedId
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -636,7 +773,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Main ist duplicate of duplicateId
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -644,7 +780,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Main hat childId als Child
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -652,7 +787,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Main hat parentId als Parent
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -660,15 +794,12 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Jetzt Main löschen
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .delete(BASE_PATH + "/" + mainId)
             .then()
             .statusCode(204);
-
-        // Prüfen, dass alle anderen Issues ihre Rückreferenzen NICHT mehr enthalten
 
         assertNoRelationsContain(mainId, blockerId);
         assertNoRelationsContain(mainId, blockedId);
@@ -678,29 +809,12 @@ class IssueResourceTest extends AbstractTicketingTest {
         assertNoRelationsContain(mainId, childId);
     }
 
-    // Helper zum prüfen, dass ein bestimmtes Issue mainId in KEINEM Relationsfeld hat
-    private void assertNoRelationsContain(String mainId, String issueId) {
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + issueId)
-            .then()
-            .statusCode(200)
-            .body("blocks", not(hasItem(mainId)))
-            .body("blockedBy", not(hasItem(mainId)))
-            .body("relatedTo", not(hasItem(mainId)))
-            .body("duplicateOf", not(hasItem(mainId)))
-            .body("parentIssue", not(equalTo(mainId)))
-            .body("childrenIssues", not(hasItem(mainId)));
-    }
-
     @Test
-    void deleteRelation_blocks_updatesBothSides() {
+    void deleteBlocksRelation_SUCCESS_updatesBothSides() {
         setupTestIssues();
         String sourceId = TicketingTestData.ISSUE_ID_1.toString();
         String targetId = TicketingTestData.ISSUE_ID_2.toString();
 
-        // blocks setzen
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -708,7 +822,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Relation löschen
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -716,33 +829,29 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // Prüfen: keine Relation mehr
         assertNoRelationsContain(targetId, sourceId);
         assertNoRelationsContain(sourceId, targetId);
     }
 
     @Test
-    void deleteRelation_onNonExistingRelation_isNoOp() {
+    void deleteBlocksRelation_FAILED_nonExistingRelation() {
         setupTestIssues();
         String sourceId = TicketingTestData.ISSUE_ID_1.toString();
         String targetId = TicketingTestData.ISSUE_ID_2.toString();
 
-        // Keine Relation gesetzt, direkt deleteRelation aufrufen
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .delete(BASE_PATH + "/" + sourceId + "/blocks/" + targetId)
             .then()
-            .statusCode(400); // BadRequestException: "Issue does not block the specified issue"
+            .statusCode(400);
 
-        // Sicherstellen, dass weiterhin keine Relation existiert
         assertNoRelationsContain(sourceId, targetId);
         assertNoRelationsContain(targetId, sourceId);
     }
 
     @Test
     void deleteRelation_FAILED_forbiddenWhenNoProjectRole() {
-        // Issue als Manager anlegen, damit es ein valides Project hat
         String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Relation Test\","
             + "\"type\":\"TASK\" }";
@@ -757,7 +866,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        // Anderer User, der KEINE projectRole für dieses Projekt hat (z.B. Tenant)
         given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
@@ -769,133 +877,11 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createRelation_SUCCESS_withBlocksRelation_bidirectionalOnCreate() {
-        // Target-Issue zuerst anlegen
-        String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Target\","
-            + "\"type\":\"TASK\" }";
-
-        String targetId = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(targetJson)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .extract().path("id");
-
-        // Source erstellen
-        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Source with Relation\","
-            + "\"type\":\"TASK\" }";
-
-        String sourceId = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(sourceJson)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .extract().path("id");
-
-        // Relation hinzufügen
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(BASE_PATH + "/" + sourceId + "/blocks/" + targetId)
-            .then()
-            .statusCode(200)
-            .body("blocks", hasSize(1))
-            .body("blocks[0]", equalTo(targetId));
-
-        // Target muss blockedBy = Source haben (Spiegelung)
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + targetId)
-            .then()
-            .statusCode(200)
-            .body("blockedBy", hasSize(1))
-            .body("blockedBy[0]", equalTo(sourceId));
-    }
-
-    @Test
-    void relation_blocks_rejectsNonExistingIssue() {
-        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Source\","
-            + "\"type\":\"TASK\" }";
-
-        String sourceId = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(sourceJson)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .extract().path("id");
-
-        // Versuche Relation zu nicht-existierendem Issue zu setzen
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(BASE_PATH + "/" + sourceId + "/blocks/" + UUID.randomUUID())
-            .then()
-            .statusCode(404); // Blocked issue not found
-
-        // prüfen: keine blocks gesetzt
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + sourceId)
-            .then()
-            .statusCode(200)
-            .body("blocks", anyOf(nullValue(), hasSize(0)));
-    }
-
-    @Test
-    void relation_blocks_rejectsSelfRelation() {
-        String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Self\","
-            + "\"type\":\"TASK\" }";
-
-        String sourceId = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(sourceJson)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .extract().path("id");
-
-        // blocks = [sourceId] → wird abgelehnt
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(BASE_PATH + "/" + sourceId + "/blocks/" + sourceId)
-            .then()
-            .statusCode(400); // An issue cannot block itself
-
-        // keine Self-Relation entstanden
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + sourceId)
-            .then()
-            .statusCode(200)
-            .body("blocks", anyOf(nullValue(), hasSize(0)));
-    }
-
-    @Test
-    void deleteRelation_blockedBy_updatesBothSides() {
+    void deleteBlockedByRelation_SUCCESS_updatesBothSides() {
         setupTestIssues();
         String sourceId = TicketingTestData.ISSUE_ID_1.toString();
         String targetId = TicketingTestData.ISSUE_ID_2.toString();
 
-        // blockedBy setzen → target.blocks wird gespiegelt
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -903,7 +889,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Relation löschen
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -911,7 +896,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // Prüfen: beide Seiten leer
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -930,7 +914,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void deleteRelation_relatedTo_updatesBothSides() {
+    void deleteRelatedToRelation_SUCCESS_updatesBothSides() {
         setupTestIssues();
         String aId = TicketingTestData.ISSUE_ID_1.toString();
         String bId = TicketingTestData.ISSUE_ID_2.toString();
@@ -942,7 +926,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Löschen
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -950,7 +933,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // A und B haben keine relatedTo mehr
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -969,7 +951,7 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void deleteRelation_FAILED_unknownType_returnsBadRequest() {
+    void deleteRelation_FAILED_unknownRelationType() {
         setupTestIssues();
         String sourceId = TicketingTestData.ISSUE_ID_1.toString();
         String targetId = TicketingTestData.ISSUE_ID_2.toString();
@@ -979,16 +961,15 @@ class IssueResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .delete(BASE_PATH + "/" + sourceId + "/unknown-type/" + targetId)
             .then()
-            .statusCode(404); // Path pattern doesn't match, so 404
+            .statusCode(404);
     }
 
     @Test
-    void deleteRelation_duplicateOf_updatesBothSides() {
+    void deleteDuplicateOfRelation_SUCCESS_updatesBothSides() {
         setupTestIssues();
         String originalId = TicketingTestData.ISSUE_ID_1.toString();
         String duplicateId = TicketingTestData.ISSUE_ID_2.toString();
 
-        // duplicateOf setzen: Original -> Duplicate
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -996,7 +977,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Relation löschen: duplicate-of
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1004,7 +984,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // Original darf keine duplicateOf mehr haben
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1013,7 +992,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("duplicateOf", anyOf(nullValue(), hasSize(0)));
 
-        // Duplicate darf keine duplicateOf mehr auf Original haben
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1024,12 +1002,11 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void deleteRelation_children_updatesBothSides() {
+    void deleteChildrenRelation_SUCCESS_updatesBothSides() {
         setupTestIssues();
         String parentId = TicketingTestData.ISSUE_ID_1.toString();
         String childId = TicketingTestData.ISSUE_ID_2.toString();
 
-        // childrenIssues setzen: Parent has Child
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1037,7 +1014,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Relation löschen: children
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1045,7 +1021,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // Parent darf keine childrenIssues mehr haben
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1054,7 +1029,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("childrenIssues", anyOf(nullValue(), hasSize(0)));
 
-        // Child darf keine parentIssue mehr haben
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1065,12 +1039,11 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void deleteRelation_parent_updatesBothSides() {
+    void deleteParentRelation_SUCCESS_updatesBothSides() {
         setupTestIssues();
         String parentId = TicketingTestData.ISSUE_ID_1.toString();
         String childId = TicketingTestData.ISSUE_ID_2.toString();
 
-        // parentIssue setzen: Child -> Parent
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1078,7 +1051,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200);
 
-        // Relation löschen: parent
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1086,7 +1058,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // Child darf keine parentIssue mehr haben
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1095,7 +1066,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("parentIssue", nullValue());
 
-        // Parent darf keine childrenIssues mehr haben
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1105,423 +1075,7 @@ class IssueResourceTest extends AbstractTicketingTest {
             .body("childrenIssues", anyOf(nullValue(), hasSize(0)));
     }
 
-    @Test
-    void getIssues_FAILED_tenantWithUnauthorizedTenancyId() {
-        UUID unauthorizedAgreementId = UUID.randomUUID();
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("agreementId", unauthorizedAgreementId.toString())
-            .get(BASE_PATH)
-            .then()
-            .statusCode(403);
-    }
-
-    @Test
-    void getIssues_SUCCESS_tenantWithoutSpecificTenancyId() {
-        final String createJson1 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Tenant Issue 1\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson1)
-            .post(BASE_PATH);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_contractorAsParticipantWithDeletedIssue() {
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Contractor Issue\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        Response createResponse = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH)
-            .thenReturn();
-
-        String issueId = createResponse.then()
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract().path("id");
-
-        UUID contractorId = UUID.randomUUID();
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .delete(BASE_PATH + "/" + issueId)
-            .then()
-            .statusCode(204);
-
-        given()
-            .when()
-            .cookie(buildCookie(contractorId, "contractor@test.com",
-                "Contractor", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_tenantFiltersByStatus() {
-        final String createJson1 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Open Issue\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        Response response1 = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson1)
-            .post(BASE_PATH)
-            .thenReturn();
-
-        String issueId1 = response1.then()
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract().path("id");
-
-        final String updateJson = "{ \"status\":\"IN_PROGRESS\" }";
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(updateJson)
-            .patch(BASE_PATH + "/" + issueId1);
-
-        final String createJson2 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Pending Issue\","
-            + "\"type\":\"DEFECT\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson2)
-            .post(BASE_PATH);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("status", "PENDING")
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_handlesNullIssuesInDeduplication() {
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_contractorWithNoParticipations() {
-        UUID contractorId = UUID.randomUUID();
-
-        given()
-            .when()
-            .cookie(buildCookie(contractorId, "contractor@test.com",
-                "Contractor", Map.of(), Map.of(), Map.of()));
-
-    }
-
-    void getIssues_FAILED_noAgreementMembership() {
-        given()
-            .when()
-            .cookie(buildCookie(
-                TicketingTestData.USER_ID,
-                TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_FIRST_NAME,
-                Map.of(), Map.of(),
-                Map.of()))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(404);
-    }
-
-    @Test
-    void getIssues_FAILED_invalidAgreementIdForbidden() {
-        UUID unknownAgreement = UUID.randomUUID();
-
-        given()
-            .when()
-            .cookie(buildCookie(
-                TicketingTestData.USER_ID,
-                TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_FIRST_NAME,
-                Map.of(), Map.of(),
-                TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("agreementId", unknownAgreement.toString())
-            .get(BASE_PATH)
-            .then()
-            .statusCode(403);
-    }
-
-    @Test
-    void getIssues_SUCCESS_agreementIssuesForMember() {
-        given()
-            .when()
-            .cookie(buildCookie(
-                TicketingTestData.USER_ID,
-                TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_FIRST_NAME,
-                Map.of(), Map.of(),
-                TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("agreementId", TicketingTestData.AGREEMENT_ID.toString())
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("issues", hasSize(0))
-            .body("total", equalTo(0));
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideIssueTestCases")
-    void getIssues_SUCCESS_variousScenarios(String title, String description) {
-
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + title + "\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    private static Stream<Arguments> provideIssueTestCases() {
-        return Stream.of(
-            Arguments.of("Dedupe Issue", "Deduplication of issues"),
-            Arguments.of("Combined Role Issue", "User with both tenant and contractor roles"),
-            Arguments.of("No Filter Issue", "Without status filter"));
-    }
-
-    @Test
-    void getIssues_SUCCESS_handlesIssueWithNullId() {
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssue_FAILED_noPermission() {
-
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        final Response createResponse = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH)
-            .thenReturn();
-
-        final String issueId = createResponse.then()
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract().path("id");
-
-        UUID unauthorizedUserId = UUID.randomUUID();
-
-        given()
-            .when()
-            .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
-                "Unauthorized", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH + "/" + issueId)
-            .then()
-            .statusCode(403);
-    }
-
-    @Test
-    void deleteIssue_FAILED_noPermissionToDelete() {
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        final Response createResponse = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH)
-            .thenReturn();
-
-        final String issueId = createResponse.then()
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract().path("id");
-
-        UUID unauthorizedUserId = UUID.randomUUID();
-
-        given()
-            .when()
-            .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
-                "Unauthorized", Map.of(), Map.of(), Map.of()))
-            .delete(BASE_PATH + "/" + issueId)
-            .then()
-            .statusCode(403);
-    }
-
-    @Test
-    void getIssues_SUCCESS_tenantWithSpecificAgreementIdGetsIssues() {
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Agreement Specific Issue\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH);
-
-        UUID agreementId = UUID.fromString(TicketingTestData.TENANT_PROJECT_ROLES.keySet().iterator().next());
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("agreementId", agreementId.toString())
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void createTenancyIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
-        final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
-            + "\"title\":\"Issue with attachments\","
-            + "\"type\":\"DEFECT\""
-            + "}";
-        InputStream fileStream = getTestFileStream(TicketingTestData.FILE_PNG_PATH);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .multiPart("issue", issueJson, MediaType.APPLICATION_JSON)
-            .multiPart("attachment", TicketingTestData.FILE_PNG_PATH, fileStream, TicketingTestData.FILE_PNG_TYPE)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .contentType(ContentType.JSON)
-            .body("id", notNullValue())
-            .body("title", equalTo("Issue with attachments"))
-            .body("type", equalTo("DEFECT"))
-            .body("status", equalTo("PENDING"))
-            .body("projectId", nullValue())
-            .body("attachments", hasSize(1))
-            .body("attachments[0].issueId", notNullValue())
-            .body("attachments[0].attachmentId", notNullValue())
-            .body("attachments[0].fileName", equalTo(TicketingTestData.FILE_PNG_PATH))
-            .body("attachments[0].contentType", startsWith(TicketingTestData.FILE_PNG_TYPE))
-            .body("attachments[0].objectName", startsWith("/issues/"))
-            .body("attachments[0].objectName", endsWith(TicketingTestData.FILE_PNG_PATH))
-            .body("attachments[0].uploadedBy", equalTo(TicketingTestData.USER_ID.toString()))
-            .body("attachments[0].createdAt", notNullValue());
-    }
-
-    @Test
-    void createTenancyIssueWithAttachments_SUCCESS_issueWithoutAttachmentsIsCreated() {
-        final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
-            + "\"title\":\"Issue without attachments\","
-            + "\"type\":\"TERMINATION\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .multiPart("issue", issueJson, MediaType.APPLICATION_JSON)
-            .post(BASE_PATH)
-            .then()
-            .statusCode(201)
-            .contentType(ContentType.JSON)
-            .body("id", notNullValue())
-            .body("title", equalTo("Issue without attachments"))
-            .body("type", equalTo("TERMINATION"))
-            .body("status", equalTo("PENDING"))
-            .body("isVisibleForTenant", nullValue())
-            .body("projectId", nullValue())
-            .body("attachments", nullValue());
-    }
-
-    @Test
-    void createTenancyIssueWithAttachments_FAILED_noAuthentication() {
-        given()
-            .when()
-            .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
-            .multiPart("title", "Issue with attachments")
-            .multiPart("type", "TASK")
-            .post(BASE_PATH)
-            .then()
-            .statusCode(401);
-    }
-
-    @Test
-    void createTenancyIssueWithAttachments_FAILED_missingRequiredFields() {
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .multiPart("projectId", TicketingTestData.PROJECT_ID.toString())
-            .post(BASE_PATH)
-            .then()
-            .statusCode(400);
-    }
+    // --- Attachments (Manager) ---
 
     @Test
     void downloadAttachment_SUCCESS_managerDownloadsAttachment() throws Exception {
@@ -1540,22 +1094,6 @@ class IssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void downloadAttachment_SUCCESS_tenantDownloadsAttachment() throws Exception {
-        setupTestIssuesWithAttachment();
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_FIRST_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
-                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
-            .then()
-            .statusCode(200)
-            .contentType(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", containsString("attachment"));
-    }
-
-    @Test
     void downloadAttachment_FAILED_noAuthentication() {
         setupTestIssues();
 
@@ -1570,11 +1108,10 @@ class IssueResourceTest extends AbstractTicketingTest {
     @Test
     void downloadAttachment_FAILED_noPermission() {
         setupTestIssues();
-        UUID unauthorizedUserId = UUID.randomUUID();
 
         given()
             .when()
-            .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
+            .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
                 "Unauthorized", Map.of(), Map.of(), Map.of()))
             .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
                 + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
@@ -1584,14 +1121,11 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void downloadAttachment_FAILED_issueNotFound() {
-        UUID nonExistentIssueId = UUID.randomUUID();
-        UUID attachmentId = UUID.randomUUID();
-
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + nonExistentIssueId + "/attachments/"
-                + attachmentId + "/test.png")
+            .get(BASE_PATH + "/" + UUID.randomUUID() + "/attachments/"
+                + UUID.randomUUID() + "/test.png")
             .then()
             .statusCode(404);
     }
@@ -1599,13 +1133,12 @@ class IssueResourceTest extends AbstractTicketingTest {
     @Test
     void downloadAttachment_FAILED_attachmentNotFound() {
         setupTestIssues();
-        UUID nonExistentAttachmentId = UUID.randomUUID();
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
-                + nonExistentAttachmentId + "/test.png")
+                + UUID.randomUUID() + "/test.png")
             .then()
             .statusCode(404);
     }
@@ -1622,7 +1155,6 @@ class IssueResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(204);
 
-        // Verify attachment is deleted - should return 404 when trying to download
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -1661,11 +1193,10 @@ class IssueResourceTest extends AbstractTicketingTest {
     @Test
     void deleteAttachment_FAILED_noPermission() throws Exception {
         setupTestIssuesWithAttachment();
-        UUID unauthorizedUserId = UUID.randomUUID();
 
         given()
             .when()
-            .cookie(buildCookie(unauthorizedUserId, "unauthorized@test.com",
+            .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
                 "Unauthorized", Map.of(), Map.of(), Map.of()))
             .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
                 + TicketingTestData.ATTACHMENT_ID_1)
@@ -1675,13 +1206,10 @@ class IssueResourceTest extends AbstractTicketingTest {
 
     @Test
     void deleteAttachment_FAILED_issueNotFound() {
-        UUID nonExistentIssueId = UUID.randomUUID();
-        UUID attachmentId = UUID.randomUUID();
-
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .delete(BASE_PATH + "/" + nonExistentIssueId + "/attachments/" + attachmentId)
+            .delete(BASE_PATH + "/" + UUID.randomUUID() + "/attachments/" + UUID.randomUUID())
             .then()
             .statusCode(404);
     }
@@ -1689,13 +1217,12 @@ class IssueResourceTest extends AbstractTicketingTest {
     @Test
     void deleteAttachment_FAILED_attachmentNotFound() {
         setupTestIssues();
-        UUID nonExistentAttachmentId = UUID.randomUUID();
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .delete(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_1 + "/attachments/"
-                + nonExistentAttachmentId)
+                + UUID.randomUUID())
             .then()
             .statusCode(404);
     }
@@ -1805,5 +1332,21 @@ class IssueResourceTest extends AbstractTicketingTest {
             .statusCode(404);
     }
 
+    // --- Helper ---
+
+    private void assertNoRelationsContain(String mainId, String issueId) {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(200)
+            .body("blocks", not(hasItem(mainId)))
+            .body("blockedBy", not(hasItem(mainId)))
+            .body("relatedTo", not(hasItem(mainId)))
+            .body("duplicateOf", not(hasItem(mainId)))
+            .body("parentIssue", not(equalTo(mainId)))
+            .body("childrenIssues", not(hasItem(mainId)));
+    }
 
 }

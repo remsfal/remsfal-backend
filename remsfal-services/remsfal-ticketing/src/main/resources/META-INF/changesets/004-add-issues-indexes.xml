@@ -8,20 +8,46 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="remsfal-ticketing-0.0.2-issues-indexes" author="github-copilot">
-        <comment>Add indexes to issues table for filtering</comment>
+        <comment>Add SAI (Storage-Attached Index) to issues table for flexible filtering.
+                 SAI supports filtering combined with IN on the partition key without ALLOW FILTERING,
+                 and is stable from Cassandra 5.0 onwards.</comment>
         <sql>
-            CREATE INDEX IF NOT EXISTS issues_status_idx ON REMSFAL.issues (status);
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_status_sai
+            ON REMSFAL.issues (status)
+            USING 'StorageAttachedIndex';
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS issues_assignee_id_idx ON REMSFAL.issues (assignee_id);
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_assignee_id_sai
+            ON REMSFAL.issues (assignee_id)
+            USING 'StorageAttachedIndex';
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS issues_agreement_id_idx ON REMSFAL.issues (agreement_id);
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_agreement_id_sai
+            ON REMSFAL.issues (agreement_id)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_visible_to_tenants_sai
+            ON REMSFAL.issues (is_visable_to_tenants)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_rental_unit_type_sai
+            ON REMSFAL.issues (rental_unit_type)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_rental_unit_id_sai
+            ON REMSFAL.issues (rental_unit_id)
+            USING 'StorageAttachedIndex';
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_status_idx;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_assignee_id_idx;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_agreement_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_status_sai;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_assignee_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_agreement_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_visible_to_tenants_sai;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_rental_unit_type_sai;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_rental_unit_id_sai;</sql>
         </rollback>
     </changeSet>
 

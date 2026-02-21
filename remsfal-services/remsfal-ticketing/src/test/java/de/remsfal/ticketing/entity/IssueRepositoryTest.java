@@ -16,6 +16,7 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -44,7 +45,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            List.of(projectId), null, null, null, null, IssueStatus.OPEN, Integer.MAX_VALUE
+            List.of(projectId), null, null, null, null, IssueStatus.OPEN, false, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 OPEN issues
@@ -69,13 +70,34 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by assigneeId1
         List<? extends IssueModel> assigneeIssues = repository.findByQuery(
-            List.of(projectId), assigneeId1, null, null, null, null, Integer.MAX_VALUE
+            List.of(projectId), assigneeId1, null, null, null, null, false, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 issues assigned to assigneeId1
         assertNotNull(assigneeIssues);
         assertEquals(2, assigneeIssues.size());
         assigneeIssues.forEach(issue -> assertEquals(assigneeId1, issue.getAssigneeId()));
+    }
+
+    @Test
+    void testUnicodeCharactersArePreserved() {
+        UUID projectId = UUID.randomUUID();
+        UUID issueId = UUID.randomUUID();
+        final String title = "Kündigung der Wohnung – Mängel: Öl-/Wärmeanlage & Schäden (€ 1.200)";
+        final String description = "Sehr geehrte Damen und Herren,\n"
+            + "hiermit kündige ich das Mietverhältnis fristgerecht.\n"
+            + "Bekannte Mängel: Heizöltank, Überflutung im Küchenbereich (€ 800),\n"
+            + "beschädigte Türen (äußere Türdichtung), kaputte Wärmedämmung.\n"
+            + "Bitte bestätigen Sie den Empfang. Schöne Grüße.";
+
+        insertIssue(projectId, issueId, title, IssueType.TERMINATION, IssueStatus.PENDING,
+            IssuePriority.HIGH, UUID.randomUUID(), null, null, description);
+
+        IssueEntity found = repository.findByIssueId(issueId)
+            .orElseThrow(() -> new AssertionError("Issue not found"));
+
+        assertEquals(title, found.getTitle());
+        assertEquals(description, found.getDescription());
     }
 
     @Test

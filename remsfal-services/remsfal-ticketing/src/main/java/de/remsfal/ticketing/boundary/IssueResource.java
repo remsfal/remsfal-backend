@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
@@ -54,6 +55,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @Override
     public IssueListJson getIssues(final Integer offset, final Integer limit, final boolean preferTenancyIssues,
         final UUID projectId, final UUID assigneeId, final UUID agreementId,
@@ -64,7 +68,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         } else if (projectId != null && principal.getProjectRoles().containsKey(projectId)) {
             return getProjectIssues(offset, limit, List.of(projectId), assigneeId, agreementId,
                 rentalUnitType, rentalUnitId, status);
-        } else if (preferTenancyIssues) {
+        } else if (preferTenancyIssues || principal.getProjectRoles().isEmpty()) {
             List<UUID> projectFilter = principal.getTenancyProjects().values().stream().toList();
             return getTenancyIssues(offset, limit, projectFilter, agreementId, status);
         } else {
@@ -82,20 +86,26 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         } else {
             agreementFilter = principal.getTenancyProjects().keySet().stream().toList();
         }
-        final List<? extends IssueModel> issues = issueController.getIssues(projectIds, null, agreementFilter,
-            null, null, status, offset, limit);
+        if (projectIds.isEmpty() || agreementFilter.isEmpty()) {
+            return IssueListJson.valueOfTenancyIssues(List.of(), offset);
+        }
+        final List<? extends IssueModel> issues = issueController
+            .getTenancyIssues(projectIds, agreementFilter, status, offset, limit);
         return IssueListJson.valueOfTenancyIssues(issues, offset);
     }
 
     private IssueListJson getProjectIssues(final Integer offset, final Integer limit,
         final List<UUID> projectIds, final UUID assigneeId, final UUID agreementId,
         final UnitType rentalUnitType, final UUID rentalUnitId, final IssueStatus status) {
+        if (projectIds.isEmpty()) {
+            return IssueListJson.valueOfTenancyIssues(List.of(), offset);
+        }
         final List<? extends IssueModel> issues;
-        if(agreementId != null) {
-            issues = issueController.getIssues(projectIds, assigneeId, List.of(agreementId),
+        if (agreementId != null) {
+            issues = issueController.getProjectIssues(projectIds, assigneeId, List.of(agreementId),
                 rentalUnitType, rentalUnitId, status, offset, limit);
         } else {
-            issues = issueController.getIssues(projectIds, assigneeId, null,
+            issues = issueController.getProjectIssues(projectIds, assigneeId, null,
                 rentalUnitType, rentalUnitId, status, offset, limit);
         }
         return IssueListJson.valueOfProjectIssues(issues, offset);
@@ -166,7 +176,8 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
                 !issueParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
                 throw new BadRequestException("Issue part must be of type application/json");
             }
-            final IssueJson issue = issueParts.get(0).getBody(IssueJson.class, IssueJson.class);
+            final InputStream stream = issueParts.get(0).getBody(InputStream.class, null);
+            final IssueJson issue = objectMapper.readValue(stream, IssueJson.class);
             if (issue == null) {
                 throw new BadRequestException("Unable to parse issue data from request");
             }
@@ -284,9 +295,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
                 output.write(buffer, 0, bytesRead);
             }
         })
-        .type(MediaType.APPLICATION_OCTET_STREAM)
-        .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
-        .build();
+            .type(MediaType.APPLICATION_OCTET_STREAM)
+            .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
+            .build();
     }
 
     @Override

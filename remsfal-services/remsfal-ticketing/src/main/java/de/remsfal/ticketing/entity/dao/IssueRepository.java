@@ -52,14 +52,15 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
         final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final Integer offset, final Integer limit) {
+        final IssueStatus status, final boolean onlyVisibleToTenants,
+        final Integer offset, final Integer limit) {
         return findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
-            status, offset + limit).stream().skip(offset).limit(limit).toList();
+            status, onlyVisibleToTenants, offset + limit).stream().skip(offset).limit(limit).toList();
     }
 
     public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
         final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final Integer limit) {
+        final IssueStatus status, final boolean onlyVisibleToTenants, final Integer limit) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).in(projectIds);
         if (assigneeId != null) {
@@ -77,8 +78,13 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         if (status != null) {
             query = query.and("status").eq(status.name());
         }
-        return query.orderBy(CREATED_AT).asc()
-            .limit(limit).result();
+        if (onlyVisibleToTenants) {
+            query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);
+        }
+        // No ORDER BY here: Cassandra does not support ORDER BY with secondary indexes.
+        // The native clustering order (issue_id DESC, UUIDv7) returns newest rows first
+        // for unfiltered partition scans. Filtered queries return rows in clustering order.
+        return query.limit(limit).result();
     }
 
     public List<? extends IssueModel> findByAgreementId(UUID agreementId) {
