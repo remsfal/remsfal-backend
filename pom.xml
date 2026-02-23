@@ -24,7 +24,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.style.configDirectory>src/main/style</project.style.configDirectory>
         <surefire-plugin.version>3.5.5</surefire-plugin.version>
-        <failsafe-plugin.version>3.5.4</failsafe-plugin.version>
+        <failsafe-plugin.version>3.5.5</failsafe-plugin.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
         <release-plugin.version>3.3.1</release-plugin.version>
         <scm-plugin.version>2.2.1</scm-plugin.version>
