@@ -76,7 +76,7 @@ jobs:
             SERVICE_NAME=${{ matrix.microservice }}
       - name: Generate artifact attestation
         id: attest
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.microservice }}
           subject-digest: ${{ steps.push.outputs.digest }}
