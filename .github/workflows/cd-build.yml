@@ -22,7 +22,7 @@ jobs:
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: built-app-artifacts
           path: |
