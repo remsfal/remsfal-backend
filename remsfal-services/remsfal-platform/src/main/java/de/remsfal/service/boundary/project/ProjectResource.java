@@ -3,21 +3,18 @@ package de.remsfal.service.boundary.project;
 import java.util.List;
 import java.util.UUID;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import org.eclipse.microprofile.metrics.MetricUnits;
-
 import de.remsfal.core.api.project.ProjectEndpoint;
 import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.json.project.ProjectListJson;
 import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.service.control.ProjectController;
-
-import org.eclipse.microprofile.metrics.annotation.Timed;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -62,14 +59,14 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     Instance<RentalAgreementResource> tenancyResource;
 
     @Override
-    @Timed(name = "GetProjectsListTimer", unit = MetricUnits.MILLISECONDS)
+    @WithSpan("ProjectResource.getProjects")
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
         List<ProjectModel> projects = controller.getProjects(principal, offset, limit);
         return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal), principal);
     }
 
     @Override
-    @Timed(name = "CreateProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @WithSpan("ProjectResource.createProject")
     public Response createProject(final ProjectJson project) {
         final ProjectModel model = controller.createProject(principal, project);
         return getCreatedResponseBuilder(model.getId())
@@ -79,7 +76,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    @Timed(name = "GetSingleProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @WithSpan("ProjectResource.getProject")
     public ProjectJson getProject(final UUID projectId) {
         checkProjectReadPermissions(projectId);
         final ProjectModel model = controller.getProject(principal, projectId);
@@ -87,7 +84,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    @Timed(name = "UpdateProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @WithSpan("ProjectResource.updateProject")
     public ProjectJson updateProject(final UUID projectId, final ProjectJson project) {
         checkOwnerPermissions(projectId);
         final ProjectModel model = controller.updateProject(principal, projectId, project);
@@ -95,7 +92,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    @Timed(name = "deleteProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @WithSpan("ProjectResource.deleteProject")
     public void deleteProject(final UUID projectId) {
         checkOwnerPermissions(projectId);
         controller.deleteProject(principal, projectId);
