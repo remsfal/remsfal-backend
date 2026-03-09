@@ -66,7 +66,7 @@ jobs:
             type=sha
       - name : Build and push Docker image
         id: push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./src/main/docker/Dockerfile
