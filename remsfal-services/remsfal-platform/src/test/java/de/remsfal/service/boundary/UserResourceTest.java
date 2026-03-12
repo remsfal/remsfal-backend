@@ -230,7 +230,7 @@ class UserResourceTest extends AbstractResourceTest {
             .when().get("/q/metrics")
             .then()
             .statusCode(200)
-            .body(containsString("GetUserTimer"));
+            .body(containsString("get_user_timer"));
     }
 
     @Test
@@ -251,7 +251,7 @@ class UserResourceTest extends AbstractResourceTest {
             .when().get("/q/metrics")
             .then()
             .statusCode(200)
-            .body(containsString("UpdateUserTimer"));
+            .body(containsString("update_user_timer"));
     }
 
     @Test
@@ -266,7 +266,7 @@ class UserResourceTest extends AbstractResourceTest {
             .when().get("/q/metrics")
             .then()
             .statusCode(200)
-            .body(containsString("DeleteUserTimer"));
+            .body(containsString("delete_user_timer"));
     }
 
 }
