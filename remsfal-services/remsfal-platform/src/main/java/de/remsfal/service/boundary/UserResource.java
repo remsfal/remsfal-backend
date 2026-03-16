@@ -15,12 +15,10 @@ import de.remsfal.service.control.ProjectController;
 import de.remsfal.service.control.RentalAgreementController;
 import de.remsfal.service.control.UserController;
 
-import org.eclipse.microprofile.metrics.annotation.Timed;
+import io.micrometer.core.annotation.Timed;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.eclipse.microprofile.metrics.MetricUnits;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -44,7 +42,7 @@ public class UserResource implements UserEndpoint {
     RentalAgreementController agreementController;
 
     @Override
-    @Timed(name = "GetUserTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("get_user_timer")
     public UserJson getUser() {
         final CustomerModel user = userController.getUser(principal.getId());
         final Set<UserContext> userRoles = getUserContexts(user);
@@ -66,14 +64,14 @@ public class UserResource implements UserEndpoint {
     }
 
     @Override
-    @Timed(name = "UpdateUserTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("update_user_timer")
     public UserJson updateUser(final UserJson user) {
         final CustomerModel updatedUser = userController.updateUser(principal.getId(), user);
         return UserJson.valueOf(updatedUser);
     }
 
     @Override
-    @Timed(name = "DeleteUserTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("delete_user_timer")
     public void deleteUser() {
         if (!userController.deleteUser(principal.getId())) {
             throw new NotFoundException();

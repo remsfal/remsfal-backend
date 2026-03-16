@@ -22,8 +22,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.annotation.Timed;
+import io.micrometer.core.annotation.Timed;
 import org.jboss.logging.Logger;
 
 import java.net.URI;
@@ -65,7 +64,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     HttpHeaders httpHeaders;
 
     @Override
-    @Timed(name = "checksTimerLogin", unit = MetricUnits.MILLISECONDS)
+    @Timed("checks_timer_login")
     public Response login(final String route) {
         final String redirectUri = getAbsoluteUri().toASCIIString().replace("/login", "/session");
         final URI redirectUrl = authenticator.getAuthorizationCodeURI(redirectUri, route);
@@ -73,7 +72,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     }
 
     @Override
-    @Timed(name = "checksTimerSession", unit = MetricUnits.MILLISECONDS)
+    @Timed("checks_timer_session")
     public Response session(final String code, final String state, final String error) {
         if (error != null) {
             throw new UnauthorizedException("Error during Google authentication: " + error);
@@ -112,7 +111,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         }
     }
 
-    @Timed(name = "checksTimerLogout", unit = MetricUnits.MILLISECONDS)
+    @Timed("checks_timer_logout")
     @Override
     public Response logout() {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath("/").build();
@@ -125,7 +124,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     }
 
     @Override
-    @Timed(name = "checksTimerJwks")
+    @Timed("checks_timer_jwks")
     public Response jwks() {
         JWKSet jwkSet = new JWKSet(jwtManager.getPublicJwk());
         return Response.ok(jwkSet.toJSONObject()).build();
