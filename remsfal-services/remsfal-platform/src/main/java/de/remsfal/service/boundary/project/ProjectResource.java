@@ -9,15 +9,13 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import org.eclipse.microprofile.metrics.MetricUnits;
-
 import de.remsfal.core.api.project.ProjectEndpoint;
 import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.json.project.ProjectListJson;
 import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.service.control.ProjectController;
 
-import org.eclipse.microprofile.metrics.annotation.Timed;
+import io.micrometer.core.annotation.Timed;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -62,14 +60,14 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     Instance<RentalAgreementResource> tenancyResource;
 
     @Override
-    @Timed(name = "GetProjectsListTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("get_projects_list_timer")
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
         List<ProjectModel> projects = controller.getProjects(principal, offset, limit);
         return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal), principal);
     }
 
     @Override
-    @Timed(name = "CreateProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("create_project_timer")
     public Response createProject(final ProjectJson project) {
         final ProjectModel model = controller.createProject(principal, project);
         return getCreatedResponseBuilder(model.getId())
@@ -79,7 +77,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    @Timed(name = "GetSingleProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("get_single_project_timer")
     public ProjectJson getProject(final UUID projectId) {
         checkProjectReadPermissions(projectId);
         final ProjectModel model = controller.getProject(principal, projectId);
@@ -87,7 +85,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    @Timed(name = "UpdateProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("update_project_timer")
     public ProjectJson updateProject(final UUID projectId, final ProjectJson project) {
         checkOwnerPermissions(projectId);
         final ProjectModel model = controller.updateProject(principal, projectId, project);
@@ -95,7 +93,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    @Timed(name = "deleteProjectTimer", unit = MetricUnits.MILLISECONDS)
+    @Timed("delete_project_timer")
     public void deleteProject(final UUID projectId) {
         checkOwnerPermissions(projectId);
         controller.deleteProject(principal, projectId);

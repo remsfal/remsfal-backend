@@ -348,7 +348,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         given()
             .when().get("/q/metrics")
             .then().statusCode(200)
-            .body(containsString("GetProjectsListTimer"));
+            .body(containsString("get_projects_list_timer"));
     }
 
     @Test
@@ -363,7 +363,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         given()
             .when().get("/q/metrics")
             .then().statusCode(200)
-            .body(containsString("CreateProjectTimer"));
+            .body(containsString("create_project_timer"));
     }
 
     @Test
@@ -382,7 +382,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         given()
             .when().get("/q/metrics")
             .then().statusCode(200)
-            .body(containsString("GetSingleProjectTimer"));
+            .body(containsString("get_single_project_timer"));
     }
 
     @Test
@@ -403,7 +403,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         given()
             .when().get("/q/metrics")
             .then().statusCode(200)
-            .body(containsString("UpdateProjectTimer"));
+            .body(containsString("update_project_timer"));
     }
 
     @Test
@@ -422,7 +422,7 @@ class ProjectResourceTest extends AbstractResourceTest {
         given()
             .when().get("/q/metrics")
             .then().statusCode(200)
-            .body(containsString("deleteProjectTimer"));
+            .body(containsString("delete_project_timer"));
     }
     @Test
     void createApartmentResource_SUCCESS_resourceIsInitialized() {

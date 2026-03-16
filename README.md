@@ -23,7 +23,7 @@ The project is structured into multiple modules:
 - **[remsfal-notification](remsfal-services/remsfal-notification/README.md)**: A microservice responsible for all customer notifications.
 - **[remsfal-platform](remsfal-services/remsfal-platform/README.md)**: The most important microservice, which is responsible for core functionalities such as user login, metadata storage, etc.
 
-> **_NOTE:_** When contributing to this repository, please **first** read and understand the **[Authorization Concept](Authorization.md)**.
+> **_NOTE:_** Before implementing a new feature, please **first** read [AGENT.md](AGENT.md) to understand the project architecture, layered patterns, and coding conventions. For authentication and authorization concepts (RBAC, roles, JWT structure), see [Authorization.md](Authorization.md).
 
 
 ## Development
