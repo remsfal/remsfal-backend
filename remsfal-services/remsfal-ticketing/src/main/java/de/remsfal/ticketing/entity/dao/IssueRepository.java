@@ -13,6 +13,9 @@ import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,13 +57,33 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
         final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
         final IssueStatus status, final boolean onlyVisibleToTenants, final Integer limit) {
+        // Cassandra does not support IN on a partition key combined with secondary index
+        // filters, and secondary indexes only support equality (not IN). Execute one query
+        // per (projectId, agreementId) combination and merge the results afterwards.
+        final List<UUID> agreementIdList = (agreementIds != null && !agreementIds.isEmpty())
+            ? agreementIds : Collections.singletonList(null);
+        final List<IssueEntity> results = new ArrayList<>();
+        for (UUID projectId : projectIds) {
+            for (UUID agreementId : agreementIdList) {
+                results.addAll(querySinglePartition(projectId, assigneeId, agreementId,
+                    rentalType, rentalId, status, onlyVisibleToTenants, limit));
+            }
+        }
+        results.sort(Comparator.comparing(IssueEntity::getModifiedAt,
+            Comparator.nullsLast(Comparator.reverseOrder())));
+        return results;
+    }
+
+    private List<IssueEntity> querySinglePartition(final UUID projectId, final UUID assigneeId,
+        final UUID agreementId, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final boolean onlyVisibleToTenants, final int limit) {
         MapperWhere query = template.select(IssueEntity.class)
-            .where(PROJECT_ID).in(projectIds);
+            .where(PROJECT_ID).eq(projectId);
         if (assigneeId != null) {
             query = query.and("assignee_id").eq(assigneeId);
         }
-        if (agreementIds != null) {
-            query = query.and(AGREEMENT_ID).in(agreementIds);
+        if (agreementId != null) {
+            query = query.and(AGREEMENT_ID).eq(agreementId);
         }
         if (rentalType != null) {
             query = query.and("rental_unit_type").eq(rentalType.name());
@@ -74,9 +97,6 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         if (onlyVisibleToTenants) {
             query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);
         }
-        // No ORDER BY here: Cassandra does not support ORDER BY with secondary indexes.
-        // The native clustering order (issue_id DESC, UUIDv7) returns newest rows first
-        // for unfiltered partition scans. Filtered queries return rows in clustering order.
         return query.limit(limit).result();
     }
 
