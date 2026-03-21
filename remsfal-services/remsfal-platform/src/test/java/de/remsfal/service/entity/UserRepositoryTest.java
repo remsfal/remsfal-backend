@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.remsfal.service.AbstractServiceTest;
@@ -52,6 +53,78 @@ class UserRepositoryTest extends AbstractServiceTest {
         copy.setLastName(TestData.USER_LAST_NAME);
         
         assertEquals(entity, copy);
+    }
+
+    @Test
+    void setMobilePhoneNumber_SUCCESS_blankStringRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setMobilePhoneNumber("+491601234567");
+        entity.setMobilePhoneNumber("");
+        assertNull(entity.getMobilePhoneNumber());
+    }
+
+    @Test
+    void setMobilePhoneNumber_SUCCESS_whitespaceStringRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setMobilePhoneNumber("+491601234567");
+        entity.setMobilePhoneNumber("   ");
+        assertNull(entity.getMobilePhoneNumber());
+    }
+
+    @Test
+    void setMobilePhoneNumber_SUCCESS_nullRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setMobilePhoneNumber("+491601234567");
+        entity.setMobilePhoneNumber(null);
+        assertNull(entity.getMobilePhoneNumber());
+    }
+
+    @Test
+    void setBusinessPhoneNumber_SUCCESS_blankStringRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setBusinessPhoneNumber("+491604567890");
+        entity.setBusinessPhoneNumber("");
+        assertNull(entity.getBusinessPhoneNumber());
+    }
+
+    @Test
+    void setBusinessPhoneNumber_SUCCESS_whitespaceStringRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setBusinessPhoneNumber("+491604567890");
+        entity.setBusinessPhoneNumber("   ");
+        assertNull(entity.getBusinessPhoneNumber());
+    }
+
+    @Test
+    void setBusinessPhoneNumber_SUCCESS_nullRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setBusinessPhoneNumber("+491604567890");
+        entity.setBusinessPhoneNumber(null);
+        assertNull(entity.getBusinessPhoneNumber());
+    }
+
+    @Test
+    void setPrivatePhoneNumber_SUCCESS_blankStringRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setPrivatePhoneNumber("+491605678901");
+        entity.setPrivatePhoneNumber("");
+        assertNull(entity.getPrivatePhoneNumber());
+    }
+
+    @Test
+    void setPrivatePhoneNumber_SUCCESS_whitespaceStringRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setPrivatePhoneNumber("+491605678901");
+        entity.setPrivatePhoneNumber("   ");
+        assertNull(entity.getPrivatePhoneNumber());
+    }
+
+    @Test
+    void setPrivatePhoneNumber_SUCCESS_nullRemovesNumber() {
+        final UserEntity entity = new UserEntity();
+        entity.setPrivatePhoneNumber("+491605678901");
+        entity.setPrivatePhoneNumber(null);
+        assertNull(entity.getPrivatePhoneNumber());
     }
 
     @Test
