@@ -55,7 +55,7 @@ public abstract class UserJson implements CustomerModel {
     @Email
     @Nullable
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
-    @Schema(examples = {"user@example.com"})
+    @Schema(readOnly = true, examples = {"user@example.com"})
     @Override
     public abstract String getEmail();
 
@@ -82,17 +82,26 @@ public abstract class UserJson implements CustomerModel {
 
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
+    @Pattern(
+        regexp = "^$|^\\+[1-9]\\d{4,14}$",
+        message = "The number must be empty or match the E.164 formatted phone numbers"
+    )
     public abstract String getMobilePhoneNumber();
 
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
+    @Pattern(
+        regexp = "^$|^\\+[1-9]\\d{4,14}$",
+        message = "The number must be empty or match the E.164 formatted phone numbers"
+    )
     public abstract String getBusinessPhoneNumber();
 
     @Nullable
     @Override
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
+    @Pattern(
+        regexp = "^$|^\\+[1-9]\\d{4,14}$",
+        message = "The number must be empty or match the E.164 formatted phone numbers"
+    )
     public abstract String getPrivatePhoneNumber();
 
     @Size(max = 2, message = "Locale must be 2 characters long")

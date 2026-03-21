@@ -137,6 +137,9 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     public void setMobilePhoneNumber(String mobilePhoneNumber) {
+        if(mobilePhoneNumber != null && mobilePhoneNumber.isBlank()) {
+            this.mobilePhoneNumber = null;
+        }
         this.mobilePhoneNumber = mobilePhoneNumber;
     }
 
@@ -146,6 +149,9 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     public void setBusinessPhoneNumber(String businessPhoneNumber) {
+        if(businessPhoneNumber != null && businessPhoneNumber.isBlank()) {
+            this.businessPhoneNumber = null;
+        }
         this.businessPhoneNumber = businessPhoneNumber;
     }
 
@@ -155,6 +161,9 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     public void setPrivatePhoneNumber(String privatePhoneNumber) {
+        if(privatePhoneNumber != null && privatePhoneNumber.isBlank()) {
+            this.privatePhoneNumber = null;
+        }
         this.privatePhoneNumber = privatePhoneNumber;
     }
 
