@@ -12,8 +12,10 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.AddressModel;
-import de.remsfal.core.validation.NullOrNotBlank;
 import de.remsfal.core.validation.Zip;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -25,20 +27,24 @@ import de.remsfal.core.validation.Zip;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class AddressJson implements AddressModel {
 
-    @NullOrNotBlank
+    @NotNull
+    @NotBlank
     @Override
     public abstract String getStreet();
 
-    @NullOrNotBlank
+    @NotNull
+    @NotBlank
     @Override
     public abstract String getCity();
 
-    @NullOrNotBlank
+    @NotNull
+    @NotBlank
     @Override
     public abstract String getProvince();
 
     @Zip
-    @NullOrNotBlank
+    @NotNull
+    @NotBlank
     @Override
     public abstract String getZip();
 
@@ -51,7 +57,9 @@ public abstract class AddressJson implements AddressModel {
         return new Locale("", getCountryCode());
     }
 
-    @NullOrNotBlank
+    @NotNull
+    @NotBlank
+    @Size(min = 2, max = 2, message = "Country code must be a valid ISO 3166-1 alpha-2 code")
     public abstract String getCountryCode();
 
     public static AddressJson valueOf(final AddressModel model) {
@@ -59,9 +67,9 @@ public abstract class AddressJson implements AddressModel {
             return null;
         }
 
-        String country = "";
+        String countryCode = null;
         if(model.getCountry() != null){
-            country = model.getCountry().getCountry();
+            countryCode = model.getCountry().getCountry();
         }
 
         return ImmutableAddressJson.builder()
@@ -69,7 +77,7 @@ public abstract class AddressJson implements AddressModel {
             .city(model.getCity())
             .province(model.getProvince())
             .zip(model.getZip())
-            .countryCode(country)
+            .countryCode(countryCode)
             .build();
     }
 
