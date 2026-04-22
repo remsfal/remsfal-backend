@@ -18,7 +18,7 @@
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.validation>3.1.1</version.validation>
         <version.jax-rs>4.0.0</version.jax-rs>
-        <version.resteasy>7.0.1.Final</version.resteasy>
+        <version.resteasy>7.0.2.Final</version.resteasy>
         <version.open-api>4.1.1</version.open-api>
         <version.config-api>3.1</version.config-api>
         <version.archunit>1.4.2</version.archunit>
