@@ -13,14 +13,14 @@
 
     <properties>
         <version.immutables>2.12.1</version.immutables>
-        <version.jackson>2.21.2</version.jackson>
+        <version.jackson>2.21.3</version.jackson>
         <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.validation>3.1.1</version.validation>
         <version.jax-rs>4.0.0</version.jax-rs>
         <version.resteasy>7.0.2.Final</version.resteasy>
         <version.open-api>4.1.1</version.open-api>
-        <version.config-api>3.1</version.config-api>
+        <version.config-api>3.1.1</version.config-api>
         <version.archunit>1.4.2</version.archunit>
     </properties>
 
