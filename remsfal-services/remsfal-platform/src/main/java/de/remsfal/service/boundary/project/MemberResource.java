@@ -42,7 +42,7 @@ public class MemberResource extends AbstractProjectResource implements MemberEnd
     public ProjectMemberJson updateProjectMember(final UUID projectId, final UUID memberId,
             final ProjectMemberJson member) {
         checkPropertyWritePermissions(projectId);
-        if(MemberRole.PROPRIETOR == member.getRole() && principal.getId().equals(memberId)) {
+        if (MemberRole.PROPRIETOR == member.getRole() && principal.getId().equals(memberId)) {
             throw new ForbiddenException("Nobody can upgrade their own role");
         }
         final ProjectMemberModel model = controller.changeProjectMemberRole(projectId,
@@ -53,7 +53,7 @@ public class MemberResource extends AbstractProjectResource implements MemberEnd
     @Override
     public void deleteProjectMember(final UUID projectId, final UUID memberId) {
         checkPropertyWritePermissions(projectId);
-        if(controller.getProjectMemberRole(memberId, projectId) == MemberRole.PROPRIETOR
+        if (controller.getProjectMemberRole(memberId, projectId) == MemberRole.PROPRIETOR
             && principal.getProjectRole(projectId) != MemberRole.PROPRIETOR) {
             throw new ForbiddenException("Only a proprietor can remove a proprietor from a project");
         }

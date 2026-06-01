@@ -39,7 +39,7 @@ public final class DependencyCycleTest {
      * Any cyclic dependency between these slices will cause the test to fail.
      */
     @ArchTest
-    static final ArchRule no_cycles_between_top_level_packages = slices()
+    static final ArchRule NO_CYCLES_BETWEEN_TOP_LEVEL_PACKAGES = slices()
         .matching("de.remsfal.(*)..")
         .should().beFreeOfCycles();
 

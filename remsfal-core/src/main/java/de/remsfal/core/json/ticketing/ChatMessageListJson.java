@@ -25,7 +25,7 @@ public abstract class ChatMessageListJson {
 
     public static ChatMessageListJson valueOf(final List<? extends ChatMessageJson> messages) {
         final ImmutableChatMessageListJson.Builder builder = ImmutableChatMessageListJson.builder();
-        for(ChatMessageJson message : messages) {
+        for (ChatMessageJson message : messages) {
             builder.addMessages(message);
         }
         return builder.build();

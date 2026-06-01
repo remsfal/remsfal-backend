@@ -45,7 +45,7 @@ public class AbstractResource {
     }
 
     public MemberRole checkProjectReadPermissions(final UUID projectId) {
-        if(principal.getProjectRole(projectId) == null) {
+        if (principal.getProjectRole(projectId) == null) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
         return principal.getProjectRole(projectId);

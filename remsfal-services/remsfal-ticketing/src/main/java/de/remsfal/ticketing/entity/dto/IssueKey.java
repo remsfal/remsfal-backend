@@ -33,8 +33,12 @@ public class IssueKey {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         IssueKey issueKey = (IssueKey) o;
         return Objects.equals(projectId, issueKey.projectId) && Objects.equals(issueId, issueKey.issueId);
     }

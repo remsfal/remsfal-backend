@@ -68,7 +68,7 @@ public abstract class AddressJson implements AddressModel {
         }
 
         String countryCode = null;
-        if(model.getCountry() != null){
+        if (model.getCountry() != null){
             countryCode = model.getCountry().getCountry();
         }
 

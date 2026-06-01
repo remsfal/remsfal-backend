@@ -27,7 +27,7 @@ public class AbstractTicketingResource extends AbstractResource {
     protected IssueController issueController;
 
     protected MemberRole checkProjectIssueCreatePermissions(final UUID projectId) {
-        if(principal.getProjectRole(projectId) == null
+        if (principal.getProjectRole(projectId) == null
             || !principal.getProjectRole(projectId).isPrivileged(MemberRole.STAFF) ) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
@@ -45,7 +45,7 @@ public class AbstractTicketingResource extends AbstractResource {
     protected UserContext checkIssueReadPermissions(final UUID issueId) {
         final IssueModel issue = issueController.getIssue(issueId);
         final UserContext context = getUserContext(issue.getProjectId());
-        if(context == null) {
+        if (context == null) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         } else if (context == UserContext.TENANT &&
             (issue.getAgreementId() == null || !Boolean.TRUE.equals(issue.isVisibleToTenants())
@@ -70,7 +70,7 @@ public class AbstractTicketingResource extends AbstractResource {
 
     protected MemberRole checkIssueWritePermissions(final UUID issueId) {
         final IssueModel issue = issueController.getIssue(issueId);
-        if(principal.getProjectRole(issue.getProjectId()) == null
+        if (principal.getProjectRole(issue.getProjectId()) == null
             || !principal.getProjectRole(issue.getProjectId()).isPrivileged(MemberRole.LESSOR) ) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }

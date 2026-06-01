@@ -45,8 +45,12 @@ public class IssueAttachmentKey {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         IssueAttachmentKey that = (IssueAttachmentKey) o;
         return Objects.equals(issueId, that.issueId) &&
                Objects.equals(attachmentId, that.attachmentId);

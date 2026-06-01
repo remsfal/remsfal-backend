@@ -17,7 +17,7 @@ import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 public class AbstractProjectResource extends AbstractResource {
 
     public MemberRole checkRentalAgreementWritePermissions(final UUID projectId) {
-        if(principal.getProjectRole(projectId) == null
+        if (principal.getProjectRole(projectId) == null
             || !principal.getProjectRole(projectId).isPrivileged(MemberRole.LESSOR) ) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
@@ -25,7 +25,7 @@ public class AbstractProjectResource extends AbstractResource {
     }
 
     public MemberRole checkPropertyWritePermissions(final UUID projectId) {
-        if(principal.getProjectRole(projectId) == null
+        if (principal.getProjectRole(projectId) == null
             || !principal.getProjectRole(projectId).isPrivileged() ) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
@@ -33,7 +33,7 @@ public class AbstractProjectResource extends AbstractResource {
     }
 
     public MemberRole checkOwnerPermissions(final UUID projectId) {
-        if(principal.getProjectRole(projectId) == null
+        if (principal.getProjectRole(projectId) == null
             || !principal.getProjectRole(projectId).isPrivileged(MemberRole.PROPRIETOR) ) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }

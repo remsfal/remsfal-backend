@@ -125,8 +125,12 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         IssueAttachmentEntity that = (IssueAttachmentEntity) obj;
         return Objects.equals(key, that.key);
     }

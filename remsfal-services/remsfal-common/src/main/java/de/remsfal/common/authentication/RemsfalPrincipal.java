@@ -83,12 +83,14 @@ public class RemsfalPrincipal implements Principal, UserModel {
     }
 
     public Map<String, String> getClaimMap(String claimName) {
-        if (jwt == null)
+        if (jwt == null) {
             return Collections.emptyMap();
+        }
 
         Object claim = jwt.getClaim(claimName);
-        if (claim == null)
+        if (claim == null) {
             return Collections.emptyMap();
+        }
 
         if (claim instanceof Map<?, ?> map) {
             Map<String, String> result = new LinkedHashMap<>();

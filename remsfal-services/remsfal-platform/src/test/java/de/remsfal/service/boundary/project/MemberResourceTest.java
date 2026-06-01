@@ -154,6 +154,20 @@ class MemberResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void addProjectMember_FAILED_memberAlreadyExists() {
+        // USER_ID_1 is already MANAGER from setupTestProjects()
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"email\":\"" + TestData.USER_EMAIL_1 + "\",  \"role\":\"LESSOR\"}")
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.CONFLICT.getStatusCode());
+    }
+
+    @Test
     void updateProjectMember_SUCCESS_memberWithChangedRoleReturned() {
         given()
             .when()

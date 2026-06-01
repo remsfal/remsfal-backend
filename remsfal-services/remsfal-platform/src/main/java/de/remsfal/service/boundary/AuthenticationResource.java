@@ -98,7 +98,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Override
     public Response token(final String appId, final String appToken, final Boolean devService) {
-        if(devServicesEnabled && devService) {
+        if (devServicesEnabled && devService) {
             logger.warn("Dev Services for Authentication are enabled!");
             final String devToken = "dev-token";
             final String devEmail = "dev@remsfal.de";

@@ -49,11 +49,11 @@ public interface BuildingModel extends RentalUnitModel {
     @Nullable
     @Override
     default Float getSpace() {
-        if(getGrossFloorArea() != null) {
+        if (getGrossFloorArea() != null) {
             return getGrossFloorArea();
-        } else if(getLivingSpace() != null && getUsableSpace() != null) {
+        } else if (getLivingSpace() != null && getUsableSpace() != null) {
             return getLivingSpace() + getUsableSpace();
-        } else if(getLivingSpace() != null) {
+        } else if (getLivingSpace() != null) {
             return getLivingSpace();
         }
         return getUsableSpace();

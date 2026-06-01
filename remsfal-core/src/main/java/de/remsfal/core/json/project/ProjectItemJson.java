@@ -39,8 +39,8 @@ public abstract class ProjectItemJson {
         final ImmutableProjectItemJson.Builder builder = ImmutableProjectItemJson.builder()
             .id(model.getId())
             .name(model.getTitle());
-        for(ProjectMemberModel member : model.getMembers()) {
-            if(member.getId().equals(user.getId())) {
+        for (ProjectMemberModel member : model.getMembers()) {
+            if (member.getId().equals(user.getId())) {
                 builder.memberRole(member.getRole());
             }
         }

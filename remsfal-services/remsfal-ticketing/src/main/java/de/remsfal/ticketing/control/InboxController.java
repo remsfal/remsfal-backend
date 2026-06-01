@@ -30,8 +30,7 @@ public class InboxController {
 
         if (read != null) {
             result = repository.findByUserIdAndRead(userId, read);
-        }
-        else {
+        } else {
             result = repository.findByUserId(userId);
         }
 
