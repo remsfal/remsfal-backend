@@ -6,6 +6,8 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
+import de.remsfal.service.control.exception.AlreadyExistsException;
+
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jboss.logging.Logger;
 
@@ -140,6 +142,9 @@ public class ProjectController {
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
 
         UserEntity userEntity = userController.findOrCreateUser(member);
+        if (projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId).isPresent()) {
+            throw new AlreadyExistsException("User is already a member of this project");
+        }
         projectEntity.addMember(userEntity, member.getRole());
         notificationController.informUserAboutProjectMembership(userEntity, projectId);
         projectRepository.mergeAndFlush(projectEntity);
@@ -191,6 +196,11 @@ public class ProjectController {
         final OrganizationEntity organizationEntity = organizationRepository.findById(organization.getOrganizationId());
         if (organizationEntity == null) {
             throw new NotFoundException("Organization does not exist");
+        }
+        if (projectOrganizationRepository
+                .findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
+                .isPresent()) {
+            throw new AlreadyExistsException("Organization is already assigned to this project");
         }
 
         projectEntity.addOrganization(organizationEntity, organization.getRole());

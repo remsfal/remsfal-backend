@@ -287,6 +287,21 @@ class ProjectOrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void addProjectOrganization_FAILED_organizationAlreadyAssigned() {
+        insertProjectOrganization(TestData.PROJECT_ID, TestData.ORGANIZATION_ID_2, "LESSOR");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"organizationId\":\"" + TestData.ORGANIZATION_ID_2 + "\",  \"role\":\"STAFF\"}")
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.CONFLICT.getStatusCode());
+    }
+
+    @Test
     void addProjectOrganization_FAILED_organizationDoesNotExist() {
         given()
             .when()
