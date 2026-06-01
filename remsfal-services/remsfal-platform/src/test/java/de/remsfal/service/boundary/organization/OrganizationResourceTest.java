@@ -1,5 +1,6 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.organization;
 
+import de.remsfal.service.boundary.AbstractResourceTest;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 public class OrganizationResourceTest extends AbstractResourceTest {
 
-    static final String BASE_PATH = "/api/v1/organization";
+    static final String BASE_PATH = "/api/v1/organizations";
 
     @BeforeEach
     protected void setupTestData() {
@@ -215,8 +216,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
 
     @Test
     void updateOrganization_SUCCESS_changedName() {
-        final String json_updated = "{\"id\":\"" + TestData.ORGANIZATION_ID + "\",\n" +
-                "\"name\": \"" + "New Name" + "\",\n" +
+        final String json_updated = "{\"name\": \"" + "New Name" + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\",\n" +
@@ -272,8 +272,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
 
     @Test
     void updatedOrganization_FAILED_noPermission() {
-        final String json = "{\"id\": \"" + TestData.ORGANIZATION_ID_3 + "\",\n" +
-            "  \"name\": \"" + "New Name" + "\",\n" +
+        final String json = "{\"name\": \"" + "New Name" + "\",\n" +
             "  \"phone\": \"" + TestData.ORGANIZATION_PHONE_3 + "\",\n" +
             "  \"email\": \"" + TestData.ORGANIZATION_EMAIL_3 + "\",\n" +
             "  \"trade\": \"" + TestData.ORGANIZATION_TRADE_3 + "\"\n" +

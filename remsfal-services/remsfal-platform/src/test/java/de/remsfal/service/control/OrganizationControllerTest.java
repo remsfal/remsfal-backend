@@ -1,6 +1,6 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.OrganizationJson;
+import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.AbstractResourceTest;
 import de.remsfal.service.entity.dto.OrganizationEntity;
