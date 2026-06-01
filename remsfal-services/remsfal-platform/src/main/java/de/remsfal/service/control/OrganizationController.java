@@ -67,9 +67,9 @@ public class OrganizationController {
     @Transactional
     public OrganizationEntity createOrganization(final OrganizationModel organization, final UserModel user) {
 
-        logger.infov("Creating Organization (name={0}, email={1}, phone={2}, trade={3}, address={4}",
+        logger.infov("Creating Organization (name={0}, email={1}, phone={2}, trade={3}, vatId={4}, address={5}",
             organization.getName(), organization.getEmail(), organization.getPhone(), organization.getTrade(),
-            organization.getAddress());
+            organization.getVatIdentificationNumber(), organization.getAddress());
 
         UserEntity userEntity = userController.findOrCreateUser(user);
 
@@ -80,6 +80,7 @@ public class OrganizationController {
         organizationEntity.setEmail(organization.getEmail());
         organizationEntity.setPhone(organization.getPhone());
         organizationEntity.setTrade(organization.getTrade());
+        organizationEntity.setVatIdentificationNumber(organization.getVatIdentificationNumber());
         organizationEntity.addEmployee(userEntity, EmployeeRole.OWNER);
 
         if (organization.getAddress() != null) {
@@ -101,9 +102,9 @@ public class OrganizationController {
     public OrganizationEntity updateOrganization(final UserModel user, final UUID organizationId,
         final OrganizationModel organization) {
 
-        logger.infov("Updating Organization (id={0}, name={1}, email={2}, phone={3}, trade={4}, address={5}",
+        logger.infov("Updating Organization (id={0}, name={1}, email={2}, phone={3}, trade={4}, vatId={5}, address={6}",
             organization.getId(), organization.getName(), organization.getEmail(), organization.getPhone(),
-            organization.getTrade(), organization.getAddress());
+            organization.getTrade(), organization.getVatIdentificationNumber(), organization.getAddress());
 
         OrganizationEntity organizationEntity = organizationRepository
             .findOrganizationByUserId(user.getId(), organizationId)
@@ -123,6 +124,10 @@ public class OrganizationController {
 
         if (organization.getTrade() != null) {
             organizationEntity.setTrade(organization.getTrade());
+        }
+
+        if (organization.getVatIdentificationNumber() != null) {
+            organizationEntity.setVatIdentificationNumber(organization.getVatIdentificationNumber());
         }
 
         if (organization.getAddress() != null) {

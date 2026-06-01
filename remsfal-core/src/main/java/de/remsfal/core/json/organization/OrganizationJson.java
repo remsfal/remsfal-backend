@@ -56,6 +56,10 @@ public abstract class OrganizationJson implements OrganizationModel {
     @Override
     public abstract String getTrade();
 
+    @Size(max = 255)
+    @Override
+    public abstract String getVatIdentificationNumber();
+
     @Nullable
     @Valid
     @Override
@@ -77,7 +81,8 @@ public abstract class OrganizationJson implements OrganizationModel {
             .name(model.getName())
             .phone(model.getPhone())
             .email(model.getEmail())
-            .trade(model.getTrade());
+            .trade(model.getTrade())
+            .vatIdentificationNumber(model.getVatIdentificationNumber());
 
         if (model.getAddress() != null) {
             builder.address(AddressJson.valueOf(model.getAddress()));

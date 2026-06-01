@@ -36,6 +36,9 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     @Column(name = "trade")
     private String trade;
 
+    @Column(name = "vat_identification_number")
+    private String vatIdentificationNumber;
+
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
@@ -70,6 +73,13 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     }
     public void setTrade(String trade) {
         this.trade = trade;
+    }
+
+    public String getVatIdentificationNumber() {
+        return vatIdentificationNumber;
+    }
+    public void setVatIdentificationNumber(String vatIdentificationNumber) {
+        this.vatIdentificationNumber = vatIdentificationNumber;
     }
 
     public AddressEntity getAddress() {

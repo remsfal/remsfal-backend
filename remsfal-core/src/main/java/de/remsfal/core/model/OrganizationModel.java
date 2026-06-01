@@ -43,6 +43,13 @@ public interface OrganizationModel {
     String getTrade();
 
     /**
+     * Get the vat identification number of the organization.
+     *
+     * @return the vat identification number
+     */
+    String getVatIdentificationNumber();
+
+    /**
      * Get the address of the organization.
      *
      * @return the address

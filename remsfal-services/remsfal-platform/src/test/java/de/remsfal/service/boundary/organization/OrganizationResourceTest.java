@@ -51,6 +51,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
+                "  \"vatIdentificationNumber\": \"" + TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\",\n" +
                 " \"address\": { " +
                     "\"street\":\"" + TestData.ADDRESS_STREET + "\",\n" +
@@ -73,6 +74,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .and().body("name", Matchers.equalTo(TestData.ORGANIZATION_NAME))
             .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE))
             .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
+            .and().body("vatIdentificationNumber", Matchers.equalTo(TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER))
             .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE))
             .statusCode(Response.Status.CREATED.getStatusCode())
             .extract().path("id");
@@ -108,6 +110,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
+                "  \"vatIdentificationNumber\": \"" + TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\"\n" +
                 "}";
 
@@ -143,6 +146,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
+                "  \"vatIdentificationNumber\": \"" + TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\"\n" +
                 "}";
 
@@ -175,6 +179,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
                 .and().body("name", Matchers.equalTo(TestData.ORGANIZATION_NAME))
                 .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE))
                 .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
+                .and().body("vatIdentificationNumber", Matchers.equalTo(TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER))
                 .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE));
     }
 
@@ -219,6 +224,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
         final String json_updated = "{\"name\": \"" + "New Name" + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
+                "  \"vatIdentificationNumber\": \"" + TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\",\n" +
                 " \"address\": { " +
                     "\"street\":\"" + TestData.ADDRESS_STREET + "\",\n" +
@@ -241,6 +247,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
                 .and().body("name", Matchers.equalTo("New Name"))
                 .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE))
                 .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
+                .and().body("vatIdentificationNumber", Matchers.equalTo(TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER))
                 .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE));
     }
 
