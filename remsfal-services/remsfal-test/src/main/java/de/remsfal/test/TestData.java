@@ -854,6 +854,7 @@ public class TestData {
     public static final String ORGANIZATION_PHONE_1 = "+57752788714093";
     public static final String ORGANIZATION_EMAIL_1 = "test@test.de";
     public static final String ORGANIZATION_TRADE_1 = "Test";
+    public static final String ORGANIZATION_VAT_IDENTIFICATION_NUMBER_1 = "DE123456789";
 
     // Default test organization
     public static final UUID ORGANIZATION_ID = ORGANIZATION_ID_1;
@@ -861,6 +862,7 @@ public class TestData {
     public static final String ORGANIZATION_PHONE = ORGANIZATION_PHONE_1;
     public static final String ORGANIZATION_EMAIL = ORGANIZATION_EMAIL_1;
     public static final String ORGANIZATION_TRADE = ORGANIZATION_TRADE_1;
+    public static final String ORGANIZATION_VAT_IDENTIFICATION_NUMBER = ORGANIZATION_VAT_IDENTIFICATION_NUMBER_1;
 
     // Test organization 2
     public static final UUID ORGANIZATION_ID_2 = UUID.fromString("11111111-A1bA-8235-e751-a2Dcac9D78De");
@@ -868,6 +870,7 @@ public class TestData {
     public static final String ORGANIZATION_PHONE_2 = "+57752788714093";
     public static final String ORGANIZATION_EMAIL_2 = "test2@test.de";
     public static final String ORGANIZATION_TRADE_2 = "Test";
+    public static final String ORGANIZATION_VAT_IDENTIFICATION_NUMBER_2 = "DE987654321";
 
     // Test organization 3
     public static final UUID ORGANIZATION_ID_3 = UUID.fromString("22222222-A1bA-8235-e751-a2Dcac9D78De");
@@ -875,6 +878,7 @@ public class TestData {
     public static final String ORGANIZATION_PHONE_3 = "+57752788714093";
     public static final String ORGANIZATION_EMAIL_3 = "test3@test.de";
     public static final String ORGANIZATION_TRADE_3 = "Test3";
+    public static final String ORGANIZATION_VAT_IDENTIFICATION_NUMBER_3 = "DE234567890";
 
     // Test employee 1
     public static final UUID EMPLOYEE_ID = UUID.fromString("9CA5aac6-29B5-FB0E-D5E8-eD2Ec5cDDe3C");

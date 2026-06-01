@@ -41,6 +41,9 @@
             <column name="trade" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
+            <column name="vat_identification_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>

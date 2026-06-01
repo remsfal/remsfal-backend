@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @QuarkusTest
 public class OrganizationControllerTest extends AbstractResourceTest {
@@ -37,6 +38,7 @@ public class OrganizationControllerTest extends AbstractResourceTest {
         entity.setEmail(null);
         entity.setPhone(null);
         entity.setTrade(null);
+        entity.setVatIdentificationNumber(null);
         entity.setAddress(null);
 
         OrganizationJson json = OrganizationJson.valueOf(entity);
@@ -47,6 +49,7 @@ public class OrganizationControllerTest extends AbstractResourceTest {
         assertEquals(TestData.ORGANIZATION_EMAIL, updatedEntity.getEmail());
         assertEquals(TestData.ORGANIZATION_PHONE, updatedEntity.getPhone());
         assertEquals(TestData.ORGANIZATION_TRADE, updatedEntity.getTrade());
+        assertNull(updatedEntity.getVatIdentificationNumber());
         assertEquals(TestData.ADDRESS_ID, updatedEntity.getAddress().getId());
     }
 }
