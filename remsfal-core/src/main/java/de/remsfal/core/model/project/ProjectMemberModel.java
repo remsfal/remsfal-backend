@@ -36,7 +36,7 @@ public interface ProjectMemberModel extends UserModel {
     MemberRole getRole();
 
     default boolean isPrivileged() {
-        if(getRole() == null) {
+        if (getRole() == null) {
             return false;
         } else {
             return getRole().isPrivileged();

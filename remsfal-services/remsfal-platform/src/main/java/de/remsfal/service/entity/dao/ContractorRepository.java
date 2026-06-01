@@ -73,7 +73,7 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
      * @return the optional contractor
      */
     public Optional<ContractorEntity> findByProjectIdAndContractorId(
-            final UUID projectId, final UUID contractorId) {
+        final UUID projectId, final UUID contractorId) {
         try {
             // Clear the entity manager cache to ensure we're not getting a cached entity
             getEntityManager().clear();

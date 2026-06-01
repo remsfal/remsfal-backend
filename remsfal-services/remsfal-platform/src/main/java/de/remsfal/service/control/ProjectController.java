@@ -85,7 +85,7 @@ public class ProjectController {
     public ProjectModel getProject(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving a project (id = {0})", projectId);
         return projectRepository.findProjectByUserId(user.getId(), projectId)
-                .orElseThrow(() -> new NotFoundException("Project does not exist or user has no membership"));
+            .orElseThrow(() -> new NotFoundException("Project does not exist or user has no membership"));
     }
 
     @Transactional
@@ -198,8 +198,8 @@ public class ProjectController {
             throw new NotFoundException("Organization does not exist");
         }
         if (projectOrganizationRepository
-                .findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
-                .isPresent()) {
+            .findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
+            .isPresent()) {
             throw new AlreadyExistsException("Organization is already assigned to this project");
         }
 

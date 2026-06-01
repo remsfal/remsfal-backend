@@ -30,7 +30,7 @@ public abstract class AbstractKafkaTest extends AbstractTest {
     @BeforeEach
     protected void clearAllTopics() {
         Set<String> topics = Set.of(EmailEventJson.TOPIC);
-        for(String topic : topics) {
+        for (String topic : topics) {
             companion.topics().clearIfExists(topic);
         }
     }

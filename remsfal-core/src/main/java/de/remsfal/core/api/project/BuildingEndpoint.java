@@ -89,7 +89,7 @@ public interface BuildingEndpoint {
     @DELETE
     @Path("/{buildingId}")
     @Operation(summary = "Delete an existing building.")
-    @APIResponse(responseCode = "204",description = "The building was deleted successfully" )
+    @APIResponse(responseCode = "204", description = "The building was deleted successfully" )
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The building does not exist")
     void deleteBuilding(

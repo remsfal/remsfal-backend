@@ -53,7 +53,7 @@ public abstract class ProjectJson implements ProjectModel {
         final ImmutableProjectJson.Builder builder = ImmutableProjectJson.builder()
             .id(model.getId())
             .title(model.getTitle());
-        for(ProjectMemberModel member : model.getMembers()) {
+        for (ProjectMemberModel member : model.getMembers()) {
             builder.addMembers(ProjectMemberJson.valueOf(member));
         }
         return builder.build();

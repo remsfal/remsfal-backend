@@ -51,7 +51,7 @@ public class IssueController {
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, issue.getProjectId() , IssueStatus.OPEN);
+        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN);
     }
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue,

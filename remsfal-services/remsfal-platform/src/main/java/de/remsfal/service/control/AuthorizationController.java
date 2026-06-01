@@ -76,7 +76,7 @@ public class AuthorizationController {
         logger.infov("Authenticating a user (googleId={0}, email={1})", googleId, email);
 
         final Optional<UserEntity> entity = userRepository.findByTokenId(googleId);
-        if(entity.isPresent()) {
+        if (entity.isPresent()) {
             authenticatedUser.fireAsync(new AuthenticationEvent(googleId, email));
             return entity.get();
         }

@@ -27,7 +27,7 @@ import java.util.Properties;
 @ApplicationScoped
 public class CassandraExecutor {
 
-    private static final Logger logger = Logger.getLogger(CassandraExecutor.class);
+    private static final Logger LOGGER = Logger.getLogger(CassandraExecutor.class);
 
     @ConfigProperty(name = "quarkus.liquibase.migrate-at-start", defaultValue = "false")
     Boolean migrateAtStart;
@@ -66,33 +66,33 @@ public class CassandraExecutor {
                 .withLocalDatacenter(localDatacenter)
                 .build()) {
 
-            logger.info("Initializing Cassandra...");
+            LOGGER.info("Initializing Cassandra...");
             ensureKeyspaceExists(session);
             if (migrateAtStart) {
                 processChangelogs(session);
             } else {
-                logger.warn("Cassandra migration at start is disabled. Skipping migration.");
+                LOGGER.warn("Cassandra migration at start is disabled. Skipping migration.");
             }
 
-            logger.info("Cassandra initialization completed.");
+            LOGGER.info("Cassandra initialization completed.");
         } catch (Exception e) {
-            logger.error("Error during Cassandra initialization", e);
+            LOGGER.error("Error during Cassandra initialization", e);
             throw new RuntimeException("Failed to initialize Cassandra at " +
                 contactPoints, e);
         }
     }
 
     private void ensureKeyspaceExists(CqlSession session) {
-        logger.infov("Ensuring keyspace {0} exists.", keyspace);
+        LOGGER.infov("Ensuring keyspace {0} exists.", keyspace);
         String createKeyspaceCQL = String.format("CREATE KEYSPACE IF NOT EXISTS %s " +
             "WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};",
             keyspace);
         session.execute(createKeyspaceCQL);
-        logger.infov("Keyspace {0} ensured.", keyspace);
+        LOGGER.infov("Keyspace {0} ensured.", keyspace);
     }
 
     private void processChangelogs(CqlSession session) throws SQLException, LiquibaseException {
-        logger.infov("Processing Cassandra changelogs XML at {0}", liquibaseChangelog);
+        LOGGER.infov("Processing Cassandra changelogs XML at {0}", liquibaseChangelog);
 
         final String url = buildConnectionURL();
         try (Connection c = DriverManager.getConnection(url, getLiquibaseProperties())) {

@@ -51,7 +51,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     }
 
     public void addMember(final UserEntity userEntity, final MemberRole role) {
-        if(memberships == null) {
+        if (memberships == null) {
             memberships = new HashSet<>();
         }
         ProjectMembershipEntity member = new ProjectMembershipEntity();
@@ -63,8 +63,8 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     public boolean isMember(final UserModel user) {
         Iterator<ProjectMembershipEntity> iter = memberships.iterator();
-        while(iter.hasNext()) {
-            if(iter.next().getUser().getId().equals(user.getId())) {
+        while (iter.hasNext()) {
+            if (iter.next().getUser().getId().equals(user.getId())) {
                 return true;
             }
         }
@@ -80,7 +80,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     }
 
     public void addOrganization(final OrganizationEntity organizationEntity, final MemberRole role) {
-        if(organizations == null) {
+        if (organizations == null) {
             organizations = new HashSet<>();
         }
         ProjectOrganizationEntity organization = new ProjectOrganizationEntity();

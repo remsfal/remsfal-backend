@@ -55,7 +55,7 @@ public class UserController {
         final UserEntity entity = new UserEntity();
         entity.generateId();
         entity.setTokenId(googleId);
-        if(additionalEmailRepository.existsByEmail(email.toLowerCase())){
+        if (additionalEmailRepository.existsByEmail(email.toLowerCase())){
             throw new AlreadyExistsException("Unable to create user");
         }
         entity.setEmail(email.toLowerCase());
@@ -103,28 +103,28 @@ public class UserController {
         final UserEntity entity = repository.findByIdWithAdditionalEmails(userId)
             .orElseThrow(() -> new NotFoundException("User not exist"));
 
-        if(user.getFirstName() != null) {
+        if (user.getFirstName() != null) {
             entity.setFirstName(user.getFirstName());
         }
-        if(user.getLastName() != null) {
+        if (user.getLastName() != null) {
             entity.setLastName(user.getLastName());
         }
-        if(user.getAddress() != null) {
+        if (user.getAddress() != null) {
             entity.setAddress(addressController.updateAddress(user.getAddress(), entity.getAddress()));
         }
-        if(user.getMobilePhoneNumber() != null) {
+        if (user.getMobilePhoneNumber() != null) {
             entity.setMobilePhoneNumber(user.getMobilePhoneNumber());
         }
-        if(user.getBusinessPhoneNumber() != null) {
+        if (user.getBusinessPhoneNumber() != null) {
             entity.setBusinessPhoneNumber(user.getBusinessPhoneNumber());
         }
-        if(user.getPrivatePhoneNumber() != null) {
+        if (user.getPrivatePhoneNumber() != null) {
             entity.setPrivatePhoneNumber(user.getPrivatePhoneNumber());
         }
-        if(user.getLocale() != null) {
+        if (user.getLocale() != null) {
             entity.setLocale(user.getLocale());
         }
-        if(user.getAdditionalEmails() != null) {
+        if (user.getAdditionalEmails() != null) {
             syncAdditionalEmails(entity, user.getAdditionalEmails());
         }
         return repository.merge(entity);

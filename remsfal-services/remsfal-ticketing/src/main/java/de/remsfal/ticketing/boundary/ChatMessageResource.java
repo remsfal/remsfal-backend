@@ -113,11 +113,12 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
             UUID projectId = checkWritePermissions(issueId);
             ChatMessageEntity chatMessageEntity =
                 chatMessageController.getChatMessage(sessionId, messageId);
-            if (chatMessageEntity.getContentType().equals(ContentType.TEXT.name()))
+            if (chatMessageEntity.getContentType().equals(ContentType.TEXT.name())) {
                 return Response.ok()
                     .type(MediaType.APPLICATION_JSON)
                     .entity(ChatMessageJson.valueOf(chatMessageEntity))
                     .build();
+            }
             if (chatMessageEntity.getContentType().equals(ContentType.FILE.name())) {
                 // Extract the file URL and derive the file name
                 String fileUrl = chatMessageEntity.getUrl();

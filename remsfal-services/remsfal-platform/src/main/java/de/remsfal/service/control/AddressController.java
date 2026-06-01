@@ -31,26 +31,26 @@ public class AddressController {
 
     @Transactional(TxType.MANDATORY)
     public AddressEntity updateAddress(final AddressModel address, AddressEntity entity) {
-        if(entity == null && address.getStreet() == null && address.getCity() == null &&
+        if (entity == null && address.getStreet() == null && address.getCity() == null &&
             address.getProvince() == null && address.getZip() == null && address.getCountry() == null) {
             return null;
-        } else if(entity == null) {
+        } else if (entity == null) {
             entity = new AddressEntity();
             entity.generateId();
         }
-        if(address.getStreet() != null) {
+        if (address.getStreet() != null) {
             entity.setStreet(address.getStreet());
         }
-        if(address.getCity() != null) {
+        if (address.getCity() != null) {
             entity.setCity(address.getCity());
         }
-        if(address.getProvince() != null) {
+        if (address.getProvince() != null) {
             entity.setProvince(address.getProvince());
         }
-        if(address.getZip() != null) {
+        if (address.getZip() != null) {
             entity.setZip(address.getZip());
         }
-        if(address.getCountry() != null) {
+        if (address.getCountry() != null) {
             entity.setCountry(address.getCountry());
         }
         return entity;

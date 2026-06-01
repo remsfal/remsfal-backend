@@ -26,7 +26,7 @@ public abstract class CountryListJson {
 
     public static CountryListJson valueOf(final List<Locale> countries) {
         final ImmutableCountryListJson.Builder builder = ImmutableCountryListJson.builder();
-        for(Locale country : countries) {
+        for (Locale country : countries) {
             builder.addCountries(CountryItemJson.valueOf(country));
         }
         return builder.build();

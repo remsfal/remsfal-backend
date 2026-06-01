@@ -33,9 +33,9 @@ public interface ApartmentModel extends RentalUnitModel {
     @Nullable
     @Override
     default Float getSpace() {
-        if(getLivingSpace() != null && getUsableSpace() != null) {
+        if (getLivingSpace() != null && getUsableSpace() != null) {
             return getLivingSpace() + getUsableSpace();
-        } else if(getLivingSpace() != null) {
+        } else if (getLivingSpace() != null) {
             return getLivingSpace();
         }
         return getUsableSpace();

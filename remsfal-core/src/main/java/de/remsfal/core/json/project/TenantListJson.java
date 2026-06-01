@@ -39,9 +39,9 @@ public abstract class TenantListJson {
      * @return the tenant list JSON
      */
     public static TenantListJson valueOf(
-            final List<? extends TenantModel> tenants,
-            final Map<UUID, List<? extends RentalAgreementModel>> agreementsByTenant,
-            final Map<UUID, RentalUnitJson> rentalUnitsMap) {
+        final List<? extends TenantModel> tenants,
+        final Map<UUID, List<? extends RentalAgreementModel>> agreementsByTenant,
+        final Map<UUID, RentalUnitJson> rentalUnitsMap) {
         return ImmutableTenantListJson.builder()
             .tenants(tenants.stream()
                 .map(tenant -> TenantItemJson.valueOf(

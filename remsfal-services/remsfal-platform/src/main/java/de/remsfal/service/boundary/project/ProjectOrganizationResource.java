@@ -43,7 +43,7 @@ public class ProjectOrganizationResource extends AbstractProjectResource impleme
     public ProjectOrganizationJson updateProjectOrganization(final UUID projectId, final UUID organizationId,
             final ProjectOrganizationJson organization) {
         checkPropertyWritePermissions(projectId);
-        if(MemberRole.PROPRIETOR == organization.getRole()
+        if (MemberRole.PROPRIETOR == organization.getRole()
             && principal.getOrganizationRole(organizationId) != null) {
             throw new ForbiddenException("Nobody can upgrade their own role");
         }
@@ -55,7 +55,7 @@ public class ProjectOrganizationResource extends AbstractProjectResource impleme
     @Override
     public void deleteProjectOrganization(final UUID projectId, final UUID organizationId) {
         checkPropertyWritePermissions(projectId);
-        if(controller.getProjectOrganizationRole(organizationId, projectId) == MemberRole.PROPRIETOR
+        if (controller.getProjectOrganizationRole(organizationId, projectId) == MemberRole.PROPRIETOR
             && principal.getProjectRole(projectId) != MemberRole.PROPRIETOR) {
             throw new ForbiddenException("Only a proprietor can remove a proprietor from a project");
         }

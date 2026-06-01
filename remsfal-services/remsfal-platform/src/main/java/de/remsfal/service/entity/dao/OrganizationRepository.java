@@ -40,8 +40,7 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
                 .setParameter("organizationId", organizationId)
                 .setParameter("userId", userId)
                 .getSingleResult());
-        }
-        catch (NoResultException e) {
+        } catch (NoResultException e) {
             return Optional.empty();
         }
     }
