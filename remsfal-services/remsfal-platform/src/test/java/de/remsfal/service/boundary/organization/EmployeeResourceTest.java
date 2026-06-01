@@ -16,7 +16,7 @@ import static io.restassured.RestAssured.given;
 @QuarkusTest
 public class EmployeeResourceTest extends AbstractResourceTest {
 
-    static final String BASE_PATH = "/api/v1/organization/{organizationId}/employees";
+    static final String BASE_PATH = "/api/v1/organizations/{organizationId}/employees";
     static final String EMPLOYEE_PATH = BASE_PATH + "/{employeeId}";
 
     @BeforeEach
@@ -293,8 +293,6 @@ public class EmployeeResourceTest extends AbstractResourceTest {
 
     @Test
     void deleteLastEmployeeWithWriteAccess_SUCCESS_organizationDeleted() {
-        final String ORGANIZATION_PATH = "/api/v1/organization";
-
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -314,7 +312,7 @@ public class EmployeeResourceTest extends AbstractResourceTest {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
-            .get(ORGANIZATION_PATH + "/" + TestData.ORGANIZATION_ID_3)
+            .get("/api/v1/organizations/" + TestData.ORGANIZATION_ID_3)
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }

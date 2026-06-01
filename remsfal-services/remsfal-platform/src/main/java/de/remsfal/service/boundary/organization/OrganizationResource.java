@@ -1,11 +1,9 @@
-package de.remsfal.service.boundary;
+package de.remsfal.service.boundary.organization;
 
-import de.remsfal.core.api.OrganizationEndpoint;
-import de.remsfal.core.json.OrganizationJson;
-import de.remsfal.core.json.OrganizationListJson;
+import de.remsfal.core.api.organization.OrganizationEndpoint;
+import de.remsfal.core.json.organization.OrganizationJson;
+import de.remsfal.core.json.organization.OrganizationListJson;
 import de.remsfal.core.model.OrganizationModel;
-import de.remsfal.service.boundary.organization.EmployeeResource;
-import de.remsfal.service.boundary.organization.OrganizationSubResource;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;

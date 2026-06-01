@@ -1,4 +1,4 @@
-package de.remsfal.core.json;
+package de.remsfal.core.json.organization;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

@@ -1,8 +1,7 @@
-package de.remsfal.core.api;
+package de.remsfal.core.api.organization;
 
-import de.remsfal.core.api.organization.EmployeeEndpoint;
-import de.remsfal.core.json.OrganizationJson;
-import de.remsfal.core.json.OrganizationListJson;
+import de.remsfal.core.json.organization.OrganizationJson;
+import de.remsfal.core.json.organization.OrganizationListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -41,7 +40,7 @@ public interface OrganizationEndpoint {
 
     String CONTEXT = "api";
     String VERSION = "v1";
-    String SERVICE = "organization";
+    String SERVICE = "organizations";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -88,7 +87,7 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "404", description = "The organization with the requested id doesn't exist")
     OrganizationJson getOrganization(
         @Parameter(description = "Id of the organization", required = true)
-        @PathParam("organizationId") UUID organizationId
+        @PathParam("organizationId") @NotNull UUID organizationId
     );
 
     @PATCH
@@ -100,8 +99,8 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The organization does not exist")
     OrganizationJson updateOrganization(
-        @Parameter(description = "Id of the organization")
-        @PathParam("organizationId") UUID organizationId,
+        @Parameter(description = "Id of the organization", required = true)
+        @PathParam("organizationId") @NotNull UUID organizationId,
         @Parameter(description = "Organization information")
         @Valid @ConvertGroup(to = PatchValidation.class) OrganizationJson organization
     );
@@ -113,8 +112,8 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The organization does not exist")
     void deleteOrganization(
-        @Parameter(description = "ID of the organization")
-        @PathParam("organizationId") UUID organizationId
+        @Parameter(description = "ID of the organization", required = true)
+        @PathParam("organizationId") @NotNull UUID organizationId
     );
 
     @Path("{organizationId}/" + EmployeeEndpoint.SERVICE)
