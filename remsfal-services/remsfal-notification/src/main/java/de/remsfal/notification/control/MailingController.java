@@ -84,9 +84,11 @@ public class MailingController {
     }
 
     @WithSpan("MailingController.sendAdditionalEmailVerificationEmail")
-    public void sendAdditionalEmailVerificationEmail(final UserModel recipient, final String link, final Locale locale) {
+    public void sendAdditionalEmailVerificationEmail(final UserModel recipient,
+        final String link, final Locale locale) {
         logger.infov("Sending additional email verification email to {0}", recipient.getEmail());
-        final TemplateInstance instance = additionalEmailVerification.data("name", recipient.getName()).data("buttonLink", link);
+        final TemplateInstance instance = additionalEmailVerification.data("name", recipient.getName())
+            .data("buttonLink", link);
         final String subject = getSubject("additional-email-verification", locale);
 
         String html = setTemplateProperties(instance, locale).render();
