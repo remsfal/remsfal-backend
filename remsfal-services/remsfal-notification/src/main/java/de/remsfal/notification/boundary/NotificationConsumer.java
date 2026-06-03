@@ -42,6 +42,9 @@ public class NotificationConsumer {
             case USER_REGISTRATION:
                 mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
                 break;
+            case ADDITIONAL_EMAIL_VERIFICATION:
+                mailingController.sendAdditionalEmailVerificationEmail(mail.getUser(), link, locale);
+                break;
         }
         logger.infov("Email has been sent");
         return msg.ack();

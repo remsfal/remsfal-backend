@@ -70,4 +70,12 @@ public interface AuthenticationEndpoint {
     @APIResponse(responseCode = "204", description = "Tokens refreshed successfully, new tokens set as cookies")
     @APIResponse(responseCode = "401", description = "Unauthorized - Invalid or missing refresh token")
     Response refresh(@CookieParam("remsfal_refresh_token") Cookie refreshCookie);
+
+    @GET
+    @Path("/verify-additional-email")
+    @Operation(summary = "Verify an additional user email address using a verification token.")
+    @APIResponse(responseCode = "204", description = "Additional email verified successfully")
+    @APIResponse(responseCode = "400", description = "Verification token is missing or expired")
+    @APIResponse(responseCode = "404", description = "Verification token is invalid")
+    Response verifyAdditionalEmail(@QueryParam("token") String token);
 }

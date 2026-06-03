@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-0.1.7-additional-email-verification-token" author="github-copilot">
+        <comment>Add verification token fields for additional user email addresses</comment>
+
+        <addColumn tableName="user_additional_email">
+            <column name="verification_token" type="varchar(255)"/>
+            <column name="verification_token_expires_at" type="timestamp"/>
+        </addColumn>
+
+        <addUniqueConstraint
+                tableName="user_additional_email"
+                columnNames="verification_token"
+                constraintName="unique_additional_email_verification_token"/>
+    </changeSet>
+
+</databaseChangeLog>

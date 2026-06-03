@@ -12,6 +12,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 import de.remsfal.service.boundary.authentication.SessionManager;
 import de.remsfal.service.control.AuthorizationController;
+import de.remsfal.service.control.UserController;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Context;
@@ -56,6 +57,9 @@ public class AuthenticationResource implements AuthenticationEndpoint {
 
     @Inject
     AuthorizationController controller;
+
+    @Inject
+    UserController userController;
 
     @Inject
     Logger logger;
@@ -140,6 +144,12 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         return Response.noContent()
             .cookie(response.getAccessToken(), response.getRefreshToken())
             .build();
+    }
+
+    @Override
+    public Response verifyAdditionalEmail(final String token) {
+        userController.verifyAdditionalEmail(token);
+        return Response.noContent().build();
     }
 
     private Response.ResponseBuilder redirect(final URI redirectUrl) {

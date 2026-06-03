@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.List;
 import java.util.Set;
 import java.util.Objects;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
@@ -48,6 +49,7 @@ public class UserController {
     NotificationController notificationController;
 
     private static final String DEFAULT_LOCALE = "de";
+    private static final int ADDITIONAL_EMAIL_VERIFICATION_TOKEN_VALID_HOURS = 24;
 
     @Transactional
     protected UserModel createUser(final String googleId, final String email) {
@@ -125,7 +127,14 @@ public class UserController {
             entity.setLocale(user.getLocale());
         }
         if (user.getAdditionalEmails() != null) {
-            syncAdditionalEmails(entity, user.getAdditionalEmails());
+            final List<AdditionalEmailEntity> createdEmails = syncAdditionalEmails(entity, user.getAdditionalEmails());
+            final UserEntity mergedEntity = repository.merge(entity);
+            createdEmails.forEach(additionalEmail -> notificationController.informUserAboutAdditionalEmailVerification(
+                mergedEntity,
+                additionalEmail.getEmail(),
+                additionalEmail.getVerificationToken()
+            ));
+            return mergedEntity;
         }
         return repository.merge(entity);
     }
@@ -136,7 +145,23 @@ public class UserController {
         return repository.remove(userId);
     }
 
-    private void syncAdditionalEmails(UserEntity user, List<String> newEmailsRaw) {
+    @Transactional
+    public void verifyAdditionalEmail(final String verificationToken) {
+        if (verificationToken == null || verificationToken.isBlank()) {
+            throw new BadRequestException("Verification token is missing.");
+        }
+        final AdditionalEmailEntity additionalEmail = additionalEmailRepository.findByVerificationToken(verificationToken)
+            .orElseThrow(() -> new NotFoundException("Verification token is invalid."));
+        final LocalDateTime expiresAt = additionalEmail.getVerificationTokenExpiresAt();
+        if (expiresAt == null || expiresAt.isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Verification token has expired.");
+        }
+        additionalEmail.setVerified(true);
+        additionalEmail.setVerificationToken(null);
+        additionalEmail.setVerificationTokenExpiresAt(null);
+    }
+
+    private List<AdditionalEmailEntity> syncAdditionalEmails(UserEntity user, List<String> newEmailsRaw) {
         List<String> newEmails = newEmailsRaw.stream()
             .filter(Objects::nonNull)
             .map(String::trim)
@@ -153,6 +178,7 @@ public class UserController {
 
         Set<AdditionalEmailEntity> currentEmails = user.getAdditionalEmailEntities();
         currentEmails.removeIf(ae -> !newEmails.contains(ae.getEmail()));
+        List<AdditionalEmailEntity> createdEmails = new ArrayList<>();
 
         Set<String> existingEmails = currentEmails.stream()
             .map(AdditionalEmailEntity::getEmail)
@@ -175,9 +201,14 @@ public class UserController {
             ae.setUser(user);
             ae.setEmail(email);
             ae.setVerified(false);
+            ae.setVerificationToken(UUID.randomUUID().toString());
+            ae.setVerificationTokenExpiresAt(LocalDateTime.now()
+                .plusHours(ADDITIONAL_EMAIL_VERIFICATION_TOKEN_VALID_HOURS));
 
             currentEmails.add(ae);
+            createdEmails.add(ae);
         }
+        return createdEmails;
     }
 
 }

@@ -9,7 +9,11 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import jakarta.ws.rs.core.Response.Status;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @QuarkusTest
 class AuthenticationResourceTest extends AbstractResourceTest {
@@ -149,6 +153,73 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .when().post(BASE_PATH + "/refresh")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void verifyAdditionalEmail_SUCCESS_marksAdditionalEmailAsVerified() {
+        final UUID additionalEmailId = UUID.randomUUID();
+        final String verificationToken = UUID.randomUUID().toString();
+
+        insertAddress(TestData.ADDRESS_ID_1, TestData.ADDRESS_STREET_1,
+            TestData.ADDRESS_CITY_1, TestData.ADDRESS_PROVINCE_1,
+            TestData.ADDRESS_ZIP_1, TestData.ADDRESS_COUNTRY_1);
+        insertUser(TestData.USER_ID_1, TestData.USER_TOKEN_1,
+            TestData.USER_EMAIL_1, TestData.USER_FIRST_NAME_1,
+            TestData.USER_LAST_NAME_1, TestData.ADDRESS_ID_1);
+
+        runInTransaction(() -> entityManager.createNativeQuery(
+            "INSERT INTO user_additional_email (id, user_id, email, verified, verification_token, verification_token_expires_at) "
+                + "VALUES (?,?,?,?,?,?)")
+            .setParameter(1, additionalEmailId)
+            .setParameter(2, TestData.USER_ID_1)
+            .setParameter(3, TestData.ALTERNATIVE_EMAIL_1)
+            .setParameter(4, false)
+            .setParameter(5, verificationToken)
+            .setParameter(6, LocalDateTime.now().plusHours(1))
+            .executeUpdate());
+
+        given()
+            .queryParam("token", verificationToken)
+            .when().get(BASE_PATH + "/verify-additional-email")
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        final Boolean verified = runInTransaction(() -> entityManager.createQuery(
+            "SELECT ae.verified FROM AdditionalEmailEntity ae WHERE ae.id = :id",
+            Boolean.class)
+            .setParameter("id", additionalEmailId)
+            .getSingleResult());
+        assertEquals(Boolean.TRUE, verified);
+    }
+
+    @Test
+    void verifyAdditionalEmail_FAIL_tokenExpired() {
+        final UUID additionalEmailId = UUID.randomUUID();
+        final String verificationToken = UUID.randomUUID().toString();
+
+        insertAddress(TestData.ADDRESS_ID_1, TestData.ADDRESS_STREET_1,
+            TestData.ADDRESS_CITY_1, TestData.ADDRESS_PROVINCE_1,
+            TestData.ADDRESS_ZIP_1, TestData.ADDRESS_COUNTRY_1);
+        insertUser(TestData.USER_ID_1, TestData.USER_TOKEN_1,
+            TestData.USER_EMAIL_1, TestData.USER_FIRST_NAME_1,
+            TestData.USER_LAST_NAME_1, TestData.ADDRESS_ID_1);
+
+        runInTransaction(() -> entityManager.createNativeQuery(
+            "INSERT INTO user_additional_email (id, user_id, email, verified, verification_token, verification_token_expires_at) "
+                + "VALUES (?,?,?,?,?,?)")
+            .setParameter(1, additionalEmailId)
+            .setParameter(2, TestData.USER_ID_1)
+            .setParameter(3, TestData.ALTERNATIVE_EMAIL_1)
+            .setParameter(4, false)
+            .setParameter(5, verificationToken)
+            .setParameter(6, LocalDateTime.now().minusHours(1))
+            .executeUpdate());
+
+        given()
+            .queryParam("token", verificationToken)
+            .when().get(BASE_PATH + "/verify-additional-email")
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
 }

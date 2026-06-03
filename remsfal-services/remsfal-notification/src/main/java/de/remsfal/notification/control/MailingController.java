@@ -47,6 +47,10 @@ public class MailingController {
     Template newMembership;
 
     @Inject
+    @Location("additional-email-verification.html")
+    Template additionalEmailVerification;
+
+    @Inject
     @Location("issue-created.html")
     Template issueCreated;
 
@@ -73,6 +77,17 @@ public class MailingController {
         logger.infov("Sending new membership email to {0}", recipient.getEmail());
         final TemplateInstance instance = newMembership.data("name", recipient.getName()).data("buttonLink", link);
         final String subject = getSubject("new-membership", locale);
+
+        String html = setTemplateProperties(instance, locale).render();
+        Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
+        sendWithAlias(mail, "info");
+    }
+
+    @WithSpan("MailingController.sendAdditionalEmailVerificationEmail")
+    public void sendAdditionalEmailVerificationEmail(final UserModel recipient, final String link, final Locale locale) {
+        logger.infov("Sending additional email verification email to {0}", recipient.getEmail());
+        final TemplateInstance instance = additionalEmailVerification.data("name", recipient.getName()).data("buttonLink", link);
+        final String subject = getSubject("additional-email-verification", locale);
 
         String html = setTemplateProperties(instance, locale).render();
         Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
