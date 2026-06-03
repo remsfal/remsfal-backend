@@ -2,7 +2,8 @@ package de.remsfal.service.entity.dao;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import de.remsfal.service.entity.dto.CommercialEntity;
-import io.quarkus.panache.common.Parameters;
+
+import java.util.Map;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,20 +17,18 @@ public class CommercialRepository extends AbstractRepository<CommercialEntity> {
 
     public List<CommercialEntity> findAllCommercials(final UUID projectId, final UUID buildingId) {
         return list("projectId = :projectId and buildingId = :buildingId",
-            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_BUILDING_ID, buildingId));
+            Map.of(PARAM_PROJECT_ID, projectId, PARAM_BUILDING_ID, buildingId));
     }
 
     public Optional<CommercialEntity> findCommercialById(final UUID projectId, final UUID commercialId) {
         return find("id = :id and projectId = :projectId",
-            Parameters.with(PARAM_ID, commercialId)
-                .and(PARAM_PROJECT_ID, projectId))
-                    .singleResultOptional();
+            Map.of(PARAM_ID, commercialId, PARAM_PROJECT_ID, projectId))
+                .singleResultOptional();
     }
 
     public long deleteCommercialById(final UUID projectId, final UUID commercialId) {
         return delete("id = :id and projectId = :projectId",
-            Parameters.with(PARAM_ID, commercialId)
-                .and(PARAM_PROJECT_ID, projectId));
+            Map.of(PARAM_ID, commercialId, PARAM_PROJECT_ID, projectId));
     }
 
 }

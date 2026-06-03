@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import java.util.Map;
+
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
-import io.quarkus.panache.common.Parameters;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -17,13 +18,13 @@ public class RentalAgreementRepository extends AbstractRepository<RentalAgreemen
 
     public List<RentalAgreementEntity> findRentalAgreementsByTenant(final UUID tenantId) {
         return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant WHERE tenant.user.id = :userId",
-            Parameters.with(PARAM_USER_ID, tenantId)).list();
+            Map.of(PARAM_USER_ID, tenantId)).list();
     }
 
     public Optional<RentalAgreementEntity> findRentalAgreementByTenant(final UUID tenantId, final UUID agreementId) {
         return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant "
                 + "WHERE a.id = :id and tenant.user.id = :userId",
-            Parameters.with(PARAM_ID, agreementId).and(PARAM_USER_ID, tenantId))
+            Map.of(PARAM_ID, agreementId, PARAM_USER_ID, tenantId))
             .singleResultOptional();
     }
 
@@ -38,7 +39,7 @@ public class RentalAgreementRepository extends AbstractRepository<RentalAgreemen
     public Optional<RentalAgreementEntity> findRentalAgreementByProject(final UUID projectId, final UUID agreementId) {
         return find("SELECT a FROM RentalAgreementEntity a LEFT JOIN FETCH a.tenants t " +
             "LEFT JOIN FETCH t.user u LEFT JOIN FETCH t.address WHERE a.id = :id and a.projectId = :projectId",
-            Parameters.with(PARAM_ID, agreementId).and(PARAM_PROJECT_ID, projectId))
+            Map.of(PARAM_ID, agreementId, PARAM_PROJECT_ID, projectId))
             .singleResultOptional();
     }
 }
