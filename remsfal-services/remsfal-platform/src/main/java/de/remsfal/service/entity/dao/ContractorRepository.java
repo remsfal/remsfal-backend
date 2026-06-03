@@ -1,8 +1,9 @@
 package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.ContractorEntity;
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.Map;
 import jakarta.persistence.NoResultException;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
 
     public List<ContractorEntity> findContractorsByEmployee(final UUID employeeId) {
         return find("SELECT c FROM ContractorEntity c JOIN c.employees employee WHERE employee.user.id = :userId",
-            Parameters.with(PARAM_USER_ID, employeeId)).list();
+            Map.of(PARAM_USER_ID, employeeId)).list();
     }
 
     /**

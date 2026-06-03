@@ -3,7 +3,8 @@ package de.remsfal.service.entity.dao;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.remsfal.service.entity.dto.BuildingEntity;
-import io.quarkus.panache.common.Parameters;
+
+import java.util.Map;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,7 +17,7 @@ public class BuildingRepository extends AbstractRepository<BuildingEntity> {
 
     public List<BuildingEntity> findAllBuildings(final UUID projectId, final UUID propertyId) {
         return list("projectId = :projectId and propertyId = :propertyId",
-            Parameters.with(PARAM_PROJECT_ID, projectId).and(PARAM_PROPERTY_ID, propertyId));
+            Map.of(PARAM_PROJECT_ID, projectId, PARAM_PROPERTY_ID, propertyId));
     }
 
 }

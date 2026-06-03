@@ -1,8 +1,9 @@
 package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.PropertyEntity;
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.Map;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,12 +17,12 @@ public class PropertyRepository extends AbstractRepository<PropertyEntity> {
 
     public List<PropertyEntity> findPropertiesByProjectId(final UUID projectId) {
         return list("projectId = :projectId",
-            Parameters.with(PARAM_PROJECT_ID, projectId));
+            Map.of(PARAM_PROJECT_ID, projectId));
     }
 
     public Optional<PropertyEntity> findPropertyById(final UUID projectId, final UUID propertyId) {
         return find("id = :id and projectId = :projectId",
-                Parameters.with("id", propertyId).and(PARAM_PROJECT_ID, projectId))
+                Map.of("id", propertyId, PARAM_PROJECT_ID, projectId))
                 .singleResultOptional();
     }
 
@@ -31,7 +32,7 @@ public class PropertyRepository extends AbstractRepository<PropertyEntity> {
 
     public long deletePropertyById(final UUID projectId, final UUID propertyId) {
         return delete("id = :id and projectId = :projectId",
-                Parameters.with("id", propertyId).and(PARAM_PROJECT_ID, projectId));
+                Map.of("id", propertyId, PARAM_PROJECT_ID, projectId));
     }
 
 }

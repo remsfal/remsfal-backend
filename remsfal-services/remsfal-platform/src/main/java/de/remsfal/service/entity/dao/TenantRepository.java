@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import java.util.Map;
+
 import de.remsfal.service.entity.dto.TenantEntity;
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
@@ -35,7 +36,7 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      */
     public Optional<TenantEntity> findTenantByProjectId(final UUID projectId, final UUID tenantId) {
         return find("projectId = :projectId and id = :tenantId",
-            Parameters.with("projectId", projectId).and("tenantId", tenantId))
+            Map.of("projectId", projectId, "tenantId", tenantId))
                 .singleResultOptional();
     }
 
@@ -51,10 +52,8 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
     public List<TenantEntity> findByNameInProject(final UUID projectId, final String firstName, final String lastName) {
         return find(
             "LOWER(firstName) = LOWER(:firstName) AND LOWER(lastName) = LOWER(:lastName) AND projectId = :projectId",
-            Parameters.with("firstName", firstName)
-                .and("lastName", lastName)
-                .and("projectId", projectId))
-                    .list();
+            Map.of("firstName", firstName, "lastName", lastName, "projectId", projectId))
+                .list();
     }
 
     /**
@@ -76,7 +75,7 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      */
     public List<TenantEntity> findByEmailAndProjectId(String email, UUID projectId) {
         return find("email = :email and projectId = :projectId",
-            Parameters.with("email", email).and("projectId", projectId))
+            Map.of("email", email, "projectId", projectId))
                 .list();
     }
 }
