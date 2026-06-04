@@ -3,8 +3,10 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dao.ContractorRepository;
+import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.ContractorEntity;
+import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -29,6 +31,9 @@ public class ContractorController {
 
     @Inject
     ContractorRepository contractorRepository;
+
+    @Inject
+    OrganizationRepository organizationRepository;
 
     @Inject
     AddressController addressController;
@@ -101,6 +106,12 @@ public class ContractorController {
         entity.setEmail(contractor.getEmail());
         entity.setTrade(contractor.getTrade());
 
+        if (contractor.getOrganizationId() != null) {
+            OrganizationEntity org = organizationRepository.findByIdOptional(contractor.getOrganizationId())
+                .orElseThrow(() -> new NotFoundException("Organization not found"));
+            entity.setOrganization(org);
+        }
+
         if (contractor.getAddress() != null) {
             entity.setAddress(addressController.updateAddress(contractor.getAddress(), null));
         }
@@ -137,6 +148,11 @@ public class ContractorController {
         }
         if (contractor.getTrade() != null) {
             entity.setTrade(contractor.getTrade());
+        }
+        if (contractor.getOrganizationId() != null) {
+            OrganizationEntity org = organizationRepository.findByIdOptional(contractor.getOrganizationId())
+                .orElseThrow(() -> new NotFoundException("Organization not found"));
+            entity.setOrganization(org);
         }
         if (contractor.getAddress() != null) {
             entity.setAddress(addressController.updateAddress(contractor.getAddress(), entity.getAddress()));

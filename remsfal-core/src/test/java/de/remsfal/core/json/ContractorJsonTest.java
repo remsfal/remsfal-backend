@@ -152,5 +152,10 @@ class ContractorJsonTest {
         public AddressModel getAddress() {
             return address;
         }
+
+        @Override
+        public UUID getOrganizationId() {
+            return null;
+        }
     }
 }

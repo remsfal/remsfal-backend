@@ -69,4 +69,20 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
                 .getResultList().size();
     }
 
+    /**
+     * Search organizations by name (case-insensitive, partial match).
+     *
+     * @param query the search term (min. 3 characters)
+     * @param limit the maximum number of results
+     * @return matching organizations
+     */
+    public List<OrganizationEntity> searchByName(final String query, final int limit) {
+        return getEntityManager()
+            .createQuery("SELECT o FROM OrganizationEntity o WHERE LOWER(o.name) LIKE LOWER(:query)",
+                OrganizationEntity.class)
+            .setParameter("query", "%" + query + "%")
+            .setMaxResults(limit)
+            .getResultList();
+    }
+
 }

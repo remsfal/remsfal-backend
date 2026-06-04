@@ -31,6 +31,10 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     @JoinColumn(name = "project_id", columnDefinition = "uuid")
     private ProjectEntity project;
 
+    @ManyToOne
+    @JoinColumn(name = "organization_id", columnDefinition = "uuid")
+    private OrganizationEntity organization;
+
     @Column(name = "company_name", nullable = false)
     private String companyName;
 
@@ -61,6 +65,19 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
 
     public void setProject(ProjectEntity project) {
         this.project = project;
+    }
+
+    @Override
+    public UUID getOrganizationId() {
+        return organization != null ? organization.getId() : null;
+    }
+
+    public OrganizationEntity getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(OrganizationEntity organization) {
+        this.organization = organization;
     }
 
     @Override
@@ -116,6 +133,7 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
         if (o instanceof ContractorEntity e) {
             return super.equals(e)
                 && Objects.equals(project, e.project)
+                && Objects.equals(organization, e.organization)
                 && Objects.equals(companyName, e.companyName)
                 && Objects.equals(phone, e.phone)
                 && Objects.equals(email, e.email)

@@ -29,6 +29,11 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     ResourceContext resourceContext;
 
     @Override
+    public OrganizationListJson searchOrganizations(final String query, final Integer limit) {
+        return OrganizationListJson.valueOf(controller.searchOrganizations(query, limit));
+    }
+
+    @Override
     public OrganizationListJson getOrganizationsOfUser() {
         return OrganizationListJson.valueOf(controller.getOrganizationsOfUser(principal));
     }

@@ -23,6 +23,14 @@ public interface ContractorModel {
     UUID getProjectId();
 
     /**
+     * Get the organization ID linked to this contractor.
+     *
+     * @return the organization ID, or null if not linked
+     */
+    @Nullable
+    UUID getOrganizationId();
+
+    /**
      * Get the company name of the contractor.
      *
      * @return the company name

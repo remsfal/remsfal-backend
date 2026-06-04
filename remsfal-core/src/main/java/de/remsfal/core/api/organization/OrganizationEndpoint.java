@@ -7,9 +7,11 @@ import de.remsfal.core.validation.PostValidation;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.groups.ConvertGroup;
 
 import jakarta.ws.rs.GET;
@@ -50,6 +52,20 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "List of organizations with the requested id doesn't exist")
     OrganizationListJson getOrganizationsOfUser();
+
+    @GET
+    @Path("/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(description = "Search organizations by name for autocomplete (min. 3 characters)")
+    @APIResponse(responseCode = "200", description = "Matching organizations were successfully returned")
+    @APIResponse(responseCode = "400", description = "Query parameter too short (min. 3 characters)")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    OrganizationListJson searchOrganizations(
+        @Parameter(description = "Name search query (min. 3 characters)")
+        @QueryParam("q") @NotBlank @Size(min = 3, max = 255) String query,
+        @Parameter(description = "Maximum number of results to return")
+        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(10) Integer limit
+    );
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

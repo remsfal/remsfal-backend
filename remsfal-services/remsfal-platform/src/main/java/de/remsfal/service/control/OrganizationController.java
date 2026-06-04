@@ -5,6 +5,7 @@ import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.model.UserModel;
 
+import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
@@ -29,6 +30,9 @@ public class OrganizationController {
 
     @Inject
     OrganizationRepository organizationRepository;
+
+    @Inject
+    ContractorRepository contractorRepository;
 
     @Inject
     AddressController addressController;
@@ -89,7 +93,21 @@ public class OrganizationController {
 
         organizationRepository.persistAndFlush(organizationEntity);
 
+        contractorRepository.linkOrganizationByEmail(user.getEmail(), organizationEntity);
+
         return organizationEntity;
+    }
+
+    /**
+     * Search organizations by name (case-insensitive, partial match).
+     *
+     * @param query the search term (min. 3 characters)
+     * @param limit the maximum number of results
+     * @return matching organizations
+     */
+    public List<OrganizationEntity> searchOrganizations(final String query, final int limit) {
+        logger.infov("Searching organizations by name (query={0})", query);
+        return organizationRepository.searchByName(query, limit);
     }
 
     /**

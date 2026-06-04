@@ -41,6 +41,10 @@ public abstract class ContractorJson implements ContractorModel {
     @Override
     public abstract  UUID getProjectId();
 
+    @Nullable
+    @Override
+    public abstract UUID getOrganizationId();
+
     @NotBlank(groups = PostValidation.class)
     @Size(max = 255)
     @Override
@@ -79,6 +83,7 @@ public abstract class ContractorJson implements ContractorModel {
         final ImmutableContractorJson.Builder builder = ImmutableContractorJson.builder()
             .id(model.getId())
             .projectId(model.getProjectId())
+            .organizationId(model.getOrganizationId())
             .companyName(model.getCompanyName())
             .phone(model.getPhone())
             .email(model.getEmail())
