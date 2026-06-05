@@ -184,7 +184,8 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void getAllOrganizations_SUCCESS_organizationListIsReturned() {
+    void getAllOrganizations_SUCCESS_ownedOrganizationsAreReturned() {
+        // USER_ID is OWNER of all 3 test organizations
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
@@ -194,29 +195,42 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("organizations.size()", Matchers.equalTo(3))
             .and().body("total", Matchers.equalTo(3));
+
+        // USER_ID_2 is MANAGER (not OWNER) → empty list
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("organizations.size()", Matchers.equalTo(0));
     }
 
     @Test
-    void getOrganizationsOfUser_SUCCESS_organizationListIsReturned() {
+    void getOrganizationEmployments_SUCCESS_employmentListIsReturned() {
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
-                .get(BASE_PATH + "/employments")
-                .then()
-                .statusCode(Response.Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("organizations.size()", Matchers.equalTo(3))
-                .and().body("total", Matchers.equalTo(3));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/employments")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("employees.size()", Matchers.equalTo(3))
+            .and().body("employees[0].organizationId", Matchers.notNullValue())
+            .and().body("employees[0].organizationName", Matchers.notNullValue());
 
         given()
-                .when()
-                .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
-                .get(BASE_PATH + "/employments")
-                .then()
-                .statusCode(Response.Status.OK.getStatusCode())
-                .contentType(ContentType.JSON)
-                .and().body("organizations.size()", Matchers.equalTo(1))
-                .and().body("total", Matchers.equalTo(1));
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/employments")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("employees.size()", Matchers.equalTo(1))
+            .and().body("employees[0].employeeRole", Matchers.equalTo("MANAGER"))
+            .and().body("employees[0].organizationId", Matchers.notNullValue())
+            .and().body("employees[0].organizationName", Matchers.notNullValue());
     }
 
     @Test

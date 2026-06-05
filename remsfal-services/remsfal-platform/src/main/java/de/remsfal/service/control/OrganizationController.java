@@ -11,6 +11,7 @@ import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -53,13 +54,18 @@ public class OrganizationController {
     }
 
     /**
-     * Retrieve all organizations
+     * Retrieve all organizations owned by the given user.
      *
-     * @return list of all organizations
+     * @param user the authenticated user
+     * @return list of organizations where the user is OWNER
      */
-    public List<OrganizationEntity> getOrganizations() {
-        logger.info("Retrieving all Organizations");
-        return organizationRepository.findAll().list();
+    public List<OrganizationEntity> getOrganizations(final UserModel user) {
+        logger.infov("Retrieving owned Organizations for user {0}", user.getId());
+        return organizationRepository.findOrganizationEmployeesByUserId(user.getId())
+            .stream()
+            .filter(e -> e.getRole() == EmployeeRole.OWNER)
+            .map(OrganizationEmployeeEntity::getOrganization)
+            .toList();
     }
 
     /**
@@ -195,9 +201,15 @@ public class OrganizationController {
         return organizationRepository.findOrganizationEmployeesByOrganizationId(organizationId);
     }
 
-    public List<? extends OrganizationModel> getOrganizationsOfUser(final UserModel user) {
-        return organizationRepository.findOrganizationEmployeesByUserId(user.getId())
-            .stream().map(OrganizationEmployeeEntity::getOrganization).toList();
+    /**
+     * Retrieve all organization memberships for the given user, including the user's role in each.
+     *
+     * @param user the authenticated user
+     * @return list of organization employee entries (org + role + user info)
+     */
+    public List<OrganizationEmployeeEntity> getOrganizationEmployments(final UserModel user) {
+        logger.infov("Retrieving organization employments for user {0}", user.getId());
+        return organizationRepository.findOrganizationEmployeesByUserId(user.getId());
     }
 
     @Transactional

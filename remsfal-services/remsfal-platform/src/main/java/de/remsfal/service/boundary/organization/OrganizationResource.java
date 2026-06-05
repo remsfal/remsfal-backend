@@ -1,10 +1,10 @@
 package de.remsfal.service.boundary.organization;
 
 import de.remsfal.core.api.organization.OrganizationEndpoint;
+import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.organization.OrganizationListJson;
 import de.remsfal.core.model.OrganizationModel;
-import de.remsfal.service.entity.dto.OrganizationEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -13,7 +13,6 @@ import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,14 +33,13 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
-    public OrganizationListJson getOrganizationsOfUser() {
-        return OrganizationListJson.valueOf(controller.getOrganizationsOfUser(principal));
+    public OrganizationEmployeeListJson getOrganizationEmployments() {
+        return OrganizationEmployeeListJson.valueOfList(controller.getOrganizationEmployments(principal));
     }
 
     @Override
-    public OrganizationListJson getOrganizations(Integer offset, Integer limit) {
-        List<OrganizationEntity> organizations = controller.getOrganizations();
-        return OrganizationListJson.valueOf(organizations, offset, (long) organizations.size());
+    public OrganizationListJson getOrganizations() {
+        return OrganizationListJson.valueOf(controller.getOrganizations(principal));
     }
 
     @Override
