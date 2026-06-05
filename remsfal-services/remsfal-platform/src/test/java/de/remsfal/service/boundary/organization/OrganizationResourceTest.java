@@ -320,6 +320,30 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void searchOrganizations_SUCCESS_resultsReturned() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .queryParam("name", TestData.ORGANIZATION_NAME.substring(0, 4))
+            .get(BASE_PATH + "/search")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("organizations.size()", Matchers.greaterThanOrEqualTo(1))
+            .and().body("total", Matchers.greaterThanOrEqualTo(1));
+    }
+
+    @Test
+    void searchOrganizations_FAILED_noAuthentication() {
+        given()
+            .when()
+            .queryParam("name", TestData.ORGANIZATION_NAME)
+            .get(BASE_PATH + "/search")
+            .then()
+            .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
     void getContractors_FAILED_noAuthentication() {
         given()
             .when()

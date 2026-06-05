@@ -55,7 +55,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
-    public Response createOrganization(OrganizationJson organization) {
+    public Response createOrganization(final OrganizationJson organization) {
         OrganizationModel model = controller.createOrganization(organization, principal);
         return getCreatedResponseBuilder(model.getId())
                 .type(MediaType.APPLICATION_JSON)
@@ -64,19 +64,19 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
-    public OrganizationJson getOrganization(UUID organizationId) {
+    public OrganizationJson getOrganization(final UUID organizationId) {
         checkReadPermissions(organizationId);
         return OrganizationJson.valueOf(controller.getOrganizationById(organizationId));
     }
 
     @Override
-    public OrganizationJson updateOrganization(UUID organizationId, OrganizationJson organization) {
+    public OrganizationJson updateOrganization(final UUID organizationId, final OrganizationJson organization) {
         checkWritePermissions(organizationId);
         return OrganizationJson.valueOf(controller.updateOrganization(principal, organizationId, organization));
     }
 
     @Override
-    public void deleteOrganization(UUID organizationId) {
+    public void deleteOrganization(final UUID organizationId) {
         checkOwnerPermissions(organizationId);
         if (!controller.deleteOrganization(organizationId)) {
             throw new NotFoundException("Organization not found");
