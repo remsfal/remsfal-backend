@@ -74,5 +74,48 @@ class OrganizationEmployeeEntityTest {
         assertFalse(employee1.equals(employee2));
     }
 
+    @Test
+    void isUnequal_SUCCESS_nullObject() {
+        assertFalse(employee1.equals(null));
+    }
+
+    @Test
+    void isUnequal_SUCCESS_differentClass() {
+        assertFalse(employee1.equals(new Object()));
+    }
+
+    @Test
+    void isUnequal_SUCCESS_differentOrganization() {
+        employee2.setOrganization(organization2);
+        assertFalse(employee1.equals(employee2));
+    }
+
+    @Test
+    void isUnequal_SUCCESS_differentUser() {
+        employee2.setUser(user2);
+        assertFalse(employee1.equals(employee2));
+    }
+
+    @Test
+    void getOrganizationId_SUCCESS_nullOrganization() {
+        OrganizationEmployeeEntity e = new OrganizationEmployeeEntity();
+        assertNull(e.getOrganizationId());
+    }
+
+    @Test
+    void getOrganizationName_SUCCESS_nullOrganization() {
+        OrganizationEmployeeEntity e = new OrganizationEmployeeEntity();
+        assertNull(e.getOrganizationName());
+    }
+
+    @Test
+    void getOrganizationId_SUCCESS_withOrganization() {
+        assertEquals(organization1.getId(), employee1.getOrganizationId());
+    }
+
+    @Test
+    void getOrganizationName_SUCCESS_withOrganization() {
+        assertEquals(organization1.getName(), employee1.getOrganizationName());
+    }
 
 }

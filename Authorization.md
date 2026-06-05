@@ -66,7 +66,7 @@ public enum EmployeeRole {
 | Role    | Create/Delete Organization | Manage Organization | Manage Employees | View Basic Information |
 |---------|----------------------------|---------------------|------------------|------------------------|
 | OWNER   | ✓ | ✓ | ✓ | ✓ |
-| MANAGER | - | ✓ | ✓ | ✓ |
+| MANAGER | - | - | - | ✓ |
 | STAFF   | - | - | - | ✓ |
 
 Linking a user as an employee of an organization with the corresponding role is done via the organization_employees table.

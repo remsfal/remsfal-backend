@@ -1,10 +1,10 @@
 package de.remsfal.service.boundary.organization;
 
 import de.remsfal.core.api.organization.OrganizationEndpoint;
+import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.organization.OrganizationListJson;
 import de.remsfal.core.model.OrganizationModel;
-import de.remsfal.service.entity.dto.OrganizationEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -13,7 +13,6 @@ import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -29,18 +28,34 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     ResourceContext resourceContext;
 
     @Override
-    public OrganizationListJson getOrganizationsOfUser() {
-        return OrganizationListJson.valueOf(controller.getOrganizationsOfUser(principal));
+    public OrganizationListJson searchOrganizations(final String name, final Integer offset,
+        final Integer limit) {
+        return OrganizationListJson.valueOf(
+            controller.searchOrganizations(name, offset, limit),
+            offset,
+            controller.countSearchOrganizations(name));
     }
 
     @Override
-    public OrganizationListJson getOrganizations(Integer offset, Integer limit) {
-        List<OrganizationEntity> organizations = controller.getOrganizations();
-        return OrganizationListJson.valueOf(organizations, offset, (long) organizations.size());
+    public OrganizationListJson getContractors(final Integer offset, final Integer limit) {
+        return OrganizationListJson.valueOf(
+            controller.getContractorOrganizations(principal, offset, limit),
+            offset,
+            controller.countContractorOrganizations(principal));
     }
 
     @Override
-    public Response createOrganization(OrganizationJson organization) {
+    public OrganizationEmployeeListJson getOrganizationEmployments() {
+        return OrganizationEmployeeListJson.valueOfList(controller.getOrganizationEmployments(principal));
+    }
+
+    @Override
+    public OrganizationListJson getOrganizations() {
+        return OrganizationListJson.valueOf(controller.getOrganizations(principal));
+    }
+
+    @Override
+    public Response createOrganization(final OrganizationJson organization) {
         OrganizationModel model = controller.createOrganization(organization, principal);
         return getCreatedResponseBuilder(model.getId())
                 .type(MediaType.APPLICATION_JSON)
@@ -49,19 +64,19 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
-    public OrganizationJson getOrganization(UUID organizationId) {
+    public OrganizationJson getOrganization(final UUID organizationId) {
         checkReadPermissions(organizationId);
         return OrganizationJson.valueOf(controller.getOrganizationById(organizationId));
     }
 
     @Override
-    public OrganizationJson updateOrganization(UUID organizationId, OrganizationJson organization) {
+    public OrganizationJson updateOrganization(final UUID organizationId, final OrganizationJson organization) {
         checkWritePermissions(organizationId);
         return OrganizationJson.valueOf(controller.updateOrganization(principal, organizationId, organization));
     }
 
     @Override
-    public void deleteOrganization(UUID organizationId) {
+    public void deleteOrganization(final UUID organizationId) {
         checkOwnerPermissions(organizationId);
         if (!controller.deleteOrganization(organizationId)) {
             throw new NotFoundException("Organization not found");

@@ -2,6 +2,7 @@ package de.remsfal.core.json;
 
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.ContractorModel;
+import de.remsfal.core.model.OrganizationModel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,6 +69,66 @@ class ContractorJsonTest {
     void testValueOfWithNullModel() {
         ContractorJson json = ContractorJson.valueOf(null);
         assertNull(json);
+    }
+
+    @Test
+    void testValueOfWithOrganization() {
+        OrganizationModel org = new OrganizationModel() {
+            @Override
+            public UUID getId() {
+                return UUID.randomUUID();
+            }
+
+            @Override
+            public String getName() {
+                return "Test Org";
+            }
+
+            @Override
+            public String getEmail() {
+                return null;
+            }
+
+            @Override
+            public String getPhone() {
+                return null;
+            }
+
+            @Override
+            public String getTrade() {
+                return null;
+            }
+
+            @Override
+            public String getVatIdentificationNumber() {
+                return null;
+            }
+
+            @Override
+            public de.remsfal.core.model.AddressModel getAddress() {
+                return null;
+            }
+        };
+
+        ContractorModel model = new ContractorModelEntity(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "ACME Construction",
+                "+12345678901",
+                "info@acme.com",
+                "Construction",
+                null) {
+            @Override
+            public OrganizationModel getOrganization() {
+                return org;
+            }
+        };
+
+        ContractorJson json = ContractorJson.valueOf(model);
+
+        assertNotNull(json);
+        assertNotNull(json.getOrganization());
+        assertEquals("Test Org", json.getOrganization().getName());
     }
 
     private AddressModel createTestAddress() {
@@ -151,6 +212,26 @@ class ContractorJsonTest {
         @Override
         public AddressModel getAddress() {
             return address;
+        }
+
+        @Override
+        public UUID getOrganizationId() {
+            return null;
+        }
+
+        @Override
+        public String getContactPerson() {
+            return null;
+        }
+
+        @Override
+        public String getRemarks() {
+            return null;
+        }
+
+        @Override
+        public OrganizationModel getOrganization() {
+            return null;
         }
     }
 }
