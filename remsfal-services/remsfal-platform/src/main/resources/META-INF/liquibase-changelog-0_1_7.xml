@@ -3,7 +3,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-backend-0.1.7-additional-email-verification-token" author="github-copilot">
+    <changeSet id="remsfal-backend-0.1.7-additional-email-verification-token" author="alexander.stanik@htw-berlin.de">
         <comment>Add verification token fields for additional user email addresses</comment>
 
         <addColumn tableName="user_additional_email">
@@ -15,6 +15,31 @@
                 tableName="user_additional_email"
                 columnNames="verification_token"
                 constraintName="unique_additional_email_verification_token"/>
+    </changeSet>
+
+    <changeSet id="remsfal-backend-0.1.7-contractor-organization" author="alexander.stanik@htw-berlin.de">
+        <comment>Link contractors to organizations</comment>
+
+        <addColumn tableName="contractors">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+            <column name="contact_person" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="remarks" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_contractor_organization_id"
+                                 baseTableName="contractors" baseColumnNames="organization_id"
+                                 referencedTableName="organizations" referencedColumnNames="id"
+                                 onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_contractor_organization_fk" tableName="contractors">
+            <column name="organization_id" type="uuid" />
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>

@@ -428,6 +428,17 @@ public abstract class AbstractServiceTest extends AbstractTest {
             .executeUpdate());
     }
 
+    protected void insertContractor(Object... params) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery(
+                "INSERT INTO contractors (id, project_id, company_name, organization_id) VALUES (?,?,?,?)")
+            .setParameter(1, params[0])
+            .setParameter(2, params[1])
+            .setParameter(3, params[2])
+            .setParameter(4, params[3])
+            .executeUpdate());
+    }
+
     /**
      * Insert an apartment rent entry.
      * @param params apartment_id, agreement_id, first_payment, billing_cycle, basic_rent, operating_costs_prepayment, heating_costs_prepayment, last_payment (optional)

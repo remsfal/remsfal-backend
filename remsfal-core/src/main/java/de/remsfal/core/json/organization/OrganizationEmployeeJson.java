@@ -35,6 +35,18 @@ public abstract class OrganizationEmployeeJson implements OrganizationEmployeeMo
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract UUID getOrganizationId();
+
+    @Null
+    @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract String getOrganizationName();
+
+    @Null
+    @Nullable
     @Override
     public abstract String getName();
 
@@ -58,6 +70,8 @@ public abstract class OrganizationEmployeeJson implements OrganizationEmployeeMo
     public static OrganizationEmployeeJson valueOf(final OrganizationEmployeeModel model) {
         return ImmutableOrganizationEmployeeJson.builder()
                 .id(model.getId())
+                .organizationId(model.getOrganizationId())
+                .organizationName(model.getOrganizationName())
                 .name(model.getName())
                 .email(model.getEmail())
                 .active(model.isActive())

@@ -1,7 +1,9 @@
 package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.ContractorEntity;
+import de.remsfal.service.entity.dto.OrganizationEntity;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 
 import java.util.Map;
 import jakarta.persistence.NoResultException;
@@ -15,6 +17,24 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class ContractorRepository extends AbstractRepository<ContractorEntity> {
+
+    /**
+     * Update organization_id for all contractors with the given email that have no organization set.
+     * Called when a new organization is created to retroactively link matching contractors.
+     *
+     * @param email the contractor email to match (case-insensitive)
+     * @param organization the organization to link
+     * @return the number of updated contractor rows
+     */
+    @Transactional
+    public int linkOrganizationByEmail(final String email, final OrganizationEntity organization) {
+        return getEntityManager()
+            .createQuery("UPDATE ContractorEntity c SET c.organization = :organization "
+                + "WHERE LOWER(c.email) = LOWER(:email) AND c.organization IS NULL")
+            .setParameter("organization", organization)
+            .setParameter("email", email)
+            .executeUpdate();
+    }
 
     /**
      * Delete a contractor by ID.

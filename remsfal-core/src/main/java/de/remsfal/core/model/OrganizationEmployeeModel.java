@@ -35,6 +35,10 @@ public interface OrganizationEmployeeModel extends UserModel {
         }
     }
 
+    java.util.UUID getOrganizationId();
+
+    String getOrganizationName();
+
     EmployeeRole getEmployeeRole();
 
     default boolean isPrivileged(PermissionType permissionType) {
