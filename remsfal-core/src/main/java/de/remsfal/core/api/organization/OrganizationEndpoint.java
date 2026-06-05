@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.groups.ConvertGroup;
 
@@ -55,15 +56,30 @@ public interface OrganizationEndpoint {
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(description = "Search organizations by name for autocomplete (min. 3 characters)")
+    @Operation(description = "Search organizations by name (min. 3 characters)")
     @APIResponse(responseCode = "200", description = "Matching organizations were successfully returned")
-    @APIResponse(responseCode = "400", description = "Query parameter too short (min. 3 characters)")
+    @APIResponse(responseCode = "400", description = "Name parameter too short (min. 3 characters)")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     OrganizationListJson searchOrganizations(
         @Parameter(description = "Name search query (min. 3 characters)")
-        @QueryParam("q") @NotBlank @Size(min = 3, max = 255) String query,
-        @Parameter(description = "Maximum number of results to return")
-        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(10) Integer limit
+        @QueryParam("name") @NotBlank @Size(min = 3, max = 255) String name,
+        @Parameter(description = "Offset of the first organization to return")
+        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
+        @Parameter(description = "Maximum number of organizations to return")
+        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
+    );
+
+    @GET
+    @Path("/contractors")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(description = "Retrieve all organizations acting as contractors in projects accessible to the user")
+    @APIResponse(responseCode = "200", description = "List of contractor organizations was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    OrganizationListJson getContractors(
+        @Parameter(description = "Offset of the first organization to return")
+        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
+        @Parameter(description = "Maximum number of organizations to return")
+        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
     );
 
     @GET

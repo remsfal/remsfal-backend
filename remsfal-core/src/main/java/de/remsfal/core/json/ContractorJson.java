@@ -42,10 +42,6 @@ public abstract class ContractorJson implements ContractorModel {
     @Override
     public abstract  UUID getProjectId();
 
-    @Nullable
-    @Override
-    public abstract UUID getOrganizationId();
-
     @NotNull(groups = PostValidation.class)
     @NotBlank(groups = PostValidation.class)
     @Size(max = 255)

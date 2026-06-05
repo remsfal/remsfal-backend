@@ -318,4 +318,53 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.FORBIDDEN.getStatusCode());
     }
+
+    @Test
+    void getContractors_FAILED_noAuthentication() {
+        given()
+            .when()
+            .get(BASE_PATH + "/contractors")
+            .then()
+            .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getContractors_SUCCESS_directProjectMember() {
+        // PROJECT_ID_1 with USER_ID as direct MANAGER member
+        super.setupTestProjects();
+        final UUID contractorId = UUID.fromString("cc000000-0000-0000-0000-000000000001");
+        insertContractor(contractorId, TestData.PROJECT_ID_1, "Test Contractor", TestData.ORGANIZATION_ID);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/contractors")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("organizations.size()", Matchers.equalTo(1))
+            .and().body("total", Matchers.equalTo(1))
+            .and().body("organizations[0].id", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()));
+    }
+
+    @Test
+    void getContractors_SUCCESS_viaOrganizationMembership() {
+        // USER_ID_2 is MANAGER of ORGANIZATION_ID_3
+        // Link ORGANIZATION_ID_3 to PROJECT_ID_1 → USER_ID_2 gets access via org membership
+        super.setupTestProjects();
+        insertProjectOrganization(TestData.PROJECT_ID_1, TestData.ORGANIZATION_ID_3, "COLLABORATOR");
+        final UUID contractorId = UUID.fromString("cc000000-0000-0000-0000-000000000002");
+        insertContractor(contractorId, TestData.PROJECT_ID_1, "Test Contractor", TestData.ORGANIZATION_ID);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/contractors")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("organizations.size()", Matchers.equalTo(1))
+            .and().body("total", Matchers.equalTo(1))
+            .and().body("organizations[0].id", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()));
+    }
 }

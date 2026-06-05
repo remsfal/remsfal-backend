@@ -107,13 +107,49 @@ public class OrganizationController {
     /**
      * Search organizations by name (case-insensitive, partial match).
      *
-     * @param query the search term (min. 3 characters)
-     * @param limit the maximum number of results
+     * @param query  the search term (min. 3 characters)
+     * @param offset pagination offset
+     * @param limit  maximum number of results
      * @return matching organizations
      */
-    public List<OrganizationEntity> searchOrganizations(final String query, final int limit) {
+    public List<OrganizationEntity> searchOrganizations(final String query,
+        final int offset, final int limit) {
         logger.infov("Searching organizations by name (query={0})", query);
-        return organizationRepository.searchByName(query, limit);
+        return organizationRepository.searchByName(query, offset, limit);
+    }
+
+    /**
+     * Count organizations matching a name search.
+     *
+     * @param query the search term
+     * @return total count
+     */
+    public long countSearchOrganizations(final String query) {
+        return organizationRepository.countByName(query);
+    }
+
+    /**
+     * Retrieve paginated distinct organizations that are contractors in projects accessible to the user.
+     *
+     * @param user   the authenticated user
+     * @param offset pagination offset
+     * @param limit  pagination limit
+     * @return list of contractor organizations
+     */
+    public List<OrganizationEntity> getContractorOrganizations(final UserModel user,
+        final int offset, final int limit) {
+        logger.infov("Retrieving contractor organizations for user {0}", user.getId());
+        return organizationRepository.findContractorOrganizationsByUser(user.getId(), offset, limit);
+    }
+
+    /**
+     * Count distinct organizations that are contractors in projects accessible to the user.
+     *
+     * @param user the authenticated user
+     * @return total count
+     */
+    public long countContractorOrganizations(final UserModel user) {
+        return organizationRepository.countContractorOrganizationsByUser(user.getId());
     }
 
     /**

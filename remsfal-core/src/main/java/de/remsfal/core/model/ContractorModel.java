@@ -42,6 +42,7 @@ public interface ContractorModel {
      *
      * @return the phone number
      */
+    @Nullable
     String getPhone();
 
     /**
@@ -49,6 +50,7 @@ public interface ContractorModel {
      *
      * @return the email
      */
+    @Nullable
     String getEmail();
 
     /**
@@ -56,6 +58,7 @@ public interface ContractorModel {
      *
      * @return the trade
      */
+    @Nullable
     String getTrade();
 
     /**
