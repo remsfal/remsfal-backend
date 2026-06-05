@@ -105,6 +105,8 @@ public class ContractorController {
         entity.setPhone(contractor.getPhone());
         entity.setEmail(contractor.getEmail());
         entity.setTrade(contractor.getTrade());
+        entity.setContactPerson(contractor.getContactPerson());
+        entity.setRemarks(contractor.getRemarks());
 
         if (contractor.getOrganizationId() != null) {
             OrganizationEntity org = organizationRepository.findByIdOptional(contractor.getOrganizationId())
@@ -148,6 +150,12 @@ public class ContractorController {
         }
         if (contractor.getTrade() != null) {
             entity.setTrade(contractor.getTrade());
+        }
+        if (contractor.getContactPerson() != null) {
+            entity.setContactPerson(contractor.getContactPerson());
+        }
+        if (contractor.getRemarks() != null) {
+            entity.setRemarks(contractor.getRemarks());
         }
         if (contractor.getOrganizationId() != null) {
             OrganizationEntity org = organizationRepository.findByIdOptional(contractor.getOrganizationId())

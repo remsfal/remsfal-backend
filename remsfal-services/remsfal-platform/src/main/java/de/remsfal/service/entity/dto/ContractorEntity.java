@@ -47,6 +47,12 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     @Column(name = "trade")
     private String trade;
 
+    @Column(name = "contact_person")
+    private String contactPerson;
+
+    @Column(name = "remarks", columnDefinition = "text")
+    private String remarks;
+
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
@@ -117,6 +123,24 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     }
 
     @Override
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
+    }
+
+    @Override
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    @Override
     public AddressEntity getAddress() {
         return address;
     }
@@ -138,6 +162,8 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
                 && Objects.equals(phone, e.phone)
                 && Objects.equals(email, e.email)
                 && Objects.equals(trade, e.trade)
+                && Objects.equals(contactPerson, e.contactPerson)
+                && Objects.equals(remarks, e.remarks)
                 && Objects.equals(address, e.address);
         }
         return false;

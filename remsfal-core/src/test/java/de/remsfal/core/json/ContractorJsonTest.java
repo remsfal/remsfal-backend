@@ -2,6 +2,7 @@ package de.remsfal.core.json;
 
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.ContractorModel;
+import de.remsfal.core.model.OrganizationModel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -155,6 +156,21 @@ class ContractorJsonTest {
 
         @Override
         public UUID getOrganizationId() {
+            return null;
+        }
+
+        @Override
+        public String getContactPerson() {
+            return null;
+        }
+
+        @Override
+        public String getRemarks() {
+            return null;
+        }
+
+        @Override
+        public OrganizationModel getOrganization() {
             return null;
         }
     }

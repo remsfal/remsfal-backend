@@ -79,7 +79,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{ \"id\":\"b9440c43-b5c0-4951-9c29-000000000001\", \"companyName\":\"" + COMPANY_NAME_2 + "\"}")
+            .body("{ \"companyName\":\"" + COMPANY_NAME_2 + "\"}")
             .patch(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), "b9440c43-b5c0-4951-9c29-000000000001")
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
@@ -246,7 +246,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .extract().path("id");
 
         // Update the contractor
-        String updateJson = "{ \"id\":\"" + contractorId + "\", \"companyName\":\"" + COMPANY_NAME_2 + "\", \"phone\":\"" + PHONE_2 + "\", \"email\":\"" + EMAIL_2 + "\", \"trade\":\"" + TRADE_2 + "\"}";
+        String updateJson = "{ \"companyName\":\"" + COMPANY_NAME_2 + "\", \"phone\":\"" + PHONE_2 + "\", \"email\":\"" + EMAIL_2 + "\", \"trade\":\"" + TRADE_2 + "\"}";
 
         given()
             .when()
@@ -278,7 +278,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
     @Test
     void updateContractor_FAILED_contractorNotFound() {
-        String updateJson = "{ \"id\":\"b9440c43-b5c0-4951-9c29-000000000099\", \"companyName\":\"" + COMPANY_NAME_2 + "\"}";
+        String updateJson = "{ \"companyName\":\"" + COMPANY_NAME_2 + "\"}";
 
         given()
             .when()

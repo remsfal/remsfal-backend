@@ -48,9 +48,8 @@ public interface OrganizationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/employments")
     @Operation(description = "Retrieve a list of all organizations where the user is an employee")
-    @APIResponse(responseCode = "200", description = "An organization was successfully returned")
+    @APIResponse(responseCode = "200", description = "A list of organization was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "List of organizations with the requested id doesn't exist")
     OrganizationListJson getOrganizationsOfUser();
 
     @GET

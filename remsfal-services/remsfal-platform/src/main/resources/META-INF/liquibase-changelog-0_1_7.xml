@@ -10,6 +10,12 @@
             <column name="organization_id" type="uuid">
                 <constraints nullable="true" />
             </column>
+            <column name="contact_person" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="remarks" type="text">
+                <constraints nullable="true" />
+            </column>
         </addColumn>
 
         <addForeignKeyConstraint constraintName="fk_contractor_organization_id"
