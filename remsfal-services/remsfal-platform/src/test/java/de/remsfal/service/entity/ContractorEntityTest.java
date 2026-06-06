@@ -164,4 +164,43 @@ class ContractorEntityTest {
     void testGetProject() {
         assertEquals(project1, entity1.getProject());
     }
+
+    @Test
+    @DisplayName("Tests getOrganizationId with non-null organization")
+    void testGetOrganizationIdWithOrganization() {
+        de.remsfal.service.entity.dto.OrganizationEntity org = new de.remsfal.service.entity.dto.OrganizationEntity();
+        org.setId(java.util.UUID.fromString("eeeeeeee-eeee-eeee-eeee-000000000001"));
+        entity1.setOrganization(org);
+        assertEquals(org.getId(), entity1.getOrganizationId());
+    }
+
+    @Test
+    @DisplayName("Tests getOrganizationId with null organization")
+    void testGetOrganizationIdWithoutOrganization() {
+        ContractorEntity entity = new ContractorEntity();
+        assertNull(entity.getOrganizationId());
+    }
+
+    @Test
+    @DisplayName("Tests two unequal objects (different organization)")
+    void testEqualsDifferentOrganizations() {
+        de.remsfal.service.entity.dto.OrganizationEntity org = new de.remsfal.service.entity.dto.OrganizationEntity();
+        org.setId(java.util.UUID.fromString("eeeeeeee-eeee-eeee-eeee-000000000001"));
+        entity2.setOrganization(org);
+        assertNotEquals(entity1, entity2);
+    }
+
+    @Test
+    @DisplayName("Tests two unequal objects (different contactPerson)")
+    void testEqualsDifferentContactPersons() {
+        entity2.setContactPerson("Some Person");
+        assertNotEquals(entity1, entity2);
+    }
+
+    @Test
+    @DisplayName("Tests two unequal objects (different remarks)")
+    void testEqualsDifferentRemarks() {
+        entity2.setRemarks("Some remarks");
+        assertNotEquals(entity1, entity2);
+    }
 }

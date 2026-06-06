@@ -31,6 +31,10 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     @JoinColumn(name = "project_id", columnDefinition = "uuid")
     private ProjectEntity project;
 
+    @ManyToOne
+    @JoinColumn(name = "organization_id", columnDefinition = "uuid")
+    private OrganizationEntity organization;
+
     @Column(name = "company_name", nullable = false)
     private String companyName;
 
@@ -42,6 +46,12 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
 
     @Column(name = "trade")
     private String trade;
+
+    @Column(name = "contact_person")
+    private String contactPerson;
+
+    @Column(name = "remarks", columnDefinition = "text")
+    private String remarks;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id", columnDefinition = "uuid")
@@ -61,6 +71,19 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
 
     public void setProject(ProjectEntity project) {
         this.project = project;
+    }
+
+    @Override
+    public UUID getOrganizationId() {
+        return organization != null ? organization.getId() : null;
+    }
+
+    public OrganizationEntity getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(OrganizationEntity organization) {
+        this.organization = organization;
     }
 
     @Override
@@ -100,6 +123,24 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     }
 
     @Override
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
+    }
+
+    @Override
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    @Override
     public AddressEntity getAddress() {
         return address;
     }
@@ -116,10 +157,13 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
         if (o instanceof ContractorEntity e) {
             return super.equals(e)
                 && Objects.equals(project, e.project)
+                && Objects.equals(organization, e.organization)
                 && Objects.equals(companyName, e.companyName)
                 && Objects.equals(phone, e.phone)
                 && Objects.equals(email, e.email)
                 && Objects.equals(trade, e.trade)
+                && Objects.equals(contactPerson, e.contactPerson)
+                && Objects.equals(remarks, e.remarks)
                 && Objects.equals(address, e.address);
         }
         return false;

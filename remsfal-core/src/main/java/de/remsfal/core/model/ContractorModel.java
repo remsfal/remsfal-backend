@@ -23,6 +23,14 @@ public interface ContractorModel {
     UUID getProjectId();
 
     /**
+     * Get the organization ID linked to this contractor.
+     *
+     * @return the organization ID, or null if not linked
+     */
+    @Nullable
+    UUID getOrganizationId();
+
+    /**
      * Get the company name of the contractor.
      *
      * @return the company name
@@ -34,6 +42,7 @@ public interface ContractorModel {
      *
      * @return the phone number
      */
+    @Nullable
     String getPhone();
 
     /**
@@ -41,6 +50,7 @@ public interface ContractorModel {
      *
      * @return the email
      */
+    @Nullable
     String getEmail();
 
     /**
@@ -48,7 +58,32 @@ public interface ContractorModel {
      *
      * @return the trade
      */
+    @Nullable
     String getTrade();
+
+    /**
+     * Get the contact person at the contractor company.
+     *
+     * @return the contact person name, or null
+     */
+    @Nullable
+    String getContactPerson();
+
+    /**
+     * Get the remarks for this contractor.
+     *
+     * @return the remarks, or null
+     */
+    @Nullable
+    String getRemarks();
+
+    /**
+     * Get the organization linked to this contractor.
+     *
+     * @return the organization, or null if not linked
+     */
+    @Nullable
+    OrganizationModel getOrganization();
 
     /**
      * Get the address of the contractor.

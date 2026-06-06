@@ -18,19 +18,19 @@ import java.util.UUID;
 public class EmployeeResource extends OrganizationSubResource implements EmployeeEndpoint {
 
     @Override
-    public OrganizationEmployeeJson getEmployee(UUID organizationId, UUID employeeId) {
+    public OrganizationEmployeeJson getEmployee(final UUID organizationId, final UUID employeeId) {
         checkReadPermissions(organizationId);
         return OrganizationEmployeeJson.valueOf(controller.getOrganizationEmployee(organizationId, employeeId));
     }
 
     @Override
-    public OrganizationEmployeeListJson getEmployees(UUID organizationId) {
+    public OrganizationEmployeeListJson getEmployees(final UUID organizationId) {
         checkReadPermissions(organizationId);
         return OrganizationEmployeeListJson.valueOfList(controller.getEmployeesByOrganization(organizationId));
     }
 
     @Override
-    public OrganizationEmployeeJson addEmployee(UUID organizationId, OrganizationEmployeeJson employee) {
+    public OrganizationEmployeeJson addEmployee(final UUID organizationId, final OrganizationEmployeeJson employee) {
         if (employee.getEmployeeRole() == EmployeeRole.OWNER) {
             checkOwnerPermissions(organizationId);
         } else {
@@ -40,7 +40,7 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
     }
 
     @Override
-    public OrganizationEmployeeJson updateEmployee(UUID organizationId, UUID employeeId,
+    public OrganizationEmployeeJson updateEmployee(final UUID organizationId, final UUID employeeId,
         OrganizationEmployeeJson employee) {
         if (employee.getEmployeeRole() == EmployeeRole.OWNER) {
             checkOwnerPermissions(organizationId);
@@ -53,7 +53,7 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
     }
 
     @Override
-    public void deleteEmployee(UUID organizationId, UUID employeeId) {
+    public void deleteEmployee(final UUID organizationId, final UUID employeeId) {
         EmployeeRole role =
             controller.getOrganizationEmployee(organizationId, employeeId).getEmployeeRole();
 

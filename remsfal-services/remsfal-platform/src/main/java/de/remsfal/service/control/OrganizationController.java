@@ -5,10 +5,12 @@ import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.model.UserModel;
 
+import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -31,6 +33,9 @@ public class OrganizationController {
     OrganizationRepository organizationRepository;
 
     @Inject
+    ContractorRepository contractorRepository;
+
+    @Inject
     AddressController addressController;
 
     @Inject
@@ -49,13 +54,18 @@ public class OrganizationController {
     }
 
     /**
-     * Retrieve all organizations
+     * Retrieve all organizations owned by the given user.
      *
-     * @return list of all organizations
+     * @param user the authenticated user
+     * @return list of organizations where the user is OWNER
      */
-    public List<OrganizationEntity> getOrganizations() {
-        logger.info("Retrieving all Organizations");
-        return organizationRepository.findAll().list();
+    public List<OrganizationEntity> getOrganizations(final UserModel user) {
+        logger.infov("Retrieving owned Organizations for user {0}", user.getId());
+        return organizationRepository.findOrganizationEmployeesByUserId(user.getId())
+            .stream()
+            .filter(e -> e.getRole() == EmployeeRole.OWNER)
+            .map(OrganizationEmployeeEntity::getOrganization)
+            .toList();
     }
 
     /**
@@ -89,7 +99,57 @@ public class OrganizationController {
 
         organizationRepository.persistAndFlush(organizationEntity);
 
+        contractorRepository.linkOrganizationByEmail(user.getEmail(), organizationEntity);
+
         return organizationEntity;
+    }
+
+    /**
+     * Search organizations by name (case-insensitive, partial match).
+     *
+     * @param query  the search term (min. 3 characters)
+     * @param offset pagination offset
+     * @param limit  maximum number of results
+     * @return matching organizations
+     */
+    public List<OrganizationEntity> searchOrganizations(final String query,
+        final int offset, final int limit) {
+        logger.infov("Searching organizations by name (query={0})", query);
+        return organizationRepository.searchByName(query, offset, limit);
+    }
+
+    /**
+     * Count organizations matching a name search.
+     *
+     * @param query the search term
+     * @return total count
+     */
+    public long countSearchOrganizations(final String query) {
+        return organizationRepository.countByName(query);
+    }
+
+    /**
+     * Retrieve paginated distinct organizations that are contractors in projects accessible to the user.
+     *
+     * @param user   the authenticated user
+     * @param offset pagination offset
+     * @param limit  pagination limit
+     * @return list of contractor organizations
+     */
+    public List<OrganizationEntity> getContractorOrganizations(final UserModel user,
+        final int offset, final int limit) {
+        logger.infov("Retrieving contractor organizations for user {0}", user.getId());
+        return organizationRepository.findContractorOrganizationsByUser(user.getId(), offset, limit);
+    }
+
+    /**
+     * Count distinct organizations that are contractors in projects accessible to the user.
+     *
+     * @param user the authenticated user
+     * @return total count
+     */
+    public long countContractorOrganizations(final UserModel user) {
+        return organizationRepository.countContractorOrganizationsByUser(user.getId());
     }
 
     /**
@@ -177,9 +237,15 @@ public class OrganizationController {
         return organizationRepository.findOrganizationEmployeesByOrganizationId(organizationId);
     }
 
-    public List<? extends OrganizationModel> getOrganizationsOfUser(final UserModel user) {
-        return organizationRepository.findOrganizationEmployeesByUserId(user.getId())
-            .stream().map(OrganizationEmployeeEntity::getOrganization).toList();
+    /**
+     * Retrieve all organization memberships for the given user, including the user's role in each.
+     *
+     * @param user the authenticated user
+     * @return list of organization employee entries (org + role + user info)
+     */
+    public List<OrganizationEmployeeEntity> getOrganizationEmployments(final UserModel user) {
+        logger.infov("Retrieving organization employments for user {0}", user.getId());
+        return organizationRepository.findOrganizationEmployeesByUserId(user.getId());
     }
 
     @Transactional

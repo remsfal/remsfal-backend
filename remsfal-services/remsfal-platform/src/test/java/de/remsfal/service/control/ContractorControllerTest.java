@@ -2,11 +2,13 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ImmutableContractorJson;
+import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.ContractorEntity;
+import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
@@ -31,6 +33,9 @@ class ContractorControllerTest extends AbstractServiceTest {
 
     @Inject
     ContractorController contractorController;
+
+    @Inject
+    OrganizationController organizationController;
 
     // Test data for contractors
     private static final String COMPANY_NAME_1 = "Test Contractor 1";
@@ -261,7 +266,103 @@ class ContractorControllerTest extends AbstractServiceTest {
     void deleteContractor_FAILED_contractorNotFound() {
         // In a real scenario, authorization would be checked at the boundary layer
         // Try to delete a non-existent contractor
-        assertThrows(NotFoundException.class, () -> 
+        assertThrows(NotFoundException.class, () ->
             contractorController.deleteContractor(user, projectId, UUID.randomUUID()));
+    }
+
+    @Test
+    void createContractor_FAILED_projectNotFound() {
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .build();
+
+        assertThrows(NotFoundException.class, () ->
+            contractorController.createContractor(user, UUID.randomUUID(), contractorJson));
+    }
+
+    @Test
+    void createContractor_SUCCESS_withOrganization() {
+        OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
+            ImmutableOrganizationJson.builder().name("Test Org").build(), user);
+
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .phone(PHONE_1)
+            .email(EMAIL_1)
+            .trade(TRADE_1)
+            .organizationId(org.getId())
+            .build();
+
+        ContractorModel contractor = contractorController.createContractor(user, projectId, contractorJson);
+
+        assertNotNull(contractor);
+        assertEquals(COMPANY_NAME_1, contractor.getCompanyName());
+        assertEquals(org.getId(), contractor.getOrganizationId());
+    }
+
+    @Test
+    void createContractor_FAILED_organizationNotFound() {
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .organizationId(UUID.randomUUID())
+            .build();
+
+        assertThrows(NotFoundException.class, () ->
+            contractorController.createContractor(user, projectId, contractorJson));
+    }
+
+    @Test
+    void updateContractor_SUCCESS_withOrganization() {
+        OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
+            ImmutableOrganizationJson.builder().name("Test Org").build(), user);
+
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .phone(PHONE_1)
+            .email(EMAIL_1)
+            .trade(TRADE_1)
+            .build();
+
+        ContractorModel created = contractorController.createContractor(user, projectId, contractorJson);
+
+        ContractorJson updateJson = ImmutableContractorJson.builder()
+            .organizationId(org.getId())
+            .build();
+
+        ContractorModel updated = contractorController.updateContractor(user, projectId, created.getId(), updateJson);
+
+        assertNotNull(updated);
+        assertEquals(org.getId(), updated.getOrganizationId());
+    }
+
+    @Test
+    void updateContractor_FAILED_organizationNotFound() {
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .build();
+
+        ContractorModel created = contractorController.createContractor(user, projectId, contractorJson);
+
+        ContractorJson updateJson = ImmutableContractorJson.builder()
+            .organizationId(UUID.randomUUID())
+            .build();
+
+        assertThrows(NotFoundException.class, () ->
+            contractorController.updateContractor(user, projectId, created.getId(), updateJson));
+    }
+
+    @Test
+    void getOrganizations_SUCCESS_returnsContractors() {
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .phone(PHONE_1)
+            .email(EMAIL_1)
+            .trade(TRADE_1)
+            .build();
+
+        contractorController.createContractor(user, projectId, contractorJson);
+
+        List<ContractorEntity> contractors = contractorController.getOrganizations(user);
+        assertNotNull(contractors);
     }
 }

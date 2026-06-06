@@ -60,6 +60,16 @@ public class OrganizationEmployeeEntity extends MetaDataEntity implements Organi
         return user.getId();
     }
 
+    @Override
+    public UUID getOrganizationId() {
+        return organization != null ? organization.getId() : null;
+    }
+
+    @Override
+    public String getOrganizationName() {
+        return organization != null ? organization.getName() : null;
+    }
+
     public OrganizationEntity getOrganization() {
         return organization;
     }
