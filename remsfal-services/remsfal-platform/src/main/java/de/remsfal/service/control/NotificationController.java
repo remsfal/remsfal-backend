@@ -13,7 +13,6 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.core.json.eventing.EmailEventJson.EmailEventType;
 import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
-import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.CustomerModel;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

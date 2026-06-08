@@ -150,7 +150,8 @@ public class UserController {
         if (verificationToken == null || verificationToken.isBlank()) {
             throw new BadRequestException("Verification token is missing.");
         }
-        final AdditionalEmailEntity additionalEmail = additionalEmailRepository.findByVerificationToken(verificationToken)
+        final AdditionalEmailEntity additionalEmail = additionalEmailRepository
+            .findByVerificationToken(verificationToken)
             .orElseThrow(() -> new NotFoundException("Verification token is invalid."));
         final LocalDateTime expiresAt = additionalEmail.getVerificationTokenExpiresAt();
         if (expiresAt == null || expiresAt.isBefore(LocalDateTime.now())) {
