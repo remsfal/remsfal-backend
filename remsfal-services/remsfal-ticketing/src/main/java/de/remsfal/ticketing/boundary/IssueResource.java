@@ -65,7 +65,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             return getProjectIssues(offset, limit, List.of(projectId), assigneeId, agreementId,
                 rentalUnitType, rentalUnitId, status);
         } else if (preferTenancyIssues || principal.getProjectRoles().isEmpty()) {
-            List<UUID> projectFilter = principal.getTenancyProjects().values().stream().toList();
+            List<UUID> projectFilter = principal.getTenancyProjects().values().stream().distinct().toList();
             return getTenancyIssues(offset, limit, projectFilter, agreementId, status);
         } else {
             List<UUID> projectFilter = principal.getProjectRoles().keySet().stream().toList();
