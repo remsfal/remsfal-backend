@@ -5,14 +5,17 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.BadRequestException;
 
 import org.junit.jupiter.api.Test;
 
@@ -366,6 +369,91 @@ class UserControllerTest extends AbstractServiceTest {
         assertEquals(userId1, ownerUserId, "Alternative email must belong to the first user");
     }
 
+    @Test
+    void updateUser_SUCCESS_additionalEmailVerificationTokenCreated() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UUID userId = user.getId();
+
+        CustomerModel update = ImmutableUserJson.builder()
+            .id(userId)
+            .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
+            .build();
+
+        controller.updateUser(userId, update);
+
+        Object[] result = entityManager.createQuery(
+            "SELECT ae.verified, ae.verificationToken, ae.verificationTokenExpiresAt "
+                + "FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId AND ae.email = :email",
+            Object[].class)
+            .setParameter("userId", userId)
+            .setParameter("email", TestData.ALTERNATIVE_EMAIL_1)
+            .getSingleResult();
+
+        assertEquals(Boolean.FALSE, result[0]);
+        assertNotNull(result[1]);
+        assertNotNull(result[2]);
+    }
+
+    @Test
+    void verifyAdditionalEmail_SUCCESS_marksEmailAsVerified() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UUID userId = user.getId();
+
+        CustomerModel update = ImmutableUserJson.builder()
+            .id(userId)
+            .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
+            .build();
+        controller.updateUser(userId, update);
+
+        String token = entityManager.createQuery(
+            "SELECT ae.verificationToken FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId AND ae.email = :email",
+            String.class)
+            .setParameter("userId", userId)
+            .setParameter("email", TestData.ALTERNATIVE_EMAIL_1)
+            .getSingleResult();
+
+        controller.verifyAdditionalEmail(token);
+
+        Object[] result = entityManager.createQuery(
+            "SELECT ae.verified, ae.verificationToken, ae.verificationTokenExpiresAt "
+                + "FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId AND ae.email = :email",
+            Object[].class)
+            .setParameter("userId", userId)
+            .setParameter("email", TestData.ALTERNATIVE_EMAIL_1)
+            .getSingleResult();
+
+        assertEquals(Boolean.TRUE, result[0]);
+        assertNull(result[1]);
+        assertNull(result[2]);
+    }
+
+    @Test
+    void verifyAdditionalEmail_FAIL_tokenExpired() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UUID userId = user.getId();
+
+        CustomerModel update = ImmutableUserJson.builder()
+            .id(userId)
+            .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
+            .build();
+        controller.updateUser(userId, update);
+
+        String token = entityManager.createQuery(
+            "SELECT ae.verificationToken FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId AND ae.email = :email",
+            String.class)
+            .setParameter("userId", userId)
+            .setParameter("email", TestData.ALTERNATIVE_EMAIL_1)
+            .getSingleResult();
+
+        runInTransaction(() -> entityManager.createQuery(
+            "UPDATE AdditionalEmailEntity ae SET ae.verificationTokenExpiresAt = :expired WHERE ae.verificationToken = :token")
+            .setParameter("expired", LocalDateTime.now().minusMinutes(1))
+            .setParameter("token", token)
+            .executeUpdate());
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> controller.verifyAdditionalEmail(token));
+        assertEquals("Verification token has expired.", ex.getMessage());
+    }
 
     @Test
     void deleteUser_SUCCESS_repeatedRemove() {

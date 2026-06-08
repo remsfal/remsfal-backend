@@ -99,4 +99,36 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 );
     }
 
+    @Test
+    void testConsumeUserNotification_AdditionalEmailVerification() {
+        UserJson user = ImmutableUserJson.builder()
+                .id(UUID.randomUUID())
+                .email("additional@example.com")
+                .firstName("Test")
+                .lastName("Verification")
+                .build();
+
+        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
+                .user(user)
+                .locale("en")
+                .type(EmailEventJson.EmailEventType.ADDITIONAL_EMAIL_VERIFICATION)
+                .link("https://remsfal.de/api/v1/authentication/verify-additional-email?token=token")
+                .build();
+
+        companion.produce(ImmutableEmailEventJson.class)
+            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+            .awaitCompletion();
+
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+                verify(mailingController, atLeastOnce())
+                    .sendAdditionalEmailVerificationEmail(
+                        user,
+                        "https://remsfal.de/api/v1/authentication/verify-additional-email?token=token",
+                        Locale.ENGLISH
+                    )
+                );
+    }
+
 }

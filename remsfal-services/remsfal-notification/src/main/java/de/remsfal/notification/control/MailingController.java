@@ -15,10 +15,11 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.model.UserModel;
 import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
+import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
+import io.smallrye.mutiny.Uni;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -30,7 +31,7 @@ public class MailingController {
     Logger logger;
 
     @Inject
-    Mailer mailer;
+    ReactiveMailer mailer;
 
     @ConfigProperty(name = "quarkus.mailer.from")
     String from;
@@ -47,6 +48,10 @@ public class MailingController {
     Template newMembership;
 
     @Inject
+    @Location("additional-email-verification.html")
+    Template additionalEmailVerification;
+
+    @Inject
     @Location("issue-created.html")
     Template issueCreated;
 
@@ -58,25 +63,38 @@ public class MailingController {
     @Location("issue-assigned.html")
     Template issueAssigned;
 
-    public void sendWelcomeEmail(final UserModel recipient, final String link, final Locale locale) {
+    public Uni<Void> sendWelcomeEmail(final UserModel recipient, final String link, final Locale locale) {
         logger.infov("Sending welcome email to {0}", recipient.getEmail());
         final TemplateInstance instance = welcome.data("name", recipient.getName()).data("buttonLink", link);
         final String subject = getSubject("welcome", locale);
 
         String html = setTemplateProperties(instance, locale).render();
         Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
-        sendWithAlias(mail, "info");
+        return sendWithAlias(mail, "info");
     }
 
     @WithSpan("MailingController.sendNewMembershipEmail")
-    public void sendNewMembershipEmail(final UserModel recipient, final String link, final Locale locale) {
+    public Uni<Void> sendNewMembershipEmail(final UserModel recipient, final String link, final Locale locale) {
         logger.infov("Sending new membership email to {0}", recipient.getEmail());
         final TemplateInstance instance = newMembership.data("name", recipient.getName()).data("buttonLink", link);
         final String subject = getSubject("new-membership", locale);
 
         String html = setTemplateProperties(instance, locale).render();
         Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
-        sendWithAlias(mail, "info");
+        return sendWithAlias(mail, "info");
+    }
+
+    @WithSpan("MailingController.sendAdditionalEmailVerificationEmail")
+    public Uni<Void> sendAdditionalEmailVerificationEmail(final UserModel recipient,
+        final String link, final Locale locale) {
+        logger.infov("Sending additional email verification email to {0}", recipient.getEmail());
+        final TemplateInstance instance = additionalEmailVerification.data("name", recipient.getName())
+            .data("buttonLink", link);
+        final String subject = getSubject("additional-email-verification", locale);
+
+        String html = setTemplateProperties(instance, locale).render();
+        Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
+        return sendWithAlias(mail, "info");
     }
 
     private TemplateInstance setTemplateProperties(TemplateInstance template, final Locale locale) {
@@ -93,36 +111,32 @@ public class MailingController {
         return bundle.getString(template + "_subject");
     }
 
-    private void sendWithAlias(final Mail mail, final String alias) {
+    private Uni<Void> sendWithAlias(final Mail mail, final String alias) {
         mail.setFrom(from.replace("@", "+" + alias + "@"));
-        send(mail);
-    }
-
-    private void send(final Mail mail) {
-        mailer.send(mail);
+        return mailer.send(mail);
     }
 
     // Issue event email methods
 
-    public void sendIssueCreatedEmail(IssueEventJson event, UserJson recipient) {
+    public Uni<Void> sendIssueCreatedEmail(IssueEventJson event, UserJson recipient) {
         logger.infov("Sending issue-created email to {0}", recipient.getEmail());
         TemplateInstance instance = createIssueTemplateInstance(issueCreated, event, recipient);
         String subject = "[Issue Created] " + event.getTitle();
-        sendIssueEmail(recipient.getEmail(), subject, instance);
+        return sendIssueEmail(recipient.getEmail(), subject, instance);
     }
 
-    public void sendIssueUpdatedEmail(IssueEventJson event, UserJson recipient) {
+    public Uni<Void> sendIssueUpdatedEmail(IssueEventJson event, UserJson recipient) {
         logger.infov("Sending issue-updated email to {0}", recipient.getEmail());
         TemplateInstance instance = createIssueTemplateInstance(issueUpdated, event, recipient);
         String subject = "[Issue Updated] " + event.getTitle();
-        sendIssueEmail(recipient.getEmail(), subject, instance);
+        return sendIssueEmail(recipient.getEmail(), subject, instance);
     }
 
-    public void sendIssueAssignedEmail(IssueEventJson event, UserJson recipient) {
+    public Uni<Void> sendIssueAssignedEmail(IssueEventJson event, UserJson recipient) {
         logger.infov("Sending issue-assigned email to {0}", recipient.getEmail());
         TemplateInstance instance = createIssueTemplateInstance(issueAssigned, event, recipient);
         String subject = "[Issue Assigned] " + event.getTitle();
-        sendIssueEmail(recipient.getEmail(), subject, instance);
+        return sendIssueEmail(recipient.getEmail(), subject, instance);
     }
 
     private TemplateInstance createIssueTemplateInstance(Template template, IssueEventJson event, UserJson recipient) {
@@ -162,9 +176,9 @@ public class MailingController {
         return instance;
     }
 
-    private void sendIssueEmail(String to, String subject, TemplateInstance instance) {
+    private Uni<Void> sendIssueEmail(String to, String subject, TemplateInstance instance) {
         String html = setTemplateProperties(instance, Locale.ENGLISH).render();
         Mail mail = Mail.withHtml(to, subject, html);
-        sendWithAlias(mail, "issues");
+        return sendWithAlias(mail, "issues");
     }
 }

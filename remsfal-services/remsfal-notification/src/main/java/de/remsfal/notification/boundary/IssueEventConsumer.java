@@ -3,6 +3,7 @@ package de.remsfal.notification.boundary;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.notification.control.MailingController;
 import io.smallrye.common.annotation.Blocking;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -33,81 +34,73 @@ public class IssueEventConsumer {
             event.getIssueEventType(),
             event.getIssueId());
 
-        try {
-            switch (event.getIssueEventType()) {
-                case ISSUE_CREATED:
-                    handleIssueCreated(event);
-                    break;
-                case ISSUE_UPDATED:
-                    handleIssueUpdated(event);
-                    break;
-                case ISSUE_ASSIGNED:
-                    handleIssueAssigned(event);
-                    break;
-                case ISSUE_MENTIONED:
-                    // Not active yet, ignore
-                    logger.debugv("ISSUE_MENTIONED event ignored (not implemented)");
-                    break;
-                default:
-                    // Surface unexpected types to ease schema evolution
-                    logger.warnv(
-                        "Unhandled issue event type: {0} (issueId={1})",
-                        event.getIssueEventType(),
-                        event.getIssueId());
-                    break;
-            }
-        } catch (Exception e) {
-            logger.errorv(e, "Failed to process issue event: {0}", event.getIssueId());
+        Uni<Void> processUni;
+        switch (event.getIssueEventType()) {
+            case ISSUE_CREATED:
+                processUni = handleIssueCreated(event);
+                break;
+            case ISSUE_UPDATED:
+                processUni = handleIssueUpdated(event);
+                break;
+            case ISSUE_ASSIGNED:
+                processUni = handleIssueAssigned(event);
+                break;
+            case ISSUE_MENTIONED:
+                logger.debugv("ISSUE_MENTIONED event ignored (not implemented)");
+                processUni = Uni.createFrom().voidItem();
+                break;
+            default:
+                logger.warnv("Unhandled issue event type: {0} (issueId={1})",
+                    event.getIssueEventType(), event.getIssueId());
+                processUni = Uni.createFrom().voidItem();
         }
 
-        return msg.ack();
+        return processUni
+            .onFailure().invoke(e -> logger.errorv(e, "Failed to process issue event: {0}", event.getIssueId()))
+            .onFailure().recoverWithNull()
+            .subscribeAsCompletionStage()
+            .thenCompose(ignored -> msg.ack());
     }
 
-    private void handleIssueCreated(IssueEventJson event) {
+    private Uni<Void> handleIssueCreated(IssueEventJson event) {
         logger.infov("Handling ISSUE_CREATED for issue: {0}", event.getTitle());
-
-        // Send to owner
+        Uni<Void> result = Uni.createFrom().voidItem();
         if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
-            mailingController.sendIssueCreatedEmail(event, event.getAssignee());
+            result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getAssignee()));
         }
-
-        // Send to creator (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
             && (event.getAssignee() == null
-                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
-            mailingController.sendIssueCreatedEmail(event, event.getUser());
+            || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getUser()));
         }
+        return result;
     }
 
-    private void handleIssueUpdated(IssueEventJson event) {
+    private Uni<Void> handleIssueUpdated(IssueEventJson event) {
         logger.infov("Handling ISSUE_UPDATED for issue: {0}", event.getTitle());
-
-        // Send to owner
+        Uni<Void> result = Uni.createFrom().voidItem();
         if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
-            mailingController.sendIssueUpdatedEmail(event, event.getAssignee());
+            result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getAssignee()));
         }
-
-        // Send to updater (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
             && (event.getAssignee() == null
-                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
-            mailingController.sendIssueUpdatedEmail(event, event.getUser());
+            || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getUser()));
         }
+        return result;
     }
 
-    private void handleIssueAssigned(IssueEventJson event) {
+    private Uni<Void> handleIssueAssigned(IssueEventJson event) {
         logger.infov("Handling ISSUE_ASSIGNED for issue: {0}", event.getTitle());
-
-        // Send to new owner
+        Uni<Void> result = Uni.createFrom().voidItem();
         if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
-            mailingController.sendIssueAssignedEmail(event, event.getAssignee());
+            result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getAssignee()));
         }
-
-        // Send to assigner (user)
         if (event.getUser() != null && event.getUser().getEmail() != null
             && (event.getAssignee() == null
-                || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
-            mailingController.sendIssueAssignedEmail(event, event.getUser());
+            || !event.getUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getUser()));
         }
+        return result;
     }
 }

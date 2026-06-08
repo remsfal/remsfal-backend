@@ -16,7 +16,7 @@ abstract class AbstractRepository<Entity extends MetaDataEntity>
     protected static final String PARAM_PROJECT_ID = "projectId";
     protected static final String PARAM_PROPERTY_ID = "propertyId";
     protected static final String PARAM_BUILDING_ID = "buildingId";
-
+    protected static final String PARAM_ORGANIZATION_ID = "organizationId";
 
     public Entity merge(final Entity entity) {
         return getEntityManager().merge(entity);

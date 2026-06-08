@@ -59,10 +59,10 @@ public class MailingResource {
             }
         };
 
-        controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.ENGLISH);
-        controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.GERMAN);
-        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.ENGLISH);
-        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.GERMAN);
+        controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
+        controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
+        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
+        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
         return Response.accepted().build();
     }
 
@@ -73,7 +73,7 @@ public class MailingResource {
         try {
             IssueEventJson event = createMockIssueEvent(IssueEventJson.IssueEventType.ISSUE_ASSIGNED);
             UserJson recipient = createMockRecipient(to);
-            controller.sendIssueAssignedEmail(event, recipient);
+            controller.sendIssueAssignedEmail(event, recipient).await().indefinitely();
             return Response.accepted().entity("Issue assigned email sent successfully").build();
         } catch (Exception e) {
             return Response.serverError().entity(ERROR_SEND_EMAIL).build();
@@ -87,7 +87,7 @@ public class MailingResource {
         try {
             IssueEventJson event = createMockIssueEvent(IssueEventJson.IssueEventType.ISSUE_CREATED);
             UserJson recipient = createMockRecipient(to);
-            controller.sendIssueCreatedEmail(event, recipient);
+            controller.sendIssueCreatedEmail(event, recipient).await().indefinitely();
             return Response.accepted().entity("Issue created email sent successfully").build();
         } catch (Exception e) {
             return Response.serverError().entity(ERROR_SEND_EMAIL).build();
@@ -101,7 +101,7 @@ public class MailingResource {
         try {
             IssueEventJson event = createMockIssueEvent(IssueEventJson.IssueEventType.ISSUE_UPDATED);
             UserJson recipient = createMockRecipient(to);
-            controller.sendIssueUpdatedEmail(event, recipient);
+            controller.sendIssueUpdatedEmail(event, recipient).await().indefinitely();
             return Response.accepted().entity("Issue updated email sent successfully").build();
         } catch (Exception e) {
             return Response.serverError().entity(ERROR_SEND_EMAIL).build();

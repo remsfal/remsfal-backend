@@ -29,7 +29,7 @@ public class ProjectOrganizationRepository extends AbstractRepository<ProjectOrg
                 .createNamedQuery("ProjectOrganizationEntity.findByProjectIdAndOrganizationId",
                     ProjectOrganizationEntity.class)
                 .setParameter(PARAM_PROJECT_ID, projectId)
-                .setParameter("organizationId", organizationId)
+                .setParameter(PARAM_ORGANIZATION_ID, organizationId)
                 .getSingleResult());
         } catch (NoResultException e) {
             return Optional.empty();
@@ -40,7 +40,7 @@ public class ProjectOrganizationRepository extends AbstractRepository<ProjectOrg
         return getEntityManager()
             .createNamedQuery("ProjectOrganizationEntity.removeByProjectIdAndOrganizationId")
             .setParameter(PARAM_PROJECT_ID, projectId)
-            .setParameter("organizationId", organizationId)
+            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
             .executeUpdate() > 0;
     }
 
@@ -51,7 +51,7 @@ public class ProjectOrganizationRepository extends AbstractRepository<ProjectOrg
     public List<ProjectOrganizationEntity> findByUserId(final UUID userId) {
         return getEntityManager()
             .createNamedQuery("ProjectOrganizationEntity.findByUserId", ProjectOrganizationEntity.class)
-            .setParameter("userId", userId)
+            .setParameter(PARAM_USER_ID, userId)
             .getResultList();
     }
 

@@ -24,7 +24,7 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      * @return list of tenants
      */
     public List<TenantEntity> findTenantsByProjectId(final UUID projectId) {
-        return find("projectId", projectId).list();
+        return find(PARAM_PROJECT_ID, projectId).list();
     }
 
     /**
@@ -36,7 +36,7 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      */
     public Optional<TenantEntity> findTenantByProjectId(final UUID projectId, final UUID tenantId) {
         return find("projectId = :projectId and id = :tenantId",
-            Map.of("projectId", projectId, "tenantId", tenantId))
+            Map.of(PARAM_PROJECT_ID, projectId, "tenantId", tenantId))
                 .singleResultOptional();
     }
 
@@ -52,7 +52,7 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
     public List<TenantEntity> findByNameInProject(final UUID projectId, final String firstName, final String lastName) {
         return find(
             "LOWER(firstName) = LOWER(:firstName) AND LOWER(lastName) = LOWER(:lastName) AND projectId = :projectId",
-            Map.of("firstName", firstName, "lastName", lastName, "projectId", projectId))
+            Map.of("firstName", firstName, "lastName", lastName, PARAM_PROJECT_ID, projectId))
                 .list();
     }
 
@@ -75,7 +75,7 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      */
     public List<TenantEntity> findByEmailAndProjectId(String email, UUID projectId) {
         return find("email = :email and projectId = :projectId",
-            Map.of("email", email, "projectId", projectId))
+            Map.of("email", email, PARAM_PROJECT_ID, projectId))
                 .list();
     }
 }

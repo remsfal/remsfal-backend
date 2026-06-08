@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -25,6 +26,12 @@ public class AdditionalEmailEntity extends AbstractEntity {
 
     @Column(name = "verified", nullable = false)
     private boolean verified;
+
+    @Column(name = "verification_token", unique = true)
+    private String verificationToken;
+
+    @Column(name = "verification_token_expires_at")
+    private LocalDateTime verificationTokenExpiresAt;
 
     public UserEntity getUser() {
         return user;
@@ -50,6 +57,22 @@ public class AdditionalEmailEntity extends AbstractEntity {
         this.verified = verified;
     }
 
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(final String verificationToken) {
+        this.verificationToken = verificationToken;
+    }
+
+    public LocalDateTime getVerificationTokenExpiresAt() {
+        return verificationTokenExpiresAt;
+    }
+
+    public void setVerificationTokenExpiresAt(final LocalDateTime verificationTokenExpiresAt) {
+        this.verificationTokenExpiresAt = verificationTokenExpiresAt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -59,7 +82,9 @@ public class AdditionalEmailEntity extends AbstractEntity {
             return super.equals(e)
                     && Objects.equals(user, e.user)
                     && Objects.equals(email, e.email)
-                    && Objects.equals(verified, e.verified);
+                    && Objects.equals(verified, e.verified)
+                    && Objects.equals(verificationToken, e.verificationToken)
+                    && Objects.equals(verificationTokenExpiresAt, e.verificationTokenExpiresAt);
         }
         return false;
     }
