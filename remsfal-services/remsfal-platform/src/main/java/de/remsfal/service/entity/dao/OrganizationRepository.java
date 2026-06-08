@@ -18,14 +18,14 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
                     "OrganizationEmployeeEntity.findByOrganizationId",
                     OrganizationEmployeeEntity.class
             )
-            .setParameter("organizationId", organizationId)
+            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
             .getResultList();
     }
 
     public List<OrganizationEmployeeEntity> findOrganizationEmployeesByUserId(UUID userId) {
         return getEntityManager()
             .createNamedQuery("OrganizationEmployeeEntity.findByUserId", OrganizationEmployeeEntity.class)
-            .setParameter("userId", userId)
+            .setParameter(PARAM_USER_ID, userId)
             .getResultList();
     }
 
@@ -37,8 +37,8 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
                         "OrganizationEmployeeEntity.findByOrganizationIdAndUserId",
                         OrganizationEmployeeEntity.class
                 )
-                .setParameter("organizationId", organizationId)
-                .setParameter("userId", userId)
+                .setParameter(PARAM_ORGANIZATION_ID, organizationId)
+                .setParameter(PARAM_USER_ID, userId)
                 .getSingleResult());
         } catch (NoResultException e) {
             return Optional.empty();
@@ -53,8 +53,8 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
     public void deleteOrganizationEmployeesByOrganizationIdAndUserId(UUID organizationId, UUID userId) {
         getEntityManager()
             .createNamedQuery("OrganizationEmployeeEntity.removeByOrganizationIdAndUserId")
-            .setParameter("organizationId", organizationId)
-            .setParameter("userId", userId)
+            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
+            .setParameter(PARAM_USER_ID, userId)
             .executeUpdate();
     }
 
@@ -65,7 +65,7 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
     public int countEmployeesWithWriteAccess(final UUID organizationId) {
         return getEntityManager()
                 .createNamedQuery("OrganizationEmployeeEntity.countEmployeesWithWriteAccess")
-                .setParameter("organizationId", organizationId)
+                .setParameter(PARAM_ORGANIZATION_ID, organizationId)
                 .getResultList().size();
     }
 
@@ -145,7 +145,7 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
             + "             JOIN OrganizationEmployeeEntity oe ON oe.organization.id = po.organization.id"
             + "             WHERE po.project.id = c.project.id AND oe.user.id = :userId)"
             + " )", Long.class)
-            .setParameter("userId", userId)
+            .setParameter(PARAM_USER_ID, userId)
             .getSingleResult();
     }
 

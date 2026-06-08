@@ -68,7 +68,7 @@ public class NotificationController {
 
     @WithSpan("NotificationController.informUserAboutAdditionalEmailVerification")
     public void informUserAboutAdditionalEmailVerification(final CustomerModel user, final String additionalEmail,
-            final String verificationToken) {
+        final String verificationToken) {
         logger.infov("Sending information about additional email verification (email={0})", additionalEmail);
         final String encodedToken = URLEncoder.encode(verificationToken, StandardCharsets.UTF_8);
         EmailEventJson mail = ImmutableEmailEventJson.builder()
