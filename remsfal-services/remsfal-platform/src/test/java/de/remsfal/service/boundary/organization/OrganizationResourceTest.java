@@ -50,7 +50,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     void createOrganization_SUCCESS_organizationIsCreated() {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
-                "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
+                "  \"email\": \"" + TestData.USER_EMAIL + "\",\n" +
                 "  \"vatIdentificationNumber\": \"" + TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\",\n" +
                 " \"address\": { " +
@@ -73,7 +73,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .and().body("id", Matchers.notNullValue())
             .and().body("name", Matchers.equalTo(TestData.ORGANIZATION_NAME))
             .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE))
-            .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
             .and().body("vatIdentificationNumber", Matchers.equalTo(TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER))
             .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE))
             .statusCode(Response.Status.CREATED.getStatusCode())
@@ -145,7 +145,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     void getOrganization_SUCCESS_sameOrganizationIsReturned() {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
-                "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
+                "  \"email\": \"" + TestData.USER_EMAIL + "\",\n" +
                 "  \"vatIdentificationNumber\": \"" + TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\"\n" +
                 "}";
@@ -178,7 +178,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
                 .and().body("id", Matchers.equalTo(organizationId))
                 .and().body("name", Matchers.equalTo(TestData.ORGANIZATION_NAME))
                 .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE))
-                .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
+                .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
                 .and().body("vatIdentificationNumber", Matchers.equalTo(TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER))
                 .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE));
     }
@@ -237,7 +237,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     void updateOrganization_SUCCESS_changedName() {
         final String json_updated = "{\"name\": \"" + "New Name" + "\",\n" +
                 "  \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\",\n" +
-                "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\",\n" +
+                "  \"email\": \"" + TestData.USER_EMAIL + "\",\n" +
                 "  \"vatIdentificationNumber\": \"" + TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER + "\",\n" +
                 "  \"trade\": \"" + TestData.ORGANIZATION_TRADE + "\",\n" +
                 " \"address\": { " +
@@ -260,7 +260,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
                 .and().body("id", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()))
                 .and().body("name", Matchers.equalTo("New Name"))
                 .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE))
-                .and().body("email", Matchers.equalTo(TestData.ORGANIZATION_EMAIL))
+                .and().body("email", Matchers.equalTo(TestData.USER_EMAIL))
                 .and().body("vatIdentificationNumber", Matchers.equalTo(TestData.ORGANIZATION_VAT_IDENTIFICATION_NUMBER))
                 .and().body("trade", Matchers.equalTo(TestData.ORGANIZATION_TRADE));
     }
@@ -390,5 +390,47 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .and().body("organizations.size()", Matchers.equalTo(1))
             .and().body("total", Matchers.equalTo(1))
             .and().body("organizations[0].id", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()));
+    }
+
+    @Test
+    void createOrganization_FAILED_emailNotOwnedByUser() {
+        final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
+                "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\"\n" +
+                "}";
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body(json)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void updateOrganization_FAILED_emailNotOwnedByUser() {
+        final String json = "{\"email\": \"" + TestData.ORGANIZATION_EMAIL + "\"}";
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(BASE_PATH + "/" + TestData.ORGANIZATION_ID)
+            .then()
+            .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void updateOrganization_SUCCESS_emailMatchesPrimaryEmail() {
+        final String json = "{\"email\": \"" + TestData.USER_EMAIL + "\"}";
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(BASE_PATH + "/" + TestData.ORGANIZATION_ID)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .and().body("email", Matchers.equalTo(TestData.USER_EMAIL));
     }
 }

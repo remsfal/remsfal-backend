@@ -15,6 +15,7 @@ import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
@@ -87,7 +88,13 @@ public class OrganizationController {
 
         organizationEntity.generateId();
         organizationEntity.setName(organization.getName());
-        organizationEntity.setEmail(organization.getEmail());
+        if (organization.getEmail() != null) {
+            if (!userController.isVerifiedEmailForUser(user.getId(), organization.getEmail())) {
+                throw new BadRequestException(
+                    "Organization email must be the owner's primary or a verified additional email.");
+            }
+            organizationEntity.setEmail(organization.getEmail());
+        }
         organizationEntity.setPhone(organization.getPhone());
         organizationEntity.setTrade(organization.getTrade());
         organizationEntity.setVatIdentificationNumber(organization.getVatIdentificationNumber());
@@ -175,6 +182,10 @@ public class OrganizationController {
         }
 
         if (organization.getEmail() != null) {
+            if (!userController.isVerifiedEmailForUser(user.getId(), organization.getEmail())) {
+                throw new BadRequestException(
+                    "Organization email must be the owner's primary or a verified additional email.");
+            }
             organizationEntity.setEmail(organization.getEmail());
         }
 

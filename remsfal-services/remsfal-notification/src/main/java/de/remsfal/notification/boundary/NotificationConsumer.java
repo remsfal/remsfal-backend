@@ -3,6 +3,7 @@ package de.remsfal.notification.boundary;
 import de.remsfal.core.json.eventing.EmailEventJson;
 import de.remsfal.notification.control.MailingController;
 import io.smallrye.common.annotation.Blocking;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -35,19 +36,25 @@ public class NotificationConsumer {
         logger.infov("Received user-notification for user email: {0}", email);
         logger.infov("Type: {0}", mail.getType());
 
+        Uni<Void> sendUni;
         switch (mail.getType()) {
             case PROJECT_ADMISSION:
-                mailingController.sendNewMembershipEmail(mail.getUser(), link, locale);
+                sendUni = mailingController.sendNewMembershipEmail(mail.getUser(), link, locale);
                 break;
             case USER_REGISTRATION:
-                mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
+                sendUni = mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
                 break;
             case ADDITIONAL_EMAIL_VERIFICATION:
-                mailingController.sendAdditionalEmailVerificationEmail(mail.getUser(), link, locale);
+                sendUni = mailingController.sendAdditionalEmailVerificationEmail(mail.getUser(), link, locale);
                 break;
+            default:
+                sendUni = Uni.createFrom().voidItem();
         }
-        logger.infov("Email has been sent");
-        return msg.ack();
+
+        return sendUni
+            .invoke(() -> logger.infov("Email has been sent to {0}", email))
+            .subscribeAsCompletionStage()
+            .thenCompose(ignored -> msg.ack());
     }
 
 }

@@ -71,7 +71,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
 
     @Override
     public OrganizationJson updateOrganization(final UUID organizationId, final OrganizationJson organization) {
-        checkWritePermissions(organizationId);
+        checkOwnerPermissions(organizationId);
         return OrganizationJson.valueOf(controller.updateOrganization(principal, organizationId, organization));
     }
 

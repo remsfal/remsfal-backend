@@ -145,6 +145,17 @@ public class UserController {
         return repository.remove(userId);
     }
 
+    public boolean isVerifiedEmailForUser(final UUID userId, final String email) {
+        final String normalized = email.trim().toLowerCase();
+        final UserEntity entity = repository.findByIdWithAdditionalEmails(userId)
+            .orElseThrow(() -> new NotFoundException("User not found"));
+        if (normalized.equalsIgnoreCase(entity.getEmail())) {
+            return true;
+        }
+        return entity.getAdditionalEmailEntities().stream()
+            .anyMatch(ae -> ae.getEmail().equalsIgnoreCase(normalized) && ae.isVerified());
+    }
+
     @Transactional
     public void verifyAdditionalEmail(final String verificationToken) {
         if (verificationToken == null || verificationToken.isBlank()) {
