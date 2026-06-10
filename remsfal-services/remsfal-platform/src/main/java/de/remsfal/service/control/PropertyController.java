@@ -217,28 +217,28 @@ public class PropertyController {
             unitsMap.put(property.getId(), PropertyJson.valueOf(property));
 
             // Load all sites for this property
-            siteRepository.findAllSites(projectId, property.getId()).forEach(site -> {
-                unitsMap.put(site.getId(), SiteJson.valueOf(site));
-            });
+            siteRepository.findAllSites(projectId, property.getId()).forEach(site ->
+                unitsMap.put(site.getId(), SiteJson.valueOf(site))
+            );
 
             // Load all buildings for this property
             buildingRepository.findAllBuildings(projectId, property.getId()).forEach(building -> {
                 unitsMap.put(building.getId(), BuildingJson.valueOf(building));
 
                 // Load all apartments for this building
-                apartmentRepository.findAllApartments(projectId, building.getId()).forEach(apartment -> {
-                    unitsMap.put(apartment.getId(), ApartmentJson.valueOf(apartment));
-                });
+                apartmentRepository.findAllApartments(projectId, building.getId()).forEach(apartment ->
+                    unitsMap.put(apartment.getId(), ApartmentJson.valueOf(apartment))
+                );
 
                 // Load all commercials for this building
-                commercialRepository.findAllCommercials(projectId, building.getId()).forEach(commercial -> {
-                    unitsMap.put(commercial.getId(), CommercialJson.valueOf(commercial));
-                });
+                commercialRepository.findAllCommercials(projectId, building.getId()).forEach(commercial ->
+                    unitsMap.put(commercial.getId(), CommercialJson.valueOf(commercial))
+                );
 
                 // Load all storages for this building
-                storageRepository.findAllStorages(projectId, building.getId()).forEach(storage -> {
-                    unitsMap.put(storage.getId(), StorageJson.valueOf(storage));
-                });
+                storageRepository.findAllStorages(projectId, building.getId()).forEach(storage ->
+                    unitsMap.put(storage.getId(), StorageJson.valueOf(storage))
+                );
             });
         });
 

@@ -138,7 +138,7 @@ public class EmployeeResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"role\":\"LESSOR\"}")
+            .body("{ \"email\":\"" + TestData.USER_EMAIL_2 + "\",  \"employeeRole\":\"STAFF\"}")
             .patch(EMPLOYEE_PATH, TestData.ORGANIZATION_ID.toString(), TestData.USER_ID_1.toString())
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode());

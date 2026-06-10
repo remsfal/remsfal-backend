@@ -130,11 +130,11 @@ public class RentalAgreementController {
 
     @Transactional
     public RentalAgreementEntity updateRentalAgreement(final UUID projectId, final UUID agreementId,
-            final RentalAgreementModel agreement) {
+        final RentalAgreementModel agreement) {
         logger.infov("Updating a rental agreement (projectId={0}, agreementId={1})", projectId, agreementId);
-        final RentalAgreementEntity entity =
-            rentalAgreementRepository.findRentalAgreementByProject(projectId, agreementId)
-                .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
+        final RentalAgreementEntity entity = rentalAgreementRepository
+            .findRentalAgreementByProject(projectId, agreementId)
+            .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
 
         if (agreement.getStartOfRental() != null) {
             entity.setStartOfRental(agreement.getStartOfRental());
@@ -510,8 +510,8 @@ public class RentalAgreementController {
      * @param rentInput the rent model
      * @param rentEntity the rent entity
      */
-    private <T extends RentEntity> void mapRentFields(
-            RentModel rentInput, T rentEntity, LocalDate agreementStartOfRental) {
+    private <T extends RentEntity> void mapRentFields(final RentModel rentInput,
+        T rentEntity, LocalDate agreementStartOfRental) {
         if (rentInput.getFirstPaymentDate() == null) {
             rentEntity.setFirstPaymentDate(agreementStartOfRental);
         } else {
