@@ -51,10 +51,7 @@ public abstract class AddressJson implements AddressModel {
     @JsonIgnore
     @Override
     public Locale getCountry() {
-        if (getCountryCode() == null) {
-            return null;
-        }
-        return new Locale("", getCountryCode());
+        return new Locale.Builder().setRegion(getCountryCode()).build();
     }
 
     @NotNull
