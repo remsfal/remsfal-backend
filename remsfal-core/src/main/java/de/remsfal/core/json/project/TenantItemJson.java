@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -90,7 +91,7 @@ public abstract class TenantItemJson {
             .map(RentModel::getUnitId)
             .distinct()
             .map(rentalUnitsMap::get)
-            .filter(unit -> unit != null)
+            .filter(Objects::nonNull)
             .toList();
 
         return ImmutableTenantItemJson.builder()
@@ -135,7 +136,7 @@ public abstract class TenantItemJson {
             model.getStorageRents(),
             model.getCommercialRents()
         )
-        .filter(list -> list != null)
+        .filter(Objects::nonNull)
         .flatMap(List::stream)
         .toList();
     }
