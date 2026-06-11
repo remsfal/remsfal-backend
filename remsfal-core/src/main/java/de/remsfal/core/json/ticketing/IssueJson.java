@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -46,6 +47,11 @@ public abstract class IssueJson implements IssueModel {
     @Nullable
     @Override
     public abstract UUID getProjectId();
+
+    @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract Instant getModifiedAt();
 
     @NullOrNotBlank
     @NotBlank(groups = {PostValidation.class, TenancyValidation.class})
@@ -150,6 +156,7 @@ public abstract class IssueJson implements IssueModel {
         return ImmutableIssueJson.builder()
             .id(model.getId())
             .projectId(model.getProjectId())
+            .modifiedAt(model.getModifiedAt())
             .title(model.getTitle())
             .type(model.getType())
             .category(model.getCategory())
@@ -184,6 +191,7 @@ public abstract class IssueJson implements IssueModel {
     public static IssueJson valueOfTenancyIssue(final IssueModel model) {
         return ImmutableIssueJson.builder()
             .id(model.getId())
+            .modifiedAt(model.getModifiedAt())
             .title(model.getTitle())
             .type(model.getType())
             .category(model.getCategory())

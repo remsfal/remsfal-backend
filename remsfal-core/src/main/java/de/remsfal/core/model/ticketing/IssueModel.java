@@ -1,5 +1,6 @@
 package de.remsfal.core.model.ticketing;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,6 +14,8 @@ public interface IssueModel {
     UUID getId();
 
     UUID getProjectId();
+
+    Instant getModifiedAt();
 
     String getTitle();
 

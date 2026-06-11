@@ -11,6 +11,7 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import jakarta.annotation.Nullable;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -29,6 +30,10 @@ public abstract class IssueItemJson {
 
     @Schema(description = "Unique identifier of the issue", readOnly = true)
     public abstract UUID getId();
+
+    @Schema(description = "Last modification timestamp of the issue", readOnly = true)
+    @Nullable
+    public abstract Instant getModifiedAt();
 
     @Schema(description = "Title of the issue", readOnly = true)
     public abstract String getName();
@@ -55,6 +60,7 @@ public abstract class IssueItemJson {
     public static IssueItemJson valueOfProjectIssue(final IssueModel model) {
         return ImmutableIssueItemJson.builder()
             .id(model.getId())
+            .modifiedAt(model.getModifiedAt())
             .name(model.getTitle())
             .title(model.getTitle())
             .type(model.getType())
@@ -67,6 +73,7 @@ public abstract class IssueItemJson {
     public static IssueItemJson valueOfTenancyIssue(final IssueModel model) {
         return ImmutableIssueItemJson.builder()
             .id(model.getId())
+            .modifiedAt(model.getModifiedAt())
             .name(model.getTitle())
             .title(model.getTitle())
             .type(model.getType())
