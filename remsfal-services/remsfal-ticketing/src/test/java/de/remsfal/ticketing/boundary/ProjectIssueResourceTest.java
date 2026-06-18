@@ -12,11 +12,15 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.ticketing.AbstractTicketingTest;
@@ -182,6 +186,90 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body(json)
             .post(BASE_PATH)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void createRequestsForQuotation_SUCCESS_createsSeparateRowsPerContractor() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId1 = UUID.randomUUID();
+        UUID contractorId2 = UUID.randomUUID();
+        String requestJson = "{ \"contractorIds\":[\"" + contractorId1 + "\",\"" + contractorId2 + "\"],"
+            + "\"freeText\":\"Please submit your quotation.\" }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT project_id, issue_id, trigger_id, contractor_id, free_text, status "
+                + "FROM remsfal.requests_for_quotation WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .all();
+
+        Set<UUID> contractorIds = rows.stream()
+            .map(row -> row.getUuid("contractor_id"))
+            .collect(Collectors.toSet());
+
+        org.junit.jupiter.api.Assertions.assertEquals(2, rows.size());
+        org.junit.jupiter.api.Assertions.assertEquals(Set.of(contractorId1, contractorId2), contractorIds);
+        org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
+            row -> TicketingTestData.PROJECT_ID.equals(row.getUuid("project_id"))));
+        org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
+            row -> UUID.fromString(issueId).equals(row.getUuid("issue_id"))));
+        org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
+            row -> TicketingTestData.USER_ID.equals(row.getUuid("trigger_id"))));
+        org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
+            row -> "Please submit your quotation.".equals(row.getString("free_text"))));
+        org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
+            row -> "VALID".equals(row.getString("status"))));
+    }
+
+    @Test
+    void createRequestsForQuotation_FAILED_noPermission() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        String requestJson = "{ \"contractorIds\":[\"" + contractorId + "\"] }";
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
+                "Unauthorized", Map.of(), Map.of(), Map.of()))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(403);
     }

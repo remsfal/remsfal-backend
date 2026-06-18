@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.1-requests-for-quotation" author="copilot">
+        <comment>Create requests for quotation table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.requests_for_quotation (
+                issue_id UUID,
+                request_id UUID,
+                project_id UUID,
+                trigger_id UUID,
+                contractor_id UUID,
+                free_text TEXT,
+                status TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY (issue_id, request_id)
+            ) WITH CLUSTERING ORDER BY (request_id DESC);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS requests_for_quotation_request_id_idx
+            ON REMSFAL.requests_for_quotation (request_id);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.requests_for_quotation;</sql>
+            <sql>DROP INDEX IF EXISTS requests_for_quotation_request_id_idx;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -17,9 +17,12 @@ import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dao.RequestForQuotationRepository;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.dto.RequestForQuotationEntity;
+import de.remsfal.ticketing.entity.dto.RequestForQuotationEntity.RequestStatus;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -41,6 +44,9 @@ public class IssueController {
 
     @Inject
     IssueAttachmentRepository attachmentRepository;
+
+    @Inject
+    RequestForQuotationRepository requestForQuotationRepository;
 
     @Inject
     FileStorageController fileStorageController;
@@ -380,6 +386,22 @@ public class IssueController {
     public InputStream downloadAttachment(String objectName) {
         logger.infov("Downloading attachment from storage (objectName={0})", objectName);
         return fileStorageController.downloadFile(objectName);
+    }
+
+    public void createRequestsForQuotation(final UserModel user, final UUID issueId,
+        final List<UUID> contractorIds, final String freeText) {
+        IssueEntity issue = getIssue(issueId);
+        contractorIds.stream().distinct().forEach(contractorId -> {
+            RequestForQuotationEntity request = new RequestForQuotationEntity();
+            request.generateId();
+            request.setIssueId(issueId);
+            request.setProjectId(issue.getProjectId());
+            request.setTriggerId(user.getId());
+            request.setContractorId(contractorId);
+            request.setFreeText(freeText);
+            request.setStatus(RequestStatus.VALID);
+            requestForQuotationRepository.insert(request);
+        });
     }
 
     public void deleteAttachment(UUID issueId, UUID attachmentId) {

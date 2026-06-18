@@ -29,6 +29,7 @@ import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
+import de.remsfal.core.json.ticketing.RequestForQuotationJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -299,6 +300,14 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             .type(MediaType.APPLICATION_JSON)
             .entity(attachments)
             .build();
+    }
+
+    @Override
+    public Response createRequestsForQuotation(final UUID issueId, final RequestForQuotationJson request) {
+        checkIssueWritePermissions(issueId);
+        issueController.createRequestsForQuotation(principal, issueId,
+            request.getContractorIds(), request.getFreeText());
+        return Response.status(Response.Status.CREATED).build();
     }
 
     private List<IssueAttachmentJson> uploadAttachments(final UUID issueId, final List<InputPart> fileParts) {

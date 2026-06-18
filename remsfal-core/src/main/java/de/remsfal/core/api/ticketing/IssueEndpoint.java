@@ -30,6 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
+import de.remsfal.core.json.ticketing.RequestForQuotationJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.PatchValidation;
@@ -227,6 +228,18 @@ public interface IssueEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "Multipart form data containing one or more image files", required = true)
         MultipartFormDataInput input);
+
+    @POST
+    @Path("/{issueId}/quotation-request")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Create requests for quotation.")
+    @APIResponse(responseCode = "201", description = "Requests for quotation created successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    Response createRequestsForQuotation(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Request information", required = true)
+        @Valid @NotNull RequestForQuotationJson request);
 
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
