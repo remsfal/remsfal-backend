@@ -30,6 +30,8 @@ import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
+import de.remsfal.core.json.ticketing.QuotationRequestJson;
+import de.remsfal.core.json.ticketing.QuotationRequestListJson;
 import de.remsfal.core.json.ticketing.RequestForQuotationJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
@@ -240,6 +242,49 @@ public interface IssueEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "Request information", required = true)
         @Valid @NotNull RequestForQuotationJson request);
+
+    @GET
+    @Path("/{issueId}/quotation-request")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Retrieve all quotation requests for an issue.")
+    @APIResponse(responseCode = "200", description = "Quotation requests returned successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to access this issue")
+    @APIResponse(responseCode = "404", description = "The issue does not exist")
+    QuotationRequestListJson getRequestsForQuotation(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId);
+
+    @GET
+    @Path("/{issueId}/quotation-request/{requestId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Retrieve a single quotation request.")
+    @APIResponse(responseCode = "200", description = "Quotation request returned successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to access this issue")
+    @APIResponse(responseCode = "404", description = "The issue or quotation request does not exist")
+    QuotationRequestJson getRequestForQuotation(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the quotation request", required = true)
+        @PathParam("requestId") @NotNull UUID requestId);
+
+    @PATCH
+    @Path("/{issueId}/quotation-request/{requestId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Update a quotation request.")
+    @APIResponse(responseCode = "200", description = "Quotation request updated successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to update this request")
+    @APIResponse(responseCode = "404", description = "The issue or quotation request does not exist")
+    QuotationRequestJson updateRequestForQuotation(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the quotation request", required = true)
+        @PathParam("requestId") @NotNull UUID requestId,
+        @Parameter(description = "Updated fields (status, freeText)", required = true)
+        @NotNull QuotationRequestJson body);
 
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();

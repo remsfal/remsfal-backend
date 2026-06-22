@@ -29,6 +29,8 @@ import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
+import de.remsfal.core.json.ticketing.QuotationRequestJson;
+import de.remsfal.core.json.ticketing.QuotationRequestListJson;
 import de.remsfal.core.json.ticketing.RequestForQuotationJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
@@ -306,8 +308,28 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     public Response createRequestsForQuotation(final UUID issueId, final RequestForQuotationJson request) {
         checkIssueWritePermissions(issueId);
         issueController.createRequestsForQuotation(principal, issueId,
-            request.getContractorIds(), request.getFreeText());
+            request.getContractors(), request.getFreeText());
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @Override
+    public QuotationRequestListJson getRequestsForQuotation(final UUID issueId) {
+        checkIssueWritePermissions(issueId);
+        return QuotationRequestListJson.valueOf(issueController.getRequestsForQuotation(issueId));
+    }
+
+    @Override
+    public QuotationRequestJson getRequestForQuotation(final UUID issueId, final UUID requestId) {
+        checkIssueWritePermissions(issueId);
+        return QuotationRequestJson.valueOf(issueController.getRequestForQuotation(issueId, requestId));
+    }
+
+    @Override
+    public QuotationRequestJson updateRequestForQuotation(final UUID issueId, final UUID requestId,
+        final QuotationRequestJson body) {
+        checkIssueWritePermissions(issueId);
+        return QuotationRequestJson.valueOf(
+            issueController.updateRequestForQuotation(issueId, requestId, body));
     }
 
     private List<IssueAttachmentJson> uploadAttachments(final UUID issueId, final List<InputPart> fileParts) {

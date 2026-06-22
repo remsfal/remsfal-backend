@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.1-requests-for-quotation-organization-id" author="copilot">
+        <comment>Add organization_id column and index to requests_for_quotation table</comment>
+        <sql>
+            ALTER TABLE REMSFAL.requests_for_quotation ADD organization_id UUID;
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS requests_for_quotation_organization_id_idx
+            ON REMSFAL.requests_for_quotation (organization_id);
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS REMSFAL.requests_for_quotation_organization_id_idx;</sql>
+            <sql>ALTER TABLE REMSFAL.requests_for_quotation DROP organization_id;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

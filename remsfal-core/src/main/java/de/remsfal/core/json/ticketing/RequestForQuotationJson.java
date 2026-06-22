@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.ContractorJson;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -13,7 +14,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import java.util.List;
-import java.util.UUID;
 
 @Immutable
 @ImmutableStyle
@@ -23,7 +23,7 @@ import java.util.UUID;
 public abstract class RequestForQuotationJson {
 
     @NotEmpty
-    public abstract List<@NotNull UUID> getContractorIds();
+    public abstract List<@NotNull ContractorJson> getContractors();
 
     @Nullable
     @Size(max = 5000)

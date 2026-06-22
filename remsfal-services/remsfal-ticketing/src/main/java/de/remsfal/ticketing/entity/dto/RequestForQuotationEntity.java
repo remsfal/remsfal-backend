@@ -1,6 +1,7 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.model.ticketing.QuotationRequestModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Entity("requests_for_quotation")
-public class RequestForQuotationEntity extends AbstractEntity {
+public class RequestForQuotationEntity extends AbstractEntity implements QuotationRequestModel {
 
     public enum RequestStatus {
         VALID,
@@ -28,11 +29,19 @@ public class RequestForQuotationEntity extends AbstractEntity {
     @Column("contractor_id")
     private UUID contractorId;
 
+    @Column("organization_id")
+    private UUID organizationId;
+
     @Column("free_text")
     private String freeText;
 
     @Column("status")
     private String status;
+
+    @Override
+    public UUID getId() {
+        return getRequestId();
+    }
 
     public RequestForQuotationKey getKey() {
         return key;
@@ -94,6 +103,15 @@ public class RequestForQuotationEntity extends AbstractEntity {
         this.contractorId = contractorId;
     }
 
+    @Override
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(UUID organizationId) {
+        this.organizationId = organizationId;
+    }
+
     public String getFreeText() {
         return freeText;
     }
@@ -102,7 +120,12 @@ public class RequestForQuotationEntity extends AbstractEntity {
         this.freeText = freeText;
     }
 
-    public RequestStatus getStatus() {
+    @Override
+    public String getStatus() {
+        return status;
+    }
+
+    public RequestStatus getRequestStatus() {
         return status != null ? RequestStatus.valueOf(status) : null;
     }
 

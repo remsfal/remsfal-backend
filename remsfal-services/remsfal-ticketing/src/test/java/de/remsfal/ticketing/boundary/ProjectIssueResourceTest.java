@@ -208,8 +208,10 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
 
         UUID contractorId1 = UUID.randomUUID();
         UUID contractorId2 = UUID.randomUUID();
-        String requestJson = "{ \"contractorIds\":[\"" + contractorId1 + "\",\"" + contractorId2 + "\"],"
-            + "\"freeText\":\"Please submit your quotation.\" }";
+        String requestJson = "{ \"contractors\":["
+            + "{\"id\":\"" + contractorId1 + "\",\"companyName\":\"Contractor A\"},"
+            + "{\"id\":\"" + contractorId2 + "\",\"companyName\":\"Contractor B\"}"
+            + "],\"freeText\":\"Please submit your quotation.\" }";
 
         given()
             .when()
@@ -261,7 +263,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .extract().path("id");
 
         UUID contractorId = UUID.randomUUID();
-        String requestJson = "{ \"contractorIds\":[\"" + contractorId + "\"] }";
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId + "\",\"companyName\":\"Test Contractor\"}] }";
 
         given()
             .when()
@@ -272,6 +274,170 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(403);
+    }
+
+    // --- Get Quotation Requests ---
+
+    @Test
+    void getRequestsForQuotation_SUCCESS_returnsListForManager() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"companyName\":\"Test GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
+            + "\"freeText\":\"Bitte Angebot einreichen.\" }";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1))
+            .body("items[0].contractorId", equalTo(contractorId.toString()))
+            .body("items[0].freeText", equalTo("Bitte Angebot einreichen."))
+            .body("items[0].status", equalTo("VALID"));
+    }
+
+    @Test
+    void getRequestsForQuotation_FAILED_noPermission() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
+                "Unauthorized", Map.of(), Map.of(), Map.of()))
+            .get(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void getRequestForQuotation_SUCCESS_returnsSingleRequest() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"companyName\":\"Test GmbH\"}],\"freeText\":\"Anfrage.\" }";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
+            .then()
+            .statusCode(200)
+            .body("id", equalTo(requestId))
+            .body("contractorId", equalTo(contractorId.toString()))
+            .body("status", equalTo("VALID"));
+    }
+
+    @Test
+    void updateRequestForQuotation_SUCCESS_updatesStatus() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"companyName\":\"Test GmbH\"}],\"freeText\":\"Original.\" }";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"INVALID\", \"freeText\":\"Aktualisiert.\" }")
+            .patch(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
+            .then()
+            .statusCode(200)
+            .body("status", equalTo("INVALID"))
+            .body("freeText", equalTo("Aktualisiert."));
     }
 
     // --- Get Issue ---

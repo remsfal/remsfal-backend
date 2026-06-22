@@ -9,6 +9,8 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.model.FileUploadData;
+import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
@@ -23,11 +25,13 @@ import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.RequestForQuotationEntity;
 import de.remsfal.ticketing.entity.dto.RequestForQuotationEntity.RequestStatus;
+import de.remsfal.ticketing.entity.dto.RequestForQuotationKey;
 
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @RequestScoped
@@ -389,19 +393,54 @@ public class IssueController {
     }
 
     public void createRequestsForQuotation(final UserModel user, final UUID issueId,
-        final List<UUID> contractorIds, final String freeText) {
+        final List<ContractorJson> contractors, final String freeText) {
         IssueEntity issue = getIssue(issueId);
-        contractorIds.stream().distinct().forEach(contractorId -> {
+        contractors.stream().distinct().forEach(contractor -> {
             RequestForQuotationEntity request = new RequestForQuotationEntity();
             request.generateId();
             request.setIssueId(issueId);
             request.setProjectId(issue.getProjectId());
             request.setTriggerId(user.getId());
-            request.setContractorId(contractorId);
+            request.setContractorId(contractor.getId());
+            request.setOrganizationId(contractor.getOrganizationId());
             request.setFreeText(freeText);
             request.setStatus(RequestStatus.VALID);
             requestForQuotationRepository.insert(request);
         });
+    }
+
+    public List<RequestForQuotationEntity> getRequestsForQuotation(final UUID issueId) {
+        logger.infov("Retrieving quotation requests for issue (issueId={0})", issueId);
+        return requestForQuotationRepository.findByIssueId(issueId);
+    }
+
+    public RequestForQuotationEntity getRequestForQuotation(final UUID issueId, final UUID requestId) {
+        logger.infov("Retrieving quotation request (issueId={0}, requestId={1})", issueId, requestId);
+        RequestForQuotationKey key = new RequestForQuotationKey();
+        key.setIssueId(issueId);
+        key.setRequestId(requestId);
+        return requestForQuotationRepository.findById(key)
+            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+    }
+
+    public RequestForQuotationEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
+        final QuotationRequestJson body) {
+        RequestForQuotationEntity entity = getRequestForQuotation(issueId, requestId);
+        if (body.getFreeText() != null) {
+            entity.setFreeText(body.getFreeText());
+        }
+        if (body.getStatus() != null) {
+            entity.setStatus(body.getStatus());
+        }
+        return requestForQuotationRepository.update(entity);
+    }
+
+    public List<RequestForQuotationEntity> getRequestsForQuotationByOrganizationIds(
+        final Set<UUID> organizationIds) {
+        logger.infov("Retrieving quotation requests for organizations (count={0})", organizationIds.size());
+        return organizationIds.stream()
+            .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
+            .toList();
     }
 
     public void deleteAttachment(UUID issueId, UUID attachmentId) {
