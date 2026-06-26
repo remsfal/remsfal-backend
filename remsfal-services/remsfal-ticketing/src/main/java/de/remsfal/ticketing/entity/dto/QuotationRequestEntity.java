@@ -2,6 +2,7 @@ package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
+import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
@@ -11,11 +12,6 @@ import java.util.UUID;
 
 @Entity("quotation_requests")
 public class QuotationRequestEntity extends AbstractEntity implements QuotationRequestModel {
-
-    public enum RequestStatus {
-        VALID,
-        INVALID
-    }
 
     @Id
     private QuotationRequestKey key;
@@ -121,11 +117,7 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     }
 
     @Override
-    public String getStatus() {
-        return status;
-    }
-
-    public RequestStatus getRequestStatus() {
+    public RequestStatus getStatus() {
         return status != null ? RequestStatus.valueOf(status) : null;
     }
 

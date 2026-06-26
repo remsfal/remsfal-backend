@@ -24,7 +24,7 @@ import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
-import de.remsfal.ticketing.entity.dto.QuotationRequestEntity.RequestStatus;
+import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 
 import java.io.InputStream;
@@ -404,7 +404,7 @@ public class IssueController {
             request.setContractorId(contractor.getId());
             request.setOrganizationId(contractor.getOrganizationId());
             request.setScopeOfWork(scopeOfWork);
-            request.setStatus(RequestStatus.VALID);
+            request.setStatus(RequestStatus.REQUESTED);
             requestForQuotationRepository.insert(request);
         });
     }
@@ -430,8 +430,35 @@ public class IssueController {
             entity.setScopeOfWork(body.getScopeOfWork());
         }
         if (body.getStatus() != null) {
+            if (body.getStatus() != RequestStatus.WITHDRAWN) {
+                throw new BadRequestException("Manager can only set status to WITHDRAWN");
+            }
             entity.setStatus(body.getStatus());
         }
+        return requestForQuotationRepository.update(entity);
+    }
+
+    public QuotationRequestEntity updateRequestForQuotationByContractor(
+        final Set<UUID> organizationIds, final UUID requestId, final QuotationRequestJson body) {
+        if (body.getStatus() == null) {
+            throw new BadRequestException("Status must be provided");
+        }
+        final Set<RequestStatus> allowedStatuses = Set.of(
+            RequestStatus.VIEWING_REQUIRED,
+            RequestStatus.CONSULTATION_REQUIRED,
+            RequestStatus.REJECTED,
+            RequestStatus.SUBMITTED
+        );
+        if (!allowedStatuses.contains(body.getStatus())) {
+            throw new BadRequestException("Contractor can only set status to VIEWING_REQUIRED,"
+                + " CONSULTATION_REQUIRED, REJECTED, or SUBMITTED");
+        }
+        final QuotationRequestEntity entity = organizationIds.stream()
+            .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
+            .filter(r -> requestId.equals(r.getRequestId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+        entity.setStatus(body.getStatus());
         return requestForQuotationRepository.update(entity);
     }
 

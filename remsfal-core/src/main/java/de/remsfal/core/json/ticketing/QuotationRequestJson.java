@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
+import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Size;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -54,8 +55,8 @@ public abstract class QuotationRequestJson {
     public abstract String getScopeOfWork();
 
     @Nullable
-    @Schema(description = "Status of the request (VALID or INVALID)")
-    public abstract String getStatus();
+    @Schema(description = "Status of the request: REQUESTED, WITHDRAWN, VIEWING_REQUIRED, CONSULTATION_REQUIRED, REJECTED, SUBMITTED")
+    public abstract RequestStatus getStatus();
 
     @Nullable
     @Schema(readOnly = true)

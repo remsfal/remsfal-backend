@@ -100,7 +100,106 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .body("items", hasSize(1))
             .body("items[0].contractorId", equalTo(contractorId.toString()))
             .body("items[0].organizationId", equalTo(organizationId.toString()))
-            .body("items[0].status", equalTo("VALID"));
+            .body("items[0].status", equalTo("REQUESTED"));
+    }
+
+    @Test
+    void updateQuotationRequest_SUCCESS_contractorSetsSubmitted() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"contractors\":[{\"id\":\"" + contractorId
+                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .get(QUOTATION_PATH)
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"SUBMITTED\" }")
+            .patch(QUOTATION_PATH + "/" + requestId)
+            .then()
+            .statusCode(200)
+            .body("status", equalTo("SUBMITTED"));
+    }
+
+    @Test
+    void updateQuotationRequest_FAILED_invalidContractorStatus() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"contractors\":[{\"id\":\"" + contractorId
+                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .get(QUOTATION_PATH)
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"WITHDRAWN\" }")
+            .patch(QUOTATION_PATH + "/" + requestId)
+            .then()
+            .statusCode(400);
     }
 
     @Test

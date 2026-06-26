@@ -243,7 +243,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
             row -> "Please submit your quotation.".equals(row.getString("scope_of_work"))));
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
-            row -> "VALID".equals(row.getString("status"))));
+            row -> "REQUESTED".equals(row.getString("status"))));
     }
 
     @Test
@@ -317,7 +317,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .body("items", hasSize(1))
             .body("items[0].contractorId", equalTo(contractorId.toString()))
             .body("items[0].scopeOfWork", equalTo("Bitte Angebot einreichen."))
-            .body("items[0].status", equalTo("VALID"));
+            .body("items[0].status", equalTo("REQUESTED"));
     }
 
     @Test
@@ -389,7 +389,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("id", equalTo(requestId))
             .body("contractorId", equalTo(contractorId.toString()))
-            .body("status", equalTo("VALID"));
+            .body("status", equalTo("REQUESTED"));
     }
 
     @Test
@@ -432,12 +432,56 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
-            .body("{ \"status\":\"INVALID\", \"scopeOfWork\":\"Aktualisiert.\" }")
+            .body("{ \"status\":\"WITHDRAWN\", \"scopeOfWork\":\"Aktualisiert.\" }")
             .patch(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
             .then()
             .statusCode(200)
-            .body("status", equalTo("INVALID"))
+            .body("status", equalTo("WITHDRAWN"))
             .body("scopeOfWork", equalTo("Aktualisiert."));
+    }
+
+    @Test
+    void updateRequestForQuotation_FAILED_managerSetsInvalidStatus() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"contractors\":[{\"id\":\"" + contractorId + "\",\"companyName\":\"Test GmbH\"}] }")
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"SUBMITTED\" }")
+            .patch(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
+            .then()
+            .statusCode(400);
     }
 
     // --- Get Issue ---

@@ -10,6 +10,15 @@ import java.util.UUID;
  */
 public interface QuotationRequestModel {
 
+    enum RequestStatus {
+        REQUESTED,
+        WITHDRAWN,
+        VIEWING_REQUIRED,
+        CONSULTATION_REQUIRED,
+        REJECTED,
+        SUBMITTED
+    }
+
     UUID getId();
 
     UUID getIssueId();
@@ -26,7 +35,7 @@ public interface QuotationRequestModel {
     @Nullable
     String getScopeOfWork();
 
-    String getStatus();
+    RequestStatus getStatus();
 
     Instant getCreatedAt();
 
