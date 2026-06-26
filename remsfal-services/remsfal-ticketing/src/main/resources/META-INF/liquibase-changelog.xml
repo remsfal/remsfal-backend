@@ -21,5 +21,6 @@
     <include file="META-INF/changesets/008-create-chat-sessions-table.xml"/>
     <include file="META-INF/changesets/009-create-chat-messages-table.xml"/>
     <include file="META-INF/changesets/010-create-inbox-messages-table.xml"/>
+    <include file="META-INF/changesets/011-create-quotations-table.xml"/>
 
 </databaseChangeLog>
