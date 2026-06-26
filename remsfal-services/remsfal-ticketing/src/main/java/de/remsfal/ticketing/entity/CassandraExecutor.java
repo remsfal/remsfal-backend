@@ -28,6 +28,8 @@ import java.util.Properties;
 public class CassandraExecutor {
 
     private static final Logger LOGGER = Logger.getLogger(CassandraExecutor.class);
+    private static final int MAX_MIGRATION_ATTEMPTS = 3;
+    private static final long MIGRATION_RETRY_DELAY_MS = 2_000L;
 
     @ConfigProperty(name = "quarkus.liquibase.migrate-at-start", defaultValue = "false")
     Boolean migrateAtStart;
@@ -94,14 +96,54 @@ public class CassandraExecutor {
     private void processChangelogs(CqlSession session) throws SQLException, LiquibaseException {
         LOGGER.infov("Processing Cassandra changelogs XML at {0}", liquibaseChangelog);
 
-        final String url = buildConnectionURL();
-        try (Connection c = DriverManager.getConnection(url, getLiquibaseProperties())) {
-            @SuppressWarnings("resource")
-            Liquibase lb = new Liquibase(
-                liquibaseChangelog,
-                new ClassLoaderResourceAccessor(),
-                new JdbcConnection(c));
-            lb.update((String) null);
+        LiquibaseException lastLiquibaseException = null;
+        for (int attempt = 1; attempt <= MAX_MIGRATION_ATTEMPTS; attempt++) {
+            try {
+                final String url = buildConnectionURL();
+                try (Connection c = DriverManager.getConnection(url, getLiquibaseProperties())) {
+                    @SuppressWarnings("resource")
+                    Liquibase lb = new Liquibase(
+                        liquibaseChangelog,
+                        new ClassLoaderResourceAccessor(),
+                        new JdbcConnection(c));
+                    lb.update((String) null);
+                    return;
+                }
+            } catch (LiquibaseException e) {
+                lastLiquibaseException = e;
+                if (attempt == MAX_MIGRATION_ATTEMPTS || !isTransientTimeout(e)) {
+                    throw e;
+                }
+                LOGGER.warnv("Transient Cassandra timeout during migrations (attempt {0}/{1}), retrying...",
+                    attempt, MAX_MIGRATION_ATTEMPTS);
+                sleepBeforeRetry();
+            }
+        }
+
+        if (lastLiquibaseException != null) {
+            throw lastLiquibaseException;
+        }
+    }
+
+    private boolean isTransientTimeout(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            String message = current.getMessage();
+            if ("DriverTimeoutException".equals(current.getClass().getSimpleName())
+                || (message != null && message.contains("Query timed out after PT2S"))) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private void sleepBeforeRetry() {
+        try {
+            Thread.sleep(MIGRATION_RETRY_DELAY_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while retrying Cassandra migration", e);
         }
     }
 
