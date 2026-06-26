@@ -17,7 +17,7 @@
                 trigger_id UUID,
                 contractor_id UUID,
                 organization_id UUID,
-                free_text TEXT,
+                scope_of_work TEXT,
                 status TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,

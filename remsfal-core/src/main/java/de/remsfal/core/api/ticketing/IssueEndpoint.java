@@ -283,7 +283,7 @@ public interface IssueEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the quotation request", required = true)
         @PathParam("requestId") @NotNull UUID requestId,
-        @Parameter(description = "Updated fields (status, freeText)", required = true)
+        @Parameter(description = "Updated fields (status, scopeOfWork)", required = true)
         @NotNull QuotationRequestJson body);
 
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)

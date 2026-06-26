@@ -32,8 +32,8 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     @Column("organization_id")
     private UUID organizationId;
 
-    @Column("free_text")
-    private String freeText;
+    @Column("scope_of_work")
+    private String scopeOfWork;
 
     @Column("status")
     private String status;
@@ -112,12 +112,12 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
         this.organizationId = organizationId;
     }
 
-    public String getFreeText() {
-        return freeText;
+    public String getScopeOfWork() {
+        return scopeOfWork;
     }
 
-    public void setFreeText(String freeText) {
-        this.freeText = freeText;
+    public void setScopeOfWork(String scopeOfWork) {
+        this.scopeOfWork = scopeOfWork;
     }
 
     @Override

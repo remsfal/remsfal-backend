@@ -79,7 +79,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
         // Create quotation request linked to the organization
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
             + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}],"
-            + "\"freeText\":\"Bitte Angebot einreichen.\" }";
+            + "\"scopeOfWork\":\"Bitte Angebot einreichen.\" }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))

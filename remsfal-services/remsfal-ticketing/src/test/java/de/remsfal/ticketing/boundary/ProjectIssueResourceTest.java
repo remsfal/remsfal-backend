@@ -211,7 +211,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         String requestJson = "{ \"contractors\":["
             + "{\"id\":\"" + contractorId1 + "\",\"companyName\":\"Contractor A\"},"
             + "{\"id\":\"" + contractorId2 + "\",\"companyName\":\"Contractor B\"}"
-            + "],\"freeText\":\"Please submit your quotation.\" }";
+            + "],\"scopeOfWork\":\"Please submit your quotation.\" }";
 
         given()
             .when()
@@ -223,7 +223,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .statusCode(201);
 
         List<Row> rows = cqlSession.execute(
-            "SELECT project_id, issue_id, trigger_id, contractor_id, free_text, status "
+            "SELECT project_id, issue_id, trigger_id, contractor_id, scope_of_work, status "
                 + "FROM remsfal.quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
@@ -241,7 +241,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
             row -> TicketingTestData.USER_ID.equals(row.getUuid("trigger_id"))));
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
-            row -> "Please submit your quotation.".equals(row.getString("free_text"))));
+            row -> "Please submit your quotation.".equals(row.getString("scope_of_work"))));
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
             row -> "VALID".equals(row.getString("status"))));
     }
@@ -298,7 +298,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         UUID organizationId = TicketingTestData.ORGANIZATION_ID;
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
             + "\",\"companyName\":\"Test GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
-            + "\"freeText\":\"Bitte Angebot einreichen.\" }";
+            + "\"scopeOfWork\":\"Bitte Angebot einreichen.\" }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -316,7 +316,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("items", hasSize(1))
             .body("items[0].contractorId", equalTo(contractorId.toString()))
-            .body("items[0].freeText", equalTo("Bitte Angebot einreichen."))
+            .body("items[0].scopeOfWork", equalTo("Bitte Angebot einreichen."))
             .body("items[0].status", equalTo("VALID"));
     }
 
@@ -363,7 +363,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
 
         UUID contractorId = UUID.randomUUID();
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Test GmbH\"}],\"freeText\":\"Anfrage.\" }";
+            + "\",\"companyName\":\"Test GmbH\"}],\"scopeOfWork\":\"Anfrage.\" }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -410,7 +410,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
 
         UUID contractorId = UUID.randomUUID();
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Test GmbH\"}],\"freeText\":\"Original.\" }";
+            + "\",\"companyName\":\"Test GmbH\"}],\"scopeOfWork\":\"Original.\" }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -432,12 +432,12 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
-            .body("{ \"status\":\"INVALID\", \"freeText\":\"Aktualisiert.\" }")
+            .body("{ \"status\":\"INVALID\", \"scopeOfWork\":\"Aktualisiert.\" }")
             .patch(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
             .then()
             .statusCode(200)
             .body("status", equalTo("INVALID"))
-            .body("freeText", equalTo("Aktualisiert."));
+            .body("scopeOfWork", equalTo("Aktualisiert."));
     }
 
     // --- Get Issue ---

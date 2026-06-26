@@ -393,7 +393,7 @@ public class IssueController {
     }
 
     public void createRequestsForQuotation(final UserModel user, final UUID issueId,
-        final List<ContractorJson> contractors, final String freeText) {
+        final List<ContractorJson> contractors, final String scopeOfWork) {
         IssueEntity issue = getIssue(issueId);
         contractors.stream().distinct().forEach(contractor -> {
             QuotationRequestEntity request = new QuotationRequestEntity();
@@ -403,7 +403,7 @@ public class IssueController {
             request.setTriggerId(user.getId());
             request.setContractorId(contractor.getId());
             request.setOrganizationId(contractor.getOrganizationId());
-            request.setFreeText(freeText);
+            request.setScopeOfWork(scopeOfWork);
             request.setStatus(RequestStatus.VALID);
             requestForQuotationRepository.insert(request);
         });
@@ -426,8 +426,8 @@ public class IssueController {
     public QuotationRequestEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
         final QuotationRequestJson body) {
         QuotationRequestEntity entity = getRequestForQuotation(issueId, requestId);
-        if (body.getFreeText() != null) {
-            entity.setFreeText(body.getFreeText());
+        if (body.getScopeOfWork() != null) {
+            entity.setScopeOfWork(body.getScopeOfWork());
         }
         if (body.getStatus() != null) {
             entity.setStatus(body.getStatus());

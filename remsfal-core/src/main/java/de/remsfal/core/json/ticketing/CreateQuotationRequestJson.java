@@ -27,6 +27,6 @@ public abstract class CreateQuotationRequestJson {
 
     @Nullable
     @Size(max = 5000)
-    public abstract String getFreeText();
+    public abstract String getScopeOfWork();
 
 }

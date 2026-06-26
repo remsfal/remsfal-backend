@@ -24,7 +24,7 @@ public interface QuotationRequestModel {
     UUID getOrganizationId();
 
     @Nullable
-    String getFreeText();
+    String getScopeOfWork();
 
     String getStatus();
 

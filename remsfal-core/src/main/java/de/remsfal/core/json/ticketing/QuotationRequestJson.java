@@ -50,8 +50,8 @@ public abstract class QuotationRequestJson {
 
     @Nullable
     @Size(max = 5000)
-    @Schema(description = "Optional free text message for the contractor")
-    public abstract String getFreeText();
+    @Schema(description = "Scope of work description for the contractor")
+    public abstract String getScopeOfWork();
 
     @Nullable
     @Schema(description = "Status of the request (VALID or INVALID)")
@@ -73,7 +73,7 @@ public abstract class QuotationRequestJson {
             .triggerId(model.getTriggerId())
             .contractorId(model.getContractorId())
             .organizationId(model.getOrganizationId())
-            .freeText(model.getFreeText())
+            .scopeOfWork(model.getScopeOfWork())
             .status(model.getStatus())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
