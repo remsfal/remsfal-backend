@@ -55,7 +55,8 @@ public abstract class QuotationRequestJson {
     public abstract String getScopeOfWork();
 
     @Nullable
-    @Schema(description = "Status of the request: REQUESTED, WITHDRAWN, VIEWING_REQUIRED, CONSULTATION_REQUIRED, REJECTED, SUBMITTED")
+    @Schema(description = "Status of the request: REQUESTED, WITHDRAWN, VIEWING_REQUIRED,"
+            + "CONSULTATION_REQUIRED, REJECTED, SUBMITTED")
     public abstract RequestStatus getStatus();
 
     @Nullable

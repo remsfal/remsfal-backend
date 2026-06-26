@@ -57,7 +57,7 @@ public class UserController {
         final UserEntity entity = new UserEntity();
         entity.generateId();
         entity.setTokenId(googleId);
-        if (additionalEmailRepository.existsByEmail(email.toLowerCase())){
+        if (additionalEmailRepository.existsByEmail(email.toLowerCase())) {
             throw new AlreadyExistsException("Unable to create user");
         }
         entity.setEmail(email.toLowerCase());

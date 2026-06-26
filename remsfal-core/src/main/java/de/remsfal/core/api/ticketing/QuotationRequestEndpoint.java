@@ -21,12 +21,8 @@ import java.util.UUID;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Path(QuotationRequestEndpoint.CONTEXT + "/" + QuotationRequestEndpoint.VERSION
-    + "/" + QuotationRequestEndpoint.SERVICE)
 public interface QuotationRequestEndpoint {
 
-    String CONTEXT = "ticketing";
-    String VERSION = "v1";
     String SERVICE = "quotation-requests";
 
     @GET

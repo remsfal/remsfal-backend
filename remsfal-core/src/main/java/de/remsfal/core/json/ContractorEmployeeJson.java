@@ -2,137 +2,104 @@ package de.remsfal.core.json;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ContractorEmployeeModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.validation.PostValidation;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Derived;
+import org.immutables.value.Value.Immutable;
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
-/**
- * JSON representation of a contractor employee.
- */
-@JsonInclude(Include.NON_NULL)
-public class ContractorEmployeeJson implements ContractorEmployeeModel {
+@Immutable
+@ImmutableStyle
+@Schema(description = "A contractor employee")
+@JsonDeserialize(as = ImmutableContractorEmployeeJson.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+public abstract class ContractorEmployeeJson implements ContractorEmployeeModel {
 
-    protected UUID contractorId;
-    protected UUID userId;
-    protected String responsibility;
+    @Null
+    @Nullable
+    @Override
+    public abstract UUID getContractorId();
 
-    public void setContractorId(UUID contractorId) {
-        this.contractorId = contractorId;
-    }
+    @Nullable
+    @Override
+    public abstract UUID getUserId();
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public void setResponsibility(String responsibility) {
-        this.responsibility = responsibility;
-    }
+    @Nullable
+    @Size(max = 255)
+    @Override
+    public abstract String getResponsibility();
 
     @NotBlank(groups = PostValidation.class)
     @Email
     @Size(max = 255)
-    private String email;
+    @Nullable
+    public abstract String getEmail();
 
-    private String name;
+    @Nullable
+    public abstract String getName();
 
-    private Boolean active;
+    @Nullable
+    public abstract Boolean isActive();
 
-    @Null
-    @Override
-    public UUID getContractorId() {
-        return contractorId;
-    }
-
-    @Override
-    public UUID getUserId() {
-        return userId;
-    }
-
-    @Size(max = 255)
-    @Override
-    public String getResponsibility() {
-        return responsibility;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Boolean isActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
+    @Derived
     @Override
     public UserModel getUser() {
-        // Return a simple implementation of UserModel with the available user information
+        if (getEmail() == null && getName() == null && isActive() == null) {
+            return null;
+        }
         return new UserModel() {
             @Override
             public UUID getId() {
-                return userId;
+                return getUserId();
             }
 
             @Override
             public String getEmail() {
-                return email;
+                return ContractorEmployeeJson.this.getEmail();
             }
 
             @Override
             public String getName() {
-                return name;
+                return ContractorEmployeeJson.this.getName();
             }
 
             @Override
             public Boolean isActive() {
-                return active;
+                return ContractorEmployeeJson.this.isActive();
             }
         };
     }
 
-    /**
-     * Create a JSON representation from a model.
-     *
-     * @param model the model
-     * @return the JSON representation
-     */
-    public static ContractorEmployeeJson valueOf(ContractorEmployeeModel model) {
+    public static ContractorEmployeeJson valueOf(final ContractorEmployeeModel model) {
         if (model == null) {
             return null;
         }
 
-        ContractorEmployeeJson json = new ContractorEmployeeJson();
-        json.setContractorId(model.getContractorId());
-        json.setUserId(model.getUserId());
-        json.setResponsibility(model.getResponsibility());
+        final ImmutableContractorEmployeeJson.Builder builder = ImmutableContractorEmployeeJson.builder()
+            .contractorId(model.getContractorId())
+            .userId(model.getUserId())
+            .responsibility(model.getResponsibility());
 
         if (model.getUser() != null) {
-            UserModel user = model.getUser();
-            json.setEmail(user.getEmail());
-            json.setName(user.getName());
-            json.setActive(user.isActive());
+            final UserModel user = model.getUser();
+            builder.email(user.getEmail())
+                .name(user.getName())
+                .active(user.isActive());
         }
 
-        return json;
+        return builder.build();
     }
 }

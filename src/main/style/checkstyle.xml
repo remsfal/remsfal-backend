@@ -58,10 +58,7 @@
         <module name="GenericWhitespace"/>
 
         <!-- ===== Code quality ===== -->
-        <module name="Indentation">
-            <property name="forceStrictCondition" value="true"/>
-            <property name="severity" value="warning"/>
-        </module>
+        <module name="Indentation" />
         <module name="CommentsIndentation"/>
         <module name="AnnotationLocation">
             <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
@@ -69,8 +66,12 @@
             <property name="allowSamelineMultipleAnnotations" value="false"/>
         </module>
         <module name="EmptyBlock"/>
+        <module name="EmptyLineSeparator">
+            <property name="allowNoEmptyLineBetweenFields" value="true"/>
+        </module>
         <module name="EmptyStatement"/>
         <module name="ModifierOrder"/>
+        <module name="WhitespaceAround"/>
 
     </module>
 </module>

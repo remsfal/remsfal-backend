@@ -22,7 +22,7 @@ import io.restassured.http.ContentType;
 class QuotationRequestResourceTest extends AbstractTicketingTest {
 
     static final String BASE_PATH = "/ticketing/v1/issues";
-    static final String QUOTATION_PATH = "/ticketing/v1/quotation-requests";
+    static final String QUOTATION_PATH = "/ticketing/v1/order-management/quotation-requests";
 
     @Test
     void getQuotationRequests_FAILED_noAuthentication() {

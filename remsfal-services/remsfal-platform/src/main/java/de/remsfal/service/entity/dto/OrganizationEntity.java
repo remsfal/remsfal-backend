@@ -50,6 +50,7 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -57,6 +58,7 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     public String getPhone() {
         return phone;
     }
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
@@ -64,6 +66,7 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -71,6 +74,7 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     public String getTrade() {
         return trade;
     }
+
     public void setTrade(String trade) {
         this.trade = trade;
     }
@@ -78,6 +82,7 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     public String getVatIdentificationNumber() {
         return vatIdentificationNumber;
     }
+
     public void setVatIdentificationNumber(String vatIdentificationNumber) {
         this.vatIdentificationNumber = vatIdentificationNumber;
     }
@@ -85,6 +90,7 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
     public AddressEntity getAddress() {
         return address;
     }
+
     public void setAddress(AddressEntity address) {
         this.address = address;
     }

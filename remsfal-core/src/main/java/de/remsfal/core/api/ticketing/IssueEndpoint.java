@@ -77,7 +77,7 @@ public interface IssueEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new issue.",
-    description = "Creates a new issue based on the provided issue information."
+        description = "Creates a new issue based on the provided issue information."
         + " This method is intended solely for the creation of issues by a property manager.")
     @APIResponse(responseCode = "201", description = "Issue created successfully",
         headers = @Header(name = "Location", description = "URL of the new issue"))
@@ -90,7 +90,7 @@ public interface IssueEndpoint {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new issue with multiple image attachments.",
-    description = "Creates a new issue based on the provided issue information and attaches multiple image files"
+        description = "Creates a new issue based on the provided issue information and attaches multiple image files"
         + " to it. This method is intended solely for the creation of issues by a tenant.")
     @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
         headers = @Header(name = "Location", description = "URL of the new issue"))

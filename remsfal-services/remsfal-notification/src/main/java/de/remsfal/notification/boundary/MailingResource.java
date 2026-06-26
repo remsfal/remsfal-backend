@@ -45,14 +45,17 @@ public class MailingResource {
             public UUID getId() {
                 return UUID.randomUUID();
             }
+
             @Override
             public String getEmail() {
                 return to;
             }
+
             @Override
             public String getName() {
                 return "Max Mustermann";
             }
+
             @Override
             public Boolean isActive() {
                 return true;
