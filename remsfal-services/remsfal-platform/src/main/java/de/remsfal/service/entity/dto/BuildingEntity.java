@@ -22,7 +22,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     @Column(name = "property_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID propertyId;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
 

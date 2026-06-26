@@ -29,6 +29,9 @@ import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
+import de.remsfal.core.json.ticketing.QuotationRequestJson;
+import de.remsfal.core.json.ticketing.QuotationRequestListJson;
+import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -299,6 +302,34 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             .type(MediaType.APPLICATION_JSON)
             .entity(attachments)
             .build();
+    }
+
+    @Override
+    public Response createRequestsForQuotation(final UUID issueId, final CreateQuotationRequestJson request) {
+        checkIssueWritePermissions(issueId);
+        issueController.createRequestsForQuotation(principal, issueId,
+            request.getContractors(), request.getScopeOfWork());
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @Override
+    public QuotationRequestListJson getRequestsForQuotation(final UUID issueId) {
+        checkIssueWritePermissions(issueId);
+        return QuotationRequestListJson.valueOf(issueController.getRequestsForQuotation(issueId));
+    }
+
+    @Override
+    public QuotationRequestJson getRequestForQuotation(final UUID issueId, final UUID requestId) {
+        checkIssueWritePermissions(issueId);
+        return QuotationRequestJson.valueOf(issueController.getRequestForQuotation(issueId, requestId));
+    }
+
+    @Override
+    public QuotationRequestJson updateRequestForQuotation(final UUID issueId, final UUID requestId,
+        final QuotationRequestJson body) {
+        checkIssueWritePermissions(issueId);
+        return QuotationRequestJson.valueOf(
+            issueController.updateRequestForQuotation(issueId, requestId, body));
     }
 
     private List<IssueAttachmentJson> uploadAttachments(final UUID issueId, final List<InputPart> fileParts) {

@@ -23,7 +23,7 @@ public class SiteEntity extends RentalUnitEntity implements SiteModel {
     @Column(name = "property_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID propertyId;
 
-    @OneToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
 

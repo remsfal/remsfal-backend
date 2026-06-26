@@ -30,13 +30,13 @@ public abstract class RentEntity extends MetaDataEntity implements RentModel {
     @Enumerated(EnumType.STRING)
     private BillingCycle billingCycle;
 
-    @Column(name = "basic_rent", columnDefinition = "numeric(6,2)", precision=6, scale=2)
+    @Column(name = "basic_rent", columnDefinition = "numeric(6,2)", precision = 6, scale = 2)
     private BigDecimal basicRent;
 
-    @Column(name = "operating_costs_prepayment", columnDefinition = "numeric(6,2)", precision=6, scale=2)
+    @Column(name = "operating_costs_prepayment", columnDefinition = "numeric(6,2)", precision = 6, scale = 2)
     private BigDecimal operatingCostsPrepayment;
 
-    @Column(name = "heating_costs_prepayment", columnDefinition = "numeric(6,2)",  precision=6, scale=2)
+    @Column(name = "heating_costs_prepayment", columnDefinition = "numeric(6,2)", precision = 6, scale = 2)
     private BigDecimal heatingCostsPrepayment;
 
     @Override

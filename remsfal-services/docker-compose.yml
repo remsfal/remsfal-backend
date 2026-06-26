@@ -6,6 +6,7 @@ services:
     image: apache/kafka:latest
     hostname: kafka-broker
     container_name: kafka-broker
+    restart: unless-stopped
     ports:
       - "9092:9092"
       - "39092:39092"
@@ -34,6 +35,7 @@ services:
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
+    restart: unless-stopped
     depends_on:
       - kafka-broker
     ports:
@@ -47,6 +49,7 @@ services:
   otel-lgtm:
     image: grafana/otel-lgtm
     container_name: otel-lgtm
+    restart: unless-stopped
     ports:
       - '3000:3000' # Grafana Frontend
       - '4317:4317' # gRPC as the transport for OTLP

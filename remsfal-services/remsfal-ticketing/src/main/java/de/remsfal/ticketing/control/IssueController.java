@@ -9,6 +9,8 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.model.FileUploadData;
+import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
@@ -17,14 +19,19 @@ import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
+import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
+import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @RequestScoped
@@ -41,6 +48,9 @@ public class IssueController {
 
     @Inject
     IssueAttachmentRepository attachmentRepository;
+
+    @Inject
+    QuotationRequestRepository requestForQuotationRepository;
 
     @Inject
     FileStorageController fileStorageController;
@@ -380,6 +390,84 @@ public class IssueController {
     public InputStream downloadAttachment(String objectName) {
         logger.infov("Downloading attachment from storage (objectName={0})", objectName);
         return fileStorageController.downloadFile(objectName);
+    }
+
+    public void createRequestsForQuotation(final UserModel user, final UUID issueId,
+        final List<ContractorJson> contractors, final String scopeOfWork) {
+        IssueEntity issue = getIssue(issueId);
+        contractors.stream().distinct().forEach(contractor -> {
+            QuotationRequestEntity request = new QuotationRequestEntity();
+            request.generateId();
+            request.setIssueId(issueId);
+            request.setProjectId(issue.getProjectId());
+            request.setTriggerId(user.getId());
+            request.setContractorId(contractor.getId());
+            request.setOrganizationId(contractor.getOrganizationId());
+            request.setScopeOfWork(scopeOfWork);
+            request.setStatus(RequestStatus.REQUESTED);
+            requestForQuotationRepository.insert(request);
+        });
+    }
+
+    public List<QuotationRequestEntity> getRequestsForQuotation(final UUID issueId) {
+        logger.infov("Retrieving quotation requests for issue (issueId={0})", issueId);
+        return requestForQuotationRepository.findByIssueId(issueId);
+    }
+
+    public QuotationRequestEntity getRequestForQuotation(final UUID issueId, final UUID requestId) {
+        logger.infov("Retrieving quotation request (issueId={0}, requestId={1})", issueId, requestId);
+        QuotationRequestKey key = new QuotationRequestKey();
+        key.setIssueId(issueId);
+        key.setRequestId(requestId);
+        return requestForQuotationRepository.findById(key)
+            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+    }
+
+    public QuotationRequestEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
+        final QuotationRequestJson body) {
+        QuotationRequestEntity entity = getRequestForQuotation(issueId, requestId);
+        if (body.getScopeOfWork() != null) {
+            entity.setScopeOfWork(body.getScopeOfWork());
+        }
+        if (body.getStatus() != null) {
+            if (body.getStatus() != RequestStatus.WITHDRAWN) {
+                throw new BadRequestException("Manager can only set status to WITHDRAWN");
+            }
+            entity.setStatus(body.getStatus());
+        }
+        return requestForQuotationRepository.update(entity);
+    }
+
+    public QuotationRequestEntity updateRequestForQuotationByContractor(
+        final Set<UUID> organizationIds, final UUID requestId, final QuotationRequestJson body) {
+        if (body.getStatus() == null) {
+            throw new BadRequestException("Status must be provided");
+        }
+        final Set<RequestStatus> allowedStatuses = Set.of(
+            RequestStatus.VIEWING_REQUIRED,
+            RequestStatus.CONSULTATION_REQUIRED,
+            RequestStatus.REJECTED,
+            RequestStatus.SUBMITTED
+        );
+        if (!allowedStatuses.contains(body.getStatus())) {
+            throw new BadRequestException("Contractor can only set status to VIEWING_REQUIRED,"
+                + " CONSULTATION_REQUIRED, REJECTED, or SUBMITTED");
+        }
+        final QuotationRequestEntity entity = organizationIds.stream()
+            .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
+            .filter(r -> requestId.equals(r.getRequestId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+        entity.setStatus(body.getStatus());
+        return requestForQuotationRepository.update(entity);
+    }
+
+    public List<QuotationRequestEntity> getRequestsForQuotationByOrganizationIds(
+        final Set<UUID> organizationIds) {
+        logger.infov("Retrieving quotation requests for organizations (count={0})", organizationIds.size());
+        return organizationIds.stream()
+            .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
+            .toList();
     }
 
     public void deleteAttachment(UUID issueId, UUID attachmentId) {

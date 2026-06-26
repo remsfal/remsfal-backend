@@ -10,7 +10,7 @@ import jakarta.validation.Payload;
 import jakarta.validation.constraints.Size;
 
 @NullOrNotBlank
-@Size(max=255)
+@Size(max = 255)
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 @Constraint(validatedBy = {})
 @Retention(RetentionPolicy.RUNTIME)

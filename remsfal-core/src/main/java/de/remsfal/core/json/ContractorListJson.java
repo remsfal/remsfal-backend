@@ -1,65 +1,41 @@
 package de.remsfal.core.json;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import de.remsfal.core.model.ContractorModel;
-
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * JSON representation of a list of contractors.
- */
-@JsonInclude(Include.NON_NULL)
-public class ContractorListJson {
+import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.model.ContractorModel;
 
-    private List<ContractorJson> contractors;
-    private Integer offset;
-    private Long total;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Immutable;
 
-    public List<ContractorJson> getContractors() {
-        return contractors;
-    }
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-    public void setContractors(List<ContractorJson> contractors) {
-        this.contractors = contractors;
-    }
+@Immutable
+@ImmutableStyle
+@Schema(description = "A list of contractors")
+@JsonDeserialize(as = ImmutableContractorListJson.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+public abstract class ContractorListJson {
 
-    public Integer getOffset() {
-        return offset;
-    }
+    @Schema(description = "Index of the first element", readOnly = true)
+    public abstract Integer getOffset();
 
-    public void setOffset(Integer offset) {
-        this.offset = offset;
-    }
+    @Schema(description = "Total number of available contractors", readOnly = true)
+    public abstract Long getTotal();
 
-    public Long getTotal() {
-        return total;
-    }
+    public abstract List<ContractorJson> getContractors();
 
-    public void setTotal(Long total) {
-        this.total = total;
-    }
+    public static ContractorListJson valueOf(
+        final List<? extends ContractorModel> models,
+        final Integer offset,
+        final Long total) {
 
-    /**
-     * Create a JSON representation from a list of models.
-     *
-     * @param models the list of models
-     * @param offset the offset
-     * @param total the total number of models
-     * @return the JSON representation
-     */
-    public static ContractorListJson valueOf(List<? extends ContractorModel> models, Integer offset, Long total) {
-        ContractorListJson json = new ContractorListJson();
-        json.setOffset(offset);
-        json.setTotal(total);
-
-        List<ContractorJson> contractors = new ArrayList<>();
-        for (ContractorModel model : models) {
-            contractors.add(ContractorJson.valueOf(model));
-        }
-        json.setContractors(contractors);
-
-        return json;
+        return ImmutableContractorListJson.builder()
+            .offset(offset)
+            .total(total)
+            .contractors(models.stream().map(ContractorJson::valueOf).toList())
+            .build();
     }
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.4-quotation-requests" author="alexander.stanik@htw-berlin.de">
+        <comment>Create quotation requests table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.quotation_requests (
+                issue_id UUID,
+                request_id UUID,
+                project_id UUID,
+                trigger_id UUID,
+                contractor_id UUID,
+                organization_id UUID,
+                scope_of_work TEXT,
+                status TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY (issue_id, request_id)
+            ) WITH CLUSTERING ORDER BY (request_id DESC);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS quotation_requests_request_id_idx
+            ON REMSFAL.quotation_requests (request_id);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS quotation_requests_organization_id_idx
+            ON REMSFAL.quotation_requests (organization_id);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.quotation_requests;</sql>
+            <sql>DROP INDEX IF EXISTS quotation_requests_request_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS quotation_requests_organization_id_idx;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
