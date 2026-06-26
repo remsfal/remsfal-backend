@@ -32,7 +32,7 @@ import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
-import de.remsfal.core.json.ticketing.RequestForQuotationJson;
+import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.PatchValidation;
@@ -241,7 +241,7 @@ public interface IssueEndpoint {
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "Request information", required = true)
-        @Valid @NotNull RequestForQuotationJson request);
+        @Valid @NotNull CreateQuotationRequestJson request);
 
     @GET
     @Path("/{issueId}/quotation-request")

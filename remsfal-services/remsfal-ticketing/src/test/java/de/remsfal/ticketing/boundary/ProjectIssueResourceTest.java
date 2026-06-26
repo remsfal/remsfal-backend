@@ -224,7 +224,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
 
         List<Row> rows = cqlSession.execute(
             "SELECT project_id, issue_id, trigger_id, contractor_id, free_text, status "
-                + "FROM remsfal.requests_for_quotation WHERE issue_id = ?",
+                + "FROM remsfal.quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
 

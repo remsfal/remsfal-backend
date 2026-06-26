@@ -7,18 +7,21 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.1-requests-for-quotation-organization-id" author="copilot">
-        <comment>Add organization_id column and index to requests_for_quotation table</comment>
+    <changeSet id="remsfal-ticketing-0.0.2-chat-sessions" author="alexander.stanik@htw-berlin.de">
+        <comment>Create chat session schema</comment>
         <sql>
-            ALTER TABLE REMSFAL.requests_for_quotation ADD organization_id UUID;
-        </sql>
-        <sql>
-            CREATE INDEX IF NOT EXISTS requests_for_quotation_organization_id_idx
-            ON REMSFAL.requests_for_quotation (organization_id);
+            CREATE TABLE IF NOT EXISTS REMSFAL.chat_sessions (
+                project_id UUID,
+                issue_id UUID,
+                session_id UUID,
+                participants MAP&lt;UUID, TEXT&gt;,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY ((project_id, issue_id), session_id)
+            ) WITH CLUSTERING ORDER BY (session_id ASC);
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS REMSFAL.requests_for_quotation_organization_id_idx;</sql>
-            <sql>ALTER TABLE REMSFAL.requests_for_quotation DROP organization_id;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.chat_sessions;</sql>
         </rollback>
     </changeSet>
 

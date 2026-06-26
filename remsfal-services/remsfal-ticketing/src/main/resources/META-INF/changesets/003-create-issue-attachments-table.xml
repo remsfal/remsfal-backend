@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.1-issue-attachments" author="copilot">
+    <changeSet id="remsfal-ticketing-0.0.3-issue-attachments" author="alexander.stanik@htw-berlin.de">
         <comment>Create issue attachments table for storing file references from MinIO</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.issue_attachments (

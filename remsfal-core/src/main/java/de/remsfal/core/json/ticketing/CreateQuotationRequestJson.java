@@ -18,9 +18,9 @@ import java.util.List;
 @Immutable
 @ImmutableStyle
 @Schema(description = "A request to create one quotation request per contractor")
-@JsonDeserialize(as = ImmutableRequestForQuotationJson.class)
+@JsonDeserialize(as = ImmutableCreateQuotationRequestJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class RequestForQuotationJson {
+public abstract class CreateQuotationRequestJson {
 
     @NotEmpty
     public abstract List<@NotNull ContractorJson> getContractors();

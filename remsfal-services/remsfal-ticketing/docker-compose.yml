@@ -2,6 +2,7 @@ services:
   minio:
     image: minio/minio
     container_name: minio
+    restart: unless-stopped
     depends_on:
       cassandra:
         condition: service_healthy
@@ -30,8 +31,9 @@ services:
       - HEAP_NEWSIZE=256M
     ports:
       - "9042:9042"
-    mem_limit: 2g              # Docker memory limit
-    memswap_limit: 2g          # Swap deactivation
+    mem_limit: 3g
+    memswap_limit: 4g
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "cqlsh -e 'describe cluster'"]
       interval: 10s
@@ -46,6 +48,7 @@ services:
   ocr:
     image: ghcr.io/remsfal/remsfal-ocr:latest
     container_name: remsfal-ocr
+    restart: unless-stopped
     depends_on:
       kafka-broker:
         condition: service_healthy

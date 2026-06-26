@@ -1,7 +1,7 @@
 package de.remsfal.ticketing.entity.dao;
 
-import de.remsfal.ticketing.entity.dto.RequestForQuotationEntity;
-import de.remsfal.ticketing.entity.dto.RequestForQuotationKey;
+import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
+import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.Instant;
@@ -10,13 +10,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
-public class RequestForQuotationRepository
-    extends AbstractRepository<RequestForQuotationEntity, RequestForQuotationKey> {
+public class QuotationRequestRepository
+    extends AbstractRepository<QuotationRequestEntity, QuotationRequestKey> {
 
     private static final String REQUEST_ID = "request_id";
     private static final String ORGANIZATION_ID = "organization_id";
 
-    public RequestForQuotationEntity insert(final RequestForQuotationEntity entity) {
+    public QuotationRequestEntity insert(final QuotationRequestEntity entity) {
         Instant now = Instant.now();
         entity.setModifiedAt(now);
         if (entity.getCreatedAt() == null) {
@@ -25,26 +25,26 @@ public class RequestForQuotationRepository
         return template.insert(entity);
     }
 
-    public RequestForQuotationEntity update(final RequestForQuotationEntity entity) {
+    public QuotationRequestEntity update(final QuotationRequestEntity entity) {
         entity.setModifiedAt(Instant.now());
         return template.update(entity);
     }
 
-    public List<RequestForQuotationEntity> findByIssueId(final UUID issueId) {
-        return template.select(RequestForQuotationEntity.class)
+    public List<QuotationRequestEntity> findByIssueId(final UUID issueId) {
+        return template.select(QuotationRequestEntity.class)
             .where(ISSUE_ID).eq(issueId)
             .result();
     }
 
-    public Optional<RequestForQuotationEntity> findById(final RequestForQuotationKey key) {
-        return template.select(RequestForQuotationEntity.class)
+    public Optional<QuotationRequestEntity> findById(final QuotationRequestKey key) {
+        return template.select(QuotationRequestEntity.class)
             .where(ISSUE_ID).eq(key.getIssueId())
             .and(REQUEST_ID).eq(key.getRequestId())
             .singleResult();
     }
 
-    public List<RequestForQuotationEntity> findByOrganizationId(final UUID organizationId) {
-        return template.select(RequestForQuotationEntity.class)
+    public List<QuotationRequestEntity> findByOrganizationId(final UUID organizationId) {
+        return template.select(QuotationRequestEntity.class)
             .where(ORGANIZATION_ID).eq(organizationId)
             .result();
     }

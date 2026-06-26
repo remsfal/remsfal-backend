@@ -19,13 +19,13 @@ import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
-import de.remsfal.ticketing.entity.dao.RequestForQuotationRepository;
+import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
-import de.remsfal.ticketing.entity.dto.RequestForQuotationEntity;
-import de.remsfal.ticketing.entity.dto.RequestForQuotationEntity.RequestStatus;
-import de.remsfal.ticketing.entity.dto.RequestForQuotationKey;
+import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
+import de.remsfal.ticketing.entity.dto.QuotationRequestEntity.RequestStatus;
+import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -50,7 +50,7 @@ public class IssueController {
     IssueAttachmentRepository attachmentRepository;
 
     @Inject
-    RequestForQuotationRepository requestForQuotationRepository;
+    QuotationRequestRepository requestForQuotationRepository;
 
     @Inject
     FileStorageController fileStorageController;
@@ -396,7 +396,7 @@ public class IssueController {
         final List<ContractorJson> contractors, final String freeText) {
         IssueEntity issue = getIssue(issueId);
         contractors.stream().distinct().forEach(contractor -> {
-            RequestForQuotationEntity request = new RequestForQuotationEntity();
+            QuotationRequestEntity request = new QuotationRequestEntity();
             request.generateId();
             request.setIssueId(issueId);
             request.setProjectId(issue.getProjectId());
@@ -409,23 +409,23 @@ public class IssueController {
         });
     }
 
-    public List<RequestForQuotationEntity> getRequestsForQuotation(final UUID issueId) {
+    public List<QuotationRequestEntity> getRequestsForQuotation(final UUID issueId) {
         logger.infov("Retrieving quotation requests for issue (issueId={0})", issueId);
         return requestForQuotationRepository.findByIssueId(issueId);
     }
 
-    public RequestForQuotationEntity getRequestForQuotation(final UUID issueId, final UUID requestId) {
+    public QuotationRequestEntity getRequestForQuotation(final UUID issueId, final UUID requestId) {
         logger.infov("Retrieving quotation request (issueId={0}, requestId={1})", issueId, requestId);
-        RequestForQuotationKey key = new RequestForQuotationKey();
+        QuotationRequestKey key = new QuotationRequestKey();
         key.setIssueId(issueId);
         key.setRequestId(requestId);
         return requestForQuotationRepository.findById(key)
             .orElseThrow(() -> new NotFoundException("Quotation request not found"));
     }
 
-    public RequestForQuotationEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
+    public QuotationRequestEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
         final QuotationRequestJson body) {
-        RequestForQuotationEntity entity = getRequestForQuotation(issueId, requestId);
+        QuotationRequestEntity entity = getRequestForQuotation(issueId, requestId);
         if (body.getFreeText() != null) {
             entity.setFreeText(body.getFreeText());
         }
@@ -435,7 +435,7 @@ public class IssueController {
         return requestForQuotationRepository.update(entity);
     }
 
-    public List<RequestForQuotationEntity> getRequestsForQuotationByOrganizationIds(
+    public List<QuotationRequestEntity> getRequestsForQuotationByOrganizationIds(
         final Set<UUID> organizationIds) {
         logger.infov("Retrieving quotation requests for organizations (count={0})", organizationIds.size());
         return organizationIds.stream()

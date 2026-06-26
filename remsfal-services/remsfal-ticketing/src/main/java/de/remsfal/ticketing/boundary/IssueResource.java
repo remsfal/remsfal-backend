@@ -31,7 +31,7 @@ import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
-import de.remsfal.core.json.ticketing.RequestForQuotationJson;
+import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -305,7 +305,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     }
 
     @Override
-    public Response createRequestsForQuotation(final UUID issueId, final RequestForQuotationJson request) {
+    public Response createRequestsForQuotation(final UUID issueId, final CreateQuotationRequestJson request) {
         checkIssueWritePermissions(issueId);
         issueController.createRequestsForQuotation(principal, issueId,
             request.getContractors(), request.getFreeText());

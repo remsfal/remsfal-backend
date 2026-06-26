@@ -9,8 +9,8 @@ import jakarta.nosql.Id;
 import java.util.Optional;
 import java.util.UUID;
 
-@Entity("requests_for_quotation")
-public class RequestForQuotationEntity extends AbstractEntity implements QuotationRequestModel {
+@Entity("quotation_requests")
+public class QuotationRequestEntity extends AbstractEntity implements QuotationRequestModel {
 
     public enum RequestStatus {
         VALID,
@@ -18,7 +18,7 @@ public class RequestForQuotationEntity extends AbstractEntity implements Quotati
     }
 
     @Id
-    private RequestForQuotationKey key;
+    private QuotationRequestKey key;
 
     @Column("project_id")
     private UUID projectId;
@@ -43,36 +43,36 @@ public class RequestForQuotationEntity extends AbstractEntity implements Quotati
         return getRequestId();
     }
 
-    public RequestForQuotationKey getKey() {
+    public QuotationRequestKey getKey() {
         return key;
     }
 
-    public void setKey(RequestForQuotationKey key) {
+    public void setKey(QuotationRequestKey key) {
         this.key = key;
     }
 
     public UUID getIssueId() {
         return Optional.ofNullable(key)
-            .map(RequestForQuotationKey::getIssueId)
+            .map(QuotationRequestKey::getIssueId)
             .orElse(null);
     }
 
     public void setIssueId(UUID issueId) {
         if (this.key == null) {
-            this.key = new RequestForQuotationKey();
+            this.key = new QuotationRequestKey();
         }
         this.key.setIssueId(issueId);
     }
 
     public UUID getRequestId() {
         return Optional.ofNullable(key)
-            .map(RequestForQuotationKey::getRequestId)
+            .map(QuotationRequestKey::getRequestId)
             .orElse(null);
     }
 
     public void generateId() {
         if (this.key == null) {
-            this.key = new RequestForQuotationKey();
+            this.key = new QuotationRequestKey();
         }
         if (this.key.getRequestId() == null) {
             this.key.setRequestId(UUIDv7.randomUUID());

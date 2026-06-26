@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Embeddable
-public class RequestForQuotationKey {
+public class QuotationRequestKey {
 
     @Id("issue_id")
     private UUID issueId;
@@ -41,7 +41,7 @@ public class RequestForQuotationKey {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof RequestForQuotationKey other)) {
+        if (!(obj instanceof QuotationRequestKey other)) {
             return false;
         }
         return Objects.equals(issueId, other.issueId) && Objects.equals(requestId, other.requestId);

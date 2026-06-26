@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:16
     container_name: postgres
+    restart: unless-stopped
     environment:
       - POSTGRES_DB=REMSFAL
       - POSTGRES_USER=remsfalAdmin

@@ -7,15 +7,16 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.1-requests-for-quotation" author="copilot">
-        <comment>Create requests for quotation table</comment>
+    <changeSet id="remsfal-ticketing-0.0.4-quotation-requests" author="alexander.stanik@htw-berlin.de">
+        <comment>Create quotation requests table</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.requests_for_quotation (
+            CREATE TABLE IF NOT EXISTS REMSFAL.quotation_requests (
                 issue_id UUID,
                 request_id UUID,
                 project_id UUID,
                 trigger_id UUID,
                 contractor_id UUID,
+                organization_id UUID,
                 free_text TEXT,
                 status TEXT,
                 created_at TIMESTAMP,
@@ -24,12 +25,17 @@
             ) WITH CLUSTERING ORDER BY (request_id DESC);
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS requests_for_quotation_request_id_idx
-            ON REMSFAL.requests_for_quotation (request_id);
+            CREATE INDEX IF NOT EXISTS quotation_requests_request_id_idx
+            ON REMSFAL.quotation_requests (request_id);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS quotation_requests_organization_id_idx
+            ON REMSFAL.quotation_requests (organization_id);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.requests_for_quotation;</sql>
-            <sql>DROP INDEX IF EXISTS requests_for_quotation_request_id_idx;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.quotation_requests;</sql>
+            <sql>DROP INDEX IF EXISTS quotation_requests_request_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS quotation_requests_organization_id_idx;</sql>
         </rollback>
     </changeSet>
 

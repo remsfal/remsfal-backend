@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.2-issues-indexes" author="github-copilot">
+    <changeSet id="remsfal-ticketing-0.0.2-issues-indexes" author="alexander.stanik@htw-berlin.de">
         <comment>Add SAI (Storage-Attached Index) to issues table for flexible filtering.
                  SAI supports filtering combined with IN on the partition key without ALLOW FILTERING,
                  and is stable from Cassandra 5.0 onwards.</comment>
