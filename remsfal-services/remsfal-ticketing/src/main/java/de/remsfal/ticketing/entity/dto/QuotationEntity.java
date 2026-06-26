@@ -144,4 +144,8 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         this.status = status != null ? status.name() : null;
     }
 
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
 }
