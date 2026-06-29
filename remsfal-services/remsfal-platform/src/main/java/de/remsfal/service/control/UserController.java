@@ -48,6 +48,9 @@ public class UserController {
     @Inject
     NotificationController notificationController;
 
+    @Inject
+    UserEventProducer userEventProducer;
+
     private static final String DEFAULT_LOCALE = "de";
     private static final int ADDITIONAL_EMAIL_VERIFICATION_TOKEN_VALID_HOURS = 24;
 
@@ -142,7 +145,11 @@ public class UserController {
     @Transactional
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
-        return repository.remove(userId);
+        final boolean deleted = repository.remove(userId);
+        if (deleted) {
+            userEventProducer.sendUserDeleted(userId);
+        }
+        return deleted;
     }
 
     public boolean isVerifiedEmailForUser(final UUID userId, final String email) {

@@ -46,6 +46,25 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             .singleResult();
     }
 
+    public List<IssueEntity> findByAssigneeId(final UUID assigneeId) {
+        if (assigneeId == null) {
+            return List.of();
+        }
+        return template.select(IssueEntity.class)
+            .where("assignee_id").eq(assigneeId)
+            .result();
+    }
+
+    public int clearAssigneeAndResetStatus(final UUID assigneeId, final IssueStatus resetStatus) {
+        final List<IssueEntity> issues = findByAssigneeId(assigneeId);
+        for (IssueEntity issue : issues) {
+            issue.setAssigneeId(null);
+            issue.setStatus(resetStatus);
+            update(issue);
+        }
+        return issues.size();
+    }
+
     public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
         final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
         final IssueStatus status, final boolean onlyVisibleToTenants,
