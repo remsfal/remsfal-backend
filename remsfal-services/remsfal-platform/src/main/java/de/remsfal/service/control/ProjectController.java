@@ -24,9 +24,11 @@ import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.ProjectOrganizationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.entity.dto.AddressEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,6 +56,9 @@ public class ProjectController {
     @Inject
     OrganizationRepository organizationRepository;
 
+    @Inject
+    AddressController addressController;
+
     @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
         List<ProjectMembershipEntity> memberships = projectRepository.findMembershipByUserId(user.getId(),
@@ -77,6 +82,18 @@ public class ProjectController {
         ProjectEntity entity = new ProjectEntity();
         entity.generateId();
         entity.setTitle(project.getTitle());
+        entity.setOwner(resolveProjectOwner(userEntity));
+        if (project.getOwner() != null) {
+            entity.setOwner(project.getOwner());
+        }
+        if (project.getCareOf() != null) {
+            entity.setCareOf(project.getCareOf());
+        }
+        if (project.getAddress() != null) {
+            entity.setAddress(resolveProjectAddress(userEntity, project));
+        } else if (userEntity.getAddress() != null) {
+            entity.setAddress(userEntity.getAddress());
+        }
         entity.addMember(userEntity, MemberRole.PROPRIETOR);
         projectRepository.persistAndFlush(entity);
         return entity;
@@ -94,10 +111,64 @@ public class ProjectController {
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
         entity.setTitle(project.getTitle());
+        if (project.getOwner() != null) {
+            entity.setOwner(project.getOwner());
+        }
+        if (project.getCareOf() != null) {
+            entity.setCareOf(project.getCareOf());
+        }
+        if (project.getAddress() != null) {
+            final UserEntity userEntity = userController.getUser(user.getId());
+            entity.setAddress(resolveProjectAddress(userEntity, project));
+        }
         return projectRepository.merge(entity);
         // fetch eager project members
         // entity.getMembers().size();
         // return entity;
+    }
+
+    private String resolveProjectOwner(final UserEntity userEntity) {
+        if (isBlank(userEntity.getFirstName()) || isBlank(userEntity.getLastName())) {
+            return null;
+        }
+        return String.format("%s %s", userEntity.getFirstName().trim(), userEntity.getLastName().trim());
+    }
+
+    private AddressEntity resolveProjectAddress(final UserEntity userEntity, final ProjectModel project) {
+        final List<AddressEntity> addresses = new ArrayList<>();
+        if (userEntity.getAddress() != null) {
+            addresses.add(userEntity.getAddress());
+        }
+        organizationRepository.findOrganizationEmployeesByUserId(userEntity.getId())
+            .stream()
+            .map(employment -> employment.getOrganization().getAddress())
+            .filter(Objects::nonNull)
+            .forEach(addresses::add);
+        for (AddressEntity candidate : addresses) {
+            if (matchesAddress(project, candidate)) {
+                return candidate;
+            }
+        }
+        return addressController.updateAddress(project.getAddress(), null);
+    }
+
+    private boolean matchesAddress(final ProjectModel project, final AddressEntity candidate) {
+        return equalsNullable(project.getAddress().getStreet(), candidate.getStreet())
+            && equalsNullable(project.getAddress().getCity(), candidate.getCity())
+            && equalsNullable(project.getAddress().getProvince(), candidate.getProvince())
+            && equalsNullable(project.getAddress().getZip(), candidate.getZip())
+            && Objects.equals(project.getAddress().getCountry(), candidate.getCountry());
+    }
+
+    private boolean equalsNullable(final String left, final String right) {
+        if (left == null || right == null) {
+            return left == null && right == null;
+        }
+        return left.trim().equalsIgnoreCase(right.trim());
+    }
+
+    private boolean isBlank(final String value) {
+        return value == null || value.isBlank();
     }
 
     @Transactional

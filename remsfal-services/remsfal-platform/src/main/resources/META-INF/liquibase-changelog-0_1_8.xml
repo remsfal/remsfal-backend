@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-0.1.8-project-billing-recipient" author="alexander.stanik@htw-berlin.de">
+        <comment>Add billing recipient fields to projects</comment>
+
+        <addColumn tableName="projects">
+            <column name="owner" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="care_of" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="address_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_projects_address_id"
+                                 baseTableName="projects" baseColumnNames="address_id"
+                                 referencedTableName="addresses" referencedColumnNames="id"
+                                 onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_projects_address_fk" tableName="projects">
+            <column name="address_id" type="uuid" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
