@@ -41,6 +41,8 @@ import java.util.UUID;
 @RequestScoped
 public class IssueController {
 
+    static final String QUOTATION_REQUEST_NOT_FOUND = "Quotation request not found";
+
     @Inject
     Logger logger;
 
@@ -428,7 +430,7 @@ public class IssueController {
         key.setIssueId(issueId);
         key.setRequestId(requestId);
         return requestForQuotationRepository.findById(key)
-            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
     }
 
     public QuotationRequestEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
@@ -465,7 +467,7 @@ public class IssueController {
             .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
             .filter(r -> requestId.equals(r.getRequestId()))
             .findFirst()
-            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
         entity.setStatus(body.getStatus());
         return requestForQuotationRepository.update(entity);
     }
@@ -484,7 +486,7 @@ public class IssueController {
             .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
             .filter(r -> requestId.equals(r.getRequestId()))
             .findFirst()
-            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
 
         QuotationEntity quotation = new QuotationEntity();
         quotation.generateId();

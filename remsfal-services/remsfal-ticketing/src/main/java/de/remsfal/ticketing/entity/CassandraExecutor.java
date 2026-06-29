@@ -1,6 +1,8 @@
 package de.remsfal.ticketing.entity;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverTimeoutException;
+
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -125,11 +127,11 @@ public class CassandraExecutor {
         }
     }
 
-    private boolean isTransientTimeout(Throwable throwable) {
+    private boolean isTransientTimeout(final Throwable throwable) {
         Throwable current = throwable;
         while (current != null) {
             String message = current.getMessage();
-            if ("DriverTimeoutException".equals(current.getClass().getSimpleName())
+            if (current instanceof DriverTimeoutException
                 || (message != null && message.contains("Query timed out after PT2S"))) {
                 return true;
             }
