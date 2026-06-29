@@ -55,6 +55,26 @@ public abstract class QuotationRequestJson {
     public abstract String getScopeOfWork();
 
     @Nullable
+    @Schema(readOnly = true, description = "Name of the project owner / billing recipient")
+    public abstract String getProjectOwner();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Care of / representative on behalf of")
+    public abstract String getProjectCareOf();
+
+    @Nullable
+    @Schema(readOnly = true, description = "First billing address line (street)")
+    public abstract String getProjectBillingAddress1();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Second billing address line (zip and city)")
+    public abstract String getProjectBillingAddress2();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Third billing address line (province and country)")
+    public abstract String getProjectBillingAddress3();
+
+    @Nullable
     @Schema(description = "Status of the request: REQUESTED, WITHDRAWN, VIEWING_REQUIRED,"
             + "CONSULTATION_REQUIRED, REJECTED, SUBMITTED")
     public abstract RequestStatus getStatus();
@@ -76,6 +96,11 @@ public abstract class QuotationRequestJson {
             .contractorId(model.getContractorId())
             .organizationId(model.getOrganizationId())
             .scopeOfWork(model.getScopeOfWork())
+            .projectOwner(model.getProjectOwner())
+            .projectCareOf(model.getProjectCareOf())
+            .projectBillingAddress1(model.getProjectBillingAddress1())
+            .projectBillingAddress2(model.getProjectBillingAddress2())
+            .projectBillingAddress3(model.getProjectBillingAddress3())
             .status(model.getStatus())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())

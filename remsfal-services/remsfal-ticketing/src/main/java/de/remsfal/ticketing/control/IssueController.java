@@ -9,6 +9,7 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.model.FileUploadData;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserModel;
@@ -393,7 +394,8 @@ public class IssueController {
     }
 
     public void createRequestsForQuotation(final UserModel user, final UUID issueId,
-        final List<ContractorJson> contractors, final String scopeOfWork) {
+        final List<ContractorJson> contractors, final String scopeOfWork,
+        final String projectOwner, final String projectCareOf, final AddressJson billingAddress) {
         IssueEntity issue = getIssue(issueId);
         contractors.stream().distinct().forEach(contractor -> {
             QuotationRequestEntity request = new QuotationRequestEntity();
@@ -404,6 +406,13 @@ public class IssueController {
             request.setContractorId(contractor.getId());
             request.setOrganizationId(contractor.getOrganizationId());
             request.setScopeOfWork(scopeOfWork);
+            request.setProjectOwner(projectOwner);
+            request.setProjectCareOf(projectCareOf);
+            if (billingAddress != null) {
+                request.setProjectBillingAddress1(billingAddress.getAddressLine1());
+                request.setProjectBillingAddress2(billingAddress.getAddressLine2());
+                request.setProjectBillingAddress3(billingAddress.getAddressLine3());
+            }
             request.setStatus(RequestStatus.REQUESTED);
             requestForQuotationRepository.insert(request);
         });
