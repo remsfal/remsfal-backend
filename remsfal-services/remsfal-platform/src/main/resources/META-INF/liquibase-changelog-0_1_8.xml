@@ -13,18 +13,18 @@
             <column name="care_of" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
-            <column name="address_id" type="uuid">
+            <column name="billing_address_id" type="uuid">
                 <constraints nullable="true" />
             </column>
         </addColumn>
 
-        <addForeignKeyConstraint constraintName="fk_projects_address_id"
-                                 baseTableName="projects" baseColumnNames="address_id"
+        <addForeignKeyConstraint constraintName="fk_projects_billing_address_id"
+                                 baseTableName="projects" baseColumnNames="billing_address_id"
                                  referencedTableName="addresses" referencedColumnNames="id"
                                  onDelete="SET NULL" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_projects_address_fk" tableName="projects">
-            <column name="address_id" type="uuid" />
+        <createIndex indexName="idx_projects_billing_address_fk" tableName="projects">
+            <column name="billing_address_id" type="uuid" />
         </createIndex>
     </changeSet>
 

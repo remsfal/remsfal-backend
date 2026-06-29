@@ -82,16 +82,10 @@ public class ProjectController {
         ProjectEntity entity = new ProjectEntity();
         entity.generateId();
         entity.setTitle(project.getTitle());
-        entity.setOwner(resolveProjectOwner(userEntity));
-        if (project.getOwner() != null) {
-            entity.setOwner(project.getOwner());
+        if (!userEntity.getName().equals(userEntity.getEmail())) {
+            entity.setOwner(userEntity.getName());
         }
-        if (project.getCareOf() != null) {
-            entity.setCareOf(project.getCareOf());
-        }
-        if (project.getAddress() != null) {
-            entity.setAddress(resolveProjectAddress(userEntity, project));
-        } else if (userEntity.getAddress() != null) {
+        if (userEntity.getAddress() != null) {
             entity.setAddress(userEntity.getAddress());
         }
         entity.addMember(userEntity, MemberRole.PROPRIETOR);
@@ -119,7 +113,7 @@ public class ProjectController {
         }
         if (project.getAddress() != null) {
             final UserEntity userEntity = userController.getUser(user.getId());
-            entity.setAddress(resolveProjectAddress(userEntity, project));
+            entity.setAddress(resolveBillingAddress(userEntity, project));
         }
         return projectRepository.merge(entity);
         // fetch eager project members
@@ -127,14 +121,7 @@ public class ProjectController {
         // return entity;
     }
 
-    private String resolveProjectOwner(final UserEntity userEntity) {
-        if (isBlank(userEntity.getFirstName()) || isBlank(userEntity.getLastName())) {
-            return null;
-        }
-        return String.format("%s %s", userEntity.getFirstName().trim(), userEntity.getLastName().trim());
-    }
-
-    private AddressEntity resolveProjectAddress(final UserEntity userEntity, final ProjectModel project) {
+    private AddressEntity resolveBillingAddress(final UserEntity userEntity, final ProjectModel project) {
         final List<AddressEntity> addresses = new ArrayList<>();
         if (userEntity.getAddress() != null) {
             addresses.add(userEntity.getAddress());
@@ -145,30 +132,11 @@ public class ProjectController {
             .filter(Objects::nonNull)
             .forEach(addresses::add);
         for (AddressEntity candidate : addresses) {
-            if (matchesAddress(project, candidate)) {
+            if (candidate.equalsIgnoreCase(project.getAddress())) {
                 return candidate;
             }
         }
         return addressController.updateAddress(project.getAddress(), null);
-    }
-
-    private boolean matchesAddress(final ProjectModel project, final AddressEntity candidate) {
-        return equalsNullable(project.getAddress().getStreet(), candidate.getStreet())
-            && equalsNullable(project.getAddress().getCity(), candidate.getCity())
-            && equalsNullable(project.getAddress().getProvince(), candidate.getProvince())
-            && equalsNullable(project.getAddress().getZip(), candidate.getZip())
-            && Objects.equals(project.getAddress().getCountry(), candidate.getCountry());
-    }
-
-    private boolean equalsNullable(final String left, final String right) {
-        if (left == null || right == null) {
-            return left == null && right == null;
-        }
-        return left.trim().equalsIgnoreCase(right.trim());
-    }
-
-    private boolean isBlank(final String value) {
-        return value == null || value.isBlank();
     }
 
     @Transactional

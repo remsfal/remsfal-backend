@@ -22,6 +22,7 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -46,17 +47,20 @@ public abstract class ProjectJson implements ProjectModel {
     public abstract String getTitle();
 
     @Nullable
+    @Null(groups = PostValidation.class)
     @Size(max = 255, message = "The owner cannot be longer than 255 characters")
     @Override
     public abstract String getOwner();
 
     @Nullable
+    @Null(groups = PostValidation.class)
     @Size(max = 255, message = "The care of cannot be longer than 255 characters")
     @Override
     public abstract String getCareOf();
 
     @Valid
     @Nullable
+    @Null(groups = PostValidation.class)
     @Override
     public abstract AddressJson getAddress();
 

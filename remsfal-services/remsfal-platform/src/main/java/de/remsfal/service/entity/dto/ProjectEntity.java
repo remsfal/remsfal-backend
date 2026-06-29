@@ -36,7 +36,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     private String careOf;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "address_id", columnDefinition = "uuid")
+    @JoinColumn(name = "billing_address_id", columnDefinition = "uuid")
     private AddressEntity address;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
