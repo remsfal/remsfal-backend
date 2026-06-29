@@ -9,11 +9,11 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.model.FileUploadData;
-import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -404,7 +404,7 @@ public class IssueController {
 
     public void createRequestsForQuotation(final UserModel user, final UUID issueId,
         final List<ContractorJson> contractors, final String scopeOfWork,
-        final String projectOwner, final String projectCareOf, final AddressJson billingAddress) {
+        final String projectOwner, final String projectCareOf, final AddressModel billingAddress) {
         IssueEntity issue = getIssue(issueId);
         contractors.stream().distinct().forEach(contractor -> {
             QuotationRequestEntity request = new QuotationRequestEntity();
