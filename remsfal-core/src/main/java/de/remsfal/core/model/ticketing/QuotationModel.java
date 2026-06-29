@@ -3,25 +3,26 @@ package de.remsfal.core.model.ticketing;
 import jakarta.annotation.Nullable;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface QuotationRequestModel {
+public interface QuotationModel {
 
-    enum RequestStatus {
-        REQUESTED,
-        WITHDRAWN,
-        VIEWING_REQUIRED,
-        CONSULTATION_REQUIRED,
-        REJECTED,
-        SUBMITTED
+    enum QuotationStatus {
+        VALID,
+        INVALID,
+        ACCEPTED,
+        REJECTED
     }
 
     UUID getId();
 
     UUID getIssueId();
+
+    UUID getRequestId();
 
     UUID getProjectId();
 
@@ -30,15 +31,12 @@ public interface QuotationRequestModel {
     UUID getContractorId();
 
     @Nullable
-    UUID getOrganizationId();
+    List<UUID> getAttachments();
 
     @Nullable
-    String getContractorName();
+    Instant getValidUntil();
 
-    @Nullable
-    String getScopeOfWork();
-
-    RequestStatus getStatus();
+    QuotationStatus getStatus();
 
     Instant getCreatedAt();
 

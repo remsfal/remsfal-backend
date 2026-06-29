@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.6-quotation-requests-contractor-name"
+               author="alexander.stanik@htw-berlin.de">
+        <comment>Add contractor_name column to quotation_requests table</comment>
+        <sql>
+            ALTER TABLE REMSFAL.quotation_requests ADD contractor_name TEXT;
+        </sql>
+        <rollback>
+            <sql>ALTER TABLE REMSFAL.quotation_requests DROP contractor_name;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
