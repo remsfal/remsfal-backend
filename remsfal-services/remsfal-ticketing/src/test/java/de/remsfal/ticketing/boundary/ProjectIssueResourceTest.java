@@ -247,6 +247,63 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void createRequestsForQuotation_SUCCESS_storesBillingAddress() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId + "\",\"companyName\":\"Bauservice GmbH\"}],"
+            + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
+            + "\"projectCareOf\":\"Max Mustermann\","
+            + "\"billingAddress\":{"
+            + "\"street\":\"Musterstraße 1\","
+            + "\"city\":\"Berlin\","
+            + "\"province\":\"Berlin\","
+            + "\"zip\":\"10115\","
+            + "\"countryCode\":\"DE\""
+            + "}}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT project_owner, project_care_of, project_billing_address_1,"
+                + " project_billing_address_2, project_billing_address_3"
+                + " FROM remsfal.quotation_requests WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .all();
+
+        org.junit.jupiter.api.Assertions.assertEquals(1, rows.size());
+        org.junit.jupiter.api.Assertions.assertEquals("Mustermann Verwaltung GmbH",
+            rows.get(0).getString("project_owner"));
+        org.junit.jupiter.api.Assertions.assertEquals("Max Mustermann",
+            rows.get(0).getString("project_care_of"));
+        org.junit.jupiter.api.Assertions.assertEquals("Musterstraße 1",
+            rows.get(0).getString("project_billing_address_1"));
+        org.junit.jupiter.api.Assertions.assertEquals("10115 Berlin",
+            rows.get(0).getString("project_billing_address_2"));
+        org.junit.jupiter.api.Assertions.assertEquals("Berlin, DE",
+            rows.get(0).getString("project_billing_address_3"));
+    }
+
+    @Test
     void createRequestsForQuotation_FAILED_noPermission() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","

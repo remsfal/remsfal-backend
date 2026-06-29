@@ -4,6 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,9 +21,12 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.json.project.ImmutableProjectMemberJson;
+import de.remsfal.core.json.organization.ImmutableOrganizationJson;
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
+import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.ProjectRepository;
@@ -39,6 +43,9 @@ class ProjectControllerTest extends AbstractServiceTest {
 
     @Inject
     ProjectController projectController;
+
+    @Inject
+    OrganizationController organizationController;
 
     @Test
     void createProject_SUCCESS_defaultProjectCreated() {
@@ -87,6 +94,31 @@ class ProjectControllerTest extends AbstractServiceTest {
         assertNotNull(retrievedProject);
         assertEquals(project.getId(), retrievedProject.getId());
         assertEquals(project.getTitle(), retrievedProject.getTitle());
+    }
+
+    @Test
+    void createProject_SUCCESS_setOwnerAndAddressFromCreator() {
+        final UserModel user = userController
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        userController.updateUser(user.getId(), ImmutableUserJson.builder()
+            .firstName(TestData.USER_FIRST_NAME)
+            .lastName(TestData.USER_LAST_NAME)
+            .address(TestData.addressBuilder().build())
+            .build());
+
+        final ProjectModel project = projectController.createProject(user,
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        assertNotNull(project);
+        assertEquals(TestData.USER_NAME, project.getOwner());
+        assertNotNull(project.getAddress());
+        assertEquals(TestData.ADDRESS_STREET, project.getAddress().getStreet());
+
+        final Object[] result = (Object[]) entityManager
+            .createNativeQuery("SELECT owner, billing_address_id FROM projects WHERE id = :projectId")
+            .setParameter("projectId", project.getId())
+            .getSingleResult();
+        assertEquals(TestData.USER_NAME, result[0]);
+        assertNotNull(result[1]);
     }
 
     @Test
@@ -168,6 +200,110 @@ class ProjectControllerTest extends AbstractServiceTest {
             .setParameter("projectId", project.getId())
             .getSingleResult();
         assertEquals(TestData.PROJECT_TITLE_2, projectTitle);
+    }
+
+    @Test
+    void updateProject_SUCCESS_withOwnerAndCareOf() {
+        final UserModel user = userController
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        final ProjectModel project = projectController.createProject(user,
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
+        assertNotNull(project);
+
+        final String updatedOwner = "Updated Billing Owner";
+        final String updatedCareOf = "c/o New Manager";
+        final ProjectModel updatedProject = projectController.updateProject(user, project.getId(),
+            ImmutableProjectJson.builder()
+                .id(project.getId())
+                .title(TestData.PROJECT_TITLE_2)
+                .owner(updatedOwner)
+                .careOf(updatedCareOf)
+                .build());
+        assertNotNull(updatedProject);
+        assertEquals(TestData.PROJECT_TITLE_2, updatedProject.getTitle());
+        assertEquals(updatedOwner, updatedProject.getOwner());
+        assertEquals(updatedCareOf, updatedProject.getCareOf());
+
+        final Object[] result = (Object[]) entityManager
+            .createNativeQuery("SELECT owner, care_of FROM projects WHERE id = :projectId")
+            .setParameter("projectId", project.getId())
+            .getSingleResult();
+        assertEquals(updatedOwner, result[0]);
+        assertEquals(updatedCareOf, result[1]);
+    }
+
+    @Test
+    void updateProject_SUCCESS_reuseAddressIdFromUserOrOrganization() {
+        final UserModel user = userController
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        userController.updateUser(user.getId(), ImmutableUserJson.builder()
+            .firstName(TestData.USER_FIRST_NAME)
+            .lastName(TestData.USER_LAST_NAME)
+            .address(TestData.addressBuilder1().build())
+            .build());
+        final OrganizationEntity organization = organizationController.createOrganization(
+            ImmutableOrganizationJson.builder()
+                .name("Test Organization")
+                .address(TestData.addressBuilder2().build())
+                .build(),
+            user
+        );
+        assertNotNull(organization.getAddress());
+
+        final ProjectModel project = projectController.createProject(user,
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        assertNotNull(project.getAddress());
+
+        final ProjectModel updatedProject = projectController.updateProject(user, project.getId(),
+            ImmutableProjectJson.builder()
+                .id(project.getId())
+                .title(TestData.PROJECT_TITLE)
+                .address(TestData.addressBuilder2().build())
+                .build());
+        assertNotNull(updatedProject.getAddress());
+        assertEquals(TestData.ADDRESS_STREET_2, updatedProject.getAddress().getStreet());
+
+        final UUID updatedAddressId = (UUID) entityManager
+            .createNativeQuery("SELECT billing_address_id FROM projects WHERE id = :projectId")
+            .setParameter("projectId", project.getId())
+            .getSingleResult();
+        assertEquals(organization.getAddress().getId(), updatedAddressId);
+    }
+
+    @Test
+    void updateProject_SUCCESS_createDedicatedAddressId() {
+        final UserModel user = userController
+            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        userController.updateUser(user.getId(), ImmutableUserJson.builder()
+            .firstName(TestData.USER_FIRST_NAME)
+            .lastName(TestData.USER_LAST_NAME)
+            .address(TestData.addressBuilder1().build())
+            .build());
+
+        final ProjectModel project = projectController.createProject(user,
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+
+        final UUID userAddressId = (UUID) entityManager
+            .createNativeQuery("SELECT address_id FROM users WHERE id = :userId")
+            .setParameter("userId", user.getId())
+            .getSingleResult();
+
+        final ProjectModel updatedProject = projectController.updateProject(user, project.getId(),
+            ImmutableProjectJson.builder()
+                .id(project.getId())
+                .title(TestData.PROJECT_TITLE)
+                .address(TestData.addressBuilder3().build())
+                .build());
+        assertNotNull(updatedProject.getAddress());
+        assertEquals(TestData.ADDRESS_STREET_3, updatedProject.getAddress().getStreet());
+
+        final UUID projectAddressId = (UUID) entityManager
+            .createNativeQuery("SELECT billing_address_id FROM projects WHERE id = :projectId")
+            .setParameter("projectId", project.getId())
+            .getSingleResult();
+        assertNotNull(projectAddressId);
+        assertNotEquals(projectAddressId, userAddressId);
     }
 
     @Test

@@ -88,6 +88,24 @@ public class AddressEntity extends AbstractEntity implements AddressModel {
         return false;
     }
 
+    public boolean equalsIgnoreCase(final AddressModel m) {
+        if (m == null) {
+            return false;
+        }
+        return equalsIgnoreCase(street, m.getStreet())
+            && equalsIgnoreCase(city, m.getCity())
+            && equalsIgnoreCase(province, m.getProvince())
+            && equalsIgnoreCase(zip, m.getZip())
+            && Objects.equals(getCountry(), m.getCountry());
+    }
+
+    private static boolean equalsIgnoreCase(final String a, final String b) {
+        if (a == null || b == null) {
+            return a == null && b == null;
+        }
+        return a.trim().equalsIgnoreCase(b.trim());
+    }
+
     public String toString() {
         return String.format("%s, %s %s, %s %s", street, zip, city, country, province);
     }

@@ -204,6 +204,60 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void getQuotationRequests_SUCCESS_includesBillingAddressFields() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\""
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"companyName\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
+            + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
+            + "\"projectCareOf\":\"Max Mustermann\","
+            + "\"billingAddress\":{"
+            + "\"street\":\"Musterstraße 1\","
+            + "\"city\":\"Berlin\","
+            + "\"province\":\"Berlin\","
+            + "\"zip\":\"10115\","
+            + "\"countryCode\":\"DE\""
+            + "}}";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .get(QUOTATION_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1))
+            .body("items[0].projectOwner", equalTo("Mustermann Verwaltung GmbH"))
+            .body("items[0].projectCareOf", equalTo("Max Mustermann"))
+            .body("items[0].projectBillingAddress1", equalTo("Musterstraße 1"))
+            .body("items[0].projectBillingAddress2", equalTo("10115 Berlin"))
+            .body("items[0].projectBillingAddress3", equalTo("Berlin, DE"));
+    }
+
+    @Test
     void getQuotationRequests_SUCCESS_ownerOrgRoleAlsoAllowed() {
         final UUID organizationId = TicketingTestData.ORGANIZATION_ID_2;
         final UUID contractorId = UUID.randomUUID();

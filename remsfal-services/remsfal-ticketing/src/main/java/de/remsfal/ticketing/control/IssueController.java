@@ -13,6 +13,7 @@ import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -402,7 +403,8 @@ public class IssueController {
     }
 
     public void createRequestsForQuotation(final UserModel user, final UUID issueId,
-        final List<ContractorJson> contractors, final String scopeOfWork) {
+        final List<ContractorJson> contractors, final String scopeOfWork,
+        final String projectOwner, final String projectCareOf, final AddressModel billingAddress) {
         IssueEntity issue = getIssue(issueId);
         contractors.stream().distinct().forEach(contractor -> {
             QuotationRequestEntity request = new QuotationRequestEntity();
@@ -414,6 +416,13 @@ public class IssueController {
             request.setOrganizationId(contractor.getOrganizationId());
             request.setContractorName(contractor.getCompanyName());
             request.setScopeOfWork(scopeOfWork);
+            request.setProjectOwner(projectOwner);
+            request.setProjectCareOf(projectCareOf);
+            if (billingAddress != null) {
+                request.setProjectBillingAddress1(billingAddress.getAddressLine1());
+                request.setProjectBillingAddress2(billingAddress.getAddressLine2());
+                request.setProjectBillingAddress3(billingAddress.getAddressLine3());
+            }
             request.setStatus(RequestStatus.REQUESTED);
             requestForQuotationRepository.insert(request);
         });

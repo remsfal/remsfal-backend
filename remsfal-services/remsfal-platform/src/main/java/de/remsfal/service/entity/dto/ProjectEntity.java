@@ -9,8 +9,11 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import de.remsfal.core.model.AddressModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectModel;
@@ -25,7 +28,17 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     @Column(name = "title")
     private String title;
-    
+
+    @Column(name = "owner")
+    private String owner;
+
+    @Column(name = "care_of")
+    private String careOf;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "billing_address_id", columnDefinition = "uuid")
+    private AddressEntity address;
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ProjectMembershipEntity> memberships;
 
@@ -39,6 +52,33 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     public void setTitle(final String title) {
         this.title = title;
+    }
+
+    @Override
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(final String owner) {
+        this.owner = owner;
+    }
+
+    @Override
+    public String getCareOf() {
+        return careOf;
+    }
+
+    public void setCareOf(final String careOf) {
+        this.careOf = careOf;
+    }
+
+    @Override
+    public AddressModel getAddress() {
+        return address;
+    }
+
+    public void setAddress(final AddressEntity address) {
+        this.address = address;
     }
 
     @Override
@@ -98,6 +138,9 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
         if (o instanceof ProjectEntity e) {
             return super.equals(e)
                 && Objects.equals(title, e.title)
+                && Objects.equals(owner, e.owner)
+                && Objects.equals(careOf, e.careOf)
+                && Objects.equals(address, e.address)
                 && Objects.equals(memberships, e.memberships);
         }
         return false;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ContractorJson;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
@@ -28,5 +29,16 @@ public abstract class CreateQuotationRequestJson {
     @Nullable
     @Size(max = 5000)
     public abstract String getScopeOfWork();
+
+    @Nullable
+    @Size(max = 255)
+    public abstract String getProjectOwner();
+
+    @Nullable
+    @Size(max = 255)
+    public abstract String getProjectCareOf();
+
+    @Nullable
+    public abstract AddressJson getBillingAddress();
 
 }

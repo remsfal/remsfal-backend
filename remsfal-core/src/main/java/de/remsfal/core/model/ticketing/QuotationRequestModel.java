@@ -38,6 +38,21 @@ public interface QuotationRequestModel {
     @Nullable
     String getScopeOfWork();
 
+    @Nullable
+    String getProjectOwner();
+
+    @Nullable
+    String getProjectCareOf();
+
+    @Nullable
+    String getProjectBillingAddress1();
+
+    @Nullable
+    String getProjectBillingAddress2();
+
+    @Nullable
+    String getProjectBillingAddress3();
+
     RequestStatus getStatus();
 
     Instant getCreatedAt();

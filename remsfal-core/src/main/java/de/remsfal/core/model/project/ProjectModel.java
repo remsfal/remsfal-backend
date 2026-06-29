@@ -1,5 +1,8 @@
 package de.remsfal.core.model.project;
 
+import de.remsfal.core.model.AddressModel;
+import jakarta.annotation.Nullable;
+
 import java.util.Set;
 import java.util.UUID;
 
@@ -11,6 +14,15 @@ public interface ProjectModel {
     UUID getId();
 
     String getTitle();
+
+    @Nullable
+    String getOwner();
+
+    @Nullable
+    String getCareOf();
+
+    @Nullable
+    AddressModel getAddress();
 
     Set<? extends ProjectMemberModel> getMembers();
 

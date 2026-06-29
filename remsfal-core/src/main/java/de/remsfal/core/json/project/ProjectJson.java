@@ -2,6 +2,7 @@ package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
@@ -18,8 +19,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
+import de.remsfal.core.validation.PostValidation;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -43,6 +46,24 @@ public abstract class ProjectJson implements ProjectModel {
     @Override
     public abstract String getTitle();
 
+    @Nullable
+    @Null(groups = PostValidation.class)
+    @Size(max = 255, message = "The owner cannot be longer than 255 characters")
+    @Override
+    public abstract String getOwner();
+
+    @Nullable
+    @Null(groups = PostValidation.class)
+    @Size(max = 255, message = "The care of cannot be longer than 255 characters")
+    @Override
+    public abstract String getCareOf();
+
+    @Valid
+    @Nullable
+    @Null(groups = PostValidation.class)
+    @Override
+    public abstract AddressJson getAddress();
+
     @Null
     @Nullable
     @Schema(readOnly = true, description = "Project members (managed separately via members endpoint)")
@@ -52,7 +73,10 @@ public abstract class ProjectJson implements ProjectModel {
     public static ProjectJson valueOf(final ProjectModel model) {
         final ImmutableProjectJson.Builder builder = ImmutableProjectJson.builder()
             .id(model.getId())
-            .title(model.getTitle());
+            .title(model.getTitle())
+            .owner(model.getOwner())
+            .careOf(model.getCareOf())
+            .address(AddressJson.valueOf(model.getAddress()));
         for (ProjectMemberModel member : model.getMembers()) {
             builder.addMembers(ProjectMemberJson.valueOf(member));
         }

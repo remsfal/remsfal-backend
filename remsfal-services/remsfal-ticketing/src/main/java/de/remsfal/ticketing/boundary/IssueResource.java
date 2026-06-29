@@ -308,7 +308,8 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     public Response createRequestsForQuotation(final UUID issueId, final CreateQuotationRequestJson request) {
         checkIssueWritePermissions(issueId);
         issueController.createRequestsForQuotation(principal, issueId,
-            request.getContractors(), request.getScopeOfWork());
+            request.getContractors(), request.getScopeOfWork(),
+            request.getProjectOwner(), request.getProjectCareOf(), request.getBillingAddress());
         return Response.status(Response.Status.CREATED).build();
     }
 

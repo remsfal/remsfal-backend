@@ -34,6 +34,21 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     @Column("scope_of_work")
     private String scopeOfWork;
 
+    @Column("project_owner")
+    private String projectOwner;
+
+    @Column("project_care_of")
+    private String projectCareOf;
+
+    @Column("project_billing_address_1")
+    private String projectBillingAddress1;
+
+    @Column("project_billing_address_2")
+    private String projectBillingAddress2;
+
+    @Column("project_billing_address_3")
+    private String projectBillingAddress3;
+
     @Column("status")
     private String status;
 
@@ -126,6 +141,51 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     public void setScopeOfWork(String scopeOfWork) {
         this.scopeOfWork = scopeOfWork;
+    }
+
+    @Override
+    public String getProjectOwner() {
+        return projectOwner;
+    }
+
+    public void setProjectOwner(String projectOwner) {
+        this.projectOwner = projectOwner;
+    }
+
+    @Override
+    public String getProjectCareOf() {
+        return projectCareOf;
+    }
+
+    public void setProjectCareOf(String projectCareOf) {
+        this.projectCareOf = projectCareOf;
+    }
+
+    @Override
+    public String getProjectBillingAddress1() {
+        return projectBillingAddress1;
+    }
+
+    public void setProjectBillingAddress1(String projectBillingAddress1) {
+        this.projectBillingAddress1 = projectBillingAddress1;
+    }
+
+    @Override
+    public String getProjectBillingAddress2() {
+        return projectBillingAddress2;
+    }
+
+    public void setProjectBillingAddress2(String projectBillingAddress2) {
+        this.projectBillingAddress2 = projectBillingAddress2;
+    }
+
+    @Override
+    public String getProjectBillingAddress3() {
+        return projectBillingAddress3;
+    }
+
+    public void setProjectBillingAddress3(String projectBillingAddress3) {
+        this.projectBillingAddress3 = projectBillingAddress3;
     }
 
     @Override
