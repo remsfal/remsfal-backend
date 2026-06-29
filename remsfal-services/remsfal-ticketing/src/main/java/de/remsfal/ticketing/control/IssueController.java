@@ -11,6 +11,7 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
@@ -18,12 +19,15 @@ import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.QuotationModel.QuotationStatus;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dao.QuotationRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentKey;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.dto.QuotationEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
@@ -37,6 +41,8 @@ import java.util.UUID;
 
 @RequestScoped
 public class IssueController {
+
+    static final String QUOTATION_REQUEST_NOT_FOUND = "Quotation request not found";
 
     @Inject
     Logger logger;
@@ -52,6 +58,9 @@ public class IssueController {
 
     @Inject
     QuotationRequestRepository requestForQuotationRepository;
+
+    @Inject
+    QuotationRepository quotationRepository;
 
     @Inject
     FileStorageController fileStorageController;
@@ -405,6 +414,7 @@ public class IssueController {
             request.setTriggerId(user.getId());
             request.setContractorId(contractor.getId());
             request.setOrganizationId(contractor.getOrganizationId());
+            request.setContractorName(contractor.getCompanyName());
             request.setScopeOfWork(scopeOfWork);
             request.setProjectOwner(projectOwner);
             request.setProjectCareOf(projectCareOf);
@@ -429,7 +439,7 @@ public class IssueController {
         key.setIssueId(issueId);
         key.setRequestId(requestId);
         return requestForQuotationRepository.findById(key)
-            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
     }
 
     public QuotationRequestEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
@@ -466,7 +476,7 @@ public class IssueController {
             .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
             .filter(r -> requestId.equals(r.getRequestId()))
             .findFirst()
-            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
         entity.setStatus(body.getStatus());
         return requestForQuotationRepository.update(entity);
     }
@@ -477,6 +487,27 @@ public class IssueController {
         return organizationIds.stream()
             .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
             .toList();
+    }
+
+    public QuotationEntity createQuotationByContractor(final Set<UUID> organizationIds, final UUID requestId,
+        final QuotationJson body) {
+        final QuotationRequestEntity request = organizationIds.stream()
+            .flatMap(orgId -> requestForQuotationRepository.findByOrganizationId(orgId).stream())
+            .filter(r -> requestId.equals(r.getRequestId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
+
+        QuotationEntity quotation = new QuotationEntity();
+        quotation.generateId();
+        quotation.setIssueId(request.getIssueId());
+        quotation.setRequestId(request.getRequestId());
+        quotation.setProjectId(request.getProjectId());
+        quotation.setTriggerId(request.getTriggerId());
+        quotation.setContractorId(request.getContractorId());
+        quotation.setAttachments(body.getAttachments());
+        quotation.setValidUntil(body.getValidUntil());
+        quotation.setStatus(body.getStatus() != null ? body.getStatus() : QuotationStatus.VALID);
+        return quotationRepository.insert(quotation);
     }
 
     public void deleteAttachment(UUID issueId, UUID attachmentId) {

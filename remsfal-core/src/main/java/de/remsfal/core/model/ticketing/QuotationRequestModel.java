@@ -33,6 +33,9 @@ public interface QuotationRequestModel {
     UUID getOrganizationId();
 
     @Nullable
+    String getContractorName();
+
+    @Nullable
     String getScopeOfWork();
 
     @Nullable
