@@ -410,6 +410,7 @@ public class IssueController {
             request.setTriggerId(user.getId());
             request.setContractorId(contractor.getId());
             request.setOrganizationId(contractor.getOrganizationId());
+            request.setContractorName(contractor.getCompanyName());
             request.setScopeOfWork(scopeOfWork);
             request.setStatus(RequestStatus.REQUESTED);
             requestForQuotationRepository.insert(request);

@@ -28,6 +28,9 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     @Column("organization_id")
     private UUID organizationId;
 
+    @Column("contractor_name")
+    private String contractorName;
+
     @Column("scope_of_work")
     private String scopeOfWork;
 
@@ -106,6 +109,15 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     public void setOrganizationId(UUID organizationId) {
         this.organizationId = organizationId;
+    }
+
+    @Override
+    public String getContractorName() {
+        return contractorName;
+    }
+
+    public void setContractorName(final String contractorName) {
+        this.contractorName = contractorName;
     }
 
     public String getScopeOfWork() {

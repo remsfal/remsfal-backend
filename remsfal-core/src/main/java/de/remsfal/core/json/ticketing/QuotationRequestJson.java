@@ -50,6 +50,10 @@ public abstract class QuotationRequestJson {
     public abstract UUID getOrganizationId();
 
     @Nullable
+    @Schema(readOnly = true, description = "Company name of the contractor")
+    public abstract String getContractorName();
+
+    @Nullable
     @Size(max = 5000)
     @Schema(description = "Scope of work description for the contractor")
     public abstract String getScopeOfWork();
@@ -75,6 +79,7 @@ public abstract class QuotationRequestJson {
             .triggerId(model.getTriggerId())
             .contractorId(model.getContractorId())
             .organizationId(model.getOrganizationId())
+            .contractorName(model.getContractorName())
             .scopeOfWork(model.getScopeOfWork())
             .status(model.getStatus())
             .createdAt(model.getCreatedAt())
