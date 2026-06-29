@@ -71,4 +71,18 @@ class UserEventProducerTest {
             UserEventType.USER_DELETED,
             userId);
     }
+
+    @Test
+    void sendUserDeleted_whenAckFails_isHandled() {
+        final UUID userId = UUID.randomUUID();
+        final RuntimeException failure = new RuntimeException("kafka ack failed");
+        Mockito.when(emitter.send(Mockito.<UserEventJson>any())).thenReturn(CompletableFuture.failedFuture(failure));
+
+        assertDoesNotThrow(() -> producer.sendUserDeleted(userId));
+        verify(logger).errorv(
+            failure,
+            "Failed to send user event (type={0}, userId={1})",
+            UserEventType.USER_DELETED,
+            userId);
+    }
 }

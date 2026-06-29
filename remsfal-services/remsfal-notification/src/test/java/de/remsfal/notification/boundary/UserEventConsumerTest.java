@@ -39,6 +39,19 @@ class UserEventConsumerTest {
         verify(message).ack();
     }
 
+    @Test
+    void consume_incompletePayload_acknowledgesWithoutProcessing() {
+        final UserEventJson event = mock(UserEventJson.class);
+        when(event.getUserEventType()).thenReturn(UserEventType.USER_DELETED);
+        when(event.getUserId()).thenReturn(null);
+        final Message<UserEventJson> message = mockMessage(event);
+
+        consumer.consume(message);
+
+        verify(consumer.logger).warn("Skipping user event because payload is incomplete");
+        verify(message).ack();
+    }
+
     @SuppressWarnings("unchecked")
     private Message<UserEventJson> mockMessage(final UserEventJson payload) {
         final Message<UserEventJson> message = mock(Message.class);

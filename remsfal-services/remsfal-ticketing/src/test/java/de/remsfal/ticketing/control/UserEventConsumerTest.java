@@ -58,6 +58,21 @@ class UserEventConsumerTest {
         consumer.consume(message);
 
         verify(issueRepository, never()).clearAssigneeAndResetStatus(any(), any());
+        verify(logger).warn("Skipping user event because payload is incomplete");
+        verify(message).ack();
+    }
+
+    @Test
+    void consume_payloadWithoutUserId_isSkipped() {
+        final UserEventJson event = mock(UserEventJson.class);
+        when(event.getUserEventType()).thenReturn(UserEventType.USER_DELETED);
+        when(event.getUserId()).thenReturn(null);
+        final Message<UserEventJson> message = mockMessage(event);
+
+        consumer.consume(message);
+
+        verify(issueRepository, never()).clearAssigneeAndResetStatus(any(), any());
+        verify(logger).warn("Skipping user event because payload is incomplete");
         verify(message).ack();
     }
 
