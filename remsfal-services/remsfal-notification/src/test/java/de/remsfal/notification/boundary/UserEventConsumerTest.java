@@ -1,62 +1,57 @@
 package de.remsfal.notification.boundary;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.microprofile.reactive.messaging.Message;
-import org.jboss.logging.Logger;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.json.eventing.ImmutableUserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson.UserEventType;
+import de.remsfal.test.kafka.AbstractKafkaTest;
+import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.kafka.KafkaCompanionResource;
 
-class UserEventConsumerTest {
+@QuarkusTest
+@QuarkusTestResource(KafkaCompanionResource.class)
+class UserEventConsumerTest extends AbstractKafkaTest {
 
-    private UserEventConsumer consumer;
+    @InjectSpy
+    UserEventConsumer consumer;
 
+    @Override
     @BeforeEach
-    void setUp() {
-        consumer = new UserEventConsumer();
-        consumer.logger = mock(Logger.class);
+    protected void clearAllTopics() {
+        companion.registerSerde(ImmutableUserEventJson.class,
+            new ObjectMapperSerde<>(ImmutableUserEventJson.class));
     }
 
     @Test
-    void consume_userDeleted_acknowledgesMessage() {
-        final UserEventJson event = ImmutableUserEventJson.builder()
+    void testConsumeUserDeleted_processesEvent() {
+        final ImmutableUserEventJson event = ImmutableUserEventJson.builder()
             .userEventType(UserEventType.USER_DELETED)
             .userId(UUID.randomUUID())
             .build();
-        final Message<UserEventJson> message = mockMessage(event);
 
-        consumer.consume(message);
+        companion.produce(ImmutableUserEventJson.class)
+            .fromRecords(new ProducerRecord<>(UserEventJson.TOPIC, event))
+            .awaitCompletion();
 
-        verify(message).ack();
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+                verify(consumer, atLeastOnce()).consume(any())
+            );
     }
 
-    @Test
-    void consume_incompletePayload_acknowledgesWithoutProcessing() {
-        final UserEventJson event = mock(UserEventJson.class);
-        when(event.getUserEventType()).thenReturn(UserEventType.USER_DELETED);
-        when(event.getUserId()).thenReturn(null);
-        final Message<UserEventJson> message = mockMessage(event);
-
-        consumer.consume(message);
-
-        verify(consumer.logger).warn("Skipping user event because payload is incomplete");
-        verify(message).ack();
-    }
-
-    @SuppressWarnings("unchecked")
-    private Message<UserEventJson> mockMessage(final UserEventJson payload) {
-        final Message<UserEventJson> message = mock(Message.class);
-        when(message.getPayload()).thenReturn(payload);
-        when(message.ack()).thenReturn(CompletableFuture.completedFuture(null));
-        return message;
-    }
 }

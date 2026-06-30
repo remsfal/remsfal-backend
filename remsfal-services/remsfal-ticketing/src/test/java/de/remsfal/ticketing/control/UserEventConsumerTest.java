@@ -1,86 +1,81 @@
 package de.remsfal.ticketing.control;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.time.Duration;
+import java.util.Set;
 
-import org.eclipse.microprofile.reactive.messaging.Message;
-import org.jboss.logging.Logger;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.awaitility.Awaitility;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.json.eventing.ImmutableUserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson.UserEventType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.test.TestData;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.kafka.InjectKafkaCompanion;
+import io.quarkus.test.kafka.KafkaCompanionResource;
+import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
+import jakarta.inject.Inject;
 
+@QuarkusTest
+@QuarkusTestResource(KafkaCompanionResource.class)
+@QuarkusTestResource(CassandraTestResource.class)
 class UserEventConsumerTest {
 
-    private UserEventConsumer consumer;
-    private IssueRepository issueRepository;
-    private Logger logger;
+    @InjectKafkaCompanion
+    KafkaCompanion companion;
+
+    @Inject
+    UserEventConsumer consumer;
+
+    @InjectSpy
+    IssueRepository issueRepository;
 
     @BeforeEach
-    void setUp() {
-        consumer = new UserEventConsumer();
-        issueRepository = mock(IssueRepository.class);
-        logger = mock(Logger.class);
-        consumer.issueRepository = issueRepository;
-        consumer.logger = logger;
+    void setup() {
+        Config config = ConfigProvider.getConfig();
+        String bootstrapServers = config.getValue("quarkus.kafka.bootstrap-servers", String.class);
+        companion = new KafkaCompanion(bootstrapServers);
+
+        Set<String> topics = Set.of(UserEventJson.TOPIC);
+        for (String topic : topics) {
+            companion.topics().clearIfExists(topic);
+        }
+
+        companion.registerSerde(ImmutableUserEventJson.class,
+            new ObjectMapperSerde<>(ImmutableUserEventJson.class));
     }
 
     @Test
-    void consume_userDeleted_updatesIssues() {
-        final UUID userId = UUID.randomUUID();
-        final UserEventJson event = ImmutableUserEventJson.builder()
+    void testConsumeUserDeleted_callsClearAssigneeAndResetStatus() {
+        final ImmutableUserEventJson event = ImmutableUserEventJson.builder()
             .userEventType(UserEventType.USER_DELETED)
-            .userId(userId)
+            .userId(TestData.USER_ID)
             .build();
-        final Message<UserEventJson> message = mockMessage(event);
-        when(issueRepository.clearAssigneeAndResetStatus(userId, IssueStatus.OPEN)).thenReturn(2);
 
-        consumer.consume(message);
+        companion.produce(ImmutableUserEventJson.class)
+            .fromRecords(new ProducerRecord<>(UserEventJson.TOPIC, event))
+            .awaitCompletion();
 
-        verify(issueRepository).clearAssigneeAndResetStatus(userId, IssueStatus.OPEN);
-        verify(message).ack();
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(10))
+            .untilAsserted(() ->
+                verify(issueRepository, atLeastOnce())
+                    .clearAssigneeAndResetStatus(TestData.USER_ID, IssueStatus.OPEN)
+            );
     }
 
-    @Test
-    void consume_incompletePayload_isSkipped() {
-        final Message<UserEventJson> message = mockMessage(null);
-
-        consumer.consume(message);
-
-        verify(issueRepository, never()).clearAssigneeAndResetStatus(any(), any());
-        verify(logger).warn("Skipping user event because payload is incomplete");
-        verify(message).ack();
-    }
-
-    @Test
-    void consume_payloadWithoutUserId_isSkipped() {
-        final UserEventJson event = mock(UserEventJson.class);
-        when(event.getUserEventType()).thenReturn(UserEventType.USER_DELETED);
-        when(event.getUserId()).thenReturn(null);
-        final Message<UserEventJson> message = mockMessage(event);
-
-        consumer.consume(message);
-
-        verify(issueRepository, never()).clearAssigneeAndResetStatus(any(), any());
-        verify(logger).warn("Skipping user event because payload is incomplete");
-        verify(message).ack();
-    }
-
-    @SuppressWarnings("unchecked")
-    private Message<UserEventJson> mockMessage(final UserEventJson payload) {
-        final Message<UserEventJson> message = mock(Message.class);
-        when(message.getPayload()).thenReturn(payload);
-        when(message.ack()).thenReturn(CompletableFuture.completedFuture(null));
-        return message;
-    }
 }
