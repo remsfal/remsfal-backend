@@ -66,6 +66,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute("TRUNCATE inbox_messages");
         cqlSession.execute("TRUNCATE quotation_requests");
         cqlSession.execute("TRUNCATE quotations");
+        cqlSession.execute("TRUNCATE order_placements");
     }
 
     protected InputStream getTestFileStream(final String path) {

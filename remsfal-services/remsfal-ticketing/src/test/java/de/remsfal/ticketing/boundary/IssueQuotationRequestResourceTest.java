@@ -28,6 +28,7 @@ import io.restassured.http.ContentType;
 class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
 
     static final String BASE_PATH = "/ticketing/v1/issues";
+    static final String QUOTATION_PATH = "/ticketing/v1/order-management/quotation-requests";
 
     // --- Create Quotation Requests ---
 
@@ -377,6 +378,79 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .patch(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
             .then()
             .statusCode(400);
+    }
+
+    @Test
+    void placeOrder_SUCCESS_createsOrderPlacement() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final UUID contractorUserId = UUID.randomUUID();
+
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+                + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+                + "\"type\":\"TASK\""
+                + "}")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"contractors\":[{\"id\":\"" + contractorId
+                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .get(QUOTATION_PATH)
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        final String quotationId = given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"VALID\" }")
+            .post(QUOTATION_PATH + "/" + requestId + "/quotation")
+            .then()
+            .statusCode(200)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .post(BASE_PATH + "/" + issueId + "/quotations/" + quotationId + "/order-placement")
+            .then()
+            .statusCode(201);
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT issue_id, quotation_id, project_id, orderer_id, ordered_by, contractor_id, status "
+                + "FROM remsfal.order_placements WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .all();
+
+        assertEquals(1, rows.size());
+        Row row = rows.get(0);
+        assertEquals(UUID.fromString(issueId), row.getUuid("issue_id"));
+        assertEquals(UUID.fromString(quotationId), row.getUuid("quotation_id"));
+        assertEquals(TicketingTestData.PROJECT_ID, row.getUuid("project_id"));
+        assertEquals(TicketingTestData.USER_ID, row.getUuid("orderer_id"));
+        assertEquals(TicketingTestData.USER_NAME, row.getString("ordered_by"));
+        assertEquals(contractorId, row.getUuid("contractor_id"));
+        assertEquals("placed", row.getString("status"));
     }
 
 }

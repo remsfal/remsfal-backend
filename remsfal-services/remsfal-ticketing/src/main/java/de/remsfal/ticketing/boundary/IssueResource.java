@@ -33,6 +33,7 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.TenancyValidation;
 import de.remsfal.ticketing.control.AttachmentController;
+import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
 
@@ -51,6 +52,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Inject
     AttachmentController attachmentController;
+
+    @Inject
+    OrderManagementController orderManagementController;
 
     @Inject
     Instance<IssueAttachmentResource> attachmentResource;
@@ -273,6 +277,13 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public IssueQuotationRequestEndpoint getQuotationRequestResource() {
         return resourceContext.initResource(quotationRequestResource.get());
+    }
+
+    @Override
+    public Response placeOrder(final UUID issueId, final UUID quotationId) {
+        checkIssueWritePermissions(issueId);
+        orderManagementController.placeOrder(issueId, quotationId);
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @Override

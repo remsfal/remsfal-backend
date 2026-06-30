@@ -11,15 +11,19 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
+import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.QuotationModel.QuotationStatus;
 import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dao.OrderPlacementRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
 import de.remsfal.ticketing.entity.dto.QuotationEntity;
+import de.remsfal.ticketing.entity.dto.QuotationKey;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 
@@ -46,6 +50,9 @@ public class OrderManagementController {
 
     @Inject
     QuotationRepository quotationRepository;
+
+    @Inject
+    OrderPlacementRepository orderPlacementRepository;
 
     public void createRequestsForQuotation(final UserModel user, final UUID issueId,
         final List<ContractorJson> contractors, final String scopeOfWork,
@@ -156,6 +163,25 @@ public class OrderManagementController {
         quotation.setValidUntil(body.getValidUntil());
         quotation.setStatus(body.getStatus() != null ? body.getStatus() : QuotationStatus.VALID);
         return quotationRepository.insert(quotation);
+    }
+
+    public void placeOrder(final UUID issueId, final UUID quotationId) {
+        QuotationKey key = new QuotationKey();
+        key.setIssueId(issueId);
+        key.setQuotationId(quotationId);
+        QuotationEntity quotation = quotationRepository.findById(key)
+            .orElseThrow(() -> new NotFoundException("Quotation not found"));
+
+        OrderPlacementEntity orderPlacement = new OrderPlacementEntity();
+        orderPlacement.generateId();
+        orderPlacement.setIssueId(issueId);
+        orderPlacement.setQuotationId(quotationId);
+        orderPlacement.setProjectId(quotation.getProjectId());
+        orderPlacement.setOrdererId(principal.getId());
+        orderPlacement.setOrderedBy(principal.getName());
+        orderPlacement.setContractorId(quotation.getContractorId());
+        orderPlacement.setStatus(OrderPlacementStatus.PLACED);
+        orderPlacementRepository.insert(orderPlacement);
     }
 
 }

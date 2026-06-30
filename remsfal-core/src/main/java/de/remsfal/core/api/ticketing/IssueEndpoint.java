@@ -186,6 +186,19 @@ public interface IssueEndpoint {
     @Path("/{issueId}/" + IssueQuotationRequestEndpoint.SERVICE)
     IssueQuotationRequestEndpoint getQuotationRequestResource();
 
+    @POST
+    @Path("/{issueId}/quotations/{quotationId}/order-placement")
+    @Operation(summary = "Place an order based on a quotation.")
+    @APIResponse(responseCode = "201", description = "Order placement created successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to access this issue")
+    @APIResponse(responseCode = "404", description = "The issue or quotation does not exist")
+    Response placeOrder(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the quotation", required = true)
+        @PathParam("quotationId") @NotNull UUID quotationId);
+
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
 

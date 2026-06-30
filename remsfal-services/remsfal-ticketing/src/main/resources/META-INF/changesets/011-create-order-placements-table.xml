@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.11-order-placements" author="alexander.stanik@htw-berlin.de">
+        <comment>Create order placements table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.order_placements (
+                issue_id UUID,
+                placement_id UUID,
+                quotation_id UUID,
+                project_id UUID,
+                orderer_id UUID,
+                ordered_by TEXT,
+                contractor_id UUID,
+                confirmor_id UUID,
+                confirmed_by TEXT,
+                status TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY (issue_id, placement_id)
+            ) WITH CLUSTERING ORDER BY (placement_id DESC);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.order_placements;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
