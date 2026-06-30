@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.control;
+package de.remsfal.ticketing.boundary.eventing;
 
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.ticketing.entity.dao.InboxMessageRepository;

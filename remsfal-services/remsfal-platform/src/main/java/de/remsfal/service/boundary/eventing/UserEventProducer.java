@@ -1,4 +1,4 @@
-package de.remsfal.service.control;
+package de.remsfal.service.boundary.eventing;
 
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;

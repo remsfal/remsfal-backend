@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.control;
+package de.remsfal.ticketing.boundary.eventing;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;

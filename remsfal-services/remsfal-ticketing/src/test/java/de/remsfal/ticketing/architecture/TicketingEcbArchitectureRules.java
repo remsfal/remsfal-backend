@@ -50,8 +50,8 @@ public final class TicketingEcbArchitectureRules {
     /**
      * Packages that may be accessed by control layer classes.
      * Control components implement application logic and orchestration.
-     * They must not depend on boundary components but may use
-     * infrastructure, domain and shared modules.
+     * They may call Kafka producers in {@code boundary.eventing} to emit outgoing events,
+     * but must not depend on REST boundary components ({@code boundary.*Resource}).
      */
     private static final String[] ALLOWED_FOR_CONTROL = {
             "de.remsfal.ticketing.control..",
@@ -60,6 +60,7 @@ public final class TicketingEcbArchitectureRules {
             "de.remsfal.ticketing.model..",
             "de.remsfal.ticketing.entity..",
             "de.remsfal.ticketing.infrastructure..",
+            "de.remsfal.ticketing.boundary.eventing..",
 
             "de.remsfal.core..",
             "de.remsfal.common..",
@@ -103,16 +104,17 @@ public final class TicketingEcbArchitectureRules {
                     .allowEmptyShould(true);
 
     /**
-     * Explicitly forbids control layer access to boundary components.
-     * This rule enforces the direction of dependencies and prevents
-     * cyclic dependencies between boundary and control layers.
+     * Explicitly forbids control layer access to REST boundary components.
+     * Control logic must not depend on REST-specific boundary classes ({@code *Resource}).
+     * Calling Kafka producers in {@code boundary.eventing} is allowed and expected —
+     * those represent outgoing event emission, not transport-layer coupling.
      */
     @ArchTest
     public static final ArchRule control_should_not_access_boundary =
             noClasses()
                     .that().resideInAnyPackage("de.remsfal.ticketing.control..")
                     .and().resideInAnyPackage(BASE)
-                    .should().accessClassesThat().resideInAnyPackage("de.remsfal.ticketing.boundary..")
+                    .should().accessClassesThat().resideInAPackage("de.remsfal.ticketing.boundary")
                     .allowEmptyShould(true);
 
     /**

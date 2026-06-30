@@ -1,6 +1,7 @@
-package de.remsfal.ticketing.control;
+package de.remsfal.ticketing.boundary.eventing;
 
 import de.remsfal.core.json.ticketing.OcrResultJson;
+import de.remsfal.ticketing.control.ChatMessageController;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;

@@ -1,4 +1,4 @@
-package de.remsfal.service.control;
+package de.remsfal.service.boundary.eventing;
 
 import de.remsfal.core.json.eventing.UserEventJson;
 import de.remsfal.test.TestData;

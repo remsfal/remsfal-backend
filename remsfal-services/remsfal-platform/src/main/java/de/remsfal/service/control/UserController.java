@@ -23,6 +23,7 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserEntity;

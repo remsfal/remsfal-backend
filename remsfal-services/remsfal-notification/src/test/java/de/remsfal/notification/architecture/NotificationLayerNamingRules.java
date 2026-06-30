@@ -25,17 +25,21 @@ public final class NotificationLayerNamingRules {
 
     /**
      * Boundary layer classes.
-     * Boundary components represent REST endpoints or message consumers.
-     * All top-level classes in the boundary package must therefore end
-     * with {@code Resource} or {@code Consumer}.
+     * Boundary components represent REST endpoints ({@code *Resource}),
+     * incoming Kafka message handlers ({@code *Consumer}),
+     * or outgoing Kafka message wrappers ({@code *Producer}).
+     * All three variants belong in the boundary layer of the ECB pattern:
+     * REST resources reside in {@code boundary}, while Kafka consumers and producers
+     * reside in the {@code boundary.eventing} sub-package.
      */
     @ArchTest
-    static final ArchRule boundary_classes_should_be_resources_or_consumers =
+    static final ArchRule boundary_classes_should_follow_naming_convention =
             classes()
                     .that().resideInAnyPackage("de.remsfal.notification.boundary..")
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Resource")
                     .orShould().haveSimpleNameEndingWith("Consumer")
+                    .orShould().haveSimpleNameEndingWith("Producer")
                     .allowEmptyShould(true);
 
     /**

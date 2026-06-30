@@ -22,16 +22,21 @@ public final class TicketingLayerNamingRules {
 
     /**
      * Boundary layer naming rule.
-     * Boundary components represent REST endpoints.
-     * All top-level classes in the boundary package must therefore
-     * end with {@code Resource}.
+     * Boundary components represent either REST endpoints ({@code *Resource}),
+     * incoming Kafka message handlers ({@code *Consumer}),
+     * or outgoing Kafka message wrappers ({@code *Producer}).
+     * All three variants belong in the boundary layer of the ECB pattern:
+     * REST resources reside in {@code boundary}, while Kafka consumers and producers
+     * reside in the {@code boundary.eventing} sub-package.
      */
     @ArchTest
-    static final ArchRule boundary_classes_should_be_resources =
+    static final ArchRule boundary_classes_should_follow_naming_convention =
             classes()
                     .that().resideInAnyPackage("de.remsfal.ticketing.boundary..")
                     .and().areTopLevelClasses()
                     .should().haveSimpleNameEndingWith("Resource")
+                    .orShould().haveSimpleNameEndingWith("Consumer")
+                    .orShould().haveSimpleNameEndingWith("Producer")
                     .allowEmptyShould(true);
 
     /**

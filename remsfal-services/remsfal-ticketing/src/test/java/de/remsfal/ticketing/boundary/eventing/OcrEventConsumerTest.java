@@ -1,9 +1,8 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.eventing;
 
 import de.remsfal.core.json.ticketing.ImmutableOcrResultJson;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import de.remsfal.ticketing.control.ChatMessageController;
-import de.remsfal.ticketing.control.OcrEventConsumer;
 import de.remsfal.ticketing.testcontainers.OcrServiceResource;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
 import io.quarkus.test.common.QuarkusTestResource;

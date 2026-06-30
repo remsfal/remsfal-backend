@@ -8,6 +8,7 @@ import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.json.ticketing.FileUploadJson;
 import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.ticketing.boundary.eventing.OcrEventProducer;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository.ContentType;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;

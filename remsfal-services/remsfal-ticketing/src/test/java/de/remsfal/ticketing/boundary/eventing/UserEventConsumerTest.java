@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.control;
+package de.remsfal.ticketing.boundary.eventing;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;

@@ -20,6 +20,7 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.QuotationModel.QuotationStatus;
+import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRepository;
