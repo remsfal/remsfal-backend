@@ -19,6 +19,7 @@
                 status TEXT,
                 priority TEXT,
                 reporter_id UUID,
+                reported_by TEXT,
                 agreement_id UUID,
                 is_visable_to_tenants BOOLEAN,
                 rental_unit_id UUID,

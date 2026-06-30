@@ -92,12 +92,30 @@ Checkstyle configuration: `src/main/style/checkstyle.xml`
 
 ### Package Structure
 
+This project follows the **Entity-Control-Boundary (ECB)** pattern:
+
 - **Core interfaces**: `de.remsfal.core.api.*Endpoint` - JAX-RS endpoint interfaces with OpenAPI annotations
 - **JSON DTOs**: `de.remsfal.core.json.*` - Immutable DTOs using `@ImmutableStyle` and Jackson
-- **Service implementations**: `de.remsfal.service.boundary.*Resource` - Implement core endpoint interfaces
-- **Business logic**: `de.remsfal.service.control.*Controller` - Business logic layer
-- **Data access**: `de.remsfal.service.entity.dao.*Repository` - Data repositories extending `AbstractRepository`
-- **JPA Entities**: `de.remsfal.service.entity.dto.*Entity` - All JPA entities end with `Entity` suffix
+- **Kafka event DTOs**: `de.remsfal.core.json.eventing.*` - Immutable event DTOs for Kafka messaging
+- **REST boundary**: `de.remsfal.{service}.boundary.*Resource` - Incoming HTTP endpoints
+- **Kafka boundary**: `de.remsfal.{service}.boundary.eventing.*Consumer` / `*Producer` - Kafka consumers (incoming) and producers (outgoing)
+- **Business logic**: `de.remsfal.{service}.control.*Controller` - Orchestration and business rules
+- **Data access**: `de.remsfal.{service}.entity.dao.*Repository` - Data repositories
+- **JPA/Cassandra Entities**: `de.remsfal.{service}.entity.dto.*Entity` - All entities end with `Entity` suffix
+
+### ECB Layer Rules
+
+| What | Layer | Package |
+|---|---|---|
+| REST endpoints | Boundary | `boundary.*Resource` |
+| Kafka consumers (incoming) | Boundary | `boundary.eventing.*Consumer` |
+| Kafka producers (outgoing) | Boundary | `boundary.eventing.*Producer` |
+| Business logic & orchestration | Control | `control.*Controller` |
+| JPA / Cassandra entities, value objects | Entity | `entity.dto.*Entity` |
+
+> **Do not place Kafka producers/consumers in `control`** — they are boundary components.
+> A `*Controller` that *triggers* Kafka events (e.g. `NotificationController`) stays in `control`;
+> the thin producer wrapper that wraps the `Emitter` belongs in `boundary.eventing`.
 
 ### Layered Architecture Pattern
 
@@ -105,10 +123,11 @@ When implementing a new feature:
 
 1. Define the API contract in `remsfal-core/src/main/java/de/remsfal/core/api/*Endpoint.java`
 2. Create immutable JSON DTOs in `remsfal-core/src/main/java/de/remsfal/core/json/*Json.java` using `@ImmutableStyle`
-3. Implement the endpoint in `remsfal-services/remsfal-{service}/src/main/java/de/remsfal/service/boundary/*Resource.java`
-4. Add business logic in `de.remsfal.service.control/*Controller.java`
-5. Create repository methods in `de.remsfal.service.entity.dao/*Repository.java`
-6. Define JPA entities in `de.remsfal.service.entity.dto/*Entity.java`
+3. Implement the REST endpoint in `remsfal-services/remsfal-{service}/src/main/java/de/remsfal/service/boundary/*Resource.java`
+4. Add business logic in `de.remsfal.{service}.control.*Controller.java`
+5. Create repository methods in `de.remsfal.{service}.entity.dao.*Repository.java`
+6. Define JPA entities in `de.remsfal.{service}.entity.dto.*Entity.java`
+7. For Kafka: place event DTOs in `remsfal-core/.../json/eventing/`, consumers and producers in `boundary/eventing/`
 
 ### Data Layer
 
@@ -120,10 +139,13 @@ When implementing a new feature:
 ### Testing Patterns
 
 - **Platform service tests**: Extend `AbstractServiceTest` for transaction management
-- **Kafka tests**: Extend `AbstractKafkaTest` for messaging-related tests
+- **Kafka producer tests**: Extend `AbstractKafkaTest`, inject the producer, call the send method, assert via `given().topic(...).assertThat().json(...)`
+- **Kafka consumer tests**: Use `@QuarkusTest` + `AbstractKafkaTest`, register serde in overridden `clearAllTopics()`, produce via `companion.produce(...).fromRecords(...).awaitCompletion()`, verify side effects with `@InjectSpy` + `Awaitility`
+- **Ticketing Kafka tests**: Use `@QuarkusTestResource(CassandraTestResource.class)` in addition to `KafkaCompanionResource`; re-initialize companion from bootstrap config in `@BeforeEach`
 - **Ticketing tests**: Extend `AbstractTicketingTest`
 - Use `@QuarkusTest` with appropriate test resources (`KafkaCompanionResource`, `CassandraTestResource`)
 - Test data constants should be defined in `TestData` class
+- Kafka test classes live in `boundary/eventing/` (same package as the classes under test)
 
 ## Configuration
 

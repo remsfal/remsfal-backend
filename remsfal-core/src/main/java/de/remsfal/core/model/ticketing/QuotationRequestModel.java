@@ -25,7 +25,9 @@ public interface QuotationRequestModel {
 
     UUID getProjectId();
 
-    UUID getTriggerId();
+    UUID getInitiatorId();
+
+    String getInitiatedBy();
 
     UUID getContractorId();
 

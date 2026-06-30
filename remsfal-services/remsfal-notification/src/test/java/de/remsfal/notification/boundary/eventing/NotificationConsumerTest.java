@@ -1,4 +1,4 @@
-package de.remsfal.notification.boundary;
+package de.remsfal.notification.boundary.eventing;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;

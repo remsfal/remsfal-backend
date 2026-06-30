@@ -327,9 +327,10 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(201);
 
+        final UUID contractorUserId = UUID.randomUUID();
         final String requestId = given()
             .when()
-            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor Manager",
                 Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
             .get(QUOTATION_PATH)
             .then()
@@ -339,7 +340,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
         final String attachmentId = UUID.randomUUID().toString();
         given()
             .when()
-            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor Manager",
                 Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
             .contentType(ContentType.JSON)
             .body("{ \"attachments\":[\"" + attachmentId + "\"],"
@@ -352,7 +353,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .body("issueId", equalTo(issueId))
             .body("requestId", equalTo(requestId))
             .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
-            .body("triggerId", equalTo(TicketingTestData.USER_ID.toString()))
+            .body("offererId", equalTo(contractorUserId.toString()))
             .body("contractorId", equalTo(contractorId.toString()))
             .body("attachments", hasSize(1))
             .body("attachments[0]", equalTo(attachmentId))

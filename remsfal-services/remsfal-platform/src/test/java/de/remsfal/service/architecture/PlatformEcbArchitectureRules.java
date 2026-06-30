@@ -53,8 +53,8 @@ public final class PlatformEcbArchitectureRules {
     /**
      * Packages that may be accessed by control layer classes.
      * Control components coordinate application logic and messaging.
-     * They must not depend on boundary components and are restricted
-     * to domain-related packages, shared modules and frameworks.
+     * They may call Kafka producers in {@code boundary.eventing} to emit outgoing events,
+     * but must not depend on REST boundary components ({@code boundary.*Resource}).
      */
     private static final String[] ALLOWED_FOR_CONTROL = {
             "de.remsfal.service.control..",
@@ -62,6 +62,7 @@ public final class PlatformEcbArchitectureRules {
             "de.remsfal.service.dto..",
             "de.remsfal.service.model..",
             "de.remsfal.service.entity..",
+            "de.remsfal.service.boundary.eventing..",
 
             "de.remsfal.core..",
             "de.remsfal.common..",
@@ -107,16 +108,17 @@ public final class PlatformEcbArchitectureRules {
                     .allowEmptyShould(true);
 
     /**
-     * Explicitly forbids control layer access to boundary components.
-     * This rule protects the direction of dependencies in the ECB architecture
-     * and prevents cyclic dependencies between boundary and control layers.
+     * Explicitly forbids control layer access to REST boundary components.
+     * Control logic must not depend on REST-specific boundary classes ({@code *Resource}).
+     * Calling Kafka producers in {@code boundary.eventing} is allowed and expected —
+     * those represent outgoing event emission, not transport-layer coupling.
      */
     @ArchTest
     public static final ArchRule control_should_not_access_boundary =
             noClasses()
                     .that().resideInAnyPackage("de.remsfal.service.control..")
                     .and().resideInAnyPackage(BASE)
-                    .should().accessClassesThat().resideInAnyPackage("de.remsfal.service.boundary..")
+                    .should().accessClassesThat().resideInAPackage("de.remsfal.service.boundary")
                     .allowEmptyShould(true);
 
     /**

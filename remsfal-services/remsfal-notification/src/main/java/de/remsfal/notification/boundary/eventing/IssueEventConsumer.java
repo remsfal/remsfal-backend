@@ -1,4 +1,4 @@
-package de.remsfal.notification.boundary;
+package de.remsfal.notification.boundary.eventing;
 
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.notification.control.MailingController;

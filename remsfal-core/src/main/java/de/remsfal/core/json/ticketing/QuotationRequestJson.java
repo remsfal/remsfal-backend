@@ -38,8 +38,12 @@ public abstract class QuotationRequestJson {
     public abstract UUID getProjectId();
 
     @Nullable
-    @Schema(readOnly = true, description = "ID of the user who triggered this request")
-    public abstract UUID getTriggerId();
+    @Schema(readOnly = true, description = "ID of the user who initiated this request")
+    public abstract UUID getInitiatorId();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Name of the user who initiated this request")
+    public abstract String getInitiatedBy();
 
     @Nullable
     @Schema(readOnly = true, description = "ID of the contractor this request was sent to")
@@ -96,7 +100,8 @@ public abstract class QuotationRequestJson {
             .id(model.getId())
             .issueId(model.getIssueId())
             .projectId(model.getProjectId())
-            .triggerId(model.getTriggerId())
+            .initiatorId(model.getInitiatorId())
+            .initiatedBy(model.getInitiatedBy())
             .contractorId(model.getContractorId())
             .organizationId(model.getOrganizationId())
             .contractorName(model.getContractorName())

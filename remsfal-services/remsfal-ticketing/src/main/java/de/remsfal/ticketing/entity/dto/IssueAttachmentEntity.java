@@ -27,8 +27,11 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
     @Column("object_name")
     private String objectName;
 
+    @Column("uploader_id")
+    private UUID uploaderId;
+
     @Column("uploaded_by")
-    private UUID uploadedBy;
+    private String uploadedBy;
 
     public IssueAttachmentKey getKey() {
         return key;
@@ -101,11 +104,20 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
     }
 
     @Override
-    public UUID getUploadedBy() {
+    public UUID getUploaderId() {
+        return uploaderId;
+    }
+
+    public void setUploaderId(UUID uploaderId) {
+        this.uploaderId = uploaderId;
+    }
+
+    @Override
+    public String getUploadedBy() {
         return uploadedBy;
     }
 
-    public void setUploadedBy(UUID uploadedBy) {
+    public void setUploadedBy(String uploadedBy) {
         this.uploadedBy = uploadedBy;
     }
 

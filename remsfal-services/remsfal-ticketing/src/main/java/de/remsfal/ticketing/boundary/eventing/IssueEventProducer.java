@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.control;
+package de.remsfal.ticketing.boundary.eventing;
 
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;

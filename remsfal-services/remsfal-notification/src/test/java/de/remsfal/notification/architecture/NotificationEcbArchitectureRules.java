@@ -49,8 +49,8 @@ public final class NotificationEcbArchitectureRules {
     /**
      * Whitelist of packages that may be accessed by control classes.
      * Control classes may depend on DTOs, domain models, entities,
-     * and shared core/common libraries, but must remain independent
-     * of boundary (transport-layer) implementations.
+     * and shared core/common libraries. They may also call Kafka producers
+     * in {@code boundary.eventing}, but must not depend on REST boundary components.
      */
     private static final String[] ALLOWED_FOR_CONTROL = {
             "de.remsfal.notification.control..",
@@ -58,6 +58,7 @@ public final class NotificationEcbArchitectureRules {
             "de.remsfal.notification.dto..",
             "de.remsfal.notification.model..",
             "de.remsfal.notification.entity..",
+            "de.remsfal.notification.boundary.eventing..",
 
             "de.remsfal.core..",
             "de.remsfal.common..",
@@ -102,16 +103,17 @@ public final class NotificationEcbArchitectureRules {
                     .allowEmptyShould(true);
 
     /**
-     * Ensures that control classes do not access boundary classes.
-     * This enforces the architectural rule that application logic
-     * must remain independent of transport-layer concerns.
+     * Ensures that control classes do not access REST boundary components.
+     * Control logic must remain independent of transport-layer concerns ({@code *Resource}).
+     * Calling Kafka producers in {@code boundary.eventing} is allowed and expected —
+     * those represent outgoing event emission, not transport-layer coupling.
      */
     @ArchTest
     public static final ArchRule control_should_not_access_boundary =
             noClasses()
                     .that().resideInAnyPackage("de.remsfal.notification.control..")
                     .and().resideInAnyPackage(BASE)
-                    .should().accessClassesThat().resideInAnyPackage("de.remsfal.notification.boundary..")
+                    .should().accessClassesThat().resideInAPackage("de.remsfal.notification.boundary")
                     .allowEmptyShould(true);
 
     /**

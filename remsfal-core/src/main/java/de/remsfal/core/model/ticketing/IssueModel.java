@@ -84,6 +84,8 @@ public interface IssueModel {
 
     UUID getReporterId();
 
+    String getReportedBy();
+
     UUID getAgreementId();
 
     Boolean isVisibleToTenants();

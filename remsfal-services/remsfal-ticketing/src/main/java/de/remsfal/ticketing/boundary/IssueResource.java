@@ -9,35 +9,30 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-import de.remsfal.common.model.FileUploadData;
+import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
 import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
-import de.remsfal.core.json.ticketing.QuotationRequestJson;
-import de.remsfal.core.json.ticketing.QuotationRequestListJson;
-import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.TenancyValidation;
-import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
+import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
 
@@ -53,6 +48,15 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Inject
     Validator validator;
+
+    @Inject
+    AttachmentController attachmentController;
+
+    @Inject
+    Instance<IssueAttachmentResource> attachmentResource;
+
+    @Inject
+    Instance<IssueQuotationRequestResource> quotationRequestResource;
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
@@ -134,7 +138,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Process attachments
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
-        List<IssueAttachmentJson> attachments = uploadAttachments(createdIssue.getId(), fileParts);
+        IssueAttachmentResource attachmentRes = resourceContext.initResource(attachmentResource.get());
+        List<IssueAttachmentJson> attachments = attachmentRes.processAttachmentParts(
+            createdIssue.getId(), fileParts);
 
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
@@ -192,7 +198,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         }
 
         // Lazy-load attachments and add to response
-        List<? extends IssueAttachmentModel> attachments = issueController.getAttachments(issueId);
+        List<? extends IssueAttachmentModel> attachments = attachmentController.getAttachments(issueId);
         List<IssueAttachmentJson> attachmentJsons = attachments.stream()
             .map(IssueAttachmentJson::valueOf)
             .collect(Collectors.toList());
@@ -260,99 +266,13 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     }
 
     @Override
-    public Response downloadAttachment(UUID issueId, UUID attachmentId, String filename) {
-        checkIssueReadPermissions(issueId);
-
-        // Retrieve attachment metadata
-        IssueAttachmentEntity attachment = issueController.getAttachment(issueId, attachmentId);
-        // Download file from storage
-        InputStream fileStream = issueController.downloadAttachment(attachment.getObjectName());
-
-        // Stream response with Content-Disposition header
-        return Response.ok((StreamingOutput) output -> {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = fileStream.read(buffer)) != -1) {
-                output.write(buffer, 0, bytesRead);
-            }
-        })
-            .type(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
-            .build();
+    public IssueAttachmentEndpoint getAttachmentResource() {
+        return resourceContext.initResource(attachmentResource.get());
     }
 
     @Override
-    public void deleteAttachment(UUID issueId, UUID attachmentId) {
-        checkIssueWritePermissions(issueId);
-
-        // Delete attachment (includes storage and database)
-        issueController.deleteAttachment(issueId, attachmentId);
-    }
-
-    @Override
-    public Response uploadAttachments(final UUID issueId, final MultipartFormDataInput input) {
-        checkIssueWritePermissions(issueId);
-
-        // Process attachment parts
-        Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-        List<InputPart> fileParts = formDataMap.get("attachment");
-        List<IssueAttachmentJson> attachments = uploadAttachments(issueId, fileParts);
-
-        return Response.ok()
-            .type(MediaType.APPLICATION_JSON)
-            .entity(attachments)
-            .build();
-    }
-
-    @Override
-    public Response createRequestsForQuotation(final UUID issueId, final CreateQuotationRequestJson request) {
-        checkIssueWritePermissions(issueId);
-        issueController.createRequestsForQuotation(principal, issueId,
-            request.getContractors(), request.getScopeOfWork(),
-            request.getProjectOwner(), request.getProjectCareOf(), request.getBillingAddress());
-        return Response.status(Response.Status.CREATED).build();
-    }
-
-    @Override
-    public QuotationRequestListJson getRequestsForQuotation(final UUID issueId) {
-        checkIssueWritePermissions(issueId);
-        return QuotationRequestListJson.valueOf(issueController.getRequestsForQuotation(issueId));
-    }
-
-    @Override
-    public QuotationRequestJson getRequestForQuotation(final UUID issueId, final UUID requestId) {
-        checkIssueWritePermissions(issueId);
-        return QuotationRequestJson.valueOf(issueController.getRequestForQuotation(issueId, requestId));
-    }
-
-    @Override
-    public QuotationRequestJson updateRequestForQuotation(final UUID issueId, final UUID requestId,
-        final QuotationRequestJson body) {
-        checkIssueWritePermissions(issueId);
-        return QuotationRequestJson.valueOf(
-            issueController.updateRequestForQuotation(issueId, requestId, body));
-    }
-
-    private List<IssueAttachmentJson> uploadAttachments(final UUID issueId, final List<InputPart> fileParts) {
-        List<IssueAttachmentJson> attachments = new ArrayList<>();
-        if (fileParts != null && !fileParts.isEmpty()) {
-            for (InputPart inputPart : fileParts) {
-                try {
-                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
-                    FileUploadData fileData = new FileUploadData(
-                        inputStream,
-                        inputPart.getFileName(),
-                        inputPart.getMediaType());
-                    IssueAttachmentModel attachmentModel =
-                        issueController.addAttachment(principal, issueId, fileData);
-                    attachments.add(IssueAttachmentJson.valueOf(attachmentModel));
-                } catch (IOException e) {
-                    throw new BadRequestException("Failed to read file data", e);
-                }
-            }
-        }
-
-        return attachments;
+    public IssueQuotationRequestEndpoint getQuotationRequestResource() {
+        return resourceContext.initResource(quotationRequestResource.get());
     }
 
     @Override

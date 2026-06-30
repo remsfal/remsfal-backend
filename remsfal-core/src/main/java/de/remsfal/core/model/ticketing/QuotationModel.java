@@ -26,7 +26,9 @@ public interface QuotationModel {
 
     UUID getProjectId();
 
-    UUID getTriggerId();
+    UUID getOffererId();
+
+    String getOfferedBy();
 
     UUID getContractorId();
 

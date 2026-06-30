@@ -164,13 +164,14 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     }
 
     protected void insertAttachment(UUID issueId, UUID attachmentId, String fileName,
-            String contentType, String objectName, UUID uploadedBy) {
+            String contentType, String objectName, UUID uploaderId) {
         String insertAttachmentCql = "INSERT INTO remsfal.issue_attachments "
-            + "(issue_id, attachment_id, file_name, content_type, object_name, uploaded_by, created_at, modified_at) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            + "(issue_id, attachment_id, file_name, content_type, object_name, uploader_id, uploaded_by,"
+            + " created_at, modified_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertAttachmentCql,
-            issueId, attachmentId, fileName, contentType, objectName, uploadedBy,
-            Instant.now(), Instant.now());
+            issueId, attachmentId, fileName, contentType, objectName, uploaderId,
+            TicketingTestData.USER_NAME, Instant.now(), Instant.now());
     }
 
 }

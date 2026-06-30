@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.eventing;
 
 import java.util.Set;
 import java.util.UUID;
@@ -13,7 +13,6 @@ import de.remsfal.core.json.ticketing.FileUploadJson;
 import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
-import de.remsfal.ticketing.control.OcrEventProducer;
 import de.remsfal.ticketing.entity.storage.FileStorage;
 import de.remsfal.ticketing.testcontainers.OcrServiceResource;
 import io.quarkus.test.common.QuarkusTestResource;

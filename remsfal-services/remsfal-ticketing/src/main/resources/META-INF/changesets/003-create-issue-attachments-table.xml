@@ -16,7 +16,8 @@
                 file_name TEXT,
                 content_type TEXT,
                 object_name TEXT,
-                uploaded_by UUID,
+                uploader_id UUID,
+                uploaded_by TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY (issue_id, attachment_id)

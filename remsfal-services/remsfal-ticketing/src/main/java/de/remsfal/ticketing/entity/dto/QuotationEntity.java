@@ -24,8 +24,11 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
     @Column("project_id")
     private UUID projectId;
 
-    @Column("trigger_id")
-    private UUID triggerId;
+    @Column("offerer_id")
+    private UUID offererId;
+
+    @Column("offered_by")
+    private String offeredBy;
 
     @Column("contractor_id")
     private UUID contractorId;
@@ -100,12 +103,21 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
     }
 
     @Override
-    public UUID getTriggerId() {
-        return triggerId;
+    public UUID getOffererId() {
+        return offererId;
     }
 
-    public void setTriggerId(UUID triggerId) {
-        this.triggerId = triggerId;
+    public void setOffererId(UUID offererId) {
+        this.offererId = offererId;
+    }
+
+    @Override
+    public String getOfferedBy() {
+        return offeredBy;
+    }
+
+    public void setOfferedBy(String offeredBy) {
+        this.offeredBy = offeredBy;
     }
 
     @Override
