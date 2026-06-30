@@ -42,8 +42,12 @@ public abstract class QuotationJson {
     public abstract UUID getProjectId();
 
     @Nullable
-    @Schema(readOnly = true, description = "ID of the user who triggered the original quotation request")
-    public abstract UUID getTriggerId();
+    @Schema(readOnly = true, description = "ID of the user who submitted this quotation")
+    public abstract UUID getOffererId();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Name of the user who submitted this quotation")
+    public abstract String getOfferedBy();
 
     @Nullable
     @Schema(readOnly = true, description = "ID of the contractor submitting the quotation")
@@ -75,7 +79,8 @@ public abstract class QuotationJson {
             .issueId(model.getIssueId())
             .requestId(model.getRequestId())
             .projectId(model.getProjectId())
-            .triggerId(model.getTriggerId())
+            .offererId(model.getOffererId())
+            .offeredBy(model.getOfferedBy())
             .contractorId(model.getContractorId())
             .attachments(model.getAttachments())
             .validUntil(model.getValidUntil())

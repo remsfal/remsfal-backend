@@ -44,7 +44,11 @@ public abstract class IssueAttachmentJson implements IssueAttachmentModel {
 
     @Nullable
     @Override
-    public abstract UUID getUploadedBy();
+    public abstract UUID getUploaderId();
+
+    @Nullable
+    @Override
+    public abstract String getUploadedBy();
 
     @Nullable
     @Override
@@ -57,6 +61,7 @@ public abstract class IssueAttachmentJson implements IssueAttachmentModel {
             .fileName(model.getFileName())
             .contentType(model.getContentType())
             .objectName(model.getObjectName())
+            .uploaderId(model.getUploaderId())
             .uploadedBy(model.getUploadedBy())
             .createdAt(model.getCreatedAt())
             .build();

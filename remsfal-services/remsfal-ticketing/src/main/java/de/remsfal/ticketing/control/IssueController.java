@@ -92,6 +92,7 @@ public class IssueController {
             entity.setPriority(IssuePriority.UNCLASSIFIED);
         }
         entity.setReporterId(user.getId());
+        entity.setReportedBy(user.getName());
         entity.setAgreementId(issue.getAgreementId());
         if (issue.getAgreementId() != null && issue.isVisibleToTenants() == null) {
             entity.setVisibleToTenants(true);
@@ -109,7 +110,7 @@ public class IssueController {
         // and should not be updated via POST
 
         entity = issueRepository.insert(entity);
-        issueEventProducer.sendIssueCreated(entity, principal);
+        issueEventProducer.sendIssueCreated(entity, user);
         return entity;
     }
 
@@ -366,7 +367,8 @@ public class IssueController {
         attachment.setIssueId(issueId);
         attachment.setFileName(fileData.getFileName());
         attachment.setMediaType(fileData.getMediaType());
-        attachment.setUploadedBy(user.getId());
+        attachment.setUploaderId(user.getId());
+        attachment.setUploadedBy(user.getName());
         attachment.setCreatedAt(Instant.now());
 
         String objectFileName = generateUniqueFileName(
@@ -412,7 +414,8 @@ public class IssueController {
             request.generateId();
             request.setIssueId(issueId);
             request.setProjectId(issue.getProjectId());
-            request.setTriggerId(user.getId());
+            request.setInitiatorId(user.getId());
+            request.setInitiatedBy(user.getName());
             request.setContractorId(contractor.getId());
             request.setOrganizationId(contractor.getOrganizationId());
             request.setContractorName(contractor.getCompanyName());
@@ -503,7 +506,8 @@ public class IssueController {
         quotation.setIssueId(request.getIssueId());
         quotation.setRequestId(request.getRequestId());
         quotation.setProjectId(request.getProjectId());
-        quotation.setTriggerId(request.getTriggerId());
+        quotation.setOffererId(principal.getId());
+        quotation.setOfferedBy(principal.getName());
         quotation.setContractorId(request.getContractorId());
         quotation.setAttachments(body.getAttachments());
         quotation.setValidUntil(body.getValidUntil());

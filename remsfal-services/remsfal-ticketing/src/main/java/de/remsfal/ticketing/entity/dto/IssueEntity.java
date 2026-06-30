@@ -38,6 +38,9 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("reporter_id")
     private UUID reporterId;
 
+    @Column("reported_by")
+    private String reportedBy;
+
     @Column("agreement_id")
     private UUID agreementId;
 
@@ -171,6 +174,15 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setReporterId(UUID reporterId) {
         this.reporterId = reporterId;
+    }
+
+    @Override
+    public String getReportedBy() {
+        return reportedBy;
+    }
+
+    public void setReportedBy(String reportedBy) {
+        this.reportedBy = reportedBy;
     }
 
     @Override

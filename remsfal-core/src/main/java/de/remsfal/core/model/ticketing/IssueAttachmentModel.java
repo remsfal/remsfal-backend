@@ -18,7 +18,9 @@ public interface IssueAttachmentModel {
 
     String getObjectName();
 
-    UUID getUploadedBy();
+    UUID getUploaderId();
+
+    String getUploadedBy();
 
     Instant getCreatedAt();
 

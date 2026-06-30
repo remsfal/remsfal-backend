@@ -19,8 +19,11 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     @Column("project_id")
     private UUID projectId;
 
-    @Column("trigger_id")
-    private UUID triggerId;
+    @Column("initiator_id")
+    private UUID initiatorId;
+
+    @Column("initiated_by")
+    private String initiatedBy;
 
     @Column("contractor_id")
     private UUID contractorId;
@@ -101,12 +104,22 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
         this.projectId = projectId;
     }
 
-    public UUID getTriggerId() {
-        return triggerId;
+    @Override
+    public UUID getInitiatorId() {
+        return initiatorId;
     }
 
-    public void setTriggerId(UUID triggerId) {
-        this.triggerId = triggerId;
+    public void setInitiatorId(UUID initiatorId) {
+        this.initiatorId = initiatorId;
+    }
+
+    @Override
+    public String getInitiatedBy() {
+        return initiatedBy;
+    }
+
+    public void setInitiatedBy(String initiatedBy) {
+        this.initiatedBy = initiatedBy;
     }
 
     public UUID getContractorId() {

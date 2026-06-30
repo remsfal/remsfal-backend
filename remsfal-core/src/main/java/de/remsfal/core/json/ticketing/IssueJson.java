@@ -84,6 +84,11 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getReporterId();
 
+    @Null
+    @Nullable
+    @Override
+    public abstract String getReportedBy();
+
     @NotNull(groups = TenancyValidation.class)
     @Nullable
     @Override
@@ -163,6 +168,7 @@ public abstract class IssueJson implements IssueModel {
             .status(model.getStatus())
             .priority(model.getPriority())
             .reporterId(model.getReporterId())
+            .reportedBy(model.getReportedBy())
             .agreementId(model.getAgreementId())
             .visibleToTenants(model.isVisibleToTenants())
             .rentalUnitId(model.getRentalUnitId())
@@ -197,6 +203,7 @@ public abstract class IssueJson implements IssueModel {
             .category(model.getCategory())
             .status(model.getStatus())
             .reporterId(model.getReporterId())
+            .reportedBy(model.getReportedBy())
             .agreementId(model.getAgreementId())
             .rentalUnitId(model.getRentalUnitId())
             .rentalUnitType(model.getRentalUnitType())

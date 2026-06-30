@@ -223,7 +223,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .statusCode(201);
 
         List<Row> rows = cqlSession.execute(
-            "SELECT project_id, issue_id, trigger_id, contractor_id, scope_of_work, status "
+            "SELECT project_id, issue_id, initiator_id, contractor_id, scope_of_work, status "
                 + "FROM remsfal.quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
@@ -239,7 +239,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
             row -> UUID.fromString(issueId).equals(row.getUuid("issue_id"))));
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
-            row -> TicketingTestData.USER_ID.equals(row.getUuid("trigger_id"))));
+            row -> TicketingTestData.USER_ID.equals(row.getUuid("initiator_id"))));
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
             row -> "Please submit your quotation.".equals(row.getString("scope_of_work"))));
         org.junit.jupiter.api.Assertions.assertTrue(rows.stream().allMatch(
@@ -1617,6 +1617,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .body("[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1))
             .body("[0].contentType", startsWith(TicketingTestData.ATTACHMENT_FILE_TYPE_1))
             .body("[0].objectName", startsWith("/issues/"))
+            .body("[0].uploaderId", notNullValue())
             .body("[0].uploadedBy", notNullValue())
             .body("[0].createdAt", notNullValue());
     }
