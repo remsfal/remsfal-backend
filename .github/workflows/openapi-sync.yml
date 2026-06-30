@@ -98,9 +98,12 @@ jobs:
       - name: Commit Frontend Changes
         if: ${{ env.SPEC_CHANGED == 'true' }}
         working-directory: ${{ github.workspace }}/remsfal-frontend
+        env:
+          MERGED_PR_NUMBER: ${{ steps.backend-merge.outputs.pr-number }}
+          MERGED_PR_TITLE: ${{ steps.backend-merge.outputs.pr-title }}
         run: |
           COMMIT_MESSAGE="Updated generated files from merged backend  \
-          PR #${{ steps.backend-merge.outputs.pr-number }}: ${{ steps.backend-merge.outputs.pr-title }}"
+          PR #${MERGED_PR_NUMBER}: ${MERGED_PR_TITLE}"
           git add --all
           git commit -m "$COMMIT_MESSAGE"
 
@@ -109,19 +112,22 @@ jobs:
         working-directory: ${{ github.workspace }}/remsfal-frontend
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          TARGET_BRANCH: ${{ steps.frontend-selection.outputs.pr-branch }}
         run: |
-          git push origin ${{ steps.frontend-selection.outputs.pr-branch }}
+          git push origin "$TARGET_BRANCH"
       - name: Push Commits and create new Pull Request
         if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr-branch == '' }}
         working-directory: ${{ github.workspace }}/remsfal-frontend
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
           BRANCH_NAME: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
+          MERGED_PR_NUMBER: ${{ steps.backend-merge.outputs.pr-number }}
+          MERGED_PR_TITLE: ${{ steps.backend-merge.outputs.pr-title }}
         run: |
-          PR_TITLE="Sync of OpenAPI Spec created by #${{ steps.backend-merge.outputs.pr-title }}"
+          PR_TITLE="Sync of OpenAPI Spec created by #${MERGED_PR_TITLE}"
           PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend, \
-          which were created by the PR remsfal/remsfal-backend#${{ steps.backend-merge.outputs.pr-number }}: \
-          ${{ steps.backend-merge.outputs.pr-title }}"
+          which were created by the PR remsfal/remsfal-backend#${MERGED_PR_NUMBER}: \
+          ${MERGED_PR_TITLE}"
 
           git push origin "$BRANCH_NAME"
           echo "Branch $BRANCH_NAME is pushed"
