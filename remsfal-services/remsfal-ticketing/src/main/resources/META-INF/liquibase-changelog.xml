@@ -18,10 +18,10 @@
     <include file="META-INF/changesets/003-create-issue-attachments-table.xml"/>
     <include file="META-INF/changesets/004-create-quotation-requests-table.xml"/>
     <include file="META-INF/changesets/005-create-quotations-table.xml"/>
+    <include file="META-INF/changesets/006-create-order-placements-table.xml"/>
 
     <include file="META-INF/changesets/008-create-chat-sessions-table.xml"/>
     <include file="META-INF/changesets/009-create-chat-messages-table.xml"/>
     <include file="META-INF/changesets/010-create-inbox-messages-table.xml"/>
-    <include file="META-INF/changesets/011-create-order-placements-table.xml"/>
 
 </databaseChangeLog>

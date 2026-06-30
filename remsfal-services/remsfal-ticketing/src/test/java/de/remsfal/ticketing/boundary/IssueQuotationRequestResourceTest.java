@@ -437,7 +437,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(201);
 
         List<Row> rows = cqlSession.execute(
-            "SELECT issue_id, quotation_id, project_id, orderer_id, ordered_by, contractor_id, status "
+            "SELECT issue_id, quotation_id, project_id, orderer_id, ordered_by, contractor_id,"
+                + " organization_id, status "
                 + "FROM remsfal.order_placements WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
@@ -450,6 +451,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         assertEquals(TicketingTestData.USER_ID, row.getUuid("orderer_id"));
         assertEquals(TicketingTestData.USER_NAME, row.getString("ordered_by"));
         assertEquals(contractorId, row.getUuid("contractor_id"));
+        assertEquals(organizationId, row.getUuid("organization_id"));
         assertEquals("PLACED", row.getString("status"));
     }
 

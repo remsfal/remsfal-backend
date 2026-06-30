@@ -5,7 +5,9 @@ import de.remsfal.ticketing.entity.dto.QuotationKey;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @ApplicationScoped
 public class QuotationRepository extends AbstractRepository<QuotationEntity, QuotationKey> {
@@ -17,6 +19,12 @@ public class QuotationRepository extends AbstractRepository<QuotationEntity, Quo
             entity.setCreatedAt(now);
         }
         return template.insert(entity);
+    }
+
+    public List<QuotationEntity> findByIssueId(final UUID issueId) {
+        return template.select(QuotationEntity.class)
+            .where(ISSUE_ID).eq(issueId)
+            .result();
     }
 
     public Optional<QuotationEntity> findById(final QuotationKey key) {

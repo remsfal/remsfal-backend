@@ -2,7 +2,6 @@ package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.model.ticketing.OrderPlacementModel;
-import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
@@ -30,6 +29,9 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
 
     @Column("contractor_id")
     private UUID contractorId;
+
+    @Column("organization_id")
+    private UUID organizationId;
 
     @Column("confirmor_id")
     private UUID confirmorId;
@@ -128,6 +130,15 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
     }
 
     @Override
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(final UUID organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    @Override
     public UUID getConfirmorId() {
         return confirmorId;
     }
@@ -147,11 +158,11 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
 
     @Override
     public OrderPlacementStatus getStatus() {
-        return status != null ? OrderPlacementStatus.valueOfStatus(status) : null;
+        return status != null ? OrderPlacementStatus.valueOf(status) : null;
     }
 
     public void setStatus(final OrderPlacementStatus status) {
-        this.status = status != null ? status.getValue() : null;
+        this.status = status != null ? status.name() : null;
     }
 
     public void setStatus(final String status) {

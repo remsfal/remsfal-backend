@@ -2,7 +2,6 @@ package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
-import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;

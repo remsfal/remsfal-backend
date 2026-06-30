@@ -172,6 +172,12 @@ public class OrderManagementController {
         QuotationEntity quotation = quotationRepository.findById(key)
             .orElseThrow(() -> new NotFoundException("Quotation not found"));
 
+        QuotationRequestKey requestKey = new QuotationRequestKey();
+        requestKey.setIssueId(quotation.getIssueId());
+        requestKey.setRequestId(quotation.getRequestId());
+        QuotationRequestEntity request = quotationRequestRepository.findById(requestKey)
+            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
+
         OrderPlacementEntity orderPlacement = new OrderPlacementEntity();
         orderPlacement.generateId();
         orderPlacement.setIssueId(issueId);
@@ -180,8 +186,67 @@ public class OrderManagementController {
         orderPlacement.setOrdererId(principal.getId());
         orderPlacement.setOrderedBy(principal.getName());
         orderPlacement.setContractorId(quotation.getContractorId());
+        orderPlacement.setOrganizationId(request.getOrganizationId());
         orderPlacement.setStatus(OrderPlacementStatus.PLACED);
         orderPlacementRepository.insert(orderPlacement);
+    }
+
+    public List<QuotationEntity> getQuotationsByIssue(final UUID issueId) {
+        logger.infov("Retrieving quotations for issue (issueId={0})", issueId);
+        return quotationRepository.findByIssueId(issueId);
+    }
+
+    public QuotationEntity getQuotation(final UUID issueId, final UUID quotationId) {
+        logger.infov("Retrieving quotation (issueId={0}, quotationId={1})", issueId, quotationId);
+        QuotationKey key = new QuotationKey();
+        key.setIssueId(issueId);
+        key.setQuotationId(quotationId);
+        return quotationRepository.findById(key)
+            .orElseThrow(() -> new NotFoundException("Quotation not found"));
+    }
+
+    public OrderPlacementEntity getOrderPlacementByQuotation(final UUID issueId, final UUID quotationId) {
+        logger.infov("Retrieving order placement (issueId={0}, quotationId={1})", issueId, quotationId);
+        return orderPlacementRepository.findByIssueIdAndQuotationId(issueId, quotationId)
+            .orElseThrow(() -> new NotFoundException("Order placement not found"));
+    }
+
+    public void withdrawOrderPlacement(final UUID issueId, final UUID quotationId) {
+        OrderPlacementEntity placement = getOrderPlacementByQuotation(issueId, quotationId);
+        placement.setStatus(OrderPlacementStatus.WITHDRAWN);
+        orderPlacementRepository.update(placement);
+    }
+
+    public List<OrderPlacementEntity> getOrderPlacementsByOrganizationIds(final Set<UUID> organizationIds) {
+        logger.infov("Retrieving order placements for organizations (count={0})", organizationIds.size());
+        return organizationIds.stream()
+            .flatMap(orgId -> orderPlacementRepository.findByOrganizationId(orgId).stream())
+            .toList();
+    }
+
+    public OrderPlacementEntity getOrderPlacementForOrganization(final Set<UUID> organizationIds,
+        final UUID placementId) {
+        return organizationIds.stream()
+            .flatMap(orgId -> orderPlacementRepository.findByOrganizationId(orgId).stream())
+            .filter(p -> placementId.equals(p.getId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Order placement not found"));
+    }
+
+    public OrderPlacementEntity updateOrderPlacementStatus(final Set<UUID> organizationIds,
+        final UUID placementId, final OrderPlacementStatus status) {
+        final Set<OrderPlacementStatus> allowedStatuses = Set.of(
+            OrderPlacementStatus.CONFIRMED,
+            OrderPlacementStatus.REJECTED
+        );
+        if (!allowedStatuses.contains(status)) {
+            throw new BadRequestException("Contractor can only set status to CONFIRMED or REJECTED");
+        }
+        OrderPlacementEntity placement = getOrderPlacementForOrganization(organizationIds, placementId);
+        placement.setStatus(status);
+        placement.setConfirmorId(principal.getId());
+        placement.setConfirmedBy(principal.getName());
+        return orderPlacementRepository.update(placement);
     }
 
 }

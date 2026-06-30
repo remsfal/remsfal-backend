@@ -81,11 +81,13 @@ public abstract class IssueJson implements IssueModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true, description = "ID of the user who reported this issue")
     @Override
     public abstract UUID getReporterId();
 
     @Null
     @Nullable
+    @Schema(readOnly = true, description = "Name of the user who reported this issue")
     @Override
     public abstract String getReportedBy();
 

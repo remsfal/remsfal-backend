@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.11-order-placements" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-0.0.6-order-placements" author="alexander.stanik@htw-berlin.de">
         <comment>Create order placements table</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.order_placements (
@@ -18,6 +18,7 @@
                 orderer_id UUID,
                 ordered_by TEXT,
                 contractor_id UUID,
+                organization_id UUID,
                 confirmor_id UUID,
                 confirmed_by TEXT,
                 status TEXT,
@@ -26,7 +27,12 @@
                 PRIMARY KEY (issue_id, placement_id)
             ) WITH CLUSTERING ORDER BY (placement_id DESC);
         </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS order_placements_organization_id_idx
+            ON REMSFAL.order_placements (organization_id);
+        </sql>
         <rollback>
+            <sql>DROP INDEX IF EXISTS order_placements_organization_id_idx;</sql>
             <sql>DROP TABLE IF EXISTS REMSFAL.order_placements;</sql>
         </rollback>
     </changeSet>
