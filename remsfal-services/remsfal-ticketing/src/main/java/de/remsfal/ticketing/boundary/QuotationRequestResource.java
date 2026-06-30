@@ -2,6 +2,7 @@ package de.remsfal.ticketing.boundary;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 
 import java.util.Map;
@@ -15,6 +16,7 @@ import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
+import de.remsfal.ticketing.control.OrderManagementController;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -22,6 +24,9 @@ import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
 @Authenticated
 @RequestScoped
 public class QuotationRequestResource extends AbstractTicketingResource implements QuotationRequestEndpoint {
+
+    @Inject
+    OrderManagementController orderManagementController;
 
     @Override
     public QuotationRequestListJson getQuotationRequests() {
@@ -35,7 +40,7 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
             .map(Map.Entry::getKey)
             .collect(Collectors.toSet());
         return QuotationRequestListJson.valueOf(
-            issueController.getRequestsForQuotationByOrganizationIds(eligibleOrgIds));
+            orderManagementController.getRequestsForQuotationByOrganizationIds(eligibleOrgIds));
     }
 
     @Override
@@ -50,7 +55,7 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
             .map(Map.Entry::getKey)
             .collect(Collectors.toSet());
         return QuotationRequestJson.valueOf(
-            issueController.updateRequestForQuotationByContractor(eligibleOrgIds, requestId, body));
+            orderManagementController.updateRequestForQuotationByContractor(eligibleOrgIds, requestId, body));
     }
 
     @Override
@@ -64,7 +69,8 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
             .filter(e -> e.getValue().isPrivileged(PermissionType.WRITE))
             .map(Map.Entry::getKey)
             .collect(Collectors.toSet());
-        return QuotationJson.valueOf(issueController.createQuotationByContractor(eligibleOrgIds, requestId, body));
+        return QuotationJson.valueOf(
+            orderManagementController.createQuotationByContractor(eligibleOrgIds, requestId, body));
     }
 
 }

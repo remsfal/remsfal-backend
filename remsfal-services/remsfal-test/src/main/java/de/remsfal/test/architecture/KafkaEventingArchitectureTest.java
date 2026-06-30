@@ -44,7 +44,7 @@ public final class KafkaEventingArchitectureTest {
      * and separates them from REST resources in the {@code boundary} package.
      */
     @ArchTest
-    static final ArchRule consumer_classes_should_reside_in_boundary_eventing =
+    static final ArchRule CONSUMER_CLASSES_SHOULD_RESIDE_IN_BOUNDARY_EVENTING =
             classes()
                     .that().haveSimpleNameEndingWith("Consumer")
                     .and().areTopLevelClasses()
@@ -59,7 +59,7 @@ public final class KafkaEventingArchitectureTest {
      * and separates them from REST resources in the {@code boundary} package.
      */
     @ArchTest
-    static final ArchRule producer_classes_should_reside_in_boundary_eventing =
+    static final ArchRule PRODUCER_CLASSES_SHOULD_RESIDE_IN_BOUNDARY_EVENTING =
             classes()
                     .that().haveSimpleNameEndingWith("Producer")
                     .and().areTopLevelClasses()
@@ -73,7 +73,7 @@ public final class KafkaEventingArchitectureTest {
      * a Kafka entry point (incoming message boundary).
      */
     @ArchTest
-    static final ArchRule no_consumer_classes_in_control =
+    static final ArchRule NO_CONSUMER_CLASSES_IN_CONTROL =
             noClasses()
                     .that().haveSimpleNameEndingWith("Consumer")
                     .and().areTopLevelClasses()
@@ -87,7 +87,7 @@ public final class KafkaEventingArchitectureTest {
      * a thin Kafka output wrapper (outgoing message boundary).
      */
     @ArchTest
-    static final ArchRule no_producer_classes_in_control =
+    static final ArchRule NO_PRODUCER_CLASSES_IN_CONTROL =
             noClasses()
                     .that().haveSimpleNameEndingWith("Producer")
                     .and().areTopLevelClasses()
@@ -102,7 +102,7 @@ public final class KafkaEventingArchitectureTest {
      * (e.g. helpers, configs) from accumulating there without a proper layer assignment.
      */
     @ArchTest
-    static final ArchRule boundary_eventing_classes_should_be_consumer_or_producer =
+    static final ArchRule BOUNDARY_EVENTING_CLASSES_SHOULD_BE_CONSUMER_OR_PRODUCER =
             classes()
                     .that().resideInAPackage("..boundary.eventing..")
                     .and().areTopLevelClasses()
