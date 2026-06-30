@@ -450,7 +450,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         assertEquals(TicketingTestData.USER_ID, row.getUuid("orderer_id"));
         assertEquals(TicketingTestData.USER_NAME, row.getString("ordered_by"));
         assertEquals(contractorId, row.getUuid("contractor_id"));
-        assertEquals("placed", row.getString("status"));
+        assertEquals("PLACED", row.getString("status"));
     }
 
 }
