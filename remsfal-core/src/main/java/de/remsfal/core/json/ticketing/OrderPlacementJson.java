@@ -10,8 +10,6 @@ import jakarta.annotation.Nullable;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,52 +20,12 @@ import java.util.UUID;
 @Schema(description = "An order placement created by a manager based on a quotation")
 @JsonDeserialize(as = ImmutableOrderPlacementJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class OrderPlacementJson implements OrderPlacementModel {
-
-    @Nullable
-    @Schema(readOnly = true, description = "Unique identifier of the order placement")
-    @Override
-    public abstract UUID getId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the issue this order belongs to")
-    @Override
-    public abstract UUID getIssueId();
+public abstract class OrderPlacementJson extends OrderProcessJson implements OrderPlacementModel {
 
     @Nullable
     @Schema(readOnly = true, description = "ID of the quotation this order is based on")
     @Override
     public abstract UUID getQuotationId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the project this order belongs to")
-    @Override
-    public abstract UUID getProjectId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Name of the project owner / billing recipient")
-    @Override
-    public abstract String getProjectOwner();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Care of / representative on behalf of")
-    @Override
-    public abstract String getProjectCareOf();
-
-    @Nullable
-    @Schema(readOnly = true, description = "First billing address line (street)")
-    @Override
-    public abstract String getProjectBillingAddress1();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Second billing address line (zip and city)")
-    @Override
-    public abstract String getProjectBillingAddress2();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Third billing address line (province and country)")
-    @Override
-    public abstract String getProjectBillingAddress3();
 
     @Nullable
     @Schema(readOnly = true, description = "ID of the user who placed the order")
@@ -78,21 +36,6 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
     @Schema(readOnly = true, description = "Name of the user who placed the order")
     @Override
     public abstract String getOrderedBy();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the contractor receiving this order")
-    @Override
-    public abstract UUID getContractorId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Company name of the contractor")
-    @Override
-    public abstract String getContractorName();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the organization of the contractor")
-    @Override
-    public abstract UUID getOrganizationId();
 
     @Nullable
     @Schema(description = "Status of the order placement: PLACED, CONFIRMED, REJECTED, WITHDRAWN")
@@ -108,19 +51,6 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
     @Schema(readOnly = true, description = "Name of the user who confirmed or rejected the order")
     @Override
     public abstract String getConfirmedBy();
-
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract Instant getCreatedAt();
-
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract Instant getModifiedAt();
-
-    @Nullable
-    public abstract List<OrderAttachmentJson> getAttachments();
 
     public static OrderPlacementJson valueOf(final OrderPlacementModel model) {
         return ImmutableOrderPlacementJson.builder()
@@ -146,15 +76,6 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
             .build();
     }
 
-    /**
-     * Creates a new {@link OrderPlacementJson} instance with attachments added to an existing order placement.
-     * <p>
-     * This method allows adding attachment information to an OrderPlacementJson without modifying the core model.
-     * Useful for lazy-loading attachments only when needed.
-     *
-     * @param attachments the list of attachments to add
-     * @return an immutable {@link OrderPlacementJson} with attachments included
-     */
     public abstract OrderPlacementJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
 
 }

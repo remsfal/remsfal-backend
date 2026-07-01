@@ -27,11 +27,11 @@ public class CoreNameConventionsTest {
      */
     @ArchTest
     static final ArchRule json_classes_should_end_with_Json =
-            classes()
-                    .that().resideInAnyPackage("de.remsfal.core.json..")
-                    .and().areTopLevelClasses()
-                    .should().haveSimpleNameEndingWith("Json")
-                    .allowEmptyShould(true);
+        classes()
+            .that().resideInAnyPackage("de.remsfal.core.json..")
+            .and().areTopLevelClasses()
+            .should().haveSimpleNameEndingWith("Json")
+            .allowEmptyShould(true);
 
     /**
      * Ensures that API contract interfaces are named consistently.
@@ -40,11 +40,11 @@ public class CoreNameConventionsTest {
      */
     @ArchTest
     static final ArchRule api_interfaces_should_end_with_Endpoint =
-            classes()
-                    .that().resideInAnyPackage("de.remsfal.core.api..")
-                    .and().areInterfaces()
-                    .should().haveSimpleNameEndingWith("Endpoint")
-                    .allowEmptyShould(true);
+        classes()
+            .that().resideInAnyPackage("de.remsfal.core.api..")
+            .and().areInterfaces()
+            .should().haveSimpleNameEndingWith("Endpoint")
+            .allowEmptyShould(true);
 
 
     /**
@@ -54,11 +54,11 @@ public class CoreNameConventionsTest {
      */
     @ArchTest
     static final ArchRule model_interfaces_should_end_with_Model =
-            classes()
-                    .that().resideInAnyPackage("de.remsfal.core.model..")
-                    .and().areInterfaces()
-                    .should().haveSimpleNameEndingWith("Model")
-                    .allowEmptyShould(true);
+        classes()
+            .that().resideInAnyPackage("de.remsfal.core.model..")
+            .and().areInterfaces()
+            .should().haveSimpleNameEndingWith("Model")
+            .allowEmptyShould(true);
 
     /**
      * Ensures that the core model package contains only interfaces.
@@ -67,10 +67,11 @@ public class CoreNameConventionsTest {
      */
     @ArchTest
     static final ArchRule model_package_should_only_contain_interfaces =
-            classes()
-                    .that().resideInAnyPackage("de.remsfal.core.model..")
-                    .and().areTopLevelClasses()
-                    .should().beInterfaces()
-                    .allowEmptyShould(true);
+        classes()
+            .that().resideInAnyPackage("de.remsfal.core.model..")
+            .and().areTopLevelClasses()
+            .should().beInterfaces()
+            .orShould().beEnums()
+            .allowEmptyShould(true);
 }
 

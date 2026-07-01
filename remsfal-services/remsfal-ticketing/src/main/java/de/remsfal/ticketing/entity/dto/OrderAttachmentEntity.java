@@ -1,6 +1,8 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.core.model.ticketing.OrderAttachmentModel;
+import de.remsfal.core.model.ticketing.OrderProcessPhase;
+
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
