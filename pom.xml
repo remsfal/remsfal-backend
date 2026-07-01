@@ -46,7 +46,7 @@
             **/de/remsfal/test/**
         </sonar.coverage.exclusions>
         <sonar.cpd.exclusions>
-            **/de/remsfal/service/entity/dto/**
+            **/entity/dto/**
         </sonar.cpd.exclusions>
     </properties>
 
