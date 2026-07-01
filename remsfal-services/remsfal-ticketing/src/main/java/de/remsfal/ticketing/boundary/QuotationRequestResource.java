@@ -2,21 +2,22 @@ package de.remsfal.ticketing.boundary;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.ForbiddenException;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.QuotationRequestEndpoint;
+import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
-import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
-import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
+import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
+import de.remsfal.ticketing.entity.dto.QuotationEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -28,49 +29,46 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
     @Inject
     OrderManagementController orderManagementController;
 
+    @Inject
+    OrderAttachmentController orderAttachmentController;
+
+    @Inject
+    Instance<OrderAttachmentResource> attachmentResource;
+
     @Override
     public QuotationRequestListJson getQuotationRequests() {
-        final Map<UUID, EmployeeRole> orgRoles = principal.getOrganizationRoles();
-        if (orgRoles.isEmpty() || orgRoles.values().stream()
-            .noneMatch(role -> role.isPrivileged(PermissionType.WRITE))) {
-            throw new ForbiddenException(FORBIDDEN_MESSAGE);
-        }
-        final Set<UUID> eligibleOrgIds = orgRoles.entrySet().stream()
-            .filter(e -> e.getValue().isPrivileged(PermissionType.WRITE))
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet());
+        final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         return QuotationRequestListJson.valueOf(
             orderManagementController.getRequestsForQuotationByOrganizationIds(eligibleOrgIds));
     }
 
     @Override
     public QuotationRequestJson updateQuotationRequest(final UUID requestId, final QuotationRequestJson body) {
-        final Map<UUID, EmployeeRole> orgRoles = principal.getOrganizationRoles();
-        if (orgRoles.isEmpty() || orgRoles.values().stream()
-            .noneMatch(role -> role.isPrivileged(PermissionType.WRITE))) {
-            throw new ForbiddenException(FORBIDDEN_MESSAGE);
-        }
-        final Set<UUID> eligibleOrgIds = orgRoles.entrySet().stream()
-            .filter(e -> e.getValue().isPrivileged(PermissionType.WRITE))
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet());
-        return QuotationRequestJson.valueOf(
+        final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
+        final QuotationRequestJson json = QuotationRequestJson.valueOf(
             orderManagementController.updateRequestForQuotationByContractor(eligibleOrgIds, requestId, body));
+        return json.withAttachments(orderAttachmentController
+            .getAttachments(OrderProcessPhase.QUOTATION_REQUEST, requestId).stream()
+            .map(OrderAttachmentJson::valueOf)
+            .toList());
     }
 
     @Override
     public QuotationJson createQuotation(final UUID requestId, final QuotationJson body) {
-        final Map<UUID, EmployeeRole> orgRoles = principal.getOrganizationRoles();
-        if (orgRoles.isEmpty() || orgRoles.values().stream()
-            .noneMatch(role -> role.isPrivileged(PermissionType.WRITE))) {
-            throw new ForbiddenException(FORBIDDEN_MESSAGE);
-        }
-        final Set<UUID> eligibleOrgIds = orgRoles.entrySet().stream()
-            .filter(e -> e.getValue().isPrivileged(PermissionType.WRITE))
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet());
-        return QuotationJson.valueOf(
-            orderManagementController.createQuotationByContractor(eligibleOrgIds, requestId, body));
+        final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
+        final QuotationEntity quotation =
+            orderManagementController.createQuotationByContractor(eligibleOrgIds, requestId, body);
+        final QuotationJson json = QuotationJson.valueOf(quotation);
+        return json.withAttachments(orderAttachmentController
+            .getAttachments(OrderProcessPhase.QUOTATION, quotation.getQuotationId()).stream()
+            .map(OrderAttachmentJson::valueOf)
+            .toList());
+    }
+
+    @Override
+    public OrderAttachmentEndpoint getAttachmentResource() {
+        return resourceContext.initResource(attachmentResource.get())
+            .configure(OrderProcessPhase.QUOTATION_REQUEST);
     }
 
 }

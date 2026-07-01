@@ -51,4 +51,7 @@ public interface IssueQuotationEndpoint {
     @Path("/{quotationId}/" + IssueOrderPlacementEndpoint.SERVICE)
     IssueOrderPlacementEndpoint getOrderPlacementResource();
 
+    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
+    OrderAttachmentEndpoint getAttachmentResource();
+
 }

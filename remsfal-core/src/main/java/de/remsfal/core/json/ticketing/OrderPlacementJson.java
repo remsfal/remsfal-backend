@@ -11,6 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -118,6 +119,9 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
     @Override
     public abstract Instant getModifiedAt();
 
+    @Nullable
+    public abstract List<OrderAttachmentJson> getAttachments();
+
     public static OrderPlacementJson valueOf(final OrderPlacementModel model) {
         return ImmutableOrderPlacementJson.builder()
             .id(model.getId())
@@ -141,5 +145,16 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
             .modifiedAt(model.getModifiedAt())
             .build();
     }
+
+    /**
+     * Creates a new {@link OrderPlacementJson} instance with attachments added to an existing order placement.
+     * <p>
+     * This method allows adding attachment information to an OrderPlacementJson without modifying the core model.
+     * Useful for lazy-loading attachments only when needed.
+     *
+     * @param attachments the list of attachments to add
+     * @return an immutable {@link OrderPlacementJson} with attachments included
+     */
+    public abstract OrderPlacementJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
 
 }

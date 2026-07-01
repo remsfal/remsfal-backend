@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
@@ -60,5 +61,8 @@ public interface IssueOrderPlacementEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the quotation", required = true)
         @PathParam("quotationId") @NotNull UUID quotationId);
+
+    @Path(OrderAttachmentEndpoint.SERVICE)
+    OrderAttachmentEndpoint getAttachmentResource();
 
 }

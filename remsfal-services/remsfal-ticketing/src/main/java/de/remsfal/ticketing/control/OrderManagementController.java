@@ -143,6 +143,15 @@ public class OrderManagementController {
             .toList();
     }
 
+    public QuotationRequestEntity getRequestForQuotationByOrganizationIds(final Set<UUID> organizationIds,
+        final UUID requestId) {
+        return organizationIds.stream()
+            .flatMap(orgId -> quotationRequestRepository.findByOrganizationId(orgId).stream())
+            .filter(r -> requestId.equals(r.getRequestId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
+    }
+
     public QuotationEntity createQuotationByContractor(final Set<UUID> organizationIds, final UUID requestId,
         final QuotationJson body) {
         final QuotationRequestEntity request = organizationIds.stream()
@@ -166,7 +175,6 @@ public class OrderManagementController {
         quotation.setContractorId(request.getContractorId());
         quotation.setContractorName(request.getContractorName());
         quotation.setOrganizationId(request.getOrganizationId());
-        quotation.setAttachments(body.getAttachments());
         quotation.setValidUntil(body.getValidUntil());
         quotation.setStatus(body.getStatus() != null ? body.getStatus() : QuotationStatus.VALID);
         return quotationRepository.insert(quotation);

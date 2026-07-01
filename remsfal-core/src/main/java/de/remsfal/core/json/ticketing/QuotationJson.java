@@ -100,9 +100,7 @@ public abstract class QuotationJson implements QuotationModel {
     public abstract QuotationStatus getStatus();
 
     @Nullable
-    @Schema(description = "Attachment IDs associated with the quotation")
-    @Override
-    public abstract List<UUID> getAttachments();
+    public abstract List<OrderAttachmentJson> getAttachments();
 
     @Nullable
     @Schema(description = "Timestamp until which the quotation is valid")
@@ -136,11 +134,21 @@ public abstract class QuotationJson implements QuotationModel {
             .contractorName(model.getContractorName())
             .organizationId(model.getOrganizationId())
             .status(model.getStatus())
-            .attachments(model.getAttachments())
             .validUntil(model.getValidUntil())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();
     }
+
+    /**
+     * Creates a new {@link QuotationJson} instance with attachments added to an existing quotation.
+     * <p>
+     * This method allows adding attachment information to a QuotationJson without modifying the core model.
+     * Useful for lazy-loading attachments only when needed.
+     *
+     * @param attachments the list of attachments to add
+     * @return an immutable {@link QuotationJson} with attachments included
+     */
+    public abstract QuotationJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
 
 }

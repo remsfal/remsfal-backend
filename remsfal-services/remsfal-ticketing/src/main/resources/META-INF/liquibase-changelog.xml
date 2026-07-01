@@ -23,5 +23,7 @@
     <include file="META-INF/changesets/008-create-chat-sessions-table.xml"/>
     <include file="META-INF/changesets/009-create-chat-messages-table.xml"/>
     <include file="META-INF/changesets/010-create-inbox-messages-table.xml"/>
+    <include file="META-INF/changesets/011-create-order-attachments-table.xml"/>
+    <include file="META-INF/changesets/012-drop-quotation-attachments-column.xml"/>
 
 </databaseChangeLog>

@@ -71,4 +71,7 @@ public interface QuotationRequestEndpoint {
         @Parameter(description = "Quotation response payload", required = true)
         @NotNull QuotationJson body);
 
+    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
+    OrderAttachmentEndpoint getAttachmentResource();
+
 }

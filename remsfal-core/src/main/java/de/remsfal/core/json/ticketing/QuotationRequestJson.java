@@ -12,6 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -111,6 +112,9 @@ public abstract class QuotationRequestJson implements QuotationRequestModel {
     @Override
     public abstract Instant getModifiedAt();
 
+    @Nullable
+    public abstract List<OrderAttachmentJson> getAttachments();
+
     public static QuotationRequestJson valueOf(final QuotationRequestModel model) {
         return ImmutableQuotationRequestJson.builder()
             .id(model.getId())
@@ -132,5 +136,16 @@ public abstract class QuotationRequestJson implements QuotationRequestModel {
             .modifiedAt(model.getModifiedAt())
             .build();
     }
+
+    /**
+     * Creates a new {@link QuotationRequestJson} instance with attachments added to an existing request.
+     * <p>
+     * This method allows adding attachment information to a QuotationRequestJson without modifying the core model.
+     * Useful for lazy-loading attachments only when needed.
+     *
+     * @param attachments the list of attachments to add
+     * @return an immutable {@link QuotationRequestJson} with attachments included
+     */
+    public abstract QuotationRequestJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
 
 }

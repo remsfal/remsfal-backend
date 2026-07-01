@@ -2,19 +2,20 @@ package de.remsfal.ticketing.boundary;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.BadRequestException;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.OrderPlacementEndpoint;
+import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
-import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
-import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
+import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
 
 /**
@@ -27,40 +28,48 @@ public class OrderPlacementResource extends AbstractTicketingResource implements
     @Inject
     OrderManagementController orderManagementController;
 
+    @Inject
+    OrderAttachmentController orderAttachmentController;
+
+    @Inject
+    Instance<OrderAttachmentResource> attachmentResource;
+
     @Override
     public OrderPlacementListJson getOrderPlacements() {
-        final Set<UUID> eligibleOrgIds = resolveEligibleOrgIds();
+        final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         return OrderPlacementListJson.valueOf(
             orderManagementController.getOrderPlacementsByOrganizationIds(eligibleOrgIds));
     }
 
     @Override
     public OrderPlacementJson getOrderPlacement(final UUID placementId) {
-        final Set<UUID> eligibleOrgIds = resolveEligibleOrgIds();
-        return OrderPlacementJson.valueOf(
+        final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
+        final OrderPlacementJson json = OrderPlacementJson.valueOf(
             orderManagementController.getOrderPlacementForOrganization(eligibleOrgIds, placementId));
+        return json.withAttachments(orderAttachmentController
+            .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placementId).stream()
+            .map(OrderAttachmentJson::valueOf)
+            .toList());
     }
 
     @Override
     public OrderPlacementJson updateOrderPlacement(final UUID placementId, final OrderPlacementJson body) {
-        final Set<UUID> eligibleOrgIds = resolveEligibleOrgIds();
+        final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         if (body.getStatus() == null) {
-            throw new jakarta.ws.rs.BadRequestException("Status must be provided");
+            throw new BadRequestException("Status must be provided");
         }
-        return OrderPlacementJson.valueOf(
+        final OrderPlacementJson json = OrderPlacementJson.valueOf(
             orderManagementController.updateOrderPlacementStatus(eligibleOrgIds, placementId, body.getStatus()));
+        return json.withAttachments(orderAttachmentController
+            .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placementId).stream()
+            .map(OrderAttachmentJson::valueOf)
+            .toList());
     }
 
-    private Set<UUID> resolveEligibleOrgIds() {
-        final Map<UUID, EmployeeRole> orgRoles = principal.getOrganizationRoles();
-        if (orgRoles.isEmpty() || orgRoles.values().stream()
-            .noneMatch(role -> role.isPrivileged(PermissionType.WRITE))) {
-            throw new ForbiddenException(FORBIDDEN_MESSAGE);
-        }
-        return orgRoles.entrySet().stream()
-            .filter(e -> e.getValue().isPrivileged(PermissionType.WRITE))
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet());
+    @Override
+    public OrderAttachmentEndpoint getAttachmentResource() {
+        return resourceContext.initResource(attachmentResource.get())
+            .configure(OrderProcessPhase.ORDER_PLACEMENT);
     }
 
 }

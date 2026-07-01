@@ -65,4 +65,7 @@ public interface OrderPlacementEndpoint {
         @Parameter(description = "Updated status field (CONFIRMED or REJECTED)", required = true)
         @NotNull OrderPlacementJson body);
 
+    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
+    OrderAttachmentEndpoint getAttachmentResource();
+
 }

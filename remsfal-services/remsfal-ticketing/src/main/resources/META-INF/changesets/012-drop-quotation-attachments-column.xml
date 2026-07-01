@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.12-drop-quotation-attachments" author="alexander.stanik@htw-berlin.de">
+        <comment>Drop the unused quotations.attachments column, superseded by the order_attachments table</comment>
+        <sql>
+            ALTER TABLE REMSFAL.quotations DROP attachments;
+        </sql>
+        <rollback>
+            <sql>ALTER TABLE REMSFAL.quotations ADD attachments LIST&lt;UUID&gt;;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -9,8 +9,12 @@ import java.util.UUID;
 
 import de.remsfal.core.api.ticketing.IssueOrderPlacementEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
+import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
+import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationListJson;
+import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
 
 /**
@@ -24,7 +28,13 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
     OrderManagementController orderManagementController;
 
     @Inject
+    OrderAttachmentController orderAttachmentController;
+
+    @Inject
     Instance<IssueOrderPlacementResource> orderPlacementResource;
+
+    @Inject
+    Instance<OrderAttachmentResource> attachmentResource;
 
     @Override
     public QuotationListJson getQuotations(final UUID issueId) {
@@ -35,12 +45,22 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
     @Override
     public QuotationJson getQuotation(final UUID issueId, final UUID quotationId) {
         checkIssueWritePermissions(issueId);
-        return QuotationJson.valueOf(orderManagementController.getQuotation(issueId, quotationId));
+        final QuotationJson json = QuotationJson.valueOf(orderManagementController.getQuotation(issueId, quotationId));
+        return json.withAttachments(orderAttachmentController
+            .getAttachments(OrderProcessPhase.QUOTATION, quotationId).stream()
+            .map(OrderAttachmentJson::valueOf)
+            .toList());
     }
 
     @Override
     public IssueOrderPlacementEndpoint getOrderPlacementResource() {
         return resourceContext.initResource(orderPlacementResource.get());
+    }
+
+    @Override
+    public OrderAttachmentEndpoint getAttachmentResource() {
+        return resourceContext.initResource(attachmentResource.get())
+            .configure(OrderProcessPhase.QUOTATION);
     }
 
 }

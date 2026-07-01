@@ -3,7 +3,6 @@ package de.remsfal.core.model.ticketing;
 import jakarta.annotation.Nullable;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -54,9 +53,6 @@ public interface QuotationModel {
     UUID getOrganizationId();
 
     QuotationStatus getStatus();
-
-    @Nullable
-    List<UUID> getAttachments();
 
     @Nullable
     Instant getValidUntil();

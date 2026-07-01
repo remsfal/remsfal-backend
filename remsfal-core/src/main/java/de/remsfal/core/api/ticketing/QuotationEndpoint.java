@@ -45,4 +45,7 @@ public interface QuotationEndpoint {
         @Parameter(description = "ID of the quotation", required = true)
         @PathParam("quotationId") @NotNull UUID quotationId);
 
+    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
+    OrderAttachmentEndpoint getAttachmentResource();
+
 }
