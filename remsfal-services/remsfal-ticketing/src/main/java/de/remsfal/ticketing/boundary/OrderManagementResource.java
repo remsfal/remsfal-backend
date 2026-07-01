@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 
 import de.remsfal.core.api.ticketing.OrderManagementEndpoint;
 import de.remsfal.core.api.ticketing.OrderPlacementEndpoint;
+import de.remsfal.core.api.ticketing.QuotationEndpoint;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -21,6 +22,9 @@ public class OrderManagementResource extends AbstractTicketingResource implement
     @Inject
     Instance<OrderPlacementResource> orderPlacementResource;
 
+    @Inject
+    Instance<QuotationResource> quotationResource;
+
     @Override
     public QuotationRequestResource getQuotationRequestResource() {
         return resourceContext.initResource(quotationRequestResource.get());
@@ -29,6 +33,11 @@ public class OrderManagementResource extends AbstractTicketingResource implement
     @Override
     public OrderPlacementEndpoint getOrderPlacementResource() {
         return resourceContext.initResource(orderPlacementResource.get());
+    }
+
+    @Override
+    public QuotationEndpoint getQuotationResource() {
+        return resourceContext.initResource(quotationResource.get());
     }
 
 }

@@ -33,6 +33,9 @@ public interface QuotationModel {
     UUID getContractorId();
 
     @Nullable
+    UUID getOrganizationId();
+
+    @Nullable
     List<UUID> getAttachments();
 
     @Nullable

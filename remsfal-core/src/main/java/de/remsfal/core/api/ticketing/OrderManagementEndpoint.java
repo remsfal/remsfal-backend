@@ -19,4 +19,7 @@ public interface OrderManagementEndpoint {
     @Path("/" + OrderPlacementEndpoint.SERVICE)
     OrderPlacementEndpoint getOrderPlacementResource();
 
+    @Path("/" + QuotationEndpoint.SERVICE)
+    QuotationEndpoint getQuotationResource();
+
 }

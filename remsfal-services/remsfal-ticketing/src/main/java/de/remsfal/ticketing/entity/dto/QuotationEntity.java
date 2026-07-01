@@ -32,6 +32,9 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
     @Column("contractor_id")
     private UUID contractorId;
 
+    @Column("organization_id")
+    private UUID organizationId;
+
     @Column("attachments")
     private List<UUID> attachments;
 
@@ -126,6 +129,15 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
 
     public void setContractorId(UUID contractorId) {
         this.contractorId = contractorId;
+    }
+
+    @Override
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(UUID organizationId) {
+        this.organizationId = organizationId;
     }
 
     @Override

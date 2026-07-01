@@ -34,4 +34,10 @@ public class QuotationRepository extends AbstractRepository<QuotationEntity, Quo
             .singleResult();
     }
 
+    public List<QuotationEntity> findByOrganizationId(final UUID organizationId) {
+        return template.select(QuotationEntity.class)
+            .where("organization_id").eq(organizationId)
+            .result();
+    }
+
 }

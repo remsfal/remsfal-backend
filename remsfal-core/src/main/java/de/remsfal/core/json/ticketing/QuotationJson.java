@@ -60,6 +60,11 @@ public abstract class QuotationJson implements QuotationModel {
     public abstract UUID getContractorId();
 
     @Nullable
+    @Schema(readOnly = true, description = "ID of the contractor's organization")
+    @Override
+    public abstract UUID getOrganizationId();
+
+    @Nullable
     @Schema(description = "Attachment IDs associated with the quotation")
     @Override
     public abstract List<UUID> getAttachments();
@@ -93,6 +98,7 @@ public abstract class QuotationJson implements QuotationModel {
             .offererId(model.getOffererId())
             .offeredBy(model.getOfferedBy())
             .contractorId(model.getContractorId())
+            .organizationId(model.getOrganizationId())
             .attachments(model.getAttachments())
             .validUntil(model.getValidUntil())
             .status(model.getStatus())

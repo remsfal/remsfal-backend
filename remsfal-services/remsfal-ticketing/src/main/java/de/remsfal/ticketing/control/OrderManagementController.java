@@ -159,6 +159,7 @@ public class OrderManagementController {
         quotation.setOffererId(principal.getId());
         quotation.setOfferedBy(principal.getName());
         quotation.setContractorId(request.getContractorId());
+        quotation.setOrganizationId(request.getOrganizationId());
         quotation.setAttachments(body.getAttachments());
         quotation.setValidUntil(body.getValidUntil());
         quotation.setStatus(body.getStatus() != null ? body.getStatus() : QuotationStatus.VALID);
@@ -215,6 +216,22 @@ public class OrderManagementController {
         OrderPlacementEntity placement = getOrderPlacementByQuotation(issueId, quotationId);
         placement.setStatus(OrderPlacementStatus.WITHDRAWN);
         orderPlacementRepository.update(placement);
+    }
+
+    public List<QuotationEntity> getQuotationsByOrganizationIds(final Set<UUID> organizationIds) {
+        logger.infov("Retrieving quotations for organizations (count={0})", organizationIds.size());
+        return organizationIds.stream()
+            .flatMap(orgId -> quotationRepository.findByOrganizationId(orgId).stream())
+            .toList();
+    }
+
+    public QuotationEntity getQuotationForOrganization(final Set<UUID> organizationIds,
+        final UUID quotationId) {
+        return organizationIds.stream()
+            .flatMap(orgId -> quotationRepository.findByOrganizationId(orgId).stream())
+            .filter(q -> quotationId.equals(q.getId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Quotation not found"));
     }
 
     public List<OrderPlacementEntity> getOrderPlacementsByOrganizationIds(final Set<UUID> organizationIds) {
