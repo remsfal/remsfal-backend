@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.11-order-attachments" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-0.0.7-order-attachments" author="alexander.stanik@htw-berlin.de">
         <comment>Create order attachments table for storing file references from MinIO,
             attachable to quotation requests, quotations, or order placements</comment>
         <sql>

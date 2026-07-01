@@ -26,7 +26,6 @@
                 contractor_name TEXT,
                 organization_id UUID,
                 status TEXT,
-                attachments LIST&lt;UUID&gt;,
                 valid_until TIMESTAMP,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
