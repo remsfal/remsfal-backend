@@ -14,7 +14,7 @@ import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.core.model.ticketing.OrderAttachmentModel.OrderProcessPhase;
 import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.QuotationEntity;

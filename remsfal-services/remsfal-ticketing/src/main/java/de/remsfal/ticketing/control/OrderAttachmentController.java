@@ -9,7 +9,7 @@ import org.jboss.logging.Logger;
 import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.OrderAttachmentModel;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.core.model.ticketing.OrderAttachmentModel.OrderProcessPhase;
 import de.remsfal.ticketing.entity.dao.OrderAttachmentRepository;
 import de.remsfal.ticketing.entity.dto.OrderAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.OrderAttachmentKey;

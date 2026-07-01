@@ -8,6 +8,12 @@ import java.util.UUID;
  */
 public interface OrderAttachmentModel {
 
+    public enum OrderProcessPhase {
+        QUOTATION_REQUEST,
+        QUOTATION,
+        ORDER_PLACEMENT
+    }
+
     OrderProcessPhase getProcessPhase();
 
     UUID getProcessId();

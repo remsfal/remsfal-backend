@@ -14,7 +14,7 @@ import de.remsfal.core.api.ticketing.OrderPlacementEndpoint;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.core.model.ticketing.OrderAttachmentModel.OrderProcessPhase;
 import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
 

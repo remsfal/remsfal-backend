@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.OrderAttachmentModel;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
 
 @Immutable
 @ImmutableStyle
