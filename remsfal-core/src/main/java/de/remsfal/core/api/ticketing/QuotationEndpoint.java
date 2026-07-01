@@ -1,0 +1,51 @@
+package de.remsfal.core.api.ticketing;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
+import java.util.UUID;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+
+import de.remsfal.core.json.ticketing.QuotationJson;
+import de.remsfal.core.json.ticketing.QuotationListJson;
+
+/**
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
+public interface QuotationEndpoint {
+
+    String SERVICE = "quotations";
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Retrieve quotations submitted by the authenticated contractor.",
+        description = "Returns all quotations that were submitted by the contractor's organization."
+            + " Requires at least MANAGER role in the contractor organization.")
+    @APIResponse(responseCode = "200", description = "Quotations returned successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have sufficient organization role")
+    QuotationListJson getQuotations();
+
+    @GET
+    @Path("/{quotationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Retrieve a single quotation submitted by the authenticated contractor.")
+    @APIResponse(responseCode = "200", description = "Quotation returned successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have sufficient organization role")
+    @APIResponse(responseCode = "404", description = "Quotation not found")
+    QuotationJson getQuotation(
+        @Parameter(description = "ID of the quotation", required = true)
+        @PathParam("quotationId") @NotNull UUID quotationId);
+
+    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
+    OrderAttachmentEndpoint getAttachmentResource();
+
+}

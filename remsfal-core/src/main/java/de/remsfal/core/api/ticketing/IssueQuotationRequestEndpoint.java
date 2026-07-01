@@ -82,4 +82,7 @@ public interface IssueQuotationRequestEndpoint {
         @Parameter(description = "Updated fields (status, scopeOfWork)", required = true)
         @NotNull QuotationRequestJson body);
 
+    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
+    OrderAttachmentEndpoint getAttachmentResource();
+
 }

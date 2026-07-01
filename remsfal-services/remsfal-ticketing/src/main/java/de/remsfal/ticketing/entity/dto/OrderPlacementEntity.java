@@ -1,23 +1,22 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.common.util.UUIDv7;
-import de.remsfal.core.model.ticketing.QuotationModel;
+import de.remsfal.core.model.ticketing.OrderPlacementModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-@Entity("quotations")
-public class QuotationEntity extends AbstractEntity implements QuotationModel {
+@Entity("order_placements")
+public class OrderPlacementEntity extends AbstractEntity implements OrderPlacementModel {
 
     @Id
-    private QuotationKey key;
+    private OrderPlacementKey key;
 
-    @Column("request_id")
-    private UUID requestId;
+    @Column("quotation_id")
+    private UUID quotationId;
 
     @Column("project_id")
     private UUID projectId;
@@ -37,11 +36,11 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
     @Column("project_billing_address_3")
     private String projectBillingAddress3;
 
-    @Column("offerer_id")
-    private UUID offererId;
+    @Column("orderer_id")
+    private UUID ordererId;
 
-    @Column("offered_by")
-    private String offeredBy;
+    @Column("ordered_by")
+    private String orderedBy;
 
     @Column("contractor_id")
     private UUID contractorId;
@@ -55,58 +54,61 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
     @Column("status")
     private String status;
 
-    @Column("valid_until")
-    private Instant validUntil;
+    @Column("confirmor_id")
+    private UUID confirmorId;
+
+    @Column("confirmed_by")
+    private String confirmedBy;
 
     @Override
     public UUID getId() {
-        return getQuotationId();
+        return getPlacementId();
     }
 
-    public QuotationKey getKey() {
+    public OrderPlacementKey getKey() {
         return key;
     }
 
-    public void setKey(QuotationKey key) {
+    public void setKey(final OrderPlacementKey key) {
         this.key = key;
     }
 
     @Override
     public UUID getIssueId() {
         return Optional.ofNullable(key)
-            .map(QuotationKey::getIssueId)
+            .map(OrderPlacementKey::getIssueId)
             .orElse(null);
     }
 
-    public void setIssueId(UUID issueId) {
+    public void setIssueId(final UUID issueId) {
         if (this.key == null) {
-            this.key = new QuotationKey();
+            this.key = new OrderPlacementKey();
         }
         this.key.setIssueId(issueId);
     }
 
-    public UUID getQuotationId() {
+    public UUID getPlacementId() {
         return Optional.ofNullable(key)
-            .map(QuotationKey::getQuotationId)
+            .map(OrderPlacementKey::getPlacementId)
             .orElse(null);
     }
 
     public void generateId() {
         if (this.key == null) {
-            this.key = new QuotationKey();
+            this.key = new OrderPlacementKey();
         }
-        if (this.key.getQuotationId() == null) {
-            this.key.setQuotationId(UUIDv7.randomUUID());
+        if (this.key.getPlacementId() == null) {
+            this.key.setPlacementId(UUIDv7.randomUUID());
         }
     }
 
     @Override
-    public UUID getRequestId() {
-        return requestId;
+    public UUID getQuotationId() {
+        return quotationId;
     }
 
-    public void setRequestId(UUID requestId) {
-        this.requestId = requestId;
+    public void setQuotationId(final UUID quotationId) {
+        this.quotationId = quotationId;
     }
 
     @Override
@@ -114,7 +116,7 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return projectId;
     }
 
-    public void setProjectId(UUID projectId) {
+    public void setProjectId(final UUID projectId) {
         this.projectId = projectId;
     }
 
@@ -123,7 +125,7 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return projectOwner;
     }
 
-    public void setProjectOwner(String projectOwner) {
+    public void setProjectOwner(final String projectOwner) {
         this.projectOwner = projectOwner;
     }
 
@@ -132,7 +134,7 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return projectCareOf;
     }
 
-    public void setProjectCareOf(String projectCareOf) {
+    public void setProjectCareOf(final String projectCareOf) {
         this.projectCareOf = projectCareOf;
     }
 
@@ -141,7 +143,7 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return projectBillingAddress1;
     }
 
-    public void setProjectBillingAddress1(String projectBillingAddress1) {
+    public void setProjectBillingAddress1(final String projectBillingAddress1) {
         this.projectBillingAddress1 = projectBillingAddress1;
     }
 
@@ -150,7 +152,7 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return projectBillingAddress2;
     }
 
-    public void setProjectBillingAddress2(String projectBillingAddress2) {
+    public void setProjectBillingAddress2(final String projectBillingAddress2) {
         this.projectBillingAddress2 = projectBillingAddress2;
     }
 
@@ -159,26 +161,26 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return projectBillingAddress3;
     }
 
-    public void setProjectBillingAddress3(String projectBillingAddress3) {
+    public void setProjectBillingAddress3(final String projectBillingAddress3) {
         this.projectBillingAddress3 = projectBillingAddress3;
     }
 
     @Override
-    public UUID getOffererId() {
-        return offererId;
+    public UUID getOrdererId() {
+        return ordererId;
     }
 
-    public void setOffererId(UUID offererId) {
-        this.offererId = offererId;
+    public void setOrdererId(final UUID ordererId) {
+        this.ordererId = ordererId;
     }
 
     @Override
-    public String getOfferedBy() {
-        return offeredBy;
+    public String getOrderedBy() {
+        return orderedBy;
     }
 
-    public void setOfferedBy(String offeredBy) {
-        this.offeredBy = offeredBy;
+    public void setOrderedBy(final String orderedBy) {
+        this.orderedBy = orderedBy;
     }
 
     @Override
@@ -186,7 +188,7 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return contractorId;
     }
 
-    public void setContractorId(UUID contractorId) {
+    public void setContractorId(final UUID contractorId) {
         this.contractorId = contractorId;
     }
 
@@ -195,7 +197,7 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return contractorName;
     }
 
-    public void setContractorName(String contractorName) {
+    public void setContractorName(final String contractorName) {
         this.contractorName = contractorName;
     }
 
@@ -204,30 +206,39 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
         return organizationId;
     }
 
-    public void setOrganizationId(UUID organizationId) {
+    public void setOrganizationId(final UUID organizationId) {
         this.organizationId = organizationId;
     }
 
     @Override
-    public QuotationStatus getStatus() {
-        return status != null ? QuotationStatus.valueOf(status) : null;
+    public OrderPlacementStatus getStatus() {
+        return status != null ? OrderPlacementStatus.valueOf(status) : null;
     }
 
-    public void setStatus(QuotationStatus status) {
+    public void setStatus(final OrderPlacementStatus status) {
         this.status = status != null ? status.name() : null;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(final String status) {
         this.status = status;
     }
 
     @Override
-    public Instant getValidUntil() {
-        return validUntil;
+    public UUID getConfirmorId() {
+        return confirmorId;
     }
 
-    public void setValidUntil(Instant validUntil) {
-        this.validUntil = validUntil;
+    public void setConfirmorId(final UUID confirmorId) {
+        this.confirmorId = confirmorId;
+    }
+
+    @Override
+    public String getConfirmedBy() {
+        return confirmedBy;
+    }
+
+    public void setConfirmedBy(final String confirmedBy) {
+        this.confirmedBy = confirmedBy;
     }
 
 }

@@ -11,15 +11,19 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
+import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.QuotationModel.QuotationStatus;
 import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dao.OrderPlacementRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
 import de.remsfal.ticketing.entity.dto.QuotationEntity;
+import de.remsfal.ticketing.entity.dto.QuotationKey;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 
@@ -46,6 +50,9 @@ public class OrderManagementController {
 
     @Inject
     QuotationRepository quotationRepository;
+
+    @Inject
+    OrderPlacementRepository orderPlacementRepository;
 
     public void createRequestsForQuotation(final UserModel user, final UUID issueId,
         final List<ContractorJson> contractors, final String scopeOfWork,
@@ -136,6 +143,15 @@ public class OrderManagementController {
             .toList();
     }
 
+    public QuotationRequestEntity getRequestForQuotationByOrganizationIds(final Set<UUID> organizationIds,
+        final UUID requestId) {
+        return organizationIds.stream()
+            .flatMap(orgId -> quotationRequestRepository.findByOrganizationId(orgId).stream())
+            .filter(r -> requestId.equals(r.getRequestId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
+    }
+
     public QuotationEntity createQuotationByContractor(final Set<UUID> organizationIds, final UUID requestId,
         final QuotationJson body) {
         final QuotationRequestEntity request = organizationIds.stream()
@@ -149,13 +165,119 @@ public class OrderManagementController {
         quotation.setIssueId(request.getIssueId());
         quotation.setRequestId(request.getRequestId());
         quotation.setProjectId(request.getProjectId());
+        quotation.setProjectOwner(request.getProjectOwner());
+        quotation.setProjectCareOf(request.getProjectCareOf());
+        quotation.setProjectBillingAddress1(request.getProjectBillingAddress1());
+        quotation.setProjectBillingAddress2(request.getProjectBillingAddress2());
+        quotation.setProjectBillingAddress3(request.getProjectBillingAddress3());
         quotation.setOffererId(principal.getId());
         quotation.setOfferedBy(principal.getName());
         quotation.setContractorId(request.getContractorId());
-        quotation.setAttachments(body.getAttachments());
+        quotation.setContractorName(request.getContractorName());
+        quotation.setOrganizationId(request.getOrganizationId());
         quotation.setValidUntil(body.getValidUntil());
         quotation.setStatus(body.getStatus() != null ? body.getStatus() : QuotationStatus.VALID);
         return quotationRepository.insert(quotation);
+    }
+
+    public void placeOrder(final UUID issueId, final UUID quotationId) {
+        QuotationKey key = new QuotationKey();
+        key.setIssueId(issueId);
+        key.setQuotationId(quotationId);
+        QuotationEntity quotation = quotationRepository.findById(key)
+            .orElseThrow(() -> new NotFoundException("Quotation not found"));
+
+        OrderPlacementEntity orderPlacement = new OrderPlacementEntity();
+        orderPlacement.generateId();
+        orderPlacement.setIssueId(issueId);
+        orderPlacement.setQuotationId(quotationId);
+        orderPlacement.setProjectId(quotation.getProjectId());
+        orderPlacement.setProjectOwner(quotation.getProjectOwner());
+        orderPlacement.setProjectCareOf(quotation.getProjectCareOf());
+        orderPlacement.setProjectBillingAddress1(quotation.getProjectBillingAddress1());
+        orderPlacement.setProjectBillingAddress2(quotation.getProjectBillingAddress2());
+        orderPlacement.setProjectBillingAddress3(quotation.getProjectBillingAddress3());
+        orderPlacement.setOrdererId(principal.getId());
+        orderPlacement.setOrderedBy(principal.getName());
+        orderPlacement.setContractorId(quotation.getContractorId());
+        orderPlacement.setContractorName(quotation.getContractorName());
+        orderPlacement.setOrganizationId(quotation.getOrganizationId());
+        orderPlacement.setStatus(OrderPlacementStatus.PLACED);
+        orderPlacementRepository.insert(orderPlacement);
+    }
+
+    public List<QuotationEntity> getQuotationsByIssue(final UUID issueId) {
+        logger.infov("Retrieving quotations for issue (issueId={0})", issueId);
+        return quotationRepository.findByIssueId(issueId);
+    }
+
+    public QuotationEntity getQuotation(final UUID issueId, final UUID quotationId) {
+        logger.infov("Retrieving quotation (issueId={0}, quotationId={1})", issueId, quotationId);
+        QuotationKey key = new QuotationKey();
+        key.setIssueId(issueId);
+        key.setQuotationId(quotationId);
+        return quotationRepository.findById(key)
+            .orElseThrow(() -> new NotFoundException("Quotation not found"));
+    }
+
+    public OrderPlacementEntity getOrderPlacementByQuotation(final UUID issueId, final UUID quotationId) {
+        logger.infov("Retrieving order placement (issueId={0}, quotationId={1})", issueId, quotationId);
+        return orderPlacementRepository.findByIssueIdAndQuotationId(issueId, quotationId)
+            .orElseThrow(() -> new NotFoundException("Order placement not found"));
+    }
+
+    public void withdrawOrderPlacement(final UUID issueId, final UUID quotationId) {
+        OrderPlacementEntity placement = getOrderPlacementByQuotation(issueId, quotationId);
+        placement.setStatus(OrderPlacementStatus.WITHDRAWN);
+        orderPlacementRepository.update(placement);
+    }
+
+    public List<QuotationEntity> getQuotationsByOrganizationIds(final Set<UUID> organizationIds) {
+        logger.infov("Retrieving quotations for organizations (count={0})", organizationIds.size());
+        return organizationIds.stream()
+            .flatMap(orgId -> quotationRepository.findByOrganizationId(orgId).stream())
+            .toList();
+    }
+
+    public QuotationEntity getQuotationForOrganization(final Set<UUID> organizationIds,
+        final UUID quotationId) {
+        return organizationIds.stream()
+            .flatMap(orgId -> quotationRepository.findByOrganizationId(orgId).stream())
+            .filter(q -> quotationId.equals(q.getId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Quotation not found"));
+    }
+
+    public List<OrderPlacementEntity> getOrderPlacementsByOrganizationIds(final Set<UUID> organizationIds) {
+        logger.infov("Retrieving order placements for organizations (count={0})", organizationIds.size());
+        return organizationIds.stream()
+            .flatMap(orgId -> orderPlacementRepository.findByOrganizationId(orgId).stream())
+            .toList();
+    }
+
+    public OrderPlacementEntity getOrderPlacementForOrganization(final Set<UUID> organizationIds,
+        final UUID placementId) {
+        return organizationIds.stream()
+            .flatMap(orgId -> orderPlacementRepository.findByOrganizationId(orgId).stream())
+            .filter(p -> placementId.equals(p.getId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Order placement not found"));
+    }
+
+    public OrderPlacementEntity updateOrderPlacementStatus(final Set<UUID> organizationIds,
+        final UUID placementId, final OrderPlacementStatus status) {
+        final Set<OrderPlacementStatus> allowedStatuses = Set.of(
+            OrderPlacementStatus.CONFIRMED,
+            OrderPlacementStatus.REJECTED
+        );
+        if (!allowedStatuses.contains(status)) {
+            throw new BadRequestException("Contractor can only set status to CONFIRMED or REJECTED");
+        }
+        OrderPlacementEntity placement = getOrderPlacementForOrganization(organizationIds, placementId);
+        placement.setStatus(status);
+        placement.setConfirmorId(principal.getId());
+        placement.setConfirmedBy(principal.getName());
+        return orderPlacementRepository.update(placement);
     }
 
 }

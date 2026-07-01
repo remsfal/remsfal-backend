@@ -6,13 +6,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
-import de.remsfal.core.model.ticketing.QuotationRequestModel.RequestStatus;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Size;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
-import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -23,98 +21,52 @@ import java.util.UUID;
 @Schema(description = "A request for quotation sent to a contractor")
 @JsonDeserialize(as = ImmutableQuotationRequestJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class QuotationRequestJson {
-
-    @Nullable
-    @Schema(readOnly = true, description = "Unique identifier of the quotation request")
-    public abstract UUID getId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the issue this request belongs to")
-    public abstract UUID getIssueId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the project this request belongs to")
-    public abstract UUID getProjectId();
+public abstract class QuotationRequestJson extends OrderProcessJson implements QuotationRequestModel {
 
     @Nullable
     @Schema(readOnly = true, description = "ID of the user who initiated this request")
+    @Override
     public abstract UUID getInitiatorId();
 
     @Nullable
     @Schema(readOnly = true, description = "Name of the user who initiated this request")
+    @Override
     public abstract String getInitiatedBy();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the contractor this request was sent to")
-    public abstract UUID getContractorId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the organization of the contractor")
-    public abstract UUID getOrganizationId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Company name of the contractor")
-    public abstract String getContractorName();
-
-    @Nullable
-    @Size(max = 5000)
-    @Schema(description = "Scope of work description for the contractor")
-    public abstract String getScopeOfWork();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Name of the project owner / billing recipient")
-    public abstract String getProjectOwner();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Care of / representative on behalf of")
-    public abstract String getProjectCareOf();
-
-    @Nullable
-    @Schema(readOnly = true, description = "First billing address line (street)")
-    public abstract String getProjectBillingAddress1();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Second billing address line (zip and city)")
-    public abstract String getProjectBillingAddress2();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Third billing address line (province and country)")
-    public abstract String getProjectBillingAddress3();
 
     @Nullable
     @Schema(description = "Status of the request: REQUESTED, WITHDRAWN, VIEWING_REQUIRED,"
             + "CONSULTATION_REQUIRED, REJECTED, SUBMITTED")
+    @Override
     public abstract RequestStatus getStatus();
 
     @Nullable
-    @Schema(readOnly = true)
-    public abstract Instant getCreatedAt();
-
-    @Nullable
-    @Schema(readOnly = true)
-    public abstract Instant getModifiedAt();
+    @Size(max = 5000)
+    @Schema(description = "Scope of work description for the contractor")
+    @Override
+    public abstract String getScopeOfWork();
 
     public static QuotationRequestJson valueOf(final QuotationRequestModel model) {
         return ImmutableQuotationRequestJson.builder()
             .id(model.getId())
             .issueId(model.getIssueId())
             .projectId(model.getProjectId())
-            .initiatorId(model.getInitiatorId())
-            .initiatedBy(model.getInitiatedBy())
-            .contractorId(model.getContractorId())
-            .organizationId(model.getOrganizationId())
-            .contractorName(model.getContractorName())
-            .scopeOfWork(model.getScopeOfWork())
             .projectOwner(model.getProjectOwner())
             .projectCareOf(model.getProjectCareOf())
             .projectBillingAddress1(model.getProjectBillingAddress1())
             .projectBillingAddress2(model.getProjectBillingAddress2())
             .projectBillingAddress3(model.getProjectBillingAddress3())
+            .initiatorId(model.getInitiatorId())
+            .initiatedBy(model.getInitiatedBy())
+            .contractorId(model.getContractorId())
+            .contractorName(model.getContractorName())
+            .organizationId(model.getOrganizationId())
             .status(model.getStatus())
+            .scopeOfWork(model.getScopeOfWork())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();
     }
+
+    public abstract QuotationRequestJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
 
 }

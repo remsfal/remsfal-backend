@@ -7,42 +7,39 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.4-quotation-requests" author="alexander.stanik@htw-berlin.de">
-        <comment>Create quotation requests table</comment>
+    <changeSet id="remsfal-ticketing-0.0.6-order-placements" author="alexander.stanik@htw-berlin.de">
+        <comment>Create order placements table</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.quotation_requests (
+            CREATE TABLE IF NOT EXISTS REMSFAL.order_placements (
                 issue_id UUID,
-                request_id UUID,
+                placement_id UUID,
+                quotation_id UUID,
                 project_id UUID,
                 project_owner TEXT,
                 project_care_of TEXT,
                 project_billing_address_1 TEXT,
                 project_billing_address_2 TEXT,
                 project_billing_address_3 TEXT,
-                initiator_id UUID,
-                initiated_by TEXT,
+                orderer_id UUID,
+                ordered_by TEXT,
                 contractor_id UUID,
                 contractor_name TEXT,
                 organization_id UUID,
                 status TEXT,
-                scope_of_work TEXT,
+                confirmor_id UUID,
+                confirmed_by TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
-                PRIMARY KEY (issue_id, request_id)
-            ) WITH CLUSTERING ORDER BY (request_id DESC);
+                PRIMARY KEY (issue_id, placement_id)
+            ) WITH CLUSTERING ORDER BY (placement_id DESC);
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS quotation_requests_request_id_idx
-            ON REMSFAL.quotation_requests (request_id);
-        </sql>
-        <sql>
-            CREATE INDEX IF NOT EXISTS quotation_requests_organization_id_idx
-            ON REMSFAL.quotation_requests (organization_id);
+            CREATE INDEX IF NOT EXISTS order_placements_organization_id_idx
+            ON REMSFAL.order_placements (organization_id);
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS quotation_requests_organization_id_idx;</sql>
-            <sql>DROP INDEX IF EXISTS quotation_requests_request_id_idx;</sql>
-            <sql>DROP TABLE IF EXISTS REMSFAL.quotation_requests;</sql>
+            <sql>DROP INDEX IF EXISTS order_placements_organization_id_idx;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.order_placements;</sql>
         </rollback>
     </changeSet>
 

@@ -2,13 +2,12 @@ package de.remsfal.core.model.ticketing;
 
 import jakarta.annotation.Nullable;
 
-import java.time.Instant;
 import java.util.UUID;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface QuotationRequestModel {
+public interface QuotationRequestModel extends OrderProcessModel {
 
     enum RequestStatus {
         REQUESTED,
@@ -19,46 +18,13 @@ public interface QuotationRequestModel {
         SUBMITTED
     }
 
-    UUID getId();
-
-    UUID getIssueId();
-
-    UUID getProjectId();
-
     UUID getInitiatorId();
 
     String getInitiatedBy();
 
-    UUID getContractorId();
-
-    @Nullable
-    UUID getOrganizationId();
-
-    @Nullable
-    String getContractorName();
+    RequestStatus getStatus();
 
     @Nullable
     String getScopeOfWork();
-
-    @Nullable
-    String getProjectOwner();
-
-    @Nullable
-    String getProjectCareOf();
-
-    @Nullable
-    String getProjectBillingAddress1();
-
-    @Nullable
-    String getProjectBillingAddress2();
-
-    @Nullable
-    String getProjectBillingAddress3();
-
-    RequestStatus getStatus();
-
-    Instant getCreatedAt();
-
-    Instant getModifiedAt();
 
 }

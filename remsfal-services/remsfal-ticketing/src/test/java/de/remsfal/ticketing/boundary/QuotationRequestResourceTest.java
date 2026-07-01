@@ -337,14 +337,12 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .extract().path("items[0].id");
 
-        final String attachmentId = UUID.randomUUID().toString();
         given()
             .when()
             .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor Manager",
                 Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
             .contentType(ContentType.JSON)
-            .body("{ \"attachments\":[\"" + attachmentId + "\"],"
-                + "\"validUntil\":\"2030-12-31T23:59:59Z\","
+            .body("{ \"validUntil\":\"2030-12-31T23:59:59Z\","
                 + "\"status\":\"VALID\" }")
             .post(QUOTATION_PATH + "/" + requestId + "/quotation")
             .then()
@@ -355,8 +353,6 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
             .body("offererId", equalTo(contractorUserId.toString()))
             .body("contractorId", equalTo(contractorId.toString()))
-            .body("attachments", hasSize(1))
-            .body("attachments[0]", equalTo(attachmentId))
             .body("status", equalTo("VALID"))
             .body("createdAt", notNullValue());
     }

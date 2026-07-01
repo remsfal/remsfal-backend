@@ -66,6 +66,8 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute("TRUNCATE inbox_messages");
         cqlSession.execute("TRUNCATE quotation_requests");
         cqlSession.execute("TRUNCATE quotations");
+        cqlSession.execute("TRUNCATE order_placements");
+        cqlSession.execute("TRUNCATE order_attachments");
     }
 
     protected InputStream getTestFileStream(final String path) {
@@ -171,6 +173,17 @@ public abstract class AbstractTicketingTest extends AbstractTest {
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertAttachmentCql,
             issueId, attachmentId, fileName, contentType, objectName, uploaderId,
+            TicketingTestData.USER_NAME, Instant.now(), Instant.now());
+    }
+
+    protected void insertOrderAttachment(String processPhase, UUID processId, UUID attachmentId, String fileName,
+            String contentType, String objectName, UUID uploaderId) {
+        String insertAttachmentCql = "INSERT INTO remsfal.order_attachments "
+            + "(process_phase, process_id, attachment_id, file_name, content_type, object_name, uploader_id,"
+            + " uploaded_by, created_at, modified_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertAttachmentCql,
+            processPhase, processId, attachmentId, fileName, contentType, objectName, uploaderId,
             TicketingTestData.USER_NAME, Instant.now(), Instant.now());
     }
 

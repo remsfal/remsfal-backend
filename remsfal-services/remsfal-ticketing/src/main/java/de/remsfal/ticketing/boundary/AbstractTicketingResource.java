@@ -8,10 +8,14 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import de.remsfal.common.boundary.AbstractResource;
 import de.remsfal.core.json.UserJson.UserContext;
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
+import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.IssueController;
@@ -75,6 +79,18 @@ public class AbstractTicketingResource extends AbstractResource {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
         return principal.getProjectRole(issue.getProjectId());
+    }
+
+    protected Set<UUID> resolveEligibleOrganizationIds() {
+        final Map<UUID, EmployeeRole> orgRoles = principal.getOrganizationRoles();
+        if (orgRoles.isEmpty() || orgRoles.values().stream()
+            .noneMatch(role -> role.isPrivileged(PermissionType.WRITE))) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
+        return orgRoles.entrySet().stream()
+            .filter(e -> e.getValue().isPrivileged(PermissionType.WRITE))
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet());
     }
 
     protected String getFileName(final MultivaluedMap<String, String> headers) {

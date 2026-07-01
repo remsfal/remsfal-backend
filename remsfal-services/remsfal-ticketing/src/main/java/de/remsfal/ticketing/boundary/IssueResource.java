@@ -22,6 +22,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
 import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
@@ -57,6 +58,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Inject
     Instance<IssueQuotationRequestResource> quotationRequestResource;
+
+    @Inject
+    Instance<IssueQuotationResource> quotationResource;
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
@@ -273,6 +277,11 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public IssueQuotationRequestEndpoint getQuotationRequestResource() {
         return resourceContext.initResource(quotationRequestResource.get());
+    }
+
+    @Override
+    public IssueQuotationEndpoint getQuotationResource() {
+        return resourceContext.initResource(quotationResource.get());
     }
 
     @Override

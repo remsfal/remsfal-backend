@@ -4,27 +4,26 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 
 import java.util.Set;
 import java.util.UUID;
 
 import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
-import de.remsfal.core.api.ticketing.QuotationRequestEndpoint;
+import de.remsfal.core.api.ticketing.OrderPlacementEndpoint;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
-import de.remsfal.core.json.ticketing.QuotationJson;
-import de.remsfal.core.json.ticketing.QuotationRequestJson;
-import de.remsfal.core.json.ticketing.QuotationRequestListJson;
+import de.remsfal.core.json.ticketing.OrderPlacementJson;
+import de.remsfal.core.json.ticketing.OrderPlacementListJson;
 import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
-import de.remsfal.ticketing.entity.dto.QuotationEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Authenticated
 @RequestScoped
-public class QuotationRequestResource extends AbstractTicketingResource implements QuotationRequestEndpoint {
+public class OrderPlacementResource extends AbstractTicketingResource implements OrderPlacementEndpoint {
 
     @Inject
     OrderManagementController orderManagementController;
@@ -36,31 +35,33 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
     Instance<OrderAttachmentResource> attachmentResource;
 
     @Override
-    public QuotationRequestListJson getQuotationRequests() {
+    public OrderPlacementListJson getOrderPlacements() {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
-        return QuotationRequestListJson.valueOf(
-            orderManagementController.getRequestsForQuotationByOrganizationIds(eligibleOrgIds));
+        return OrderPlacementListJson.valueOf(
+            orderManagementController.getOrderPlacementsByOrganizationIds(eligibleOrgIds));
     }
 
     @Override
-    public QuotationRequestJson updateQuotationRequest(final UUID requestId, final QuotationRequestJson body) {
+    public OrderPlacementJson getOrderPlacement(final UUID placementId) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
-        final QuotationRequestJson json = QuotationRequestJson.valueOf(
-            orderManagementController.updateRequestForQuotationByContractor(eligibleOrgIds, requestId, body));
+        final OrderPlacementJson json = OrderPlacementJson.valueOf(
+            orderManagementController.getOrderPlacementForOrganization(eligibleOrgIds, placementId));
         return json.withAttachments(orderAttachmentController
-            .getAttachments(OrderProcessPhase.QUOTATION_REQUEST, requestId).stream()
+            .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placementId).stream()
             .map(OrderAttachmentJson::valueOf)
             .toList());
     }
 
     @Override
-    public QuotationJson createQuotation(final UUID requestId, final QuotationJson body) {
+    public OrderPlacementJson updateOrderPlacement(final UUID placementId, final OrderPlacementJson body) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
-        final QuotationEntity quotation =
-            orderManagementController.createQuotationByContractor(eligibleOrgIds, requestId, body);
-        final QuotationJson json = QuotationJson.valueOf(quotation);
+        if (body.getStatus() == null) {
+            throw new BadRequestException("Status must be provided");
+        }
+        final OrderPlacementJson json = OrderPlacementJson.valueOf(
+            orderManagementController.updateOrderPlacementStatus(eligibleOrgIds, placementId, body.getStatus()));
         return json.withAttachments(orderAttachmentController
-            .getAttachments(OrderProcessPhase.QUOTATION, quotation.getQuotationId()).stream()
+            .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placementId).stream()
             .map(OrderAttachmentJson::valueOf)
             .toList());
     }
@@ -68,7 +69,7 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
     @Override
     public OrderAttachmentEndpoint getAttachmentResource() {
         return resourceContext.initResource(attachmentResource.get())
-            .configure(OrderProcessPhase.QUOTATION_REQUEST);
+            .configure(OrderProcessPhase.ORDER_PLACEMENT);
     }
 
 }
