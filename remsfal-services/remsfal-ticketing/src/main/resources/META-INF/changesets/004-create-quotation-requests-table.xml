@@ -24,8 +24,8 @@
                 contractor_id UUID,
                 contractor_name TEXT,
                 organization_id UUID,
-                scope_of_work TEXT,
                 status TEXT,
+                scope_of_work TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY (issue_id, request_id)
@@ -40,9 +40,9 @@
             ON REMSFAL.quotation_requests (organization_id);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.quotation_requests;</sql>
-            <sql>DROP INDEX IF EXISTS quotation_requests_request_id_idx;</sql>
             <sql>DROP INDEX IF EXISTS quotation_requests_organization_id_idx;</sql>
+            <sql>DROP INDEX IF EXISTS quotation_requests_request_id_idx;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.quotation_requests;</sql>
         </rollback>
     </changeSet>
 

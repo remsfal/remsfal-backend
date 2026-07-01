@@ -46,7 +46,16 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}],"
+                + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
+                + "\"projectCareOf\":\"Max Mustermann\","
+                + "\"billingAddress\":{"
+                + "\"street\":\"Musterstraße 1\","
+                + "\"city\":\"Berlin\","
+                + "\"province\":\"Berlin\","
+                + "\"zip\":\"10115\","
+                + "\"countryCode\":\"DE\""
+                + "}}")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
@@ -153,6 +162,14 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
             .body("id", notNullValue())
             .body("issueId", equalTo(issueId))
             .body("quotationId", equalTo(quotationId))
+            .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
+            .body("projectOwner", equalTo("Mustermann Verwaltung GmbH"))
+            .body("projectCareOf", equalTo("Max Mustermann"))
+            .body("projectBillingAddress1", equalTo("Musterstraße 1"))
+            .body("projectBillingAddress2", equalTo("10115 Berlin"))
+            .body("projectBillingAddress3", equalTo("Berlin, DE"))
+            .body("contractorId", equalTo(contractorId.toString()))
+            .body("contractorName", equalTo("Test Betrieb"))
             .body("status", equalTo("PLACED"))
             .body("organizationId", equalTo(organizationId.toString()));
     }

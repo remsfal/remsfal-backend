@@ -44,6 +44,31 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
     public abstract UUID getProjectId();
 
     @Nullable
+    @Schema(readOnly = true, description = "Name of the project owner / billing recipient")
+    @Override
+    public abstract String getProjectOwner();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Care of / representative on behalf of")
+    @Override
+    public abstract String getProjectCareOf();
+
+    @Nullable
+    @Schema(readOnly = true, description = "First billing address line (street)")
+    @Override
+    public abstract String getProjectBillingAddress1();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Second billing address line (zip and city)")
+    @Override
+    public abstract String getProjectBillingAddress2();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Third billing address line (province and country)")
+    @Override
+    public abstract String getProjectBillingAddress3();
+
+    @Nullable
     @Schema(readOnly = true, description = "ID of the user who placed the order")
     @Override
     public abstract UUID getOrdererId();
@@ -59,9 +84,19 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
     public abstract UUID getContractorId();
 
     @Nullable
+    @Schema(readOnly = true, description = "Company name of the contractor")
+    @Override
+    public abstract String getContractorName();
+
+    @Nullable
     @Schema(readOnly = true, description = "ID of the organization of the contractor")
     @Override
     public abstract UUID getOrganizationId();
+
+    @Nullable
+    @Schema(description = "Status of the order placement: PLACED, CONFIRMED, REJECTED, WITHDRAWN")
+    @Override
+    public abstract OrderPlacementStatus getStatus();
 
     @Nullable
     @Schema(readOnly = true, description = "ID of the user who confirmed or rejected the order")
@@ -72,11 +107,6 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
     @Schema(readOnly = true, description = "Name of the user who confirmed or rejected the order")
     @Override
     public abstract String getConfirmedBy();
-
-    @Nullable
-    @Schema(description = "Status of the order placement: PLACED, CONFIRMED, REJECTED, WITHDRAWN")
-    @Override
-    public abstract OrderPlacementStatus getStatus();
 
     @Nullable
     @Schema(readOnly = true)
@@ -94,13 +124,19 @@ public abstract class OrderPlacementJson implements OrderPlacementModel {
             .issueId(model.getIssueId())
             .quotationId(model.getQuotationId())
             .projectId(model.getProjectId())
+            .projectOwner(model.getProjectOwner())
+            .projectCareOf(model.getProjectCareOf())
+            .projectBillingAddress1(model.getProjectBillingAddress1())
+            .projectBillingAddress2(model.getProjectBillingAddress2())
+            .projectBillingAddress3(model.getProjectBillingAddress3())
             .ordererId(model.getOrdererId())
             .orderedBy(model.getOrderedBy())
             .contractorId(model.getContractorId())
+            .contractorName(model.getContractorName())
             .organizationId(model.getOrganizationId())
+            .status(model.getStatus())
             .confirmorId(model.getConfirmorId())
             .confirmedBy(model.getConfirmedBy())
-            .status(model.getStatus())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();

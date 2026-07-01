@@ -26,6 +26,21 @@ public interface QuotationModel {
 
     UUID getProjectId();
 
+    @Nullable
+    String getProjectOwner();
+
+    @Nullable
+    String getProjectCareOf();
+
+    @Nullable
+    String getProjectBillingAddress1();
+
+    @Nullable
+    String getProjectBillingAddress2();
+
+    @Nullable
+    String getProjectBillingAddress3();
+
     UUID getOffererId();
 
     String getOfferedBy();
@@ -33,15 +48,18 @@ public interface QuotationModel {
     UUID getContractorId();
 
     @Nullable
+    String getContractorName();
+
+    @Nullable
     UUID getOrganizationId();
+
+    QuotationStatus getStatus();
 
     @Nullable
     List<UUID> getAttachments();
 
     @Nullable
     Instant getValidUntil();
-
-    QuotationStatus getStatus();
 
     Instant getCreatedAt();
 

@@ -25,21 +25,6 @@ public interface QuotationRequestModel {
 
     UUID getProjectId();
 
-    UUID getInitiatorId();
-
-    String getInitiatedBy();
-
-    UUID getContractorId();
-
-    @Nullable
-    UUID getOrganizationId();
-
-    @Nullable
-    String getContractorName();
-
-    @Nullable
-    String getScopeOfWork();
-
     @Nullable
     String getProjectOwner();
 
@@ -55,7 +40,22 @@ public interface QuotationRequestModel {
     @Nullable
     String getProjectBillingAddress3();
 
+    UUID getInitiatorId();
+
+    String getInitiatedBy();
+
+    UUID getContractorId();
+
+    @Nullable
+    String getContractorName();
+
+    @Nullable
+    UUID getOrganizationId();
+
     RequestStatus getStatus();
+
+    @Nullable
+    String getScopeOfWork();
 
     Instant getCreatedAt();
 

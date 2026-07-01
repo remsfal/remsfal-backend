@@ -40,37 +40,6 @@ public abstract class QuotationRequestJson implements QuotationRequestModel {
     public abstract UUID getProjectId();
 
     @Nullable
-    @Schema(readOnly = true, description = "ID of the user who initiated this request")
-    @Override
-    public abstract UUID getInitiatorId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Name of the user who initiated this request")
-    @Override
-    public abstract String getInitiatedBy();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the contractor this request was sent to")
-    @Override
-    public abstract UUID getContractorId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "ID of the organization of the contractor")
-    @Override
-    public abstract UUID getOrganizationId();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Company name of the contractor")
-    @Override
-    public abstract String getContractorName();
-
-    @Nullable
-    @Size(max = 5000)
-    @Schema(description = "Scope of work description for the contractor")
-    @Override
-    public abstract String getScopeOfWork();
-
-    @Nullable
     @Schema(readOnly = true, description = "Name of the project owner / billing recipient")
     @Override
     public abstract String getProjectOwner();
@@ -96,10 +65,41 @@ public abstract class QuotationRequestJson implements QuotationRequestModel {
     public abstract String getProjectBillingAddress3();
 
     @Nullable
+    @Schema(readOnly = true, description = "ID of the user who initiated this request")
+    @Override
+    public abstract UUID getInitiatorId();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Name of the user who initiated this request")
+    @Override
+    public abstract String getInitiatedBy();
+
+    @Nullable
+    @Schema(readOnly = true, description = "ID of the contractor this request was sent to")
+    @Override
+    public abstract UUID getContractorId();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Company name of the contractor")
+    @Override
+    public abstract String getContractorName();
+
+    @Nullable
+    @Schema(readOnly = true, description = "ID of the organization of the contractor")
+    @Override
+    public abstract UUID getOrganizationId();
+
+    @Nullable
     @Schema(description = "Status of the request: REQUESTED, WITHDRAWN, VIEWING_REQUIRED,"
             + "CONSULTATION_REQUIRED, REJECTED, SUBMITTED")
     @Override
     public abstract RequestStatus getStatus();
+
+    @Nullable
+    @Size(max = 5000)
+    @Schema(description = "Scope of work description for the contractor")
+    @Override
+    public abstract String getScopeOfWork();
 
     @Nullable
     @Schema(readOnly = true)
@@ -116,18 +116,18 @@ public abstract class QuotationRequestJson implements QuotationRequestModel {
             .id(model.getId())
             .issueId(model.getIssueId())
             .projectId(model.getProjectId())
-            .initiatorId(model.getInitiatorId())
-            .initiatedBy(model.getInitiatedBy())
-            .contractorId(model.getContractorId())
-            .organizationId(model.getOrganizationId())
-            .contractorName(model.getContractorName())
-            .scopeOfWork(model.getScopeOfWork())
             .projectOwner(model.getProjectOwner())
             .projectCareOf(model.getProjectCareOf())
             .projectBillingAddress1(model.getProjectBillingAddress1())
             .projectBillingAddress2(model.getProjectBillingAddress2())
             .projectBillingAddress3(model.getProjectBillingAddress3())
+            .initiatorId(model.getInitiatorId())
+            .initiatedBy(model.getInitiatedBy())
+            .contractorId(model.getContractorId())
+            .contractorName(model.getContractorName())
+            .organizationId(model.getOrganizationId())
             .status(model.getStatus())
+            .scopeOfWork(model.getScopeOfWork())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();

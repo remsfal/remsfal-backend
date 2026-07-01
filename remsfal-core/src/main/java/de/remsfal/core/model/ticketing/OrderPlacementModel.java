@@ -25,21 +25,39 @@ public interface OrderPlacementModel {
 
     UUID getProjectId();
 
+    @Nullable
+    String getProjectOwner();
+
+    @Nullable
+    String getProjectCareOf();
+
+    @Nullable
+    String getProjectBillingAddress1();
+
+    @Nullable
+    String getProjectBillingAddress2();
+
+    @Nullable
+    String getProjectBillingAddress3();
+
     UUID getOrdererId();
 
     String getOrderedBy();
 
     UUID getContractorId();
 
+    @Nullable
+    String getContractorName();
+
     UUID getOrganizationId();
+
+    OrderPlacementStatus getStatus();
 
     @Nullable
     UUID getConfirmorId();
 
     @Nullable
     String getConfirmedBy();
-
-    OrderPlacementStatus getStatus();
 
     Instant getCreatedAt();
 

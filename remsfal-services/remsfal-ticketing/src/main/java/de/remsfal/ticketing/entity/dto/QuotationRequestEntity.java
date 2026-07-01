@@ -18,24 +18,6 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     @Column("project_id")
     private UUID projectId;
 
-    @Column("initiator_id")
-    private UUID initiatorId;
-
-    @Column("initiated_by")
-    private String initiatedBy;
-
-    @Column("contractor_id")
-    private UUID contractorId;
-
-    @Column("organization_id")
-    private UUID organizationId;
-
-    @Column("contractor_name")
-    private String contractorName;
-
-    @Column("scope_of_work")
-    private String scopeOfWork;
-
     @Column("project_owner")
     private String projectOwner;
 
@@ -51,8 +33,26 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     @Column("project_billing_address_3")
     private String projectBillingAddress3;
 
+    @Column("initiator_id")
+    private UUID initiatorId;
+
+    @Column("initiated_by")
+    private String initiatedBy;
+
+    @Column("contractor_id")
+    private UUID contractorId;
+
+    @Column("contractor_name")
+    private String contractorName;
+
+    @Column("organization_id")
+    private UUID organizationId;
+
     @Column("status")
     private String status;
+
+    @Column("scope_of_work")
+    private String scopeOfWork;
 
     @Override
     public UUID getId() {
@@ -104,58 +104,6 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     }
 
     @Override
-    public UUID getInitiatorId() {
-        return initiatorId;
-    }
-
-    public void setInitiatorId(UUID initiatorId) {
-        this.initiatorId = initiatorId;
-    }
-
-    @Override
-    public String getInitiatedBy() {
-        return initiatedBy;
-    }
-
-    public void setInitiatedBy(String initiatedBy) {
-        this.initiatedBy = initiatedBy;
-    }
-
-    public UUID getContractorId() {
-        return contractorId;
-    }
-
-    public void setContractorId(UUID contractorId) {
-        this.contractorId = contractorId;
-    }
-
-    @Override
-    public UUID getOrganizationId() {
-        return organizationId;
-    }
-
-    public void setOrganizationId(UUID organizationId) {
-        this.organizationId = organizationId;
-    }
-
-    @Override
-    public String getContractorName() {
-        return contractorName;
-    }
-
-    public void setContractorName(final String contractorName) {
-        this.contractorName = contractorName;
-    }
-
-    public String getScopeOfWork() {
-        return scopeOfWork;
-    }
-
-    public void setScopeOfWork(String scopeOfWork) {
-        this.scopeOfWork = scopeOfWork;
-    }
-
-    @Override
     public String getProjectOwner() {
         return projectOwner;
     }
@@ -201,6 +149,50 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     }
 
     @Override
+    public UUID getInitiatorId() {
+        return initiatorId;
+    }
+
+    public void setInitiatorId(UUID initiatorId) {
+        this.initiatorId = initiatorId;
+    }
+
+    @Override
+    public String getInitiatedBy() {
+        return initiatedBy;
+    }
+
+    public void setInitiatedBy(String initiatedBy) {
+        this.initiatedBy = initiatedBy;
+    }
+
+    public UUID getContractorId() {
+        return contractorId;
+    }
+
+    public void setContractorId(UUID contractorId) {
+        this.contractorId = contractorId;
+    }
+
+    @Override
+    public String getContractorName() {
+        return contractorName;
+    }
+
+    public void setContractorName(final String contractorName) {
+        this.contractorName = contractorName;
+    }
+
+    @Override
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(UUID organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    @Override
     public RequestStatus getStatus() {
         return status != null ? RequestStatus.valueOf(status) : null;
     }
@@ -211,6 +203,14 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getScopeOfWork() {
+        return scopeOfWork;
+    }
+
+    public void setScopeOfWork(String scopeOfWork) {
+        this.scopeOfWork = scopeOfWork;
     }
 
 }

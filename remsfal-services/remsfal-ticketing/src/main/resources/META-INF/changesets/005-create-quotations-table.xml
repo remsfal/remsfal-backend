@@ -15,12 +15,19 @@
                 quotation_id UUID,
                 request_id UUID,
                 project_id UUID,
+                project_owner TEXT,
+                project_care_of TEXT,
+                project_billing_address_1 TEXT,
+                project_billing_address_2 TEXT,
+                project_billing_address_3 TEXT,
                 offerer_id UUID,
                 offered_by TEXT,
                 contractor_id UUID,
+                contractor_name TEXT,
+                organization_id UUID,
+                status TEXT,
                 attachments LIST&lt;UUID&gt;,
                 valid_until TIMESTAMP,
-                status TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY (issue_id, quotation_id)
@@ -30,9 +37,14 @@
             CREATE INDEX IF NOT EXISTS quotations_request_id_idx
             ON REMSFAL.quotations (request_id);
         </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS quotations_organization_id_idx
+            ON REMSFAL.quotations (organization_id);
+        </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.quotations;</sql>
+            <sql>DROP INDEX IF EXISTS quotations_organization_id_idx;</sql>
             <sql>DROP INDEX IF EXISTS quotations_request_id_idx;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.quotations;</sql>
         </rollback>
     </changeSet>
 

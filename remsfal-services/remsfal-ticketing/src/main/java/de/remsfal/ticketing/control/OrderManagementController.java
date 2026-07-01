@@ -156,9 +156,15 @@ public class OrderManagementController {
         quotation.setIssueId(request.getIssueId());
         quotation.setRequestId(request.getRequestId());
         quotation.setProjectId(request.getProjectId());
+        quotation.setProjectOwner(request.getProjectOwner());
+        quotation.setProjectCareOf(request.getProjectCareOf());
+        quotation.setProjectBillingAddress1(request.getProjectBillingAddress1());
+        quotation.setProjectBillingAddress2(request.getProjectBillingAddress2());
+        quotation.setProjectBillingAddress3(request.getProjectBillingAddress3());
         quotation.setOffererId(principal.getId());
         quotation.setOfferedBy(principal.getName());
         quotation.setContractorId(request.getContractorId());
+        quotation.setContractorName(request.getContractorName());
         quotation.setOrganizationId(request.getOrganizationId());
         quotation.setAttachments(body.getAttachments());
         quotation.setValidUntil(body.getValidUntil());
@@ -173,21 +179,21 @@ public class OrderManagementController {
         QuotationEntity quotation = quotationRepository.findById(key)
             .orElseThrow(() -> new NotFoundException("Quotation not found"));
 
-        QuotationRequestKey requestKey = new QuotationRequestKey();
-        requestKey.setIssueId(quotation.getIssueId());
-        requestKey.setRequestId(quotation.getRequestId());
-        QuotationRequestEntity request = quotationRequestRepository.findById(requestKey)
-            .orElseThrow(() -> new NotFoundException("Quotation request not found"));
-
         OrderPlacementEntity orderPlacement = new OrderPlacementEntity();
         orderPlacement.generateId();
         orderPlacement.setIssueId(issueId);
         orderPlacement.setQuotationId(quotationId);
         orderPlacement.setProjectId(quotation.getProjectId());
+        orderPlacement.setProjectOwner(quotation.getProjectOwner());
+        orderPlacement.setProjectCareOf(quotation.getProjectCareOf());
+        orderPlacement.setProjectBillingAddress1(quotation.getProjectBillingAddress1());
+        orderPlacement.setProjectBillingAddress2(quotation.getProjectBillingAddress2());
+        orderPlacement.setProjectBillingAddress3(quotation.getProjectBillingAddress3());
         orderPlacement.setOrdererId(principal.getId());
         orderPlacement.setOrderedBy(principal.getName());
         orderPlacement.setContractorId(quotation.getContractorId());
-        orderPlacement.setOrganizationId(request.getOrganizationId());
+        orderPlacement.setContractorName(quotation.getContractorName());
+        orderPlacement.setOrganizationId(quotation.getOrganizationId());
         orderPlacement.setStatus(OrderPlacementStatus.PLACED);
         orderPlacementRepository.insert(orderPlacement);
     }

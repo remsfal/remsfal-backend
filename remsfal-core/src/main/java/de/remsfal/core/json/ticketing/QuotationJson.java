@@ -45,6 +45,31 @@ public abstract class QuotationJson implements QuotationModel {
     public abstract UUID getProjectId();
 
     @Nullable
+    @Schema(readOnly = true, description = "Name of the project owner / billing recipient")
+    @Override
+    public abstract String getProjectOwner();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Care of / representative on behalf of")
+    @Override
+    public abstract String getProjectCareOf();
+
+    @Nullable
+    @Schema(readOnly = true, description = "First billing address line (street)")
+    @Override
+    public abstract String getProjectBillingAddress1();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Second billing address line (zip and city)")
+    @Override
+    public abstract String getProjectBillingAddress2();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Third billing address line (province and country)")
+    @Override
+    public abstract String getProjectBillingAddress3();
+
+    @Nullable
     @Schema(readOnly = true, description = "ID of the user who submitted this quotation")
     @Override
     public abstract UUID getOffererId();
@@ -60,9 +85,19 @@ public abstract class QuotationJson implements QuotationModel {
     public abstract UUID getContractorId();
 
     @Nullable
+    @Schema(readOnly = true, description = "Company name of the contractor")
+    @Override
+    public abstract String getContractorName();
+
+    @Nullable
     @Schema(readOnly = true, description = "ID of the contractor's organization")
     @Override
     public abstract UUID getOrganizationId();
+
+    @Nullable
+    @Schema(description = "Status of the quotation: VALID, INVALID, ACCEPTED, REJECTED")
+    @Override
+    public abstract QuotationStatus getStatus();
 
     @Nullable
     @Schema(description = "Attachment IDs associated with the quotation")
@@ -73,11 +108,6 @@ public abstract class QuotationJson implements QuotationModel {
     @Schema(description = "Timestamp until which the quotation is valid")
     @Override
     public abstract Instant getValidUntil();
-
-    @Nullable
-    @Schema(description = "Status of the quotation: VALID, INVALID, ACCEPTED, REJECTED")
-    @Override
-    public abstract QuotationStatus getStatus();
 
     @Nullable
     @Schema(readOnly = true)
@@ -95,13 +125,19 @@ public abstract class QuotationJson implements QuotationModel {
             .issueId(model.getIssueId())
             .requestId(model.getRequestId())
             .projectId(model.getProjectId())
+            .projectOwner(model.getProjectOwner())
+            .projectCareOf(model.getProjectCareOf())
+            .projectBillingAddress1(model.getProjectBillingAddress1())
+            .projectBillingAddress2(model.getProjectBillingAddress2())
+            .projectBillingAddress3(model.getProjectBillingAddress3())
             .offererId(model.getOffererId())
             .offeredBy(model.getOfferedBy())
             .contractorId(model.getContractorId())
+            .contractorName(model.getContractorName())
             .organizationId(model.getOrganizationId())
+            .status(model.getStatus())
             .attachments(model.getAttachments())
             .validUntil(model.getValidUntil())
-            .status(model.getStatus())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();

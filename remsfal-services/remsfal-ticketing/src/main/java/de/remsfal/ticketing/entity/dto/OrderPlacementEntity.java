@@ -21,6 +21,21 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
     @Column("project_id")
     private UUID projectId;
 
+    @Column("project_owner")
+    private String projectOwner;
+
+    @Column("project_care_of")
+    private String projectCareOf;
+
+    @Column("project_billing_address_1")
+    private String projectBillingAddress1;
+
+    @Column("project_billing_address_2")
+    private String projectBillingAddress2;
+
+    @Column("project_billing_address_3")
+    private String projectBillingAddress3;
+
     @Column("orderer_id")
     private UUID ordererId;
 
@@ -30,17 +45,20 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
     @Column("contractor_id")
     private UUID contractorId;
 
+    @Column("contractor_name")
+    private String contractorName;
+
     @Column("organization_id")
     private UUID organizationId;
+
+    @Column("status")
+    private String status;
 
     @Column("confirmor_id")
     private UUID confirmorId;
 
     @Column("confirmed_by")
     private String confirmedBy;
-
-    @Column("status")
-    private String status;
 
     @Override
     public UUID getId() {
@@ -103,6 +121,51 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
     }
 
     @Override
+    public String getProjectOwner() {
+        return projectOwner;
+    }
+
+    public void setProjectOwner(final String projectOwner) {
+        this.projectOwner = projectOwner;
+    }
+
+    @Override
+    public String getProjectCareOf() {
+        return projectCareOf;
+    }
+
+    public void setProjectCareOf(final String projectCareOf) {
+        this.projectCareOf = projectCareOf;
+    }
+
+    @Override
+    public String getProjectBillingAddress1() {
+        return projectBillingAddress1;
+    }
+
+    public void setProjectBillingAddress1(final String projectBillingAddress1) {
+        this.projectBillingAddress1 = projectBillingAddress1;
+    }
+
+    @Override
+    public String getProjectBillingAddress2() {
+        return projectBillingAddress2;
+    }
+
+    public void setProjectBillingAddress2(final String projectBillingAddress2) {
+        this.projectBillingAddress2 = projectBillingAddress2;
+    }
+
+    @Override
+    public String getProjectBillingAddress3() {
+        return projectBillingAddress3;
+    }
+
+    public void setProjectBillingAddress3(final String projectBillingAddress3) {
+        this.projectBillingAddress3 = projectBillingAddress3;
+    }
+
+    @Override
     public UUID getOrdererId() {
         return ordererId;
     }
@@ -130,12 +193,34 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
     }
 
     @Override
+    public String getContractorName() {
+        return contractorName;
+    }
+
+    public void setContractorName(final String contractorName) {
+        this.contractorName = contractorName;
+    }
+
+    @Override
     public UUID getOrganizationId() {
         return organizationId;
     }
 
     public void setOrganizationId(final UUID organizationId) {
         this.organizationId = organizationId;
+    }
+
+    @Override
+    public OrderPlacementStatus getStatus() {
+        return status != null ? OrderPlacementStatus.valueOf(status) : null;
+    }
+
+    public void setStatus(final OrderPlacementStatus status) {
+        this.status = status != null ? status.name() : null;
+    }
+
+    public void setStatus(final String status) {
+        this.status = status;
     }
 
     @Override
@@ -154,19 +239,6 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
 
     public void setConfirmedBy(final String confirmedBy) {
         this.confirmedBy = confirmedBy;
-    }
-
-    @Override
-    public OrderPlacementStatus getStatus() {
-        return status != null ? OrderPlacementStatus.valueOf(status) : null;
-    }
-
-    public void setStatus(final OrderPlacementStatus status) {
-        this.status = status != null ? status.name() : null;
-    }
-
-    public void setStatus(final String status) {
-        this.status = status;
     }
 
 }
