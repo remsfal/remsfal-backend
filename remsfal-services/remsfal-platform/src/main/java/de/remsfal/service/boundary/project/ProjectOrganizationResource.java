@@ -1,6 +1,7 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.ProjectOrganizationEndpoint;
+import de.remsfal.core.json.project.ProjectMemberJson;
 import de.remsfal.core.json.project.ProjectOrganizationJson;
 import de.remsfal.core.json.project.ProjectOrganizationListJson;
 import de.remsfal.core.model.project.ProjectOrganizationModel;
@@ -10,8 +11,10 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -25,9 +28,15 @@ public class ProjectOrganizationResource extends AbstractProjectResource impleme
     @Override
     public ProjectOrganizationListJson getProjectOrganizations(final UUID projectId) {
         checkProjectReadPermissions(projectId);
-        final Set<? extends ProjectOrganizationModel> model =
+        final Set<? extends ProjectOrganizationModel> organizations =
             controller.getProjectOrganizations(principal, projectId);
-        return ProjectOrganizationListJson.valueOfSet(model);
+        final List<ProjectOrganizationJson> result = organizations.stream()
+            .map(org -> ProjectOrganizationJson.valueOf(org,
+                controller.getOrganizationMembers(org.getOrganizationId(), org.getRole()).stream()
+                    .map(ProjectMemberJson::valueOf)
+                    .collect(Collectors.toList())))
+            .collect(Collectors.toList());
+        return ProjectOrganizationListJson.valueOf(result);
     }
 
     @Override

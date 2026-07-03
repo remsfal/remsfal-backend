@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -44,11 +45,26 @@ public abstract class ProjectOrganizationJson implements ProjectOrganizationMode
     @Override
     public abstract ProjectMemberModel.MemberRole getRole();
 
+    @Null
+    @Nullable
+    @Schema(readOnly = true, description = "Members of the organization together with their derived role in this project")
+    public abstract List<ProjectMemberJson> getMembers();
+
     public static ProjectOrganizationJson valueOf(final ProjectOrganizationModel model) {
         return ImmutableProjectOrganizationJson.builder()
             .organizationId(model.getOrganizationId())
             .organizationName(model.getOrganizationName())
             .role(model.getRole())
+            .build();
+    }
+
+    public static ProjectOrganizationJson valueOf(final ProjectOrganizationModel model,
+            final List<ProjectMemberJson> members) {
+        return ImmutableProjectOrganizationJson.builder()
+            .organizationId(model.getOrganizationId())
+            .organizationName(model.getOrganizationName())
+            .role(model.getRole())
+            .members(members)
             .build();
     }
 }

@@ -19,6 +19,7 @@ import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectOrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -58,6 +60,9 @@ public class ProjectController {
 
     @Inject
     AddressController addressController;
+
+    @Inject
+    AuthorizationController authorizationController;
 
     @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
@@ -222,6 +227,56 @@ public class ProjectController {
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
         return entity.getOrganizations();
+    }
+
+    public List<ProjectMemberModel> getOrganizationMembers(final UUID organizationId,
+        final MemberRole organizationRoleInProject) {
+        logger.infov("Retrieving organization members with derived project role (organizationId={0}, role={1})",
+            organizationId, organizationRoleInProject);
+        final OrganizationEntity organization = organizationRepository.findById(organizationId);
+        if (organization == null || organization.getEmployees() == null) {
+            return List.of();
+        }
+        return organization.getEmployees().stream()
+            .map(employee -> (ProjectMemberModel) new OrganizationMemberAdapter(employee,
+                authorizationController.calculateProjectRole(employee.getRole(), organizationRoleInProject)))
+            .collect(Collectors.toList());
+    }
+
+    private static final class OrganizationMemberAdapter implements ProjectMemberModel {
+
+        private final OrganizationEmployeeEntity employee;
+        private final MemberRole role;
+
+        private OrganizationMemberAdapter(final OrganizationEmployeeEntity employee, final MemberRole role) {
+            this.employee = employee;
+            this.role = role;
+        }
+
+        @Override
+        public UUID getId() {
+            return employee.getId();
+        }
+
+        @Override
+        public String getName() {
+            return employee.getName();
+        }
+
+        @Override
+        public String getEmail() {
+            return employee.getEmail();
+        }
+
+        @Override
+        public Boolean isActive() {
+            return employee.isActive();
+        }
+
+        @Override
+        public MemberRole getRole() {
+            return role;
+        }
     }
 
     @Transactional

@@ -4,13 +4,10 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.ProjectOrganizationModel;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -24,14 +21,9 @@ public abstract class ProjectOrganizationListJson {
 
     public abstract List<ProjectOrganizationJson> getOrganizations();
 
-    public static ProjectOrganizationListJson valueOfSet(Set<? extends ProjectOrganizationModel> models) {
-        if (models == null) {
-            return ImmutableProjectOrganizationListJson.builder().build();
-        }
+    public static ProjectOrganizationListJson valueOf(final List<ProjectOrganizationJson> organizations) {
         return ImmutableProjectOrganizationListJson.builder()
-            .organizations(models.stream()
-                .map(ProjectOrganizationJson::valueOf)
-                .collect(Collectors.toList()))
+            .organizations(organizations)
             .build();
     }
 }
