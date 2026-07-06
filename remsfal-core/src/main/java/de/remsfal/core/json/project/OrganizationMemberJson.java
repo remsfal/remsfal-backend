@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -15,7 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.ProjectMemberModel;
-import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -25,9 +26,9 @@ import de.remsfal.core.validation.PostValidation;
 @Immutable
 @ImmutableStyle
 @Schema(description = "Organization assignment to a project")
-@JsonDeserialize(as = ImmutableProjectOrganizationJson.class)
+@JsonDeserialize(as = ImmutableOrganizationMemberJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class ProjectOrganizationJson implements ProjectOrganizationModel {
+public abstract class OrganizationMemberJson implements OrganizationMemberModel {
 
     @NotNull(groups = PostValidation.class)
     @Null(groups = PatchValidation.class)
@@ -44,11 +45,27 @@ public abstract class ProjectOrganizationJson implements ProjectOrganizationMode
     @Override
     public abstract ProjectMemberModel.MemberRole getRole();
 
-    public static ProjectOrganizationJson valueOf(final ProjectOrganizationModel model) {
-        return ImmutableProjectOrganizationJson.builder()
+    @Null
+    @Nullable
+    @Schema(readOnly = true,
+        description = "Members of the organization together with their derived role in this project")
+    public abstract List<ProjectMemberJson> getMembers();
+
+    public static OrganizationMemberJson valueOf(final OrganizationMemberModel model) {
+        return ImmutableOrganizationMemberJson.builder()
             .organizationId(model.getOrganizationId())
             .organizationName(model.getOrganizationName())
             .role(model.getRole())
+            .build();
+    }
+
+    public static OrganizationMemberJson valueOf(final OrganizationMemberModel model,
+            final List<ProjectMemberJson> members) {
+        return ImmutableOrganizationMemberJson.builder()
+            .organizationId(model.getOrganizationId())
+            .organizationName(model.getOrganizationName())
+            .role(model.getRole())
+            .members(members)
             .build();
     }
 }

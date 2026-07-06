@@ -14,7 +14,7 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import de.remsfal.core.model.project.ProjectMemberModel;
-import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.service.entity.dto.embeddable.ProjectOrganizationKey;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
 
@@ -35,7 +35,7 @@ import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
     query = "DELETE FROM ProjectOrganizationEntity o "
         + "WHERE o.project.id = :projectId AND o.organization.id = :organizationId")
 @Table(name = "project_organizations")
-public class ProjectOrganizationEntity extends MetaDataEntity implements ProjectOrganizationModel {
+public class ProjectOrganizationEntity extends MetaDataEntity implements OrganizationMemberModel {
 
     @EmbeddedId
     private ProjectOrganizationKey id = new ProjectOrganizationKey();

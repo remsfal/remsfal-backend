@@ -14,11 +14,12 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
-import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectOrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -58,6 +60,9 @@ public class ProjectController {
 
     @Inject
     AddressController addressController;
+
+    @Inject
+    AuthorizationController authorizationController;
 
     @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
@@ -217,16 +222,66 @@ public class ProjectController {
             .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
     }
 
-    public Set<? extends ProjectOrganizationModel> getProjectOrganizations(final UserModel user, final UUID projectId) {
+    public Set<? extends OrganizationMemberModel> getProjectOrganizations(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving project organizations (user={0}, project={1})", user.getId(), projectId);
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
         return entity.getOrganizations();
     }
 
+    public List<ProjectMemberModel> getOrganizationMembers(final UUID organizationId,
+        final MemberRole organizationRoleInProject) {
+        logger.infov("Retrieving organization members with derived project role (organizationId={0}, role={1})",
+            organizationId, organizationRoleInProject);
+        final OrganizationEntity organization = organizationRepository.findById(organizationId);
+        if (organization == null || organization.getEmployees() == null) {
+            return List.of();
+        }
+        return organization.getEmployees().stream()
+            .map(employee -> (ProjectMemberModel) new OrganizationMemberAdapter(employee,
+                authorizationController.calculateProjectRole(employee.getRole(), organizationRoleInProject)))
+            .collect(Collectors.toList());
+    }
+
+    private static final class OrganizationMemberAdapter implements ProjectMemberModel {
+
+        private final OrganizationEmployeeEntity employee;
+        private final MemberRole role;
+
+        private OrganizationMemberAdapter(final OrganizationEmployeeEntity employee, final MemberRole role) {
+            this.employee = employee;
+            this.role = role;
+        }
+
+        @Override
+        public UUID getId() {
+            return employee.getId();
+        }
+
+        @Override
+        public String getName() {
+            return employee.getName();
+        }
+
+        @Override
+        public String getEmail() {
+            return employee.getEmail();
+        }
+
+        @Override
+        public Boolean isActive() {
+            return employee.isActive();
+        }
+
+        @Override
+        public MemberRole getRole() {
+            return role;
+        }
+    }
+
     @Transactional
-    public ProjectOrganizationModel addProjectOrganization(final UserModel user, final UUID projectId,
-        final ProjectOrganizationModel organization) {
+    public OrganizationMemberModel addProjectOrganization(final UserModel user, final UUID projectId,
+        final OrganizationMemberModel organization) {
         logger.infov("Adding an organization to project (user={0}, project={1}, organizationId={2}, role={3})",
             user.getId(), projectId, organization.getOrganizationId(), organization.getRole());
         final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
@@ -250,7 +305,7 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectOrganizationModel changeProjectOrganizationRole(final UUID projectId, final UUID organizationId,
+    public OrganizationMemberModel changeProjectOrganizationRole(final UUID projectId, final UUID organizationId,
         final MemberRole role) {
         logger.infov("Updating a project organization role (projectId={0}, organizationId={1}, role={2})",
             projectId, organizationId, role);

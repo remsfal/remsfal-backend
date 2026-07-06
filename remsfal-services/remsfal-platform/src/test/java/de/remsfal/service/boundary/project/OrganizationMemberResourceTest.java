@@ -15,7 +15,7 @@ import java.time.Duration;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class ProjectOrganizationResourceTest extends AbstractResourceTest {
+class OrganizationMemberResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/organizations";
     static final String ORGANIZATION_PATH = BASE_PATH + "/{organizationId}";
@@ -170,6 +170,45 @@ class ProjectOrganizationResourceTest extends AbstractResourceTest {
             .and().body("organizations.organizationId", Matchers.hasItem(TestData.ORGANIZATION_ID.toString()))
             .and().body("organizations.organizationName", Matchers.hasItem(TestData.ORGANIZATION_NAME))
             .and().body("organizations.role", Matchers.hasItem("LESSOR"));
+    }
+
+    @Test
+    void getProjectOrganizations_SUCCESS_organizationMembersReturned() {
+        insertProjectOrganization(TestData.PROJECT_ID, TestData.ORGANIZATION_ID, "LESSOR");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("organizations[0].members.size()", Matchers.equalTo(1))
+            .and().body("organizations[0].members[0].id", Matchers.equalTo(TestData.USER_ID_1.toString()))
+            .and().body("organizations[0].members[0].email", Matchers.equalTo(TestData.USER_EMAIL_1))
+            .and().body("organizations[0].members[0].role", Matchers.equalTo("LESSOR"));
+    }
+
+    @Test
+    void getProjectOrganizations_SUCCESS_organizationMembersWithMixedRoles() {
+        insertProjectOrganization(TestData.PROJECT_ID, TestData.ORGANIZATION_ID_3, "PROPRIETOR");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
+            .get(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("organizations[0].members.size()", Matchers.equalTo(3))
+            .and().body("organizations[0].members.find { it.id == '" + TestData.USER_ID_1 + "' }.role",
+                Matchers.equalTo("PROPRIETOR"))
+            .and().body("organizations[0].members.find { it.id == '" + TestData.USER_ID_2 + "' }.role",
+                Matchers.equalTo("MANAGER"))
+            .and().body("organizations[0].members.find { it.id == '" + TestData.USER_ID_3 + "' }.role",
+                Matchers.equalTo("STAFF"));
     }
 
     @Test

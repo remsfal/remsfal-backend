@@ -1,7 +1,7 @@
 package de.remsfal.core.api.project;
 
-import de.remsfal.core.json.project.ProjectOrganizationJson;
-import de.remsfal.core.json.project.ProjectOrganizationListJson;
+import de.remsfal.core.json.project.OrganizationMemberJson;
+import de.remsfal.core.json.project.OrganizationMemberListJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 import jakarta.validation.Valid;
@@ -26,7 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface ProjectOrganizationEndpoint {
+public interface OrganizationMemberEndpoint {
 
     String SERVICE = "organizations";
 
@@ -36,7 +36,7 @@ public interface ProjectOrganizationEndpoint {
     @APIResponse(responseCode = "200", description = "A list of all assigned organizations was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
-    ProjectOrganizationListJson getProjectOrganizations(
+    OrganizationMemberListJson getProjectOrganizations(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId
     );
@@ -49,11 +49,11 @@ public interface ProjectOrganizationEndpoint {
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "Insufficient permissions")
-    ProjectOrganizationJson addProjectOrganization(
+    OrganizationMemberJson addProjectOrganization(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Organization assignment information", required = true)
-        @Valid @ConvertGroup(to = PostValidation.class) ProjectOrganizationJson organization
+        @Valid @ConvertGroup(to = PostValidation.class) OrganizationMemberJson organization
     );
 
     @PATCH
@@ -65,13 +65,13 @@ public interface ProjectOrganizationEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "Insufficient permissions")
     @APIResponse(responseCode = "404", description = "The project or organization assignment does not exist")
-    ProjectOrganizationJson updateProjectOrganization(
+    OrganizationMemberJson updateProjectOrganization(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "ID of the organization", required = true)
         @PathParam("organizationId") @NotNull UUID organizationId,
         @Parameter(description = "Organization role to change", required = true)
-        @Valid @ConvertGroup(to = PatchValidation.class) ProjectOrganizationJson organization
+        @Valid @ConvertGroup(to = PatchValidation.class) OrganizationMemberJson organization
     );
 
     @DELETE

@@ -59,7 +59,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                            <overwrite>true</overwrite>
+                            <changeDetection>always</changeDetection>
                             <resources>
                                 <resource>
                                     <directory>${maven.multiModuleProjectDirectory}/remsfal-core/target/classes</directory>
@@ -87,7 +87,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${maven.multiModuleProjectDirectory}/target/openapi</outputDirectory>
-                            <overwrite>true</overwrite>
+                            <changeDetection>always</changeDetection>
                             <resources>
                                 <resource>
                                     <directory>${serviceDirectory}/remsfal-notification/target/openapi</directory>

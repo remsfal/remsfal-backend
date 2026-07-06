@@ -187,7 +187,7 @@ public class AuthorizationController {
      * @param orgRoleInProject Organization's role in the project
      * @return The calculated project role for the user
      */
-    private MemberRole calculateProjectRole(EmployeeRole employeeRole, MemberRole orgRoleInProject) {
+    MemberRole calculateProjectRole(EmployeeRole employeeRole, MemberRole orgRoleInProject) {
         return switch (employeeRole) {
             case OWNER -> orgRoleInProject;  // Owner gets the organization's role
             case MANAGER -> {

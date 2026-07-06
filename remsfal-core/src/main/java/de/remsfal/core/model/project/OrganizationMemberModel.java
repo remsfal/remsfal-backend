@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface ProjectOrganizationModel {
+public interface OrganizationMemberModel {
 
     UUID getOrganizationId();
 
