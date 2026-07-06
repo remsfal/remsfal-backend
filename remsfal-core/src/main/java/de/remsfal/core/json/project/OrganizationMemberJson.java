@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.ProjectMemberModel;
-import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -26,9 +26,9 @@ import de.remsfal.core.validation.PostValidation;
 @Immutable
 @ImmutableStyle
 @Schema(description = "Organization assignment to a project")
-@JsonDeserialize(as = ImmutableProjectOrganizationJson.class)
+@JsonDeserialize(as = ImmutableOrganizationMemberJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class ProjectOrganizationJson implements ProjectOrganizationModel {
+public abstract class OrganizationMemberJson implements OrganizationMemberModel {
 
     @NotNull(groups = PostValidation.class)
     @Null(groups = PatchValidation.class)
@@ -47,20 +47,21 @@ public abstract class ProjectOrganizationJson implements ProjectOrganizationMode
 
     @Null
     @Nullable
-    @Schema(readOnly = true, description = "Members of the organization together with their derived role in this project")
+    @Schema(readOnly = true,
+        description = "Members of the organization together with their derived role in this project")
     public abstract List<ProjectMemberJson> getMembers();
 
-    public static ProjectOrganizationJson valueOf(final ProjectOrganizationModel model) {
-        return ImmutableProjectOrganizationJson.builder()
+    public static OrganizationMemberJson valueOf(final OrganizationMemberModel model) {
+        return ImmutableOrganizationMemberJson.builder()
             .organizationId(model.getOrganizationId())
             .organizationName(model.getOrganizationName())
             .role(model.getRole())
             .build();
     }
 
-    public static ProjectOrganizationJson valueOf(final ProjectOrganizationModel model,
+    public static OrganizationMemberJson valueOf(final OrganizationMemberModel model,
             final List<ProjectMemberJson> members) {
-        return ImmutableProjectOrganizationJson.builder()
+        return ImmutableOrganizationMemberJson.builder()
             .organizationId(model.getOrganizationId())
             .organizationName(model.getOrganizationName())
             .role(model.getRole())

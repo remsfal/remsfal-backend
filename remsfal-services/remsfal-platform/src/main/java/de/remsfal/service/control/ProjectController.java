@@ -14,7 +14,7 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
-import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectOrganizationRepository;
@@ -222,7 +222,7 @@ public class ProjectController {
             .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
     }
 
-    public Set<? extends ProjectOrganizationModel> getProjectOrganizations(final UserModel user, final UUID projectId) {
+    public Set<? extends OrganizationMemberModel> getProjectOrganizations(final UserModel user, final UUID projectId) {
         logger.infov("Retrieving project organizations (user={0}, project={1})", user.getId(), projectId);
         final ProjectEntity entity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
@@ -280,8 +280,8 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectOrganizationModel addProjectOrganization(final UserModel user, final UUID projectId,
-        final ProjectOrganizationModel organization) {
+    public OrganizationMemberModel addProjectOrganization(final UserModel user, final UUID projectId,
+        final OrganizationMemberModel organization) {
         logger.infov("Adding an organization to project (user={0}, project={1}, organizationId={2}, role={3})",
             user.getId(), projectId, organization.getOrganizationId(), organization.getRole());
         final ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
@@ -305,7 +305,7 @@ public class ProjectController {
     }
 
     @Transactional
-    public ProjectOrganizationModel changeProjectOrganizationRole(final UUID projectId, final UUID organizationId,
+    public OrganizationMemberModel changeProjectOrganizationRole(final UUID projectId, final UUID organizationId,
         final MemberRole role) {
         logger.infov("Updating a project organization role (projectId={0}, organizationId={1}, role={2})",
             projectId, organizationId, role);

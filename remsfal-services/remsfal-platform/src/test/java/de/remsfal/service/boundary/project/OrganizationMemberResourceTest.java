@@ -15,7 +15,7 @@ import java.time.Duration;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class ProjectOrganizationResourceTest extends AbstractResourceTest {
+class OrganizationMemberResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/organizations";
     static final String ORGANIZATION_PATH = BASE_PATH + "/{organizationId}";

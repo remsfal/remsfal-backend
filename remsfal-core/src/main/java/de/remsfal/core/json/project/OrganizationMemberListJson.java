@@ -15,14 +15,14 @@ import java.util.List;
 @Value.Immutable
 @ImmutableStyle
 @Schema(description = "List of organizations assigned to a project")
-@JsonDeserialize(as = ImmutableProjectOrganizationListJson.class)
+@JsonDeserialize(as = ImmutableOrganizationMemberListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class ProjectOrganizationListJson {
+public abstract class OrganizationMemberListJson {
 
-    public abstract List<ProjectOrganizationJson> getOrganizations();
+    public abstract List<OrganizationMemberJson> getOrganizations();
 
-    public static ProjectOrganizationListJson valueOf(final List<ProjectOrganizationJson> organizations) {
-        return ImmutableProjectOrganizationListJson.builder()
+    public static OrganizationMemberListJson valueOf(final List<OrganizationMemberJson> organizations) {
+        return ImmutableOrganizationMemberListJson.builder()
             .organizations(organizations)
             .build();
     }

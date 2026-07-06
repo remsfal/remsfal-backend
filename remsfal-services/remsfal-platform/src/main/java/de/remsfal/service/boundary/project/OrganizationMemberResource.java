@@ -1,10 +1,10 @@
 package de.remsfal.service.boundary.project;
 
-import de.remsfal.core.api.project.ProjectOrganizationEndpoint;
+import de.remsfal.core.api.project.OrganizationMemberEndpoint;
 import de.remsfal.core.json.project.ProjectMemberJson;
-import de.remsfal.core.json.project.ProjectOrganizationJson;
-import de.remsfal.core.json.project.ProjectOrganizationListJson;
-import de.remsfal.core.model.project.ProjectOrganizationModel;
+import de.remsfal.core.json.project.OrganizationMemberJson;
+import de.remsfal.core.json.project.OrganizationMemberListJson;
+import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.control.ProjectController;
 import jakarta.enterprise.context.RequestScoped;
@@ -20,45 +20,45 @@ import java.util.stream.Collectors;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @RequestScoped
-public class ProjectOrganizationResource extends AbstractProjectResource implements ProjectOrganizationEndpoint {
+public class OrganizationMemberResource extends AbstractProjectResource implements OrganizationMemberEndpoint {
 
     @Inject
     ProjectController controller;
 
     @Override
-    public ProjectOrganizationListJson getProjectOrganizations(final UUID projectId) {
+    public OrganizationMemberListJson getProjectOrganizations(final UUID projectId) {
         checkProjectReadPermissions(projectId);
-        final Set<? extends ProjectOrganizationModel> organizations =
+        final Set<? extends OrganizationMemberModel> organizations =
             controller.getProjectOrganizations(principal, projectId);
-        final List<ProjectOrganizationJson> result = organizations.stream()
-            .map(org -> ProjectOrganizationJson.valueOf(org,
+        final List<OrganizationMemberJson> result = organizations.stream()
+            .map(org -> OrganizationMemberJson.valueOf(org,
                 controller.getOrganizationMembers(org.getOrganizationId(), org.getRole()).stream()
                     .map(ProjectMemberJson::valueOf)
                     .collect(Collectors.toList())))
             .collect(Collectors.toList());
-        return ProjectOrganizationListJson.valueOf(result);
+        return OrganizationMemberListJson.valueOf(result);
     }
 
     @Override
-    public ProjectOrganizationJson addProjectOrganization(final UUID projectId,
-            final ProjectOrganizationJson organization) {
+    public OrganizationMemberJson addProjectOrganization(final UUID projectId,
+            final OrganizationMemberJson organization) {
         checkPropertyWritePermissions(projectId);
-        final ProjectOrganizationModel model =
+        final OrganizationMemberModel model =
             controller.addProjectOrganization(principal, projectId, organization);
-        return ProjectOrganizationJson.valueOf(model);
+        return OrganizationMemberJson.valueOf(model);
     }
 
     @Override
-    public ProjectOrganizationJson updateProjectOrganization(final UUID projectId, final UUID organizationId,
-            final ProjectOrganizationJson organization) {
+    public OrganizationMemberJson updateProjectOrganization(final UUID projectId, final UUID organizationId,
+            final OrganizationMemberJson organization) {
         checkPropertyWritePermissions(projectId);
         if (MemberRole.PROPRIETOR == organization.getRole()
             && principal.getOrganizationRole(organizationId) != null) {
             throw new ForbiddenException("Nobody can upgrade their own role");
         }
-        final ProjectOrganizationModel model = controller.changeProjectOrganizationRole(projectId,
+        final OrganizationMemberModel model = controller.changeProjectOrganizationRole(projectId,
             organizationId, organization.getRole());
-        return ProjectOrganizationJson.valueOf(model);
+        return OrganizationMemberJson.valueOf(model);
     }
 
     @Override

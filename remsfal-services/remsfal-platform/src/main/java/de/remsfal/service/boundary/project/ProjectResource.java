@@ -30,7 +30,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     Instance<MemberResource> memberResource;
 
     @Inject
-    Instance<ProjectOrganizationResource> projectOrganizationResource;
+    Instance<OrganizationMemberResource> projectOrganizationResource;
 
     @Inject
     Instance<PropertyResource> propertyResource;
@@ -150,7 +150,7 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     }
 
     @Override
-    public ProjectOrganizationResource getProjectOrganizationResource() {
+    public OrganizationMemberResource getProjectOrganizationResource() {
         return resourceContext.initResource(projectOrganizationResource.get());
     }
 }
