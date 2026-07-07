@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.11-tenant-timelines">
+        <comment>Create tenant timelines table</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.tenant_timelines (
+                tenant_id UUID,
+                issue_id UUID,
+                timeline_id TIMEUUID,
+                url TEXT,
+                title TEXT,
+                message TEXT,
+                role TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY ((tenant_id, issue_id), timeline_id)
+            ) WITH CLUSTERING ORDER BY (timeline_id DESC);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.tenant_timelines;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
