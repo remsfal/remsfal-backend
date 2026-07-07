@@ -14,6 +14,7 @@
                 tenant_id UUID,
                 issue_id UUID,
                 timeline_id TIMEUUID,
+                attachment_id UUID,
                 url TEXT,
                 title TEXT,
                 message TEXT,

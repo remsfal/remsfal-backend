@@ -10,6 +10,8 @@ public interface TenantTimelineModel {
     UUID getTenantId();
 
     UUID getTimelineId();
+    
+    UUID getAttachmentId();
 
     String getUrl();
     
