@@ -8,47 +8,47 @@ import java.util.UUID;
 @Embeddable
 public class TenantTimelineKey {
 
-	@Column("tenancy_id")
-	private UUID tenancyId;
+    @Column("tenancy_id")
+    private UUID tenancyId;
 
-	@Column("issue_id")
-	private UUID issueId;
+    @Column("issue_id")
+    private UUID issueId;
 
-	@Column("timeline_id")
-	private UUID timelineId;
-	
-	@Column("project_id")
-	private UUID projectId;
-	
-	public UUID getProjectId() {
-		return projectId;
-	}
-	
-	public void setProjectId(UUID projectId) {
-		this.projectId = projectId;
-	}
+    @Column("timeline_id")
+    private UUID timelineId;
 
-	public UUID getTenancyId() {
-		return tenancyId;
-	}
+    @Column("project_id")
+    private UUID projectId;
 
-	public void setTenancyId(UUID tenancyId) {
-		this.tenancyId = tenancyId;
-	}
+    public UUID getProjectId() {
+        return projectId;
+    }
 
-	public UUID getIssueId() {
-		return issueId;
-	}
+    public void setProjectId(final UUID projectId) {
+        this.projectId = projectId;
+    }
 
-	public void setIssueId(UUID issueId) {
-		this.issueId = issueId;
-	}
+    public UUID getTenancyId() {
+        return tenancyId;
+    }
 
-	public UUID getTimelineId() {
-		return timelineId;
-	}
+    public void setTenancyId(final UUID tenancyId) {
+        this.tenancyId = tenancyId;
+    }
 
-	public void setTimelineId(UUID timelineId) {
-		this.timelineId = timelineId;
-	}
+    public UUID getIssueId() {
+        return issueId;
+    }
+
+    public void setIssueId(final UUID issueId) {
+        this.issueId = issueId;
+    }
+
+    public UUID getTimelineId() {
+        return timelineId;
+    }
+
+    public void setTimelineId(final UUID timelineId) {
+        this.timelineId = timelineId;
+    }
 }

@@ -24,7 +24,10 @@ public class TenantTimelineController {
     @Inject
     TenantTimelineRepository tenantTimelineRepository;
 
-    public List<TenantTimelineEntity> getTimelineEntries(final UUID tenancyId, final UUID issueId, final UUID projectId) {
+    public List<TenantTimelineEntity> getTimelineEntries(
+        final UUID tenancyId,
+        final UUID issueId,
+        final UUID projectId) {
         logger.infov("Retrieving tenant timeline entries (issueId={0}, projectId={1}, tenancyId={2})",
             issueId, projectId, tenancyId);
         return tenantTimelineRepository.findByIssue(tenancyId, issueId, projectId);
