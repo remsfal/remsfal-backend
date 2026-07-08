@@ -6,6 +6,7 @@ import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,17 +16,20 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
 	@Id
 	private TenantTimelineKey key;
 
-	@Column("url")
-	private String url;
+	@Column("attachment_id")
+	private List<UUID> attachmentId;
+
+	@Column("sender_id")
+	private UUID senderId;
+
+	@Column("sender_name")
+	private String senderName;
 
 	@Column("title")
 	private String title;
 
 	@Column("message")
 	private String message;
-
-	@Column("role")
-	private String role;
 
 	public TenantTimelineKey getKey() {
 		return key;
@@ -43,9 +47,9 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
 	}
 
 	@Override
-	public UUID getTenantId() {
+	public UUID getTenancyId() {
 		return Optional.ofNullable(key)
-			.map(TenantTimelineKey::getTenantId)
+			.map(TenantTimelineKey::getTenancyId)
 			.orElse(null);
 	}
 
@@ -57,12 +61,44 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
 	}
 
 	@Override
-	public String getUrl() {
-		return url;
+	public UUID getProjectId() {
+		return Optional.ofNullable(key)
+			.map(TenantTimelineKey::getProjectId)
+			.orElse(null);
 	}
 
-	public void setUrl(final String url) {
-		this.url = url;
+	public void setProjectId(UUID projectId) {
+		if (this.key == null) {
+			this.key = new TenantTimelineKey();
+		}
+		this.key.setProjectId(projectId);
+	}
+
+	@Override
+	public List<UUID> getAttachmentId() {
+		return attachmentId;
+	}
+
+	public void setAttachmentId(List<UUID> attachmentId) {
+		this.attachmentId = attachmentId;
+	}
+
+	@Override
+	public UUID getSenderId() {
+		return senderId;
+	}
+
+	public void setSenderId(UUID senderId) {
+		this.senderId = senderId;
+	}
+
+	@Override
+	public String getSenderName() {
+		return senderName;
+	}
+
+	public void setSenderName(String senderName) {
+		this.senderName = senderName;
 	}
 
 	@Override
@@ -83,19 +119,4 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
 		this.message = message;
 	}
 
-	@Override
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(final String role) {
-		this.role = role;
-	}
-
-	private TenantTimelineKey getOrCreateKey() {
-		if (this.key == null) {
-			this.key = new TenantTimelineKey();
-		}
-		return this.key;
-	}
 }

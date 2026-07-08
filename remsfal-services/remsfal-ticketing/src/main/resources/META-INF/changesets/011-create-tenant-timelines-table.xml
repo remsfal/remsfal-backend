@@ -11,17 +11,18 @@
         <comment>Create tenant timelines table</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.tenant_timelines (
-                tenant_id UUID,
+                tenancy_id UUID,
                 issue_id UUID,
-                timeline_id TIMEUUID,
-                attachment_id UUID,
-                url TEXT,
+                timeline_id UUID,
+                project_id UUID,
+                attachment_id LIST&lt;UUID&gt;,
+                sender_id UUID,
+                sender_name TEXT,
                 title TEXT,
                 message TEXT,
-                role TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
-                PRIMARY KEY ((tenant_id, issue_id), timeline_id)
+                PRIMARY KEY ((tenancy_id, issue_id, project_id), timeline_id)
             ) WITH CLUSTERING ORDER BY (timeline_id DESC);
         </sql>
         <rollback>

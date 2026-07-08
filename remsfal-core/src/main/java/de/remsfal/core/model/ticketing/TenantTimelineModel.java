@@ -1,25 +1,28 @@
 package de.remsfal.core.model.ticketing;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public interface TenantTimelineModel {
 
     UUID getIssueId();
 
-    UUID getTenantId();
+    UUID getTenancyId();
 
     UUID getTimelineId();
     
-    UUID getAttachmentId();
-
-    String getUrl();
+    UUID getProjectId();
+    
+    List<UUID> getAttachmentId();
+    
+    UUID getSenderId();
+    
+    String getSenderName();
     
     String getTitle();
     
     String getMessage();
-    
-    String getRole();
     
     Instant getCreatedAt();
 

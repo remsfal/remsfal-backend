@@ -1,29 +1,39 @@
 package de.remsfal.ticketing.entity.dto;
 
-import java.util.Objects;
-import java.util.UUID;
-
+import jakarta.nosql.Column;
 import jakarta.nosql.Embeddable;
-import jakarta.nosql.Id;
+
+import java.util.UUID;
 
 @Embeddable
 public class TenantTimelineKey {
 
-	@Column("tenant_id")
-	private UUID tenantId;
+	@Column("tenancy_id")
+	private UUID tenancyId;
 
 	@Column("issue_id")
 	private UUID issueId;
 
 	@Column("timeline_id")
 	private UUID timelineId;
-
-	public UUID getTenantId() {
-		return tenantId;
+	
+	@Column("project_id")
+	private UUID projectId;
+	
+	public UUID getProjectId() {
+		return projectId;
+	}
+	
+	public void setProjectId(UUID projectId) {
+		this.projectId = projectId;
 	}
 
-	public void setTenantId(UUID tenantId) {
-		this.tenantId = tenantId;
+	public UUID getTenancyId() {
+		return tenancyId;
+	}
+
+	public void setTenancyId(UUID tenancyId) {
+		this.tenancyId = tenancyId;
 	}
 
 	public UUID getIssueId() {
