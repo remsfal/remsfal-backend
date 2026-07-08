@@ -308,6 +308,49 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void updateIssue_SUCCESS_categoryIsUpdated() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"DEFECT\""
+            + "}";
+
+        final Response createResponse = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(BASE_PATH)
+            .thenReturn();
+
+        final String issueId = createResponse.then()
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
+
+        final String updateJson = "{ \"category\":\"WATER_DAMAGE\" }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(updateJson)
+            .patch(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("id", equalTo(issueId))
+            .body("category", equalTo("WATER_DAMAGE"));
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("category", equalTo("WATER_DAMAGE"));
+    }
+
+    @Test
     void updateIssue_FAILED_noAuthentication() {
         final String updateJson = "{ \"title\":\"Updated Title\" }";
 
