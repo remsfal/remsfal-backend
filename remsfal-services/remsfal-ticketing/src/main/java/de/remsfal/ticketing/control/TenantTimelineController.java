@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.control;
 
+import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
@@ -44,7 +45,7 @@ public class TenantTimelineController {
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
         key.setProjectId(projectId);
-        key.setTimelineId(UUID.randomUUID());
+        key.setTimelineId(UUIDv7.randomUUID());
 
         final TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);

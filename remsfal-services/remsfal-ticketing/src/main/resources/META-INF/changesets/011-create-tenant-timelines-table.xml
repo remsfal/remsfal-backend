@@ -23,7 +23,7 @@
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY ((tenancy_id, issue_id, project_id), timeline_id)
-            ) WITH CLUSTERING ORDER BY (timeline_id DESC);
+            ) WITH CLUSTERING ORDER BY (timeline_id ASC);
         </sql>
         <rollback>
             <sql>DROP TABLE IF EXISTS REMSFAL.tenant_timelines;</sql>
