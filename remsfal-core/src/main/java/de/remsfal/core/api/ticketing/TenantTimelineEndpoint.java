@@ -42,7 +42,9 @@ public interface TenantTimelineEndpoint {
     Response createTimelineEntryWithAttachments(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
-        @Parameter(description = "Multipart form data containing timeline JSON and optional attachments", required = true)
+        @Parameter(
+            description = "Multipart form data containing timeline JSON and optional attachments",
+            required = true)
         MultipartFormDataInput input);
 
 }

@@ -114,7 +114,8 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
                 throw new BadRequestException("Timeline part must be of type application/json");
             }
 
-            final TenantTimelineJson timeline = timelineParts.get(0).getBody(TenantTimelineJson.class, TenantTimelineJson.class);
+            final TenantTimelineJson timeline = timelineParts.get(0)
+                .getBody(TenantTimelineJson.class, TenantTimelineJson.class);
             if (timeline == null) {
                 throw new BadRequestException("Unable to parse timeline data from request");
             }
@@ -138,7 +139,8 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
         }
 
         final IssueAttachmentResource attachmentResource = resourceContext.initResource(issueAttachmentResource.get());
-        final List<IssueAttachmentJson> uploadedAttachments = attachmentResource.processAttachmentParts(issueId, fileParts);
+        final List<IssueAttachmentJson> uploadedAttachments =
+            attachmentResource.processAttachmentParts(issueId, fileParts);
         for (IssueAttachmentJson attachment : uploadedAttachments) {
             attachmentIds.add(attachment.getAttachmentId());
         }
