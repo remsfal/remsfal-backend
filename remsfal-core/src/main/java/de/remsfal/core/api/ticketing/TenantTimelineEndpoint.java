@@ -1,8 +1,6 @@
 package de.remsfal.core.api.ticketing;
 
-import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.json.ticketing.TenantTimelineListJson;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
