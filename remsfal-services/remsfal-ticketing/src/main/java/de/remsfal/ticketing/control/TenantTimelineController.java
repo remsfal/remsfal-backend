@@ -35,7 +35,8 @@ public class TenantTimelineController {
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UUID senderId, final String senderName, final TenantTimelineJson timeline) {
+        final UUID senderId, final String senderName, final TenantTimelineJson timeline,
+        final List<UUID> attachmentIds) {
         logger.infov("Creating tenant timeline entry (issueId={0}, projectId={1}, tenancyId={2})",
             issueId, projectId, tenancyId);
 
@@ -47,7 +48,7 @@ public class TenantTimelineController {
 
         final TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
-        entity.setAttachmentId(timeline.getAttachmentId());
+        entity.setAttachmentId(attachmentIds);
         entity.setSenderId(senderId);
         entity.setSenderName(senderName);
         entity.setTitle(timeline.getTitle());

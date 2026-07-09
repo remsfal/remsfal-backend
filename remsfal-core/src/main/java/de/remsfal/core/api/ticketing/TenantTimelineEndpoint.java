@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 public interface TenantTimelineEndpoint {
 
@@ -45,5 +46,19 @@ public interface TenantTimelineEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "Timeline entry payload", required = true)
         @Valid @NotNull TenantTimelineJson timeline);
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Create a new timeline entry with attachments for an issue")
+    @APIResponse(responseCode = "201", description = "Timeline entry created")
+    @APIResponse(responseCode = "400", description = "Invalid input")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "Issue not found")
+    Response createTimelineEntryWithAttachments(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Multipart form data containing timeline JSON and optional attachments", required = true)
+        MultipartFormDataInput input);
 
 }
