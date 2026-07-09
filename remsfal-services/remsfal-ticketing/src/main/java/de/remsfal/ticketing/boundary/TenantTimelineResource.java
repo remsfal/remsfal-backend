@@ -49,30 +49,6 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
     }
 
     @Override
-    public Response createTimelineEntry(final UUID issueId, final TenantTimelineJson timeline) {
-        checkIssueReadPermissions(issueId);
-        final IssueModel issue = issueController.getIssue(issueId);
-        if (issue.getAgreementId() == null) {
-            throw new BadRequestException("Tenant timeline requires issue agreementId");
-        }
-
-        final TenantTimelineEntity created = tenantTimelineController.createTimelineEntry(
-            issue.getAgreementId(),
-            issueId,
-            issue.getProjectId(),
-            principal.getId(),
-            principal.getName(),
-            timeline,
-            timeline.getAttachmentId());
-
-        final URI location = uri.getAbsolutePathBuilder().path(created.getTimelineId().toString()).build();
-        return Response.created(location)
-            .type(MediaType.APPLICATION_JSON)
-            .entity(TenantTimelineJson.valueOf(created))
-            .build();
-    }
-
-    @Override
     public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
         checkIssueReadPermissions(issueId);
         final IssueModel issue = issueController.getIssue(issueId);
