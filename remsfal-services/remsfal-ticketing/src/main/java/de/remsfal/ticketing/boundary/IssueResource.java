@@ -24,7 +24,6 @@ import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
-import de.remsfal.core.api.ticketing.TenantTimelineEndpoint;
 import de.remsfal.core.json.UserJson.UserContext;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
@@ -65,9 +64,6 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
-
-    @Inject
-    Instance<TenantTimelineResource> tenantTimelineResource;
 
     @Override
     public IssueListJson getIssues(final Integer offset, final Integer limit, final boolean preferTenancyIssues,
@@ -291,11 +287,6 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public ChatSessionResource getChatSessionResource() {
         return resourceContext.initResource(chatSessionResource.get());
-    }
-
-    @Override
-    public TenantTimelineEndpoint getTenantTimelineResource() {
-        return resourceContext.initResource(tenantTimelineResource.get());
     }
 
 }

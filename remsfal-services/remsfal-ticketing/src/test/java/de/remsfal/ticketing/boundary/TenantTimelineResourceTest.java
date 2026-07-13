@@ -32,7 +32,7 @@ import jakarta.ws.rs.core.MediaType;
 @QuarkusTestResource(CassandraTestResource.class)
 class TenantTimelineResourceTest extends AbstractTicketingTest {
 
-    static final String TIMELINE_PATH = "/ticketing/v1/issues/{issueId}/timelines";
+    static final String TIMELINE_PATH = "/ticketing/v1/tenant-relations/issues/{issueId}/timelines";
 
     static final UUID PROJECT_ID = UUID.randomUUID();
     static final UUID AGREEMENT_ID = UUID.randomUUID();
@@ -101,7 +101,8 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(201)
             .contentType(ContentType.JSON)
-            .header("location", containsString("/ticketing/v1/issues/" + ISSUE_ID_WITH_AGREEMENT + "/timelines/"))
+            .header("location",
+                containsString("/ticketing/v1/tenant-relations/issues/" + ISSUE_ID_WITH_AGREEMENT + "/timelines/"))
             .body("timelineId", notNullValue())
             .body("issueId", equalTo(ISSUE_ID_WITH_AGREEMENT.toString()))
             .body("tenancyId", equalTo(AGREEMENT_ID.toString()))
