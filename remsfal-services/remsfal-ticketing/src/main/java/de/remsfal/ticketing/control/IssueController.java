@@ -122,6 +122,9 @@ public class IssueController {
         if (issue.getType() != null) {
             entity.setType(issue.getType());
         }
+        if (issue.getCategory() != null) {
+            entity.setCategory(issue.getCategory());
+        }
         if (issue.getStatus() != null) {
             entity.setStatus(issue.getStatus());
         }

@@ -4,6 +4,7 @@ import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.ticketing.entity.dao.InboxMessageRepository;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 import de.remsfal.ticketing.entity.dto.InboxMessageKey;
+import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -24,6 +25,7 @@ public class InboxEventConsumer {
     Logger logger;
 
     @Incoming(IssueEventJson.TOPIC_ENRICHED)
+    @Blocking
     public CompletionStage<Void> consume(Message<IssueEventJson> msg) {
 
         IssueEventJson event = msg.getPayload();
