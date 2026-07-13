@@ -11,12 +11,12 @@ import de.remsfal.core.api.ticketing.TenantTimelineEndpoint;
 @Authenticated
 @RequestScoped
 public class TenantRelationsResource extends AbstractTicketingResource implements TenantRelationsEndpoint {
-	
-	@Inject
-	Instance<TenantTimelineResource> tenantTimelineResource;
 
-	@Override
-	public TenantTimelineEndpoint getTenantTimelineResource() {
-		return resourceContext.initResource(tenantTimelineResource.get());
-	}
+    @Inject
+    Instance<TenantTimelineResource> tenantTimelineResource;
+
+    @Override
+    public TenantTimelineEndpoint getTenantTimelineResource() {
+        return resourceContext.initResource(tenantTimelineResource.get());
+    }
 }
