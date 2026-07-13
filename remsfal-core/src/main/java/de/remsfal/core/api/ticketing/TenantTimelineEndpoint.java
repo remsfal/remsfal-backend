@@ -19,7 +19,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 public interface TenantTimelineEndpoint {
 
-    String SERVICE = "timelines";
+    String SERVICE = "timeline";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
