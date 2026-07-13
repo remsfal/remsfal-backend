@@ -31,10 +31,7 @@ public class OrganizationMemberResource extends AbstractProjectResource implemen
         final Set<? extends OrganizationMemberModel> organizations =
             controller.getProjectOrganizations(principal, projectId);
         final List<OrganizationMemberJson> result = organizations.stream()
-            .map(org -> OrganizationMemberJson.valueOf(org,
-                controller.getOrganizationMembers(org.getOrganizationId(), org.getRole()).stream()
-                    .map(ProjectMemberJson::valueOf)
-                    .collect(Collectors.toList())))
+            .map(org -> OrganizationMemberJson.valueOf(org, fetchMembers(org)))
             .collect(Collectors.toList());
         return OrganizationMemberListJson.valueOf(result);
     }
@@ -45,7 +42,7 @@ public class OrganizationMemberResource extends AbstractProjectResource implemen
         checkPropertyWritePermissions(projectId);
         final OrganizationMemberModel model =
             controller.addProjectOrganization(principal, projectId, organization);
-        return OrganizationMemberJson.valueOf(model);
+        return OrganizationMemberJson.valueOf(model, fetchMembers(model));
     }
 
     @Override
@@ -58,7 +55,13 @@ public class OrganizationMemberResource extends AbstractProjectResource implemen
         }
         final OrganizationMemberModel model = controller.changeProjectOrganizationRole(projectId,
             organizationId, organization.getRole());
-        return OrganizationMemberJson.valueOf(model);
+        return OrganizationMemberJson.valueOf(model, fetchMembers(model));
+    }
+
+    private List<ProjectMemberJson> fetchMembers(final OrganizationMemberModel organization) {
+        return controller.getOrganizationMembers(organization.getOrganizationId(), organization.getRole()).stream()
+            .map(ProjectMemberJson::valueOf)
+            .collect(Collectors.toList());
     }
 
     @Override

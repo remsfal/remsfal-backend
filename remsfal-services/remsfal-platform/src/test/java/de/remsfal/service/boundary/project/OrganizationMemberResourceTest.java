@@ -225,7 +225,11 @@ class OrganizationMemberResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("organizationId", Matchers.equalTo(TestData.ORGANIZATION_ID_2.toString()))
             .and().body("organizationName", Matchers.equalTo(TestData.ORGANIZATION_NAME_2))
-            .and().body("role", Matchers.equalTo("STAFF"));
+            .and().body("role", Matchers.equalTo("STAFF"))
+            .and().body("members.size()", Matchers.equalTo(1))
+            .and().body("members[0].id", Matchers.equalTo(TestData.USER_ID_1.toString()))
+            .and().body("members[0].email", Matchers.equalTo(TestData.USER_EMAIL_1))
+            .and().body("members[0].role", Matchers.equalTo("STAFF"));
     }
 
     @Test
@@ -245,7 +249,11 @@ class OrganizationMemberResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("organizationId", Matchers.equalTo(TestData.ORGANIZATION_ID_2.toString()))
             .and().body("organizationName", Matchers.equalTo(TestData.ORGANIZATION_NAME_2))
-            .and().body("role", Matchers.equalTo("LESSOR"));
+            .and().body("role", Matchers.equalTo("LESSOR"))
+            .and().body("members.size()", Matchers.equalTo(1))
+            .and().body("members[0].id", Matchers.equalTo(TestData.USER_ID_1.toString()))
+            .and().body("members[0].email", Matchers.equalTo(TestData.USER_EMAIL_1))
+            .and().body("members[0].role", Matchers.equalTo("LESSOR"));
     }
 
     @Test
@@ -264,7 +272,11 @@ class OrganizationMemberResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("organizationId", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()))
             .and().body("organizationName", Matchers.equalTo(TestData.ORGANIZATION_NAME))
-            .and().body("role", Matchers.equalTo("MANAGER"));
+            .and().body("role", Matchers.equalTo("MANAGER"))
+            .and().body("members.size()", Matchers.equalTo(1))
+            .and().body("members[0].id", Matchers.equalTo(TestData.USER_ID_1.toString()))
+            .and().body("members[0].email", Matchers.equalTo(TestData.USER_EMAIL_1))
+            .and().body("members[0].role", Matchers.equalTo("MANAGER"));
     }
 
     @Test
@@ -284,7 +296,11 @@ class OrganizationMemberResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("organizationId", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()))
             .and().body("organizationName", Matchers.equalTo(TestData.ORGANIZATION_NAME))
-            .and().body("role", Matchers.equalTo("LESSOR"));
+            .and().body("role", Matchers.equalTo("LESSOR"))
+            .and().body("members.size()", Matchers.equalTo(1))
+            .and().body("members[0].id", Matchers.equalTo(TestData.USER_ID_1.toString()))
+            .and().body("members[0].email", Matchers.equalTo(TestData.USER_EMAIL_1))
+            .and().body("members[0].role", Matchers.equalTo("LESSOR"));
     }
 
     @Test
