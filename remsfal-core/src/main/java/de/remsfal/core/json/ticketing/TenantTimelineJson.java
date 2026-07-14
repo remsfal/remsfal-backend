@@ -73,20 +73,24 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
     public abstract Instant getModifiedAt();
 
     public static TenantTimelineJson valueOf(final TenantTimelineModel model) {
-        return ImmutableTenantTimelineJson.builder()
+        final ImmutableTenantTimelineJson.Builder builder = ImmutableTenantTimelineJson.builder()
             .issueId(model.getIssueId())
             .tenancyId(model.getTenancyId())
             .timelineId(model.getTimelineId())
             .projectId(model.getProjectId())
             .attachmentIds(model.getAttachmentIds())
-            attachments(timelineJson.getAttachments())
             .senderId(model.getSenderId())
             .senderName(model.getSenderName())
             .title(model.getTitle())
             .message(model.getMessage())
             .createdAt(model.getCreatedAt())
-            .modifiedAt(model.getModifiedAt())
-            .build();
+            .modifiedAt(model.getModifiedAt());
+
+        if (model instanceof TenantTimelineJson timelineJson && timelineJson.getAttachments() != null) {
+            builder.attachments(timelineJson.getAttachments());
+        }
+
+        return builder.build();
     }
 
     public abstract TenantTimelineJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
