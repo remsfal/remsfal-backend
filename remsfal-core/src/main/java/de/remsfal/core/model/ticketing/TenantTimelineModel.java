@@ -14,7 +14,7 @@ public interface TenantTimelineModel {
     
     UUID getProjectId();
     
-    List<UUID> getAttachmentId();
+    List<UUID> getAttachmentIds();
     
     UUID getSenderId();
     

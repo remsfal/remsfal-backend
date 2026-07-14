@@ -13,7 +13,6 @@ import java.util.UUID;
 public class TenantTimelineRepository extends AbstractRepository<TenantTimelineEntity, TenantTimelineKey> {
 
     private static final String COL_TENANCY_ID = "tenancy_id";
-    private static final String COL_PROJECT_ID = "project_id";
     private static final String COL_TIMELINE_ID = "timeline_id";
 
     public TenantTimelineEntity insert(final TenantTimelineEntity entity) {
@@ -24,7 +23,7 @@ public class TenantTimelineRepository extends AbstractRepository<TenantTimelineE
         return template.select(TenantTimelineEntity.class)
             .where(COL_TENANCY_ID).eq(key.getTenancyId())
             .and(ISSUE_ID).eq(key.getIssueId())
-            .and(COL_PROJECT_ID).eq(key.getProjectId())
+            .and(PROJECT_ID).eq(key.getProjectId())
             .and(COL_TIMELINE_ID).eq(key.getTimelineId())
             .singleResult();
     }
@@ -33,17 +32,7 @@ public class TenantTimelineRepository extends AbstractRepository<TenantTimelineE
         return template.select(TenantTimelineEntity.class)
             .where(COL_TENANCY_ID).eq(tenancyId)
             .and(ISSUE_ID).eq(issueId)
-            .and(COL_PROJECT_ID).eq(projectId)
+            .and(PROJECT_ID).eq(projectId)
             .result();
     }
-
-    public void delete(final TenantTimelineKey key) {
-        template.delete(TenantTimelineEntity.class)
-            .where(COL_TENANCY_ID).eq(key.getTenancyId())
-            .and(ISSUE_ID).eq(key.getIssueId())
-            .and(COL_PROJECT_ID).eq(key.getProjectId())
-            .and(COL_TIMELINE_ID).eq(key.getTimelineId())
-            .execute();
-    }
-
 }

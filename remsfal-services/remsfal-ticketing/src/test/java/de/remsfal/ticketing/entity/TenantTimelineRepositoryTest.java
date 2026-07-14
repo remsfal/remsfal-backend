@@ -45,7 +45,7 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
         assertEquals(timelineId, found.get().getTimelineId());
         assertEquals("Eintrag 1", found.get().getTitle());
         assertEquals("Nachricht 1", found.get().getMessage());
-        assertEquals(2, found.get().getAttachmentId().size());
+        assertEquals(2, found.get().getAttachmentIds().size());
     }
 
     @Test
@@ -74,22 +74,6 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
     }
 
     @Test
-    void testDelete_removesEntry() {
-        UUID tenancyId = UUID.randomUUID();
-        UUID issueId = UUID.randomUUID();
-        UUID projectId = UUID.randomUUID();
-        UUID timelineId = UUID.randomUUID();
-
-        TenantTimelineEntity entity = createEntity(tenancyId, issueId, projectId, timelineId,
-            "Zum Loeschen", "Wird geloescht");
-        repository.insert(entity);
-
-        repository.delete(entity.getKey());
-
-        assertTrue(repository.findById(entity.getKey()).isEmpty());
-    }
-
-    @Test
     void testFindById_notFound() {
         TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(UUID.randomUUID());
@@ -110,7 +94,7 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
 
         TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
-        entity.setAttachmentId(List.of(UUID.randomUUID(), UUID.randomUUID()));
+        entity.setAttachmentIds(List.of(UUID.randomUUID(), UUID.randomUUID()));
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Tester");
         entity.setTitle(title);

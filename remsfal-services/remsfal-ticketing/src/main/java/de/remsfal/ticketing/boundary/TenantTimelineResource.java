@@ -5,6 +5,7 @@ import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.json.ticketing.TenantTimelineListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.TenantTimelineController;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 
@@ -21,7 +22,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
@@ -35,6 +38,9 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
     @Inject
     Instance<IssueAttachmentResource> issueAttachmentResource;
 
+    @Inject
+    AttachmentController attachmentController;
+
     @Override
     public TenantTimelineListJson getTimelineEntries(final UUID issueId) {
         checkIssueReadPermissions(issueId);
@@ -45,7 +51,14 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
         final List<TenantTimelineEntity> entries = tenantTimelineController.getTimelineEntries(
             issue.getAgreementId(), issueId, issue.getProjectId());
-        return TenantTimelineListJson.valueOf(entries);
+
+        final List<IssueAttachmentJson> issueAttachments = attachmentController.getAttachments(issueId).stream()
+            .map(IssueAttachmentJson::valueOf)
+            .toList();
+
+        return TenantTimelineListJson.valueOf(entries.stream()
+            .map(entry -> withAttachments(entry, issueAttachments))
+            .toList());
     }
 
     @Override
@@ -68,10 +81,14 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
             timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 
+        final List<IssueAttachmentJson> issueAttachments = attachmentController.getAttachments(issueId).stream()
+            .map(IssueAttachmentJson::valueOf)
+            .toList();
+
         final URI location = uri.getAbsolutePathBuilder().path(created.getTimelineId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
-            .entity(TenantTimelineJson.valueOf(created))
+            .entity(withAttachments(created, issueAttachments))
             .build();
     }
 
@@ -104,8 +121,14 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
     private List<UUID> collectAttachmentIds(final UUID issueId, final TenantTimelineJson timeline,
         final MultipartFormDataInput input) {
         final List<UUID> attachmentIds = new ArrayList<>();
-        if (timeline.getAttachmentId() != null) {
-            attachmentIds.addAll(timeline.getAttachmentId());
+        if (timeline.getAttachmentIds() != null) {
+            attachmentIds.addAll(timeline.getAttachmentIds());
+        }
+        if (timeline.getAttachments() != null) {
+            attachmentIds.addAll(timeline.getAttachments().stream()
+                .map(IssueAttachmentJson::getAttachmentId)
+                .filter(Objects::nonNull)
+                .toList());
         }
 
         final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
@@ -122,6 +145,19 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
         }
 
         return attachmentIds;
+    }
+
+    private TenantTimelineJson withAttachments(final TenantTimelineEntity entry,
+        final List<IssueAttachmentJson> issueAttachments) {
+        final TenantTimelineJson json = TenantTimelineJson.valueOf(entry);
+        if (entry.getAttachmentIds() == null || entry.getAttachmentIds().isEmpty()) {
+            return json.withAttachments(List.of());
+        }
+
+        final List<IssueAttachmentJson> attachments = issueAttachments.stream()
+            .filter(attachment -> entry.getAttachmentIds().contains(attachment.getAttachmentId()))
+            .collect(Collectors.toList());
+        return json.withAttachments(attachments);
     }
 
 }

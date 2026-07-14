@@ -20,14 +20,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public abstract class TenantTimelineListJson {
     // Validation is not required, because it is read-only.
 
-    @Schema(description = "Number of tenant timeline entries in the list", required = true)
-    public abstract Integer getSize();
-
+    @Schema(description = "Tenant timeline entries", required = true)
     public abstract List<TenantTimelineJson> getTimelines();
 
     public static TenantTimelineListJson valueOf(final List<? extends TenantTimelineModel> timelines) {
         return ImmutableTenantTimelineListJson.builder()
-            .size(timelines.size())
             .timelines(timelines.stream()
                 .map(TenantTimelineJson::valueOf)
                 .toList())

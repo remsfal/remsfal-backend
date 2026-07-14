@@ -49,7 +49,7 @@ public class TenantTimelineController {
 
         final TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
-        entity.setAttachmentId(attachmentIds);
+        entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(senderId);
         entity.setSenderName(senderName);
         entity.setTitle(timeline.getTitle());

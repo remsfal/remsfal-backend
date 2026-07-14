@@ -69,7 +69,6 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("size", equalTo(2))
             .body("timelines", hasSize(2));
     }
 
@@ -82,7 +81,6 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("size", equalTo(0))
             .body("timelines", hasSize(0));
     }
 
@@ -146,7 +144,7 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             + "title, message, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             entity.getTenancyId(), entity.getIssueId(), entity.getTimelineId(), entity.getProjectId(),
-            entity.getAttachmentId(), entity.getSenderId(), entity.getSenderName(), entity.getTitle(),
+            entity.getAttachmentIds(), entity.getSenderId(), entity.getSenderName(), entity.getTitle(),
             entity.getMessage(), entity.getCreatedAt(), entity.getModifiedAt());
     }
 

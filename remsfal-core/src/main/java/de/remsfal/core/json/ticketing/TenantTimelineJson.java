@@ -6,6 +6,7 @@ import de.remsfal.core.model.ticketing.TenantTimelineModel;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -41,7 +42,11 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
 
     @Nullable
     @Override
-    public abstract List<UUID> getAttachmentId();
+    @JsonIgnore
+    public abstract List<UUID> getAttachmentIds();
+    
+    @Nullable
+    public abstract List<IssueAttachmentJson> getAttachments();
 
     @Nullable
     @Override
@@ -73,7 +78,8 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
             .tenancyId(model.getTenancyId())
             .timelineId(model.getTimelineId())
             .projectId(model.getProjectId())
-            .attachmentId(model.getAttachmentId())
+            .attachmentIds(model.getAttachmentIds())
+            attachments(timelineJson.getAttachments())
             .senderId(model.getSenderId())
             .senderName(model.getSenderName())
             .title(model.getTitle())
@@ -82,5 +88,7 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
             .modifiedAt(model.getModifiedAt())
             .build();
     }
+
+    public abstract TenantTimelineJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

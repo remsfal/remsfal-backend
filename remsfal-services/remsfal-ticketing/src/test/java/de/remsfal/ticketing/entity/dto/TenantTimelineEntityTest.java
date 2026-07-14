@@ -54,7 +54,7 @@ class TenantTimelineEntityTest {
         entity.setSenderName("Tester");
         entity.setTitle("Titel");
         entity.setMessage("Nachricht");
-        entity.setAttachmentId(List.of(attachmentId));
+        entity.setAttachmentIds(List.of(attachmentId));
 
         assertEquals(tenancyId, entity.getTenancyId());
         assertEquals(issueId, entity.getIssueId());
@@ -64,7 +64,7 @@ class TenantTimelineEntityTest {
         assertEquals("Tester", entity.getSenderName());
         assertEquals("Titel", entity.getTitle());
         assertEquals("Nachricht", entity.getMessage());
-        assertEquals(List.of(attachmentId), entity.getAttachmentId());
+        assertEquals(List.of(attachmentId), entity.getAttachmentIds());
     }
 
 }

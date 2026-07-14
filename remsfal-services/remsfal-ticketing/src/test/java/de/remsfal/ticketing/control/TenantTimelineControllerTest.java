@@ -63,7 +63,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         assertEquals("Max Mustermann", created.getSenderName());
         assertEquals("Neue Timeline", created.getTitle());
         assertEquals("Eintrag aus Controller-Test", created.getMessage());
-        assertEquals(attachmentIds, created.getAttachmentId());
+        assertEquals(attachmentIds, created.getAttachmentIds());
         assertNotNull(created.getCreatedAt());
         assertNotNull(created.getModifiedAt());
 
@@ -102,7 +102,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
 
         TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
-        entity.setAttachmentId(List.of(UUID.randomUUID()));
+        entity.setAttachmentIds(List.of(UUID.randomUUID()));
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Tester");
         entity.setTitle(title);

@@ -17,7 +17,7 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
     private TenantTimelineKey key;
 
     @Column("attachment_id")
-    private List<UUID> attachmentId;
+    private List<UUID> attachmentIds;
 
     @Column("sender_id")
     private UUID senderId;
@@ -75,12 +75,12 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
     }
 
     @Override
-    public List<UUID> getAttachmentId() {
-        return attachmentId;
+    public List<UUID> getAttachmentIds() {
+        return attachmentIds;
     }
 
-    public void setAttachmentId(final List<UUID> attachmentId) {
-        this.attachmentId = attachmentId;
+    public void setAttachmentIds(final List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
     }
 
     @Override
