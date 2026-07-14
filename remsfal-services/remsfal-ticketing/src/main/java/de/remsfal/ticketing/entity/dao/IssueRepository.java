@@ -13,9 +13,6 @@ import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,37 +62,19 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         return issues.size();
     }
 
-    public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
-        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final boolean onlyVisibleToTenants,
-        final Integer offset, final Integer limit) {
-        return findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
-            status, onlyVisibleToTenants, offset + limit).stream().skip(offset).limit(limit).toList();
-    }
-
-    public List<IssueEntity> findByQuery(final List<UUID> projectIds, final UUID assigneeId,
-        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final boolean onlyVisibleToTenants, final Integer limit) {
-        // Cassandra does not support IN on a partition key combined with secondary index
-        // filters, and secondary indexes only support equality (not IN). Execute one query
-        // per (projectId, agreementId) combination and merge the results afterwards.
-        final List<UUID> agreementIdList = (agreementIds != null && !agreementIds.isEmpty())
-            ? agreementIds : Collections.singletonList(null);
-        final List<IssueEntity> results = new ArrayList<>();
-        for (UUID projectId : projectIds) {
-            for (UUID agreementId : agreementIdList) {
-                results.addAll(querySinglePartition(projectId, assigneeId, agreementId,
-                    rentalType, rentalId, status, onlyVisibleToTenants, limit));
-            }
-        }
-        results.sort(Comparator.comparing(IssueEntity::getModifiedAt,
-            Comparator.nullsLast(Comparator.reverseOrder())));
-        return results;
-    }
-
-    private List<IssueEntity> querySinglePartition(final UUID projectId, final UUID assigneeId,
+    /**
+     * Fetches at most {@code limit} issues of a single project partition, ordered by {@code issue_id}
+     * descending (the table's native {@code CLUSTERING ORDER BY}, which is also creation order since
+     * {@code issue_id} is a UUIDv7). When {@code cursor} is given, only issues with an {@code issue_id}
+     * strictly smaller than the cursor are returned, i.e. continuing after the last issue of a previous
+     * page. No {@code ORDER BY} is added explicitly: Cassandra rejects combining an explicit
+     * {@code ORDER BY} on the clustering column with an SAI filter, so this relies on the table's
+     * native clustering order instead.
+     */
+    public List<IssueEntity> findByQuery(final UUID projectId, final UUID assigneeId,
         final UUID agreementId, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final boolean onlyVisibleToTenants, final int limit) {
+        final IssueStatus status, final boolean onlyVisibleToTenants,
+        final UUID cursor, final Integer limit) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).eq(projectId);
         if (assigneeId != null) {
@@ -115,6 +94,9 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         }
         if (onlyVisibleToTenants) {
             query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);
+        }
+        if (cursor != null) {
+            query = query.and(ISSUE_ID).lt(cursor);
         }
         return query.limit(limit).result();
     }

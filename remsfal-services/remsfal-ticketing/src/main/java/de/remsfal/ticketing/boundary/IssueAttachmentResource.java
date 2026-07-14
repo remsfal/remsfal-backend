@@ -36,7 +36,7 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
 
     @Override
     public Response downloadAttachment(final UUID issueId, final UUID attachmentId, final String filename) {
-        checkIssueReadPermissions(issueId);
+        checkManagerIssueReadPermissions(issueId);
 
         IssueAttachmentEntity attachment = attachmentController.getAttachment(issueId, attachmentId);
         InputStream fileStream = attachmentController.downloadAttachment(attachment.getObjectName());

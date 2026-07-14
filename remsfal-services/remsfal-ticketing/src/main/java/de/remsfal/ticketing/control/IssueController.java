@@ -17,7 +17,10 @@ import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -87,26 +90,39 @@ public class IssueController {
                 .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
-    public List<? extends IssueModel> getTenancyIssues(final List<UUID> projectIds,
-        final List<UUID> agreementIds, final IssueStatus status,
-        final Integer offset, final Integer limit) {
-        return getIssues(projectIds, null, agreementIds,
-            null, null, status, true, offset, limit);
+    /**
+     * Aggregates issues across all rental agreements the caller is a tenant of. Cassandra cannot
+     * combine an {@code IN} restriction on the partition key ({@code project_id}) with SAI filters,
+     * so this issues one single-partition query per {@code (agreementId, projectId)} pair and merges
+     * the results here. Each partition's rows already arrive sorted by {@code issue_id} descending
+     * (the table's clustering order), so merging is a simple sort of the small
+     * {@code partitions × limit} candidate set, not a full re-sort of the whole result.
+     */
+    public List<? extends IssueModel> getTenancyIssues(final UUID cursor, final Integer limit) {
+        final Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
+        if (tenancyProjects.isEmpty()) {
+            return List.of();
+        }
+        final List<IssueEntity> merged = new ArrayList<>();
+        for (final Map.Entry<UUID, UUID> tenancy : tenancyProjects.entrySet()) {
+            final UUID agreementId = tenancy.getKey();
+            final UUID projectId = tenancy.getValue();
+            merged.addAll(issueRepository.findByQuery(projectId, null, agreementId,
+                null, null, null, true, cursor, limit));
+        }
+        merged.sort(Comparator.comparing(IssueEntity::getId, Comparator.reverseOrder()));
+        return merged.size() > limit ? merged.subList(0, limit) : merged;
     }
 
-    public List<? extends IssueModel> getProjectIssues(final List<UUID> projectIds, final UUID assigneeId,
-        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final Integer offset, final Integer limit) {
-        return getIssues(projectIds, assigneeId, agreementIds,
-            rentalType, rentalId, status, false, offset, limit);
-    }
-
-    protected List<? extends IssueModel> getIssues(final List<UUID> projectIds, final UUID assigneeId,
-        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final boolean onlyVisibleToTenants,
-        final Integer offset, final Integer limit) {
-        return issueRepository.findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
-            status, onlyVisibleToTenants, offset, limit);
+    /**
+     * Fetches issues of a single project. Since the caller (a project manager) is always scoped to
+     * exactly one project, this is a single-partition query with no fan-out or merge needed.
+     */
+    public List<? extends IssueModel> getProjectIssues(final UUID projectId, final UUID assigneeId,
+        final UUID agreementId, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final UUID cursor, final Integer limit) {
+        return issueRepository.findByQuery(projectId, assigneeId, agreementId,
+            rentalType, rentalId, status, false, cursor, limit);
     }
 
     public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {

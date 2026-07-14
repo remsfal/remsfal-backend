@@ -47,13 +47,35 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("projectId", TicketingTestData.PROJECT_ID_1.toString())
             .get(BASE_PATH)
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("issues", hasSize(0))
-            .body("first", equalTo(0))
+            .body("nextCursor", nullValue())
             .body("size", equalTo(0));
+    }
+
+    @Test
+    void getIssues_FAILED_missingProjectId() {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(400);
+    }
+
+    @Test
+    void getIssues_FAILED_noPermissionForProject() {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("projectId", UUID.randomUUID().toString())
+            .get(BASE_PATH)
+            .then()
+            .statusCode(403);
     }
 
     @Test
@@ -263,6 +285,118 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
                 "Unauthorized", Map.of(), Map.of(), Map.of()))
             .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void getIssue_FAILED_tenantCannotUseManagerEndpoint() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
+            + "\"visibleToTenants\":true,"
+            + "\"type\":\"TASK\""
+            + "}";
+
+        final Response createResponse = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(BASE_PATH)
+            .thenReturn();
+
+        final String issueId = createResponse.then()
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void deleteIssue_FAILED_tenantCannotSoftCloseOnManagerEndpoint() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
+            + "\"visibleToTenants\":true,"
+            + "\"type\":\"TASK\""
+            + "}";
+
+        final Response createResponse = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(BASE_PATH)
+            .thenReturn();
+
+        final String issueId = createResponse.then()
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .delete(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(403);
+
+        // still there, untouched, and still OPEN (not soft-closed)
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(200)
+            .body("status", equalTo("OPEN"));
+    }
+
+    @Test
+    void createIssueWithAttachments_FAILED_routeNoLongerExistsOnManagerEndpoint() {
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .contentType("multipart/form-data")
+            .multiPart("issue", "{}", "application/json")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(anyOf(equalTo(404), equalTo(415)));
+    }
+
+    @Test
+    void downloadAttachment_FAILED_tenantCannotUseManagerEndpoint() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
+            + "\"visibleToTenants\":true,"
+            + "\"type\":\"TASK\""
+            + "}";
+
+        final Response createResponse = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(BASE_PATH)
+            .thenReturn();
+
+        final String issueId = createResponse.then()
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/attachments/" + UUID.randomUUID() + "/file.png")
             .then()
             .statusCode(403);
     }
