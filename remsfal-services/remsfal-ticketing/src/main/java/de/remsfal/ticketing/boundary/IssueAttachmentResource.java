@@ -20,8 +20,12 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import de.remsfal.common.model.FileUploadData;
 import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
+import de.remsfal.core.json.ticketing.ImmutableTenantTimelineJson;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
+import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.AttachmentController;
+import de.remsfal.ticketing.control.TenantTimelineController;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 
 /**
@@ -33,6 +37,9 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
 
     @Inject
     AttachmentController attachmentController;
+
+    @Inject
+    TenantTimelineController tenantTimelineController;
 
     @Override
     public Response downloadAttachment(final UUID issueId, final UUID attachmentId, final String filename) {
@@ -66,6 +73,7 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
         List<IssueAttachmentJson> attachments = processAttachmentParts(issueId, fileParts);
+        appendTimelineEntryForAttachments(issueId, attachments);
 
         return Response.ok()
             .type(MediaType.APPLICATION_JSON)
@@ -92,6 +100,32 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
             }
         }
         return attachments;
+    }
+
+    private void appendTimelineEntryForAttachments(final UUID issueId, final List<IssueAttachmentJson> attachments) {
+        if (attachments == null || attachments.isEmpty()) {
+            return;
+        }
+
+        final IssueModel issue = issueController.getIssue(issueId);
+        if (issue.getAgreementId() == null) {
+            return;
+        }
+
+        final TenantTimelineJson timeline = ImmutableTenantTimelineJson.builder()
+            .title("Verwalter Anhang")
+            .build();
+
+        tenantTimelineController.createTimelineEntry(
+            issue.getAgreementId(),
+            issueId,
+            issue.getProjectId(),
+            principal.getId(),
+            principal.getName(),
+            timeline,
+            attachments.stream()
+                .map(IssueAttachmentJson::getAttachmentId)
+                .toList());
     }
 
 }
