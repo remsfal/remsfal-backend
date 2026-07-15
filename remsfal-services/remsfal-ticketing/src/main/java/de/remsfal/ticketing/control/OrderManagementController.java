@@ -54,12 +54,12 @@ public class OrderManagementController {
     @Inject
     OrderPlacementRepository orderPlacementRepository;
 
-    public void createRequestsForQuotation(final UserModel user, final UUID issueId,
+    public List<QuotationRequestEntity> createRequestsForQuotation(final UserModel user, final UUID issueId,
         final List<ContractorJson> contractors, final String scopeOfWork,
         final String projectOwner, final String projectCareOf, final AddressModel billingAddress) {
         IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException("Issue not found"));
-        contractors.stream().distinct().forEach(contractor -> {
+        return contractors.stream().distinct().map(contractor -> {
             QuotationRequestEntity request = new QuotationRequestEntity();
             request.generateId();
             request.setIssueId(issueId);
@@ -78,8 +78,8 @@ public class OrderManagementController {
                 request.setProjectBillingAddress3(billingAddress.getAddressLine3());
             }
             request.setStatus(RequestStatus.REQUESTED);
-            quotationRequestRepository.insert(request);
-        });
+            return quotationRequestRepository.insert(request);
+        }).toList();
     }
 
     public List<QuotationRequestEntity> getRequestsForQuotation(final UUID issueId) {
@@ -180,7 +180,7 @@ public class OrderManagementController {
         return quotationRepository.insert(quotation);
     }
 
-    public void placeOrder(final UUID issueId, final UUID quotationId) {
+    public OrderPlacementEntity placeOrder(final UUID issueId, final UUID quotationId) {
         QuotationKey key = new QuotationKey();
         key.setIssueId(issueId);
         key.setQuotationId(quotationId);
@@ -203,7 +203,7 @@ public class OrderManagementController {
         orderPlacement.setContractorName(quotation.getContractorName());
         orderPlacement.setOrganizationId(quotation.getOrganizationId());
         orderPlacement.setStatus(OrderPlacementStatus.PLACED);
-        orderPlacementRepository.insert(orderPlacement);
+        return orderPlacementRepository.insert(orderPlacement);
     }
 
     public List<QuotationEntity> getQuotationsByIssue(final UUID issueId) {

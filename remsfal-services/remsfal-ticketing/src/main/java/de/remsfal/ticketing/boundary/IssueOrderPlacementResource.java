@@ -4,6 +4,7 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.UUID;
@@ -36,8 +37,12 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
     @Override
     public Response placeOrder(final UUID issueId, final UUID quotationId) {
         checkIssueWritePermissions(issueId);
-        orderManagementController.placeOrder(issueId, quotationId);
-        return Response.status(Response.Status.CREATED).build();
+        final OrderPlacementEntity placement = orderManagementController.placeOrder(issueId, quotationId);
+        return Response.status(Response.Status.CREATED)
+            .location(uri.getAbsolutePath())
+            .type(MediaType.APPLICATION_JSON)
+            .entity(OrderPlacementJson.valueOf(placement))
+            .build();
     }
 
     @Override

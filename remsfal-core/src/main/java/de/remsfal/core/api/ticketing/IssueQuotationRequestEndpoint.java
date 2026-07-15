@@ -15,6 +15,8 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -31,8 +33,11 @@ public interface IssueQuotationRequestEndpoint {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create requests for quotation.")
-    @APIResponse(responseCode = "201", description = "Requests for quotation created successfully")
+    @APIResponse(responseCode = "201", description = "Requests for quotation created successfully",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = QuotationRequestListJson.class)))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createRequestsForQuotation(
         @Parameter(description = "ID of the issue", required = true)
