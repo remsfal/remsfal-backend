@@ -1,19 +1,19 @@
 package de.remsfal.ticketing.boundary.tenant;
 
+import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.tenant.TenantTimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
 import de.remsfal.core.json.ticketing.tenant.TenantTimelineListJson;
+import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
-import de.remsfal.ticketing.boundary.IssueAttachmentResource;
 import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.TenantTimelineController;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -36,9 +37,6 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
     @Inject
     TenantTimelineController tenantTimelineController;
-
-    @Inject
-    Instance<IssueAttachmentResource> issueAttachmentResource;
 
     @Inject
     AttachmentController attachmentController;
@@ -122,14 +120,25 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
     private List<UUID> collectAttachmentIds(final UUID issueId, final TenantTimelineJson timeline,
         final MultipartFormDataInput input) {
+        // Client-referenced attachment ids (as opposed to newly-uploaded ones below) must belong to
+        // attachments the caller uploaded themselves, so a tenant cannot reference a manager-only
+        // attachment of the same issue and smuggle it into their own timeline entry's visibility.
+        final Set<UUID> ownAttachmentIds = attachmentController.getAttachments(issueId).stream()
+            .filter(attachment -> principal.getId().equals(attachment.getUploaderId()))
+            .map(IssueAttachmentModel::getAttachmentId)
+            .collect(Collectors.toSet());
+
         final List<UUID> attachmentIds = new ArrayList<>();
         if (timeline.getAttachmentIds() != null) {
-            attachmentIds.addAll(timeline.getAttachmentIds());
+            attachmentIds.addAll(timeline.getAttachmentIds().stream()
+                .filter(ownAttachmentIds::contains)
+                .toList());
         }
         if (timeline.getAttachments() != null) {
             attachmentIds.addAll(timeline.getAttachments().stream()
                 .map(IssueAttachmentJson::getAttachmentId)
                 .filter(Objects::nonNull)
+                .filter(ownAttachmentIds::contains)
                 .toList());
         }
 
@@ -139,9 +148,9 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
             return attachmentIds;
         }
 
-        final IssueAttachmentResource attachmentResource = resourceContext.initResource(issueAttachmentResource.get());
-        final List<IssueAttachmentJson> uploadedAttachments =
-            attachmentResource.processAttachmentParts(issueId, fileParts);
+        final List<IssueAttachmentJson> uploadedAttachments = MultipartAttachmentProcessor.processAttachmentParts(
+            fileParts,
+            fileData -> IssueAttachmentJson.valueOf(attachmentController.addAttachment(principal, issueId, fileData)));
         for (IssueAttachmentJson attachment : uploadedAttachments) {
             attachmentIds.add(attachment.getAttachmentId());
         }

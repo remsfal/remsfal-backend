@@ -22,18 +22,19 @@ import java.util.stream.Collectors;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
+import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.tenant.TenantIssueEndpoint;
 import de.remsfal.core.api.ticketing.tenant.TenantTimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;
-import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
-import de.remsfal.ticketing.boundary.IssueAttachmentResource;
 import de.remsfal.ticketing.boundary.IssueResource;
 import de.remsfal.ticketing.control.AttachmentController;
+import de.remsfal.ticketing.control.TenantTimelineController;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import io.quarkus.security.Authenticated;
 
@@ -57,7 +58,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     AttachmentController attachmentController;
 
     @Inject
-    Instance<IssueAttachmentResource> attachmentResource;
+    TenantTimelineController tenantTimelineController;
 
     @Inject
     Instance<TenantTimelineResource> tenantTimelineResource;
@@ -80,13 +81,22 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
 
         final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         final List<InputPart> fileParts = formDataMap.get("attachment");
-        final IssueAttachmentResource attachmentRes = resourceContext.initResource(attachmentResource.get());
-        final List<IssueAttachmentJson> attachments = attachmentRes.processAttachmentParts(
-            createdIssue.getId(), fileParts);
+        final List<IssueAttachmentJson> attachments = MultipartAttachmentProcessor.processAttachmentParts(
+            fileParts,
+            fileData -> IssueAttachmentJson.valueOf(
+                attachmentController.addAttachment(principal, createdIssue.getId(), fileData)));
+
+        final List<UUID> attachmentIds = attachments.stream()
+            .map(IssueAttachmentJson::getAttachmentId)
+            .toList();
+        tenantTimelineController.createTimelineEntry(createdIssue.getAgreementId(), createdIssue.getId(),
+            createdIssue.getProjectId(), principal.getId(), principal.getName(),
+            MessagePurpose.ISSUE_CREATED, createdIssue.getDescription(),
+            attachmentIds.isEmpty() ? null : attachmentIds);
 
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(TenantIssueJson.valueOfTenancyIssue(createdIssue).withAttachments(attachments))
+            .entity(TenantIssueJson.valueOf(createdIssue))
             .build();
     }
 
@@ -128,13 +138,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     public TenantIssueJson getIssue(final UUID issueId) {
         checkTenantIssueReadPermissions(issueId);
         final IssueModel issue = issueController.getIssue(issueId);
-
-        final List<? extends IssueAttachmentModel> attachments = attachmentController.getAttachments(issueId);
-        final List<IssueAttachmentJson> attachmentJsons = attachments.stream()
-            .map(IssueAttachmentJson::valueOf)
-            .collect(Collectors.toList());
-
-        return TenantIssueJson.valueOfTenancyIssue(issue).withAttachments(attachmentJsons);
+        return TenantIssueJson.valueOf(issue);
     }
 
     @Override
@@ -146,6 +150,13 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     @Override
     public Response downloadAttachment(final UUID issueId, final UUID attachmentId, final String filename) {
         checkTenantIssueReadPermissions(issueId);
+        final IssueModel issue = issueController.getIssue(issueId);
+
+        final Set<UUID> visibleAttachmentIds = tenantTimelineController.getVisibleAttachmentIds(
+            issue.getAgreementId(), issueId, issue.getProjectId());
+        if (!visibleAttachmentIds.contains(attachmentId)) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
 
         final IssueAttachmentEntity attachment = attachmentController.getAttachment(issueId, attachmentId);
         final InputStream fileStream = attachmentController.downloadAttachment(attachment.getObjectName());

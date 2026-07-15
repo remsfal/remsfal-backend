@@ -46,16 +46,21 @@ public class IssueController {
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN, false);
+        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN, true);
     }
 
+    /**
+     * Used by the tenant-facing create-with-attachments flow, which uploads attachments only after
+     * the issue (and its id) exist, and therefore creates its own {@code ISSUE_CREATED} timeline
+     * entry afterwards (carrying the attachment ids) instead of relying on the automatic one below.
+     */
     public IssueModel createIssue(final UserModel user, final IssueModel issue,
         final UUID projectId, final IssueStatus initialStatus) {
-        return createIssue(user, issue, projectId, initialStatus, true);
+        return createIssue(user, issue, projectId, initialStatus, false);
     }
 
     private IssueModel createIssue(final UserModel user, final IssueModel issue,
-        final UUID projectId, final IssueStatus initialStatus, final boolean alwaysNotifyTenant) {
+        final UUID projectId, final IssueStatus initialStatus, final boolean createTimelineEntry) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
         IssueEntity entity = new IssueEntity();
@@ -91,8 +96,8 @@ public class IssueController {
         entity = issueRepository.insert(entity);
         issueEventProducer.sendIssueCreated(entity, user);
 
-        if (entity.getAgreementId() != null
-            && (alwaysNotifyTenant || Boolean.TRUE.equals(entity.isVisibleToTenants()))) {
+        if (createTimelineEntry && entity.getAgreementId() != null
+            && Boolean.TRUE.equals(entity.isVisibleToTenants())) {
             tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
                 entity.getProjectId(), user.getId(), user.getName(),
                 MessagePurpose.ISSUE_CREATED, entity.getDescription());

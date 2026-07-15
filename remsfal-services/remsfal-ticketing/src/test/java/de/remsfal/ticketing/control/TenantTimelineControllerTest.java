@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -94,6 +95,29 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         assertTrue(entries.stream().anyMatch(entry -> entry.getTimelineId().equals(first.getTimelineId())));
         assertTrue(entries.stream().anyMatch(entry -> entry.getTimelineId().equals(second.getTimelineId())));
         assertFalse(entries.stream().anyMatch(entry -> entry.getTimelineId().equals(otherIssue.getTimelineId())));
+    }
+
+    @Test
+    void testGetVisibleAttachmentIds_unionsAcrossEntriesAndIgnoresNullLists() {
+        UUID tenancyId = UUID.randomUUID();
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID attachmentA = UUID.randomUUID();
+        UUID attachmentB = UUID.randomUUID();
+
+        TenantTimelineEntity withAttachments = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
+            MessagePurpose.MESSAGE_SENT);
+        withAttachments.setAttachmentIds(List.of(attachmentA, attachmentB));
+        TenantTimelineEntity withoutAttachments = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
+            MessagePurpose.STATUS_CHANGED);
+        withoutAttachments.setAttachmentIds(null);
+
+        repository.insert(withAttachments);
+        repository.insert(withoutAttachments);
+
+        Set<UUID> visibleAttachmentIds = controller.getVisibleAttachmentIds(tenancyId, issueId, projectId);
+
+        assertEquals(Set.of(attachmentA, attachmentB), visibleAttachmentIds);
     }
 
     private TenantTimelineEntity createEntity(final UUID tenancyId, final UUID issueId, final UUID projectId,

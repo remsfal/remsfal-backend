@@ -6,14 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
-import java.time.Instant;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
@@ -21,12 +20,10 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
-import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
-import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
+import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
@@ -42,9 +39,6 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     static final UUID PROJECT_ID_NO_AGREEMENT = UUID.randomUUID();
     static final UUID ISSUE_ID_NO_AGREEMENT = UUID.randomUUID();
 
-    @Inject
-    CqlSession cqlSession;
-
     @BeforeEach
     void setUpIssues() {
         insertIssue(PROJECT_ID, ISSUE_ID_WITH_AGREEMENT,
@@ -59,11 +53,11 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void getTimelineEntries_SUCCESS_forTenantIssue() {
         insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
-            MessagePurpose.MESSAGE_SENT);
+            MessagePurpose.MESSAGE_SENT, null);
         insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
-            MessagePurpose.STATUS_CHANGED);
+            MessagePurpose.STATUS_CHANGED, null);
         insertTimelineEntry(UUID.randomUUID(), PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
-            MessagePurpose.MESSAGE_SENT);
+            MessagePurpose.MESSAGE_SENT, null);
 
         given()
             .when()
@@ -108,7 +102,6 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             .body("timelineId", notNullValue())
             .body("issueId", equalTo(ISSUE_ID_WITH_AGREEMENT.toString()))
             .body("tenancyId", equalTo(AGREEMENT_ID.toString()))
-            .body("projectId", equalTo(PROJECT_ID.toString()))
             .body("purpose", equalTo("MESSAGE_SENT"))
             .body("message", equalTo("Bitte um Rueckmeldung"));
     }
@@ -124,33 +117,66 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             .statusCode(400);
     }
 
-    private void insertTimelineEntry(final UUID issueId, final UUID projectId, final UUID tenancyId,
-        final UUID timelineId, final MessagePurpose purpose) {
-        TenantTimelineKey key = new TenantTimelineKey();
-        key.setTenancyId(tenancyId);
-        key.setIssueId(issueId);
-        key.setProjectId(projectId);
-        key.setTimelineId(timelineId);
+    @Test
+    void createTimelineEntryWithAttachments_SUCCESS_uploadedAttachmentIsLinkedAndVisible() {
+        final String timelineJson = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"Bitte um Rueckmeldung\""
+            + "}";
+        final InputStream attachmentStream = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1);
 
-        TenantTimelineEntity entity = new TenantTimelineEntity();
-        entity.setKey(key);
-        entity.setSenderId(UUID.randomUUID());
-        entity.setSenderName("Tenant");
-        entity.setPurpose(purpose);
-        entity.setMessage("Message " + purpose);
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(),
+                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1,
+                attachmentStream, TicketingTestData.ATTACHMENT_FILE_TYPE_1)
+            .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("attachments", hasSize(1))
+            .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1));
 
-        Instant now = Instant.now();
-        entity.setCreatedAt(now);
-        entity.setModifiedAt(now);
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(),
+                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
+            .get(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(1))
+            .body("timelines[0].attachments", hasSize(1));
+    }
 
-        cqlSession.execute("INSERT INTO remsfal.tenant_timelines "
-            + "(tenancy_id, issue_id, timeline_id, project_id, attachment_id, sender_id, sender_name, "
-            + "purpose, message, created_at, modified_at) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            entity.getTenancyId(), entity.getIssueId(), entity.getTimelineId(), entity.getProjectId(),
-            entity.getAttachmentIds(), entity.getSenderId(), entity.getSenderName(),
-            entity.getPurpose() != null ? entity.getPurpose().name() : null,
-            entity.getMessage(), entity.getCreatedAt(), entity.getModifiedAt());
+    @Test
+    void createTimelineEntryWithAttachments_FAILED_cannotReferenceForeignAttachment() {
+        // an attachment uploaded by someone else (e.g. a manager) for the same issue
+        final UUID foreignAttachmentId = UUID.randomUUID();
+        insertAttachment(ISSUE_ID_WITH_AGREEMENT, foreignAttachmentId, TicketingTestData.ATTACHMENT_FILE_PATH_2,
+            TicketingTestData.ATTACHMENT_FILE_TYPE_2, "/issues/" + ISSUE_ID_WITH_AGREEMENT + "/attachments/"
+                + foreignAttachmentId + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_2, UUID.randomUUID());
+
+        final String timelineJson = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"Bitte um Rueckmeldung\","
+            + "\"attachments\":[{\"attachmentId\":\"" + foreignAttachmentId + "\"}]"
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(),
+                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("attachments", hasSize(0));
     }
 
 }

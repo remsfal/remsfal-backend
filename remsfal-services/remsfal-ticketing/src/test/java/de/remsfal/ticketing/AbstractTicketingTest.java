@@ -13,6 +13,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.test.AbstractTest;
 import de.remsfal.ticketing.entity.storage.FileStorage;
 import io.minio.ListObjectsArgs;
@@ -186,6 +187,21 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute(insertAttachmentCql,
             processPhase, processId, attachmentId, fileName, contentType, objectName, uploaderId,
             TicketingTestData.USER_NAME, Instant.now(), Instant.now());
+    }
+
+    /**
+     * Inserts a {@code TenantTimelineEntity} fixture, optionally referencing attachment ids —
+     * that's what makes an {@code IssueAttachment} visible to a tenant (see issue #801).
+     */
+    protected void insertTimelineEntry(UUID issueId, UUID projectId, UUID tenancyId, UUID timelineId,
+            MessagePurpose purpose, List<UUID> attachmentIds) {
+        String insertTimelineCql = "INSERT INTO remsfal.tenant_timelines "
+            + "(tenancy_id, issue_id, timeline_id, project_id, attachment_id, sender_id, sender_name, "
+            + "purpose, message, created_at, modified_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertTimelineCql,
+            tenancyId, issueId, timelineId, projectId, attachmentIds, UUID.randomUUID(), TicketingTestData.USER_NAME,
+            purpose.name(), "Message " + purpose, Instant.now(), Instant.now());
     }
 
 }

@@ -15,7 +15,10 @@ import org.jboss.logging.Logger;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class TenantTimelineController {
@@ -35,6 +38,18 @@ public class TenantTimelineController {
         return tenantTimelineRepository.findByIssue(tenancyId, issueId, projectId);
     }
 
+    /**
+     * Attachments are only visible to a tenant if they are referenced by some
+     * {@link TenantTimelineEntity} of the issue — this computes that visible set.
+     */
+    public Set<UUID> getVisibleAttachmentIds(final UUID tenancyId, final UUID issueId, final UUID projectId) {
+        return getTimelineEntries(tenancyId, issueId, projectId).stream()
+            .map(TenantTimelineEntity::getAttachmentIds)
+            .filter(Objects::nonNull)
+            .flatMap(List::stream)
+            .collect(Collectors.toSet());
+    }
+
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
         final UUID senderId, final String senderName, final TenantTimelineJson timeline,
@@ -49,7 +64,8 @@ public class TenantTimelineController {
         return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName, purpose, message, null);
     }
 
-    private TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
+    @Transactional
+    public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
         final UUID senderId, final String senderName, final MessagePurpose purpose, final String message,
         final List<UUID> attachmentIds) {
         logger.infov("Creating tenant timeline entry (issueId={0}, projectId={1}, tenancyId={2})",

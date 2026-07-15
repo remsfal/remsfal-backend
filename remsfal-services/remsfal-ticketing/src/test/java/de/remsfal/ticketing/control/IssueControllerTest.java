@@ -223,7 +223,10 @@ class IssueControllerTest {
     }
 
     @Test
-    void createIssue_tenantCreated_alwaysCreatesIssueCreatedTimelineEntry_evenWhenNotVisibleToTenants() {
+    void createIssue_tenantCreated_createsNoTimelineEntryInternally() {
+        // The tenant-facing create-with-attachments flow uploads attachments only after the issue
+        // (and its id) exist, so it creates its own ISSUE_CREATED timeline entry (carrying the
+        // attachment ids) afterwards instead of relying on an automatic one from IssueController.
         final UUID projectId = UUID.randomUUID();
         final UUID agreementId = UUID.randomUUID();
         final UUID reporterId = UUID.randomUUID();
@@ -240,10 +243,12 @@ class IssueControllerTest {
         final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
         final IssueController controller = controllerWithMocks(insertingRepository(), tenantTimelineController, null);
 
-        final IssueModel created = controller.createIssue(user, issue, projectId, IssueStatus.PENDING);
+        controller.createIssue(user, issue, projectId, IssueStatus.PENDING);
 
-        verify(tenantTimelineController).createTimelineEntry(agreementId, created.getId(), projectId,
-            reporterId, "Tina Tenant", MessagePurpose.ISSUE_CREATED, "Bitte um Rueckruf");
+        verify(tenantTimelineController, never()).createTimelineEntry(
+            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
+        verify(tenantTimelineController, never()).createTimelineEntry(
+            any(), any(), any(), any(), any(), any(MessagePurpose.class), any(), any());
     }
 
     @Test

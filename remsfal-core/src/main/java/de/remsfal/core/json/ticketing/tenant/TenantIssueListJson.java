@@ -30,10 +30,10 @@ public abstract class TenantIssueListJson {
     @Nullable
     public abstract String getNextCursor();
 
-    @Schema(description = "Number of elements in this page", minimum = "0", maximum = "500",
-        readOnly = true, required = true)
+    @Schema(description = "Number of elements in this page", minimum = "0", maximum = "500", readOnly = true)
     public abstract Integer getSize();
 
+    @Schema(description = "The issues in this page", readOnly = true)
     public abstract List<TenantIssueJson> getIssues();
 
     public static TenantIssueListJson valueOf(final List<? extends IssueModel> issues, final String nextCursor) {
@@ -41,7 +41,7 @@ public abstract class TenantIssueListJson {
             .size(issues.size())
             .nextCursor(nextCursor)
             .issues(issues.stream()
-                .map(TenantIssueJson::valueOfTenancyIssue)
+                .map(TenantIssueJson::valueOf)
                 .toList())
             .build();
     }
