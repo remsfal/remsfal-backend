@@ -1,5 +1,6 @@
 package de.remsfal.core.api.ticketing.tenant;
 
+import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
 import de.remsfal.core.json.ticketing.tenant.TenantTimelineListJson;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
@@ -13,7 +14,12 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
@@ -35,6 +41,22 @@ public interface TenantTimelineEndpoint {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new timeline entry with attachments for an issue")
+    @RequestBody(
+        required = true,
+        content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA,
+            schema = @Schema(
+                type = SchemaType.OBJECT,
+                requiredProperties = {"timeline"},
+                properties = {
+                    @SchemaProperty(name = "timeline", implementation = TenantTimelineJson.class,
+                        description = "Timeline entry information as JSON"),
+                    @SchemaProperty(name = "attachment", type = SchemaType.ARRAY, implementation = java.io.File.class,
+                        description = "One or more files to attach to the timeline entry")
+                }
+            )
+        )
+    )
     @APIResponse(responseCode = "201", description = "Timeline entry created")
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
@@ -42,9 +64,6 @@ public interface TenantTimelineEndpoint {
     Response createTimelineEntryWithAttachments(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
-        @Parameter(
-            description = "Multipart form data containing timeline JSON and optional attachments",
-            required = true)
-        MultipartFormDataInput input);
+        @Parameter(hidden = true) MultipartFormDataInput input);
 
 }

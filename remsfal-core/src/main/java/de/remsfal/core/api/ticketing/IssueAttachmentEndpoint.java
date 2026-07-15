@@ -14,7 +14,12 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
@@ -66,10 +71,23 @@ public interface IssueAttachmentEndpoint {
     @APIResponse(responseCode = "403",
         description = "User does not have permission to upload attachments to this issue")
     @APIResponse(responseCode = "404", description = "Issue not found")
+    @RequestBody(
+        required = true,
+        content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA,
+            schema = @Schema(
+                type = SchemaType.OBJECT,
+                requiredProperties = {"attachment"},
+                properties = {
+                    @SchemaProperty(name = "attachment", type = SchemaType.ARRAY, implementation = java.io.File.class,
+                        description = "One or more image files to attach to the issue")
+                }
+            )
+        )
+    )
     Response uploadAttachments(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
-        @Parameter(description = "Multipart form data containing one or more image files", required = true)
-        MultipartFormDataInput input);
+        @Parameter(hidden = true) MultipartFormDataInput input);
 
 }

@@ -18,8 +18,13 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
@@ -57,13 +62,28 @@ public interface TenantIssueEndpoint {
     @Operation(summary = "Create a new issue with multiple image attachments.",
         description = "Creates a new issue based on the provided issue information and attaches multiple image files"
         + " to it. This method is intended solely for the creation of issues by a tenant.")
+    @RequestBody(
+        required = true,
+        content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA,
+            schema = @Schema(
+                type = SchemaType.OBJECT,
+                requiredProperties = {"issue"},
+                properties = {
+                    @SchemaProperty(name = "issue", implementation = TenantIssueJson.class,
+                        description = "Issue information as JSON"),
+                    @SchemaProperty(name = "attachment", type = SchemaType.ARRAY, implementation = java.io.File.class,
+                        description = "One or more image files to attach to the issue")
+                }
+            )
+        )
+    )
     @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
         headers = @Header(name = "Location", description = "URL of the new issue"))
     @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createIssueWithAttachments(
-        @Parameter(description = "Multipart form data containing issue information and image files", required = true)
-        MultipartFormDataInput input);
+        @Parameter(hidden = true) MultipartFormDataInput input);
 
     @GET
     @Path("/{issueId}")
