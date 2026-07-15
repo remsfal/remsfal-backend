@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.core.api.ticketing.tenant;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -22,21 +22,22 @@ import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.json.ticketing.TenantIssueJson;
-import de.remsfal.core.json.ticketing.TenantIssueListJson;
+import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
+import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
  * Issue operations for tenants only. A manager cannot query this endpoint on behalf of a tenant;
  * see {@link IssueEndpoint} for the manager-facing equivalent.
+ * <p>
+ * This is a pure sub-resource: it carries no own {@code @Path} and is only reachable mounted under
+ * {@link TenantRelationsEndpoint}.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-@Path(TenantIssueEndpoint.CONTEXT + "/" + TenantIssueEndpoint.VERSION + "/tenant/" + TenantIssueEndpoint.SERVICE)
 public interface TenantIssueEndpoint {
 
-    String CONTEXT = "ticketing";
-    String VERSION = "v1";
     String SERVICE = "issues";
 
     @GET
@@ -101,5 +102,8 @@ public interface TenantIssueEndpoint {
         @PathParam("attachmentId") @NotNull UUID attachmentId,
         @Parameter(description = "Filename of the attachment", required = true)
         @PathParam("filename") @NotNull String filename);
+
+    @Path("/{issueId}/" + TenantTimelineEndpoint.SERVICE)
+    TenantTimelineEndpoint getTenantTimelineResource();
 
 }

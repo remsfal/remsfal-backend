@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.tenant;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
@@ -29,7 +29,7 @@ import jakarta.ws.rs.core.MediaType;
 @QuarkusTestResource(CassandraTestResource.class)
 class TenantIssueResourceTest extends AbstractTicketingTest {
 
-    static final String BASE_PATH = "/ticketing/v1/tenant/issues";
+    static final String BASE_PATH = "/ticketing/v1/tenant-relations/issues";
 
     private static final String MANAGER_ISSUE_PATH = "/ticketing/v1/issues";
 

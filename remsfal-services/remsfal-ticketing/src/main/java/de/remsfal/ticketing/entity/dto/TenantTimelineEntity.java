@@ -1,6 +1,6 @@
 package de.remsfal.ticketing.entity.dto;
 
-import de.remsfal.core.model.ticketing.TenantTimelineModel;
+import de.remsfal.core.model.ticketing.tenant.TenantTimelineModel;
 
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;

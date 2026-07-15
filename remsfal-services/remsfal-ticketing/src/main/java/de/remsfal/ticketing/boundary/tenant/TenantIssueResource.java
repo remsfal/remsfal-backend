@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.tenant;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
@@ -22,13 +22,17 @@ import java.util.stream.Collectors;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-import de.remsfal.core.api.ticketing.TenantIssueEndpoint;
+import de.remsfal.core.api.ticketing.tenant.TenantIssueEndpoint;
+import de.remsfal.core.api.ticketing.tenant.TenantTimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
-import de.remsfal.core.json.ticketing.TenantIssueJson;
-import de.remsfal.core.json.ticketing.TenantIssueListJson;
+import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
+import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.ticketing.boundary.AbstractTicketingResource;
+import de.remsfal.ticketing.boundary.IssueAttachmentResource;
+import de.remsfal.ticketing.boundary.IssueResource;
 import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import io.quarkus.security.Authenticated;
@@ -36,6 +40,9 @@ import io.quarkus.security.Authenticated;
 /**
  * Issue operations for tenants only, split off from {@link IssueResource} so the manager-facing
  * endpoint no longer has to fan out across every project a tenant might be involved in.
+ * <p>
+ * This is a pure sub-resource, only reachable mounted under {@link TenantRelationsResource}, and
+ * itself provides {@link TenantTimelineResource} as a sub-resource.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -51,6 +58,9 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
 
     @Inject
     Instance<IssueAttachmentResource> attachmentResource;
+
+    @Inject
+    Instance<TenantTimelineResource> tenantTimelineResource;
 
     @Override
     public TenantIssueListJson getIssues(final String cursor, final Integer limit) {
@@ -150,6 +160,11 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
             .type(MediaType.APPLICATION_OCTET_STREAM)
             .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
             .build();
+    }
+
+    @Override
+    public TenantTimelineEndpoint getTenantTimelineResource() {
+        return resourceContext.initResource(tenantTimelineResource.get());
     }
 
 }

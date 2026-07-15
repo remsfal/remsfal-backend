@@ -1,10 +1,12 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.tenant;
 
-import de.remsfal.core.api.ticketing.TenantTimelineEndpoint;
+import de.remsfal.core.api.ticketing.tenant.TenantTimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
-import de.remsfal.core.json.ticketing.TenantTimelineJson;
-import de.remsfal.core.json.ticketing.TenantTimelineListJson;
+import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
+import de.remsfal.core.json.ticketing.tenant.TenantTimelineListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.boundary.AbstractTicketingResource;
+import de.remsfal.ticketing.boundary.IssueAttachmentResource;
 import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.TenantTimelineController;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;

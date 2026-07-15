@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.core.json.ticketing.ImmutableTenantTimelineJson;
-import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.json.ticketing.tenant.ImmutableTenantTimelineJson;
+import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;

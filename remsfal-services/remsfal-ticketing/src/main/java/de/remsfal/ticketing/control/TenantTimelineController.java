@@ -1,7 +1,7 @@
 package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
-import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineKey;

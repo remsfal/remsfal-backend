@@ -1,4 +1,4 @@
-package de.remsfal.core.model.ticketing;
+package de.remsfal.core.model.ticketing.tenant;
 
 import java.time.Instant;
 import java.util.List;

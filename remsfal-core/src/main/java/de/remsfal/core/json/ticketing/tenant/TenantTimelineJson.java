@@ -1,7 +1,8 @@
-package de.remsfal.core.json.ticketing;
+package de.remsfal.core.json.ticketing.tenant;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ticketing.TenantTimelineModel;
+import de.remsfal.core.json.ticketing.IssueAttachmentJson;
+import de.remsfal.core.model.ticketing.tenant.TenantTimelineModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;

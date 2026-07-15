@@ -1,4 +1,4 @@
-package de.remsfal.core.json.ticketing;
+package de.remsfal.core.json.ticketing.tenant;
 
 import java.util.List;
 

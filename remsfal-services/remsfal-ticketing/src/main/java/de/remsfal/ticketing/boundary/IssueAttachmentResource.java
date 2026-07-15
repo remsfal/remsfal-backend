@@ -73,7 +73,7 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
             .build();
     }
 
-    List<IssueAttachmentJson> processAttachmentParts(final UUID issueId, final List<InputPart> fileParts) {
+    public List<IssueAttachmentJson> processAttachmentParts(final UUID issueId, final List<InputPart> fileParts) {
         List<IssueAttachmentJson> attachments = new ArrayList<>();
         if (fileParts != null && !fileParts.isEmpty()) {
             for (InputPart inputPart : fileParts) {
