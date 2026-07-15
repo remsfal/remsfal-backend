@@ -13,6 +13,7 @@ import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
@@ -39,14 +40,22 @@ public class IssueController {
     @Inject
     IssueEventProducer issueEventProducer;
 
+    @Inject
+    TenantTimelineController tenantTimelineController;
+
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN);
+        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN, false);
     }
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue,
         final UUID projectId, final IssueStatus initialStatus) {
+        return createIssue(user, issue, projectId, initialStatus, true);
+    }
+
+    private IssueModel createIssue(final UserModel user, final IssueModel issue,
+        final UUID projectId, final IssueStatus initialStatus, final boolean alwaysNotifyTenant) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
         IssueEntity entity = new IssueEntity();
@@ -81,6 +90,13 @@ public class IssueController {
 
         entity = issueRepository.insert(entity);
         issueEventProducer.sendIssueCreated(entity, user);
+
+        if (entity.getAgreementId() != null
+            && (alwaysNotifyTenant || Boolean.TRUE.equals(entity.isVisibleToTenants()))) {
+            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+                entity.getProjectId(), user.getId(), user.getName(),
+                MessagePurpose.ISSUE_CREATED, entity.getDescription());
+        }
         return entity;
     }
 
@@ -130,6 +146,7 @@ public class IssueController {
 
         final IssueEntity entity = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
+        final IssueStatus oldStatus = entity.getStatus();
 
         entity.touch();
         if (issue.getTitle() != null) {
@@ -159,6 +176,13 @@ public class IssueController {
         // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via PATCH
 
+        if (entity.getAgreementId() != null && Boolean.TRUE.equals(entity.isVisibleToTenants())
+            && issue.getStatus() != null && issue.getStatus() != oldStatus) {
+            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+                entity.getProjectId(), principal.getId(), principal.getName(),
+                MessagePurpose.STATUS_CHANGED, entity.getStatus().name());
+        }
+
         return issueRepository.update(entity);
     }
 
@@ -176,8 +200,15 @@ public class IssueController {
         logger.infov("Closing issue (issueId={0})", issueId);
         final Optional<IssueEntity> entity = issueRepository.findByIssueId(issueId);
         entity.ifPresent((e) -> {
+            final IssueStatus oldStatus = e.getStatus();
             e.setStatus(IssueStatus.CLOSED);
             issueRepository.update(e);
+            if (oldStatus != IssueStatus.CLOSED && e.getAgreementId() != null
+                && Boolean.TRUE.equals(e.isVisibleToTenants())) {
+                tenantTimelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
+                    principal.getId(), principal.getName(), MessagePurpose.STATUS_CHANGED,
+                    IssueStatus.CLOSED.name());
+            }
         });
     }
 

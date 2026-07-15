@@ -2,6 +2,7 @@ package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
@@ -38,6 +39,19 @@ public class TenantTimelineController {
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
         final UUID senderId, final String senderName, final TenantTimelineJson timeline,
         final List<UUID> attachmentIds) {
+        return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName,
+            timeline.getPurpose(), timeline.getMessage(), attachmentIds);
+    }
+
+    @Transactional
+    public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
+        final UUID senderId, final String senderName, final MessagePurpose purpose, final String message) {
+        return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName, purpose, message, null);
+    }
+
+    private TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
+        final UUID senderId, final String senderName, final MessagePurpose purpose, final String message,
+        final List<UUID> attachmentIds) {
         logger.infov("Creating tenant timeline entry (issueId={0}, projectId={1}, tenancyId={2})",
             issueId, projectId, tenancyId);
 
@@ -52,8 +66,8 @@ public class TenantTimelineController {
         entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(senderId);
         entity.setSenderName(senderName);
-        entity.setTitle(timeline.getTitle());
-        entity.setMessage(timeline.getMessage());
+        entity.setPurpose(purpose);
+        entity.setMessage(message);
 
         final Instant now = Instant.now();
         entity.setCreatedAt(now);

@@ -20,8 +20,8 @@ public interface TenantTimelineModel {
     
     String getSenderName();
     
-    String getTitle();
-    
+    MessagePurpose getPurpose();
+
     String getMessage();
     
     Instant getCreatedAt();

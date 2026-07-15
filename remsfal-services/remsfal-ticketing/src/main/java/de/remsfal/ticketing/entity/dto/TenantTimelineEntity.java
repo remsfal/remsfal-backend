@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.entity.dto;
 
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.core.model.ticketing.tenant.TenantTimelineModel;
 
 import jakarta.nosql.Column;
@@ -25,8 +26,8 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
     @Column("sender_name")
     private String senderName;
 
-    @Column("title")
-    private String title;
+    @Column("purpose")
+    private String purpose;
 
     @Column("message")
     private String message;
@@ -102,12 +103,16 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
     }
 
     @Override
-    public String getTitle() {
-        return title;
+    public MessagePurpose getPurpose() {
+        return purpose != null ? MessagePurpose.valueOf(purpose) : null;
     }
 
-    public void setTitle(final String title) {
-        this.title = title;
+    public void setPurpose(final MessagePurpose purpose) {
+        this.purpose = purpose != null ? purpose.name() : null;
+    }
+
+    public void setPurpose(final String purpose) {
+        this.purpose = purpose;
     }
 
     @Override
