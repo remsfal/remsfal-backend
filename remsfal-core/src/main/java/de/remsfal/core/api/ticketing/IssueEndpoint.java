@@ -23,9 +23,11 @@ import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
@@ -49,6 +51,7 @@ public interface IssueEndpoint {
     @Operation(summary = "Retrieve information for all issues of a single project.",
         description = "This method is intended solely for use by a property manager, scoped to exactly one"
         + " project at a time. Tenants must use the separate tenant issues endpoint instead.")
+    @APIResponse(responseCode = "200", description = "Issues retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to read issues of this project")
     IssueListJson getIssues(
@@ -76,7 +79,9 @@ public interface IssueEndpoint {
         description = "Creates a new issue based on the provided issue information."
         + " This method is intended solely for the creation of issues by a property manager.")
     @APIResponse(responseCode = "201", description = "Issue created successfully",
-        headers = @Header(name = "Location", description = "URL of the new issue"))
+        headers = @Header(name = "Location", description = "URL of the new issue"),
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = IssueJson.class)))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createProjectIssue(
         @Parameter(description = "Issue information", required = true)
@@ -87,6 +92,7 @@ public interface IssueEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of an issue.",
         description = "This method is intended solely for use by a property manager.")
+    @APIResponse(responseCode = "200", description = "Issue retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to view this issue")
     @APIResponse(responseCode = "404", description = "The property does not exist")
@@ -99,6 +105,7 @@ public interface IssueEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of an issue.")
+    @APIResponse(responseCode = "200", description = "Issue updated successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The issue does not exist")
     IssueJson updateIssue(

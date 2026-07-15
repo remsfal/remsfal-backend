@@ -27,6 +27,8 @@ import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -58,7 +60,9 @@ public interface ContractorEndpoint {
     @APIResponse(
         responseCode = "201",
         description = "Contractor created successfully",
-        headers = @Header(name = "Location", description = "URL of the new contractor")
+        headers = @Header(name = "Location", description = "URL of the new contractor"),
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = ContractorJson.class))
     )
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")

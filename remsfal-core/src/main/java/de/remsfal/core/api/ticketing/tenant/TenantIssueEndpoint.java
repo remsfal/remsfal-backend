@@ -49,6 +49,7 @@ public interface TenantIssueEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all issues of the calling tenant.",
         description = "Aggregates issues across all rental agreements the caller is a tenant of.")
+    @APIResponse(responseCode = "200", description = "Issues retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     TenantIssueListJson getIssues(
         @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
@@ -79,7 +80,9 @@ public interface TenantIssueEndpoint {
         )
     )
     @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
-        headers = @Header(name = "Location", description = "URL of the new issue"))
+        headers = @Header(name = "Location", description = "URL of the new issue"),
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = TenantIssueJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createIssueWithAttachments(
@@ -89,6 +92,7 @@ public interface TenantIssueEndpoint {
     @Path("/{issueId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of an issue.")
+    @APIResponse(responseCode = "200", description = "Issue retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to view this issue")
     @APIResponse(responseCode = "404", description = "The issue does not exist")

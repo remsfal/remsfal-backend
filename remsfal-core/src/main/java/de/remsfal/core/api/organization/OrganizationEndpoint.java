@@ -30,6 +30,8 @@ import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -95,7 +97,9 @@ public interface OrganizationEndpoint {
     @APIResponse(
         responseCode = "201",
         description = "Organization was created successfully",
-        headers = @Header(name = "Location", description = "URL of the new organization")
+        headers = @Header(name = "Location", description = "URL of the new organization"),
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = OrganizationJson.class))
     )
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createOrganization(

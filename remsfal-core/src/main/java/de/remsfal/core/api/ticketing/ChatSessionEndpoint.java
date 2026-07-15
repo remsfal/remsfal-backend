@@ -14,8 +14,12 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+
+import de.remsfal.core.json.ticketing.ChatSessionJson;
 
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
@@ -28,7 +32,9 @@ public interface ChatSessionEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new chat session")
-    @APIResponse(responseCode = "201", description = "Chat session created")
+    @APIResponse(responseCode = "201", description = "Chat session created",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = ChatSessionJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "404", description = "Project or task not found")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")

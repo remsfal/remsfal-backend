@@ -37,7 +37,9 @@ public interface ChatMessageEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Send a chat message in a chat session")
-    @APIResponse(responseCode = "201", description = "Chat message sent")
+    @APIResponse(responseCode = "201", description = "Chat message sent",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = ChatMessageJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "403", description = "Chat session is closed or archived")
     @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
@@ -121,7 +123,18 @@ public interface ChatMessageEndpoint {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Send a file in a chat session")
-    @APIResponse(responseCode = "201", description = "File sent")
+    @APIResponse(responseCode = "201", description = "File sent",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(
+                type = SchemaType.OBJECT,
+                properties = {
+                    @SchemaProperty(name = "fileId", implementation = UUID.class),
+                    @SchemaProperty(name = "fileUrl", implementation = String.class),
+                    @SchemaProperty(name = "sessionId", implementation = UUID.class),
+                    @SchemaProperty(name = "createdAt", implementation = java.time.Instant.class),
+                    @SchemaProperty(name = "sender", implementation = UUID.class)
+                }
+            )))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "403", description = "Chat session is closed or archived")
     @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")

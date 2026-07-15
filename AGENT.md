@@ -178,6 +178,14 @@ Use `application.properties` with profile-specific overrides:
 - Platform service must be running for other services to validate JWTs
 - Docker Compose requires newer versions supporting `include:` directive
 - Notification service requires SMTP configuration in `.env` file to send emails
+- Every JAX-RS endpoint method must declare an explicit `@APIResponse` for its success status code
+  (e.g. `200` for GET/PATCH/PUT, `201` for creating POSTs) — if the method has *any* `@APIResponse`
+  annotations but none for the success code, SmallRye OpenAPI silently omits the success response
+  from the generated spec entirely (no schema, no entry at all), regardless of the method's actual
+  return type. A bare `@APIResponse(responseCode = "200", description = "...")` without `content` is
+  enough — SmallRye infers the schema from the return type automatically. Only when the method
+  returns the generic JAX-RS `Response` type (not a concrete DTO) does the schema need to be spelled
+  out explicitly via `content = @Content(mediaType = ..., schema = @Schema(implementation = XxxJson.class))`.
 
 ## Observability
 

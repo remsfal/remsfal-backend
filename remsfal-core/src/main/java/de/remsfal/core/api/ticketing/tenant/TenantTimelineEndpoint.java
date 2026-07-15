@@ -57,7 +57,9 @@ public interface TenantTimelineEndpoint {
             )
         )
     )
-    @APIResponse(responseCode = "201", description = "Timeline entry created")
+    @APIResponse(responseCode = "201", description = "Timeline entry created",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = TenantTimelineJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "Issue not found")
