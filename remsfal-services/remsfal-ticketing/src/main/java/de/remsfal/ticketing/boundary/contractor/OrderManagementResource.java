@@ -1,13 +1,14 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.contractor;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
-import de.remsfal.core.api.ticketing.OrderManagementEndpoint;
-import de.remsfal.core.api.ticketing.OrderPlacementEndpoint;
-import de.remsfal.core.api.ticketing.QuotationEndpoint;
+import de.remsfal.core.api.ticketing.contractor.OrderManagementEndpoint;
+import de.remsfal.core.api.ticketing.contractor.OrderPlacementEndpoint;
+import de.remsfal.core.api.ticketing.contractor.QuotationEndpoint;
+import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

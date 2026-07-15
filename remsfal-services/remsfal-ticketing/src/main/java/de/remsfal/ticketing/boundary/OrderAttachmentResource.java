@@ -55,7 +55,7 @@ public class OrderAttachmentResource extends AbstractTicketingResource implement
 
     private OrderProcessPhase processPhase;
 
-    OrderAttachmentResource configure(final OrderProcessPhase processPhase) {
+    public OrderAttachmentResource configure(final OrderProcessPhase processPhase) {
         this.processPhase = processPhase;
         return this;
     }
