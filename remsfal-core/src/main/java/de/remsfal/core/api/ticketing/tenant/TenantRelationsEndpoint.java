@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.core.api.ticketing.tenant;
 
 import jakarta.ws.rs.Path;
 
@@ -10,6 +10,6 @@ public interface TenantRelationsEndpoint {
     String VERSION = "v1";
     String SERVICE = "tenant-relations";
 
-    @Path("issues/{issueId}/" + TenantTimelineEndpoint.SERVICE)
-    TenantTimelineEndpoint getTenantTimelineResource();
+    @Path(TenantIssueEndpoint.SERVICE)
+    TenantIssueEndpoint getTenantIssueResource();
 }

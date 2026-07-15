@@ -1,7 +1,9 @@
-package de.remsfal.core.json.ticketing;
+package de.remsfal.core.json.ticketing.tenant;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ticketing.TenantTimelineModel;
+import de.remsfal.core.json.ticketing.IssueAttachmentJson;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
+import de.remsfal.core.model.ticketing.tenant.TenantTimelineModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -58,7 +60,7 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
 
     @Nullable
     @Override
-    public abstract String getTitle();
+    public abstract MessagePurpose getPurpose();
 
     @Nullable
     @Override
@@ -81,7 +83,7 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
             .attachmentIds(model.getAttachmentIds())
             .senderId(model.getSenderId())
             .senderName(model.getSenderName())
-            .title(model.getTitle())
+            .purpose(model.getPurpose())
             .message(model.getMessage())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt());

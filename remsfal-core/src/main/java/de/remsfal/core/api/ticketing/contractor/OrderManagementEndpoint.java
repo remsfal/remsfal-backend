@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.core.api.ticketing.contractor;
 
 import jakarta.ws.rs.Path;
 

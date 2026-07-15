@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.contractor;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;

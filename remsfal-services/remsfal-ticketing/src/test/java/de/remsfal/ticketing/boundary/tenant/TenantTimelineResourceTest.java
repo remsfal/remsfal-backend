@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.tenant;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
@@ -19,6 +19,7 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
@@ -57,9 +58,12 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
 
     @Test
     void getTimelineEntries_SUCCESS_forTenantIssue() {
-        insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(), "Eintrag 1");
-        insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(), "Eintrag 2");
-        insertTimelineEntry(UUID.randomUUID(), PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(), "Andere Issue");
+        insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
+            MessagePurpose.MESSAGE_SENT);
+        insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
+            MessagePurpose.STATUS_CHANGED);
+        insertTimelineEntry(UUID.randomUUID(), PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
+            MessagePurpose.MESSAGE_SENT);
 
         given()
             .when()
@@ -87,7 +91,7 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void createTimelineEntryWithAttachments_SUCCESS_withoutAttachments() {
         final String timelineJson = "{"
-            + "\"title\":\"Mieter-Update\"," 
+            + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"Bitte um Rueckmeldung\""
             + "}";
 
@@ -105,7 +109,7 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             .body("issueId", equalTo(ISSUE_ID_WITH_AGREEMENT.toString()))
             .body("tenancyId", equalTo(AGREEMENT_ID.toString()))
             .body("projectId", equalTo(PROJECT_ID.toString()))
-            .body("title", equalTo("Mieter-Update"))
+            .body("purpose", equalTo("MESSAGE_SENT"))
             .body("message", equalTo("Bitte um Rueckmeldung"));
     }
 
@@ -121,7 +125,7 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     }
 
     private void insertTimelineEntry(final UUID issueId, final UUID projectId, final UUID tenancyId,
-        final UUID timelineId, final String title) {
+        final UUID timelineId, final MessagePurpose purpose) {
         TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
@@ -132,8 +136,8 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
         entity.setKey(key);
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Tenant");
-        entity.setTitle(title);
-        entity.setMessage("Message " + title);
+        entity.setPurpose(purpose);
+        entity.setMessage("Message " + purpose);
 
         Instant now = Instant.now();
         entity.setCreatedAt(now);
@@ -141,10 +145,11 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
 
         cqlSession.execute("INSERT INTO remsfal.tenant_timelines "
             + "(tenancy_id, issue_id, timeline_id, project_id, attachment_id, sender_id, sender_name, "
-            + "title, message, created_at, modified_at) "
+            + "purpose, message, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             entity.getTenancyId(), entity.getIssueId(), entity.getTimelineId(), entity.getProjectId(),
-            entity.getAttachmentIds(), entity.getSenderId(), entity.getSenderName(), entity.getTitle(),
+            entity.getAttachmentIds(), entity.getSenderId(), entity.getSenderName(),
+            entity.getPurpose() != null ? entity.getPurpose().name() : null,
             entity.getMessage(), entity.getCreatedAt(), entity.getModifiedAt());
     }
 

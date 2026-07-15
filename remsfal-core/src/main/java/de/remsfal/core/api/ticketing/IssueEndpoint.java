@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -34,7 +33,6 @@ import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -48,17 +46,14 @@ public interface IssueEndpoint {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information for all issues.")
+    @Operation(summary = "Retrieve information for all issues of a single project.",
+        description = "This method is intended solely for use by a property manager, scoped to exactly one"
+        + " project at a time. Tenants must use the separate tenant issues endpoint instead.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to read issues of this project")
     IssueListJson getIssues(
-        @Parameter(description = "Offset of the first project to return")
-        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
-        @Parameter(description = "Maximum number of projects to return")
-        @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit,
-        @Parameter(description = "Whether to prefer tenancy issues over project issues")
-        @QueryParam("preferTenancyIssues") @DefaultValue("false") boolean preferTenancyIssues,
-        @Parameter(description = "Filter to return only issues of a specific project")
-        @QueryParam("projectId") UUID projectId,
+        @Parameter(description = "ID of the project to return issues of", required = true)
+        @QueryParam("projectId") @NotNull UUID projectId,
         @Parameter(description = "Filter to return only issues of a assigned user")
         @QueryParam("assigneeId") UUID assigneeId,
         @Parameter(description = "Filter to return only issuesfor a specific rental agreement")
@@ -68,7 +63,11 @@ public interface IssueEndpoint {
         @Parameter(description = "Filter to return only issuesfor a specific rental unit")
         @QueryParam("rentalUnitId") UUID rentalUnitId,
         @Parameter(description = "Filter to return only issues with a specific status")
-        @QueryParam("status") IssueStatus status);
+        @QueryParam("status") IssueStatus status,
+        @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
+        @QueryParam("cursor") String cursor,
+        @Parameter(description = "Maximum number of issues to return")
+        @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -83,25 +82,13 @@ public interface IssueEndpoint {
         @Parameter(description = "Issue information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
 
-    @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new issue with multiple image attachments.",
-        description = "Creates a new issue based on the provided issue information and attaches multiple image files"
-        + " to it. This method is intended solely for the creation of issues by a tenant.")
-    @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
-        headers = @Header(name = "Location", description = "URL of the new issue"))
-    @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
-    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createTenancyIssueWithAttachments(
-        @Parameter(description = "Multipart form data containing issue information and image files", required = true)
-        MultipartFormDataInput input);
-
     @GET
     @Path("/{issueId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of an issue.")
+    @Operation(summary = "Retrieve information of an issue.",
+        description = "This method is intended solely for use by a property manager.")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "User does not have permission to view this issue")
     @APIResponse(responseCode = "404", description = "The property does not exist")
     IssueJson getIssue(
         @Parameter(description = "ID of the issue", required = true)

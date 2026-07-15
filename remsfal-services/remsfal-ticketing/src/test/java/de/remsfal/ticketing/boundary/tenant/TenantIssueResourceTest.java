@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.tenant;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
@@ -12,12 +12,8 @@ import static org.hamcrest.Matchers.startsWith;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
@@ -26,18 +22,21 @@ import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class TenancyIssueResourceTest extends AbstractTicketingTest {
+class TenantIssueResourceTest extends AbstractTicketingTest {
 
-    static final String BASE_PATH = "/ticketing/v1/issues";
+    static final String BASE_PATH = "/ticketing/v1/tenant-relations/issues";
 
-    // --- Create Tenancy Issue ---
+    private static final String MANAGER_ISSUE_PATH = "/ticketing/v1/issues";
+
+    // --- Create Issue With Attachments ---
 
     @Test
-    void createTenancyIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
+    void createIssueWithAttachments_SUCCESS_issueWithAttachmentsIsCreated() {
         final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_3 + "\","
             + "\"type\":\"DEFECT\","
@@ -70,6 +69,7 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
             .body("status", equalTo("PENDING"))
             .body("category", equalTo("WATER_DAMAGE"))
             .body("priority", nullValue())
+            .body("assigneeId", nullValue())
             .body("agreementId", equalTo(TicketingTestData.AGREEMENT_ID.toString()))
             .body("attachments", hasSize(3))
             .body("attachments[0].issueId", notNullValue())
@@ -92,7 +92,7 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createTenancyIssueWithAttachments_SUCCESS_issueWithoutAttachmentsIsCreated() {
+    void createIssueWithAttachments_SUCCESS_issueWithoutAttachmentsIsCreated() {
         final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_4 + "\","
             + "\"type\":\"TERMINATION\","
@@ -112,13 +112,12 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
             .body("title", equalTo(TicketingTestData.ISSUE_TITLE_4))
             .body("type", equalTo("TERMINATION"))
             .body("status", equalTo("PENDING"))
-            .body("isVisibleForTenant", nullValue())
             .body("projectId", nullValue())
             .body("attachments", hasSize(0));
     }
 
     @Test
-    void createTenancyIssueWithAttachments_FAILED_noAuthentication() {
+    void createIssueWithAttachments_FAILED_noAuthentication() {
         final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_4 + "\","
             + "\"type\":\"TERMINATION\","
@@ -134,7 +133,7 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createTenancyIssueWithAttachments_FAILED_missingTypeFields() {
+    void createIssueWithAttachments_FAILED_missingTypeField() {
         final String issueJson = "{ \"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_4 + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION_4 + "\""
@@ -150,61 +149,41 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
             .statusCode(400);
     }
 
-    // --- List Issues (Tenant) ---
-
     @Test
-    void getIssues_SUCCESS_tenantWithUnauthorizedTenancyIdIsIgnored() {
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("agreementId", UUID.randomUUID().toString())
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("issues", hasSize(0))
-            .body("size", equalTo(0));
-    }
-
-    @Test
-    void getIssues_SUCCESS_tenantWithoutSpecificTenancyId() {
-        final String createJson1 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Tenant Issue 1\","
-            + "\"type\":\"TASK\""
+    void createIssueWithAttachments_FAILED_unrelatedAgreement() {
+        final String issueJson = "{ \"agreementId\":\"" + UUID.randomUUID() + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_4 + "\","
+            + "\"type\":\"TERMINATION\","
+            + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION_4 + "\""
             + "}";
 
         given()
             .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson1)
-            .post(BASE_PATH);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_tenantFiltersByStatus() {
-        final String createJson1 = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Open Issue\","
-            + "\"type\":\"DEFECT\","
-            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson1)
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .multiPart("issue", issueJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(BASE_PATH)
+            .then()
+            .statusCode(403);
+    }
+
+    // --- List Issues ---
+
+    @Test
+    void getIssues_SUCCESS_aggregatesVisibleIssuesAcrossTenantAgreements() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"Agreement Specific Issue\","
+            + "\"type\":\"TASK\","
+            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
+            + "\"visibleToTenants\":true"
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(MANAGER_ISSUE_PATH)
             .then()
             .statusCode(201);
 
@@ -212,50 +191,21 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
                 TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("status", "OPEN")
             .get(BASE_PATH)
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("issues", hasSize(1))
-            .body("issues[0].title", equalTo("Open Issue"));
+            .body("issues[0].title", equalTo("Agreement Specific Issue"))
+            .body("nextCursor", nullValue());
     }
 
     @Test
-    void getIssues_SUCCESS_handlesNullIssuesInDeduplication() {
+    void getIssues_SUCCESS_returnsEmptyListForUserWithNoTenancies() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_handlesIssueWithNullId() {
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    @Test
-    void getIssues_SUCCESS_agreementIssuesForMember() {
-        given()
-            .when()
-            .cookie(buildCookie(
-                TicketingTestData.USER_ID,
-                TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_FIRST_NAME,
-                Map.of(), Map.of(),
-                TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("agreementId", TicketingTestData.AGREEMENT_ID.toString())
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com",
+                "Contractor", Map.of(), Map.of(), Map.of()))
             .get(BASE_PATH)
             .then()
             .statusCode(200)
@@ -265,114 +215,157 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getIssues_SUCCESS_tenantWithSpecificAgreementIdGetsIssues() {
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Agreement Specific Issue\","
-            + "\"type\":\"TASK\""
-            + "}";
-
+    void getIssues_FAILED_noAuthentication() {
         given()
             .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH);
-
-        UUID agreementId = UUID.fromString(TicketingTestData.TENANT_PROJECT_ROLES.keySet().iterator().next());
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .queryParam("agreementId", agreementId.toString())
             .get(BASE_PATH)
             .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
+            .statusCode(401);
     }
 
-    @ParameterizedTest
-    @MethodSource("provideIssueTestCases")
-    void getIssues_SUCCESS_variousScenarios(String title, String description) {
-        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"" + title + "\","
-            + "\"type\":\"TASK\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(createJson)
-            .post(BASE_PATH);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
-                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
-            .get(BASE_PATH)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON);
-    }
-
-    private static Stream<Arguments> provideIssueTestCases() {
-        return Stream.of(
-            Arguments.of("Dedupe Issue", "Deduplication of issues"),
-            Arguments.of("Combined Role Issue", "User with both tenant and contractor roles"),
-            Arguments.of("No Filter Issue", "Without status filter"));
-    }
-
-    // --- Contractor Access ---
+    // --- Get Issue ---
 
     @Test
-    void getIssues_SUCCESS_contractorAsParticipantWithDeletedIssue() {
+    void getIssue_SUCCESS_tenantGetsOwnIssue() {
+        final String issueId = createManagerVisibleIssueForTenant("Tenant Detail Issue");
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("id", equalTo(issueId))
+            .body("title", equalTo("Tenant Detail Issue"))
+            .body("projectId", nullValue())
+            .body("priority", nullValue())
+            .body("assigneeId", nullValue());
+    }
+
+    @Test
+    void getIssue_FAILED_tenantCannotAccessIssueOfUnrelatedAgreement() {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
-            + "\"title\":\"Contractor Issue\","
-            + "\"type\":\"TASK\""
+            + "\"title\":\"Unrelated Agreement Issue\","
+            + "\"type\":\"TASK\","
+            + "\"agreementId\":\"" + UUID.randomUUID() + "\","
+            + "\"visibleToTenants\":true"
             + "}";
 
-        String issueId = given()
+        final String issueId = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body(createJson)
-            .post(BASE_PATH)
-            .thenReturn()
+            .post(MANAGER_ISSUE_PATH)
             .then()
-            .contentType(MediaType.APPLICATION_JSON)
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void getIssue_FAILED_managerCannotUseTenantEndpoint() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"Manager Owned Issue\","
+            + "\"type\":\"TASK\""
+            + "}";
+
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(MANAGER_ISSUE_PATH)
+            .then()
+            .statusCode(201)
             .extract().path("id");
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(403);
+    }
+
+    // --- Close Issue ---
+
+    @Test
+    void closeIssue_SUCCESS_setsStatusToClosed() {
+        final String issueId = createManagerVisibleIssueForTenant("Issue To Close");
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
             .delete(BASE_PATH + "/" + issueId)
             .then()
             .statusCode(204);
 
         given()
             .when()
-            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com",
-                "Contractor", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH)
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(MANAGER_ISSUE_PATH + "/" + issueId)
             .then()
             .statusCode(200)
-            .contentType(ContentType.JSON);
+            .body("status", equalTo("CLOSED"));
     }
 
     @Test
-    void getIssues_SUCCESS_contractorWithNoParticipations() {
+    void closeIssue_FAILED_tenantCannotCloseIssueOfUnrelatedAgreement() {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"Unrelated Agreement Issue\","
+            + "\"type\":\"TASK\","
+            + "\"agreementId\":\"" + UUID.randomUUID() + "\","
+            + "\"visibleToTenants\":true"
+            + "}";
+
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(MANAGER_ISSUE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
         given()
             .when()
-            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com",
-                "Contractor", Map.of(), Map.of(), Map.of()))
-            .get(BASE_PATH)
+            .cookie(buildCookie(TicketingTestData.USER_ID_1, TicketingTestData.USER_EMAIL_1,
+                TicketingTestData.USER_FIRST_NAME_1, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .delete(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(403);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(MANAGER_ISSUE_PATH + "/" + issueId)
             .then()
             .statusCode(200)
-            .contentType(ContentType.JSON);
+            .body("status", equalTo("OPEN"));
     }
 
-    // --- Download Attachment (Tenant) ---
+    @Test
+    void closeIssue_FAILED_noAuthentication() {
+        given()
+            .when()
+            .delete(BASE_PATH + "/" + UUID.randomUUID())
+            .then()
+            .statusCode(401);
+    }
+
+    // --- Download Attachment ---
 
     @Test
     void downloadAttachment_SUCCESS_tenantDownloadsAttachment() throws Exception {
@@ -388,6 +381,42 @@ class TenancyIssueResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .header("Content-Disposition", containsString("attachment"));
+    }
+
+    @Test
+    void downloadAttachment_FAILED_managerCannotUseTenantEndpoint() throws Exception {
+        setupTestIssuesWithAttachment();
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
+            .then()
+            .statusCode(403);
+    }
+
+    // --- Helper ---
+
+    private String createManagerVisibleIssueForTenant(final String title) {
+        final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + title + "\","
+            + "\"type\":\"TASK\","
+            + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
+            + "\"visibleToTenants\":true"
+            + "}";
+
+        final Response createResponse = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(createJson)
+            .post(MANAGER_ISSUE_PATH)
+            .thenReturn();
+
+        return createResponse.then()
+            .statusCode(201)
+            .extract().path("id");
     }
 
 }

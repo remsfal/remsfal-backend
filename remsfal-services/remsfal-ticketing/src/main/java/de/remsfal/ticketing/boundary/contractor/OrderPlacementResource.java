@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.contractor;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
@@ -10,11 +10,13 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
-import de.remsfal.core.api.ticketing.OrderPlacementEndpoint;
+import de.remsfal.core.api.ticketing.contractor.OrderPlacementEndpoint;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
 import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.ticketing.boundary.AbstractTicketingResource;
+import de.remsfal.ticketing.boundary.OrderAttachmentResource;
 import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
 

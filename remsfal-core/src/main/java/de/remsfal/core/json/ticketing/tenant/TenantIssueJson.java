@@ -1,4 +1,4 @@
-package de.remsfal.core.json.ticketing;
+package de.remsfal.core.json.ticketing.tenant;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -19,21 +19,24 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
-import de.remsfal.core.validation.PatchValidation;
-import de.remsfal.core.validation.PostValidation;
 
 /**
+ * The issue representation exposed to tenants only: excludes project-management-internal fields
+ * (projectId, priority, assigneeId, visibleToTenants, all issue relations) that a tenant must
+ * never see or set, to avoid leaking data across the manager/tenant boundary.
+ *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "An issue")
-@JsonDeserialize(as = ImmutableIssueJson.class)
+@Schema(description = "An issue, as visible to the tenant who reported it or is affected by it")
+@JsonDeserialize(as = ImmutableTenantIssueJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class IssueJson implements IssueModel {
+public abstract class TenantIssueJson implements IssueModel {
 
     @Null
     @Nullable
@@ -41,9 +44,9 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getId();
 
-    @NotNull(groups = PostValidation.class)
-    @Null(groups = PatchValidation.class)
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract UUID getProjectId();
 
@@ -53,13 +56,13 @@ public abstract class IssueJson implements IssueModel {
     public abstract Instant getModifiedAt();
 
     @NullOrNotBlank
-    @NotBlank(groups = PostValidation.class)
+    @NotBlank
     @Size(max = 255)
     @Nullable
     @Override
     public abstract String getTitle();
 
-    @NotNull(groups = PostValidation.class)
+    @NotNull
     @Nullable
     @Override
     public abstract IssueType getType();
@@ -68,12 +71,15 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract IssueCategory getCategory();
 
-    @Null(groups = PostValidation.class)
+    @Null
     @Nullable
+    @Schema(readOnly = true)
     @Override
     public abstract IssueStatus getStatus();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract IssuePriority getPriority();
 
@@ -89,11 +95,14 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract String getReportedBy();
 
+    @NotNull
     @Nullable
     @Override
     public abstract UUID getAgreementId();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract Boolean isVisibleToTenants();
 
@@ -105,8 +114,9 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UnitType getRentalUnitType();
 
-    @Null(groups = PostValidation.class)
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract UUID getAssigneeId();
 
@@ -114,31 +124,44 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract String getLocation();
 
+    @NotNull
     @Nullable
     @Override
     public abstract String getDescription();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract UUID getParentIssue();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract Set<UUID> getChildrenIssues();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract Set<UUID> getRelatedTo();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract Set<UUID> getDuplicateOf();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract Set<UUID> getBlockedBy();
 
+    @Null
     @Nullable
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract Set<UUID> getBlocks();
 
@@ -146,51 +169,37 @@ public abstract class IssueJson implements IssueModel {
     public abstract List<IssueAttachmentJson> getAttachments();
 
     /**
-     * Creates a complete {@link IssueJson} DTO from the given {@link IssueModel}, including all available fields.
-     * <p>
-     * This method is intended for internal or privileged users and exposes all information from the IssueModel. All
-     * fields are mapped to the resulting IssueJson instance.
+     * Creates a {@link TenantIssueJson} DTO from the given {@link IssueModel}, exposing only the
+     * fields a tenant is allowed to see.
      *
      * @param model the source {@link IssueModel}
-     * @return an immutable {@link IssueJson} containing all fields
+     * @return an immutable {@link TenantIssueJson} containing only tenant-visible fields
      */
-    public static IssueJson valueOfProjectIssue(final IssueModel model) {
-        return ImmutableIssueJson.builder()
+    public static TenantIssueJson valueOfTenancyIssue(final IssueModel model) {
+        return ImmutableTenantIssueJson.builder()
             .id(model.getId())
-            .projectId(model.getProjectId())
             .modifiedAt(model.getModifiedAt())
             .title(model.getTitle())
             .type(model.getType())
             .category(model.getCategory())
             .status(model.getStatus())
-            .priority(model.getPriority())
             .reporterId(model.getReporterId())
             .reportedBy(model.getReportedBy())
             .agreementId(model.getAgreementId())
-            .visibleToTenants(model.isVisibleToTenants())
             .rentalUnitId(model.getRentalUnitId())
             .rentalUnitType(model.getRentalUnitType())
-            .assigneeId(model.getAssigneeId())
             .location(model.getLocation())
             .description(model.getDescription())
-            .parentIssue(model.getParentIssue())
-            .childrenIssues(model.getChildrenIssues())
-            .relatedTo(model.getRelatedTo())
-            .duplicateOf(model.getDuplicateOf())
-            .blockedBy(model.getBlockedBy())
-            .blocks(model.getBlocks())
+            // projectId, priority, assigneeId, visibleToTenants and all relations are omitted
             .build();
     }
 
     /**
-     * Creates a new {@link IssueJson} instance with attachments added to an existing issue.
-     * <p>
-     * This method allows adding attachment information to an IssueJson without modifying the core model.
-     * Useful for lazy-loading attachments only when needed.
+     * Creates a new {@link TenantIssueJson} instance with attachments added to an existing issue.
      *
      * @param attachments the list of attachments to add
-     * @return an immutable {@link IssueJson} with attachments included
+     * @return an immutable {@link TenantIssueJson} with attachments included
      */
-    public abstract IssueJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
+    public abstract TenantIssueJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

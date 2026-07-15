@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.12-tenant-timelines-purpose" author="test">
+        <comment>Replace free-text title with a fixed MessagePurpose enum column</comment>
+        <sql>ALTER TABLE REMSFAL.tenant_timelines DROP title;</sql>
+        <sql>ALTER TABLE REMSFAL.tenant_timelines ADD purpose TEXT;</sql>
+        <rollback>
+            <sql>ALTER TABLE REMSFAL.tenant_timelines DROP purpose;</sql>
+            <sql>ALTER TABLE REMSFAL.tenant_timelines ADD title TEXT;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

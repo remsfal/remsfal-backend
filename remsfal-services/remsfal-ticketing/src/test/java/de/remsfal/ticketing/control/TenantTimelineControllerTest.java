@@ -13,8 +13,9 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.core.json.ticketing.ImmutableTenantTimelineJson;
-import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.json.ticketing.tenant.ImmutableTenantTimelineJson;
+import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
@@ -42,7 +43,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         List<UUID> attachmentIds = List.of(UUID.randomUUID(), UUID.randomUUID());
 
         TenantTimelineJson timeline = ImmutableTenantTimelineJson.builder()
-            .title("Neue Timeline")
+            .purpose(MessagePurpose.MESSAGE_SENT)
             .message("Eintrag aus Controller-Test")
             .build();
 
@@ -61,7 +62,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         assertEquals(projectId, created.getProjectId());
         assertEquals(senderId, created.getSenderId());
         assertEquals("Max Mustermann", created.getSenderName());
-        assertEquals("Neue Timeline", created.getTitle());
+        assertEquals(MessagePurpose.MESSAGE_SENT, created.getPurpose());
         assertEquals("Eintrag aus Controller-Test", created.getMessage());
         assertEquals(attachmentIds, created.getAttachmentIds());
         assertNotNull(created.getCreatedAt());
@@ -76,9 +77,12 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
 
-        TenantTimelineEntity first = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(), "A");
-        TenantTimelineEntity second = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(), "B");
-        TenantTimelineEntity otherIssue = createEntity(tenancyId, UUID.randomUUID(), projectId, UUID.randomUUID(), "X");
+        TenantTimelineEntity first = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
+            MessagePurpose.MESSAGE_SENT);
+        TenantTimelineEntity second = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
+            MessagePurpose.MESSAGE_SENT);
+        TenantTimelineEntity otherIssue = createEntity(tenancyId, UUID.randomUUID(), projectId, UUID.randomUUID(),
+            MessagePurpose.MESSAGE_SENT);
 
         repository.insert(first);
         repository.insert(second);
@@ -93,7 +97,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
     }
 
     private TenantTimelineEntity createEntity(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UUID timelineId, final String title) {
+        final UUID timelineId, final MessagePurpose purpose) {
         TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
@@ -105,14 +109,44 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         entity.setAttachmentIds(List.of(UUID.randomUUID()));
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Tester");
-        entity.setTitle(title);
-        entity.setMessage("Message " + title);
+        entity.setPurpose(purpose);
+        entity.setMessage("Message " + purpose);
 
         Instant now = Instant.now();
         entity.setCreatedAt(now);
         entity.setModifiedAt(now);
 
         return entity;
+    }
+
+    @Test
+    void testCreateTimelineEntry_withPurposeAndMessage_persistsSystemGeneratedEntry() {
+        UUID tenancyId = UUID.randomUUID();
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID senderId = UUID.randomUUID();
+
+        TenantTimelineEntity created = controller.createTimelineEntry(
+            tenancyId,
+            issueId,
+            projectId,
+            senderId,
+            "System",
+            MessagePurpose.ISSUE_CREATED,
+            "Die Heizung ist defekt");
+
+        assertNotNull(created.getTimelineId());
+        assertEquals(tenancyId, created.getTenancyId());
+        assertEquals(issueId, created.getIssueId());
+        assertEquals(projectId, created.getProjectId());
+        assertEquals(senderId, created.getSenderId());
+        assertEquals("System", created.getSenderName());
+        assertEquals(MessagePurpose.ISSUE_CREATED, created.getPurpose());
+        assertEquals("Die Heizung ist defekt", created.getMessage());
+        assertNotNull(created.getCreatedAt());
+        assertNotNull(created.getModifiedAt());
+
+        assertTrue(repository.findById(created.getKey()).isPresent());
     }
 
 }

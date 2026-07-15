@@ -13,11 +13,15 @@ import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,14 +40,22 @@ public class IssueController {
     @Inject
     IssueEventProducer issueEventProducer;
 
+    @Inject
+    TenantTimelineController tenantTimelineController;
+
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN);
+        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN, false);
     }
 
     public IssueModel createIssue(final UserModel user, final IssueModel issue,
         final UUID projectId, final IssueStatus initialStatus) {
+        return createIssue(user, issue, projectId, initialStatus, true);
+    }
+
+    private IssueModel createIssue(final UserModel user, final IssueModel issue,
+        final UUID projectId, final IssueStatus initialStatus, final boolean alwaysNotifyTenant) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
         IssueEntity entity = new IssueEntity();
@@ -78,6 +90,13 @@ public class IssueController {
 
         entity = issueRepository.insert(entity);
         issueEventProducer.sendIssueCreated(entity, user);
+
+        if (entity.getAgreementId() != null
+            && (alwaysNotifyTenant || Boolean.TRUE.equals(entity.isVisibleToTenants()))) {
+            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+                entity.getProjectId(), user.getId(), user.getName(),
+                MessagePurpose.ISSUE_CREATED, entity.getDescription());
+        }
         return entity;
     }
 
@@ -87,26 +106,39 @@ public class IssueController {
                 .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
     }
 
-    public List<? extends IssueModel> getTenancyIssues(final List<UUID> projectIds,
-        final List<UUID> agreementIds, final IssueStatus status,
-        final Integer offset, final Integer limit) {
-        return getIssues(projectIds, null, agreementIds,
-            null, null, status, true, offset, limit);
+    /**
+     * Aggregates issues across all rental agreements the caller is a tenant of. Cassandra cannot
+     * combine an {@code IN} restriction on the partition key ({@code project_id}) with SAI filters,
+     * so this issues one single-partition query per {@code (agreementId, projectId)} pair and merges
+     * the results here. Each partition's rows already arrive sorted by {@code issue_id} descending
+     * (the table's clustering order), so merging is a simple sort of the small
+     * {@code partitions × limit} candidate set, not a full re-sort of the whole result.
+     */
+    public List<? extends IssueModel> getTenancyIssues(final UUID cursor, final Integer limit) {
+        final Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
+        if (tenancyProjects.isEmpty()) {
+            return List.of();
+        }
+        final List<IssueEntity> merged = new ArrayList<>();
+        for (final Map.Entry<UUID, UUID> tenancy : tenancyProjects.entrySet()) {
+            final UUID agreementId = tenancy.getKey();
+            final UUID projectId = tenancy.getValue();
+            merged.addAll(issueRepository.findByQuery(projectId, null, agreementId,
+                null, null, null, true, cursor, limit));
+        }
+        merged.sort(Comparator.comparing(IssueEntity::getId, Comparator.reverseOrder()));
+        return merged.size() > limit ? merged.subList(0, limit) : merged;
     }
 
-    public List<? extends IssueModel> getProjectIssues(final List<UUID> projectIds, final UUID assigneeId,
-        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final Integer offset, final Integer limit) {
-        return getIssues(projectIds, assigneeId, agreementIds,
-            rentalType, rentalId, status, false, offset, limit);
-    }
-
-    protected List<? extends IssueModel> getIssues(final List<UUID> projectIds, final UUID assigneeId,
-        final List<UUID> agreementIds, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final boolean onlyVisibleToTenants,
-        final Integer offset, final Integer limit) {
-        return issueRepository.findByQuery(projectIds, assigneeId, agreementIds, rentalType, rentalId,
-            status, onlyVisibleToTenants, offset, limit);
+    /**
+     * Fetches issues of a single project. Since the caller (a project manager) is always scoped to
+     * exactly one project, this is a single-partition query with no fan-out or merge needed.
+     */
+    public List<? extends IssueModel> getProjectIssues(final UUID projectId, final UUID assigneeId,
+        final UUID agreementId, final UnitType rentalType, final UUID rentalId,
+        final IssueStatus status, final UUID cursor, final Integer limit) {
+        return issueRepository.findByQuery(projectId, assigneeId, agreementId,
+            rentalType, rentalId, status, false, cursor, limit);
     }
 
     public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
@@ -114,6 +146,7 @@ public class IssueController {
 
         final IssueEntity entity = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
+        final IssueStatus oldStatus = entity.getStatus();
 
         entity.touch();
         if (issue.getTitle() != null) {
@@ -143,6 +176,13 @@ public class IssueController {
         // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via PATCH
 
+        if (entity.getAgreementId() != null && Boolean.TRUE.equals(entity.isVisibleToTenants())
+            && issue.getStatus() != null && issue.getStatus() != oldStatus) {
+            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+                entity.getProjectId(), principal.getId(), principal.getName(),
+                MessagePurpose.STATUS_CHANGED, entity.getStatus().name());
+        }
+
         return issueRepository.update(entity);
     }
 
@@ -160,8 +200,15 @@ public class IssueController {
         logger.infov("Closing issue (issueId={0})", issueId);
         final Optional<IssueEntity> entity = issueRepository.findByIssueId(issueId);
         entity.ifPresent((e) -> {
+            final IssueStatus oldStatus = e.getStatus();
             e.setStatus(IssueStatus.CLOSED);
             issueRepository.update(e);
+            if (oldStatus != IssueStatus.CLOSED && e.getAgreementId() != null
+                && Boolean.TRUE.equals(e.isVisibleToTenants())) {
+                tenantTimelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
+                    principal.getId(), principal.getName(), MessagePurpose.STATUS_CHANGED,
+                    IssueStatus.CLOSED.name());
+            }
         });
     }
 

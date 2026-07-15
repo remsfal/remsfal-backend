@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
@@ -36,14 +37,14 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
         UUID timelineId = UUID.randomUUID();
 
         TenantTimelineEntity entity = createEntity(tenancyId, issueId, projectId, timelineId,
-            "Eintrag 1", "Nachricht 1");
+            MessagePurpose.ISSUE_CREATED, "Nachricht 1");
         repository.insert(entity);
 
         Optional<TenantTimelineEntity> found = repository.findById(entity.getKey());
 
         assertTrue(found.isPresent());
         assertEquals(timelineId, found.get().getTimelineId());
-        assertEquals("Eintrag 1", found.get().getTitle());
+        assertEquals(MessagePurpose.ISSUE_CREATED, found.get().getPurpose());
         assertEquals("Nachricht 1", found.get().getMessage());
         assertEquals(2, found.get().getAttachmentIds().size());
     }
@@ -55,11 +56,11 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
         UUID projectId = UUID.randomUUID();
 
         TenantTimelineEntity first = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
-            "Eintrag A", "Nachricht A");
+            MessagePurpose.MESSAGE_SENT, "Nachricht A");
         TenantTimelineEntity second = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
-            "Eintrag B", "Nachricht B");
+            MessagePurpose.MESSAGE_SENT, "Nachricht B");
         TenantTimelineEntity otherIssue = createEntity(tenancyId, UUID.randomUUID(), projectId, UUID.randomUUID(),
-            "Andere", "Andere Nachricht");
+            MessagePurpose.MESSAGE_SENT, "Andere Nachricht");
 
         repository.insert(first);
         repository.insert(second);
@@ -85,7 +86,7 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
     }
 
     private TenantTimelineEntity createEntity(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UUID timelineId, final String title, final String message) {
+        final UUID timelineId, final MessagePurpose purpose, final String message) {
         TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
@@ -97,7 +98,7 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
         entity.setAttachmentIds(List.of(UUID.randomUUID(), UUID.randomUUID()));
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Tester");
-        entity.setTitle(title);
+        entity.setPurpose(purpose);
         entity.setMessage(message);
 
         Instant now = Instant.now();

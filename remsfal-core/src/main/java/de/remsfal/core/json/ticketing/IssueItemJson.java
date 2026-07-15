@@ -31,6 +31,9 @@ public abstract class IssueItemJson {
     @Schema(description = "Unique identifier of the issue", readOnly = true)
     public abstract UUID getId();
 
+    @Schema(description = "Unique identifier of the project this issue belongs to", readOnly = true)
+    public abstract UUID getProjectId();
+
     @Schema(description = "Last modification timestamp of the issue", readOnly = true)
     @Nullable
     public abstract Instant getModifiedAt();
@@ -60,6 +63,7 @@ public abstract class IssueItemJson {
     public static IssueItemJson valueOfProjectIssue(final IssueModel model) {
         return ImmutableIssueItemJson.builder()
             .id(model.getId())
+            .projectId(model.getProjectId())
             .modifiedAt(model.getModifiedAt())
             .name(model.getTitle())
             .title(model.getTitle())
@@ -67,18 +71,6 @@ public abstract class IssueItemJson {
             .status(model.getStatus())
             .priority(model.getPriority())
             .assigneeId(model.getAssigneeId())
-            .build();
-    }
-
-    public static IssueItemJson valueOfTenancyIssue(final IssueModel model) {
-        return ImmutableIssueItemJson.builder()
-            .id(model.getId())
-            .modifiedAt(model.getModifiedAt())
-            .name(model.getTitle())
-            .title(model.getTitle())
-            .type(model.getType())
-            .status(model.getStatus())
-            // priority, assigneeId are omitted
             .build();
     }
 

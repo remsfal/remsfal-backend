@@ -36,7 +36,7 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
 
     @Override
     public Response downloadAttachment(final UUID issueId, final UUID attachmentId, final String filename) {
-        checkIssueReadPermissions(issueId);
+        checkManagerIssueReadPermissions(issueId);
 
         IssueAttachmentEntity attachment = attachmentController.getAttachment(issueId, attachmentId);
         InputStream fileStream = attachmentController.downloadAttachment(attachment.getObjectName());
@@ -73,7 +73,7 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
             .build();
     }
 
-    List<IssueAttachmentJson> processAttachmentParts(final UUID issueId, final List<InputPart> fileParts) {
+    public List<IssueAttachmentJson> processAttachmentParts(final UUID issueId, final List<InputPart> fileParts) {
         List<IssueAttachmentJson> attachments = new ArrayList<>();
         if (fileParts != null && !fileParts.isEmpty()) {
             for (InputPart inputPart : fileParts) {
