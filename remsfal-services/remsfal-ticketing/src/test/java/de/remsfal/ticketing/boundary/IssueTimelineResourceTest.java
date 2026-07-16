@@ -19,6 +19,7 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
+import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -157,6 +158,31 @@ class IssueTimelineResourceTest extends AbstractTicketingTest {
             .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
             .statusCode(400);
+    }
+
+    @Test
+    void createTimelineEntryWithAttachments_FAILED_cannotReferenceExistingAttachment() {
+        // an attachment already on the issue, not uploaded as part of this request
+        final UUID existingAttachmentId = UUID.randomUUID();
+        insertAttachment(ISSUE_ID_WITH_AGREEMENT, existingAttachmentId, TicketingTestData.ATTACHMENT_FILE_PATH_2,
+            TicketingTestData.ATTACHMENT_FILE_TYPE_2, "/issues/" + ISSUE_ID_WITH_AGREEMENT + "/attachments/"
+                + existingAttachmentId + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_2, UUID.randomUUID());
+
+        final String timelineJson = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"Handwerker beauftragt\","
+            + "\"attachments\":[{\"attachmentId\":\"" + existingAttachmentId + "\"}]"
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("attachments", hasSize(0));
     }
 
 }

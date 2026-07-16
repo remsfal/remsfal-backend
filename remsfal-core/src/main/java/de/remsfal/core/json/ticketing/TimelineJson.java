@@ -8,6 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -61,6 +62,7 @@ public abstract class TimelineJson implements TimelineModel {
 
     @Null
     @Nullable
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(readOnly = true)
     public abstract List<IssueAttachmentJson> getAttachments();
 
