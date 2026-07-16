@@ -122,9 +122,8 @@ public class CassandraExecutor {
             }
         }
 
-        if (lastLiquibaseException != null) {
-            throw lastLiquibaseException;
-        }
+        throw new IllegalStateException("Cassandra migration loop exited without success or exception",
+            lastLiquibaseException);
     }
 
     private boolean isTransientTimeout(final Throwable throwable) {
