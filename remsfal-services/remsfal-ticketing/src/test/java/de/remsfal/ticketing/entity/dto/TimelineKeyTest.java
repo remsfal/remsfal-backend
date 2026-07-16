@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-class TenantTimelineKeyTest {
+class TimelineKeyTest {
 
     @Test
     void testGettersAndSetters() {
@@ -15,7 +15,7 @@ class TenantTimelineKeyTest {
         UUID timelineId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
 
-        TenantTimelineKey key = new TenantTimelineKey();
+        TimelineKey key = new TimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
         key.setTimelineId(timelineId);

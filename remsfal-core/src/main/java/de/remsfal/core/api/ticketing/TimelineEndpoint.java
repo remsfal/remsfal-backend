@@ -1,7 +1,7 @@
-package de.remsfal.core.api.ticketing.tenant;
+package de.remsfal.core.api.ticketing;
 
-import de.remsfal.core.json.ticketing.tenant.TenantTimelineJson;
-import de.remsfal.core.json.ticketing.tenant.TenantTimelineListJson;
+import de.remsfal.core.json.ticketing.TimelineJson;
+import de.remsfal.core.json.ticketing.TimelineListJson;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -23,7 +23,15 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-public interface TenantTimelineEndpoint {
+/**
+ * Timeline operations for an issue, shared by the manager-facing and tenant-facing sub-resources.
+ * Both mount this interface as a sub-resource of their own issue endpoint; the implementing
+ * boundary class is responsible for enforcing role-exclusive access (see
+ * {@code IssueTimelineResource} for managers and {@code TenantTimelineResource} for tenants).
+ *
+ * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ */
+public interface TimelineEndpoint {
 
     String SERVICE = "timeline";
 
@@ -33,7 +41,7 @@ public interface TenantTimelineEndpoint {
     @APIResponse(responseCode = "200", description = "Timeline entries retrieved")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "Issue not found")
-    TenantTimelineListJson getTimelineEntries(
+    TimelineListJson getTimelineEntries(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId);
 
@@ -49,7 +57,7 @@ public interface TenantTimelineEndpoint {
                 type = SchemaType.OBJECT,
                 requiredProperties = {"timeline"},
                 properties = {
-                    @SchemaProperty(name = "timeline", implementation = TenantTimelineJson.class,
+                    @SchemaProperty(name = "timeline", implementation = TimelineJson.class,
                         description = "Timeline entry information as JSON"),
                     @SchemaProperty(name = "attachment", type = SchemaType.ARRAY, implementation = java.io.File.class,
                         description = "One or more files to attach to the timeline entry")
@@ -59,7 +67,7 @@ public interface TenantTimelineEndpoint {
     )
     @APIResponse(responseCode = "201", description = "Timeline entry created",
         content = @Content(mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = TenantTimelineJson.class)))
+            schema = @Schema(implementation = TimelineJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "Issue not found")

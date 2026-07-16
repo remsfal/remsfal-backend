@@ -1,7 +1,7 @@
 package de.remsfal.ticketing.entity.dao;
 
-import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
-import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
+import de.remsfal.ticketing.entity.dto.TimelineEntity;
+import de.remsfal.ticketing.entity.dto.TimelineKey;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -10,17 +10,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
-public class TenantTimelineRepository extends AbstractRepository<TenantTimelineEntity, TenantTimelineKey> {
+public class TimelineRepository extends AbstractRepository<TimelineEntity, TimelineKey> {
 
     private static final String COL_TENANCY_ID = "tenancy_id";
     private static final String COL_TIMELINE_ID = "timeline_id";
 
-    public TenantTimelineEntity insert(final TenantTimelineEntity entity) {
+    public TimelineEntity insert(final TimelineEntity entity) {
         return template.insert(entity);
     }
 
-    public Optional<TenantTimelineEntity> findById(final TenantTimelineKey key) {
-        return template.select(TenantTimelineEntity.class)
+    public Optional<TimelineEntity> findById(final TimelineKey key) {
+        return template.select(TimelineEntity.class)
             .where(COL_TENANCY_ID).eq(key.getTenancyId())
             .and(ISSUE_ID).eq(key.getIssueId())
             .and(PROJECT_ID).eq(key.getProjectId())
@@ -28,8 +28,8 @@ public class TenantTimelineRepository extends AbstractRepository<TenantTimelineE
             .singleResult();
     }
 
-    public List<TenantTimelineEntity> findByIssue(final UUID tenancyId, final UUID issueId, final UUID projectId) {
-        return template.select(TenantTimelineEntity.class)
+    public List<TimelineEntity> findByIssue(final UUID tenancyId, final UUID issueId, final UUID projectId) {
+        return template.select(TimelineEntity.class)
             .where(COL_TENANCY_ID).eq(tenancyId)
             .and(ISSUE_ID).eq(issueId)
             .and(PROJECT_ID).eq(projectId)

@@ -23,18 +23,18 @@ import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
+import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.api.ticketing.tenant.TenantIssueEndpoint;
-import de.remsfal.core.api.ticketing.tenant.TenantTimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.boundary.IssueResource;
 import de.remsfal.ticketing.control.AttachmentController;
-import de.remsfal.ticketing.control.TenantTimelineController;
+import de.remsfal.ticketing.control.TimelineController;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import io.quarkus.security.Authenticated;
 
@@ -58,7 +58,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     AttachmentController attachmentController;
 
     @Inject
-    TenantTimelineController tenantTimelineController;
+    TimelineController timelineController;
 
     @Inject
     Instance<TenantTimelineResource> tenantTimelineResource;
@@ -89,7 +89,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
         final List<UUID> attachmentIds = attachments.stream()
             .map(IssueAttachmentJson::getAttachmentId)
             .toList();
-        tenantTimelineController.createTimelineEntry(createdIssue.getAgreementId(), createdIssue.getId(),
+        timelineController.createTimelineEntry(createdIssue.getAgreementId(), createdIssue.getId(),
             createdIssue.getProjectId(), principal.getId(), principal.getName(),
             MessagePurpose.ISSUE_CREATED, createdIssue.getDescription(),
             attachmentIds.isEmpty() ? null : attachmentIds);
@@ -152,7 +152,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
         checkTenantIssueReadPermissions(issueId);
         final IssueModel issue = issueController.getIssue(issueId);
 
-        final Set<UUID> visibleAttachmentIds = tenantTimelineController.getVisibleAttachmentIds(
+        final Set<UUID> visibleAttachmentIds = timelineController.getVisibleAttachmentIds(
             issue.getAgreementId(), issueId, issue.getProjectId());
         if (!visibleAttachmentIds.contains(attachmentId)) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
@@ -174,7 +174,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     }
 
     @Override
-    public TenantTimelineEndpoint getTenantTimelineResource() {
+    public TimelineEndpoint getTenantTimelineResource() {
         return resourceContext.initResource(tenantTimelineResource.get());
     }
 

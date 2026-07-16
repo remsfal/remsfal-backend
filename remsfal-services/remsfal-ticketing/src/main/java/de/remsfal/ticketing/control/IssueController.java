@@ -13,7 +13,7 @@ import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
@@ -41,7 +41,7 @@ public class IssueController {
     IssueEventProducer issueEventProducer;
 
     @Inject
-    TenantTimelineController tenantTimelineController;
+    TimelineController timelineController;
 
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
@@ -98,7 +98,7 @@ public class IssueController {
 
         if (createTimelineEntry && entity.getAgreementId() != null
             && Boolean.TRUE.equals(entity.isVisibleToTenants())) {
-            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+            timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
                 entity.getProjectId(), user.getId(), user.getName(),
                 MessagePurpose.ISSUE_CREATED, entity.getDescription());
         }
@@ -183,7 +183,7 @@ public class IssueController {
 
         if (entity.getAgreementId() != null && Boolean.TRUE.equals(entity.isVisibleToTenants())
             && issue.getStatus() != null && issue.getStatus() != oldStatus) {
-            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+            timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
                 entity.getProjectId(), principal.getId(), principal.getName(),
                 MessagePurpose.STATUS_CHANGED, entity.getStatus().name());
         }
@@ -210,7 +210,7 @@ public class IssueController {
             issueRepository.update(e);
             if (oldStatus != IssueStatus.CLOSED && e.getAgreementId() != null
                 && Boolean.TRUE.equals(e.isVisibleToTenants())) {
-                tenantTimelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
+                timelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
                     principal.getId(), principal.getName(), MessagePurpose.STATUS_CHANGED,
                     IssueStatus.CLOSED.name());
             }

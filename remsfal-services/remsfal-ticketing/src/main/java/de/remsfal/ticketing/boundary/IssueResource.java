@@ -15,6 +15,7 @@ import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
+import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
@@ -47,6 +48,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
+
+    @Inject
+    Instance<IssueTimelineResource> timelineResource;
 
     @Override
     public IssueListJson getIssues(final UUID projectId, final UUID assigneeId, final UUID agreementId,
@@ -153,6 +157,11 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public ChatSessionResource getChatSessionResource() {
         return resourceContext.initResource(chatSessionResource.get());
+    }
+
+    @Override
+    public TimelineEndpoint getTimelineResource() {
+        return resourceContext.initResource(timelineResource.get());
     }
 
 }

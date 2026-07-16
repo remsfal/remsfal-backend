@@ -13,7 +13,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.test.AbstractTest;
 import de.remsfal.ticketing.entity.storage.FileStorage;
 import io.minio.ListObjectsArgs;
@@ -190,7 +190,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     }
 
     /**
-     * Inserts a {@code TenantTimelineEntity} fixture, optionally referencing attachment ids —
+     * Inserts a {@code TimelineEntity} fixture, optionally referencing attachment ids —
      * that's what makes an {@code IssueAttachment} visible to a tenant (see issue #801).
      */
     protected void insertTimelineEntry(UUID issueId, UUID projectId, UUID tenancyId, UUID timelineId,

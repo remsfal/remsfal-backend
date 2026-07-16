@@ -18,7 +18,7 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -36,18 +36,11 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     static final UUID AGREEMENT_ID = UUID.randomUUID();
     static final UUID ISSUE_ID_WITH_AGREEMENT = UUID.randomUUID();
 
-    static final UUID PROJECT_ID_NO_AGREEMENT = UUID.randomUUID();
-    static final UUID ISSUE_ID_NO_AGREEMENT = UUID.randomUUID();
-
     @BeforeEach
     void setUpIssues() {
         insertIssue(PROJECT_ID, ISSUE_ID_WITH_AGREEMENT,
             "Tenant issue", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
             UUID.randomUUID(), AGREEMENT_ID, null, "Issue for tenant timeline tests");
-
-        insertIssue(PROJECT_ID_NO_AGREEMENT, ISSUE_ID_NO_AGREEMENT,
-            "Manager issue", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
-            UUID.randomUUID(), null, null, "Issue without agreement");
     }
 
     @Test
@@ -71,15 +64,14 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getTimelineEntries_SUCCESS_issueWithoutAgreementReturnsEmptyList() {
+    void getTimelineEntries_FORBIDDEN_forManager() {
+        // the tenant-relations timeline is tenant-exclusive; managers must use the /issues/.../timeline path
         given()
             .when()
-            .cookie(buildManagerCookie(Map.of(PROJECT_ID_NO_AGREEMENT.toString(), "MANAGER")))
-            .get(TIMELINE_PATH, ISSUE_ID_NO_AGREEMENT)
+            .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
+            .get(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("timelines", hasSize(0));
+            .statusCode(403);
     }
 
     @Test
@@ -91,7 +83,9 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
 
         given()
             .when()
-            .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(),
+                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
@@ -107,10 +101,28 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createTimelineEntryWithAttachments_FAILED_missingTimelinePart() {
+    void createTimelineEntryWithAttachments_FORBIDDEN_forManager() {
+        final String timelineJson = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"Bitte um Rueckmeldung\""
+            + "}";
+
         given()
             .when()
             .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void createTimelineEntryWithAttachments_FAILED_missingTimelinePart() {
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(),
+                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
             .multiPart("notTimeline", "{}", MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()

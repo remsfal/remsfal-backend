@@ -1,9 +1,9 @@
-package de.remsfal.core.json.ticketing.tenant;
+package de.remsfal.core.json.ticketing;
 
 import java.util.List;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.ticketing.tenant.TenantTimelineModel;
+import de.remsfal.core.model.ticketing.TimelineModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -14,19 +14,19 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @Immutable
 @ImmutableStyle
-@Schema(description = "A list of tenant timelines")
-@JsonDeserialize(as = ImmutableTenantTimelineListJson.class)
+@Schema(description = "A list of issue timelines")
+@JsonDeserialize(as = ImmutableTimelineListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TenantTimelineListJson {
+public abstract class TimelineListJson {
     // Validation is not required, because it is read-only.
 
-    @Schema(description = "Tenant timeline entries", readOnly = true)
-    public abstract List<TenantTimelineJson> getTimelines();
+    @Schema(description = "Timeline entries", readOnly = true)
+    public abstract List<TimelineJson> getTimelines();
 
-    public static TenantTimelineListJson valueOf(final List<? extends TenantTimelineModel> timelines) {
-        return ImmutableTenantTimelineListJson.builder()
+    public static TimelineListJson valueOf(final List<? extends TimelineModel> timelines) {
+        return ImmutableTimelineListJson.builder()
             .timelines(timelines.stream()
-                .map(TenantTimelineJson::valueOf)
+                .map(TimelineJson::valueOf)
                 .toList())
             .build();
     }

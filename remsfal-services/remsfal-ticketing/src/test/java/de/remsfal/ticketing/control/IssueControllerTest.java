@@ -21,7 +21,7 @@ import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
@@ -140,12 +140,12 @@ class IssueControllerTest {
     }
 
     private IssueController controllerWithMocks(final IssueRepository repository,
-        final TenantTimelineController tenantTimelineController, final RemsfalPrincipal principal) {
+        final TimelineController timelineController, final RemsfalPrincipal principal) {
         final IssueController controller = new IssueController();
         controller.logger = Logger.getLogger(IssueControllerTest.class);
         controller.issueRepository = repository;
         controller.issueEventProducer = mock(IssueEventProducer.class);
-        controller.tenantTimelineController = tenantTimelineController;
+        controller.timelineController = timelineController;
         controller.principal = principal;
         return controller;
     }
@@ -172,12 +172,12 @@ class IssueControllerTest {
         when(issue.isVisibleToTenants()).thenReturn(true);
         when(issue.getDescription()).thenReturn("Die Heizung ist defekt");
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), tenantTimelineController, null);
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
         final IssueModel created = controller.createIssue(user, issue);
 
-        verify(tenantTimelineController).createTimelineEntry(agreementId, created.getId(), projectId,
+        verify(timelineController).createTimelineEntry(agreementId, created.getId(), projectId,
             reporterId, "Max Manager", MessagePurpose.ISSUE_CREATED, "Die Heizung ist defekt");
     }
 
@@ -195,12 +195,12 @@ class IssueControllerTest {
         when(issue.getAgreementId()).thenReturn(agreementId);
         when(issue.isVisibleToTenants()).thenReturn(false);
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), tenantTimelineController, null);
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
         controller.createIssue(user, issue);
 
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
     }
 
@@ -213,12 +213,12 @@ class IssueControllerTest {
         final IssueModel issue = mock(IssueModel.class);
         when(issue.getProjectId()).thenReturn(UUID.randomUUID());
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), tenantTimelineController, null);
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
         controller.createIssue(user, issue);
 
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
     }
 
@@ -240,14 +240,14 @@ class IssueControllerTest {
         when(issue.isVisibleToTenants()).thenReturn(false);
         when(issue.getDescription()).thenReturn("Bitte um Rueckruf");
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), tenantTimelineController, null);
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
         controller.createIssue(user, issue, projectId, IssueStatus.PENDING);
 
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any(), any());
     }
 
@@ -274,12 +274,12 @@ class IssueControllerTest {
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, tenantTimelineController, principal);
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(repository, timelineController, principal);
 
         controller.updateIssue(issueId, patch);
 
-        verify(tenantTimelineController).createTimelineEntry(agreementId, issueId, projectId,
+        verify(timelineController).createTimelineEntry(agreementId, issueId, projectId,
             principalId, "Max Manager", MessagePurpose.STATUS_CHANGED, "IN_PROGRESS");
     }
 
@@ -300,13 +300,13 @@ class IssueControllerTest {
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.OPEN);
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, tenantTimelineController,
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(repository, timelineController,
             mock(RemsfalPrincipal.class));
 
         controller.updateIssue(issueId, patch);
 
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
     }
 
@@ -327,13 +327,13 @@ class IssueControllerTest {
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, tenantTimelineController,
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(repository, timelineController,
             mock(RemsfalPrincipal.class));
 
         controller.updateIssue(issueId, patch);
 
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
     }
 
@@ -352,13 +352,13 @@ class IssueControllerTest {
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, tenantTimelineController,
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(repository, timelineController,
             mock(RemsfalPrincipal.class));
 
         controller.updateIssue(issueId, patch);
 
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
     }
 
@@ -382,12 +382,12 @@ class IssueControllerTest {
         when(principal.getId()).thenReturn(principalId);
         when(principal.getName()).thenReturn("Tina Tenant");
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, tenantTimelineController, principal);
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(repository, timelineController, principal);
 
         controller.closeIssue(issueId);
 
-        verify(tenantTimelineController).createTimelineEntry(agreementId, issueId, projectId,
+        verify(timelineController).createTimelineEntry(agreementId, issueId, projectId,
             principalId, "Tina Tenant", MessagePurpose.STATUS_CHANGED, "CLOSED");
     }
 
@@ -405,13 +405,13 @@ class IssueControllerTest {
         when(repository.findByIssueId(issueId)).thenReturn(Optional.of(existing));
         when(repository.update(existing)).thenReturn(existing);
 
-        final TenantTimelineController tenantTimelineController = mock(TenantTimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, tenantTimelineController,
+        final TimelineController timelineController = mock(TimelineController.class);
+        final IssueController controller = controllerWithMocks(repository, timelineController,
             mock(RemsfalPrincipal.class));
 
         controller.closeIssue(issueId);
 
-        verify(tenantTimelineController, never()).createTimelineEntry(
+        verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
     }
 

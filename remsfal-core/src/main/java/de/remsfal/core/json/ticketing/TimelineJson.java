@@ -1,9 +1,8 @@
-package de.remsfal.core.json.ticketing.tenant;
+package de.remsfal.core.json.ticketing;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.json.ticketing.IssueAttachmentJson;
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
-import de.remsfal.core.model.ticketing.tenant.TenantTimelineModel;
+import de.remsfal.core.model.ticketing.MessagePurpose;
+import de.remsfal.core.model.ticketing.TimelineModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -23,10 +22,10 @@ import java.util.UUID;
 
 @Immutable
 @ImmutableStyle
-@Schema(description = "A tenant timeline entry")
-@JsonDeserialize(as = ImmutableTenantTimelineJson.class)
+@Schema(description = "An issue timeline entry")
+@JsonDeserialize(as = ImmutableTimelineJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TenantTimelineJson implements TenantTimelineModel {
+public abstract class TimelineJson implements TimelineModel {
 
     @Null
     @Nullable
@@ -99,8 +98,8 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
     @Override
     public abstract Instant getModifiedAt();
 
-    public static TenantTimelineJson valueOf(final TenantTimelineModel model) {
-        final ImmutableTenantTimelineJson.Builder builder = ImmutableTenantTimelineJson.builder()
+    public static TimelineJson valueOf(final TimelineModel model) {
+        final ImmutableTimelineJson.Builder builder = ImmutableTimelineJson.builder()
             .issueId(model.getIssueId())
             .tenancyId(model.getTenancyId())
             .timelineId(model.getTimelineId())
@@ -112,13 +111,13 @@ public abstract class TenantTimelineJson implements TenantTimelineModel {
             .modifiedAt(model.getModifiedAt());
         // projectId and attachmentIds are omitted
 
-        if (model instanceof TenantTimelineJson timelineJson && timelineJson.getAttachments() != null) {
+        if (model instanceof TimelineJson timelineJson && timelineJson.getAttachments() != null) {
             builder.attachments(timelineJson.getAttachments());
         }
 
         return builder.build();
     }
 
-    public abstract TenantTimelineJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
+    public abstract TimelineJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

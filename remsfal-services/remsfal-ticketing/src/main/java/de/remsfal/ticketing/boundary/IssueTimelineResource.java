@@ -1,13 +1,11 @@
-package de.remsfal.ticketing.boundary.tenant;
+package de.remsfal.ticketing.boundary;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.TimelineJson;
 import de.remsfal.core.json.ticketing.TimelineListJson;
-import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.TimelineController;
 import de.remsfal.ticketing.entity.dto.TimelineEntity;
@@ -25,19 +23,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
- * Timeline operations for tenants only. A manager cannot query this endpoint on behalf of a
- * tenant; see {@code IssueTimelineResource} for the manager-facing equivalent.
+ * Timeline operations for managers only. A tenant cannot query this endpoint; see
+ * {@code TenantTimelineResource} for the tenant-facing equivalent. Unlike the tenant-facing
+ * endpoint, a manager may reference any attachment already on the issue (not just self-uploaded
+ * ones) since managers already have full attachment visibility for the issue.
  */
 @Authenticated
 @RequestScoped
-public class TenantTimelineResource extends AbstractTicketingResource implements TimelineEndpoint {
+public class IssueTimelineResource extends AbstractTicketingResource implements TimelineEndpoint {
 
     @Inject
     TimelineController timelineController;
@@ -47,7 +46,7 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
     @Override
     public TimelineListJson getTimelineEntries(final UUID issueId) {
-        checkTenantIssueReadPermissions(issueId);
+        checkManagerIssueReadPermissions(issueId);
         final IssueModel issue = issueController.getIssue(issueId);
         if (issue.getAgreementId() == null) {
             return TimelineListJson.valueOf(List.of());
@@ -67,10 +66,10 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
     @Override
     public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
-        checkTenantIssueReadPermissions(issueId);
+        checkIssueWritePermissions(issueId);
         final IssueModel issue = issueController.getIssue(issueId);
         if (issue.getAgreementId() == null) {
-            throw new BadRequestException("Tenant timeline requires issue agreementId");
+            throw new BadRequestException("Timeline requires issue agreementId");
         }
 
         final TimelineJson timeline = extractTimelineJson(input);
@@ -124,25 +123,16 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
     private List<UUID> collectAttachmentIds(final UUID issueId, final TimelineJson timeline,
         final MultipartFormDataInput input) {
-        // Client-referenced attachment ids (as opposed to newly-uploaded ones below) must belong to
-        // attachments the caller uploaded themselves, so a tenant cannot reference a manager-only
-        // attachment of the same issue and smuggle it into their own timeline entry's visibility.
-        final Set<UUID> ownAttachmentIds = attachmentController.getAttachments(issueId).stream()
-            .filter(attachment -> principal.getId().equals(attachment.getUploaderId()))
-            .map(IssueAttachmentModel::getAttachmentId)
-            .collect(Collectors.toSet());
-
+        // Managers already have full attachment visibility for the issue, so (unlike the
+        // tenant-facing endpoint) referenced attachment ids are not restricted to self-uploaded ones.
         final List<UUID> attachmentIds = new ArrayList<>();
         if (timeline.getAttachmentIds() != null) {
-            attachmentIds.addAll(timeline.getAttachmentIds().stream()
-                .filter(ownAttachmentIds::contains)
-                .toList());
+            attachmentIds.addAll(timeline.getAttachmentIds());
         }
         if (timeline.getAttachments() != null) {
             attachmentIds.addAll(timeline.getAttachments().stream()
                 .map(IssueAttachmentJson::getAttachmentId)
                 .filter(Objects::nonNull)
-                .filter(ownAttachmentIds::contains)
                 .toList());
         }
 
