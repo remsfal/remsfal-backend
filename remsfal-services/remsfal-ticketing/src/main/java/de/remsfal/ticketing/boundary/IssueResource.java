@@ -24,6 +24,7 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.control.AttachmentController;
+import de.remsfal.ticketing.control.IssueFilter;
 import io.quarkus.security.Authenticated;
 
 /**
@@ -56,8 +57,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         final UnitType rentalUnitType, final UUID rentalUnitId, final List<IssueType> type,
         final List<IssueStatus> status, final UUID cursor, final Integer limit) {
         checkProjectReadPermissions(projectId);
-        final List<? extends IssueModel> issues = issueController.getProjectIssues(projectId, assigneeId,
-            agreementId, rentalUnitType, rentalUnitId, type, status, cursor, limit);
+        final IssueFilter filter = new IssueFilter(projectId, assigneeId, agreementId,
+            rentalUnitType, rentalUnitId, type, status);
+        final List<? extends IssueModel> issues = issueController.getProjectIssues(filter, cursor, limit);
         return IssueListJson.valueOfProjectIssues(issues, nextCursorOf(issues, limit));
     }
 

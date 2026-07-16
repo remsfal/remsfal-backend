@@ -19,6 +19,7 @@ import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
+import de.remsfal.ticketing.control.IssueFilter;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -49,7 +50,8 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            projectId, null, null, null, null, null, List.of(IssueStatus.OPEN), false, null, Integer.MAX_VALUE
+            new IssueFilter(projectId, null, null, null, null, null, List.of(IssueStatus.OPEN)),
+            false, null, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 OPEN issues
@@ -74,7 +76,8 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by assigneeId1
         List<? extends IssueModel> assigneeIssues = repository.findByQuery(
-            projectId, assigneeId1, null, null, null, null, null, false, null, Integer.MAX_VALUE
+            new IssueFilter(projectId, assigneeId1, null, null, null, null, null),
+            false, null, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 issues assigned to assigneeId1
@@ -104,7 +107,8 @@ class IssueRepositoryTest extends AbstractTicketingTest {
         int pageCount = 0;
         List<IssueEntity> page;
         do {
-            page = repository.findByQuery(projectId, null, null, null, null, null, null, false, cursor, 2);
+            page = repository.findByQuery(
+                new IssueFilter(projectId, null, null, null, null, null, null), false, cursor, 2);
             assertTrue(page.size() <= 2);
             page.forEach(issue -> visited.add(issue.getId()));
             if (!page.isEmpty()) {
@@ -126,7 +130,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
         }
 
         List<IssueEntity> page = repository.findByQuery(
-            projectId, null, null, null, null, null, null, false, null, 100);
+            new IssueFilter(projectId, null, null, null, null, null, null), false, null, 100);
 
         assertEquals(3, page.size());
     }
@@ -139,7 +143,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         UUID cursorOlderThanAnyUuidV7 = new UUID(0L, 0L);
         List<IssueEntity> page = repository.findByQuery(
-            projectId, null, null, null, null, null, null, false, cursorOlderThanAnyUuidV7, 10);
+            new IssueFilter(projectId, null, null, null, null, null, null), false, cursorOlderThanAnyUuidV7, 10);
 
         assertTrue(page.isEmpty());
     }

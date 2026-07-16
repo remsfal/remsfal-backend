@@ -9,11 +9,9 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
@@ -133,8 +131,8 @@ public class IssueController {
         for (final Map.Entry<UUID, UUID> tenancy : tenancyProjects.entrySet()) {
             final UUID agreementId = tenancy.getKey();
             final UUID projectId = tenancy.getValue();
-            merged.addAll(issueRepository.findByQuery(projectId, null, agreementId,
-                null, null, null, null, true, cursor, limit));
+            final IssueFilter filter = new IssueFilter(projectId, null, agreementId, null, null, null, null);
+            merged.addAll(issueRepository.findByQuery(filter, true, cursor, limit));
         }
         merged.sort(Comparator.comparing(IssueEntity::getId, Comparator.reverseOrder()));
         return merged.size() > limit ? merged.subList(0, limit) : merged;
@@ -144,11 +142,9 @@ public class IssueController {
      * Fetches issues of a single project. Since the caller (a project manager) is always scoped to
      * exactly one project, this is a single-partition query with no fan-out or merge needed.
      */
-    public List<? extends IssueModel> getProjectIssues(final UUID projectId, final UUID assigneeId,
-        final UUID agreementId, final UnitType rentalType, final UUID rentalId,
-        final List<IssueType> type, final List<IssueStatus> status, final UUID cursor, final Integer limit) {
-        return issueRepository.findByQuery(projectId, assigneeId, agreementId,
-            rentalType, rentalId, type, status, false, cursor, limit);
+    public List<? extends IssueModel> getProjectIssues(final IssueFilter filter,
+        final UUID cursor, final Integer limit) {
+        return issueRepository.findByQuery(filter, false, cursor, limit);
     }
 
     public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
