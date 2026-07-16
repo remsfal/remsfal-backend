@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.control;
+package de.remsfal.ticketing.entity.filter;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +9,8 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 
 /**
  * Filter criteria for querying issues, bundling the scalar/list filter parameters accepted by
- * {@link IssueController} and {@link de.remsfal.ticketing.entity.dao.IssueRepository#findByQuery}.
+ * {@link de.remsfal.ticketing.control.IssueController} and
+ * {@link de.remsfal.ticketing.entity.dao.IssueRepository#findByQuery}.
  * Pagination ({@code cursor}, {@code limit}) and visibility ({@code onlyVisibleToTenants}) are kept
  * as separate parameters since they are orthogonal to what is being filtered.
  *

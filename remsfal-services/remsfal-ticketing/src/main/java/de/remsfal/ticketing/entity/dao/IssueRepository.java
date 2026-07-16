@@ -1,9 +1,9 @@
 package de.remsfal.ticketing.entity.dao;
 
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.ticketing.control.IssueFilter;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.ticketing.entity.filter.IssueFilter;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.nosql.QueryMapper.MapperWhere;

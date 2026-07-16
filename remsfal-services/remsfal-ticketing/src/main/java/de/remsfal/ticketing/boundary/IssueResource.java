@@ -24,7 +24,7 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.control.AttachmentController;
-import de.remsfal.ticketing.control.IssueFilter;
+import de.remsfal.ticketing.entity.filter.IssueFilter;
 import io.quarkus.security.Authenticated;
 
 /**

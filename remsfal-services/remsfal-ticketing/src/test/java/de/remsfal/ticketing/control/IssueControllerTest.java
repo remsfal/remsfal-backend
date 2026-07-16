@@ -26,6 +26,7 @@ import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.ticketing.entity.filter.IssueFilter;
 
 /**
  * Covers the multi-partition fan-out/merge that moved from {@link IssueRepository} into

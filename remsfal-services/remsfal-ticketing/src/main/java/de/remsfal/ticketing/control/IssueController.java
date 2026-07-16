@@ -16,6 +16,7 @@ import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.filter.IssueFilter;
 
 import java.util.ArrayList;
 import java.util.Comparator;
