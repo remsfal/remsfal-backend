@@ -26,11 +26,13 @@ import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
 /**
+ * The issue representation exposed to project managers only and includes all fields.
+ *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Immutable
 @ImmutableStyle
-@Schema(description = "An issue")
+@Schema(description = "An issue, as visible to the project manager with full access to all fields and relations")
 @JsonDeserialize(as = ImmutableIssueJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class IssueJson implements IssueModel {
@@ -154,7 +156,7 @@ public abstract class IssueJson implements IssueModel {
      * @param model the source {@link IssueModel}
      * @return an immutable {@link IssueJson} containing all fields
      */
-    public static IssueJson valueOfProjectIssue(final IssueModel model) {
+    public static IssueJson valueOf(final IssueModel model) {
         return ImmutableIssueJson.builder()
             .id(model.getId())
             .projectId(model.getProjectId())

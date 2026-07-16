@@ -47,8 +47,7 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
     @Override
     public TimelineListJson getTimelineEntries(final UUID issueId) {
-        checkTenantIssueReadPermissions(issueId);
-        final IssueModel issue = issueController.getIssue(issueId);
+        final IssueModel issue = checkTenancyIssueAccessPermissions(issueId);
         if (issue.getAgreementId() == null) {
             return TimelineListJson.valueOf(List.of());
         }
@@ -67,8 +66,7 @@ public class TenantTimelineResource extends AbstractTicketingResource implements
 
     @Override
     public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
-        checkTenantIssueReadPermissions(issueId);
-        final IssueModel issue = issueController.getIssue(issueId);
+        final IssueModel issue = checkTenancyIssueAccessPermissions(issueId);
         if (issue.getAgreementId() == null) {
             throw new BadRequestException("Tenant timeline requires issue agreementId");
         }

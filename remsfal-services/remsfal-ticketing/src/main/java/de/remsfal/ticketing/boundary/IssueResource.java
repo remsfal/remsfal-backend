@@ -15,7 +15,6 @@ import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
-import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
@@ -23,8 +22,8 @@ import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.control.AttachmentController;
-import de.remsfal.ticketing.entity.dto.IssueEntity;
 import io.quarkus.security.Authenticated;
 
 /**
@@ -54,28 +53,27 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Override
     public IssueListJson getIssues(final UUID projectId, final UUID assigneeId, final UUID agreementId,
-        final UnitType rentalUnitType, final UUID rentalUnitId, final IssueStatus status,
-        final String cursor, final Integer limit) {
-        checkProjectIssueReadPermissions(projectId);
+        final UnitType rentalUnitType, final UUID rentalUnitId, final List<IssueType> type,
+        final List<IssueStatus> status, final UUID cursor, final Integer limit) {
+        checkProjectReadPermissions(projectId);
         final List<? extends IssueModel> issues = issueController.getProjectIssues(projectId, assigneeId,
-            agreementId, rentalUnitType, rentalUnitId, status, parseCursor(cursor), limit);
+            agreementId, rentalUnitType, rentalUnitId, type, status, cursor, limit);
         return IssueListJson.valueOfProjectIssues(issues, nextCursorOf(issues, limit));
     }
 
     @Override
-    public Response createProjectIssue(final IssueJson issue) {
+    public Response createIssue(final IssueJson issue) {
         checkProjectIssueCreatePermissions(issue.getProjectId());
-        final IssueModel createdIssue = issueController.createIssue(principal, issue);
+        final IssueModel createdIssue = issueController.createProjectIssue(principal, issue);
         return getCreatedResponseBuilder(createdIssue.getId())
             .type(MediaType.APPLICATION_JSON)
-            .entity(IssueJson.valueOfProjectIssue(createdIssue))
+            .entity(IssueJson.valueOf(createdIssue))
             .build();
     }
 
     @Override
     public IssueJson getIssue(final UUID issueId) {
-        checkManagerIssueReadPermissions(issueId);
-        IssueModel issue = issueController.getIssue(issueId);
+        final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
 
         // Lazy-load attachments and add to response
         List<? extends IssueAttachmentModel> attachments = attachmentController.getAttachments(issueId);
@@ -83,58 +81,55 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             .map(IssueAttachmentJson::valueOf)
             .collect(Collectors.toList());
 
-        return IssueJson.valueOfProjectIssue(issue).withAttachments(attachmentJsons);
+        return IssueJson.valueOf(issue).withAttachments(attachmentJsons);
     }
 
     @Override
     public IssueJson updateIssue(final UUID issueId, final IssueJson issue) {
-        checkIssueWritePermissions(issueId);
-        IssueModel updatedIssue = issueController.updateIssue(issueId, issue);
-        return IssueJson.valueOfProjectIssue(updatedIssue);
+        checkProjectIssueAccessPermissions(issueId);
+        final IssueModel updatedIssue = issueController.updateIssue(issueId, issue);
+        return IssueJson.valueOf(updatedIssue);
     }
 
     @Override
     public void deleteIssue(final UUID issueId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueAccessPermissions(issueId);
         issueController.deleteIssue(issueId);
     }
 
     @Override
     public IssueJson setParent(final UUID issueId, final UUID parentIssueId) {
-        checkIssueWritePermissions(issueId);
-        IssueEntity entity = issueController.getIssue(issueId);
-        return IssueJson.valueOfProjectIssue(issueController.setParentRelation(entity, parentIssueId));
+        final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
+        return IssueJson.valueOf(issueController.setParentRelation(principal, issue, parentIssueId));
     }
 
     @Override
     public IssueJson createRelation(final UUID issueId, final String relationType, final UUID relatedIssueId) {
-        checkIssueWritePermissions(issueId);
-        IssueEntity entity = issueController.getIssue(issueId);
+        final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
 
         IssueModel updatedIssue = switch (relationType.toLowerCase()) {
-            case "children" -> issueController.addChildRelation(entity, relatedIssueId);
-            case "blocks" -> issueController.addBlocksRelation(entity, relatedIssueId);
-            case "blocked-by" -> issueController.addBlockedByRelation(entity, relatedIssueId);
-            case "related-to" -> issueController.addRelatedToRelation(entity, relatedIssueId);
-            case "duplicate-of" -> issueController.addDuplicateOfRelation(entity, relatedIssueId);
+            case "children" -> issueController.addChildRelation(principal, issue, relatedIssueId);
+            case "blocks" -> issueController.addBlocksRelation(principal, issue, relatedIssueId);
+            case "blocked-by" -> issueController.addBlockedByRelation(principal, issue, relatedIssueId);
+            case "related-to" -> issueController.addRelatedToRelation(principal, issue, relatedIssueId);
+            case "duplicate-of" -> issueController.addDuplicateOfRelation(principal, issue, relatedIssueId);
             default -> throw new BadRequestException("Invalid relation type: " + relationType);
         };
 
-        return IssueJson.valueOfProjectIssue(updatedIssue);
+        return IssueJson.valueOf(updatedIssue);
     }
 
     @Override
     public void deleteRelation(final UUID issueId, final String relationType, final UUID relatedIssueId) {
-        checkIssueWritePermissions(issueId);
-        IssueEntity entity = issueController.getIssue(issueId);
+        final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
 
         switch (relationType.toLowerCase()) {
-            case "parent" -> issueController.deleteParentRelation(entity, relatedIssueId);
-            case "children" -> issueController.deleteChildRelation(entity, relatedIssueId);
-            case "blocks" -> issueController.deleteBlocksRelation(entity, relatedIssueId);
-            case "blocked-by" -> issueController.deleteBlockedByRelation(entity, relatedIssueId);
-            case "related-to" -> issueController.deleteRelatedToRelation(entity, relatedIssueId);
-            case "duplicate-of" -> issueController.deleteDuplicateOfRelation(entity, relatedIssueId);
+            case "parent" -> issueController.deleteParentRelation(principal, issue, relatedIssueId);
+            case "children" -> issueController.deleteChildRelation(principal, issue, relatedIssueId);
+            case "blocks" -> issueController.deleteBlocksRelation(principal, issue, relatedIssueId);
+            case "blocked-by" -> issueController.deleteBlockedByRelation(principal, issue, relatedIssueId);
+            case "related-to" -> issueController.deleteRelatedToRelation(principal, issue, relatedIssueId);
+            case "duplicate-of" -> issueController.deleteDuplicateOfRelation(principal, issue, relatedIssueId);
             default -> throw new BadRequestException("Invalid relation type: " + relationType);
         }
     }
@@ -160,7 +155,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     }
 
     @Override
-    public TimelineEndpoint getTimelineResource() {
+    public IssueTimelineResource getTimelineResource() {
         return resourceContext.initResource(timelineResource.get());
     }
 

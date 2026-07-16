@@ -29,7 +29,7 @@ import de.remsfal.ticketing.entity.dto.IssueKey;
 
 /**
  * Covers the multi-partition fan-out/merge that moved from {@link IssueRepository} into
- * {@link IssueController#getTenancyIssues(UUID, Integer)} once the repository was reduced to
+ * {@link IssueController#getTenancyIssues(Map, UUID, Integer)} once the repository was reduced to
  * single-partition queries. Uses a mocked {@link IssueRepository} so the merge/sort/limit logic
  * can be verified without a real Cassandra instance.
  */
@@ -61,20 +61,16 @@ class IssueControllerTest {
         tenancyProjects.put(agreementA, projectA);
         tenancyProjects.put(agreementB, projectB);
 
-        final RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
-        when(principal.getTenancyProjects()).thenReturn(tenancyProjects);
-
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(projectA, null, agreementA, null, null, null, true, null, 2))
+        when(repository.findByQuery(projectA, null, agreementA, null, null, null, null, true, null, 2))
             .thenReturn(List.of(issueOf(projectA, id4), issueOf(projectA, id1)));
-        when(repository.findByQuery(projectB, null, agreementB, null, null, null, true, null, 2))
+        when(repository.findByQuery(projectB, null, agreementB, null, null, null, null, true, null, 2))
             .thenReturn(List.of(issueOf(projectB, id3), issueOf(projectB, id2)));
 
         final IssueController controller = new IssueController();
-        controller.principal = principal;
         controller.issueRepository = repository;
 
-        final List<? extends IssueModel> page = controller.getTenancyIssues(null, 2);
+        final List<? extends IssueModel> page = controller.getTenancyIssues(tenancyProjects, null, 2);
 
         assertEquals(2, page.size());
         assertEquals(id4, page.get(0).getId());
@@ -90,18 +86,14 @@ class IssueControllerTest {
         final Map<UUID, UUID> tenancyProjects = new LinkedHashMap<>();
         tenancyProjects.put(agreementA, projectA);
 
-        final RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
-        when(principal.getTenancyProjects()).thenReturn(tenancyProjects);
-
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(projectA, null, agreementA, null, null, null, true, cursor, 10))
+        when(repository.findByQuery(projectA, null, agreementA, null, null, null, null, true, cursor, 10))
             .thenReturn(List.of(issueOf(projectA, new UUID(0, 4))));
 
         final IssueController controller = new IssueController();
-        controller.principal = principal;
         controller.issueRepository = repository;
 
-        final List<? extends IssueModel> page = controller.getTenancyIssues(cursor, 10);
+        final List<? extends IssueModel> page = controller.getTenancyIssues(tenancyProjects, cursor, 10);
 
         assertEquals(1, page.size());
         assertEquals(new UUID(0, 4), page.get(0).getId());
@@ -109,13 +101,9 @@ class IssueControllerTest {
 
     @Test
     void getTenancyIssues_noTenancies_returnsEmptyListWithoutQuerying() {
-        final RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
-        when(principal.getTenancyProjects()).thenReturn(Map.of());
-
         final IssueController controller = new IssueController();
-        controller.principal = principal;
 
-        final List<? extends IssueModel> page = controller.getTenancyIssues(null, 10);
+        final List<? extends IssueModel> page = controller.getTenancyIssues(Map.of(), null, 10);
 
         assertTrue(page.isEmpty());
     }
@@ -127,14 +115,15 @@ class IssueControllerTest {
         final IssueEntity expected = issueOf(projectId, UUID.randomUUID());
 
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(projectId, null, null, null, null, IssueStatus.OPEN, false, cursor, 10))
+        when(repository.findByQuery(projectId, null, null, null, null, null,
+            List.of(IssueStatus.OPEN), false, cursor, 10))
             .thenReturn(List.of(expected));
 
         final IssueController controller = new IssueController();
         controller.issueRepository = repository;
 
         final List<? extends IssueModel> result = controller.getProjectIssues(projectId, null, null, null, null,
-            IssueStatus.OPEN, cursor, 10);
+            null, List.of(IssueStatus.OPEN), cursor, 10);
 
         assertEquals(List.of(expected), result);
     }
@@ -175,7 +164,7 @@ class IssueControllerTest {
         final TimelineController timelineController = mock(TimelineController.class);
         final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
-        final IssueModel created = controller.createIssue(user, issue);
+        final IssueModel created = controller.createProjectIssue(user, issue);
 
         verify(timelineController).createTimelineEntry(agreementId, created.getId(), projectId,
             reporterId, "Max Manager", MessagePurpose.ISSUE_CREATED, "Die Heizung ist defekt");
@@ -198,7 +187,7 @@ class IssueControllerTest {
         final TimelineController timelineController = mock(TimelineController.class);
         final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
-        controller.createIssue(user, issue);
+        controller.createProjectIssue(user, issue);
 
         verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
@@ -216,7 +205,7 @@ class IssueControllerTest {
         final TimelineController timelineController = mock(TimelineController.class);
         final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
-        controller.createIssue(user, issue);
+        controller.createProjectIssue(user, issue);
 
         verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
@@ -243,7 +232,7 @@ class IssueControllerTest {
         final TimelineController timelineController = mock(TimelineController.class);
         final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
 
-        controller.createIssue(user, issue, projectId, IssueStatus.PENDING);
+        controller.createTenancyIssue(user, issue, projectId);
 
         verify(timelineController, never()).createTimelineEntry(
             any(), any(), any(), any(), any(), any(MessagePurpose.class), any());

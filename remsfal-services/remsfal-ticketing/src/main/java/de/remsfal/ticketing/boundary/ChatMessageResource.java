@@ -221,7 +221,7 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
             }
 
             for (InputPart inputPart : fileParts) {
-                String fileName = getFileName(inputPart.getHeaders());
+                String fileName = inputPart.getFileName();
                 if (!isFileNameValid(fileName)) {
                     logger.error("Invalid file name: " + fileName);
                     return Response.status(Response.Status.BAD_REQUEST)

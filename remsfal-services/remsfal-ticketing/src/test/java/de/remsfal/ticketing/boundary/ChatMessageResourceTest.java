@@ -487,7 +487,7 @@ class ChatMessageResourceTest extends AbstractTicketingTest {
             .post(CHAT_UPLOAD_PATH, TicketingTestData.ISSUE_ID_1, TicketingTestData.CHAT_SESSION_ID_1)
             .then()
             .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
-            .body("message", equalTo("Failed to read file stream: unknown"));
+            .body("message", equalTo("Invalid file name: null"));
     }
 
     @Test

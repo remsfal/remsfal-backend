@@ -5,7 +5,6 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
-import de.remsfal.core.api.ticketing.tenant.TenantIssueEndpoint;
 import de.remsfal.core.api.ticketing.tenant.TenantRelationsEndpoint;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 
@@ -17,7 +16,7 @@ public class TenantRelationsResource extends AbstractTicketingResource implement
     Instance<TenantIssueResource> tenantIssueResource;
 
     @Override
-    public TenantIssueEndpoint getTenantIssueResource() {
+    public TenantIssueResource getTenantIssueResource() {
         return resourceContext.initResource(tenantIssueResource.get());
     }
 }

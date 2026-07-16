@@ -2,6 +2,7 @@ package de.remsfal.ticketing.entity.dao;
 
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,6 +24,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     // ---- Issue columns ----
     static final String PRIORITY           = "priority";
+    static final String TYPE               = "type";
     static final String STATUS             = "status";
     static final String AGREEMENT_ID       = "agreement_id";
     
@@ -73,7 +75,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
      */
     public List<IssueEntity> findByQuery(final UUID projectId, final UUID assigneeId,
         final UUID agreementId, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final boolean onlyVisibleToTenants,
+        final List<IssueType> type, final List<IssueStatus> status, final boolean onlyVisibleToTenants,
         final UUID cursor, final Integer limit) {
         MapperWhere query = template.select(IssueEntity.class)
             .where(PROJECT_ID).eq(projectId);
@@ -89,8 +91,11 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
         if (rentalId != null) {
             query = query.and("rental_unit_id").eq(rentalId);
         }
-        if (status != null) {
-            query = query.and(STATUS).eq(status.name());
+        if (type != null && !type.isEmpty()) {
+            query = query.and(TYPE).in(type.stream().map(Enum::name).toList());
+        }
+        if (status != null && !status.isEmpty()) {
+            query = query.and(STATUS).in(status.stream().map(Enum::name).toList());
         }
         if (onlyVisibleToTenants) {
             query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);

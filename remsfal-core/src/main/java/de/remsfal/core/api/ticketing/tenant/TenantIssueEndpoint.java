@@ -54,7 +54,7 @@ public interface TenantIssueEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     TenantIssueListJson getIssues(
         @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
-        @QueryParam("cursor") String cursor,
+        @QueryParam("cursor") UUID cursor,
         @Parameter(description = "Maximum number of issues to return")
         @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit);
 

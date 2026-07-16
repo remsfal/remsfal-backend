@@ -3,9 +3,7 @@ package de.remsfal.ticketing.boundary;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +29,13 @@ public class AbstractTicketingResource extends AbstractResource {
     @Inject
     protected IssueController issueController;
 
+    /**
+     * Checks if the current user has sufficient permissions to create an issue in the given project.
+     * Throws a {@link ForbiddenException} if the user does not have sufficient permissions.
+     *
+     * @param projectId The ID of the project to check permissions for.
+     * @return The {@link MemberRole} of the user in the project if they have sufficient permissions.
+     */
     protected MemberRole checkProjectIssueCreatePermissions(final UUID projectId) {
         if (principal.getProjectRole(projectId) == null
             || !principal.getProjectRole(projectId).isPrivileged(MemberRole.STAFF) ) {
@@ -39,6 +44,13 @@ public class AbstractTicketingResource extends AbstractResource {
         return principal.getProjectRole(projectId);
     }
 
+    /**
+     * Checks if the current user has sufficient permissions to create an issue in the given tenancy.
+     * Throws a {@link ForbiddenException} if the user does not have sufficient permissions.
+     *
+     * @param tenancyId The ID of the tenancy to check permissions for.
+     * @return The project ID associated with the tenancy if the user has sufficient permissions.
+     */
     protected UUID checkTenancyIssueCreatePermissions(final UUID tenancyId) {
         Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
         if (tenancyId != null && tenancyProjects.containsKey(tenancyId)) {
@@ -47,6 +59,39 @@ public class AbstractTicketingResource extends AbstractResource {
         throw new ForbiddenException(FORBIDDEN_MESSAGE);
     }
 
+    /**
+     * Checks if the current user has sufficient permissions to access the given issue.
+     * Throws a {@link ForbiddenException} if the user does not have sufficient permissions.
+     *
+     * @param issueId The ID of the issue to check permissions for.
+     * @return The {@link IssueModel} of the issue if the user has sufficient permissions.
+     */
+    protected IssueModel checkProjectIssueAccessPermissions(final UUID issueId) {
+        final IssueModel issue = issueController.getIssue(issueId);
+        if (principal.getProjectRole(issue.getProjectId()) == null) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
+        return issue;
+    }
+
+    /**
+     * Checks if the current user has sufficient permissions to access the given issue in a tenancy context.
+     * Throws a {@link ForbiddenException} if the user does not have sufficient permissions.
+     *
+     * @param issueId The ID of the issue to check permissions for.
+     * @return The {@link IssueModel} of the issue if the user has sufficient permissions.
+     */
+    protected IssueModel checkTenancyIssueAccessPermissions(final UUID issueId) {
+        final IssueModel issue = issueController.getIssue(issueId);
+        if (issue.getAgreementId() == null || !Boolean.TRUE.equals(issue.isVisibleToTenants())
+            || !principal.getTenancyProjects().containsKey(issue.getAgreementId())
+            || !principal.getTenancyProject(issue.getAgreementId()).equals(issue.getProjectId())) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
+        return issue;
+    }
+
+    @Deprecated
     protected UserContext checkIssueReadPermissions(final UUID issueId) {
         final IssueModel issue = issueController.getIssue(issueId);
         final UserContext context = getUserContext(issue.getProjectId());
@@ -64,18 +109,9 @@ public class AbstractTicketingResource extends AbstractResource {
      * Like {@link #checkIssueReadPermissions(UUID)}, but only for the manager-facing endpoint:
      * rejects tenants outright instead of returning their context.
      */
+    @Deprecated
     protected void checkManagerIssueReadPermissions(final UUID issueId) {
         if (checkIssueReadPermissions(issueId) != UserContext.MANAGER) {
-            throw new ForbiddenException(FORBIDDEN_MESSAGE);
-        }
-    }
-
-    /**
-     * Like {@link #checkIssueReadPermissions(UUID)}, but only for the tenant-facing endpoint:
-     * rejects managers outright instead of returning their context.
-     */
-    protected void checkTenantIssueReadPermissions(final UUID issueId) {
-        if (checkIssueReadPermissions(issueId) != UserContext.TENANT) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
     }
@@ -85,12 +121,14 @@ public class AbstractTicketingResource extends AbstractResource {
      * single issue to derive a project from). Any project membership is sufficient to read, unlike
      * {@link #checkProjectIssueCreatePermissions(UUID)} which requires STAFF+.
      */
+    @Deprecated
     protected void checkProjectIssueReadPermissions(final UUID projectId) {
         if (!principal.getProjectRoles().containsKey(projectId)) {
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
     }
 
+    @Deprecated
     protected UserContext getUserContext(final UUID projectId) {
         Map<UUID, MemberRole> roles = principal.getProjectRoles();
         if (roles.containsKey(projectId)) {
@@ -104,6 +142,7 @@ public class AbstractTicketingResource extends AbstractResource {
         return null;
     }
 
+    @Deprecated
     protected MemberRole checkIssueWritePermissions(final UUID issueId) {
         final IssueModel issue = issueController.getIssue(issueId);
         if (principal.getProjectRole(issue.getProjectId()) == null
@@ -126,21 +165,6 @@ public class AbstractTicketingResource extends AbstractResource {
     }
 
     /**
-     * Parses an opaque cursor (as sent by the client on subsequent page requests) back into the
-     * {@code issue_id} it encodes. The cursor is just the raw {@code issue_id} as a string.
-     */
-    protected static UUID parseCursor(final String cursor) {
-        if (cursor == null || cursor.isBlank()) {
-            return null;
-        }
-        try {
-            return UUID.fromString(cursor);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid cursor");
-        }
-    }
-
-    /**
      * Computes the cursor for the next page from the current page's issues. A full page (as many
      * issues as requested) implies there might be more; a partial page means the data was exhausted.
      */
@@ -149,18 +173,6 @@ public class AbstractTicketingResource extends AbstractResource {
             return null;
         }
         return issues.get(issues.size() - 1).getId().toString();
-    }
-
-    protected String getFileName(final MultivaluedMap<String, String> headers) {
-        List<String> contentDisposition = headers.get("Content-Disposition");
-        if (contentDisposition != null && !contentDisposition.isEmpty()) {
-            for (String part : contentDisposition.get(0).split(";")) {
-                if (part.trim().startsWith("filename")) {
-                    return part.split("=")[1].trim().replace("\"", "");
-                }
-            }
-        }
-        return "unknown";
     }
 
 

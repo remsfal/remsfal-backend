@@ -19,6 +19,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -33,6 +34,7 @@ import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -65,10 +67,16 @@ public interface IssueEndpoint {
         @QueryParam("rentalUnitType") UnitType rentalUnitType,
         @Parameter(description = "Filter to return only issuesfor a specific rental unit")
         @QueryParam("rentalUnitId") UUID rentalUnitId,
-        @Parameter(description = "Filter to return only issues with a specific status")
-        @QueryParam("status") IssueStatus status,
+        @Parameter(description = "Filter to return only issues matching one of the given types "
+            + "(repeat the parameter for multiple values, e.g. type=DEFECT&type=MAINTENANCE); "
+            + "omit to return issues of all types")
+        @QueryParam("type") List<IssueType> type,
+        @Parameter(description = "Filter to return only issues matching one of the given statuses "
+            + "(repeat the parameter for multiple values, e.g. status=OPEN&status=IN_PROGRESS); "
+            + "omit to return issues of all statuses")
+        @QueryParam("status") List<IssueStatus> status,
         @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
-        @QueryParam("cursor") String cursor,
+        @QueryParam("cursor") UUID cursor,
         @Parameter(description = "Maximum number of issues to return")
         @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit);
 
@@ -83,7 +91,7 @@ public interface IssueEndpoint {
         content = @Content(mediaType = MediaType.APPLICATION_JSON,
             schema = @Schema(implementation = IssueJson.class)))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createProjectIssue(
+    Response createIssue(
         @Parameter(description = "Issue information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
 

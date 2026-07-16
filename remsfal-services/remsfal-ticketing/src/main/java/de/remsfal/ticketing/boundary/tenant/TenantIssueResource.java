@@ -23,13 +23,11 @@ import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
-import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.api.ticketing.tenant.TenantIssueEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.boundary.IssueResource;
@@ -64,8 +62,9 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     Instance<TenantTimelineResource> tenantTimelineResource;
 
     @Override
-    public TenantIssueListJson getIssues(final String cursor, final Integer limit) {
-        final List<? extends IssueModel> issues = issueController.getTenancyIssues(parseCursor(cursor), limit);
+    public TenantIssueListJson getIssues(final UUID cursor, final Integer limit) {
+        final Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
+        final List<? extends IssueModel> issues = issueController.getTenancyIssues(tenancyProjects, cursor, limit);
         return TenantIssueListJson.valueOf(issues, nextCursorOf(issues, limit));
     }
 
@@ -76,8 +75,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
         if (projectId == null) {
             throw new ForbiddenException("User does not have permission to create issues in this tenancy");
         }
-        final IssueModel createdIssue = issueController.createIssue(principal, issue, projectId,
-            IssueStatus.PENDING);
+        final IssueModel createdIssue = issueController.createTenancyIssue(principal, issue, projectId);
 
         final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         final List<InputPart> fileParts = formDataMap.get("attachment");
@@ -136,21 +134,19 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
 
     @Override
     public TenantIssueJson getIssue(final UUID issueId) {
-        checkTenantIssueReadPermissions(issueId);
-        final IssueModel issue = issueController.getIssue(issueId);
+        final IssueModel issue = checkTenancyIssueAccessPermissions(issueId);
         return TenantIssueJson.valueOf(issue);
     }
 
     @Override
     public void closeIssue(final UUID issueId) {
-        checkTenantIssueReadPermissions(issueId);
+        checkTenancyIssueAccessPermissions(issueId);
         issueController.closeIssue(issueId);
     }
 
     @Override
     public Response downloadAttachment(final UUID issueId, final UUID attachmentId, final String filename) {
-        checkTenantIssueReadPermissions(issueId);
-        final IssueModel issue = issueController.getIssue(issueId);
+        final IssueModel issue = checkTenancyIssueAccessPermissions(issueId);
 
         final Set<UUID> visibleAttachmentIds = timelineController.getVisibleAttachmentIds(
             issue.getAgreementId(), issueId, issue.getProjectId());
@@ -174,7 +170,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     }
 
     @Override
-    public TimelineEndpoint getTenantTimelineResource() {
+    public TenantTimelineResource getTenantTimelineResource() {
         return resourceContext.initResource(tenantTimelineResource.get());
     }
 

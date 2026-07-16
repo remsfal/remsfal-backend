@@ -25,5 +25,6 @@
     <include file="META-INF/changesets/010-create-inbox-messages-table.xml"/>
     <include file="META-INF/changesets/011-create-tenant-timelines-table.xml"/>
     <include file="META-INF/changesets/012-rename-tenant-timelines-title-to-purpose.xml"/>
+    <include file="META-INF/changesets/013-add-issues-type-index.xml"/>
 
 </databaseChangeLog>
