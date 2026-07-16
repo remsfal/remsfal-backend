@@ -1,7 +1,7 @@
-package de.remsfal.core.model.ticketing.tenant;
+package de.remsfal.core.model.ticketing;
 
 /**
- * Identifies why a {@link TenantTimelineModel} entry was created, so the client can render a
+ * Identifies why a {@link TimelineModel} entry was created, so the client can render a
  * localized label instead of relying on a backend-generated free-text title.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

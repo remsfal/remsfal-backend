@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary.tenant;
+package de.remsfal.ticketing.boundary;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
-import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,23 +27,30 @@ import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class TenantTimelineResourceTest extends AbstractTicketingTest {
+class IssueTimelineResourceTest extends AbstractTicketingTest {
 
-    static final String TIMELINE_PATH = "/ticketing/v1/tenant-relations/issues/{issueId}/timeline";
+    static final String TIMELINE_PATH = "/ticketing/v1/issues/{issueId}/timeline";
 
     static final UUID PROJECT_ID = UUID.randomUUID();
     static final UUID AGREEMENT_ID = UUID.randomUUID();
     static final UUID ISSUE_ID_WITH_AGREEMENT = UUID.randomUUID();
 
+    static final UUID PROJECT_ID_NO_AGREEMENT = UUID.randomUUID();
+    static final UUID ISSUE_ID_NO_AGREEMENT = UUID.randomUUID();
+
     @BeforeEach
     void setUpIssues() {
         insertIssue(PROJECT_ID, ISSUE_ID_WITH_AGREEMENT,
             "Tenant issue", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
-            UUID.randomUUID(), AGREEMENT_ID, null, "Issue for tenant timeline tests");
+            UUID.randomUUID(), AGREEMENT_ID, null, "Issue for manager timeline tests");
+
+        insertIssue(PROJECT_ID_NO_AGREEMENT, ISSUE_ID_NO_AGREEMENT,
+            "Manager issue", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), null, null, "Issue without agreement");
     }
 
     @Test
-    void getTimelineEntries_SUCCESS_forTenantIssue() {
+    void getTimelineEntries_SUCCESS_forManager() {
         insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
             MessagePurpose.MESSAGE_SENT, null);
         insertTimelineEntry(ISSUE_ID_WITH_AGREEMENT, PROJECT_ID, AGREEMENT_ID, UUID.randomUUID(),
@@ -54,8 +60,7 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
 
         given()
             .when()
-            .cookie(buildCookie(UUID.randomUUID(), "tenant@example.com", "Tenant", Map.of(), Map.of(),
-                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
+            .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
             .get(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
             .statusCode(200)
@@ -64,11 +69,24 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getTimelineEntries_FORBIDDEN_forManager() {
-        // the tenant-relations timeline is tenant-exclusive; managers must use the /issues/.../timeline path
+    void getTimelineEntries_SUCCESS_issueWithoutAgreementReturnsEmptyList() {
         given()
             .when()
-            .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
+            .cookie(buildManagerCookie(Map.of(PROJECT_ID_NO_AGREEMENT.toString(), "MANAGER")))
+            .get(TIMELINE_PATH, ISSUE_ID_NO_AGREEMENT)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("timelines", hasSize(0));
+    }
+
+    @Test
+    void getTimelineEntries_FORBIDDEN_forTenant() {
+        // the manager timeline is manager-exclusive; tenants must use the tenant-relations path
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "tenant@example.com", "Tenant", Map.of(), Map.of(),
+                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
             .get(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
             .statusCode(403);
@@ -78,33 +96,7 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     void createTimelineEntryWithAttachments_SUCCESS_withoutAttachments() {
         final String timelineJson = "{"
             + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\""
-            + "}";
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_NAME, Map.of(), Map.of(),
-                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
-            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
-            .then()
-            .statusCode(201)
-            .contentType(ContentType.JSON)
-            .header("location",
-                containsString("/ticketing/v1/tenant-relations/issues/" + ISSUE_ID_WITH_AGREEMENT + "/timeline/"))
-            .body("timelineId", notNullValue())
-            .body("issueId", equalTo(ISSUE_ID_WITH_AGREEMENT.toString()))
-            .body("tenancyId", equalTo(AGREEMENT_ID.toString()))
-            .body("purpose", equalTo("MESSAGE_SENT"))
-            .body("message", equalTo("Bitte um Rueckmeldung"));
-    }
-
-    @Test
-    void createTimelineEntryWithAttachments_FORBIDDEN_forManager() {
-        final String timelineJson = "{"
-            + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\""
+            + "\"message\":\"Handwerker beauftragt\""
             + "}";
 
         given()
@@ -113,16 +105,55 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .header("location",
+                containsString("/ticketing/v1/issues/" + ISSUE_ID_WITH_AGREEMENT + "/timeline/"))
+            .body("timelineId", notNullValue())
+            .body("issueId", equalTo(ISSUE_ID_WITH_AGREEMENT.toString()))
+            .body("tenancyId", equalTo(AGREEMENT_ID.toString()))
+            .body("purpose", equalTo("MESSAGE_SENT"))
+            .body("message", equalTo("Handwerker beauftragt"));
+    }
+
+    @Test
+    void createTimelineEntryWithAttachments_FORBIDDEN_forTenant() {
+        final String timelineJson = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"Handwerker beauftragt\""
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "tenant@example.com", "Tenant", Map.of(), Map.of(),
+                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
             .statusCode(403);
+    }
+
+    @Test
+    void createTimelineEntryWithAttachments_FAILED_issueWithoutAgreement() {
+        final String timelineJson = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"Handwerker beauftragt\""
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(Map.of(PROJECT_ID_NO_AGREEMENT.toString(), "MANAGER")))
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .post(TIMELINE_PATH, ISSUE_ID_NO_AGREEMENT)
+            .then()
+            .statusCode(400);
     }
 
     @Test
     void createTimelineEntryWithAttachments_FAILED_missingTimelinePart() {
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_NAME, Map.of(), Map.of(),
-                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
+            .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
             .multiPart("notTimeline", "{}", MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
@@ -130,59 +161,22 @@ class TenantTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createTimelineEntryWithAttachments_SUCCESS_uploadedAttachmentIsLinkedAndVisible() {
-        final String timelineJson = "{"
-            + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\""
-            + "}";
-        final InputStream attachmentStream = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1);
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_NAME, Map.of(), Map.of(),
-                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
-            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1,
-                attachmentStream, TicketingTestData.ATTACHMENT_FILE_TYPE_1)
-            .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
-            .then()
-            .statusCode(201)
-            .contentType(ContentType.JSON)
-            .body("attachments", hasSize(1))
-            .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1));
-
-        given()
-            .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_NAME, Map.of(), Map.of(),
-                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
-            .get(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
-            .then()
-            .statusCode(200)
-            .body("timelines", hasSize(1))
-            .body("timelines[0].attachments", hasSize(1));
-    }
-
-    @Test
-    void createTimelineEntryWithAttachments_FAILED_cannotReferenceForeignAttachment() {
-        // an attachment uploaded by someone else (e.g. a manager) for the same issue
-        final UUID foreignAttachmentId = UUID.randomUUID();
-        insertAttachment(ISSUE_ID_WITH_AGREEMENT, foreignAttachmentId, TicketingTestData.ATTACHMENT_FILE_PATH_2,
+    void createTimelineEntryWithAttachments_FAILED_cannotReferenceExistingAttachment() {
+        // an attachment already on the issue, not uploaded as part of this request
+        final UUID existingAttachmentId = UUID.randomUUID();
+        insertAttachment(ISSUE_ID_WITH_AGREEMENT, existingAttachmentId, TicketingTestData.ATTACHMENT_FILE_PATH_2,
             TicketingTestData.ATTACHMENT_FILE_TYPE_2, "/issues/" + ISSUE_ID_WITH_AGREEMENT + "/attachments/"
-                + foreignAttachmentId + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_2, UUID.randomUUID());
+                + existingAttachmentId + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_2, UUID.randomUUID());
 
         final String timelineJson = "{"
             + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\","
-            + "\"attachments\":[{\"attachmentId\":\"" + foreignAttachmentId + "\"}]"
+            + "\"message\":\"Handwerker beauftragt\","
+            + "\"attachments\":[{\"attachmentId\":\"" + existingAttachmentId + "\"}]"
             + "}";
 
         given()
             .when()
-            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
-                TicketingTestData.USER_NAME, Map.of(), Map.of(),
-                Map.of(AGREEMENT_ID.toString(), PROJECT_ID.toString())))
+            .cookie(buildManagerCookie(Map.of(PROJECT_ID.toString(), "MANAGER")))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(TIMELINE_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()

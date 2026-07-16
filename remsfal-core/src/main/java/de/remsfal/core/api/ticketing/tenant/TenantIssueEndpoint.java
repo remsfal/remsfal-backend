@@ -18,11 +18,17 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -44,10 +50,11 @@ public interface TenantIssueEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information for all issues of the calling tenant.",
         description = "Aggregates issues across all rental agreements the caller is a tenant of.")
+    @APIResponse(responseCode = "200", description = "Issues retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     TenantIssueListJson getIssues(
         @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
-        @QueryParam("cursor") String cursor,
+        @QueryParam("cursor") UUID cursor,
         @Parameter(description = "Maximum number of issues to return")
         @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit);
 
@@ -57,18 +64,36 @@ public interface TenantIssueEndpoint {
     @Operation(summary = "Create a new issue with multiple image attachments.",
         description = "Creates a new issue based on the provided issue information and attaches multiple image files"
         + " to it. This method is intended solely for the creation of issues by a tenant.")
+    @RequestBody(
+        required = true,
+        content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA,
+            schema = @Schema(
+                type = SchemaType.OBJECT,
+                requiredProperties = {"issue"},
+                properties = {
+                    @SchemaProperty(name = "issue", implementation = TenantIssueJson.class,
+                        description = "Issue information as JSON"),
+                    @SchemaProperty(name = "attachment", type = SchemaType.ARRAY, implementation = java.io.File.class,
+                        description = "One or more image files to attach to the issue")
+                }
+            )
+        )
+    )
     @APIResponse(responseCode = "201", description = "Issue with attachments created successfully",
-        headers = @Header(name = "Location", description = "URL of the new issue"))
+        headers = @Header(name = "Location", description = "URL of the new issue"),
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = TenantIssueJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input or unsupported file type")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createIssueWithAttachments(
-        @Parameter(description = "Multipart form data containing issue information and image files", required = true)
-        MultipartFormDataInput input);
+        @Parameter(hidden = true) MultipartFormDataInput input);
 
     @GET
     @Path("/{issueId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of an issue.")
+    @APIResponse(responseCode = "200", description = "Issue retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to view this issue")
     @APIResponse(responseCode = "404", description = "The issue does not exist")
@@ -103,7 +128,7 @@ public interface TenantIssueEndpoint {
         @Parameter(description = "Filename of the attachment", required = true)
         @PathParam("filename") @NotNull String filename);
 
-    @Path("/{issueId}/" + TenantTimelineEndpoint.SERVICE)
-    TenantTimelineEndpoint getTenantTimelineResource();
+    @Path("/{issueId}/" + TimelineEndpoint.SERVICE)
+    TimelineEndpoint getTenantTimelineResource();
 
 }

@@ -3,15 +3,12 @@ package de.remsfal.ticketing.boundary;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +17,7 @@ import java.util.UUID;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-import de.remsfal.common.model.FileUploadData;
+import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.model.ticketing.OrderProcessPhase;
@@ -118,33 +115,15 @@ public class OrderAttachmentResource extends AbstractTicketingResource implement
 
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
-        List<OrderAttachmentJson> attachments = processAttachmentParts(processId, fileParts);
+        List<OrderAttachmentJson> attachments = MultipartAttachmentProcessor.processAttachmentParts(
+            fileParts,
+            fileData -> OrderAttachmentJson.valueOf(
+                orderAttachmentController.addAttachment(principal, processPhase, processId, fileData)));
 
         return Response.ok()
             .type(MediaType.APPLICATION_JSON)
             .entity(attachments)
             .build();
-    }
-
-    List<OrderAttachmentJson> processAttachmentParts(final UUID processId, final List<InputPart> fileParts) {
-        List<OrderAttachmentJson> attachments = new ArrayList<>();
-        if (fileParts != null && !fileParts.isEmpty()) {
-            for (InputPart inputPart : fileParts) {
-                try {
-                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
-                    FileUploadData fileData = new FileUploadData(
-                        inputStream,
-                        inputPart.getFileName(),
-                        inputPart.getMediaType());
-                    OrderAttachmentEntity attachmentModel =
-                        orderAttachmentController.addAttachment(principal, processPhase, processId, fileData);
-                    attachments.add(OrderAttachmentJson.valueOf(attachmentModel));
-                } catch (IOException e) {
-                    throw new BadRequestException("Failed to read file data", e);
-                }
-            }
-        }
-        return attachments;
     }
 
 }

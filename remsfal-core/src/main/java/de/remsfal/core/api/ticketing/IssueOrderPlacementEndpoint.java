@@ -13,6 +13,8 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -26,8 +28,11 @@ public interface IssueOrderPlacementEndpoint {
     String SERVICE = "order-placement";
 
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Place an order based on a quotation.")
-    @APIResponse(responseCode = "201", description = "Order placement created successfully")
+    @APIResponse(responseCode = "201", description = "Order placement created successfully",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = OrderPlacementJson.class)))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to access this issue")
     @APIResponse(responseCode = "404", description = "The issue or quotation does not exist")

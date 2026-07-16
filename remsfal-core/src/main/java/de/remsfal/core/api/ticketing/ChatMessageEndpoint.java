@@ -17,7 +17,12 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
@@ -32,7 +37,9 @@ public interface ChatMessageEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Send a chat message in a chat session")
-    @APIResponse(responseCode = "201", description = "Chat message sent")
+    @APIResponse(responseCode = "201", description = "Chat message sent",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = ChatMessageJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "403", description = "Chat session is closed or archived")
     @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
@@ -116,16 +123,41 @@ public interface ChatMessageEndpoint {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Send a file in a chat session")
-    @APIResponse(responseCode = "201", description = "File sent")
+    @APIResponse(responseCode = "201", description = "File sent",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(
+                type = SchemaType.OBJECT,
+                properties = {
+                    @SchemaProperty(name = "fileId", implementation = UUID.class),
+                    @SchemaProperty(name = "fileUrl", implementation = String.class),
+                    @SchemaProperty(name = "sessionId", implementation = UUID.class),
+                    @SchemaProperty(name = "createdAt", implementation = java.time.Instant.class),
+                    @SchemaProperty(name = "sender", implementation = UUID.class)
+                }
+            )))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "403", description = "Chat session is closed or archived")
     @APIResponse(responseCode = "404", description = "Project, task, or chat session not found")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @RequestBody(
+        required = true,
+        content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA,
+            schema = @Schema(
+                type = SchemaType.OBJECT,
+                requiredProperties = {"file"},
+                properties = {
+                    @SchemaProperty(name = "file", type = SchemaType.ARRAY, implementation = java.io.File.class,
+                        description = "One or more files to send in the chat session")
+                }
+            )
+        )
+    )
     Response uploadFile(
         @Parameter(description = "ID of the task", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the chat session", required = true)
         @PathParam("sessionId") @NotNull UUID sessionId,
-        @Parameter(description = "Multipart file input", required = true) MultipartFormDataInput input);
+        @Parameter(hidden = true) MultipartFormDataInput input);
 
 }

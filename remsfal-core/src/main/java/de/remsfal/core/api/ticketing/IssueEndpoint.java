@@ -19,18 +19,22 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -49,6 +53,7 @@ public interface IssueEndpoint {
     @Operation(summary = "Retrieve information for all issues of a single project.",
         description = "This method is intended solely for use by a property manager, scoped to exactly one"
         + " project at a time. Tenants must use the separate tenant issues endpoint instead.")
+    @APIResponse(responseCode = "200", description = "Issues retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to read issues of this project")
     IssueListJson getIssues(
@@ -62,10 +67,16 @@ public interface IssueEndpoint {
         @QueryParam("rentalUnitType") UnitType rentalUnitType,
         @Parameter(description = "Filter to return only issuesfor a specific rental unit")
         @QueryParam("rentalUnitId") UUID rentalUnitId,
-        @Parameter(description = "Filter to return only issues with a specific status")
-        @QueryParam("status") IssueStatus status,
+        @Parameter(description = "Filter to return only issues matching one of the given types "
+            + "(repeat the parameter for multiple values, e.g. type=DEFECT&type=MAINTENANCE); "
+            + "omit to return issues of all types")
+        @QueryParam("type") List<IssueType> type,
+        @Parameter(description = "Filter to return only issues matching one of the given statuses "
+            + "(repeat the parameter for multiple values, e.g. status=OPEN&status=IN_PROGRESS); "
+            + "omit to return issues of all statuses")
+        @QueryParam("status") List<IssueStatus> status,
         @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
-        @QueryParam("cursor") String cursor,
+        @QueryParam("cursor") UUID cursor,
         @Parameter(description = "Maximum number of issues to return")
         @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit);
 
@@ -76,9 +87,11 @@ public interface IssueEndpoint {
         description = "Creates a new issue based on the provided issue information."
         + " This method is intended solely for the creation of issues by a property manager.")
     @APIResponse(responseCode = "201", description = "Issue created successfully",
-        headers = @Header(name = "Location", description = "URL of the new issue"))
+        headers = @Header(name = "Location", description = "URL of the new issue"),
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = IssueJson.class)))
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    Response createProjectIssue(
+    Response createIssue(
         @Parameter(description = "Issue information", required = true)
         @Valid @ConvertGroup(to = PostValidation.class) IssueJson issue);
 
@@ -87,6 +100,7 @@ public interface IssueEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve information of an issue.",
         description = "This method is intended solely for use by a property manager.")
+    @APIResponse(responseCode = "200", description = "Issue retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to view this issue")
     @APIResponse(responseCode = "404", description = "The property does not exist")
@@ -99,6 +113,7 @@ public interface IssueEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of an issue.")
+    @APIResponse(responseCode = "200", description = "Issue updated successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The issue does not exist")
     IssueJson updateIssue(
@@ -178,5 +193,8 @@ public interface IssueEndpoint {
 
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
+
+    @Path("/{issueId}/" + TimelineEndpoint.SERVICE)
+    TimelineEndpoint getTimelineResource();
 
 }

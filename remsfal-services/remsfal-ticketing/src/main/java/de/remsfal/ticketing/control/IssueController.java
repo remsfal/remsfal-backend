@@ -13,7 +13,8 @@ import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
@@ -41,21 +42,26 @@ public class IssueController {
     IssueEventProducer issueEventProducer;
 
     @Inject
-    TenantTimelineController tenantTimelineController;
+    TimelineController timelineController;
 
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
-    public IssueModel createIssue(final UserModel user, final IssueModel issue) {
-        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN, false);
+    public IssueModel createProjectIssue(final UserModel user, final IssueModel issue) {
+        return createIssue(user, issue, issue.getProjectId(), IssueStatus.OPEN, true);
     }
 
-    public IssueModel createIssue(final UserModel user, final IssueModel issue,
-        final UUID projectId, final IssueStatus initialStatus) {
-        return createIssue(user, issue, projectId, initialStatus, true);
+    /**
+     * Used by the tenant-facing create-with-attachments flow, which uploads attachments only after
+     * the issue (and its id) exist, and therefore creates its own {@code ISSUE_CREATED} timeline
+     * entry afterwards (carrying the attachment ids) instead of relying on the automatic one below.
+     */
+    public IssueModel createTenancyIssue(final UserModel user, final IssueModel issue,
+        final UUID projectId) {
+        return createIssue(user, issue, projectId, IssueStatus.PENDING, false);
     }
 
     private IssueModel createIssue(final UserModel user, final IssueModel issue,
-        final UUID projectId, final IssueStatus initialStatus, final boolean alwaysNotifyTenant) {
+        final UUID projectId, final IssueStatus initialStatus, final boolean createTimelineEntry) {
         logger.infov("Creating an issue (projectId={0}, creator={1})", issue.getProjectId(), user.getEmail());
 
         IssueEntity entity = new IssueEntity();
@@ -91,15 +97,19 @@ public class IssueController {
         entity = issueRepository.insert(entity);
         issueEventProducer.sendIssueCreated(entity, user);
 
-        if (entity.getAgreementId() != null
-            && (alwaysNotifyTenant || Boolean.TRUE.equals(entity.isVisibleToTenants()))) {
-            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+        if (createTimelineEntry && entity.getAgreementId() != null
+            && Boolean.TRUE.equals(entity.isVisibleToTenants())) {
+            timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
                 entity.getProjectId(), user.getId(), user.getName(),
                 MessagePurpose.ISSUE_CREATED, entity.getDescription());
         }
         return entity;
     }
 
+    /**
+     * Fetches a single issue by its id. This is a single-partition query, so no fan-out or merge is
+     * needed.
+     */
     public IssueEntity getIssue(final UUID issueId) {
         logger.infov("Retrieving issue (issueId={0})", issueId);
         return issueRepository.findByIssueId(issueId)
@@ -114,8 +124,8 @@ public class IssueController {
      * (the table's clustering order), so merging is a simple sort of the small
      * {@code partitions × limit} candidate set, not a full re-sort of the whole result.
      */
-    public List<? extends IssueModel> getTenancyIssues(final UUID cursor, final Integer limit) {
-        final Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
+    public List<? extends IssueModel> getTenancyIssues(final Map<UUID, UUID> tenancyProjects,
+        final UUID cursor, final Integer limit) {
         if (tenancyProjects.isEmpty()) {
             return List.of();
         }
@@ -124,7 +134,7 @@ public class IssueController {
             final UUID agreementId = tenancy.getKey();
             final UUID projectId = tenancy.getValue();
             merged.addAll(issueRepository.findByQuery(projectId, null, agreementId,
-                null, null, null, true, cursor, limit));
+                null, null, null, null, true, cursor, limit));
         }
         merged.sort(Comparator.comparing(IssueEntity::getId, Comparator.reverseOrder()));
         return merged.size() > limit ? merged.subList(0, limit) : merged;
@@ -136,9 +146,9 @@ public class IssueController {
      */
     public List<? extends IssueModel> getProjectIssues(final UUID projectId, final UUID assigneeId,
         final UUID agreementId, final UnitType rentalType, final UUID rentalId,
-        final IssueStatus status, final UUID cursor, final Integer limit) {
+        final List<IssueType> type, final List<IssueStatus> status, final UUID cursor, final Integer limit) {
         return issueRepository.findByQuery(projectId, assigneeId, agreementId,
-            rentalType, rentalId, status, false, cursor, limit);
+            rentalType, rentalId, type, status, false, cursor, limit);
     }
 
     public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
@@ -178,7 +188,7 @@ public class IssueController {
 
         if (entity.getAgreementId() != null && Boolean.TRUE.equals(entity.isVisibleToTenants())
             && issue.getStatus() != null && issue.getStatus() != oldStatus) {
-            tenantTimelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
+            timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
                 entity.getProjectId(), principal.getId(), principal.getName(),
                 MessagePurpose.STATUS_CHANGED, entity.getStatus().name());
         }
@@ -205,173 +215,167 @@ public class IssueController {
             issueRepository.update(e);
             if (oldStatus != IssueStatus.CLOSED && e.getAgreementId() != null
                 && Boolean.TRUE.equals(e.isVisibleToTenants())) {
-                tenantTimelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
+                timelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
                     principal.getId(), principal.getName(), MessagePurpose.STATUS_CHANGED,
                     IssueStatus.CLOSED.name());
             }
         });
     }
 
-    public IssueModel setParentRelation(final IssueEntity entity, final UUID parentIssueId) {
-        if (entity.getId().equals(parentIssueId)) {
+    public IssueModel setParentRelation(final UserModel user, final IssueModel issue, final UUID parentIssueId) {
+        if (issue.getId().equals(parentIssueId)) {
             throw new BadRequestException("An issue cannot be its own parent");
         }
         IssueEntity parentEntity = issueRepository.findByIssueId(parentIssueId)
             .orElseThrow(() -> new NotFoundException("Parent issue not found"));
-        if (!entity.getProjectId().equals(parentEntity.getProjectId())) {
+        if (!issue.getProjectId().equals(parentEntity.getProjectId())) {
             throw new BadRequestException("Parent issue must be in the same project");
         }
 
-        issueRepository.setParentIssue(entity.getProjectId(), entity.getId(), parentIssueId);
-        entity.setParentIssue(parentIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.setParentIssue(issue.getProjectId(), issue.getId(), parentIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel deleteParentRelation(final IssueEntity entity, final UUID parentIssueId) {
-        if (!parentIssueId.equals(entity.getParentIssue())) {
+    public IssueModel deleteParentRelation(final UserModel user, final IssueModel issue, final UUID parentIssueId) {
+        if (!parentIssueId.equals(issue.getParentIssue())) {
             throw new BadRequestException("Issue is not a child of the specified parent");
         }
 
-        issueRepository.removeParentIssue(entity.getProjectId(), entity.getId(), parentIssueId);
-        entity.setParentIssue(null);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.removeParentIssue(issue.getProjectId(), issue.getId(), parentIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel addChildRelation(final IssueEntity entity, final UUID childIssueId) {
-        if (entity.getId().equals(childIssueId)) {
+    public IssueModel addChildRelation(final UserModel user, final IssueModel issue, final UUID childIssueId) {
+        if (issue.getId().equals(childIssueId)) {
             throw new BadRequestException("An issue cannot be its own child");
         }
         IssueEntity childEntity = issueRepository.findByIssueId(childIssueId)
             .orElseThrow(() -> new NotFoundException("Child issue not found"));
-        if (!entity.getProjectId().equals(childEntity.getProjectId())) {
+        if (!issue.getProjectId().equals(childEntity.getProjectId())) {
             throw new BadRequestException("Child issue must be in the same project");
         }
 
-        issueRepository.addChildrenIssue(entity.getProjectId(), entity.getId(), childIssueId);
-        entity.addChildrenIssue(childIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.addChildrenIssue(issue.getProjectId(), issue.getId(), childIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel deleteChildRelation(final IssueEntity entity, final UUID childIssueId) {
-        if (entity.getChildrenIssues() == null || !entity.getChildrenIssues().contains(childIssueId)) {
+    public IssueModel deleteChildRelation(final UserModel user, final IssueModel issue, final UUID childIssueId) {
+        if (issue.getChildrenIssues() == null || !issue.getChildrenIssues().contains(childIssueId)) {
             throw new BadRequestException("Issue is not a parent of the specified child");
         }
 
-        issueRepository.removeChildrenIssue(entity.getProjectId(), entity.getId(), childIssueId);
-        entity.getChildrenIssues().remove(childIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.removeChildrenIssue(issue.getProjectId(), issue.getId(), childIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel addBlocksRelation(final IssueEntity entity, final UUID blockedIssueId) {
-        if (entity.getId().equals(blockedIssueId)) {
+    public IssueModel addBlocksRelation(final UserModel user, final IssueModel issue, final UUID blockedIssueId) {
+        if (issue.getId().equals(blockedIssueId)) {
             throw new BadRequestException("An issue cannot block itself");
         }
         IssueEntity blockedEntity = issueRepository.findByIssueId(blockedIssueId)
             .orElseThrow(() -> new NotFoundException("Blocked issue not found"));
-        if (!entity.getProjectId().equals(blockedEntity.getProjectId())) {
+        if (!issue.getProjectId().equals(blockedEntity.getProjectId())) {
             throw new BadRequestException("Blocked issue must be in the same project");
         }
 
-        issueRepository.addBlocks(entity.getProjectId(), entity.getId(), blockedIssueId);
-        entity.addBlocks(blockedIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.addBlocks(issue.getProjectId(), issue.getId(), blockedIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel deleteBlocksRelation(final IssueEntity entity, final UUID blockedIssueId) {
-        if (entity.getBlocks() == null || !entity.getBlocks().contains(blockedIssueId)) {
+    public IssueModel deleteBlocksRelation(final UserModel user, final IssueModel issue, final UUID blockedIssueId) {
+        if (issue.getBlocks() == null || !issue.getBlocks().contains(blockedIssueId)) {
             throw new BadRequestException("Issue does not block the specified issue");
         }
 
-        issueRepository.removeBlocks(entity.getProjectId(), entity.getId(), blockedIssueId);
-        entity.getBlocks().remove(blockedIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.removeBlocks(issue.getProjectId(), issue.getId(), blockedIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel addBlockedByRelation(final IssueEntity entity, final UUID blockerIssueId) {
-        if (entity.getId().equals(blockerIssueId)) {
+    public IssueModel addBlockedByRelation(final UserModel user, final IssueModel issue,
+        final UUID blockerIssueId) {
+        if (issue.getId().equals(blockerIssueId)) {
             throw new BadRequestException("An issue cannot be blocked by itself");
         }
         IssueEntity blockerEntity = issueRepository.findByIssueId(blockerIssueId)
             .orElseThrow(() -> new NotFoundException("Blocker issue not found"));
-        if (!entity.getProjectId().equals(blockerEntity.getProjectId())) {
+        if (!issue.getProjectId().equals(blockerEntity.getProjectId())) {
             throw new BadRequestException("Blocker issue must be in the same project");
         }
 
-        issueRepository.addBlockedBy(entity.getProjectId(), entity.getId(), blockerIssueId);
-        entity.addBlockedBy(blockerIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.addBlockedBy(issue.getProjectId(), issue.getId(), blockerIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel deleteBlockedByRelation(final IssueEntity entity, final UUID blockerIssueId) {
-        if (entity.getBlockedBy() == null || !entity.getBlockedBy().contains(blockerIssueId)) {
+    public IssueModel deleteBlockedByRelation(final UserModel user, final IssueModel issue,
+        final UUID blockerIssueId) {
+        if (issue.getBlockedBy() == null || !issue.getBlockedBy().contains(blockerIssueId)) {
             throw new BadRequestException("Issue is not blocked by the specified issue");
         }
 
-        issueRepository.removeBlockedBy(entity.getProjectId(), entity.getId(), blockerIssueId);
-        entity.getBlockedBy().remove(blockerIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.removeBlockedBy(issue.getProjectId(), issue.getId(), blockerIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel addRelatedToRelation(final IssueEntity entity, final UUID relatedIssueId) {
-        if (entity.getId().equals(relatedIssueId)) {
+    public IssueModel addRelatedToRelation(final UserModel user, final IssueModel issue,
+        final UUID relatedIssueId) {
+        if (issue.getId().equals(relatedIssueId)) {
             throw new BadRequestException("An issue cannot be related to itself");
         }
         IssueEntity relatedEntity = issueRepository.findByIssueId(relatedIssueId)
             .orElseThrow(() -> new NotFoundException("Related issue not found"));
-        if (!entity.getProjectId().equals(relatedEntity.getProjectId())) {
+        if (!issue.getProjectId().equals(relatedEntity.getProjectId())) {
             throw new BadRequestException("Related issue must be in the same project");
         }
 
-        issueRepository.addRelatedTo(entity.getProjectId(), entity.getId(), relatedIssueId);
-        entity.addRelatedTo(relatedIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.addRelatedTo(issue.getProjectId(), issue.getId(), relatedIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel deleteRelatedToRelation(final IssueEntity entity, final UUID relatedIssueId) {
-        if (entity.getRelatedTo() == null || !entity.getRelatedTo().contains(relatedIssueId)) {
+    public IssueModel deleteRelatedToRelation(final UserModel user, final IssueModel issue,
+        final UUID relatedIssueId) {
+        if (issue.getRelatedTo() == null || !issue.getRelatedTo().contains(relatedIssueId)) {
             throw new BadRequestException("Issue is not related to the specified issue");
         }
 
-        issueRepository.removeRelatedTo(entity.getProjectId(), entity.getId(), relatedIssueId);
-        entity.getRelatedTo().remove(relatedIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.removeRelatedTo(issue.getProjectId(), issue.getId(), relatedIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel addDuplicateOfRelation(final IssueEntity entity, final UUID duplicateIssueId) {
-        if (entity.getId().equals(duplicateIssueId)) {
+    public IssueModel addDuplicateOfRelation(final UserModel user, final IssueModel issue,
+        final UUID duplicateIssueId) {
+        if (issue.getId().equals(duplicateIssueId)) {
             throw new BadRequestException("An issue cannot be a duplicate of itself");
         }
         IssueEntity duplicateEntity = issueRepository.findByIssueId(duplicateIssueId)
             .orElseThrow(() -> new NotFoundException("Duplicate issue not found"));
-        if (!entity.getProjectId().equals(duplicateEntity.getProjectId())) {
+        if (!issue.getProjectId().equals(duplicateEntity.getProjectId())) {
             throw new BadRequestException("Duplicate issue must be in the same project");
         }
 
-        issueRepository.addDuplicateOf(entity.getProjectId(), entity.getId(), duplicateIssueId);
-        entity.addDuplicateOf(duplicateIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.addDuplicateOf(issue.getProjectId(), issue.getId(), duplicateIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
-    public IssueModel deleteDuplicateOfRelation(final IssueEntity entity, final UUID duplicateIssueId) {
-        if (entity.getDuplicateOf() == null || !entity.getDuplicateOf().contains(duplicateIssueId)) {
+    public IssueModel deleteDuplicateOfRelation(final UserModel user, final IssueModel issue,
+        final UUID duplicateIssueId) {
+        if (issue.getDuplicateOf() == null || !issue.getDuplicateOf().contains(duplicateIssueId)) {
             throw new BadRequestException("Issue is not a duplicate of the specified issue");
         }
 
-        issueRepository.removeDuplicateOf(entity.getProjectId(), entity.getId(), duplicateIssueId);
-        entity.getDuplicateOf().remove(duplicateIssueId);
-        issueEventProducer.sendIssueUpdated(entity, principal);
-        return entity;
+        issueRepository.removeDuplicateOf(issue.getProjectId(), issue.getId(), duplicateIssueId);
+        issueEventProducer.sendIssueUpdated(issue, user);
+        return getIssue(issue.getId());
     }
 
 }

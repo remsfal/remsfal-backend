@@ -3,14 +3,11 @@ package de.remsfal.ticketing.boundary;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,7 +15,7 @@ import java.util.UUID;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-import de.remsfal.common.model.FileUploadData;
+import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.ticketing.control.AttachmentController;
@@ -65,33 +62,14 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
 
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
-        List<IssueAttachmentJson> attachments = processAttachmentParts(issueId, fileParts);
+        List<IssueAttachmentJson> attachments = MultipartAttachmentProcessor.processAttachmentParts(
+            fileParts,
+            fileData -> IssueAttachmentJson.valueOf(attachmentController.addAttachment(principal, issueId, fileData)));
 
         return Response.ok()
             .type(MediaType.APPLICATION_JSON)
             .entity(attachments)
             .build();
-    }
-
-    public List<IssueAttachmentJson> processAttachmentParts(final UUID issueId, final List<InputPart> fileParts) {
-        List<IssueAttachmentJson> attachments = new ArrayList<>();
-        if (fileParts != null && !fileParts.isEmpty()) {
-            for (InputPart inputPart : fileParts) {
-                try {
-                    InputStream inputStream = inputPart.getBody(InputStream.class, null);
-                    FileUploadData fileData = new FileUploadData(
-                        inputStream,
-                        inputPart.getFileName(),
-                        inputPart.getMediaType());
-                    IssueAttachmentEntity attachmentModel =
-                        attachmentController.addAttachment(principal, issueId, fileData);
-                    attachments.add(IssueAttachmentJson.valueOf(attachmentModel));
-                } catch (IOException e) {
-                    throw new BadRequestException("Failed to read file data", e);
-                }
-            }
-        }
-        return attachments;
     }
 
 }

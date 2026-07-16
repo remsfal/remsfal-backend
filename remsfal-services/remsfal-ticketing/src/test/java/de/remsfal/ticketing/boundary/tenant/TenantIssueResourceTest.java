@@ -1,15 +1,16 @@
 package de.remsfal.ticketing.boundary.tenant;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -47,7 +49,7 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
         InputStream attachmentStream3 = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_3);
         InputStream attachmentStream4 = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_4);
 
-        given()
+        final String issueId = given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                 TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
@@ -71,24 +73,25 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
             .body("priority", nullValue())
             .body("assigneeId", nullValue())
             .body("agreementId", equalTo(TicketingTestData.AGREEMENT_ID.toString()))
-            .body("attachments", hasSize(3))
-            .body("attachments[0].issueId", notNullValue())
-            .body("attachments[0].attachmentId", notNullValue())
-            .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_2))
-            .body("attachments[0].contentType", startsWith(TicketingTestData.ATTACHMENT_FILE_TYPE_2))
-            .body("attachments[0].objectName", startsWith("/issues/"))
-            .body("attachments[0].objectName", endsWith(TicketingTestData.ATTACHMENT_FILE_PATH_2))
-            .body("attachments[0].uploaderId", equalTo(TicketingTestData.USER_ID.toString()))
-            .body("attachments[0].uploadedBy", equalTo(TicketingTestData.USER_NAME))
-            .body("attachments[0].createdAt", notNullValue())
-            .body("attachments[1].issueId", notNullValue())
-            .body("attachments[1].attachmentId", notNullValue())
-            .body("attachments[1].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_3))
-            .body("attachments[1].contentType", startsWith(TicketingTestData.ATTACHMENT_FILE_TYPE_3))
-            .body("attachments[2].issueId", notNullValue())
-            .body("attachments[2].attachmentId", notNullValue())
-            .body("attachments[2].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_4))
-            .body("attachments[2].contentType", startsWith(TicketingTestData.ATTACHMENT_FILE_TYPE_4));
+            .extract().path("id");
+
+        // TenantIssueJson never carries attachments (issue #801) — they're only surfaced through the
+        // issue-creation timeline entry, which the resource must link them into. Attachment order
+        // within an entry isn't guaranteed, so assert membership rather than positions.
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/timeline")
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(1))
+            .body("timelines[0].purpose", equalTo("ISSUE_CREATED"))
+            .body("timelines[0].attachments", hasSize(3))
+            .body("timelines[0].attachments.fileName", containsInAnyOrder(
+                TicketingTestData.ATTACHMENT_FILE_PATH_2, TicketingTestData.ATTACHMENT_FILE_PATH_3,
+                TicketingTestData.ATTACHMENT_FILE_PATH_4))
+            .body("timelines[0].attachments.uploaderId", everyItem(equalTo(TicketingTestData.USER_ID.toString())));
     }
 
     @Test
@@ -112,8 +115,7 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
             .body("title", equalTo(TicketingTestData.ISSUE_TITLE_4))
             .body("type", equalTo("TERMINATION"))
             .body("status", equalTo("PENDING"))
-            .body("projectId", nullValue())
-            .body("attachments", hasSize(0));
+            .body("projectId", nullValue());
     }
 
     @Test
@@ -370,6 +372,10 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
     @Test
     void downloadAttachment_SUCCESS_tenantDownloadsAttachment() throws Exception {
         setupTestIssuesWithAttachment();
+        // only attachments referenced by a TimelineEntity are visible to the tenant (issue #801)
+        insertTimelineEntry(TicketingTestData.ISSUE_ID_2, TicketingTestData.PROJECT_ID_1,
+            TicketingTestData.AGREEMENT_ID_1, UUID.randomUUID(), MessagePurpose.ISSUE_CREATED,
+            List.of(TicketingTestData.ATTACHMENT_ID_1));
 
         given()
             .when()
@@ -384,8 +390,26 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void downloadAttachment_FAILED_attachmentNotVisibleToTenant() throws Exception {
+        setupTestIssuesWithAttachment();
+        // no TimelineEntity references ATTACHMENT_ID_1 here, so it stays invisible to the tenant
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_FIRST_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + TicketingTestData.ISSUE_ID_2 + "/attachments/"
+                + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
     void downloadAttachment_FAILED_managerCannotUseTenantEndpoint() throws Exception {
         setupTestIssuesWithAttachment();
+        insertTimelineEntry(TicketingTestData.ISSUE_ID_2, TicketingTestData.PROJECT_ID_1,
+            TicketingTestData.AGREEMENT_ID_1, UUID.randomUUID(), MessagePurpose.ISSUE_CREATED,
+            List.of(TicketingTestData.ATTACHMENT_ID_1));
 
         given()
             .when()

@@ -21,6 +21,8 @@ import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -43,7 +45,9 @@ public interface RentalAgreementEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new tenancy")
-    @APIResponse(responseCode = "201", description = "Tenancy created successfully")
+    @APIResponse(responseCode = "201", description = "Tenancy created successfully",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = RentalAgreementJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid request message")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     Response createRentalAgreement(

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.13-issues-type-index" author="alexander.stanik@htw-berlin.de">
+        <comment>Add SAI (Storage-Attached Index) to the issues table's type column for filtering by issue type.</comment>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_type_sai
+            ON REMSFAL.issues (type)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_type_sai;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

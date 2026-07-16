@@ -1,7 +1,7 @@
 package de.remsfal.ticketing.entity.dto;
 
-import de.remsfal.core.model.ticketing.tenant.MessagePurpose;
-import de.remsfal.core.model.ticketing.tenant.TenantTimelineModel;
+import de.remsfal.core.model.ticketing.MessagePurpose;
+import de.remsfal.core.model.ticketing.TimelineModel;
 
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
@@ -12,10 +12,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Entity("tenant_timelines")
-public class TenantTimelineEntity extends AbstractEntity implements TenantTimelineModel {
+public class TimelineEntity extends AbstractEntity implements TimelineModel {
 
     @Id
-    private TenantTimelineKey key;
+    private TimelineKey key;
 
     @Column("attachment_id")
     private List<UUID> attachmentIds;
@@ -32,45 +32,45 @@ public class TenantTimelineEntity extends AbstractEntity implements TenantTimeli
     @Column("message")
     private String message;
 
-    public TenantTimelineKey getKey() {
+    public TimelineKey getKey() {
         return key;
     }
 
-    public void setKey(final TenantTimelineKey key) {
+    public void setKey(final TimelineKey key) {
         this.key = key;
     }
 
     @Override
     public UUID getIssueId() {
         return Optional.ofNullable(key)
-            .map(TenantTimelineKey::getIssueId)
+            .map(TimelineKey::getIssueId)
             .orElse(null);
     }
 
     @Override
     public UUID getTenancyId() {
         return Optional.ofNullable(key)
-            .map(TenantTimelineKey::getTenancyId)
+            .map(TimelineKey::getTenancyId)
             .orElse(null);
     }
 
     @Override
     public UUID getTimelineId() {
         return Optional.ofNullable(key)
-            .map(TenantTimelineKey::getTimelineId)
+            .map(TimelineKey::getTimelineId)
             .orElse(null);
     }
 
     @Override
     public UUID getProjectId() {
         return Optional.ofNullable(key)
-            .map(TenantTimelineKey::getProjectId)
+            .map(TimelineKey::getProjectId)
             .orElse(null);
     }
 
     public void setProjectId(final UUID projectId) {
         if (this.key == null) {
-            this.key = new TenantTimelineKey();
+            this.key = new TimelineKey();
         }
         this.key.setProjectId(projectId);
     }

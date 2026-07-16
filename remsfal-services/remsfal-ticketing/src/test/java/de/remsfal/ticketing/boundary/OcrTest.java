@@ -116,6 +116,7 @@ public class OcrTest extends AbstractTicketingTest {
         headers.add("Content-Disposition", "form-data; name=\"file\"; filename=\"" + fileName + "\"");
 
         when(inputPart.getHeaders()).thenReturn(headers);
+        when(inputPart.getFileName()).thenReturn(fileName);
         when(inputPart.getMediaType()).thenReturn(MediaType.valueOf(contentType));
         when(inputPart.getBody(InputStream.class, null)).thenReturn(new ByteArrayInputStream(content));
         when(input.getFormDataMap()).thenReturn(Map.of("file", List.of(inputPart)));
