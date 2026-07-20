@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
@@ -84,4 +85,15 @@ public interface RentalAgreementEndpoint {
         @PathParam("agreementId") @NotNull UUID agreementId,
         @Parameter(description = "Tenancy information", required = true)
         @Valid @NotNull @ConvertGroup(to = PatchValidation.class) RentalAgreementJson tenancy);
+
+    @DELETE
+    @Path("/{agreementId}")
+    @Operation(summary = "Delete tenancy (dummy)")
+    @APIResponse(responseCode = "204", description = "Dummy delete was handled successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    void deleteRentalAgreement(
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("agreementId") @NotNull UUID agreementId);
 }

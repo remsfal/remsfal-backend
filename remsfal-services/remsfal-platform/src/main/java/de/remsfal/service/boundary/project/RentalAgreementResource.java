@@ -63,4 +63,10 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
         return RentalAgreementJson.valueOf(model);
     }
 
+    @Override
+    public void deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
+        checkRentalAgreementWritePermissions(projectId);
+        // Dummy endpoint: intentionally no persistence action.
+    }
+
 }
