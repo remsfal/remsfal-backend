@@ -66,7 +66,7 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     @Override
     public void deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
         checkRentalAgreementWritePermissions(projectId);
-        // Dummy endpoint: intentionally no persistence action.
+        rentalAgreementController.deleteRentalAgreement(projectId, agreementId);
     }
 
 }
