@@ -4,8 +4,6 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import java.util.UUID;
 
@@ -13,6 +11,7 @@ import de.remsfal.core.api.ticketing.IssueOrderPlacementEndpoint;
 import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
+import de.remsfal.core.json.ticketing.OrderPlacementListJson;
 import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
@@ -35,21 +34,16 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
     Instance<OrderAttachmentResource> attachmentResource;
 
     @Override
-    public Response placeOrder(final UUID issueId, final UUID quotationId) {
+    public OrderPlacementListJson getOrders(final UUID issueId) {
         checkIssueWritePermissions(issueId);
-        final OrderPlacementEntity placement = orderManagementController.placeOrder(issueId, quotationId);
-        return Response.status(Response.Status.CREATED)
-            .location(uri.getAbsolutePath())
-            .type(MediaType.APPLICATION_JSON)
-            .entity(OrderPlacementJson.valueOf(placement))
-            .build();
+        return OrderPlacementListJson.valueOf(orderManagementController.getOrderPlacementsByIssue(issueId));
     }
 
     @Override
-    public OrderPlacementJson getOrderPlacement(final UUID issueId, final UUID quotationId) {
+    public OrderPlacementJson getOrderPlacement(final UUID issueId, final UUID orderId) {
         checkIssueWritePermissions(issueId);
-        final OrderPlacementEntity placement = orderManagementController.getOrderPlacementByQuotation(
-            issueId, quotationId);
+        final OrderPlacementEntity placement = orderManagementController.getOrderPlacementForIssue(
+            issueId, orderId);
         return OrderPlacementJson.valueOf(placement).withAttachments(orderAttachmentController
             .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placement.getId()).stream()
             .map(OrderAttachmentJson::valueOf)
@@ -57,9 +51,9 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
     }
 
     @Override
-    public void withdrawOrderPlacement(final UUID issueId, final UUID quotationId) {
+    public void withdrawOrderPlacement(final UUID issueId, final UUID orderId) {
         checkIssueWritePermissions(issueId);
-        orderManagementController.withdrawOrderPlacement(issueId, quotationId);
+        orderManagementController.withdrawOrderPlacement(issueId, orderId);
     }
 
     @Override

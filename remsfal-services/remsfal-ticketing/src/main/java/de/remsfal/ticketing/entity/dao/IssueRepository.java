@@ -1,10 +1,9 @@
 package de.remsfal.ticketing.entity.dao;
 
-import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.ticketing.entity.filter.IssueFilter;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.nosql.QueryMapper.MapperWhere;
@@ -73,29 +72,27 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
      * {@code ORDER BY} on the clustering column with an SAI filter, so this relies on the table's
      * native clustering order instead.
      */
-    public List<IssueEntity> findByQuery(final UUID projectId, final UUID assigneeId,
-        final UUID agreementId, final UnitType rentalType, final UUID rentalId,
-        final List<IssueType> type, final List<IssueStatus> status, final boolean onlyVisibleToTenants,
+    public List<IssueEntity> findByQuery(final IssueFilter filter, final boolean onlyVisibleToTenants,
         final UUID cursor, final Integer limit) {
         MapperWhere query = template.select(IssueEntity.class)
-            .where(PROJECT_ID).eq(projectId);
-        if (assigneeId != null) {
-            query = query.and("assignee_id").eq(assigneeId);
+            .where(PROJECT_ID).eq(filter.projectId());
+        if (filter.assigneeId() != null) {
+            query = query.and("assignee_id").eq(filter.assigneeId());
         }
-        if (agreementId != null) {
-            query = query.and(AGREEMENT_ID).eq(agreementId);
+        if (filter.agreementId() != null) {
+            query = query.and(AGREEMENT_ID).eq(filter.agreementId());
         }
-        if (rentalType != null) {
-            query = query.and("rental_unit_type").eq(rentalType.name());
+        if (filter.rentalUnitType() != null) {
+            query = query.and("rental_unit_type").eq(filter.rentalUnitType().name());
         }
-        if (rentalId != null) {
-            query = query.and("rental_unit_id").eq(rentalId);
+        if (filter.rentalUnitId() != null) {
+            query = query.and("rental_unit_id").eq(filter.rentalUnitId());
         }
-        if (type != null && !type.isEmpty()) {
-            query = query.and(TYPE).in(type.stream().map(Enum::name).toList());
+        if (filter.type() != null && !filter.type().isEmpty()) {
+            query = query.and(TYPE).in(filter.type().stream().map(Enum::name).toList());
         }
-        if (status != null && !status.isEmpty()) {
-            query = query.and(STATUS).in(status.stream().map(Enum::name).toList());
+        if (filter.status() != null && !filter.status().isEmpty()) {
+            query = query.and(STATUS).in(filter.status().stream().map(Enum::name).toList());
         }
         if (onlyVisibleToTenants) {
             query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);

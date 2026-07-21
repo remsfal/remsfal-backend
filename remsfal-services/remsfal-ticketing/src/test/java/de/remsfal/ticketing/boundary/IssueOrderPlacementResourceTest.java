@@ -2,6 +2,7 @@ package de.remsfal.ticketing.boundary;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Map;
@@ -81,8 +82,26 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
             .extract().path("id");
     }
 
-    private String orderPlacementPath(final String issueId, final String quotationId) {
-        return BASE_PATH + "/" + issueId + "/quotations/" + quotationId + "/order-placement";
+    private String placeOrderPath(final String issueId, final String quotationId) {
+        return BASE_PATH + "/" + issueId + "/quotations/" + quotationId + "/orders";
+    }
+
+    private String ordersListPath(final String issueId) {
+        return BASE_PATH + "/" + issueId + "/orders";
+    }
+
+    private String orderPath(final String issueId, final String orderId) {
+        return ordersListPath(issueId) + "/" + orderId;
+    }
+
+    private String placeOrder(final String issueId, final String quotationId) {
+        return given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .post(placeOrderPath(issueId, quotationId))
+            .then()
+            .statusCode(201)
+            .extract().path("id");
     }
 
     // --- POST place order ---
@@ -91,7 +110,7 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
     void placeOrder_FAILED_noAuthentication() {
         given()
             .when()
-            .post(orderPlacementPath(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+            .post(placeOrderPath(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
             .then()
             .statusCode(401);
     }
@@ -104,7 +123,7 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(UUID.randomUUID(), "other@test.com", "Other",
                 Map.of(), Map.of(), Map.of()))
-            .post(orderPlacementPath(issueId, UUID.randomUUID().toString()))
+            .post(placeOrderPath(issueId, UUID.randomUUID().toString()))
             .then()
             .statusCode(403);
     }
@@ -121,9 +140,56 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(orderPlacementPath(issueId, quotationId))
+            .post(placeOrderPath(issueId, quotationId))
             .then()
             .statusCode(201);
+    }
+
+    // --- GET orders (list) ---
+
+    @Test
+    void getOrders_FAILED_noAuthentication() {
+        given()
+            .when()
+            .get(ordersListPath(UUID.randomUUID().toString()))
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
+    void getOrders_SUCCESS_emptyListWhenNoOrders() {
+        final String issueId = createIssue();
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(ordersListPath(issueId))
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(0));
+    }
+
+    @Test
+    void getOrders_SUCCESS_returnsOrderList() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final UUID contractorUserId = UUID.randomUUID();
+
+        final String issueId = createIssue();
+        final String quotationId = setupQuotation(issueId, contractorId, organizationId, contractorUserId);
+        placeOrder(issueId, quotationId);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(ordersListPath(issueId))
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1))
+            .body("items[0].id", notNullValue())
+            .body("items[0].issueId", equalTo(issueId))
+            .body("items[0].quotationId", equalTo(quotationId))
+            .body("items[0].status", equalTo("PLACED"));
     }
 
     // --- GET order placement ---
@@ -132,7 +198,7 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
     void getOrderPlacement_FAILED_noAuthentication() {
         given()
             .when()
-            .get(orderPlacementPath(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+            .get(orderPath(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
             .then()
             .statusCode(401);
     }
@@ -145,21 +211,15 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
 
         final String issueId = createIssue();
         final String quotationId = setupQuotation(issueId, contractorId, organizationId, contractorUserId);
+        final String orderId = placeOrder(issueId, quotationId);
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(orderPlacementPath(issueId, quotationId))
-            .then()
-            .statusCode(201);
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(orderPlacementPath(issueId, quotationId))
+            .get(orderPath(issueId, orderId))
             .then()
             .statusCode(200)
-            .body("id", notNullValue())
+            .body("id", equalTo(orderId))
             .body("issueId", equalTo(issueId))
             .body("quotationId", equalTo(quotationId))
             .body("projectId", equalTo(TicketingTestData.PROJECT_ID.toString()))
@@ -181,7 +241,7 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(orderPlacementPath(issueId, UUID.randomUUID().toString()))
+            .get(orderPath(issueId, UUID.randomUUID().toString()))
             .then()
             .statusCode(404);
     }
@@ -192,7 +252,7 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
     void withdrawOrderPlacement_FAILED_noAuthentication() {
         given()
             .when()
-            .delete(orderPlacementPath(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+            .delete(orderPath(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
             .then()
             .statusCode(401);
     }
@@ -205,25 +265,19 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
 
         final String issueId = createIssue();
         final String quotationId = setupQuotation(issueId, contractorId, organizationId, contractorUserId);
+        final String orderId = placeOrder(issueId, quotationId);
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(orderPlacementPath(issueId, quotationId))
-            .then()
-            .statusCode(201);
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .delete(orderPlacementPath(issueId, quotationId))
+            .delete(orderPath(issueId, orderId))
             .then()
             .statusCode(204);
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(orderPlacementPath(issueId, quotationId))
+            .get(orderPath(issueId, orderId))
             .then()
             .statusCode(200)
             .body("status", equalTo("WITHDRAWN"));

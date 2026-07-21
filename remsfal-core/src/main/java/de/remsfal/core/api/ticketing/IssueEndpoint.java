@@ -191,6 +191,9 @@ public interface IssueEndpoint {
     @Path("/{issueId}/" + IssueQuotationEndpoint.SERVICE)
     IssueQuotationEndpoint getQuotationResource();
 
+    @Path("/{issueId}/" + IssueOrderPlacementEndpoint.SERVICE)
+    IssueOrderPlacementEndpoint getOrderPlacementResource();
+
     @Path("/{issueId}/" + ChatSessionEndpoint.SERVICE)
     ChatSessionEndpoint getChatSessionResource();
 

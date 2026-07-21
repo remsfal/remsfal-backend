@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.api.ticketing.IssueOrderPlacementEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
@@ -24,6 +25,7 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.control.AttachmentController;
+import de.remsfal.ticketing.entity.filter.IssueFilter;
 import io.quarkus.security.Authenticated;
 
 /**
@@ -46,6 +48,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     Instance<IssueQuotationResource> quotationResource;
 
     @Inject
+    Instance<IssueOrderPlacementResource> orderPlacementResource;
+
+    @Inject
     Instance<ChatSessionResource> chatSessionResource;
 
     @Inject
@@ -56,8 +61,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         final UnitType rentalUnitType, final UUID rentalUnitId, final List<IssueType> type,
         final List<IssueStatus> status, final UUID cursor, final Integer limit) {
         checkProjectReadPermissions(projectId);
-        final List<? extends IssueModel> issues = issueController.getProjectIssues(projectId, assigneeId,
-            agreementId, rentalUnitType, rentalUnitId, type, status, cursor, limit);
+        final IssueFilter filter = new IssueFilter(projectId, assigneeId, agreementId,
+            rentalUnitType, rentalUnitId, type, status);
+        final List<? extends IssueModel> issues = issueController.getProjectIssues(filter, cursor, limit);
         return IssueListJson.valueOfProjectIssues(issues, nextCursorOf(issues, limit));
     }
 
@@ -147,6 +153,11 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public IssueQuotationEndpoint getQuotationResource() {
         return resourceContext.initResource(quotationResource.get());
+    }
+
+    @Override
+    public IssueOrderPlacementEndpoint getOrderPlacementResource() {
+        return resourceContext.initResource(orderPlacementResource.get());
     }
 
     @Override
