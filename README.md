@@ -3,6 +3,7 @@
 ![GitHub Release](https://img.shields.io/github/v/release/remsfal/remsfal-backend?label=latest%20release)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=remsfal_remsfal-backend&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=remsfal_remsfal-backend)
+[![License](https://img.shields.io/github/license/remsfal/remsfal-backend)](https://github.com/remsfal/remsfal-backend/blob/main/LICENSE)
 ![Contributors](https://img.shields.io/github/contributors/remsfal/remsfal-backend)
 
 # Open Source Facility Management Software (Backend)
