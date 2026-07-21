@@ -40,6 +40,12 @@ public class OrderPlacementRepository extends AbstractRepository<OrderPlacementE
             .findFirst();
     }
 
+    public Optional<OrderPlacementEntity> findByIssueIdAndId(final UUID issueId, final UUID id) {
+        return findByIssueId(issueId).stream()
+            .filter(p -> id.equals(p.getId()))
+            .findFirst();
+    }
+
     public List<OrderPlacementEntity> findByOrganizationId(final UUID organizationId) {
         return template.select(OrderPlacementEntity.class)
             .where(ORGANIZATION_ID).eq(organizationId)

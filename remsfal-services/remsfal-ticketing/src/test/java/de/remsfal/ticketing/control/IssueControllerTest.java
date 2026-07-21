@@ -26,6 +26,7 @@ import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.ticketing.entity.filter.IssueFilter;
 
 /**
  * Covers the multi-partition fan-out/merge that moved from {@link IssueRepository} into
@@ -62,9 +63,11 @@ class IssueControllerTest {
         tenancyProjects.put(agreementB, projectB);
 
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(projectA, null, agreementA, null, null, null, null, true, null, 2))
+        when(repository.findByQuery(new IssueFilter(projectA, null, agreementA, null, null, null, null),
+            true, null, 2))
             .thenReturn(List.of(issueOf(projectA, id4), issueOf(projectA, id1)));
-        when(repository.findByQuery(projectB, null, agreementB, null, null, null, null, true, null, 2))
+        when(repository.findByQuery(new IssueFilter(projectB, null, agreementB, null, null, null, null),
+            true, null, 2))
             .thenReturn(List.of(issueOf(projectB, id3), issueOf(projectB, id2)));
 
         final IssueController controller = new IssueController();
@@ -87,7 +90,8 @@ class IssueControllerTest {
         tenancyProjects.put(agreementA, projectA);
 
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(projectA, null, agreementA, null, null, null, null, true, cursor, 10))
+        when(repository.findByQuery(new IssueFilter(projectA, null, agreementA, null, null, null, null),
+            true, cursor, 10))
             .thenReturn(List.of(issueOf(projectA, new UUID(0, 4))));
 
         final IssueController controller = new IssueController();
@@ -114,16 +118,17 @@ class IssueControllerTest {
         final UUID cursor = UUID.randomUUID();
         final IssueEntity expected = issueOf(projectId, UUID.randomUUID());
 
+        final IssueFilter filter = new IssueFilter(projectId, null, null, null, null,
+            null, List.of(IssueStatus.OPEN));
+
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(projectId, null, null, null, null, null,
-            List.of(IssueStatus.OPEN), false, cursor, 10))
+        when(repository.findByQuery(filter, false, cursor, 10))
             .thenReturn(List.of(expected));
 
         final IssueController controller = new IssueController();
         controller.issueRepository = repository;
 
-        final List<? extends IssueModel> result = controller.getProjectIssues(projectId, null, null, null, null,
-            null, List.of(IssueStatus.OPEN), cursor, 10);
+        final List<? extends IssueModel> result = controller.getProjectIssues(filter, cursor, 10);
 
         assertEquals(List.of(expected), result);
     }

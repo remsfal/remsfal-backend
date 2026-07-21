@@ -432,7 +432,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(BASE_PATH + "/" + issueId + "/quotations/" + quotationId + "/order-placement")
+            .post(BASE_PATH + "/" + issueId + "/quotations/" + quotationId + "/orders")
             .then()
             .statusCode(201);
 
