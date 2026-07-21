@@ -39,11 +39,6 @@ public class OrderAttachmentResource extends AbstractTicketingResource implement
     @PathParam("issueId")
     UUID issueId;
 
-    // fallback process id source for IssueOrderPlacementEndpoint, whose URL has no {processId} segment of its
-    // own (it reuses the parent quotation's {quotationId} segment instead)
-    @PathParam("quotationId")
-    UUID quotationIdParam;
-
     @Inject
     OrderAttachmentController orderAttachmentController;
 
@@ -58,16 +53,13 @@ public class OrderAttachmentResource extends AbstractTicketingResource implement
     }
 
     /**
-     * Verifies the caller may access the given process, and resolves the real process id
-     * (needed because IssueOrderPlacementEndpoint exposes order placements via {quotationId} in its URL,
-     * not the placement's own id).
+     * Verifies the caller may access the given process.
      */
-    private UUID authorize(final UUID urlProcessId) {
-        final UUID processId = urlProcessId != null ? urlProcessId : quotationIdParam;
+    private UUID authorize(final UUID processId) {
         if (issueId != null) {
             checkIssueWritePermissions(issueId);
             if (processPhase == OrderProcessPhase.ORDER_PLACEMENT) {
-                return orderManagementController.getOrderPlacementByQuotation(issueId, processId).getId();
+                return orderManagementController.getOrderPlacementForIssue(issueId, processId).getId();
             }
             return processId;
         }

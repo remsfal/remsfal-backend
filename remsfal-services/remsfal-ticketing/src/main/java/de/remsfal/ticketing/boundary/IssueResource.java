@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.api.ticketing.IssueOrderPlacementEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
@@ -45,6 +46,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
 
     @Inject
     Instance<IssueQuotationResource> quotationResource;
+
+    @Inject
+    Instance<IssueOrderPlacementResource> orderPlacementResource;
 
     @Inject
     Instance<ChatSessionResource> chatSessionResource;
@@ -149,6 +153,11 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public IssueQuotationEndpoint getQuotationResource() {
         return resourceContext.initResource(quotationResource.get());
+    }
+
+    @Override
+    public IssueOrderPlacementEndpoint getOrderPlacementResource() {
+        return resourceContext.initResource(orderPlacementResource.get());
     }
 
     @Override

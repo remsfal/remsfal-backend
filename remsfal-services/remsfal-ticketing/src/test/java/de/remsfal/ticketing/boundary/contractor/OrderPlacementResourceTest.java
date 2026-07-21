@@ -74,7 +74,7 @@ class OrderPlacementResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .post(ISSUE_BASE_PATH + "/" + issueId + "/quotations/" + quotationId + "/order-placement")
+            .post(ISSUE_BASE_PATH + "/" + issueId + "/quotations/" + quotationId + "/orders")
             .then()
             .statusCode(201);
 

@@ -220,14 +220,19 @@ public class OrderManagementController {
             .orElseThrow(() -> new NotFoundException("Quotation not found"));
     }
 
-    public OrderPlacementEntity getOrderPlacementByQuotation(final UUID issueId, final UUID quotationId) {
-        logger.infov("Retrieving order placement (issueId={0}, quotationId={1})", issueId, quotationId);
-        return orderPlacementRepository.findByIssueIdAndQuotationId(issueId, quotationId)
+    public List<OrderPlacementEntity> getOrderPlacementsByIssue(final UUID issueId) {
+        logger.infov("Retrieving order placements for issue (issueId={0})", issueId);
+        return orderPlacementRepository.findByIssueId(issueId);
+    }
+
+    public OrderPlacementEntity getOrderPlacementForIssue(final UUID issueId, final UUID orderId) {
+        logger.infov("Retrieving order placement (issueId={0}, orderId={1})", issueId, orderId);
+        return orderPlacementRepository.findByIssueIdAndId(issueId, orderId)
             .orElseThrow(() -> new NotFoundException("Order placement not found"));
     }
 
-    public void withdrawOrderPlacement(final UUID issueId, final UUID quotationId) {
-        OrderPlacementEntity placement = getOrderPlacementByQuotation(issueId, quotationId);
+    public void withdrawOrderPlacement(final UUID issueId, final UUID orderId) {
+        OrderPlacementEntity placement = getOrderPlacementForIssue(issueId, orderId);
         placement.setStatus(OrderPlacementStatus.WITHDRAWN);
         orderPlacementRepository.update(placement);
     }

@@ -96,7 +96,7 @@ class OrderAttachmentResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .post(ISSUE_BASE_PATH + "/" + quotationFlow.issueId() + "/quotations/"
-                + quotationFlow.quotationId() + "/order-placement")
+                + quotationFlow.quotationId() + "/orders")
             .then()
             .statusCode(201);
 
@@ -276,8 +276,8 @@ class OrderAttachmentResourceTest extends AbstractTicketingTest {
             .statusCode(404);
     }
 
-    // --- OrderPlacement: manager path (keyed by quotationId in the URL) must resolve to the
-    // same placement the contractor path (keyed by the placement's own id) sees ---
+    // --- OrderPlacement: manager path (keyed by the order's own id in the URL) must resolve to the
+    // same placement the contractor path (also keyed by the placement's own id) sees ---
 
     @Test
     void orderPlacementAttachment_SUCCESS_managerPathResolvesToContractorPlacement() {
@@ -289,8 +289,8 @@ class OrderAttachmentResourceTest extends AbstractTicketingTest {
             .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_3,
                 getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_3),
                 TicketingTestData.ATTACHMENT_FILE_TYPE_3)
-            .post(ISSUE_BASE_PATH + "/" + flow.issueId() + "/quotations/" + flow.quotationId()
-                + "/order-placement/attachments")
+            .post(ISSUE_BASE_PATH + "/" + flow.issueId() + "/orders/" + flow.placementId()
+                + "/attachments")
             .then()
             .statusCode(200)
             .body("[0].processPhase", equalTo("ORDER_PLACEMENT"))
@@ -327,8 +327,8 @@ class OrderAttachmentResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(ISSUE_BASE_PATH + "/" + flow.issueId() + "/quotations/" + flow.quotationId()
-                + "/order-placement/attachments/" + attachmentId + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_3)
+            .get(ISSUE_BASE_PATH + "/" + flow.issueId() + "/orders/" + flow.placementId()
+                + "/attachments/" + attachmentId + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_3)
             .then()
             .statusCode(404);
     }
@@ -344,8 +344,8 @@ class OrderAttachmentResourceTest extends AbstractTicketingTest {
             .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_3,
                 getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_3),
                 TicketingTestData.ATTACHMENT_FILE_TYPE_3)
-            .post(ISSUE_BASE_PATH + "/" + flow.issueId() + "/quotations/" + flow.quotationId()
-                + "/order-placement/attachments")
+            .post(ISSUE_BASE_PATH + "/" + flow.issueId() + "/orders/" + flow.placementId()
+                + "/attachments")
             .then()
             .statusCode(403);
     }
