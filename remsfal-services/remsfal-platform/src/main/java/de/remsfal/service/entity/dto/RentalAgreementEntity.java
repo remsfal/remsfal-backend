@@ -114,12 +114,12 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
     
     @Override
     public int getAmountOfKeys() {
-    	return amountOfKeys;
+        return amountOfKeys;
     }
     
     public void setAmountOfKeys(final int amountOfKeys) {
-		this.amountOfKeys = amountOfKeys;
-	}
+        this.amountOfKeys = amountOfKeys;
+    }
 
     @Override
     public List<PropertyRentEntity> getPropertyRents() {
