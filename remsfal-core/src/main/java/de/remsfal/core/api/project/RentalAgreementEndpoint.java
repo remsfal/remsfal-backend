@@ -36,7 +36,7 @@ public interface RentalAgreementEndpoint {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve information of all tenancies")
+    @Operation(summary = "Retrieve information of all rental agreements")
     @APIResponse(responseCode = "200", description = "The requested tenancies were successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     RentalAgreementListJson getRentalAgreements(
@@ -46,7 +46,7 @@ public interface RentalAgreementEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new tenancy")
-    @APIResponse(responseCode = "201", description = "Tenancy created successfully",
+    @APIResponse(responseCode = "201", description = "Rental agreement created successfully",
         content = @Content(mediaType = MediaType.APPLICATION_JSON,
             schema = @Schema(implementation = RentalAgreementJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid request message")
@@ -60,7 +60,7 @@ public interface RentalAgreementEndpoint {
     @GET
     @Path("/{agreementId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve Information of a tenancy.")
+    @Operation(summary = "Retrieve Information of a rental agreement.")
     @APIResponse(responseCode = "200", description = "The requested rental agreement was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided session cookie")
     @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
@@ -74,7 +74,7 @@ public interface RentalAgreementEndpoint {
     @Path("/{agreementId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a tenancy")
+    @Operation(summary = "Update information of a rental agreement")
     @APIResponse(responseCode = "200", description = "The rental agreement was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
