@@ -53,9 +53,6 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
     @Nullable
     @Override
     public abstract LocalDate getEndOfRental();
-    
-    @Override
-    public abstract int getAmountOfKeys();
 
     @Nullable
     @Schema(description = "List of property rents")
