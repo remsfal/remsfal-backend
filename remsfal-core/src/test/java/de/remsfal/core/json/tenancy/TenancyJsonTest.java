@@ -56,6 +56,7 @@ class TenancyJsonTest {
             @Override public List<? extends TenantModel> getTenants() { return Collections.emptyList(); }
             @Override public LocalDate getStartOfRental() { return START; }
             @Override public LocalDate getEndOfRental() { return null; }
+            @Override public int getAmountOfKeys() { return 1; }
             @Override public List<? extends RentModel> getPropertyRents() { return Collections.emptyList(); }
             @Override public List<? extends RentModel> getSiteRents() { return siteRents; }
             @Override public List<? extends RentModel> getBuildingRents() { return Collections.emptyList(); }

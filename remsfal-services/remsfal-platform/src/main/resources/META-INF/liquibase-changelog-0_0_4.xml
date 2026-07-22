@@ -22,6 +22,9 @@
                 <constraints nullable="false" />
             </column>
             <column name="end_of_rental" type="date" />
+            <column name="amount_of_keys" type="int" defaultValueNumeric="0">
+   				<constraints nullable="false" />
+			</column>
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>

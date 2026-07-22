@@ -53,6 +53,9 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
     @Nullable
     @Override
     public abstract LocalDate getEndOfRental();
+    
+    @Override
+    public abstract int getAmountOfKeys();
 
     @Nullable
     @Schema(description = "List of property rents")
@@ -95,6 +98,7 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
                 .toList() : null)
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
+            .amountOfKeys(model.getAmountOfKeys())
             .propertyRents(model.getPropertyRents() != null ? model.getPropertyRents().stream()
                 .map(RentJson::valueOf)
                 .toList() : null)

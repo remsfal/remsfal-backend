@@ -43,6 +43,9 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
 
     @Column(name = "end_of_rental", columnDefinition = "date")
     private LocalDate endOfRental;
+    
+    @Column(name = "amount_of_keys", nullable = false)
+    private int amountOfKeys;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
@@ -108,6 +111,15 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
     public void setEndOfRental(final LocalDate endOfRental) {
         this.endOfRental = endOfRental;
     }
+    
+    @Override
+    public int getAmountOfKeys() {
+    	return amountOfKeys;
+    }
+    
+    public void setAmountOfKeys(final int amountOfKeys) {
+		this.amountOfKeys = amountOfKeys;
+	}
 
     @Override
     public List<PropertyRentEntity> getPropertyRents() {
