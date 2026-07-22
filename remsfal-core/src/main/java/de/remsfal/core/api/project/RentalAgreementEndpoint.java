@@ -73,7 +73,7 @@ public interface RentalAgreementEndpoint {
     @Path("/{agreementId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update information of a tenancy")
+    @Operation(summary = "Update information of a rental agreement")
     @APIResponse(responseCode = "200", description = "The rental agreement was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
