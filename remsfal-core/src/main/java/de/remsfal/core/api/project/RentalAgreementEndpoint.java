@@ -88,7 +88,7 @@ public interface RentalAgreementEndpoint {
 
     @DELETE
     @Path("/{agreementId}")
-    @Operation(summary = "Delete tenancy (dummy)")
+    @Operation(summary = "Delete an existing rental agreement")
     @APIResponse(responseCode = "204", description = "Rental agreement was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     void deleteRentalAgreement(
