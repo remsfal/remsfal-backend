@@ -72,6 +72,13 @@ public class RentalAgreementController {
         logger.infov("Retrieving all rental agreements (projectId = {0})", projectId);
         return rentalAgreementRepository.findRentalAgreementByProject(projectId);
     }
+    
+    @Transactional
+    public boolean deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
+        logger.infov("Deleting a Rental Agreement (projectId={0}, agreementId={1})",
+            projectId, agreementId);
+        return rentalAgreementRepository.removeRentalAgreementByIds(projectId, agreementId) > 0;
+    }
 
     /**
      * Retrieves all rental agreements for a project grouped by tenant ID.

@@ -874,4 +874,23 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(expected.getStartOfRental(), actual.getStartOfRental());
       assertEquals(expected.getEndOfRental(), actual.getEndOfRental());
     }
+    
+    @Test
+    void deleteRentalAgreement_SUCCESS_agreementDeleted() {
+        final UUID projectId = TestData.PROJECT_ID_1;
+
+        final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+            .startOfRental(LocalDate.now())
+            .tenants(List.of())
+            .build();
+
+        RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+
+        boolean deleted = controller.deleteRentalAgreement(projectId, created.getId());
+
+        assertTrue(deleted);
+
+        RentalAgreementEntity entity = entityManager.find( RentalAgreementEntity.class, created.getId() );
+        assertNull(entity);
+    }
 }
