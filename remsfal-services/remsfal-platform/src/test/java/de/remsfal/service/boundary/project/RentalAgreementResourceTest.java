@@ -541,5 +541,14 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
-
+    
+    @Test
+    void deleteRentalAgreement_SUCCESS_agreementDeleted() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .delete(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+    }
 }
