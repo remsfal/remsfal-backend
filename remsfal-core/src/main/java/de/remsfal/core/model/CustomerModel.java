@@ -44,4 +44,5 @@ public interface CustomerModel extends UserModel {
     String getPlaceOfBirth();
 
     LocalDate getDateOfBirth();
+
 }
