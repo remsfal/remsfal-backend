@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 
 /**
@@ -24,6 +26,7 @@ public interface IssueModel {
         DEFECT,
         INQUIRY,
         MAINTENANCE,
+        SELF_SERVICE,
         TASK,
         TERMINATION
     }
@@ -111,5 +114,7 @@ public interface IssueModel {
     Set<UUID> getBlockedBy();
 
     Set<UUID> getBlocks();
+
+    JsonNode getTenantUpdate();
 
 }
