@@ -164,6 +164,32 @@ public class RentalAgreementController {
         return rentalAgreementRepository.merge(entity);
     }
 
+    @Transactional
+    public TenantEntity addTenant(final UUID projectId, final UUID agreementId, final TenantModel tenantInput) {
+        logger.infov("Adding a tenant to a rental agreement (projectId={0}, agreementId={1})",
+            projectId, agreementId);
+        final RentalAgreementEntity entity = rentalAgreementRepository
+            .findRentalAgreementByProject(projectId, agreementId)
+            .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
+
+        final TenantEntity tenant = processTenants(projectId, List.of(tenantInput)).get(0);
+        entity.addTenant(tenant);
+        rentalAgreementRepository.merge(entity);
+        return tenant;
+    }
+
+    @Transactional
+    public void removeTenant(final UUID projectId, final UUID agreementId, final UUID tenantId) {
+        logger.infov("Removing a tenant from a rental agreement (projectId={0}, agreementId={1}, tenantId={2})",
+            projectId, agreementId, tenantId);
+        final RentalAgreementEntity entity = rentalAgreementRepository
+            .findRentalAgreementByProject(projectId, agreementId)
+            .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
+
+        entity.removeTenant(tenantId);
+        rentalAgreementRepository.merge(entity);
+    }
+
     /**
      * Process tenant models and create or reuse tenant entities.
      * If a tenant matches an existing tenant in the project (based on business equality),
