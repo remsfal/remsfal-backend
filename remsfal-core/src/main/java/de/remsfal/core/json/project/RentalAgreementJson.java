@@ -95,6 +95,7 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
                 .toList() : null)
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
+            .amountOfKeys(model.getAmountOfKeys())
             .propertyRents(model.getPropertyRents() != null ? model.getPropertyRents().stream()
                 .map(RentJson::valueOf)
                 .toList() : null)

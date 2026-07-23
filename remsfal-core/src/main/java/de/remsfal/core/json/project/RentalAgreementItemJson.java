@@ -60,6 +60,9 @@ public abstract class RentalAgreementItemJson {
     @Nullable
     @Schema(description = "Sum of heating costs prepayment from all currently active rents")
     public abstract Float getHeatingCostsPrepayment();
+    
+    @Schema(description = "Amount of keys for this rental agreement")
+    public abstract Integer getAmountOfKeys();
 
     public static RentalAgreementItemJson valueOf(final RentalAgreementModel model,
         final Map<UUID, RentalUnitJson> rentalUnitsMap) {
@@ -81,6 +84,7 @@ public abstract class RentalAgreementItemJson {
                 .toList() : new ArrayList<>())
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
+            .amountOfKeys(model.getAmountOfKeys())
             .rentalUnits(rentalUnits)
             .basicRent(model.getBasicRent())
             .operatingCostsPrepayment(model.getOperatingCostsPrepayment())
