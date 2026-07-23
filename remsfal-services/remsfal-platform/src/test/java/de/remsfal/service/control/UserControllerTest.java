@@ -108,6 +108,25 @@ class UserControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void updateUser_SUCCESS_birthInfoChanged() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        final String placeOfBirth = "Berlin";
+        final java.time.LocalDate dateOfBirth = java.time.LocalDate.of(1990, 1, 1);
+        CustomerModel updatedUser = ImmutableUserJson.builder()
+            .placeOfBirth(placeOfBirth)
+            .dateOfBirth(dateOfBirth)
+            .build();
+        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        assertEquals(placeOfBirth, updatedUser.getPlaceOfBirth());
+        assertEquals(dateOfBirth, updatedUser.getDateOfBirth());
+
+        final CustomerModel persistedUser = controller.getUser(user.getId());
+        assertEquals(placeOfBirth, persistedUser.getPlaceOfBirth());
+        assertEquals(dateOfBirth, persistedUser.getDateOfBirth());
+    }
+
+    @Test
     void updateUser_SUCCESS_addressInserted() {
         UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
