@@ -142,6 +142,25 @@ class UserResourceTest extends AbstractResourceTest {
             .and().body("firstName", Matchers.equalTo("john"));
     }
 
+    @Test
+    void updateUser_SUCCESS_birthInfoChanged() {
+        setupTestUsers();
+
+        final String update = "{ \"placeOfBirth\":\"Berlin\", \"dateOfBirth\":\"1990-01-01\" }";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body(update)
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("placeOfBirth", Matchers.equalTo("Berlin"))
+            .and().body("dateOfBirth", Matchers.equalTo("1990-01-01"));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
         "{\"mobilePhoneNumber\":\"491773289245\"}",
