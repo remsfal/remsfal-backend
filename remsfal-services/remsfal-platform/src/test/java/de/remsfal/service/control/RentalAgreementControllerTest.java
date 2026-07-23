@@ -1007,8 +1007,9 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     void removeTenant_FAILED_agreementNotFound() {
         final UUID projectId = TestData.PROJECT_ID_1;
         final UUID agreementId = UUID.randomUUID();
+        final UUID tenantId = UUID.randomUUID();
 
         assertThrows(NotFoundException.class,
-            () -> controller.removeTenant(projectId, agreementId, UUID.randomUUID()));
+            () -> controller.removeTenant(projectId, agreementId, tenantId));
     }
 }
