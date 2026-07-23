@@ -173,9 +173,7 @@ public class RentalAgreementController {
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
 
         final TenantEntity tenant = processTenants(projectId, List.of(tenantInput)).get(0);
-        if (!entity.getTenants().contains(tenant)) {
-            entity.getTenants().add(tenant);
-        }
+        entity.addTenant(tenant);
         rentalAgreementRepository.merge(entity);
         return tenant;
     }
@@ -188,7 +186,7 @@ public class RentalAgreementController {
             .findRentalAgreementByProject(projectId, agreementId)
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
 
-        entity.getTenants().removeIf(tenant -> tenant.getId().equals(tenantId));
+        entity.removeTenant(tenantId);
         rentalAgreementRepository.merge(entity);
     }
 
