@@ -141,7 +141,12 @@ public class UserController {
         if (user.getLocale() != null) {
             entity.setLocale(user.getLocale());
         }
-
+        if (user.getPlaceOfBirth() != null) {
+            entity.setPlaceOfBirth(user.getPlaceOfBirth());
+        }
+        if (user.getDateOfBirth() != null) {
+            entity.setDateOfBirth(user.getDateOfBirth());
+        }
         final UserEntity mergedEntity;
         if (user.getAdditionalEmails() != null) {
             final List<AdditionalEmailEntity> createdEmails = syncAdditionalEmails(entity, user.getAdditionalEmails());
