@@ -40,4 +40,8 @@ public interface CustomerModel extends UserModel {
     String getLocale();
 
     List<String> getAdditionalEmails();
+
+    String getPlaceOfBirth();
+
+    LocalDate getDateOfBirth();
 }
