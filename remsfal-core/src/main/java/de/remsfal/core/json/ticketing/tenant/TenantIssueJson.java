@@ -14,6 +14,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -25,8 +26,8 @@ import de.remsfal.core.validation.NullOrNotBlank;
 
 /**
  * The issue representation exposed to tenants only: excludes project-management-internal fields
- * (projectId, priority, assigneeId, visibleToTenants, all issue relations) that a tenant must
- * never see or set, to avoid leaking data across the manager/tenant boundary.
+ * (projectId, priority, assigneeId, visibleToTenants, all issue relations, tenantUpdate) that a
+ * tenant must never see or set, to avoid leaking data across the manager/tenant boundary.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -174,6 +175,13 @@ public abstract class TenantIssueJson implements IssueModel {
     @Schema(readOnly = true, hidden = true)
     @Override
     public abstract Set<UUID> getBlocks();
+
+    @Null
+    @Nullable
+    @JsonIgnore
+    @Schema(readOnly = true, hidden = true)
+    @Override
+    public abstract JsonNode getTenantUpdate();
 
     /**
      * Creates a {@link TenantIssueJson} DTO from the given {@link IssueModel}, exposing only the

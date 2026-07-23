@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -145,6 +146,11 @@ public abstract class IssueJson implements IssueModel {
     public abstract Set<UUID> getBlocks();
 
     @Nullable
+    @Schema(description = "Proposed data change submitted via self-service, for manager review")
+    @Override
+    public abstract JsonNode getTenantUpdate();
+
+    @Nullable
     public abstract List<IssueAttachmentJson> getAttachments();
 
     /**
@@ -181,6 +187,7 @@ public abstract class IssueJson implements IssueModel {
             .duplicateOf(model.getDuplicateOf())
             .blockedBy(model.getBlockedBy())
             .blocks(model.getBlocks())
+            .tenantUpdate(model.getTenantUpdate())
             .build();
     }
 

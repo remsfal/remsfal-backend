@@ -1,5 +1,9 @@
 package de.remsfal.ticketing.entity.dto;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.nosql.Column;
@@ -16,6 +20,8 @@ import java.util.UUID;
 
 @Entity("issues")
 public class IssueEntity extends AbstractEntity implements IssueModel {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Id
     private IssueKey key;
@@ -79,6 +85,9 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     @Column("blocks_issue_ids")
     private Set<UUID> blocks;
+
+    @Column("tenant_update")
+    private String tenantUpdate;
 
     public IssueKey getKey() {
         return key;
@@ -350,6 +359,27 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
             this.blocks = new HashSet<>();
         }
         this.blocks.add(blocksIssue);
+    }
+
+    @Override
+    public JsonNode getTenantUpdate() {
+        if (tenantUpdate == null) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readTree(tenantUpdate);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Invalid JSON stored in tenant_update column", e);
+        }
+    }
+
+    public void setTenantUpdate(JsonNode tenantUpdate) {
+        this.tenantUpdate = tenantUpdate != null ? tenantUpdate.toString() : null;
+    }
+
+    // Setter for string tenantUpdate for Cassandra mapping
+    public void setTenantUpdate(String tenantUpdate) {
+        this.tenantUpdate = tenantUpdate;
     }
 
     /**
