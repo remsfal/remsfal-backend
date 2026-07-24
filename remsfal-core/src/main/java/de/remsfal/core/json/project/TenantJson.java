@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.AddressJson;
+import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.core.validation.PostValidation;
 import jakarta.annotation.Nullable;
@@ -117,6 +118,32 @@ public abstract class TenantJson implements TenantModel {
                 .placeOfBirth(model.getPlaceOfBirth())
                 .dateOfBirth(model.getDateOfBirth())
                 .userId(model.getUserId())
+                .build();
+    }
+
+    /**
+     * Creates a {@link TenantJson} representing the tenant data derived from a customer's profile,
+     * e.g. to propose an update to a tenant record linked to that customer's user account.
+     *
+     * @param model the source {@link CustomerModel}
+     * @param tenantId the ID of the tenant record this data applies to
+     * @return an immutable {@link TenantJson}
+     */
+    public static ImmutableTenantJson valueOf(final CustomerModel model, final UUID tenantId) {
+        if (model == null) {
+            return null;
+        }
+        return ImmutableTenantJson.builder()
+                .id(tenantId)
+                .firstName(model.getFirstName())
+                .lastName(model.getLastName())
+                .email(model.getEmail())
+                .mobilePhoneNumber(model.getMobilePhoneNumber())
+                .businessPhoneNumber(model.getBusinessPhoneNumber())
+                .privatePhoneNumber(model.getPrivatePhoneNumber())
+                .address(AddressJson.valueOf(model.getAddress()))
+                .placeOfBirth(model.getPlaceOfBirth())
+                .dateOfBirth(model.getDateOfBirth())
                 .build();
     }
 }

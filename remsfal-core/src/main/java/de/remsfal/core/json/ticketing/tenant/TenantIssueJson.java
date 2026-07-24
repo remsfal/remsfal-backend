@@ -14,12 +14,12 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
@@ -181,7 +181,7 @@ public abstract class TenantIssueJson implements IssueModel {
     @JsonIgnore
     @Schema(readOnly = true, hidden = true)
     @Override
-    public abstract JsonNode getTenantUpdate();
+    public abstract TenantJson getTenantUpdate();
 
     /**
      * Creates a {@link TenantIssueJson} DTO from the given {@link IssueModel}, exposing only the

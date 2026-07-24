@@ -1,5 +1,11 @@
 package de.remsfal.service.boundary.eventing;
 
+import java.util.List;
+
+import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.AffectedTenantJson;
+import de.remsfal.core.json.eventing.ImmutableAffectedTenantJson;
 import de.remsfal.core.json.eventing.UserEventJson;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
@@ -34,6 +40,32 @@ class UserEventProducerTest extends AbstractKafkaTest {
         .assertThat()
             .json("userId", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("userEventType", Matchers.equalTo("USER_DELETED"));
+    }
+
+    @Test
+    void testSendUserUpdated_publishesEventToTopic() {
+        final UserJson updatedProfile = ImmutableUserJson.builder()
+            .firstName(TestData.USER_FIRST_NAME)
+            .lastName(TestData.USER_LAST_NAME)
+            .build();
+        final List<AffectedTenantJson> affectedTenants = List.of(
+            ImmutableAffectedTenantJson.builder()
+                .tenantId(TestData.TENANT_ID)
+                .projectId(TestData.PROJECT_ID)
+                .build());
+
+        producer.sendUserUpdated(TestData.USER_ID, updatedProfile, affectedTenants);
+
+        given()
+            .topic(UserEventJson.TOPIC)
+        .assertThat()
+            .json("userId", Matchers.equalTo(TestData.USER_ID.toString()))
+            .json("userEventType", Matchers.equalTo("USER_UPDATED"));
+    }
+
+    @Test
+    void testSendUserUpdated_userIdNull_skipsSendingEvent() {
+        producer.sendUserUpdated(null, null, List.of());
     }
 
 }

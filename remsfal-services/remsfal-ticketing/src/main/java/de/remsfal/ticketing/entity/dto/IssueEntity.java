@@ -1,10 +1,11 @@
 package de.remsfal.ticketing.entity.dto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
+import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
@@ -362,19 +363,25 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     }
 
     @Override
-    public JsonNode getTenantUpdate() {
+    public TenantJson getTenantUpdate() {
         if (tenantUpdate == null) {
             return null;
         }
         try {
-            return OBJECT_MAPPER.readTree(tenantUpdate);
+            return OBJECT_MAPPER.readValue(tenantUpdate, TenantJson.class);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Invalid JSON stored in tenant_update column", e);
         }
     }
 
-    public void setTenantUpdate(JsonNode tenantUpdate) {
-        this.tenantUpdate = tenantUpdate != null ? tenantUpdate.toString() : null;
+    public void setTenantUpdate(TenantModel tenantUpdate) {
+        try {
+            this.tenantUpdate = tenantUpdate != null
+                ? OBJECT_MAPPER.writeValueAsString(TenantJson.valueOf(tenantUpdate))
+                : null;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize tenant update", e);
+        }
     }
 
     // Setter for string tenantUpdate for Cassandra mapping

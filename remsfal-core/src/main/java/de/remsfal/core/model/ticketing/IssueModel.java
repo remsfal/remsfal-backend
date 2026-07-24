@@ -4,9 +4,8 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import de.remsfal.core.model.RentalUnitModel.UnitType;
+import de.remsfal.core.model.project.TenantModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -115,6 +114,6 @@ public interface IssueModel {
 
     Set<UUID> getBlocks();
 
-    JsonNode getTenantUpdate();
+    TenantModel getTenantUpdate();
 
 }
