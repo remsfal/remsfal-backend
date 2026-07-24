@@ -1,5 +1,8 @@
 package de.remsfal.service.boundary.eventing;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
 import java.util.List;
 
 import de.remsfal.core.json.ImmutableUserJson;
@@ -66,6 +69,12 @@ class UserEventProducerTest extends AbstractKafkaTest {
     @Test
     void testSendUserUpdated_userIdNull_skipsSendingEvent() {
         producer.sendUserUpdated(null, null, List.of());
+
+        final List<?> records = companion.consumeStrings()
+            .fromTopics(UserEventJson.TOPIC)
+            .awaitNoRecords(Duration.ofSeconds(2))
+            .getRecords();
+        assertTrue(records.isEmpty());
     }
 
 }
