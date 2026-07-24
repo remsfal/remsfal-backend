@@ -21,10 +21,14 @@ import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.AffectedTenantJson;
+import de.remsfal.core.json.eventing.ImmutableAffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
+import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserEntity;
 
@@ -39,6 +43,9 @@ public class UserController {
 
     @Inject
     UserRepository repository;
+
+    @Inject
+    TenantRepository tenantRepository;
 
     @Inject
     AdditionalEmailRepository additionalEmailRepository;
@@ -109,6 +116,10 @@ public class UserController {
         final UserEntity entity = repository.findByIdWithAdditionalEmails(userId)
             .orElseThrow(() -> new NotFoundException("User not exist"));
 
+        final boolean tenantRelevantChange = user.getFirstName() != null || user.getLastName() != null
+            || user.getAddress() != null || user.getMobilePhoneNumber() != null
+            || user.getBusinessPhoneNumber() != null || user.getPrivatePhoneNumber() != null;
+
         if (user.getFirstName() != null) {
             entity.setFirstName(user.getFirstName());
         }
@@ -136,17 +147,33 @@ public class UserController {
         if (user.getDateOfBirth() != null) {
             entity.setDateOfBirth(user.getDateOfBirth());
         }
+        final UserEntity mergedEntity;
         if (user.getAdditionalEmails() != null) {
             final List<AdditionalEmailEntity> createdEmails = syncAdditionalEmails(entity, user.getAdditionalEmails());
-            final UserEntity mergedEntity = repository.merge(entity);
+            mergedEntity = repository.merge(entity);
             createdEmails.forEach(additionalEmail -> notificationController.informUserAboutAdditionalEmailVerification(
                 mergedEntity,
                 additionalEmail.getEmail(),
                 additionalEmail.getVerificationToken()
             ));
-            return mergedEntity;
+        } else {
+            mergedEntity = repository.merge(entity);
         }
-        return repository.merge(entity);
+
+        if (tenantRelevantChange) {
+            notifyTenantRelevantUserUpdate(userId, mergedEntity);
+        }
+        return mergedEntity;
+    }
+
+    private void notifyTenantRelevantUserUpdate(final UUID userId, final UserEntity updatedUser) {
+        final List<AffectedTenantJson> affectedTenants = tenantRepository.findByUserId(userId).stream()
+            .<AffectedTenantJson>map(tenant -> ImmutableAffectedTenantJson.builder()
+                .tenantId(tenant.getId())
+                .projectId(tenant.getProjectId())
+                .build())
+            .toList();
+        userEventProducer.sendUserUpdated(userId, UserJson.valueOf(updatedUser), affectedTenants);
     }
     
     @Transactional

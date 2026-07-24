@@ -1,6 +1,11 @@
 package de.remsfal.ticketing.entity.dto;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
+import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
@@ -16,6 +21,8 @@ import java.util.UUID;
 
 @Entity("issues")
 public class IssueEntity extends AbstractEntity implements IssueModel {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Id
     private IssueKey key;
@@ -79,6 +86,9 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     @Column("blocks_issue_ids")
     private Set<UUID> blocks;
+
+    @Column("tenant_update")
+    private String tenantUpdate;
 
     public IssueKey getKey() {
         return key;
@@ -350,6 +360,33 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
             this.blocks = new HashSet<>();
         }
         this.blocks.add(blocksIssue);
+    }
+
+    @Override
+    public TenantJson getTenantUpdate() {
+        if (tenantUpdate == null) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readValue(tenantUpdate, TenantJson.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Invalid JSON stored in tenant_update column", e);
+        }
+    }
+
+    public void setTenantUpdate(TenantModel tenantUpdate) {
+        try {
+            this.tenantUpdate = tenantUpdate != null
+                ? OBJECT_MAPPER.writeValueAsString(TenantJson.valueOf(tenantUpdate))
+                : null;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize tenant update", e);
+        }
+    }
+
+    // Setter for string tenantUpdate for Cassandra mapping
+    public void setTenantUpdate(String tenantUpdate) {
+        this.tenantUpdate = tenantUpdate;
     }
 
     /**

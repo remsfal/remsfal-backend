@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.List;
 import java.time.LocalDateTime;
@@ -18,20 +20,28 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.BadRequestException;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.AffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.test.TestData;
+import io.quarkus.test.InjectMock;
 
 @QuarkusTest
 class UserControllerTest extends AbstractServiceTest {
 
     @Inject
     UserController controller;
+
+    @InjectMock
+    UserEventProducer userEventProducer;
 
     @Test
     void createUser_SUCCESS_simpleUserCreated() {
@@ -105,6 +115,51 @@ class UserControllerTest extends AbstractServiceTest {
             .setParameter("userId", user.getId())
             .getSingleResult();
         assertEquals(newUserName, name);
+    }
+
+    @Test
+    void updateUser_SUCCESS_notifiesLinkedTenantOnRelevantChange() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UUID userId = user.getId();
+
+        insertProject(TestData.PROJECT_ID, TestData.PROJECT_TITLE_1);
+        UUID tenantId = UUID.randomUUID();
+        runInTransaction(() -> entityManager
+            .createNativeQuery(
+                "INSERT INTO tenants (id, project_id, user_id, first_name, last_name) VALUES (?,?,?,?,?)")
+            .setParameter(1, tenantId)
+            .setParameter(2, TestData.PROJECT_ID)
+            .setParameter(3, userId)
+            .setParameter(4, TestData.USER_FIRST_NAME)
+            .setParameter(5, TestData.USER_LAST_NAME)
+            .executeUpdate());
+
+        final String newLastName = "Dr. " + TestData.USER_LAST_NAME;
+        CustomerModel updatedUser = ImmutableUserJson.builder().id(userId).lastName(newLastName).build();
+        controller.updateUser(userId, updatedUser);
+
+        final ArgumentCaptor<UUID> userIdCaptor = ArgumentCaptor.forClass(UUID.class);
+        final ArgumentCaptor<UserJson> userJsonCaptor = ArgumentCaptor.forClass(UserJson.class);
+        @SuppressWarnings("unchecked")
+        final ArgumentCaptor<List<AffectedTenantJson>> tenantsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(userEventProducer).sendUserUpdated(userIdCaptor.capture(), userJsonCaptor.capture(),
+            tenantsCaptor.capture());
+
+        assertEquals(userId, userIdCaptor.getValue());
+        assertEquals(newLastName, userJsonCaptor.getValue().getLastName());
+        assertEquals(1, tenantsCaptor.getValue().size());
+        assertEquals(tenantId, tenantsCaptor.getValue().get(0).getTenantId());
+        assertEquals(TestData.PROJECT_ID, tenantsCaptor.getValue().get(0).getProjectId());
+    }
+
+    @Test
+    void updateUser_SUCCESS_noTenantNotificationWhenOnlyLocaleChanged() {
+        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        CustomerModel updatedUser = ImmutableUserJson.builder().id(user.getId()).locale("en").build();
+        controller.updateUser(user.getId(), updatedUser);
+
+        verifyNoInteractions(userEventProducer);
     }
 
     @Test
