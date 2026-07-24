@@ -20,6 +20,8 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/projects/{projectId}/rental-agreements";
     static final String AGREEMENT_PATH = BASE_PATH + "/{agreementId}";
+    static final String AGREEMENT_TENANTS_PATH = AGREEMENT_PATH + "/tenants";
+    static final String AGREEMENT_TENANT_PATH = AGREEMENT_TENANTS_PATH + "/{tenantId}";
 
     @BeforeEach
     protected void setupTests() {
@@ -550,5 +552,124 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .delete(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
             .then()
             .statusCode(Status.NO_CONTENT.getStatusCode());
+    }
+
+    @Test
+    void addTenant_SUCCESS_tenantAddedToAgreement() {
+        String json = "{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_TENANTS_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .log().ifValidationFails()
+            .statusCode(Status.CREATED.getStatusCode())
+            .header("Location", Matchers.notNullValue())
+            .body("id", Matchers.notNullValue())
+            .body("firstName", Matchers.equalTo("Max"))
+            .body("lastName", Matchers.equalTo("Mustermann"));
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("tenants.size()", Matchers.equalTo(1));
+    }
+
+    @Test
+    void addTenant_FAILURE_missingLastName() {
+        String json = "{\"firstName\":\"Max\"}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_TENANTS_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void addTenant_FAILURE_agreementNotFound() {
+        String json = "{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_TENANTS_PATH, TestData.PROJECT_ID.toString(), UUID.randomUUID().toString())
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void addTenant_FAILURE_unauthorized() {
+        String json = "{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_TENANTS_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    void removeTenant_SUCCESS_tenantRemovedFromAgreement() {
+        String tenantId = given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}")
+            .post(AGREEMENT_TENANTS_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .delete(AGREEMENT_TENANT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(), tenantId)
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("tenants.size()", Matchers.equalTo(0));
+    }
+
+    @Test
+    void removeTenant_FAILURE_agreementNotFound() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .delete(AGREEMENT_TENANT_PATH, TestData.PROJECT_ID.toString(), UUID.randomUUID().toString(),
+                UUID.randomUUID().toString())
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void removeTenant_FAILURE_unauthorized() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .delete(AGREEMENT_TENANT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
+                UUID.randomUUID().toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 }

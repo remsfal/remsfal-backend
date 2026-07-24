@@ -91,6 +91,16 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
         this.tenants = tenants;
     }
 
+    public void addTenant(final TenantEntity tenant) {
+        if (!this.tenants.contains(tenant)) {
+            this.tenants.add(tenant);
+        }
+    }
+
+    public void removeTenant(final UUID tenantId) {
+        this.tenants.removeIf(tenant -> tenant.getId().equals(tenantId));
+    }
+
     @Override
     public LocalDate getStartOfRental() {
         return startOfRental;
