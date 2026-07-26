@@ -3,8 +3,8 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-backend-0.1.10-rental-agreement-keys" author="alexander.stanik@htw-berlin.de">
-        <comment>Replace rental_agreements.amount_of_keys with a rental_agreement_keys element collection</comment>
+    <changeSet id="remsfal-backend-0.1.10-rental-agreement-keys" author="test">
+        <comment>Add rental_agreement_keys element collection table</comment>
 
         <createTable tableName="rental_agreement_keys">
             <column name="agreement_id" type="uuid">
@@ -26,8 +26,6 @@
         <createIndex indexName="idx_rental_agreement_keys_agreement_fk" tableName="rental_agreement_keys">
             <column name="agreement_id" type="uuid" />
         </createIndex>
-
-        <dropColumn tableName="rental_agreements" columnName="amount_of_keys" />
     </changeSet>
 
 </databaseChangeLog>
