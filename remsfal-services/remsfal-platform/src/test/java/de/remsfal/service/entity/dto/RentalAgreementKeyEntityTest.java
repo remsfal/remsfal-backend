@@ -99,13 +99,13 @@ class RentalAgreementKeyEntityTest {
     @Test
     @DisplayName("Test equals with null")
     void testEqualsWithNull() {
-        assertNotEquals(key1, null);
+        assertNotEquals(null, key1);
     }
 
     @Test
     @DisplayName("Test equals with different object type")
     void testEqualsWithDifferentType() {
-        assertNotEquals(key1, "Not a RentalAgreementKeyEntity");
+        assertNotEquals("Not a RentalAgreementKeyEntity", key1);
     }
 
     @Test

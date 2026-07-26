@@ -1,5 +1,6 @@
-package de.remsfal.core.json.project;
+package de.remsfal.core.json;
 
+import de.remsfal.core.json.project.RentalAgreementKeyJson;
 import de.remsfal.core.model.project.RentalAgreementKeyModel;
 import org.junit.jupiter.api.Test;
 
