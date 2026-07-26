@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.14-issues-tenant-update-column" author="alexander.stanik@htw-berlin.de">
+        <comment>Add tenant_update column to store a JSON snapshot of a user-proposed self-service
+        data change (e.g. a TenantJson payload) for later review/approval by the project manager.</comment>
+        <sql>ALTER TABLE REMSFAL.issues ADD tenant_update TEXT;</sql>
+        <rollback>
+            <sql>ALTER TABLE REMSFAL.issues DROP tenant_update;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

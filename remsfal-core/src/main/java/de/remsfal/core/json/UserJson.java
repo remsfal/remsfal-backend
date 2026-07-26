@@ -110,6 +110,17 @@ public abstract class UserJson implements CustomerModel {
     public abstract String getLocale();
 
     @Nullable
+    @Size(max = 255, message = "Place of birth cannot be longer than 255 characters")
+    @Schema(examples = {"Berlin"})
+    @Override
+    public abstract String getPlaceOfBirth();
+
+    @Nullable
+    @Schema(examples = {"1990-01-01"})
+    @Override
+    public abstract LocalDate getDateOfBirth();
+
+    @Nullable
     @Schema(examples = {"[\"test@example.com\", \"info@example.com\"]"})
     @Override
     public abstract List<
@@ -141,6 +152,8 @@ public abstract class UserJson implements CustomerModel {
                 .businessPhoneNumber(model.getBusinessPhoneNumber())
                 .privatePhoneNumber(model.getPrivatePhoneNumber())
                 .locale(model.getLocale())
+                .placeOfBirth(model.getPlaceOfBirth())
+                .dateOfBirth(model.getDateOfBirth())
                 .additionalEmails(model.getAdditionalEmails())
                 .registeredDate(model.getRegisteredDate())
                 .lastLoginDate(model.getLastLoginDate())

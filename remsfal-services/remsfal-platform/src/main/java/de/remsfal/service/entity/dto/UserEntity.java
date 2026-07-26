@@ -68,6 +68,12 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @Column(name = "locale")
     private String locale;
 
+    @Column(name = "place_of_birth")
+    private String placeOfBirth;
+
+    @Column(name = "date_of_birth", columnDefinition = "date")
+    private LocalDate dateOfBirth;
+
     @OneToMany(mappedBy = "user")
     private Set<ProjectMembershipEntity> memberships;
 
@@ -177,6 +183,24 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
 
     public void setLocale(String locale) {
         this.locale = locale;
+    }
+
+    @Override
+    public String getPlaceOfBirth() {
+        return placeOfBirth;
+    }
+
+    public void setPlaceOfBirth(String placeOfBirth) {
+        this.placeOfBirth = placeOfBirth;
+    }
+
+    @Override
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public Set<ProjectMembershipEntity> getMemberships() {

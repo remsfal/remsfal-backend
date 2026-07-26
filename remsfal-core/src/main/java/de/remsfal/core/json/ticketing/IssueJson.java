@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.validation.NullOrNotBlank;
@@ -145,6 +146,11 @@ public abstract class IssueJson implements IssueModel {
     public abstract Set<UUID> getBlocks();
 
     @Nullable
+    @Schema(description = "Proposed data change submitted via self-service, for manager review")
+    @Override
+    public abstract TenantJson getTenantUpdate();
+
+    @Nullable
     public abstract List<IssueAttachmentJson> getAttachments();
 
     /**
@@ -181,6 +187,7 @@ public abstract class IssueJson implements IssueModel {
             .duplicateOf(model.getDuplicateOf())
             .blockedBy(model.getBlockedBy())
             .blocks(model.getBlocks())
+            .tenantUpdate(TenantJson.valueOf(model.getTenantUpdate()))
             .build();
     }
 

@@ -13,7 +13,9 @@ import de.remsfal.core.api.project.RentalAgreementEndpoint;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.RentalAgreementListJson;
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.control.PropertyController;
 import de.remsfal.service.control.RentalAgreementController;
 
@@ -67,6 +69,22 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     public void deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
         checkRentalAgreementWritePermissions(projectId);
         rentalAgreementController.deleteRentalAgreement(projectId, agreementId);
+    }
+
+    @Override
+    public Response addTenant(final UUID projectId, final UUID agreementId, final TenantJson tenant) {
+        checkRentalAgreementWritePermissions(projectId);
+        final TenantModel model = rentalAgreementController.addTenant(projectId, agreementId, tenant);
+        return getCreatedResponseBuilder(model.getId())
+            .type(MediaType.APPLICATION_JSON)
+            .entity(TenantJson.valueOf(model))
+            .build();
+    }
+
+    @Override
+    public void removeTenant(final UUID projectId, final UUID agreementId, final UUID tenantId) {
+        checkRentalAgreementWritePermissions(projectId);
+        rentalAgreementController.removeTenant(projectId, agreementId, tenantId);
     }
 
 }

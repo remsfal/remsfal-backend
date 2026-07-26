@@ -1,9 +1,9 @@
 package de.remsfal.core.model.project;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.model.tenancy.CoTenantModel;
 
 /**
  * Model representing a tenant in a rental agreement.
@@ -11,13 +11,7 @@ import de.remsfal.core.model.AddressModel;
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TenantModel {
-
-    UUID getId();
-
-    String getFirstName();
-
-    String getLastName();
+public interface TenantModel extends CoTenantModel {
 
     String getEmail();
 
@@ -33,10 +27,4 @@ public interface TenantModel {
 
     LocalDate getDateOfBirth();
 
-    /**
-     * Returns the associated user ID if this tenant is linked to a user account.
-     *
-     * @return user ID or null if not linked
-     */
-    UUID getUserId();
 }

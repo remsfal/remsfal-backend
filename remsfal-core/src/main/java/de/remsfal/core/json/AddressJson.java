@@ -59,6 +59,24 @@ public abstract class AddressJson implements AddressModel {
     @Size(min = 2, max = 2, message = "Country code must be a valid ISO 3166-1 alpha-2 code")
     public abstract String getCountryCode();
 
+    @JsonIgnore
+    @Override
+    public String getAddressLine1() {
+        return AddressModel.super.getAddressLine1();
+    }
+
+    @JsonIgnore
+    @Override
+    public String getAddressLine2() {
+        return AddressModel.super.getAddressLine2();
+    }
+
+    @JsonIgnore
+    @Override
+    public String getAddressLine3() {
+        return AddressModel.super.getAddressLine3();
+    }
+
     public static AddressJson valueOf(final AddressModel model) {
         if (model == null) {
             return null;

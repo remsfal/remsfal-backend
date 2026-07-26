@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.remsfal.core.model.RentalUnitModel.UnitType;
+import de.remsfal.core.model.project.TenantModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -24,6 +25,7 @@ public interface IssueModel {
         DEFECT,
         INQUIRY,
         MAINTENANCE,
+        SELF_SERVICE,
         TASK,
         TERMINATION
     }
@@ -111,5 +113,7 @@ public interface IssueModel {
     Set<UUID> getBlockedBy();
 
     Set<UUID> getBlocks();
+
+    TenantModel getTenantUpdate();
 
 }
