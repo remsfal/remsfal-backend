@@ -50,14 +50,45 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by OPEN status
         List<? extends IssueModel> openIssues = repository.findByQuery(
-            new IssueFilter(projectId, null, null, null, null, null, List.of(IssueStatus.OPEN)),
-            false, null, Integer.MAX_VALUE
+            new IssueFilter(projectId, null, null, null, null, null, List.of(IssueStatus.OPEN), null),
+            null, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 OPEN issues
         assertNotNull(openIssues);
         assertEquals(2, openIssues.size());
         openIssues.forEach(issue -> assertEquals(IssueStatus.OPEN, issue.getStatus()));
+    }
+
+    @Test
+    void testFindByQuery_filterByMultipleTypesAndStatuses() {
+        // Regression test: combining a type filter with a multi-value status filter used to fail with
+        // "Cannot execute this query as it might involve data filtering ... use ALLOW FILTERING" because
+        // Cassandra's SAI indexes only allow a multi-value IN restriction without ALLOW FILTERING when
+        // it is the sole predicate.
+        UUID projectId = UUID.randomUUID();
+
+        insertIssue(projectId, UUID.randomUUID(), "Issue 1", IssueType.DEFECT, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+        insertIssue(projectId, UUID.randomUUID(), "Issue 2", IssueType.DEFECT, IssueStatus.IN_PROGRESS,
+            IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+        insertIssue(projectId, UUID.randomUUID(), "Issue 3", IssueType.DEFECT, IssueStatus.CLOSED,
+            IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+        insertIssue(projectId, UUID.randomUUID(), "Issue 4", IssueType.MAINTENANCE, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+
+        List<? extends IssueModel> issues = repository.findByQuery(
+            new IssueFilter(projectId, null, null, null, null,
+                List.of(IssueType.DEFECT), List.of(IssueStatus.OPEN, IssueStatus.IN_PROGRESS), null),
+            null, Integer.MAX_VALUE
+        );
+
+        assertNotNull(issues);
+        assertEquals(2, issues.size());
+        issues.forEach(issue -> {
+            assertEquals(IssueType.DEFECT, issue.getType());
+            assertTrue(issue.getStatus() == IssueStatus.OPEN || issue.getStatus() == IssueStatus.IN_PROGRESS);
+        });
     }
 
     @Test
@@ -76,8 +107,8 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         // Test: Filter by assigneeId1
         List<? extends IssueModel> assigneeIssues = repository.findByQuery(
-            new IssueFilter(projectId, assigneeId1, null, null, null, null, null),
-            false, null, Integer.MAX_VALUE
+            new IssueFilter(projectId, assigneeId1, null, null, null, null, null, null),
+            null, Integer.MAX_VALUE
         );
 
         // Verify: Should return 2 issues assigned to assigneeId1
@@ -108,7 +139,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
         List<IssueEntity> page;
         do {
             page = repository.findByQuery(
-                new IssueFilter(projectId, null, null, null, null, null, null), false, cursor, 2);
+                new IssueFilter(projectId, null, null, null, null, null, null, null), cursor, 2);
             assertTrue(page.size() <= 2);
             page.forEach(issue -> visited.add(issue.getId()));
             if (!page.isEmpty()) {
@@ -130,7 +161,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
         }
 
         List<IssueEntity> page = repository.findByQuery(
-            new IssueFilter(projectId, null, null, null, null, null, null), false, null, 100);
+            new IssueFilter(projectId, null, null, null, null, null, null, null), null, 100);
 
         assertEquals(3, page.size());
     }
@@ -143,7 +174,7 @@ class IssueRepositoryTest extends AbstractTicketingTest {
 
         UUID cursorOlderThanAnyUuidV7 = new UUID(0L, 0L);
         List<IssueEntity> page = repository.findByQuery(
-            new IssueFilter(projectId, null, null, null, null, null, null), false, cursorOlderThanAnyUuidV7, 10);
+            new IssueFilter(projectId, null, null, null, null, null, null, null), cursorOlderThanAnyUuidV7, 10);
 
         assertTrue(page.isEmpty());
     }

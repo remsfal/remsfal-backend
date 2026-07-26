@@ -59,10 +59,10 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public IssueListJson getIssues(final UUID projectId, final UUID assigneeId, final UUID agreementId,
         final UnitType rentalUnitType, final UUID rentalUnitId, final List<IssueType> type,
-        final List<IssueStatus> status, final UUID cursor, final Integer limit) {
+        final List<IssueStatus> status, final Boolean isVisibleToTenants, final UUID cursor, final Integer limit) {
         checkProjectReadPermissions(projectId);
         final IssueFilter filter = new IssueFilter(projectId, assigneeId, agreementId,
-            rentalUnitType, rentalUnitId, type, status);
+            rentalUnitType, rentalUnitId, type, status, isVisibleToTenants);
         final List<? extends IssueModel> issues = issueController.getProjectIssues(filter, cursor, limit);
         return IssueListJson.valueOfProjectIssues(issues, nextCursorOf(issues, limit));
     }
