@@ -84,7 +84,7 @@ public abstract class RentalAgreementItemJson {
                 .toList() : new ArrayList<>())
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
-            .amountOfKeys(model.getAmountOfKeys())
+            .amountOfKeys(model.getTotalAmountOfKeys())
             .rentalUnits(rentalUnits)
             .basicRent(model.getBasicRent())
             .operatingCostsPrepayment(model.getOperatingCostsPrepayment())

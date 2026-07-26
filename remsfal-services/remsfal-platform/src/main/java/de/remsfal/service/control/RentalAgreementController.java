@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.RentalAgreementKeyModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
@@ -19,6 +20,7 @@ import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
+import de.remsfal.service.entity.dto.RentalAgreementKeyEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -128,6 +130,9 @@ public class RentalAgreementController {
         // Process tenants
         entity.setTenants(processTenants(projectId, agreement.getTenants()));
 
+        // Process keys
+        entity.setKeys(processKeys(agreement.getKeys()));
+
         // Process rents
         processRents(entity, agreement);
 
@@ -156,6 +161,11 @@ public class RentalAgreementController {
             entity.getTenants().clear();
             List<TenantEntity> tenantEntities = processTenants(projectId, tenants);
             entity.getTenants().addAll(tenantEntities);
+        }
+
+        // Update keys (replace entire list, only if provided)
+        if (agreement.getKeys() != null) {
+            entity.setKeys(processKeys(agreement.getKeys()));
         }
 
         // Update rents (only replace if provided)
@@ -368,6 +378,28 @@ public class RentalAgreementController {
             }
         }
         return null;
+    }
+
+    /**
+     * Process key handover models into key handover entities.
+     *
+     * @param keysInput the key handover models from the request, may be null
+     * @return list of key handover entities
+     */
+    private List<RentalAgreementKeyEntity> processKeys(final List<? extends RentalAgreementKeyModel> keysInput) {
+        List<RentalAgreementKeyEntity> keyEntities = new ArrayList<>();
+        if (keysInput == null) {
+            return keyEntities;
+        }
+        for (RentalAgreementKeyModel keyInput : keysInput) {
+            RentalAgreementKeyEntity key = new RentalAgreementKeyEntity();
+            key.setAmountOfKeys(keyInput.getAmountOfKeys());
+            key.setIssuedAt(keyInput.getIssuedAt());
+            key.setReturnedAt(keyInput.getReturnedAt());
+            key.setKeyType(keyInput.getKeyType());
+            keyEntities.add(key);
+        }
+        return keyEntities;
     }
 
     /**

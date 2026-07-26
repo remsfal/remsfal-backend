@@ -21,8 +21,8 @@ public interface RentalAgreementModel {
     LocalDate getStartOfRental();
 
     LocalDate getEndOfRental();
-    
-    int getAmountOfKeys();
+
+    List<? extends RentalAgreementKeyModel> getKeys();
 
     List<? extends RentModel> getPropertyRents();
 
@@ -53,6 +53,14 @@ public interface RentalAgreementModel {
 
     default Float getHeatingCostsPrepayment() {
         return calculateSum(getActiveRents(), RentModel::getHeatingCostsPrepayment);
+    }
+
+    default Integer getTotalAmountOfKeys() {
+        if (getKeys() == null) {
+            return null;
+        }
+        int sum = getKeys().stream().mapToInt(RentalAgreementKeyModel::getAmountOfKeys).sum();
+        return sum > 0 ? sum : null;
     }
 
     private List<? extends RentModel> getActiveRents() {

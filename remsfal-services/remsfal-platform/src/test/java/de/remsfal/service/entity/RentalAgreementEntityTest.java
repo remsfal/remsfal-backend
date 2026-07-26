@@ -1,44 +1,58 @@
 package de.remsfal.service.entity;
 
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
+import de.remsfal.service.entity.dto.RentalAgreementKeyEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 class RentalAgreementEntityTest {
 
-    @Test
-    @DisplayName("Tests setting and getting amount of keys")
-    void testSetAndGetAmountOfKeys() {
-        RentalAgreementEntity entity = new RentalAgreementEntity();
-
-        entity.setAmountOfKeys(5);
-
-        assertEquals(5, entity.getAmountOfKeys());
+    private static RentalAgreementKeyEntity key(final int amountOfKeys) {
+        RentalAgreementKeyEntity key = new RentalAgreementKeyEntity();
+        key.setAmountOfKeys(amountOfKeys);
+        return key;
     }
 
     @Test
-    @DisplayName("Tests setting amount of keys to zero")
-    void testSetAmountOfKeysZero() {
+    @DisplayName("Tests setting and getting keys")
+    void testSetAndGetKeys() {
         RentalAgreementEntity entity = new RentalAgreementEntity();
 
-        entity.setAmountOfKeys(0);
+        entity.setKeys(List.of(key(5)));
 
-        assertEquals(0, entity.getAmountOfKeys());
+        assertEquals(1, entity.getKeys().size());
+        assertEquals(5, entity.getKeys().get(0).getAmountOfKeys());
     }
 
     @Test
-    @DisplayName("Tests updating amount of keys")
-    void testUpdateAmountOfKeys() {
+    @DisplayName("Tests setting keys to an empty list")
+    void testSetKeysEmpty() {
         RentalAgreementEntity entity = new RentalAgreementEntity();
 
-        entity.setAmountOfKeys(3);
-        assertEquals(3, entity.getAmountOfKeys());
+        entity.setKeys(List.of());
 
-        entity.setAmountOfKeys(10);
-        assertEquals(10, entity.getAmountOfKeys());
+        assertTrue(entity.getKeys().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Tests updating keys")
+    void testUpdateKeys() {
+        RentalAgreementEntity entity = new RentalAgreementEntity();
+
+        entity.setKeys(List.of(key(3)));
+        assertEquals(1, entity.getKeys().size());
+        assertEquals(3, entity.getKeys().get(0).getAmountOfKeys());
+
+        entity.setKeys(List.of(key(10), key(2)));
+        assertEquals(2, entity.getKeys().size());
+        assertEquals(10, entity.getKeys().get(0).getAmountOfKeys());
+        assertEquals(2, entity.getKeys().get(1).getAmountOfKeys());
     }
 }
