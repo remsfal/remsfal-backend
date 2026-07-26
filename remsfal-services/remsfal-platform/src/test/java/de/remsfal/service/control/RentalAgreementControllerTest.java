@@ -6,6 +6,8 @@ import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.json.project.ImmutableTenantJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
+import de.remsfal.core.json.project.RentalAgreementKeyJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementKeyJson;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
@@ -181,6 +183,103 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
 
       assertThrows(NotFoundException.class,
           () -> controller.updateRentalAgreement(projectId, agreementId, updateJson));
+    }
+
+    @Test
+    void createRentalAgreement_SUCCESS_withKeys() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final RentalAgreementKeyJson key = ImmutableRentalAgreementKeyJson.builder()
+          .amountOfKeys(2)
+          .issuedAt(LocalDate.of(2025, 1, 1))
+          .returnedAt(LocalDate.of(2025, 12, 1))
+          .keyType("Haustürschlüssel")
+          .build();
+
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.now())
+          .tenants(List.of())
+          .addKeys(key)
+          .build();
+
+      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+
+      assertNotNull(result.getId());
+      assertEquals(1, result.getKeys().size());
+      assertEquals(2, result.getKeys().get(0).getAmountOfKeys());
+      assertEquals(key.getIssuedAt(), result.getKeys().get(0).getIssuedAt());
+      assertEquals(key.getReturnedAt(), result.getKeys().get(0).getReturnedAt());
+      assertEquals("Haustürschlüssel", result.getKeys().get(0).getKeyType());
+
+      // Verify in DB
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
+      assertEquals(1, entity.getKeys().size());
+      assertEquals(2, entity.getKeys().get(0).getAmountOfKeys());
+    }
+
+    @Test
+    void updateRentalAgreement_SUCCESS_replaceKeys() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final RentalAgreementKeyJson key1 = ImmutableRentalAgreementKeyJson.builder()
+          .amountOfKeys(2)
+          .keyType("Haustürschlüssel")
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.now())
+          .tenants(List.of())
+          .addKeys(key1)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      assertEquals(1, created.getKeys().size());
+      assertEquals("Haustürschlüssel", created.getKeys().get(0).getKeyType());
+
+      // Now replace with a different key
+      final RentalAgreementKeyJson key2 = ImmutableRentalAgreementKeyJson.builder()
+          .amountOfKeys(1)
+          .keyType("Briefkastenschlüssel")
+          .build();
+
+      RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
+          .addKeys(key2)
+          .build();
+
+      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
+
+      // Old key should be replaced by new one
+      assertEquals(1, updated.getKeys().size());
+      assertEquals("Briefkastenschlüssel", updated.getKeys().get(0).getKeyType());
+
+      // Verify in DB
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
+      assertEquals(1, entity.getKeys().size());
+      assertEquals("Briefkastenschlüssel", entity.getKeys().get(0).getKeyType());
+    }
+
+    @Test
+    void updateRentalAgreement_SUCCESS_keysUnchangedWhenNotProvided() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final RentalAgreementKeyJson key = ImmutableRentalAgreementKeyJson.builder()
+          .amountOfKeys(2)
+          .keyType("Haustürschlüssel")
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.now())
+          .tenants(List.of())
+          .addKeys(key)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      // Update without touching keys
+      RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
+          .endOfRental(LocalDate.now().plusYears(1))
+          .build();
+
+      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
+
+      assertEquals(1, updated.getKeys().size());
+      assertEquals("Haustürschlüssel", updated.getKeys().get(0).getKeyType());
     }
 
     @Test
