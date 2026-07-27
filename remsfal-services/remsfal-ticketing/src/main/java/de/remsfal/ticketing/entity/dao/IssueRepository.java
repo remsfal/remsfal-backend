@@ -19,10 +19,11 @@ import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
+
+    private static final String AND = " AND ";
 
     // ---- Issue columns ----
     static final String PRIORITY           = "priority";
@@ -95,7 +96,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             params.add(filter.assigneeId());
         }
         if (filter.agreementId() != null) {
-            cql.append(" AND ").append(AGREEMENT_ID).append(" = ?");
+            cql.append(AND).append(AGREEMENT_ID).append(" = ?");
             params.add(filter.agreementId());
         }
         if (filter.rentalUnitType() != null) {
@@ -107,12 +108,12 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             params.add(filter.rentalUnitId());
         }
         if (filter.type() != null && !filter.type().isEmpty()) {
-            cql.append(" AND ").append(TYPE).append(" IN (")
+            cql.append(AND).append(TYPE).append(" IN (")
                 .append(String.join(", ", Collections.nCopies(filter.type().size(), "?"))).append(")");
             filter.type().forEach(type -> params.add(type.name()));
         }
         if (filter.status() != null && !filter.status().isEmpty()) {
-            cql.append(" AND ").append(STATUS).append(" IN (")
+            cql.append(AND).append(STATUS).append(" IN (")
                 .append(String.join(", ", Collections.nCopies(filter.status().size(), "?"))).append(")");
             filter.status().forEach(status -> params.add(status.name()));
         }
@@ -121,14 +122,14 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             params.add(filter.isVisibleToTenants());
         }
         if (cursor != null) {
-            cql.append(" AND ").append(ISSUE_ID).append(" < ?");
+            cql.append(AND).append(ISSUE_ID).append(" < ?");
             params.add(cursor);
         }
         cql.append(" LIMIT ? ALLOW FILTERING");
         params.add(limit);
 
         return cassandraTemplate.<IssueEntity>cql(cql.toString(), params.toArray())
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public IssueEntity insert(final IssueEntity entity) {

@@ -1,6 +1,6 @@
 package de.remsfal.common.validation;
 
-import io.quarkus.hibernate.validator.HibernateValidatorFactoryCustomizer;
+import io.quarkus.hibernate.validator.ValidatorFactoryCustomizer;
 import jakarta.inject.Singleton;
 import org.hibernate.validator.BaseHibernateValidatorConfiguration;
 
@@ -12,7 +12,7 @@ import org.hibernate.validator.BaseHibernateValidatorConfiguration;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Singleton
-public class BoxedBooleanGetterValidatorFactoryCustomizer implements HibernateValidatorFactoryCustomizer {
+public class BoxedBooleanGetterValidatorFactoryCustomizer implements ValidatorFactoryCustomizer {
 
     @Override
     public void customize(final BaseHibernateValidatorConfiguration<?> configuration) {
