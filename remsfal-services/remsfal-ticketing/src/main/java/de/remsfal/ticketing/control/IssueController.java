@@ -78,13 +78,7 @@ public class IssueController {
         entity.setReporterId(user.getId());
         entity.setReportedBy(user.getName());
         entity.setAgreementId(issue.getAgreementId());
-        if (issue.getAgreementId() != null && issue.isVisibleToTenants() == null) {
-            entity.setVisibleToTenants(true);
-        } else if (issue.isVisibleToTenants() != null) {
-            entity.setVisibleToTenants(issue.isVisibleToTenants());
-        } else {
-            entity.setVisibleToTenants(false);
-        }
+        entity.setVisibleToTenants(issue.isVisibleToTenants());
         entity.setRentalUnitId(issue.getRentalUnitId());
         entity.setRentalUnitType(issue.getRentalUnitType());
         // Assignee is not set on creation, must be assigned explicitly via update
@@ -132,8 +126,9 @@ public class IssueController {
         for (final Map.Entry<UUID, UUID> tenancy : tenancyProjects.entrySet()) {
             final UUID agreementId = tenancy.getKey();
             final UUID projectId = tenancy.getValue();
-            final IssueFilter filter = new IssueFilter(projectId, null, agreementId, null, null, null, null);
-            merged.addAll(issueRepository.findByQuery(filter, true, cursor, limit));
+            final IssueFilter filter = new IssueFilter(projectId, null, agreementId, null, null, null, null,
+                Boolean.TRUE);
+            merged.addAll(issueRepository.findByQuery(filter, cursor, limit));
         }
         merged.sort(Comparator.comparing(IssueEntity::getId, Comparator.reverseOrder()));
         return merged.size() > limit ? merged.subList(0, limit) : merged;
@@ -145,7 +140,7 @@ public class IssueController {
      */
     public List<? extends IssueModel> getProjectIssues(final IssueFilter filter,
         final UUID cursor, final Integer limit) {
-        return issueRepository.findByQuery(filter, false, cursor, limit);
+        return issueRepository.findByQuery(filter, cursor, limit);
     }
 
     public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
