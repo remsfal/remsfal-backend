@@ -103,12 +103,13 @@ public abstract class TenantIssueJson implements IssueModel {
     @Override
     public abstract UUID getAgreementId();
 
-    @Null
     @Nullable
     @JsonIgnore
     @Schema(readOnly = true, hidden = true)
     @Override
-    public abstract Boolean isVisibleToTenants();
+    public Boolean isVisibleToTenants() {
+        return true; // always true for tenant-facing DTO
+    }
 
     @Nullable
     @Override

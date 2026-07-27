@@ -11,8 +11,10 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueType;
  * Filter criteria for querying issues, bundling the scalar/list filter parameters accepted by
  * {@link de.remsfal.ticketing.control.IssueController} and
  * {@link de.remsfal.ticketing.entity.dao.IssueRepository#findByQuery}.
- * Pagination ({@code cursor}, {@code limit}) and visibility ({@code onlyVisibleToTenants}) are kept
- * as separate parameters since they are orthogonal to what is being filtered.
+ * {@code isVisibleToTenants} is an optional equality filter like the others: {@code null} means no
+ * restriction, {@code true}/{@code false} restricts to issues with that exact visibility. Pagination
+ * ({@code cursor}, {@code limit}) is kept as a separate parameter since it is orthogonal to what is
+ * being filtered.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -23,5 +25,6 @@ public record IssueFilter(
     UnitType rentalUnitType,
     UUID rentalUnitId,
     List<IssueType> type,
-    List<IssueStatus> status) {
+    List<IssueStatus> status,
+    Boolean isVisibleToTenants) {
 }
