@@ -22,6 +22,8 @@ public interface RentalAgreementModel {
 
     LocalDate getEndOfRental();
 
+    List<? extends RentalAgreementKeysModel> getKeys();
+
     List<? extends RentModel> getPropertyRents();
 
     List<? extends RentModel> getSiteRents();

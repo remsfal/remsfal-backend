@@ -2,6 +2,7 @@ package de.remsfal.core.json.tenancy;
 
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ImmutableAddressJson;
+import de.remsfal.core.model.project.RentalAgreementKeysModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.TenantModel;
@@ -56,6 +57,7 @@ class TenancyJsonTest {
             @Override public List<? extends TenantModel> getTenants() { return Collections.emptyList(); }
             @Override public LocalDate getStartOfRental() { return START; }
             @Override public LocalDate getEndOfRental() { return null; }
+            @Override public List<? extends RentalAgreementKeysModel> getKeys() { return Collections.emptyList(); }
             @Override public List<? extends RentModel> getPropertyRents() { return Collections.emptyList(); }
             @Override public List<? extends RentModel> getSiteRents() { return siteRents; }
             @Override public List<? extends RentModel> getBuildingRents() { return Collections.emptyList(); }

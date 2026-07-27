@@ -237,6 +237,29 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void createRentalAgreement_SUCCESS_withKeys() {
+        String json = "{" +
+            "\"startOfRental\":\"2023-01-01\"," +
+            "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
+            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]," +
+            "\"keys\": [{\"amountOfKeys\":2,\"issuedAt\":\"2023-01-01\",\"keyDescription\":\"Haustürschlüssel\"}]" +
+            "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID.toString())
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .body("keys.size()", Matchers.equalTo(1))
+            .body("keys[0].amountOfKeys", Matchers.equalTo(2))
+            .body("keys[0].issuedAt", Matchers.equalTo("2023-01-01"))
+            .body("keys[0].keyDescription", Matchers.equalTo("Haustürschlüssel"));
+    }
+
+    @Test
     void createRentalAgreement_SUCCESS_tenantLinkedToExistingUser() {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +

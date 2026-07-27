@@ -7,9 +7,12 @@ import java.util.Objects;
 import java.util.UUID;
 
 import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.service.entity.dto.embeddable.RentalAgreementKeysEntity;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -43,6 +46,11 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
 
     @Column(name = "end_of_rental", columnDefinition = "date")
     private LocalDate endOfRental;
+    
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "rental_agreement_keys",
+        joinColumns = @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid"))
+    private List<RentalAgreementKeysEntity> keys = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
@@ -118,6 +126,15 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
     public void setEndOfRental(final LocalDate endOfRental) {
         this.endOfRental = endOfRental;
     }
+    
+    @Override
+    public List<RentalAgreementKeysEntity> getKeys() {
+        return keys;
+    }
+
+    public void setKeys(final List<RentalAgreementKeysEntity> keys) {
+        this.keys = keys;
+    }
 
     @Override
     public List<PropertyRentEntity> getPropertyRents() {
@@ -184,6 +201,7 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
                 && Objects.equals(tenants, e.tenants)
                 && Objects.equals(startOfRental, e.startOfRental)
                 && Objects.equals(endOfRental, e.endOfRental)
+                && Objects.equals(keys, e.keys)
                 && Objects.equals(propertyRent, e.propertyRent)
                 && Objects.equals(siteRent, e.siteRent)
                 && Objects.equals(buildingRent, e.buildingRent)

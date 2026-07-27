@@ -55,6 +55,11 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
     public abstract LocalDate getEndOfRental();
 
     @Nullable
+    @Schema(description = "List of key handovers for this rental agreement")
+    @Override
+    public abstract List<@Valid RentalAgreementKeysJson> getKeys();
+
+    @Nullable
     @Schema(description = "List of property rents")
     @Override
     public abstract List<@Valid RentJson> getPropertyRents();
@@ -95,6 +100,9 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
                 .toList() : null)
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
+            .keys(model.getKeys() != null ? model.getKeys().stream()
+                .map(RentalAgreementKeysJson::valueOf)
+                .toList() : null)
             .propertyRents(model.getPropertyRents() != null ? model.getPropertyRents().stream()
                 .map(RentJson::valueOf)
                 .toList() : null)
