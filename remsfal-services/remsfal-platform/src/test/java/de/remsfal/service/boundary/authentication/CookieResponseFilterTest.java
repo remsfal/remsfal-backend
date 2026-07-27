@@ -46,8 +46,13 @@ class CookieResponseFilterTest {
         uriInfo = mock(UriInfo.class);
         when(requestContext.getUriInfo()).thenReturn(uriInfo);
 
-        headers = mock(MultivaluedMap.class);
+        headers = mockHeaders();
         when(responseContext.getHeaders()).thenReturn(headers);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static MultivaluedMap<String, Object> mockHeaders() {
+        return mock(MultivaluedMap.class);
     }
 
     @Test

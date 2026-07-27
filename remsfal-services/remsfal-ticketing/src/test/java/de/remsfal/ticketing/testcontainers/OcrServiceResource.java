@@ -24,8 +24,11 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
     private static Logger logger = Logger.getLogger(OcrServiceResource.class);
 
     private GenericContainer<?> kafkaContainer;
+
     private GenericContainer<?> ocrContainer;
+
     private GenericContainer<?> minioContainer;
+
     private Network network;
 
     @Override
@@ -34,6 +37,7 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
     }
 
     @Override
+    @SuppressWarnings("resource")
     public Map<String, String> start() {
         int kafkaPort = findAvailablePort();
         
@@ -119,6 +123,8 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
         }
         if (kafkaContainer != null)
             kafkaContainer.stop();
+        if (minioContainer != null)
+            minioContainer.stop();
         if (network != null)
             network.close();
     }
