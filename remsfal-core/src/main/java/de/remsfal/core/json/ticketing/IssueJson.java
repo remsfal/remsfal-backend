@@ -96,6 +96,8 @@ public abstract class IssueJson implements IssueModel {
     @Override
     public abstract UUID getAgreementId();
 
+    @NotNull(groups = PostValidation.class)
+    @Null(groups = PatchValidation.class)
     @Nullable
     @Override
     public abstract Boolean isVisibleToTenants();

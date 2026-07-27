@@ -63,11 +63,11 @@ class IssueControllerTest {
         tenancyProjects.put(agreementB, projectB);
 
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(new IssueFilter(projectA, null, agreementA, null, null, null, null),
-            true, null, 2))
+        when(repository.findByQuery(
+            new IssueFilter(projectA, null, agreementA, null, null, null, null, Boolean.TRUE), null, 2))
             .thenReturn(List.of(issueOf(projectA, id4), issueOf(projectA, id1)));
-        when(repository.findByQuery(new IssueFilter(projectB, null, agreementB, null, null, null, null),
-            true, null, 2))
+        when(repository.findByQuery(
+            new IssueFilter(projectB, null, agreementB, null, null, null, null, Boolean.TRUE), null, 2))
             .thenReturn(List.of(issueOf(projectB, id3), issueOf(projectB, id2)));
 
         final IssueController controller = new IssueController();
@@ -90,8 +90,8 @@ class IssueControllerTest {
         tenancyProjects.put(agreementA, projectA);
 
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(new IssueFilter(projectA, null, agreementA, null, null, null, null),
-            true, cursor, 10))
+        when(repository.findByQuery(
+            new IssueFilter(projectA, null, agreementA, null, null, null, null, Boolean.TRUE), cursor, 10))
             .thenReturn(List.of(issueOf(projectA, new UUID(0, 4))));
 
         final IssueController controller = new IssueController();
@@ -119,10 +119,10 @@ class IssueControllerTest {
         final IssueEntity expected = issueOf(projectId, UUID.randomUUID());
 
         final IssueFilter filter = new IssueFilter(projectId, null, null, null, null,
-            null, List.of(IssueStatus.OPEN));
+            null, List.of(IssueStatus.OPEN), null);
 
         final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(filter, false, cursor, 10))
+        when(repository.findByQuery(filter, cursor, 10))
             .thenReturn(List.of(expected));
 
         final IssueController controller = new IssueController();

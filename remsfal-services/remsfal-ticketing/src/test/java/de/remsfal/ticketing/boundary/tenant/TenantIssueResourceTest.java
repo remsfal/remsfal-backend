@@ -278,7 +278,8 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
     void getIssue_FAILED_managerCannotUseTenantEndpoint() {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Manager Owned Issue\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final String issueId = given()

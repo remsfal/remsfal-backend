@@ -82,12 +82,14 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void getIssues_SUCCESS_withFilters() {
         final String issue1Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID_1 + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_1 + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final String issue2Json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID_2 + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
-            + "\"type\":\"DEFECT\""
+            + "\"type\":\"DEFECT\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         given()
@@ -120,6 +122,51 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .body("size", equalTo(1));
     }
 
+    @Test
+    void getIssues_SUCCESS_filterByIsVisibleToTenants() {
+        final String visibleIssueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID_1 + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_1 + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":true"
+            + "}";
+
+        final String hiddenIssueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID_1 + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_2 + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(visibleIssueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(hiddenIssueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("projectId", TicketingTestData.PROJECT_ID_1.toString())
+            .queryParam("isVisibleToTenants", true)
+            .get(BASE_PATH)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("issues", hasSize(1))
+            .body("issues[0].title", equalTo(TicketingTestData.ISSUE_TITLE_1));
+    }
+
     // --- Create Project Issue ---
 
     @Test
@@ -127,7 +174,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE_5 + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION_5 + "\","
-            + "\"type\":\"INQUIRY\""
+            + "\"type\":\"INQUIRY\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         given()
@@ -161,7 +209,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void createProjectIssue_FAILED_noAuthentication() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         given()
@@ -176,6 +225,24 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     @Test
     void createProjectIssue_FAILED_noTitle() {
         final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(json)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(400);
+    }
+
+    @Test
+    void createProjectIssue_FAILED_noVisibleToTenants() {
+        final String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\""
             + "}";
 
@@ -193,7 +260,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void createProjectIssue_FAILED_noProjectPermission() {
         final String json = "{ \"projectId\":\"" + UUID.randomUUID() + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         given()
@@ -213,7 +281,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -265,7 +334,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void getIssue_FAILED_noPermission() {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -295,7 +365,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"visibleToTenants\":true,"
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -325,7 +396,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"visibleToTenants\":true,"
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -377,7 +449,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"agreementId\":\"" + TicketingTestData.AGREEMENT_ID + "\","
             + "\"visibleToTenants\":true,"
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -408,7 +481,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -445,7 +519,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void updateIssue_SUCCESS_categoryIsUpdated() {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"DEFECT\""
+            + "\"type\":\"DEFECT\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -504,7 +579,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"description\":\"" + TicketingTestData.ISSUE_DESCRIPTION + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -547,7 +623,8 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void deleteIssue_FAILED_noPermissionToDelete() {
         final String createJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
 
         final Response createResponse = given()
@@ -577,7 +654,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void addBlockedByRelation_SUCCESS_mirroredAsBlocksOnTarget() {
         String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Blocked Source\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String sourceId = given()
             .when()
@@ -591,7 +668,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
 
         String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Blocking Target\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String targetId = given()
             .when()
@@ -626,7 +703,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void addBlocksRelation_SUCCESS_noDuplicatesOnRepeat() {
         String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Source\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String sourceId = given()
             .when()
@@ -640,7 +717,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
 
         String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Target\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String targetId = given()
             .when()
@@ -687,11 +764,11 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void addRelatedToRelation_SUCCESS_isSymmetric() {
         String aJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Issue A\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String bJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Issue B\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String aId = given()
             .when()
@@ -736,11 +813,11 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void addDuplicateOfRelation_SUCCESS_isSymmetric() {
         String aJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Original\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String bJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Duplicate\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String aId = given()
             .when()
@@ -785,7 +862,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void addBlocksRelation_SUCCESS_mirroredAsBlockedByOnTarget() {
         String targetJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Target\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String targetId = given()
             .when()
@@ -799,7 +876,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
 
         String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Source with Relation\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String sourceId = given()
             .when()
@@ -834,7 +911,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void addBlocksRelation_FAILED_nonExistingTargetIssue() {
         String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Source\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String sourceId = given()
             .when()
@@ -866,7 +943,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void addBlocksRelation_FAILED_selfRelation() {
         String sourceJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Self\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String sourceId = given()
             .when()
@@ -909,7 +986,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Parent\","
-                + "\"type\":\"TASK\" }")
+                + "\"type\":\"TASK\", \"visibleToTenants\":false }")
             .post(BASE_PATH)
             .then()
             .statusCode(201)
@@ -921,7 +998,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"Child\","
-                + "\"type\":\"TASK\" }")
+                + "\"type\":\"TASK\", \"visibleToTenants\":false }")
             .post(BASE_PATH)
             .then()
             .statusCode(201)
@@ -1029,7 +1106,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
     void deleteRelation_FAILED_forbiddenWhenNoProjectRole() {
         String json = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"Relation Test\","
-            + "\"type\":\"TASK\" }";
+            + "\"type\":\"TASK\", \"visibleToTenants\":false }";
 
         String issueId = given()
             .when()
