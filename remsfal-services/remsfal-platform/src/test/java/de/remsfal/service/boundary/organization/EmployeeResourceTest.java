@@ -74,11 +74,12 @@ public class EmployeeResourceTest extends AbstractResourceTest {
 
     @Test
     void updateEmployee_FAILED_notEmployee() {
-        final String json = "{\"id\": " + null + ",\n" +
-            "  \"name\": " + null + ",\n" +
-            "  \"email\": " + null + ",\n" +
-            "  \"employeeRole\": \"STAFF\"\n" +
-            "}";
+        final String json = """
+            {"id": null,
+              "name": null,
+              "email": null,
+              "employeeRole": "STAFF"
+            }""";
 
         given()
             .when()

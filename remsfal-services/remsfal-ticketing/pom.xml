@@ -12,7 +12,7 @@
     </parent>
 
     <properties>
-        <quarkus-minio.version>3.8.6</quarkus-minio.version>
+        <quarkus-minio.version>3.9.1</quarkus-minio.version>
         <quarkus-cassandra.version>3.4.16</quarkus-cassandra.version>
     </properties>
 
