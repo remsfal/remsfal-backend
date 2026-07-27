@@ -55,7 +55,7 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
     public Response sendMessage(final UUID issueId,
         final UUID sessionId, final ChatMessageJson message) {
         try {
-            UUID projectId = checkWritePermissions(issueId);
+            checkProjectIssueAccessPermissions(issueId).getProjectId();
             UUID userId = principal.getId();
             if (userId == null) {
                 throw new NotAuthorizedException("No user authentication provided via session cookie");
@@ -91,7 +91,7 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
     public Response getChatMessages(final UUID issueId,
         final UUID sessionId) {
         try {
-            UUID projectId = checkWritePermissions(issueId);
+            UUID projectId = checkProjectIssueAccessPermissions(issueId).getProjectId();
             return Response.ok()
                 .type(MediaType.APPLICATION_JSON)
                 .entity(chatSessionController.getChatLogs(projectId, sessionId, issueId))
@@ -110,7 +110,7 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
     public Response getChatMessage(final UUID issueId,
         final UUID sessionId, final UUID messageId) {
         try {
-            UUID projectId = checkWritePermissions(issueId);
+            checkProjectIssueAccessPermissions(issueId).getProjectId();
             ChatMessageEntity chatMessageEntity =
                 chatMessageController.getChatMessage(sessionId, messageId);
             if (chatMessageEntity.getContentType().equals(ContentType.TEXT.name())) {
@@ -162,7 +162,7 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
         final UUID messageId,
         final ChatMessageJson message) {
         try {
-            UUID projectId = checkWritePermissions(issueId);
+            checkProjectIssueAccessPermissions(issueId).getProjectId();
             int maxPayloadSize = 8000;
             if (Objects.requireNonNull(message.getContent()).length() > maxPayloadSize) {
                 throw new BadRequestException("Payload size exceeds limit");
@@ -190,7 +190,7 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
     public Response deleteChatMessage(final UUID issueId,
         final UUID sessionId, final UUID messageId) {
         try {
-            UUID projectId = checkWritePermissions(issueId);
+            UUID projectId = checkProjectIssueAccessPermissions(issueId).getProjectId();
             if (chatSessionController.getChatSession(projectId, issueId, sessionId).isPresent()) {
                 chatMessageController.deleteChatMessage(sessionId, messageId);
                 return Response.noContent().build();
@@ -209,7 +209,7 @@ public class ChatMessageResource extends AbstractTicketingResource implements Ch
     public Response uploadFile(final UUID issueId,
         final UUID sessionId, final MultipartFormDataInput input) {
         try {
-            UUID projectId = checkWritePermissions(issueId);
+            checkProjectIssueAccessPermissions(issueId).getProjectId();
             Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
             List<InputPart> fileParts = formDataMap.get("file");
             if (fileParts == null || fileParts.isEmpty()) {

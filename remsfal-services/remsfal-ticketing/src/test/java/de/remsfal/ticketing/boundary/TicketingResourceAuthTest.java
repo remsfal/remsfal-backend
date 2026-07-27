@@ -42,6 +42,7 @@ class TicketingResourceAuthTest {
         when(principal.getId()).thenReturn(TestData.USER_ID);
         when(jwt.getClaim("project_roles")).thenReturn(Map.of(projectId.toString(), role));
         when(principal.getProjectRoles()).thenReturn(Map.of(projectId, MemberRole.valueOf(role)));
+        when(principal.getProjectRole(projectId)).thenReturn(MemberRole.valueOf(role));
         return principal;
     }
 

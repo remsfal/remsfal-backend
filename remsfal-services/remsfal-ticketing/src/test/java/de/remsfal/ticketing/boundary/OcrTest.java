@@ -89,6 +89,7 @@ public class OcrTest extends AbstractTicketingTest {
         when(issueController.getIssue(eq(taskId))).thenReturn(task);
         when(principal.getId()).thenReturn(UUID.randomUUID());
         when(principal.getProjectRoles()).thenReturn(Map.of(TestData.PROJECT_ID, MemberRole.MANAGER));
+        when(principal.getProjectRole(TestData.PROJECT_ID)).thenReturn(MemberRole.MANAGER);
         JsonWebToken jwt = mock(JsonWebToken.class);
         when(jwt.getClaim("project_roles")).thenReturn(Map.of(TestData.PROJECT_ID, "MANAGER"));
         when(principal.getJwt()).thenReturn(jwt);

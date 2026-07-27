@@ -13,7 +13,6 @@ import java.util.UUID;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
 import de.remsfal.core.api.ticketing.IssueOrderPlacementEndpoint;
 import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
@@ -41,13 +40,13 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
 
     @Override
     public QuotationListJson getQuotations(final UUID issueId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         return QuotationListJson.valueOf(orderManagementController.getQuotationsByIssue(issueId));
     }
 
     @Override
     public QuotationJson getQuotation(final UUID issueId, final UUID quotationId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         final QuotationJson json = QuotationJson.valueOf(orderManagementController.getQuotation(issueId, quotationId));
         return json.withAttachments(orderAttachmentController
             .getAttachments(OrderProcessPhase.QUOTATION, quotationId).stream()
@@ -57,7 +56,7 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
 
     @Override
     public Response placeOrder(final UUID issueId, final UUID quotationId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         final OrderPlacementEntity placement = orderManagementController.placeOrder(issueId, quotationId);
         final URI location = uri.getBaseUriBuilder()
             .path(IssueEndpoint.class)
@@ -73,7 +72,7 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
     }
 
     @Override
-    public OrderAttachmentEndpoint getAttachmentResource() {
+    public OrderAttachmentResource getAttachmentResource() {
         return resourceContext.initResource(attachmentResource.get())
             .configure(OrderProcessPhase.QUOTATION);
     }

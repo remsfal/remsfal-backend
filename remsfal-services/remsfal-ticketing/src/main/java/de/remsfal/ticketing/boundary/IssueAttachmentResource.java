@@ -33,8 +33,7 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
 
     @Override
     public Response downloadAttachment(final UUID issueId, final UUID attachmentId, final String filename) {
-        checkManagerIssueReadPermissions(issueId);
-
+        checkProjectIssueAccessPermissions(issueId);
         IssueAttachmentEntity attachment = attachmentController.getAttachment(issueId, attachmentId);
         InputStream fileStream = attachmentController.downloadAttachment(attachment.getObjectName());
 
@@ -52,14 +51,13 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
 
     @Override
     public void deleteAttachment(final UUID issueId, final UUID attachmentId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueAccessPermissions(issueId);
         attachmentController.deleteAttachment(issueId, attachmentId);
     }
 
     @Override
     public Response uploadAttachments(final UUID issueId, final MultipartFormDataInput input) {
-        checkIssueWritePermissions(issueId);
-
+        checkProjectIssueAccessPermissions(issueId);
         Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
         List<InputPart> fileParts = formDataMap.get("attachment");
         List<IssueAttachmentJson> attachments = MultipartAttachmentProcessor.processAttachmentParts(

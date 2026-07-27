@@ -21,15 +21,13 @@ public class IssueTimelineResource extends AbstractTimelineResource implements T
 
     @Override
     public TimelineListJson getTimelineEntries(final UUID issueId) {
-        checkManagerIssueReadPermissions(issueId);
-        final IssueModel issue = issueController.getIssue(issueId);
+        final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
         return super.getTimelineEntries(issue);
     }
 
     @Override
     public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
-        checkIssueWritePermissions(issueId);
-        final IssueModel issue = issueController.getIssue(issueId);
+        final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
         return super.createTimelineEntryWithAttachments(issue, input);
     }
 

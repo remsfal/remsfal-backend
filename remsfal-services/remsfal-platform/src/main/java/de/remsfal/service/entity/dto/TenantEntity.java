@@ -16,9 +16,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 /**
- * Entity representing a tenant in a rental agreement.
- * Tenants are independent entities with optional linkage to user accounts.
- * Tenant data takes precedence over user data (fallback pattern).
+ * Entity representing a tenant in a rental agreement. Tenants are independent entities with optional linkage to user
+ * accounts. Tenant data takes precedence over user data (fallback pattern).
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -219,7 +218,7 @@ public class TenantEntity extends AbstractEntity implements TenantModel, CoTenan
             return super.equals(e)
                 && Objects.equals(projectId, e.projectId)
                 && Objects.equals(user != null ? user.getId() : null,
-                                  e.user != null ? e.user.getId() : null);
+                    e.user != null ? e.user.getId() : null);
         }
         return false;
     }
@@ -227,7 +226,7 @@ public class TenantEntity extends AbstractEntity implements TenantModel, CoTenan
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(),
-                           projectId,
-                           user != null ? user.getId() : null);
+            projectId,
+            user != null ? user.getId() : null);
     }
 }

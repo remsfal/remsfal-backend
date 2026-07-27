@@ -57,7 +57,7 @@ public class OrderAttachmentResource extends AbstractTicketingResource implement
      */
     private UUID authorize(final UUID processId) {
         if (issueId != null) {
-            checkIssueWritePermissions(issueId);
+            checkProjectIssueAccessPermissions(issueId);
             if (processPhase == OrderProcessPhase.ORDER_PLACEMENT) {
                 return orderManagementController.getOrderPlacementForIssue(issueId, processId).getId();
             }
