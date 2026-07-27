@@ -66,7 +66,8 @@ class QuotationResourceTest extends AbstractTicketingTest {
 
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -128,7 +129,8 @@ class QuotationResourceTest extends AbstractTicketingTest {
 
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -223,7 +225,8 @@ class QuotationResourceTest extends AbstractTicketingTest {
 
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()

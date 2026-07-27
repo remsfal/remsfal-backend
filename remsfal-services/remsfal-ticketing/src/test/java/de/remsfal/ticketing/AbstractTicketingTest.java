@@ -21,7 +21,7 @@ import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectsArgs;
 import io.minio.Result;
-import io.minio.messages.DeleteObject;
+import io.minio.messages.DeleteRequest;
 import io.minio.messages.Item;
 
 public abstract class AbstractTicketingTest extends AbstractTest {
@@ -42,10 +42,10 @@ public abstract class AbstractTicketingTest extends AbstractTest {
                 .build());
 
         // collect delete command
-        List<DeleteObject> toDelete = new ArrayList<>();
+        List<DeleteRequest.Object> toDelete = new ArrayList<>();
         for (Result<Item> result : results) {
             String objectName = result.get().objectName();
-            toDelete.add(new DeleteObject(objectName));
+            toDelete.add(new DeleteRequest.Object(objectName));
         }
 
         // remove objects
@@ -90,7 +90,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
                 PutObjectArgs.builder()
                     .bucket(FileStorage.DEFAULT_BUCKET_NAME)
                     .object(objectPath)
-                    .stream(imageStream, -1, 5 * 1024 * 1024)
+                    .stream(imageStream, -1L, 5L * 1024 * 1024)
                     .contentType(mediaType)
                     .build());
         }

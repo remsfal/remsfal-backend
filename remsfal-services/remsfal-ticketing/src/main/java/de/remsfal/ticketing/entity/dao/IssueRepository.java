@@ -6,13 +6,15 @@ import de.remsfal.ticketing.entity.dto.IssueKey;
 import de.remsfal.ticketing.entity.filter.IssueFilter;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.nosql.QueryMapper.MapperWhere;
+import org.eclipse.jnosql.databases.cassandra.mapping.CassandraTemplate;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +22,8 @@ import java.util.List;
 
 @ApplicationScoped
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
+
+    private static final String AND = " AND ";
 
     // ---- Issue columns ----
     static final String PRIORITY           = "priority";
@@ -37,6 +41,9 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     @Inject
     CqlSession session;
+
+    @Inject
+    CassandraTemplate cassandraTemplate;
 
     public Optional<IssueEntity> findByIssueId(final UUID issueId) {
         return template.select(IssueEntity.class)
@@ -71,36 +78,58 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
      * page. No {@code ORDER BY} is added explicitly: Cassandra rejects combining an explicit
      * {@code ORDER BY} on the clustering column with an SAI filter, so this relies on the table's
      * native clustering order instead.
+     *
+     * <p>Built as raw CQL rather than through the {@code MapperWhere} DSL because Cassandra's SAI
+     * indexes only support a multi-value {@code IN} restriction without {@code ALLOW FILTERING} when
+     * it is the sole predicate; combined with any other predicate (as {@code type}/{@code status} are
+     * here) it is rejected. {@code ALLOW FILTERING} is safe here since {@code project_id} is always
+     * bound, so filtering is scoped to a single partition rather than a full-table scan.
      */
-    public List<IssueEntity> findByQuery(final IssueFilter filter, final boolean onlyVisibleToTenants,
-        final UUID cursor, final Integer limit) {
-        MapperWhere query = template.select(IssueEntity.class)
-            .where(PROJECT_ID).eq(filter.projectId());
+    public List<IssueEntity> findByQuery(final IssueFilter filter, final UUID cursor, final Integer limit) {
+        final StringBuilder cql = new StringBuilder("SELECT * FROM remsfal.issues WHERE ")
+            .append(PROJECT_ID).append(" = ?");
+        final List<Object> params = new ArrayList<>();
+        params.add(filter.projectId());
+
         if (filter.assigneeId() != null) {
-            query = query.and("assignee_id").eq(filter.assigneeId());
+            cql.append(" AND assignee_id = ?");
+            params.add(filter.assigneeId());
         }
         if (filter.agreementId() != null) {
-            query = query.and(AGREEMENT_ID).eq(filter.agreementId());
+            cql.append(AND).append(AGREEMENT_ID).append(" = ?");
+            params.add(filter.agreementId());
         }
         if (filter.rentalUnitType() != null) {
-            query = query.and("rental_unit_type").eq(filter.rentalUnitType().name());
+            cql.append(" AND rental_unit_type = ?");
+            params.add(filter.rentalUnitType().name());
         }
         if (filter.rentalUnitId() != null) {
-            query = query.and("rental_unit_id").eq(filter.rentalUnitId());
+            cql.append(" AND rental_unit_id = ?");
+            params.add(filter.rentalUnitId());
         }
         if (filter.type() != null && !filter.type().isEmpty()) {
-            query = query.and(TYPE).in(filter.type().stream().map(Enum::name).toList());
+            cql.append(AND).append(TYPE).append(" IN (")
+                .append(String.join(", ", Collections.nCopies(filter.type().size(), "?"))).append(")");
+            filter.type().forEach(type -> params.add(type.name()));
         }
         if (filter.status() != null && !filter.status().isEmpty()) {
-            query = query.and(STATUS).in(filter.status().stream().map(Enum::name).toList());
+            cql.append(AND).append(STATUS).append(" IN (")
+                .append(String.join(", ", Collections.nCopies(filter.status().size(), "?"))).append(")");
+            filter.status().forEach(status -> params.add(status.name()));
         }
-        if (onlyVisibleToTenants) {
-            query = query.and("is_visable_to_tenants").eq(Boolean.TRUE);
+        if (filter.isVisibleToTenants() != null) {
+            cql.append(" AND is_visable_to_tenants = ?");
+            params.add(filter.isVisibleToTenants());
         }
         if (cursor != null) {
-            query = query.and(ISSUE_ID).lt(cursor);
+            cql.append(AND).append(ISSUE_ID).append(" < ?");
+            params.add(cursor);
         }
-        return query.limit(limit).result();
+        cql.append(" LIMIT ? ALLOW FILTERING");
+        params.add(limit);
+
+        return cassandraTemplate.<IssueEntity>cql(cql.toString(), params.toArray())
+            .toList();
     }
 
     public IssueEntity insert(final IssueEntity entity) {

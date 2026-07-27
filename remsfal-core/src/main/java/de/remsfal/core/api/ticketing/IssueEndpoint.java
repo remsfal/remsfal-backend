@@ -75,6 +75,8 @@ public interface IssueEndpoint {
             + "(repeat the parameter for multiple values, e.g. status=OPEN&status=IN_PROGRESS); "
             + "omit to return issues of all statuses")
         @QueryParam("status") List<IssueStatus> status,
+        @Parameter(description = "Filter to return only issues that are (or are not) visible to tenants")
+        @QueryParam("isVisibleToTenants") Boolean isVisibleToTenants,
         @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
         @QueryParam("cursor") UUID cursor,
         @Parameter(description = "Maximum number of issues to return")

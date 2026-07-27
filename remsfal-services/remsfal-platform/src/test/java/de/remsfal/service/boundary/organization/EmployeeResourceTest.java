@@ -41,7 +41,6 @@ public class EmployeeResourceTest extends AbstractResourceTest {
         final String json = "{\"id\": " + null + ",\n" +
             "  \"name\": " + null + ",\n" +
             "  \"email\": \"" + TestData.EMPLOYEE_EMAIL + "\",\n" +
-            "  \"active\": " + TestData.EMPLOYEE_ACTIVE + ",\n" +
             "  \"employeeRole\": \"" + TestData.EMPLOYEE_ROLE + "\"\n" +
             "}";
 
@@ -75,12 +74,12 @@ public class EmployeeResourceTest extends AbstractResourceTest {
 
     @Test
     void updateEmployee_FAILED_notEmployee() {
-        final String json = "{\"id\": " + null + ",\n" +
-            "  \"name\": " + null + ",\n" +
-            "  \"email\": " + null + ",\n" +
-            "  \"active\": " + TestData.EMPLOYEE_ACTIVE + ",\n" +
-            "  \"employeeRole\": \"STAFF\"\n" +
-            "}";
+        final String json = """
+            {"id": null,
+              "name": null,
+              "email": null,
+              "employeeRole": "STAFF"
+            }""";
 
         given()
             .when()

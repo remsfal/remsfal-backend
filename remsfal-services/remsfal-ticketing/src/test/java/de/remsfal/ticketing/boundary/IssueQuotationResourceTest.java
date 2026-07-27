@@ -32,7 +32,8 @@ class IssueQuotationResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-                + "\"type\":\"TASK\""
+                + "\"type\":\"TASK\","
+                + "\"visibleToTenants\":false"
                 + "}")
             .post(BASE_PATH)
             .then()

@@ -36,7 +36,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void createRequestsForQuotation_SUCCESS_createsSeparateRowsPerContractor() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -92,7 +93,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void createRequestsForQuotation_SUCCESS_storesBillingAddress() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -145,7 +147,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void createRequestsForQuotation_FAILED_noPermission() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -178,7 +181,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void getRequestsForQuotation_SUCCESS_returnsListForManager() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -220,7 +224,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void getRequestsForQuotation_FAILED_noPermission() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -245,7 +250,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void getRequestForQuotation_SUCCESS_returnsSingleRequest() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -292,7 +298,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void updateRequestForQuotation_SUCCESS_updatesStatus() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -340,7 +347,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     void updateRequestForQuotation_FAILED_managerSetsInvalidStatus() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-            + "\"type\":\"TASK\""
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
             .when()
@@ -392,7 +400,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
                 + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
-                + "\"type\":\"TASK\""
+                + "\"type\":\"TASK\","
+                + "\"visibleToTenants\":false"
                 + "}")
             .post(BASE_PATH)
             .then()
