@@ -10,6 +10,6 @@ public interface RentalAgreementKeysModel {
 
     LocalDate getReturnedAt();
 
-    String getKeyType();
+    String getKeyDescription();
 
 }

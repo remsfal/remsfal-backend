@@ -55,14 +55,6 @@ public interface RentalAgreementModel {
         return calculateSum(getActiveRents(), RentModel::getHeatingCostsPrepayment);
     }
 
-    default Integer getTotalAmountOfKeys() {
-        if (getKeys() == null) {
-            return null;
-        }
-        int sum = getKeys().stream().mapToInt(RentalAgreementKeysModel::getAmountOfKeys).sum();
-        return sum > 0 ? sum : null;
-    }
-
     private List<? extends RentModel> getActiveRents() {
         return getAllRents().stream().filter(this::isActiveRent).toList();
     }

@@ -15,7 +15,7 @@
             </column>
             <column name="issued_at" type="date" />
             <column name="returned_at" type="date" />
-            <column name="key_type" type="varchar(255)" />
+            <column name="key_description" type="varchar(255)" />
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_rental_agreement_keys_agreement_id"

@@ -20,7 +20,7 @@ import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
-import de.remsfal.service.entity.dto.RentalAgreementKeysEntity;
+import de.remsfal.service.entity.dto.embeddable.RentalAgreementKeysEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -396,7 +396,7 @@ public class RentalAgreementController {
             key.setAmountOfKeys(keyInput.getAmountOfKeys());
             key.setIssuedAt(keyInput.getIssuedAt());
             key.setReturnedAt(keyInput.getReturnedAt());
-            key.setKeyType(keyInput.getKeyType());
+            key.setKeyDescription(keyInput.getKeyDescription());
             keyEntities.add(key);
         }
         return keyEntities;

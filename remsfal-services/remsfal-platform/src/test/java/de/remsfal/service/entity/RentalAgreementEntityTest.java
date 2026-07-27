@@ -1,7 +1,7 @@
 package de.remsfal.service.entity;
 
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
-import de.remsfal.service.entity.dto.RentalAgreementKeysEntity;
+import de.remsfal.service.entity.dto.embeddable.RentalAgreementKeysEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

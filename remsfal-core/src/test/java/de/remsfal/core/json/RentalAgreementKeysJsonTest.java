@@ -23,7 +23,7 @@ class RentalAgreementKeysJsonTest {
         assertEquals(model.getAmountOfKeys(), json.getAmountOfKeys());
         assertEquals(model.getIssuedAt(), json.getIssuedAt());
         assertEquals(model.getReturnedAt(), json.getReturnedAt());
-        assertEquals(model.getKeyType(), json.getKeyType());
+        assertEquals(model.getKeyDescription(), json.getKeyDescription());
     }
 
     @Test
@@ -35,14 +35,14 @@ class RentalAgreementKeysJsonTest {
         private final Integer amountOfKeys;
         private final LocalDate issuedAt;
         private final LocalDate returnedAt;
-        private final String keyType;
+        private final String keyDescription;
 
         RentalAgreementKeysModelEntity(final Integer amountOfKeys, final LocalDate issuedAt,
-            final LocalDate returnedAt, final String keyType) {
+            final LocalDate returnedAt, final String keyDescription) {
             this.amountOfKeys = amountOfKeys;
             this.issuedAt = issuedAt;
             this.returnedAt = returnedAt;
-            this.keyType = keyType;
+            this.keyDescription = keyDescription;
         }
 
         @Override
@@ -61,8 +61,8 @@ class RentalAgreementKeysJsonTest {
         }
 
         @Override
-        public String getKeyType() {
-            return keyType;
+        public String getKeyDescription() {
+            return keyDescription;
         }
     }
 

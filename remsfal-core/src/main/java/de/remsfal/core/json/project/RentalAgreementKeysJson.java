@@ -41,7 +41,7 @@ public abstract class RentalAgreementKeysJson implements RentalAgreementKeysMode
     @Nullable
     @Schema(description = "Free text describing the type of key, e.g. front door, mailbox, garage")
     @Override
-    public abstract String getKeyType();
+    public abstract String getKeyDescription();
 
     public static RentalAgreementKeysJson valueOf(final RentalAgreementKeysModel model) {
         if (model == null) {
@@ -51,7 +51,7 @@ public abstract class RentalAgreementKeysJson implements RentalAgreementKeysMode
             .amountOfKeys(model.getAmountOfKeys())
             .issuedAt(model.getIssuedAt())
             .returnedAt(model.getReturnedAt())
-            .keyType(model.getKeyType())
+            .keyDescription(model.getKeyDescription())
             .build();
     }
 

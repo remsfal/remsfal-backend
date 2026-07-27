@@ -192,7 +192,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .amountOfKeys(2)
           .issuedAt(LocalDate.of(2025, 1, 1))
           .returnedAt(LocalDate.of(2025, 12, 1))
-          .keyType("Haustürschlüssel")
+          .keyDescription("Haustürschlüssel")
           .build();
 
       final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
@@ -208,7 +208,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(2, result.getKeys().get(0).getAmountOfKeys());
       assertEquals(key.getIssuedAt(), result.getKeys().get(0).getIssuedAt());
       assertEquals(key.getReturnedAt(), result.getKeys().get(0).getReturnedAt());
-      assertEquals("Haustürschlüssel", result.getKeys().get(0).getKeyType());
+      assertEquals("Haustürschlüssel", result.getKeys().get(0).getKeyDescription());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
@@ -221,7 +221,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       final UUID projectId = TestData.PROJECT_ID_1;
       final RentalAgreementKeysJson key1 = ImmutableRentalAgreementKeysJson.builder()
           .amountOfKeys(2)
-          .keyType("Haustürschlüssel")
+          .keyDescription("Haustürschlüssel")
           .build();
 
       final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
@@ -232,12 +232,12 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       assertEquals(1, created.getKeys().size());
-      assertEquals("Haustürschlüssel", created.getKeys().get(0).getKeyType());
+      assertEquals("Haustürschlüssel", created.getKeys().get(0).getKeyDescription());
 
       // Now replace with a different key
       final RentalAgreementKeysJson key2 = ImmutableRentalAgreementKeysJson.builder()
           .amountOfKeys(1)
-          .keyType("Briefkastenschlüssel")
+          .keyDescription("Briefkastenschlüssel")
           .build();
 
       RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
@@ -248,12 +248,12 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
 
       // Old key should be replaced by new one
       assertEquals(1, updated.getKeys().size());
-      assertEquals("Briefkastenschlüssel", updated.getKeys().get(0).getKeyType());
+      assertEquals("Briefkastenschlüssel", updated.getKeys().get(0).getKeyDescription());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
       assertEquals(1, entity.getKeys().size());
-      assertEquals("Briefkastenschlüssel", entity.getKeys().get(0).getKeyType());
+      assertEquals("Briefkastenschlüssel", entity.getKeys().get(0).getKeyDescription());
     }
 
     @Test
@@ -261,7 +261,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       final UUID projectId = TestData.PROJECT_ID_1;
       final RentalAgreementKeysJson key = ImmutableRentalAgreementKeysJson.builder()
           .amountOfKeys(2)
-          .keyType("Haustürschlüssel")
+          .keyDescription("Haustürschlüssel")
           .build();
 
       final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
@@ -279,7 +279,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
 
       assertEquals(1, updated.getKeys().size());
-      assertEquals("Haustürschlüssel", updated.getKeys().get(0).getKeyType());
+      assertEquals("Haustürschlüssel", updated.getKeys().get(0).getKeyDescription());
     }
 
     @Test

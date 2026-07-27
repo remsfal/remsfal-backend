@@ -1,5 +1,6 @@
 package de.remsfal.service.entity.dto;
 
+import de.remsfal.service.entity.dto.embeddable.RentalAgreementKeysEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,8 +18,8 @@ class RentalAgreementKeysEntityTest {
     private static final LocalDate ISSUED_AT_2 = LocalDate.of(2025, 2, 1);
     private static final LocalDate RETURNED_AT_1 = LocalDate.of(2025, 12, 1);
     private static final LocalDate RETURNED_AT_2 = LocalDate.of(2025, 12, 15);
-    private static final String KEY_TYPE_1 = "Haustürschlüssel";
-    private static final String KEY_TYPE_2 = "Briefkastenschlüssel";
+    private static final String KEY_DESCRIPTION_1 = "Haustürschlüssel";
+    private static final String KEY_DESCRIPTION_2 = "Briefkastenschlüssel";
 
     private RentalAgreementKeysEntity key1;
     private RentalAgreementKeysEntity key2;
@@ -29,13 +30,13 @@ class RentalAgreementKeysEntityTest {
         key1.setAmountOfKeys(2);
         key1.setIssuedAt(ISSUED_AT_1);
         key1.setReturnedAt(RETURNED_AT_1);
-        key1.setKeyType(KEY_TYPE_1);
+        key1.setKeyDescription(KEY_DESCRIPTION_1);
 
         key2 = new RentalAgreementKeysEntity();
         key2.setAmountOfKeys(2);
         key2.setIssuedAt(ISSUED_AT_1);
         key2.setReturnedAt(RETURNED_AT_1);
-        key2.setKeyType(KEY_TYPE_1);
+        key2.setKeyDescription(KEY_DESCRIPTION_1);
     }
 
     @Test
@@ -44,17 +45,17 @@ class RentalAgreementKeysEntityTest {
         assertEquals(2, key1.getAmountOfKeys());
         assertEquals(ISSUED_AT_1, key1.getIssuedAt());
         assertEquals(RETURNED_AT_1, key1.getReturnedAt());
-        assertEquals(KEY_TYPE_1, key1.getKeyType());
+        assertEquals(KEY_DESCRIPTION_1, key1.getKeyDescription());
 
         key1.setAmountOfKeys(5);
         key1.setIssuedAt(ISSUED_AT_2);
         key1.setReturnedAt(RETURNED_AT_2);
-        key1.setKeyType(KEY_TYPE_2);
+        key1.setKeyDescription(KEY_DESCRIPTION_2);
 
         assertEquals(5, key1.getAmountOfKeys());
         assertEquals(ISSUED_AT_2, key1.getIssuedAt());
         assertEquals(RETURNED_AT_2, key1.getReturnedAt());
-        assertEquals(KEY_TYPE_2, key1.getKeyType());
+        assertEquals(KEY_DESCRIPTION_2, key1.getKeyDescription());
     }
 
     @Test
@@ -89,9 +90,9 @@ class RentalAgreementKeysEntityTest {
     }
 
     @Test
-    @DisplayName("Test equals with different keyType")
-    void testEqualsDifferentKeyType() {
-        key2.setKeyType(KEY_TYPE_2);
+    @DisplayName("Test equals with different keyDescription")
+    void testEqualsDifferentKeyDescription() {
+        key2.setKeyDescription(KEY_DESCRIPTION_2);
         assertNotEquals(key1, key2);
         assertNotEquals(key1.hashCode(), key2.hashCode());
     }

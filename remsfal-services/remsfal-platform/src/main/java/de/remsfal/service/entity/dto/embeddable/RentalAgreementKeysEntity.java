@@ -1,4 +1,4 @@
-package de.remsfal.service.entity.dto;
+package de.remsfal.service.entity.dto.embeddable;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -9,9 +9,6 @@ import jakarta.persistence.Embeddable;
 
 import de.remsfal.core.model.project.RentalAgreementKeysModel;
 
-/**
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
- */
 @Embeddable
 public class RentalAgreementKeysEntity implements RentalAgreementKeysModel, Serializable {
 
@@ -26,8 +23,8 @@ public class RentalAgreementKeysEntity implements RentalAgreementKeysModel, Seri
     @Column(name = "returned_at", columnDefinition = "date")
     private LocalDate returnedAt;
 
-    @Column(name = "key_type")
-    private String keyType;
+    @Column(name = "key_description")
+    private String keyDescription;
 
     @Override
     public Integer getAmountOfKeys() {
@@ -57,17 +54,17 @@ public class RentalAgreementKeysEntity implements RentalAgreementKeysModel, Seri
     }
 
     @Override
-    public String getKeyType() {
-        return keyType;
+    public String getKeyDescription() {
+        return keyDescription;
     }
 
-    public void setKeyType(final String keyType) {
-        this.keyType = keyType;
+    public void setKeyDescription(final String keyDescription) {
+        this.keyDescription = keyDescription;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(amountOfKeys, issuedAt, returnedAt, keyType);
+        return Objects.hash(amountOfKeys, issuedAt, returnedAt, keyDescription);
     }
 
     @Override
@@ -79,7 +76,7 @@ public class RentalAgreementKeysEntity implements RentalAgreementKeysModel, Seri
             return amountOfKeys == e.amountOfKeys
                 && Objects.equals(issuedAt, e.issuedAt)
                 && Objects.equals(returnedAt, e.returnedAt)
-                && Objects.equals(keyType, e.keyType);
+                && Objects.equals(keyDescription, e.keyDescription);
         }
         return false;
     }

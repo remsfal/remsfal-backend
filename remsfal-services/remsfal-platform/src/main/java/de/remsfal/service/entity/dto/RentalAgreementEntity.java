@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.service.entity.dto.embeddable.RentalAgreementKeysEntity;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;

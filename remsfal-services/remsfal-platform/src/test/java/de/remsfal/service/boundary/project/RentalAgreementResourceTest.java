@@ -166,8 +166,8 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         // Add two key handovers to the existing agreement via PATCH
         String json = "{" +
             "\"keys\": [" +
-            "{\"amountOfKeys\":2,\"keyType\":\"Haustürschlüssel\"}," +
-            "{\"amountOfKeys\":3,\"keyType\":\"Briefkastenschlüssel\"}" +
+            "{\"amountOfKeys\":2,\"keyDescription\":\"Haustürschlüssel\"}," +
+            "{\"amountOfKeys\":3,\"keyDescription\":\"Briefkastenschlüssel\"}" +
             "]}";
 
         given()
@@ -271,7 +271,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
             "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]," +
-            "\"keys\": [{\"amountOfKeys\":2,\"issuedAt\":\"2023-01-01\",\"keyType\":\"Haustürschlüssel\"}]" +
+            "\"keys\": [{\"amountOfKeys\":2,\"issuedAt\":\"2023-01-01\",\"keyDescription\":\"Haustürschlüssel\"}]" +
             "}";
 
         given()
@@ -285,7 +285,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .body("keys.size()", Matchers.equalTo(1))
             .body("keys[0].amountOfKeys", Matchers.equalTo(2))
             .body("keys[0].issuedAt", Matchers.equalTo("2023-01-01"))
-            .body("keys[0].keyType", Matchers.equalTo("Haustürschlüssel"));
+            .body("keys[0].keyDescription", Matchers.equalTo("Haustürschlüssel"));
     }
 
     @Test
