@@ -22,7 +22,7 @@ public interface RentalAgreementModel {
 
     LocalDate getEndOfRental();
 
-    List<? extends RentalAgreementKeyModel> getKeys();
+    List<? extends RentalAgreementKeysModel> getKeys();
 
     List<? extends RentModel> getPropertyRents();
 
@@ -59,7 +59,7 @@ public interface RentalAgreementModel {
         if (getKeys() == null) {
             return null;
         }
-        int sum = getKeys().stream().mapToInt(RentalAgreementKeyModel::getAmountOfKeys).sum();
+        int sum = getKeys().stream().mapToInt(RentalAgreementKeysModel::getAmountOfKeys).sum();
         return sum > 0 ? sum : null;
     }
 

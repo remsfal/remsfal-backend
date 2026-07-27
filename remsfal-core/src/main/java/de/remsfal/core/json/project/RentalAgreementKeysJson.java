@@ -13,15 +13,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.project.RentalAgreementKeyModel;
+import de.remsfal.core.model.project.RentalAgreementKeysModel;
 import de.remsfal.core.validation.PostValidation;
 
 @Immutable
 @ImmutableStyle
 @Schema(description = "A key handover record for a rental agreement")
-@JsonDeserialize(as = ImmutableRentalAgreementKeyJson.class)
+@JsonDeserialize(as = ImmutableRentalAgreementKeysJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class RentalAgreementKeyJson implements RentalAgreementKeyModel {
+public abstract class RentalAgreementKeysJson implements RentalAgreementKeysModel {
 
     @NotNull(groups = PostValidation.class, message = "Amount of keys is required")
     @Schema(required = true, description = "Number of keys of this type")
@@ -43,11 +43,11 @@ public abstract class RentalAgreementKeyJson implements RentalAgreementKeyModel 
     @Override
     public abstract String getKeyType();
 
-    public static RentalAgreementKeyJson valueOf(final RentalAgreementKeyModel model) {
+    public static RentalAgreementKeysJson valueOf(final RentalAgreementKeysModel model) {
         if (model == null) {
             return null;
         }
-        return ImmutableRentalAgreementKeyJson.builder()
+        return ImmutableRentalAgreementKeysJson.builder()
             .amountOfKeys(model.getAmountOfKeys())
             .issuedAt(model.getIssuedAt())
             .returnedAt(model.getReturnedAt())

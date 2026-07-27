@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @QuarkusTest
-class RentalAgreementKeyEntityTest {
+class RentalAgreementKeysEntityTest {
 
     private static final LocalDate ISSUED_AT_1 = LocalDate.of(2025, 1, 1);
     private static final LocalDate ISSUED_AT_2 = LocalDate.of(2025, 2, 1);
@@ -20,18 +20,18 @@ class RentalAgreementKeyEntityTest {
     private static final String KEY_TYPE_1 = "Haustürschlüssel";
     private static final String KEY_TYPE_2 = "Briefkastenschlüssel";
 
-    private RentalAgreementKeyEntity key1;
-    private RentalAgreementKeyEntity key2;
+    private RentalAgreementKeysEntity key1;
+    private RentalAgreementKeysEntity key2;
 
     @BeforeEach
     void setUp() {
-        key1 = new RentalAgreementKeyEntity();
+        key1 = new RentalAgreementKeysEntity();
         key1.setAmountOfKeys(2);
         key1.setIssuedAt(ISSUED_AT_1);
         key1.setReturnedAt(RETURNED_AT_1);
         key1.setKeyType(KEY_TYPE_1);
 
-        key2 = new RentalAgreementKeyEntity();
+        key2 = new RentalAgreementKeysEntity();
         key2.setAmountOfKeys(2);
         key2.setIssuedAt(ISSUED_AT_1);
         key2.setReturnedAt(RETURNED_AT_1);
@@ -105,7 +105,7 @@ class RentalAgreementKeyEntityTest {
     @Test
     @DisplayName("Test equals with different object type")
     void testEqualsWithDifferentType() {
-        assertNotEquals("Not a RentalAgreementKeyEntity", key1);
+        assertNotEquals("Not a RentalAgreementKeysEntity", key1);
     }
 
     @Test

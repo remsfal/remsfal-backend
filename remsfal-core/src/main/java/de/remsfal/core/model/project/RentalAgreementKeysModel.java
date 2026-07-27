@@ -2,7 +2,7 @@ package de.remsfal.core.model.project;
 
 import java.time.LocalDate;
 
-public interface RentalAgreementKeyModel {
+public interface RentalAgreementKeysModel {
 
     Integer getAmountOfKeys();
 

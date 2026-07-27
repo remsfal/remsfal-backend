@@ -1,7 +1,7 @@
 package de.remsfal.core.json;
 
-import de.remsfal.core.json.project.RentalAgreementKeyJson;
-import de.remsfal.core.model.project.RentalAgreementKeyModel;
+import de.remsfal.core.json.project.RentalAgreementKeysJson;
+import de.remsfal.core.model.project.RentalAgreementKeysModel;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -10,14 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class RentalAgreementKeyJsonTest {
+class RentalAgreementKeysJsonTest {
 
     @Test
     void testValueOf() {
-        RentalAgreementKeyModel model = new RentalAgreementKeyModelEntity(
+        RentalAgreementKeysModel model = new RentalAgreementKeysModelEntity(
             2, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), "Haustürschlüssel");
 
-        RentalAgreementKeyJson json = RentalAgreementKeyJson.valueOf(model);
+        RentalAgreementKeysJson json = RentalAgreementKeysJson.valueOf(model);
 
         assertNotNull(json);
         assertEquals(model.getAmountOfKeys(), json.getAmountOfKeys());
@@ -28,16 +28,16 @@ class RentalAgreementKeyJsonTest {
 
     @Test
     void testValueOf_returnsNull_whenModelIsNull() {
-        assertNull(RentalAgreementKeyJson.valueOf(null));
+        assertNull(RentalAgreementKeysJson.valueOf(null));
     }
 
-    static class RentalAgreementKeyModelEntity implements RentalAgreementKeyModel {
+    static class RentalAgreementKeysModelEntity implements RentalAgreementKeysModel {
         private final Integer amountOfKeys;
         private final LocalDate issuedAt;
         private final LocalDate returnedAt;
         private final String keyType;
 
-        RentalAgreementKeyModelEntity(final Integer amountOfKeys, final LocalDate issuedAt,
+        RentalAgreementKeysModelEntity(final Integer amountOfKeys, final LocalDate issuedAt,
             final LocalDate returnedAt, final String keyType) {
             this.amountOfKeys = amountOfKeys;
             this.issuedAt = issuedAt;

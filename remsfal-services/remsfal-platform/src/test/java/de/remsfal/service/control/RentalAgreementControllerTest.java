@@ -6,8 +6,8 @@ import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.json.project.ImmutableTenantJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
-import de.remsfal.core.json.project.RentalAgreementKeyJson;
-import de.remsfal.core.json.project.ImmutableRentalAgreementKeyJson;
+import de.remsfal.core.json.project.RentalAgreementKeysJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementKeysJson;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
@@ -188,7 +188,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void createRentalAgreement_SUCCESS_withKeys() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final RentalAgreementKeyJson key = ImmutableRentalAgreementKeyJson.builder()
+      final RentalAgreementKeysJson key = ImmutableRentalAgreementKeysJson.builder()
           .amountOfKeys(2)
           .issuedAt(LocalDate.of(2025, 1, 1))
           .returnedAt(LocalDate.of(2025, 12, 1))
@@ -219,7 +219,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void updateRentalAgreement_SUCCESS_replaceKeys() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final RentalAgreementKeyJson key1 = ImmutableRentalAgreementKeyJson.builder()
+      final RentalAgreementKeysJson key1 = ImmutableRentalAgreementKeysJson.builder()
           .amountOfKeys(2)
           .keyType("Haustürschlüssel")
           .build();
@@ -235,7 +235,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals("Haustürschlüssel", created.getKeys().get(0).getKeyType());
 
       // Now replace with a different key
-      final RentalAgreementKeyJson key2 = ImmutableRentalAgreementKeyJson.builder()
+      final RentalAgreementKeysJson key2 = ImmutableRentalAgreementKeysJson.builder()
           .amountOfKeys(1)
           .keyType("Briefkastenschlüssel")
           .build();
@@ -259,7 +259,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     @Test
     void updateRentalAgreement_SUCCESS_keysUnchangedWhenNotProvided() {
       final UUID projectId = TestData.PROJECT_ID_1;
-      final RentalAgreementKeyJson key = ImmutableRentalAgreementKeyJson.builder()
+      final RentalAgreementKeysJson key = ImmutableRentalAgreementKeysJson.builder()
           .amountOfKeys(2)
           .keyType("Haustürschlüssel")
           .build();

@@ -7,13 +7,13 @@ import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-import de.remsfal.core.model.project.RentalAgreementKeyModel;
+import de.remsfal.core.model.project.RentalAgreementKeysModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @Embeddable
-public class RentalAgreementKeyEntity implements RentalAgreementKeyModel, Serializable {
+public class RentalAgreementKeysEntity implements RentalAgreementKeysModel, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -75,7 +75,7 @@ public class RentalAgreementKeyEntity implements RentalAgreementKeyModel, Serial
         if (this == o) {
             return true;
         }
-        if (o instanceof RentalAgreementKeyEntity e) {
+        if (o instanceof RentalAgreementKeysEntity e) {
             return amountOfKeys == e.amountOfKeys
                 && Objects.equals(issuedAt, e.issuedAt)
                 && Objects.equals(returnedAt, e.returnedAt)

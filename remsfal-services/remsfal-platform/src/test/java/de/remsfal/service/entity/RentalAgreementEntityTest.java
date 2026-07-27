@@ -1,7 +1,7 @@
 package de.remsfal.service.entity;
 
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
-import de.remsfal.service.entity.dto.RentalAgreementKeyEntity;
+import de.remsfal.service.entity.dto.RentalAgreementKeysEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @QuarkusTest
 class RentalAgreementEntityTest {
 
-    private static RentalAgreementKeyEntity key(final int amountOfKeys) {
-        RentalAgreementKeyEntity key = new RentalAgreementKeyEntity();
+    private static RentalAgreementKeysEntity key(final int amountOfKeys) {
+        RentalAgreementKeysEntity key = new RentalAgreementKeysEntity();
         key.setAmountOfKeys(amountOfKeys);
         return key;
     }

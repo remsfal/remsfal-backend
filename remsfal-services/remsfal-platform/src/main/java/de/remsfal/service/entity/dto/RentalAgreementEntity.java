@@ -49,7 +49,7 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "rental_agreement_keys",
         joinColumns = @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid"))
-    private List<RentalAgreementKeyEntity> keys = new ArrayList<>();
+    private List<RentalAgreementKeysEntity> keys = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid")
@@ -127,11 +127,11 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
     }
     
     @Override
-    public List<RentalAgreementKeyEntity> getKeys() {
+    public List<RentalAgreementKeysEntity> getKeys() {
         return keys;
     }
 
-    public void setKeys(final List<RentalAgreementKeyEntity> keys) {
+    public void setKeys(final List<RentalAgreementKeysEntity> keys) {
         this.keys = keys;
     }
 

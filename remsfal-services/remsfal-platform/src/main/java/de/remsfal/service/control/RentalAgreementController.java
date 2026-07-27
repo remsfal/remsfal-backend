@@ -2,7 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.project.RentalAgreementKeyModel;
+import de.remsfal.core.model.project.RentalAgreementKeysModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
@@ -20,7 +20,7 @@ import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
-import de.remsfal.service.entity.dto.RentalAgreementKeyEntity;
+import de.remsfal.service.entity.dto.RentalAgreementKeysEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -386,13 +386,13 @@ public class RentalAgreementController {
      * @param keysInput the key handover models from the request, may be null
      * @return list of key handover entities
      */
-    private List<RentalAgreementKeyEntity> processKeys(final List<? extends RentalAgreementKeyModel> keysInput) {
-        List<RentalAgreementKeyEntity> keyEntities = new ArrayList<>();
+    private List<RentalAgreementKeysEntity> processKeys(final List<? extends RentalAgreementKeysModel> keysInput) {
+        List<RentalAgreementKeysEntity> keyEntities = new ArrayList<>();
         if (keysInput == null) {
             return keyEntities;
         }
-        for (RentalAgreementKeyModel keyInput : keysInput) {
-            RentalAgreementKeyEntity key = new RentalAgreementKeyEntity();
+        for (RentalAgreementKeysModel keyInput : keysInput) {
+            RentalAgreementKeysEntity key = new RentalAgreementKeysEntity();
             key.setAmountOfKeys(keyInput.getAmountOfKeys());
             key.setIssuedAt(keyInput.getIssuedAt());
             key.setReturnedAt(keyInput.getReturnedAt());
