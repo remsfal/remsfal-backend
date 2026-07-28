@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,24 @@ class IssueEntityTest {
         assertEquals("Max", result.getFirstName());
         assertEquals("Mustermann", result.getLastName());
         assertEquals("+491234567890", result.getMobilePhoneNumber());
+    }
+
+    @Test
+    void testSetAndGetTenantUpdate_withDateOfBirth_roundTripsThroughJson() {
+        // regression test: OBJECT_MAPPER previously lacked JavaTimeModule, so a
+        // non-null LocalDate field made serialization throw IllegalStateException
+        final LocalDate dateOfBirth = LocalDate.of(1985, 3, 21);
+        final TenantJson tenantUpdate = ImmutableTenantJson.builder()
+            .id(UUID.randomUUID())
+            .firstName("Max")
+            .lastName("Mustermann")
+            .dateOfBirth(dateOfBirth)
+            .build();
+
+        final IssueEntity entity = new IssueEntity();
+        entity.setTenantUpdate(tenantUpdate);
+
+        assertEquals(dateOfBirth, entity.getTenantUpdate().getDateOfBirth());
     }
 
     @Test

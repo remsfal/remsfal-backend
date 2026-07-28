@@ -2,6 +2,7 @@ package de.remsfal.ticketing.entity.dto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
@@ -22,7 +23,7 @@ import java.util.UUID;
 @Entity("issues")
 public class IssueEntity extends AbstractEntity implements IssueModel {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Id
     private IssueKey key;

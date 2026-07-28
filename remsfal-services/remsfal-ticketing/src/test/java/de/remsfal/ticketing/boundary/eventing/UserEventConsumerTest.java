@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -102,10 +103,12 @@ class UserEventConsumerTest {
         final UUID projectId1 = UUID.randomUUID();
         final UUID projectId2 = UUID.randomUUID();
 
+        final LocalDate dateOfBirth = LocalDate.of(1990, 5, 17);
         final ImmutableUserJson user = ImmutableUserJson.builder()
             .firstName(TestData.USER_FIRST_NAME)
             .lastName(TestData.USER_LAST_NAME)
             .mobilePhoneNumber(TestData.TENANT_MOBILE_1)
+            .dateOfBirth(dateOfBirth)
             .address(TestData.addressBuilder().build())
             .build();
 
@@ -141,6 +144,8 @@ class UserEventConsumerTest {
             assertEquals(TestData.USER_LAST_NAME, entity.getTenantUpdate().getLastName());
             assertEquals(TestData.TENANT_MOBILE_1, entity.getTenantUpdate().getMobilePhoneNumber());
             assertEquals(TestData.ADDRESS_STREET, entity.getTenantUpdate().getAddress().getStreet());
+            // regression check: a non-null LocalDate must survive the tenant_update JSON round trip
+            assertEquals(dateOfBirth, entity.getTenantUpdate().getDateOfBirth());
         }
 
         assertTrue(created.stream().anyMatch(e -> tenantId1.equals(e.getTenantUpdate().getId())
