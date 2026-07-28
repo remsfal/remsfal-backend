@@ -8,7 +8,6 @@ import jakarta.inject.Inject;
 import java.util.UUID;
 
 import de.remsfal.core.api.ticketing.IssueOrderPlacementEndpoint;
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
@@ -35,13 +34,13 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
 
     @Override
     public OrderPlacementListJson getOrders(final UUID issueId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         return OrderPlacementListJson.valueOf(orderManagementController.getOrderPlacementsByIssue(issueId));
     }
 
     @Override
     public OrderPlacementJson getOrderPlacement(final UUID issueId, final UUID orderId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         final OrderPlacementEntity placement = orderManagementController.getOrderPlacementForIssue(
             issueId, orderId);
         return OrderPlacementJson.valueOf(placement).withAttachments(orderAttachmentController
@@ -52,12 +51,12 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
 
     @Override
     public void withdrawOrderPlacement(final UUID issueId, final UUID orderId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         orderManagementController.withdrawOrderPlacement(issueId, orderId);
     }
 
     @Override
-    public OrderAttachmentEndpoint getAttachmentResource() {
+    public OrderAttachmentResource getAttachmentResource() {
         return resourceContext.initResource(attachmentResource.get())
             .configure(OrderProcessPhase.ORDER_PLACEMENT);
     }

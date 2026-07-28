@@ -11,11 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.IssueEndpoint;
-import de.remsfal.core.api.ticketing.IssueOrderPlacementEndpoint;
-import de.remsfal.core.api.ticketing.IssueQuotationEndpoint;
-import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
@@ -141,22 +137,22 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     }
 
     @Override
-    public IssueAttachmentEndpoint getAttachmentResource() {
+    public IssueAttachmentResource getAttachmentResource() {
         return resourceContext.initResource(attachmentResource.get());
     }
 
     @Override
-    public IssueQuotationRequestEndpoint getQuotationRequestResource() {
+    public IssueQuotationRequestResource getQuotationRequestResource() {
         return resourceContext.initResource(quotationRequestResource.get());
     }
 
     @Override
-    public IssueQuotationEndpoint getQuotationResource() {
+    public IssueQuotationResource getQuotationResource() {
         return resourceContext.initResource(quotationResource.get());
     }
 
     @Override
-    public IssueOrderPlacementEndpoint getOrderPlacementResource() {
+    public IssueOrderPlacementResource getOrderPlacementResource() {
         return resourceContext.initResource(orderPlacementResource.get());
     }
 

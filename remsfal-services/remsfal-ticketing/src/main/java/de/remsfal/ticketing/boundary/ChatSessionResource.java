@@ -38,7 +38,7 @@ public class ChatSessionResource extends AbstractTicketingResource implements Ch
 
     @Override
     public Response createChatSession(final UUID issueId) {
-        UUID projectId = checkWritePermissions(issueId);
+        UUID projectId = checkProjectIssueAccessPermissions(issueId).getProjectId();
 
         ChatSessionModel session = chatSessionController
             .createChatSession(projectId, issueId, principal.getId());
@@ -51,7 +51,7 @@ public class ChatSessionResource extends AbstractTicketingResource implements Ch
 
     @Override
     public Response getChatSession(final UUID issueId, final UUID sessionId) {
-        UUID projectId = checkReadPermissions(issueId);
+        UUID projectId = checkProjectIssueAccessPermissions(issueId).getProjectId();
         Optional<ChatSessionEntity> session = chatSessionController
             .getChatSession(projectId, issueId, sessionId);
         if (session.isPresent()) {
@@ -66,14 +66,14 @@ public class ChatSessionResource extends AbstractTicketingResource implements Ch
 
     @Override
     public Response deleteChatSession(final UUID issueId, final UUID sessionId) {
-        UUID projectId = checkWritePermissions(issueId);
+        UUID projectId = checkProjectIssueAccessPermissions(issueId).getProjectId();
         chatSessionController.deleteChatSession(projectId, issueId, sessionId);
         return Response.noContent().build();
     }
 
     @Override
     public Response getChatSessions(final UUID issueId) {
-        UUID projectId = checkReadPermissions(issueId);
+        UUID projectId = checkProjectIssueAccessPermissions(issueId).getProjectId();
         List<ChatSessionEntity> sessions = chatSessionController.getChatSessions(projectId, issueId);
         return Response.ok()
             .type(MediaType.APPLICATION_JSON)

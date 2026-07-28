@@ -22,7 +22,6 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
-import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.notification.control.MailingController;

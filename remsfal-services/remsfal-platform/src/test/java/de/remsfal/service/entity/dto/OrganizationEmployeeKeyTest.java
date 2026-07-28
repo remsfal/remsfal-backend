@@ -2,7 +2,6 @@ package de.remsfal.service.entity.dto;
 
 import de.remsfal.service.entity.dto.embeddable.OrganizationEmployeeKey;
 import de.remsfal.test.AbstractTest;
-import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

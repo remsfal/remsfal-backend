@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.UUID;
 
 import de.remsfal.core.api.ticketing.IssueQuotationRequestEndpoint;
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
@@ -40,7 +39,7 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
 
     @Override
     public Response createRequestsForQuotation(final UUID issueId, final CreateQuotationRequestJson request) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         final List<QuotationRequestEntity> created = orderManagementController.createRequestsForQuotation(
             principal, issueId, request.getContractors(), request.getScopeOfWork(),
             request.getProjectOwner(), request.getProjectCareOf(), request.getBillingAddress());
@@ -52,13 +51,13 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
 
     @Override
     public QuotationRequestListJson getRequestsForQuotation(final UUID issueId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         return QuotationRequestListJson.valueOf(orderManagementController.getRequestsForQuotation(issueId));
     }
 
     @Override
     public QuotationRequestJson getRequestForQuotation(final UUID issueId, final UUID requestId) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         return withAttachments(QuotationRequestJson.valueOf(
             orderManagementController.getRequestForQuotation(issueId, requestId)), requestId);
     }
@@ -66,13 +65,13 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
     @Override
     public QuotationRequestJson updateRequestForQuotation(final UUID issueId, final UUID requestId,
         final QuotationRequestJson body) {
-        checkIssueWritePermissions(issueId);
+        checkProjectIssueOrderPermissions(issueId);
         return withAttachments(QuotationRequestJson.valueOf(
             orderManagementController.updateRequestForQuotation(issueId, requestId, body)), requestId);
     }
 
     @Override
-    public OrderAttachmentEndpoint getAttachmentResource() {
+    public OrderAttachmentResource getAttachmentResource() {
         return resourceContext.initResource(attachmentResource.get())
             .configure(OrderProcessPhase.QUOTATION_REQUEST);
     }
