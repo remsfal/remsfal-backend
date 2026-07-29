@@ -191,6 +191,10 @@ public class PropertyController {
             .map(unit -> RentalUnitTreeNodeJson.valueOf(unit))
             .toList();
 
+        if (data.getSpace() == null || data.getSpace() <= 0) {
+            data = data.withSpace(calculateTotalSpace(apartmentTree, commercialTree, storageTree));
+        }
+
         return ImmutableRentalUnitTreeNodeJson.builder()
             .key(building.getId())
             .data(data)
@@ -198,6 +202,27 @@ public class PropertyController {
             .addAllChildren(commercialTree)
             .addAllChildren(storageTree)
             .build();
+    }
+
+    private Float calculateTotalSpace(List<RentalUnitTreeNodeJson> apartmentTree,
+        List<RentalUnitTreeNodeJson> commercialTree, List<RentalUnitTreeNodeJson> storageTree) {
+        float totalSpace = 0;
+        for (RentalUnitTreeNodeJson child : apartmentTree) {
+            if (child.getData().getSpace() != null) {
+                totalSpace += child.getData().getSpace();
+            }
+        }
+        for (RentalUnitTreeNodeJson child : commercialTree) {
+            if (child.getData().getSpace() != null) {
+                totalSpace += child.getData().getSpace();
+            }
+        }
+        for (RentalUnitTreeNodeJson child : storageTree) {
+            if (child.getData().getSpace() != null) {
+                totalSpace += child.getData().getSpace();
+            }
+        }
+        return totalSpace > 0 ? totalSpace : null;
     }
 
     /**

@@ -2,6 +2,7 @@ package de.remsfal.ticketing.entity.dto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
@@ -22,7 +23,7 @@ import java.util.UUID;
 @Entity("issues")
 public class IssueEntity extends AbstractEntity implements IssueModel {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Id
     private IssueKey key;
@@ -87,8 +88,12 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     @Column("blocks_issue_ids")
     private Set<UUID> blocks;
 
+    // Named differently from the getTenantUpdate()/setTenantUpdate(TenantModel) domain accessors below:
+    // JNoSQL Lite's annotation processor picks a field's reader by name match alone ("get" + field name),
+    // so a same-named getTenantUpdate() returning TenantJson would be used to read this column and hand
+    // Cassandra's driver a raw TenantJson instead of the JSON string, which has no codec and fails at runtime.
     @Column("tenant_update")
-    private String tenantUpdate;
+    private String tenantUpdateJson;
 
     public IssueKey getKey() {
         return key;
@@ -364,11 +369,11 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     @Override
     public TenantJson getTenantUpdate() {
-        if (tenantUpdate == null) {
+        if (tenantUpdateJson == null) {
             return null;
         }
         try {
-            return OBJECT_MAPPER.readValue(tenantUpdate, TenantJson.class);
+            return OBJECT_MAPPER.readValue(tenantUpdateJson, TenantJson.class);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Invalid JSON stored in tenant_update column", e);
         }
@@ -376,7 +381,7 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setTenantUpdate(TenantModel tenantUpdate) {
         try {
-            this.tenantUpdate = tenantUpdate != null
+            this.tenantUpdateJson = tenantUpdate != null
                 ? OBJECT_MAPPER.writeValueAsString(TenantJson.valueOf(tenantUpdate))
                 : null;
         } catch (JsonProcessingException e) {
@@ -384,9 +389,13 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
         }
     }
 
-    // Setter for string tenantUpdate for Cassandra mapping
-    public void setTenantUpdate(String tenantUpdate) {
-        this.tenantUpdate = tenantUpdate;
+    // Getter/setter for the raw JSON string, required by JNoSQL Lite for field read/write access
+    public String getTenantUpdateJson() {
+        return tenantUpdateJson;
+    }
+
+    public void setTenantUpdateJson(String tenantUpdateJson) {
+        this.tenantUpdateJson = tenantUpdateJson;
     }
 
     /**
