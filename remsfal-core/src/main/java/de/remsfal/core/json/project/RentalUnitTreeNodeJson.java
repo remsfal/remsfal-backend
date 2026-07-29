@@ -18,13 +18,13 @@ import java.util.UUID;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class RentalUnitTreeNodeJson {
 
-    @Schema(description = "Key of the node", required = true, examples = "Property 1")
+    @Schema(description = "Key of the node", readOnly = true, required = true)
     public abstract UUID getKey();
 
-    @Schema(description = "Data encapsulating node attributes")
+    @Schema(description = "Data encapsulating node attributes", readOnly = true)
     public abstract RentalUnitNodeDataJson getData();
 
-    @Schema(description = "Children nodes")
+    @Schema(description = "Children nodes", readOnly = true)
     public abstract List<RentalUnitTreeNodeJson> getChildren();
 
     public static RentalUnitTreeNodeJson valueOf(final RentalUnitModel model) {

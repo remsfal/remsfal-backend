@@ -68,10 +68,10 @@ class IssueEntityTest {
     }
 
     @Test
-    void testSetTenantUpdateString_forCassandraMapping_isReadableAsTenantJson() {
+    void testSetTenantUpdateJson_forCassandraMapping_isReadableAsTenantJson() {
         final UUID tenantId = UUID.randomUUID();
         final IssueEntity entity = new IssueEntity();
-        entity.setTenantUpdate("{\"id\":\"" + tenantId + "\",\"firstName\":\"Erika\"}");
+        entity.setTenantUpdateJson("{\"id\":\"" + tenantId + "\",\"firstName\":\"Erika\"}");
 
         final TenantJson result = entity.getTenantUpdate();
         assertEquals(tenantId, result.getId());
@@ -81,7 +81,7 @@ class IssueEntityTest {
     @Test
     void testGetTenantUpdate_invalidJson_throwsIllegalStateException() {
         final IssueEntity entity = new IssueEntity();
-        entity.setTenantUpdate("not-valid-json");
+        entity.setTenantUpdateJson("not-valid-json");
 
         assertThrows(IllegalStateException.class, entity::getTenantUpdate);
     }
