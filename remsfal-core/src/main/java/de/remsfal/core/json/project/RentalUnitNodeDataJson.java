@@ -56,4 +56,6 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
             .build();
     }
 
+    public abstract RentalUnitNodeDataJson withSpace(final Float space);
+
 }
