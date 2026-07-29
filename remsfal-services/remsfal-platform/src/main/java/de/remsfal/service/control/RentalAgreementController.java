@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 
@@ -405,7 +407,9 @@ public class RentalAgreementController {
     /**
      * Process all rent types from the agreement model and update them on the entity.
      * PATCH-style behavior: only updates rent lists that are provided in the agreement.
-     * If a rent list is provided, it replaces the existing list (orphanRemoval will delete old ones).
+     * If a rent list is provided, it replaces the existing list, but entries that match an
+     * existing one (by unit and first payment date) are updated in place rather than recreated
+     * (see {@link #reconcileRents}).
      *
      * @param entity the rental agreement entity
      * @param agreement the rental agreement model
@@ -414,158 +418,119 @@ public class RentalAgreementController {
         if (agreement.getPropertyRents() != null) {
             if (entity.getPropertyRents() == null) {
                 entity.setPropertyRents(new ArrayList<>());
-            } else {
-                entity.getPropertyRents().clear();
             }
-            if (!agreement.getPropertyRents().isEmpty()) {
-                processPropertyRents(entity, agreement.getPropertyRents());
-            }
+            reconcileRents(entity.getPropertyRents(), agreement.getPropertyRents(),
+                entity.getStartOfRental(), PropertyRentEntity::new, PropertyRentEntity::setPropertyId);
         }
 
         if (agreement.getSiteRents() != null) {
             if (entity.getSiteRents() == null) {
                 entity.setSiteRents(new ArrayList<>());
-            } else {
-                entity.getSiteRents().clear();
             }
-            if (!agreement.getSiteRents().isEmpty()) {
-                processSiteRents(entity, agreement.getSiteRents());
-            }
+            reconcileRents(entity.getSiteRents(), agreement.getSiteRents(),
+                entity.getStartOfRental(), SiteRentEntity::new, SiteRentEntity::setSiteId);
         }
 
         if (agreement.getBuildingRents() != null) {
             if (entity.getBuildingRents() == null) {
                 entity.setBuildingRents(new ArrayList<>());
-            } else {
-                entity.getBuildingRents().clear();
             }
-            if (!agreement.getBuildingRents().isEmpty()) {
-                processBuildingRents(entity, agreement.getBuildingRents());
-            }
+            reconcileRents(entity.getBuildingRents(), agreement.getBuildingRents(),
+                entity.getStartOfRental(), BuildingRentEntity::new, BuildingRentEntity::setBuildingId);
         }
 
         if (agreement.getApartmentRents() != null) {
             if (entity.getApartmentRents() == null) {
                 entity.setApartmentRents(new ArrayList<>());
-            } else {
-                entity.getApartmentRents().clear();
             }
-            if (!agreement.getApartmentRents().isEmpty()) {
-                processApartmentRents(entity, agreement.getApartmentRents());
-            }
+            reconcileRents(entity.getApartmentRents(), agreement.getApartmentRents(),
+                entity.getStartOfRental(), ApartmentRentEntity::new, ApartmentRentEntity::setApartmentId);
         }
 
         if (agreement.getStorageRents() != null) {
             if (entity.getStorageRents() == null) {
                 entity.setStorageRents(new ArrayList<>());
-            } else {
-                entity.getStorageRents().clear();
             }
-            if (!agreement.getStorageRents().isEmpty()) {
-                processStorageRents(entity, agreement.getStorageRents());
-            }
+            reconcileRents(entity.getStorageRents(), agreement.getStorageRents(),
+                entity.getStartOfRental(), StorageRentEntity::new, StorageRentEntity::setStorageId);
         }
 
         if (agreement.getCommercialRents() != null) {
             if (entity.getCommercialRents() == null) {
                 entity.setCommercialRents(new ArrayList<>());
+            }
+            reconcileRents(entity.getCommercialRents(), agreement.getCommercialRents(),
+                entity.getStartOfRental(), CommercialRentEntity::new, CommercialRentEntity::setCommercialId);
+        }
+    }
+
+    /**
+     * Reconciles the currently persisted rent entities of one type against the rents provided in
+     * the request, instead of blindly deleting and recreating all of them on every update.
+     *
+     * <p>Rent entities carry an optimistic-locking {@code @Version} (inherited from
+     * {@code MetaDataEntity}) and a natural, assigned composite id (unit id + first payment date) —
+     * not a generated surrogate key. Recreating an entry that already exists in the database as a
+     * brand-new Java object (with a {@code null} version) and merging it causes Hibernate to issue an
+     * update against the existing row using that {@code null} version, which never matches the row's
+     * real version and fails with {@link jakarta.persistence.OptimisticLockException}. This is why
+     * adding a second unit used to fail: the first, already-persisted unit was rebuilt from scratch
+     * alongside the new one.
+     *
+     * <p>Existing entries that still appear in {@code rentsInput} (matched by unit id + first payment
+     * date) keep their original, managed instance — only their fields are refreshed — so Hibernate
+     * treats them as an update of the same row. Entries no longer present are dropped so
+     * {@code orphanRemoval} deletes them; entries with no match are created new.
+     *
+     * <p><b>Mutates {@code existingRents} in place</b> — it must never be replaced with a new List
+     * instance via the entity's setter. The field holds a Hibernate-managed, {@code orphanRemoval}
+     * collection once the owning entity is loaded/attached; swapping in a different List reference
+     * makes Hibernate lose track of the dereferenced original and it fails the transaction with
+     * {@code HibernateException: A collection with orphan deletion was no longer referenced by the
+     * owning entity instance} at flush time.
+     *
+     * @param <T> the rent entity type
+     * @param existingRents the currently persisted rent entities, mutated in place (must not be null)
+     * @param rentsInput the rent models from the request
+     * @param agreementStartOfRental fallback first payment date when a rent model doesn't specify one
+     * @param factory creates a new, empty entity instance of type {@code T}
+     * @param unitIdSetter assigns the unit id on a newly created entity
+     */
+    private <T extends RentEntity> void reconcileRents(final List<T> existingRents,
+        final List<? extends RentModel> rentsInput, final LocalDate agreementStartOfRental,
+        final Supplier<T> factory, final BiConsumer<T, UUID> unitIdSetter) {
+
+        final Map<RentKey, T> existingByKey = new HashMap<>();
+        for (T existing : existingRents) {
+            existingByKey.put(new RentKey(existing.getUnitId(), existing.getFirstPaymentDate()), existing);
+        }
+
+        final List<T> reconciled = new ArrayList<>();
+        for (RentModel rentInput : rentsInput) {
+            final LocalDate firstPaymentDate = rentInput.getFirstPaymentDate() != null
+                ? rentInput.getFirstPaymentDate() : agreementStartOfRental;
+            final T existing = existingByKey.remove(new RentKey(rentInput.getUnitId(), firstPaymentDate));
+
+            final T rent;
+            if (existing != null) {
+                rent = existing;
             } else {
-                entity.getCommercialRents().clear();
+                rent = factory.get();
+                unitIdSetter.accept(rent, rentInput.getUnitId());
             }
-            if (!agreement.getCommercialRents().isEmpty()) {
-                processCommercialRents(entity, agreement.getCommercialRents());
-            }
+            mapRentFields(rentInput, rent, agreementStartOfRental);
+            reconciled.add(rent);
         }
+
+        existingRents.clear();
+        existingRents.addAll(reconciled);
     }
 
     /**
-     * Process property rent models and create property rent entities.
-     *
-     * @param entity the rental agreement entity
-     * @param rentsInput the rent models from the request
+     * Identifies a rent entity by its natural key (unit id + first payment date), used to match
+     * incoming rent models against already-persisted rent entities in {@link #reconcileRents}.
      */
-    private void processPropertyRents(final RentalAgreementEntity entity, List<? extends RentModel> rentsInput) {
-        for (RentModel rentInput : rentsInput) {
-            PropertyRentEntity rent = new PropertyRentEntity();
-            rent.setPropertyId(rentInput.getUnitId());
-            mapRentFields(rentInput, rent, entity.getStartOfRental());
-            entity.getPropertyRents().add(rent);
-        }
-    }
-
-    /**
-     * Process site rent models and create site rent entities.
-     *
-     * @param entity the rental agreement entity
-     * @param rentsInput the rent models from the request
-     */
-    private void processSiteRents(final RentalAgreementEntity entity, List<? extends RentModel> rentsInput) {
-        for (RentModel rentInput : rentsInput) {
-            SiteRentEntity rent = new SiteRentEntity();
-            rent.setSiteId(rentInput.getUnitId());
-            mapRentFields(rentInput, rent, entity.getStartOfRental());
-            entity.getSiteRents().add(rent);
-        }
-    }
-
-    /**
-     * Process building rent models and create building rent entities.
-     *
-     * @param entity the rental agreement entity
-     * @param rentsInput the rent models from the request
-     */
-    private void processBuildingRents(final RentalAgreementEntity entity, List<? extends RentModel> rentsInput) {
-        for (RentModel rentInput : rentsInput) {
-            BuildingRentEntity rent = new BuildingRentEntity();
-            rent.setBuildingId(rentInput.getUnitId());
-            mapRentFields(rentInput, rent, entity.getStartOfRental());
-            entity.getBuildingRents().add(rent);
-        }
-    }
-
-    /**
-     * Process apartment rent models and create apartment rent entities.
-     *
-     * @param entity the rental agreement entity
-     * @param rentsInput the rent models from the request
-     */
-    private void processApartmentRents(final RentalAgreementEntity entity, List<? extends RentModel> rentsInput) {
-        for (RentModel rentInput : rentsInput) {
-            ApartmentRentEntity rent = new ApartmentRentEntity();
-            rent.setApartmentId(rentInput.getUnitId());
-            mapRentFields(rentInput, rent, entity.getStartOfRental());
-            entity.getApartmentRents().add(rent);
-        }
-    }
-
-    /**
-     * Process storage rent models and create storage rent entities.
-     *
-     * @param entity the rental agreement entity
-     * @param rentsInput the rent models from the request
-     */
-    private void processStorageRents(final RentalAgreementEntity entity, List<? extends RentModel> rentsInput) {
-        for (RentModel rentInput : rentsInput) {
-            StorageRentEntity rent = new StorageRentEntity();
-            rent.setStorageId(rentInput.getUnitId());
-            mapRentFields(rentInput, rent, entity.getStartOfRental());
-            entity.getStorageRents().add(rent);
-        }
-    }
-
-    /**
-     * Process commercial rent models and create commercial rent entities.
-     *
-     * @param entity the rental agreement entity
-     * @param rentsInput the rent models from the request
-     */
-    private void processCommercialRents(final RentalAgreementEntity entity, List<? extends RentModel> rentsInput) {
-        for (RentModel rentInput : rentsInput) {
-            CommercialRentEntity rent = new CommercialRentEntity();
-            rent.setCommercialId(rentInput.getUnitId());
-            mapRentFields(rentInput, rent, entity.getStartOfRental());
-            entity.getCommercialRents().add(rent);
-        }
+    private record RentKey(UUID unitId, LocalDate firstPaymentDate) {
     }
 
     /**
