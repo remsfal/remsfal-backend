@@ -1,6 +1,7 @@
 package de.remsfal.core.json.project;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -20,6 +21,12 @@ import de.remsfal.core.model.project.ApartmentModel;
 @JsonDeserialize(as = ImmutableApartmentJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ApartmentJson extends RentalUnitJson implements ApartmentModel {
+
+    @Derived
+    @Override
+    public Float getSpace() {
+        return ApartmentModel.super.getSpace();
+    }
 
     public static ApartmentJson valueOf(final ApartmentModel model) {
         return model == null ? null : ImmutableApartmentJson.builder()

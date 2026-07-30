@@ -1,6 +1,7 @@
 package de.remsfal.core.json.project;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -20,6 +21,12 @@ import de.remsfal.core.model.project.StorageModel;
 @JsonDeserialize(as = ImmutableStorageJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class StorageJson extends RentalUnitJson implements StorageModel {
+
+    @Derived
+    @Override
+    public Float getSpace() {
+        return StorageModel.super.getSpace();
+    }
 
     public static StorageJson valueOf(final StorageModel model) {
         return model == null ? null : ImmutableStorageJson.builder()

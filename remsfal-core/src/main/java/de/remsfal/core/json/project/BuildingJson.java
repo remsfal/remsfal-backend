@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -29,6 +30,12 @@ public abstract class BuildingJson extends RentalUnitJson implements BuildingMod
     @Nullable
     @Override
     public abstract AddressJson getAddress();
+
+    @Derived
+    @Override
+    public Float getSpace() {
+        return BuildingModel.super.getSpace();
+    }
 
     public static BuildingJson valueOf(final BuildingModel model) {
         return model == null ? null : ImmutableBuildingJson.builder()
