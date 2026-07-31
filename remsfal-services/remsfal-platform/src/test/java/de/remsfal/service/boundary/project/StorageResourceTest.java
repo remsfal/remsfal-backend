@@ -38,6 +38,7 @@ class StorageResourceTest extends AbstractResourceTest {
     private static final String STORAGE_JSON = "{ \"title\": \"" + TestData.STORAGE_TITLE + "\"," +
         " \"description\": \"" + TestData.STORAGE_DESCRIPTION + "\"," +
         " \"usableSpace\": " + 12.8f + "," +
+        " \"heated\": " + TestData.STORAGE_HEATED + "," +
         " \"location\": \"" + TestData.STORAGE_LOCATION + "\" }";
 
     @Override
@@ -141,6 +142,7 @@ class StorageResourceTest extends AbstractResourceTest {
             .body("title", Matchers.equalTo(TestData.STORAGE_TITLE))
             .body("description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION))
             .body("usableSpace", Matchers.equalTo(12.8f))
+            .body("heated", Matchers.equalTo(TestData.STORAGE_HEATED))
             .body("location", Matchers.equalTo(TestData.STORAGE_LOCATION));
     }
 
@@ -163,6 +165,7 @@ class StorageResourceTest extends AbstractResourceTest {
         final String updatedStorageJson = "{ \"title\": \"" + TestData.STORAGE_TITLE_2 + "\"," +
             " \"description\": \"" + TestData.STORAGE_DESCRIPTION_2 + "\"," +
             " \"usableSpace\": " + 15.5f + "," +
+            " \"heated\": false," +
             " \"location\": \"" + TestData.STORAGE_LOCATION_2 + "\" }";
 
         given()
@@ -187,6 +190,7 @@ class StorageResourceTest extends AbstractResourceTest {
             .body("title", Matchers.equalTo(TestData.STORAGE_TITLE_2))
             .body("description", Matchers.equalTo(TestData.STORAGE_DESCRIPTION_2))
             .body("usableSpace", Matchers.equalTo(15.5f))
+            .body("heated", Matchers.equalTo(false))
             .body("location", Matchers.equalTo(TestData.STORAGE_LOCATION_2));
     }
 

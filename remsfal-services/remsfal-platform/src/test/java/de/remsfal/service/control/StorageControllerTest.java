@@ -69,6 +69,7 @@ class StorageControllerTest extends AbstractServiceTest {
         assertEquals(storage.getLocation(), storageResult.getLocation());
         assertEquals(storage.getDescription(), storageResult.getDescription());
         assertEquals(storage.getUsableSpace(), storageResult.getUsableSpace());
+        assertEquals(storage.isHeated(), storageResult.isHeated());
 
         final StorageEntity entity = entityManager
                 .createQuery("SELECT s FROM StorageEntity s WHERE s.title = :title", StorageEntity.class)
@@ -97,6 +98,7 @@ class StorageControllerTest extends AbstractServiceTest {
         assertEquals(storageResult.getLocation(), result.getLocation(), "Storage location should match");
         assertEquals(storageResult.getDescription(), result.getDescription(), "Storage description should match");
         assertEquals(storageResult.getUsableSpace(), result.getUsableSpace(), "Storage usable space should match");
+        assertEquals(storageResult.isHeated(), result.isHeated(), "Storage heated flag should match");
     }
 
     @Test
@@ -117,6 +119,7 @@ class StorageControllerTest extends AbstractServiceTest {
                 .location("Updated Location")
                 .description("Updated Storage Description")
                 .usableSpace(350.0f)
+                .heated(false)
                 .build();
 
         StorageJson updatedStorageJson = StorageJson.valueOf(StorageModel);
@@ -129,6 +132,7 @@ class StorageControllerTest extends AbstractServiceTest {
         assertEquals(updatedStorageJson.getLocation(), updatedStorage.getLocation(), "Storage location should be updated");
         assertEquals(updatedStorageJson.getDescription(), updatedStorage.getDescription(), "Storage description should be updated");
         assertEquals(updatedStorageJson.getUsableSpace(), updatedStorage.getUsableSpace(), "Storage usable space should be updated");
+        assertEquals(updatedStorageJson.isHeated(), updatedStorage.isHeated(), "Storage heated flag should be updated");
     }
 
     @Test

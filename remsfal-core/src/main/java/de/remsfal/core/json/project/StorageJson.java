@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.model.project.StorageModel;
+import jakarta.annotation.Nullable;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -28,6 +29,10 @@ public abstract class StorageJson extends RentalUnitJson implements StorageModel
         return StorageModel.super.getSpace();
     }
 
+    @Nullable
+    @Override
+    public abstract Boolean isHeated();
+
     public static StorageJson valueOf(final StorageModel model) {
         return model == null ? null : ImmutableStorageJson.builder()
             .id(model.getId())
@@ -35,6 +40,7 @@ public abstract class StorageJson extends RentalUnitJson implements StorageModel
             .location(model.getLocation())
             .description(model.getDescription())
             .usableSpace(model.getUsableSpace())
+            .heated(model.isHeated())
             .build();
     }
 
