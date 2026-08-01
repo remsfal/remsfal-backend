@@ -632,6 +632,7 @@ public class TestData {
     public static final Float BUILDING_GROSS_FLOOR_AREA_2 = 430.5f;
     public static final Float BUILDING_NET_FLOOR_AREA_2 = 400.0f;
     public static final Float BUILDING_CONSTRUCTION_FLOOR_AREA_2 = 70.5f;
+    public static final Float BUILDING_COMMERCIAL_HEATING_SPACE_2 = 45.25f;
     public static final Float BUILDING_HEATING_SPACE_2 = 420.75f;
 
     public static final ImmutableBuildingJson.Builder buildingBuilder2() {
@@ -642,6 +643,7 @@ public class TestData {
             .grossFloorArea(BUILDING_GROSS_FLOOR_AREA_2)
             .netFloorArea(BUILDING_NET_FLOOR_AREA_2)
             .constructionFloorArea(BUILDING_CONSTRUCTION_FLOOR_AREA_2)
+            .commercialHeatingSpace(BUILDING_COMMERCIAL_HEATING_SPACE_2)
             .heatingSpace(BUILDING_HEATING_SPACE_2);
     }
 

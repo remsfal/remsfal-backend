@@ -81,6 +81,7 @@ class BuildingControllerTest extends AbstractServiceTest {
         assertEquals(building.getGrossFloorArea(), result.getGrossFloorArea());
         assertEquals(building.getNetFloorArea(), result.getNetFloorArea());
         assertEquals(building.getConstructionFloorArea(), result.getConstructionFloorArea());
+        assertEquals(building.getCommercialHeatingSpace(), result.getCommercialHeatingSpace());
         assertEquals(building.getLivingSpace(), result.getLivingSpace());
         assertEquals(building.getUsableSpace(), result.getUsableSpace());
         
@@ -110,6 +111,7 @@ class BuildingControllerTest extends AbstractServiceTest {
         assertEquals(building.getGrossFloorArea(), result.getGrossFloorArea());
         assertEquals(building.getNetFloorArea(), result.getNetFloorArea());
         assertEquals(building.getConstructionFloorArea(), result.getConstructionFloorArea());
+        assertEquals(building.getCommercialHeatingSpace(), result.getCommercialHeatingSpace());
         assertEquals(building.getLivingSpace(), result.getLivingSpace());
         assertEquals(building.getUsableSpace(), result.getUsableSpace());
     }

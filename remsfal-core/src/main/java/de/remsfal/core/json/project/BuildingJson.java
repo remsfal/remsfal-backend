@@ -47,6 +47,7 @@ public abstract class BuildingJson extends RentalUnitJson implements BuildingMod
             .grossFloorArea(model.getGrossFloorArea())
             .netFloorArea(model.getNetFloorArea())
             .constructionFloorArea(model.getConstructionFloorArea())
+            .commercialHeatingSpace(model.getCommercialHeatingSpace())
             .livingSpace(model.getLivingSpace())
             .usableSpace(model.getUsableSpace())
             .heatingSpace(model.getHeatingSpace())

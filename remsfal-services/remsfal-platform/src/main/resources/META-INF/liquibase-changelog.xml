@@ -29,4 +29,5 @@
     <include file="META-INF/liquibase-changelog-0_1_9.xml"/>
     <include file="META-INF/liquibase-changelog-0_1_10.xml"/>
     <include file="META-INF/liquibase-changelog-0_1_11.xml"/>
+    <include file="META-INF/liquibase-changelog-0_1_12.xml"/>
 </databaseChangeLog>
