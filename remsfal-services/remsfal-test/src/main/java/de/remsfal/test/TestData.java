@@ -632,6 +632,7 @@ public class TestData {
     public static final Float BUILDING_GROSS_FLOOR_AREA_2 = 430.5f;
     public static final Float BUILDING_NET_FLOOR_AREA_2 = 400.0f;
     public static final Float BUILDING_CONSTRUCTION_FLOOR_AREA_2 = 70.5f;
+    public static final Float BUILDING_COMMERCIAL_HEATING_SPACE_2 = 45.25f;
     public static final Float BUILDING_HEATING_SPACE_2 = 420.75f;
 
     public static final ImmutableBuildingJson.Builder buildingBuilder2() {
@@ -642,6 +643,7 @@ public class TestData {
             .grossFloorArea(BUILDING_GROSS_FLOOR_AREA_2)
             .netFloorArea(BUILDING_NET_FLOOR_AREA_2)
             .constructionFloorArea(BUILDING_CONSTRUCTION_FLOOR_AREA_2)
+            .commercialHeatingSpace(BUILDING_COMMERCIAL_HEATING_SPACE_2)
             .heatingSpace(BUILDING_HEATING_SPACE_2);
     }
 
@@ -757,6 +759,7 @@ public class TestData {
     public static final String STORAGE_DESCRIPTION_1 = "Tiefgarage 1 links";
     public static final Float STORAGE_USABLE_SPACE_1 = 12.8f;
     public static final Float STORAGE_RENT_1 = 80f;
+    public static final Boolean STORAGE_HEATED_1 = true;
 
     public static final ImmutableStorageJson.Builder storageBuilder1() {
         return ImmutableStorageJson
@@ -764,7 +767,8 @@ public class TestData {
         .title(STORAGE_TITLE_1)
         .location(STORAGE_LOCATION_1)
         .description(STORAGE_DESCRIPTION_1)
-        .usableSpace(STORAGE_USABLE_SPACE_1);
+        .usableSpace(STORAGE_USABLE_SPACE_1)
+        .heated(STORAGE_HEATED_1);
     }
 
     // Default test storage
@@ -774,6 +778,7 @@ public class TestData {
     public static final String STORAGE_DESCRIPTION = TestData.STORAGE_DESCRIPTION_1;
     public static final Float STORAGE_USABLE_SPACE = TestData.STORAGE_USABLE_SPACE_1;
     public static final Float STORAGE_RENT = TestData.STORAGE_RENT_1;
+    public static final Boolean STORAGE_HEATED = TestData.STORAGE_HEATED_1;
 
     public static final ImmutableStorageJson.Builder storageBuilder() {
         return storageBuilder1();
@@ -786,6 +791,7 @@ public class TestData {
     public static final String STORAGE_DESCRIPTION_2 = "Tiefgarage 2 rechts";
     public static final Float STORAGE_USABLE_SPACE_2 = 12.8f;
     public static final Float STORAGE_RENT_2 = 80f;
+    public static final Boolean STORAGE_HEATED_2 = false;
 
     public static final ImmutableStorageJson.Builder storageBuilder2() {
         return ImmutableStorageJson
@@ -793,7 +799,8 @@ public class TestData {
         .title(STORAGE_TITLE_2)
         .location(STORAGE_LOCATION_2)
         .description(STORAGE_DESCRIPTION_2)
-        .usableSpace(STORAGE_USABLE_SPACE_2);
+        .usableSpace(STORAGE_USABLE_SPACE_2)
+        .heated(STORAGE_HEATED_2);
     }
 
     public static final ImmutableUserJson.Builder userBuilder() {

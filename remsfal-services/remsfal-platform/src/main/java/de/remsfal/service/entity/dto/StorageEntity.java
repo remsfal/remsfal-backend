@@ -26,6 +26,9 @@ public class StorageEntity extends RentalUnitEntity implements StorageModel {
     @Column(name = "heating_space", columnDefinition = "numeric(10,2)")
     private Float heatingSpace;
 
+    @Column(name = "is_heated", nullable = false)
+    private Boolean isHeated = false;
+
 
     public UUID getBuildingId() {
         return buildingId;
@@ -54,6 +57,15 @@ public class StorageEntity extends RentalUnitEntity implements StorageModel {
     }
 
     @Override
+    public Boolean isHeated() {
+        return isHeated;
+    }
+
+    public void setHeated(final Boolean heated) {
+        this.isHeated = heated;
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -62,7 +74,8 @@ public class StorageEntity extends RentalUnitEntity implements StorageModel {
             return super.equals(e)
                 && Objects.equals(buildingId, e.buildingId)
                 && Objects.equals(usableSpace, e.usableSpace)
-                && Objects.equals(heatingSpace, e.heatingSpace);
+                && Objects.equals(heatingSpace, e.heatingSpace)
+                && Objects.equals(isHeated, e.isHeated);
         }
         return false;
     }

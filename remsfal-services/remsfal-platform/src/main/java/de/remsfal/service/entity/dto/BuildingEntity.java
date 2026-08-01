@@ -35,6 +35,9 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     @Column(name = "construction_floor_area", columnDefinition = "numeric(10,2)")
     private Float constructionFloorArea;
 
+    @Column(name = "commercial_heating_space", columnDefinition = "numeric(10,2)")
+    private Float commercialHeatingSpace;
+
     @Column(name = "living_space", columnDefinition = "numeric(10,2)")
     private Float livingSpace;
 
@@ -89,6 +92,15 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
     }
 
     @Override
+    public Float getCommercialHeatingSpace() {
+        return commercialHeatingSpace;
+    }
+
+    public void setCommercialHeatingSpace(Float commercialHeatingSpace) {
+        this.commercialHeatingSpace = commercialHeatingSpace;
+    }
+
+    @Override
     public Float getLivingSpace() {
         return livingSpace;
     }
@@ -127,6 +139,7 @@ public class BuildingEntity extends RentalUnitEntity implements BuildingModel {
                 && Objects.equals(grossFloorArea, e.grossFloorArea)
                 && Objects.equals(netFloorArea, e.netFloorArea)
                 && Objects.equals(constructionFloorArea, e.constructionFloorArea)
+                && Objects.equals(commercialHeatingSpace, e.commercialHeatingSpace)
                 && Objects.equals(livingSpace, e.livingSpace)
                 && Objects.equals(usableSpace, e.usableSpace)
                 && Objects.equals(heatingSpace, e.heatingSpace);

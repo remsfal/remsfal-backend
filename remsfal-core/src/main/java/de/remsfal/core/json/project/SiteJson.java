@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -29,6 +30,12 @@ public abstract class SiteJson extends RentalUnitJson implements SiteModel {
     @Nullable
     @Override
     public abstract AddressJson getAddress();
+
+    @Derived
+    @Override
+    public Float getSpace() {
+        return SiteModel.super.getSpace();
+    }
 
     public static SiteJson valueOf(final SiteModel model) {
         return ImmutableSiteJson.builder()

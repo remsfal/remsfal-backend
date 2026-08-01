@@ -35,6 +35,10 @@ public interface BuildingModel extends RentalUnitModel {
 
     @PositiveOrZero
     @Nullable
+    Float getCommercialHeatingSpace(); // gewerblich genutzte Heizfläche
+
+    @PositiveOrZero
+    @Nullable
     Float getLivingSpace(); // Wohnfläche nach Wohnflächenverordnung - WoFlV
 
     @PositiveOrZero

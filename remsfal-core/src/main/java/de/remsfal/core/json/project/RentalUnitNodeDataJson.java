@@ -18,30 +18,30 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public interface RentalUnitNodeDataJson extends RentalUnitModel {
 
     @Override
-    @Schema(description = "Type of the node (e.g., 'PROPERTY', 'BUILDING')", required = true, examples = "PROPERTY")
+    @Schema(description = "Type of the node (e.g., 'PROPERTY', 'BUILDING')", readOnly = true, examples = "PROPERTY")
     UnitType getType();
 
     @Override
-    @Schema(description = "Title of the node", examples = "Main Building")
+    @Schema(description = "Title of the node", readOnly = true, examples = "Main Building")
     String getTitle();
 
     @Override
     @Nullable
-    @Schema(description = "Location of the rental unit", examples = "first floor left")
+    @Schema(description = "Location of the rental unit", readOnly = true, examples = "first floor left")
     String getLocation();
 
     @Override
     @Nullable
-    @Schema(description = "Description of the rental unit", examples = "A multi-story office building")
+    @Schema(description = "Description of the rental unit", readOnly = true, examples = "A multi-story office building")
     String getDescription();
 
     @Nullable
-    @Schema(description = "Name of the tenant associated with this node", examples = "Doe, John")
+    @Schema(description = "Name of the tenant associated with this node", readOnly = true, examples = "Doe, John")
     String getTenant();
 
     @Override
     @Nullable
-    @Schema(description = "Usable space in square meters", examples = "350.5")
+    @Schema(description = "Usable space in square meters", readOnly = true, examples = "350.5")
     Float getSpace();
 
     public static RentalUnitNodeDataJson valueOf(final RentalUnitModel model) {

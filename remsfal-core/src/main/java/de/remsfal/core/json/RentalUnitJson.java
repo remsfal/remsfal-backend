@@ -34,4 +34,9 @@ public abstract class RentalUnitJson implements RentalUnitModel {
     @Override
     public abstract String getTitle();
 
+    @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract Float getSpace();
+
 }

@@ -66,6 +66,9 @@ public class StorageController {
         if (model.getHeatingSpace() != null) {
             entity.setHeatingSpace(model.getHeatingSpace());
         }
+        if (model.isHeated() != null) {
+            entity.setHeated(model.isHeated());
+        }
         return entity;
     }
 

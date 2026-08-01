@@ -80,6 +80,9 @@ public class BuildingController {
         if (model.getConstructionFloorArea() != null) {
             entity.setConstructionFloorArea(model.getConstructionFloorArea());
         }
+        if (model.getCommercialHeatingSpace() != null) {
+            entity.setCommercialHeatingSpace(model.getCommercialHeatingSpace());
+        }
         if (model.getLivingSpace() != null) {
             entity.setLivingSpace(model.getLivingSpace());
         }

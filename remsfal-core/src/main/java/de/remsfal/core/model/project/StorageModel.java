@@ -25,6 +25,9 @@ public interface StorageModel extends RentalUnitModel {
     @Nullable
     Float getHeatingSpace();
 
+    @Nullable
+    Boolean isHeated();
+
     @Value.Derived
     @Nullable
     @Override

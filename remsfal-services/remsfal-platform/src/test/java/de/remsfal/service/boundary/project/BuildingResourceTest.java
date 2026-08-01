@@ -110,6 +110,7 @@ class BuildingResourceTest extends AbstractResourceTest {
             .body("grossFloorArea", Matchers.equalTo(430.5f))
             .body("netFloorArea", Matchers.equalTo(400.0f))
             .body("constructionFloorArea", Matchers.equalTo(70.5f))
+            .body("commercialHeatingSpace", Matchers.equalTo(45.25f))
             .body("livingSpace", Matchers.nullValue())
             .body("usableSpace", Matchers.nullValue())
             .body("heatingSpace", Matchers.equalTo(420.75f))

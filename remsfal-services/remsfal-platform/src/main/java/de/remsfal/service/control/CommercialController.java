@@ -66,14 +66,22 @@ public class CommercialController {
         }
         if (model.getNetFloorArea() != null) {
             entity.setNetFloorArea(model.getNetFloorArea());
+            if (model.getNetFloorArea() > 0 &&
+                model.getUsableFloorArea() != null && model.getUsableFloorArea() <= 0 &&
+                model.getTechnicalServicesArea() != null && model.getTechnicalServicesArea() <= 0 &&
+                model.getTrafficArea() != null && model.getTrafficArea() <= 0) {
+                entity.setUsableFloorArea(null);
+                entity.setTechnicalServicesArea(null);
+                entity.setTrafficArea(null);
+            }
         }
-        if (model.getUsableFloorArea() != null) {
+        if (model.getUsableFloorArea() != null && model.getUsableFloorArea() > 0) {
             entity.setUsableFloorArea(model.getUsableFloorArea());
         }
-        if (model.getTechnicalServicesArea() != null) {
+        if (model.getTechnicalServicesArea() != null && model.getTechnicalServicesArea() > 0) {
             entity.setTechnicalServicesArea(model.getTechnicalServicesArea());
         }
-        if (model.getTrafficArea() != null) {
+        if (model.getTrafficArea() != null && model.getTrafficArea() > 0) {
             entity.setTrafficArea(model.getTrafficArea());
         }
         if (model.getHeatingSpace() != null) {

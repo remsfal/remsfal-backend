@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -30,6 +31,12 @@ public abstract class BuildingJson extends RentalUnitJson implements BuildingMod
     @Override
     public abstract AddressJson getAddress();
 
+    @Derived
+    @Override
+    public Float getSpace() {
+        return BuildingModel.super.getSpace();
+    }
+
     public static BuildingJson valueOf(final BuildingModel model) {
         return model == null ? null : ImmutableBuildingJson.builder()
             .id(model.getId())
@@ -40,6 +47,7 @@ public abstract class BuildingJson extends RentalUnitJson implements BuildingMod
             .grossFloorArea(model.getGrossFloorArea())
             .netFloorArea(model.getNetFloorArea())
             .constructionFloorArea(model.getConstructionFloorArea())
+            .commercialHeatingSpace(model.getCommercialHeatingSpace())
             .livingSpace(model.getLivingSpace())
             .usableSpace(model.getUsableSpace())
             .heatingSpace(model.getHeatingSpace())
