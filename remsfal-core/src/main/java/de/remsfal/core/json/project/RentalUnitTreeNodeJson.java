@@ -21,7 +21,7 @@ public abstract class RentalUnitTreeNodeJson {
     @Schema(description = "Key of the node", readOnly = true, required = true)
     public abstract UUID getKey();
 
-    @Schema(description = "Data encapsulating node attributes", readOnly = true)
+    @Schema(description = "Data encapsulating node attributes", readOnly = true, required = true)
     public abstract RentalUnitNodeDataJson getData();
 
     @Schema(description = "Children nodes", readOnly = true)

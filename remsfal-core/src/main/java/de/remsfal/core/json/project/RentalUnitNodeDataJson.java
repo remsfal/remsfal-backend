@@ -18,11 +18,13 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public interface RentalUnitNodeDataJson extends RentalUnitModel {
 
     @Override
-    @Schema(description = "Type of the node (e.g., 'PROPERTY', 'BUILDING')", readOnly = true, examples = "PROPERTY")
+    @Schema(description = "Type of the node (e.g., 'PROPERTY', 'BUILDING')",
+            required = true, readOnly = true, examples = "PROPERTY")
     UnitType getType();
 
     @Override
-    @Schema(description = "Title of the node", readOnly = true, examples = "Main Building")
+    @Schema(description = "Title of the node",
+            required = true, readOnly = true, examples = "Main Building")
     String getTitle();
 
     @Override
