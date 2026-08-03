@@ -40,6 +40,7 @@ public abstract class StorageJson extends RentalUnitJson implements StorageModel
             .location(model.getLocation())
             .description(model.getDescription())
             .usableSpace(model.getUsableSpace())
+            .heatingSpace(model.getHeatingSpace())
             .heated(model.isHeated())
             .build();
     }
