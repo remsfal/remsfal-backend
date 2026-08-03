@@ -37,10 +37,6 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
     @Schema(description = "Description of the rental unit", readOnly = true, examples = "A multi-story office building")
     String getDescription();
 
-    @Nullable
-    @Schema(description = "Name of the tenant associated with this node", readOnly = true, examples = "Doe, John")
-    String getTenant();
-
     @Override
     @Nullable
     @Schema(description = "Usable space in square meters", readOnly = true, examples = "350.5")
@@ -53,7 +49,6 @@ public interface RentalUnitNodeDataJson extends RentalUnitModel {
             .title(model.getTitle())
             .location(model.getLocation())
             .description(model.getDescription())
-            .tenant("") // TODO: does that make sense?
             .space(model.getSpace())
             .build();
     }
