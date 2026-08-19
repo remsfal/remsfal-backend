@@ -20,4 +20,9 @@ public class BuildingRepository extends AbstractRepository<BuildingEntity> {
             Map.of(PARAM_PROJECT_ID, projectId, PARAM_PROPERTY_ID, propertyId));
     }
 
+    public boolean existsByPropertyId(final UUID projectId, final UUID propertyId) {
+        return count("projectId = :projectId and propertyId = :propertyId",
+            Map.of(PARAM_PROJECT_ID, projectId, PARAM_PROPERTY_ID, propertyId)) > 0;
+    }
+
 }

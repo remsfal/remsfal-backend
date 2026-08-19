@@ -43,6 +43,37 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
         setupTestBuildings();
     }
 
+    /**
+     * Inserts a property with no sites or buildings beneath it, i.e. a leaf rental unit.
+     * {@link TestData#PROPERTY_ID_1} and {@link TestData#PROPERTY_ID_2} both have children via
+     * {@code setupTestSites}/{@code setupTestBuildings} and are therefore not leaves.
+     */
+    private UUID insertLeafProperty() {
+        final UUID propertyId = UUID.randomUUID();
+        insertProperty(propertyId, TestData.PROJECT_ID_1, TestData.PROPERTY_TITLE_1,
+            TestData.PROPERTY_LOCATION_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_LAND_REGISTRY_1,
+            TestData.PROPERTY_CADASTRAL_DESTRICT_1, TestData.PROPERTY_SHEET_NUMBER_1,
+            TestData.PROPERTY_PLOT_NUMBER_1, TestData.PROPERTY_CADASTRAL_SECTION_1,
+            TestData.PROPERTY_PLOT_1, TestData.PROPERTY_ECONOMY_TYPE_1, TestData.PROPERTY_PLOT_AREA_1);
+        return propertyId;
+    }
+
+    /**
+     * Inserts a building with no apartments, commercials or storages beneath it, i.e. a leaf
+     * rental unit. {@link TestData#BUILDING_ID_1} has such children via {@code setupTestBuildings}
+     * and is therefore not a leaf.
+     */
+    private UUID insertLeafBuilding() {
+        final UUID buildingId = UUID.randomUUID();
+        final UUID addressId = UUID.randomUUID();
+        insertAddress(addressId, TestData.ADDRESS_STREET_6, TestData.ADDRESS_CITY_6,
+            TestData.ADDRESS_PROVINCE_6, TestData.ADDRESS_ZIP_6, TestData.ADDRESS_COUNTRY_6);
+        insertBuilding(buildingId, TestData.PROJECT_ID_1, TestData.PROPERTY_ID_1,
+            TestData.BUILDING_TITLE_1, TestData.BUILDING_DESCRIPTION_1,
+            null, null, null, null, null, null, addressId);
+        return buildingId;
+    }
+
     @Test
     void createRentalAgreement_FAILED_noProject() {
         final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
@@ -339,8 +370,9 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(1000.0f)
           .build();
 
+      final UUID leafPropertyId = insertLeafProperty();
       final RentJson propertyRent = ImmutableRentJson.builder()
-          .rentalUnitId(TestData.PROPERTY_ID_1)
+          .rentalUnitId(leafPropertyId)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(5000.0f)
@@ -359,13 +391,65 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getApartmentRents().size());
       assertEquals(1, result.getPropertyRents().size());
       assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getRentalUnitId());
-      assertEquals(TestData.PROPERTY_ID_1, result.getPropertyRents().get(0).getRentalUnitId());
+      assertEquals(leafPropertyId, result.getPropertyRents().get(0).getRentalUnitId());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
       assertRentalAgreement(result, entity);
       assertEquals(1, entity.getApartmentRents().size());
       assertEquals(1, entity.getPropertyRents().size());
+    }
+
+    @Test
+    void createRentalAgreement_FAILED_propertyRentNotLeaf() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      // PROPERTY_ID_1 has sites and buildings beneath it, so it is not a leaf rental unit
+      final RentJson propertyRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.PROPERTY_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(5000.0f)
+          .build();
+
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addPropertyRents(propertyRent)
+          .build();
+
+      assertThrows(jakarta.ws.rs.BadRequestException.class,
+          () -> controller.createRentalAgreement(projectId, agreement));
+    }
+
+    @Test
+    void createRentalAgreement_FAILED_buildingRentNotLeaf() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      // BUILDING_ID_1 has apartments, commercials and storages beneath it, so it is not a leaf
+      final RentJson buildingRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.BUILDING_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(3500.0f)
+          .build();
+
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addBuildingRents(buildingRent)
+          .build();
+
+      assertThrows(jakarta.ws.rs.BadRequestException.class,
+          () -> controller.createRentalAgreement(projectId, agreement));
     }
 
     @Test
@@ -672,8 +756,9 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .lastName(TestData.USER_LAST_NAME_1)
           .build();
 
+      final UUID leafBuildingId = insertLeafBuilding();
       final RentJson buildingRent = ImmutableRentJson.builder()
-          .rentalUnitId(TestData.BUILDING_ID_1)
+          .rentalUnitId(leafBuildingId)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
@@ -693,7 +778,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getTenants().size());
       assertNotNull(result.getBuildingRents());
       assertEquals(1, result.getBuildingRents().size());
-      assertEquals(TestData.BUILDING_ID_1, result.getBuildingRents().get(0).getRentalUnitId());
+      assertEquals(leafBuildingId, result.getBuildingRents().get(0).getRentalUnitId());
       assertEquals(RentModel.BillingCycle.MONTHLY, result.getBuildingRents().get(0).getBillingCycle());
       assertEquals(3500.0f, result.getBuildingRents().get(0).getBasicRent());
 
@@ -837,15 +922,17 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(1000.0f)
           .build();
 
+      final UUID leafPropertyId = insertLeafProperty();
       final RentJson propertyRent = ImmutableRentJson.builder()
-          .rentalUnitId(TestData.PROPERTY_ID_1)
+          .rentalUnitId(leafPropertyId)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(5000.0f)
           .build();
 
+      final UUID leafBuildingId = insertLeafBuilding();
       final RentJson buildingRent = ImmutableRentJson.builder()
-          .rentalUnitId(TestData.BUILDING_ID_1)
+          .rentalUnitId(leafBuildingId)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
@@ -894,8 +981,8 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getStorageRents().size());
 
       assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getRentalUnitId());
-      assertEquals(TestData.PROPERTY_ID_1, result.getPropertyRents().get(0).getRentalUnitId());
-      assertEquals(TestData.BUILDING_ID_1, result.getBuildingRents().get(0).getRentalUnitId());
+      assertEquals(leafPropertyId, result.getPropertyRents().get(0).getRentalUnitId());
+      assertEquals(leafBuildingId, result.getBuildingRents().get(0).getRentalUnitId());
       assertEquals(TestData.COMMERCIAL_ID_1, result.getCommercialRents().get(0).getRentalUnitId());
       assertEquals(TestData.SITE_ID_1, result.getSiteRents().get(0).getRentalUnitId());
       assertEquals(TestData.STORAGE_ID_1, result.getStorageRents().get(0).getRentalUnitId());
@@ -926,23 +1013,76 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
+      final UUID leafBuildingId = insertLeafBuilding();
       final RentJson buildingRent = ImmutableRentJson.builder()
-          .rentalUnitId(TestData.BUILDING_ID_1)
+          .rentalUnitId(leafBuildingId)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
           .build();
 
       RentalAgreementEntity updated = controller.addRent(
-          projectId, created.getId(), UnitType.BUILDING, TestData.BUILDING_ID_1, buildingRent);
+          projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
 
       assertEquals(1, updated.getBuildingRents().size());
-      assertEquals(TestData.BUILDING_ID_1, updated.getBuildingRents().get(0).getRentalUnitId());
+      assertEquals(leafBuildingId, updated.getBuildingRents().get(0).getRentalUnitId());
       assertEquals(3500.0f, updated.getBuildingRents().get(0).getBasicRent());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
       assertEquals(1, entity.getBuildingRents().size());
+    }
+
+    @Test
+    void addRent_FAILED_propertyRentNotLeaf() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      // PROPERTY_ID_1 has sites and buildings beneath it, so it is not a leaf rental unit
+      final RentJson propertyRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.PROPERTY_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(5000.0f)
+          .build();
+
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+          projectId, created.getId(), UnitType.PROPERTY, TestData.PROPERTY_ID_1, propertyRent));
+    }
+
+    @Test
+    void addRent_FAILED_buildingRentNotLeaf() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      // BUILDING_ID_1 has apartments, commercials and storages beneath it, so it is not a leaf
+      final RentJson buildingRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.BUILDING_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(3500.0f)
+          .build();
+
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+          projectId, created.getId(), UnitType.BUILDING, TestData.BUILDING_ID_1, buildingRent));
     }
 
     @Test

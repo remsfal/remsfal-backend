@@ -64,6 +64,9 @@ public class RentalAgreementController {
     @Inject
     TenantRepository tenantRepository;
 
+    @Inject
+    PropertyController propertyController;
+
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
         return rentalAgreementRepository.findRentalAgreementsByTenant(tenant.getId());
@@ -129,6 +132,8 @@ public class RentalAgreementController {
             throw new NotFoundException("Project not exist");
         }
 
+        validateLeafRentalUnits(projectId, agreement);
+
         RentalAgreementEntity entity = new RentalAgreementEntity();
         entity.generateId();
         entity.setProjectId(projectId);
@@ -146,6 +151,32 @@ public class RentalAgreementController {
 
         rentalAgreementRepository.persistAndFlush(entity);
         return entity;
+    }
+
+    /**
+     * Validates that every rent in the agreement references a leaf rental unit (i.e. a unit
+     * without sub-units) — rental agreements may only be concluded for leaf units.
+     */
+    private void validateLeafRentalUnits(final UUID projectId, final RentalAgreementModel agreement) {
+        validateLeafRentalUnits(projectId, UnitType.PROPERTY, agreement.getPropertyRents());
+        validateLeafRentalUnits(projectId, UnitType.SITE, agreement.getSiteRents());
+        validateLeafRentalUnits(projectId, UnitType.BUILDING, agreement.getBuildingRents());
+        validateLeafRentalUnits(projectId, UnitType.APARTMENT, agreement.getApartmentRents());
+        validateLeafRentalUnits(projectId, UnitType.STORAGE, agreement.getStorageRents());
+        validateLeafRentalUnits(projectId, UnitType.COMMERCIAL, agreement.getCommercialRents());
+    }
+
+    private void validateLeafRentalUnits(final UUID projectId, final UnitType type,
+            final List<? extends RentModel> rents) {
+        if (rents == null) {
+            return;
+        }
+        for (RentModel rent : rents) {
+            if (!propertyController.isLeafRentalUnit(projectId, type, rent.getRentalUnitId())) {
+                throw new BadRequestException("Rents may only be created for leaf rental units; "
+                    + type + " " + rent.getRentalUnitId() + " has child units");
+            }
+        }
     }
 
     @Transactional
@@ -228,6 +259,10 @@ public class RentalAgreementController {
             .findRentalAgreementByProject(projectId, agreementId)
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
 
+        if (!propertyController.isLeafRentalUnit(projectId, rentalUnitType, rentalUnitId)) {
+            throw new BadRequestException("Rents may only be created for leaf rental units; "
+                + rentalUnitType + " " + rentalUnitId + " has child units");
+        }
         if (rentInput.getFirstPaymentDate() == null) {
             throw new BadRequestException("First payment date is required");
         }
