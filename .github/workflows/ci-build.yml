@@ -69,6 +69,8 @@ jobs:
   check-branches:
     name: "Check Pull Request Conditions"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: github.event_name == 'pull_request' && github.actor != 'remsfal-bot[bot]'
     steps:
       - name: Checkout
