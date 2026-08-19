@@ -4,6 +4,7 @@ import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.RentalAgreementListJson;
 import de.remsfal.core.json.project.RentJson;
 import de.remsfal.core.json.project.TenantJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
@@ -18,6 +19,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -43,7 +45,11 @@ public interface RentalAgreementEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     RentalAgreementListJson getRentalAgreements(
         @Parameter(description = "ID of the project", required = true)
-        @PathParam("projectId") @NotNull UUID projectId);
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "Type of the rental unit to filter by")
+        @QueryParam("rentalUnitType") UnitType rentalUnitType,
+        @Parameter(description = "ID of the rental unit to filter by; only evaluated when rentalUnitType is set")
+        @QueryParam("rentalUnitId") UUID rentalUnitId);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

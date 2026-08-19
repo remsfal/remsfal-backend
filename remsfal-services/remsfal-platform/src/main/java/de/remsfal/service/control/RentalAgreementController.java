@@ -76,9 +76,11 @@ public class RentalAgreementController {
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
     }
 
-    public List<RentalAgreementEntity> getRentalAgreementsByProject(final UUID projectId) {
-        logger.infov("Retrieving all rental agreements (projectId = {0})", projectId);
-        return rentalAgreementRepository.findRentalAgreementByProject(projectId);
+    public List<RentalAgreementEntity> getRentalAgreementsByProject(final UUID projectId,
+            final UnitType rentalUnitType, final UUID rentalUnitId) {
+        logger.infov("Retrieving all rental agreements (projectId = {0}, rentalUnitType = {1}, rentalUnitId = {2})",
+            projectId, rentalUnitType, rentalUnitId);
+        return rentalAgreementRepository.findRentalAgreementByProject(projectId, rentalUnitType, rentalUnitId);
     }
     
     @Transactional

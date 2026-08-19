@@ -31,10 +31,11 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     PropertyController propertyController;
 
     @Override
-    public RentalAgreementListJson getRentalAgreements(final UUID projectId) {
+    public RentalAgreementListJson getRentalAgreements(final UUID projectId, final UnitType rentalUnitType,
+            final UUID rentalUnitId) {
         checkProjectReadPermissions(projectId);
         final List<? extends RentalAgreementModel> agreements =
-            rentalAgreementController.getRentalAgreementsByProject(projectId);
+            rentalAgreementController.getRentalAgreementsByProject(projectId, rentalUnitType, rentalUnitId);
         final Map<UUID, RentalUnitJson> rentalUnitsMap =
             propertyController.getRentalUnitsMapForProject(projectId);
         return RentalAgreementListJson.valueOf(agreements, rentalUnitsMap);

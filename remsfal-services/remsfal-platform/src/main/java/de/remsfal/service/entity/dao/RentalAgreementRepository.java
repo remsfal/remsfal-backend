@@ -2,12 +2,14 @@ package de.remsfal.service.entity.dao;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import java.util.Map;
 
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 
 /**
@@ -15,6 +17,8 @@ import de.remsfal.service.entity.dto.RentalAgreementEntity;
  */
 @ApplicationScoped
 public class RentalAgreementRepository extends AbstractRepository<RentalAgreementEntity> {
+
+    private static final String PARAM_RENTAL_UNIT_ID = "rentalUnitId";
 
     public List<RentalAgreementEntity> findRentalAgreementsByTenant(final UUID tenantId) {
         return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant WHERE tenant.user.id = :userId",
@@ -34,6 +38,36 @@ public class RentalAgreementRepository extends AbstractRepository<RentalAgreemen
 
     public List<RentalAgreementEntity> findRentalAgreementByProject(final UUID projectId) {
         return find("projectId", projectId).list();
+    }
+
+    public List<RentalAgreementEntity> findRentalAgreementByProject(final UUID projectId,
+            final UnitType rentalUnitType, final UUID rentalUnitId) {
+        if (rentalUnitType == null) {
+            return findRentalAgreementByProject(projectId);
+        }
+        final Map<String, Object> params = new HashMap<>();
+        params.put(PARAM_PROJECT_ID, projectId);
+        params.put(PARAM_RENTAL_UNIT_ID, rentalUnitId);
+        return switch (rentalUnitType) {
+            case PROPERTY -> find("SELECT DISTINCT a FROM RentalAgreementEntity a JOIN a.propertyRent r "
+                + "WHERE a.projectId = :projectId AND (:rentalUnitId IS NULL OR r.propertyId = :rentalUnitId)",
+                params).list();
+            case SITE -> find("SELECT DISTINCT a FROM RentalAgreementEntity a JOIN a.siteRent r "
+                + "WHERE a.projectId = :projectId AND (:rentalUnitId IS NULL OR r.siteId = :rentalUnitId)",
+                params).list();
+            case BUILDING -> find("SELECT DISTINCT a FROM RentalAgreementEntity a JOIN a.buildingRent r "
+                + "WHERE a.projectId = :projectId AND (:rentalUnitId IS NULL OR r.buildingId = :rentalUnitId)",
+                params).list();
+            case APARTMENT -> find("SELECT DISTINCT a FROM RentalAgreementEntity a JOIN a.apartmentRent r "
+                + "WHERE a.projectId = :projectId AND (:rentalUnitId IS NULL OR r.apartmentId = :rentalUnitId)",
+                params).list();
+            case STORAGE -> find("SELECT DISTINCT a FROM RentalAgreementEntity a JOIN a.storageRent r "
+                + "WHERE a.projectId = :projectId AND (:rentalUnitId IS NULL OR r.storageId = :rentalUnitId)",
+                params).list();
+            case COMMERCIAL -> find("SELECT DISTINCT a FROM RentalAgreementEntity a JOIN a.commercialRent r "
+                + "WHERE a.projectId = :projectId AND (:rentalUnitId IS NULL OR r.commercialId = :rentalUnitId)",
+                params).list();
+        };
     }
 
     public Optional<RentalAgreementEntity> findRentalAgreementByProject(final UUID projectId, final UUID agreementId) {
