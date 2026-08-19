@@ -748,6 +748,444 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void addRent_SUCCESS_propertyRent() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      assertNull(created.getPropertyRents());
+
+      final UUID leafPropertyId = insertLeafProperty();
+      final RentJson propertyRent = ImmutableRentJson.builder()
+          .rentalUnitId(leafPropertyId)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(5000.0f)
+          .heatingCostsPrepayment(400.0f)
+          .build();
+
+      RentalAgreementEntity updated = controller.addRent(
+          projectId, created.getId(), UnitType.PROPERTY, leafPropertyId, propertyRent);
+
+      assertEquals(1, updated.getPropertyRents().size());
+      assertEquals(leafPropertyId, updated.getPropertyRents().get(0).getRentalUnitId());
+      assertEquals(5000.0f, updated.getPropertyRents().get(0).getBasicRent());
+      assertEquals(400.0f, updated.getPropertyRents().get(0).getHeatingCostsPrepayment());
+      assertEquals(RentModel.BillingCycle.MONTHLY, updated.getPropertyRents().get(0).getBillingCycle());
+
+      // Verify in DB
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
+      assertEquals(1, entity.getPropertyRents().size());
+    }
+
+    @Test
+    void addRent_SUCCESS_siteRent() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      final RentJson siteRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.SITE_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(150.0f)
+          .build();
+
+      RentalAgreementEntity updated = controller.addRent(
+          projectId, created.getId(), UnitType.SITE, TestData.SITE_ID_1, siteRent);
+
+      assertEquals(1, updated.getSiteRents().size());
+      assertEquals(TestData.SITE_ID_1, updated.getSiteRents().get(0).getRentalUnitId());
+      assertEquals(150.0f, updated.getSiteRents().get(0).getBasicRent());
+
+      // Verify in DB
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
+      assertEquals(1, entity.getSiteRents().size());
+    }
+
+    @Test
+    void deleteRents_SUCCESS_noOpWhenPropertyRentsListIsNull() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      assertNull(created.getPropertyRents());
+
+      // The unit was never rented, so the property-rents list is still null; deleting must be a no-op
+      controller.deleteRents(projectId, created.getId(), UnitType.PROPERTY, TestData.PROPERTY_ID_1);
+
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
+      assertTrue(entity.getPropertyRents() == null || entity.getPropertyRents().isEmpty());
+    }
+
+    @Test
+    void deleteRents_SUCCESS_removesSiteRent() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentJson siteRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.SITE_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(150.0f)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addSiteRents(siteRent)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      assertEquals(1, created.getSiteRents().size());
+
+      controller.deleteRents(projectId, created.getId(), UnitType.SITE, TestData.SITE_ID_1);
+
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
+      assertEquals(0, entity.getSiteRents().size());
+    }
+
+    @Test
+    void deleteRents_SUCCESS_removesBuildingRent() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      final UUID leafBuildingId = insertLeafBuilding();
+      final RentJson buildingRent = ImmutableRentJson.builder()
+          .rentalUnitId(leafBuildingId)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(3500.0f)
+          .build();
+      controller.addRent(projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
+
+      controller.deleteRents(projectId, created.getId(), UnitType.BUILDING, leafBuildingId);
+
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
+      assertEquals(0, entity.getBuildingRents().size());
+    }
+
+    @Test
+    void deleteRents_SUCCESS_removesStorageRent() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentJson storageRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.STORAGE_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(85.0f)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addStorageRents(storageRent)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      assertEquals(1, created.getStorageRents().size());
+
+      controller.deleteRents(projectId, created.getId(), UnitType.STORAGE, TestData.STORAGE_ID_1);
+
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
+      assertEquals(0, entity.getStorageRents().size());
+    }
+
+    @Test
+    void deleteRents_SUCCESS_removesCommercialRent() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentJson commercialRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.COMMERCIAL_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(2800.0f)
+          .build();
+
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addCommercialRents(commercialRent)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      assertEquals(1, created.getCommercialRents().size());
+
+      controller.deleteRents(projectId, created.getId(), UnitType.COMMERCIAL, TestData.COMMERCIAL_ID_1);
+
+      RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
+      assertEquals(0, entity.getCommercialRents().size());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterByUnitTypeAndId() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentJson apartmentRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.APARTMENT_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(1000.0f)
+          .build();
+      final RentalAgreementJson agreementWithApartment = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addApartmentRents(apartmentRent)
+          .build();
+      RentalAgreementEntity withApartment = controller.createRentalAgreement(projectId, agreementWithApartment);
+
+      final RentalAgreementJson agreementWithoutApartment = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      controller.createRentalAgreement(projectId, agreementWithoutApartment);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.APARTMENT, TestData.APARTMENT_ID_1);
+
+      assertEquals(1, filtered.size());
+      assertEquals(withApartment.getId(), filtered.get(0).getId());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterByUnitTypeOnly_ignoresUnitId() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentJson apartmentRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.APARTMENT_ID_2)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(1000.0f)
+          .build();
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addApartmentRents(apartmentRent)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.APARTMENT, null);
+
+      assertEquals(1, filtered.size());
+      assertEquals(created.getId(), filtered.get(0).getId());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterExcludesNonMatchingUnit() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+
+      final RentJson apartmentRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.APARTMENT_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(1000.0f)
+          .build();
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addApartmentRents(apartmentRent)
+          .build();
+      controller.createRentalAgreement(projectId, agreement);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.APARTMENT, TestData.APARTMENT_ID_2);
+
+      assertTrue(filtered.isEmpty());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterByPropertyType() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      final UUID leafPropertyId = insertLeafProperty();
+      final RentJson propertyRent = ImmutableRentJson.builder()
+          .rentalUnitId(leafPropertyId)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(5000.0f)
+          .build();
+      controller.addRent(projectId, created.getId(), UnitType.PROPERTY, leafPropertyId, propertyRent);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.PROPERTY, leafPropertyId);
+
+      assertEquals(1, filtered.size());
+      assertEquals(created.getId(), filtered.get(0).getId());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterBySiteType() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+      final RentJson siteRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.SITE_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(150.0f)
+          .build();
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addSiteRents(siteRent)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.SITE, TestData.SITE_ID_1);
+
+      assertEquals(1, filtered.size());
+      assertEquals(created.getId(), filtered.get(0).getId());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterByBuildingType() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+      final RentalAgreementJson startAgreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+
+      final UUID leafBuildingId = insertLeafBuilding();
+      final RentJson buildingRent = ImmutableRentJson.builder()
+          .rentalUnitId(leafBuildingId)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(3500.0f)
+          .build();
+      controller.addRent(projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.BUILDING, leafBuildingId);
+
+      assertEquals(1, filtered.size());
+      assertEquals(created.getId(), filtered.get(0).getId());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterByStorageType() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+      final RentJson storageRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.STORAGE_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(85.0f)
+          .build();
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addStorageRents(storageRent)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.STORAGE, TestData.STORAGE_ID_1);
+
+      assertEquals(1, filtered.size());
+      assertEquals(created.getId(), filtered.get(0).getId());
+    }
+
+    @Test
+    void getRentalAgreementsByProject_SUCCESS_filterByCommercialType() {
+      final UUID projectId = TestData.PROJECT_ID_1;
+      final TenantJson tenant = ImmutableTenantJson.builder()
+          .email(TestData.USER_EMAIL_1)
+          .firstName(TestData.USER_FIRST_NAME_1)
+          .lastName(TestData.USER_LAST_NAME_1)
+          .build();
+      final RentJson commercialRent = ImmutableRentJson.builder()
+          .rentalUnitId(TestData.COMMERCIAL_ID_1)
+          .firstPaymentDate(LocalDate.of(2025, 1, 1))
+          .basicRent(2800.0f)
+          .build();
+      final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
+          .startOfRental(LocalDate.of(2025, 1, 1))
+          .addTenants(tenant)
+          .addCommercialRents(commercialRent)
+          .build();
+      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+
+      List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
+          projectId, UnitType.COMMERCIAL, TestData.COMMERCIAL_ID_1);
+
+      assertEquals(1, filtered.size());
+      assertEquals(created.getId(), filtered.get(0).getId());
+    }
+
+    @Test
     void createRentalAgreement_SUCCESS_withBuildingRent() {
       final UUID projectId = TestData.PROJECT_ID_1;
       final TenantJson tenant = ImmutableTenantJson.builder()
