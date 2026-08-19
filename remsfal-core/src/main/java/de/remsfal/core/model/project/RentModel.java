@@ -8,7 +8,7 @@ import java.util.UUID;
  */
 public interface RentModel {
 
-    UUID getUnitId();
+    UUID getRentalUnitId();
 
     LocalDate getFirstPaymentDate();
 

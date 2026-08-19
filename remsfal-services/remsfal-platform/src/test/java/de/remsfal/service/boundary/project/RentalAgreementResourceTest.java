@@ -221,7 +221,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -242,7 +242,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]," +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]," +
             "\"keys\": [{\"amountOfKeys\":2,\"issuedAt\":\"2023-01-01\",\"keyDescription\":\"Haustürschlüssel\"}]" +
             "}";
 
@@ -265,7 +265,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +
                 "\"tenants\": [{\"firstName\":\"John\", \"lastName\":\"Doe\", \"email\":\"" + TestData.USER_EMAIL_1 + "\"}]," +
-                "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+                "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
                 "}";
 
         given()
@@ -285,7 +285,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +
                 "\"tenants\": [{\"firstName\":\"Jane\", \"lastName\":\"Smith\"}]," +
-                "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+                "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
                 "}";
 
         given()
@@ -425,7 +425,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"lastName\":\"Doe\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -443,7 +443,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"John\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -460,7 +460,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     void createRentalAgreement_FAILURE_missingTenants() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -535,7 +535,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -700,7 +700,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     @Test
     void updateRentalAgreement_FAILURE_rentsNoLongerAllowed() {
         String json = "{" +
-                "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"," +
+                "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"," +
                 "\"firstPaymentDate\":\"2021-01-01\"}]" +
                 "}";
 
@@ -733,7 +733,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .log().ifValidationFails()
             .statusCode(Status.CREATED.getStatusCode())
             .body("apartmentRents.size()", Matchers.equalTo(1))
-            .body("apartmentRents[0].unitId", Matchers.equalTo(TestData.APARTMENT_ID.toString()))
+            .body("apartmentRents[0].rentalUnitId", Matchers.equalTo(TestData.APARTMENT_ID.toString()))
             .body("apartmentRents[0].basicRent", Matchers.equalTo(1200.0f));
 
         given()

@@ -293,7 +293,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1000.0f)
@@ -313,7 +313,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getTenants().size());
       assertNotNull(result.getApartmentRents());
       assertEquals(1, result.getApartmentRents().size());
-      assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getRentalUnitId());
       assertEquals(RentModel.BillingCycle.MONTHLY, result.getApartmentRents().get(0).getBillingCycle());
       assertEquals(1000.0f, result.getApartmentRents().get(0).getBasicRent());
 
@@ -333,14 +333,14 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1000.0f)
           .build();
 
       final RentJson propertyRent = ImmutableRentJson.builder()
-          .unitId(TestData.PROPERTY_ID_1)
+          .rentalUnitId(TestData.PROPERTY_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(5000.0f)
@@ -358,8 +358,8 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertNotNull(result.getId());
       assertEquals(1, result.getApartmentRents().size());
       assertEquals(1, result.getPropertyRents().size());
-      assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getUnitId());
-      assertEquals(TestData.PROPERTY_ID_1, result.getPropertyRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getRentalUnitId());
+      assertEquals(TestData.PROPERTY_ID_1, result.getPropertyRents().get(0).getRentalUnitId());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
@@ -378,7 +378,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson apartmentRent1 = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1000.0f)
@@ -392,11 +392,11 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       assertEquals(1, created.getApartmentRents().size());
-      assertEquals(TestData.APARTMENT_ID_1, created.getApartmentRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_1, created.getApartmentRents().get(0).getRentalUnitId());
 
       // Rents are no longer processed by updateRentalAgreement, even if provided in the request
       final RentJson apartmentRent2 = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_2)
+          .rentalUnitId(TestData.APARTMENT_ID_2)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 2, 1))
           .basicRent(1500.0f)
@@ -410,13 +410,13 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
 
       // Original rent must remain untouched
       assertEquals(1, updated.getApartmentRents().size());
-      assertEquals(TestData.APARTMENT_ID_1, updated.getApartmentRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_1, updated.getApartmentRents().get(0).getRentalUnitId());
       assertEquals(1000.0f, updated.getApartmentRents().get(0).getBasicRent());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
       assertEquals(1, entity.getApartmentRents().size());
-      assertEquals(TestData.APARTMENT_ID_1, entity.getApartmentRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_1, entity.getApartmentRents().get(0).getRentalUnitId());
     }
 
     @Test
@@ -435,7 +435,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1200.0f)
           .build();
@@ -444,7 +444,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent);
 
       assertEquals(1, updated.getApartmentRents().size());
-      assertEquals(TestData.APARTMENT_ID_1, updated.getApartmentRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_1, updated.getApartmentRents().get(0).getRentalUnitId());
       assertEquals(LocalDate.of(2025, 1, 1), updated.getApartmentRents().get(0).getFirstPaymentDate());
       assertNull(updated.getApartmentRents().get(0).getLastPaymentDate());
       assertEquals(RentModel.BillingCycle.MONTHLY, updated.getApartmentRents().get(0).getBillingCycle());
@@ -464,7 +464,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson apartmentRent1 = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .billingCycle(RentModel.BillingCycle.WEEKLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1000.0f)
@@ -478,7 +478,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson apartmentRent2 = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .firstPaymentDate(LocalDate.of(2025, 3, 1))
           .basicRent(1500.0f)
           .build();
@@ -516,7 +516,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .basicRent(1200.0f)
           .build();
 
@@ -540,7 +540,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1200.0f)
           .build();
@@ -566,7 +566,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .firstPaymentDate(LocalDate.of(2025, 7, 1))
           .basicRent(1200.0f)
           .build();
@@ -592,7 +592,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .lastPaymentDate(LocalDate.of(2025, 7, 1))
           .basicRent(1200.0f)
@@ -608,7 +608,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       final UUID agreementId = UUID.randomUUID();
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .build();
 
@@ -626,13 +626,13 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson apartmentRent1 = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1000.0f)
           .build();
       final RentJson otherApartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_2)
+          .rentalUnitId(TestData.APARTMENT_ID_2)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(900.0f)
@@ -651,7 +651,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
 
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
       assertEquals(1, entity.getApartmentRents().size());
-      assertEquals(TestData.APARTMENT_ID_2, entity.getApartmentRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_2, entity.getApartmentRents().get(0).getRentalUnitId());
     }
 
     @Test
@@ -673,7 +673,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson buildingRent = ImmutableRentJson.builder()
-          .unitId(TestData.BUILDING_ID_1)
+          .rentalUnitId(TestData.BUILDING_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
@@ -693,7 +693,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getTenants().size());
       assertNotNull(result.getBuildingRents());
       assertEquals(1, result.getBuildingRents().size());
-      assertEquals(TestData.BUILDING_ID_1, result.getBuildingRents().get(0).getUnitId());
+      assertEquals(TestData.BUILDING_ID_1, result.getBuildingRents().get(0).getRentalUnitId());
       assertEquals(RentModel.BillingCycle.MONTHLY, result.getBuildingRents().get(0).getBillingCycle());
       assertEquals(3500.0f, result.getBuildingRents().get(0).getBasicRent());
 
@@ -713,7 +713,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson commercialRent = ImmutableRentJson.builder()
-          .unitId(TestData.COMMERCIAL_ID_1)
+          .rentalUnitId(TestData.COMMERCIAL_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 2, 1))
           .basicRent(2800.0f)
@@ -733,7 +733,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getTenants().size());
       assertNotNull(result.getCommercialRents());
       assertEquals(1, result.getCommercialRents().size());
-      assertEquals(TestData.COMMERCIAL_ID_1, result.getCommercialRents().get(0).getUnitId());
+      assertEquals(TestData.COMMERCIAL_ID_1, result.getCommercialRents().get(0).getRentalUnitId());
       assertEquals(RentModel.BillingCycle.MONTHLY, result.getCommercialRents().get(0).getBillingCycle());
       assertEquals(2800.0f, result.getCommercialRents().get(0).getBasicRent());
 
@@ -753,7 +753,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson siteRent = ImmutableRentJson.builder()
-          .unitId(TestData.SITE_ID_1)
+          .rentalUnitId(TestData.SITE_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 3, 1))
           .basicRent(150.0f)
@@ -772,7 +772,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getTenants().size());
       assertNotNull(result.getSiteRents());
       assertEquals(1, result.getSiteRents().size());
-      assertEquals(TestData.SITE_ID_1, result.getSiteRents().get(0).getUnitId());
+      assertEquals(TestData.SITE_ID_1, result.getSiteRents().get(0).getRentalUnitId());
       assertEquals(RentModel.BillingCycle.MONTHLY, result.getSiteRents().get(0).getBillingCycle());
       assertEquals(150.0f, result.getSiteRents().get(0).getBasicRent());
 
@@ -792,7 +792,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson storageRent = ImmutableRentJson.builder()
-          .unitId(TestData.STORAGE_ID_1)
+          .rentalUnitId(TestData.STORAGE_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 4, 1))
           .basicRent(75.0f)
@@ -811,7 +811,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getTenants().size());
       assertNotNull(result.getStorageRents());
       assertEquals(1, result.getStorageRents().size());
-      assertEquals(TestData.STORAGE_ID_1, result.getStorageRents().get(0).getUnitId());
+      assertEquals(TestData.STORAGE_ID_1, result.getStorageRents().get(0).getRentalUnitId());
       assertEquals(RentModel.BillingCycle.MONTHLY, result.getStorageRents().get(0).getBillingCycle());
       assertEquals(75.0f, result.getStorageRents().get(0).getBasicRent());
 
@@ -831,42 +831,42 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
-          .unitId(TestData.APARTMENT_ID_1)
+          .rentalUnitId(TestData.APARTMENT_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(1000.0f)
           .build();
 
       final RentJson propertyRent = ImmutableRentJson.builder()
-          .unitId(TestData.PROPERTY_ID_1)
+          .rentalUnitId(TestData.PROPERTY_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(5000.0f)
           .build();
 
       final RentJson buildingRent = ImmutableRentJson.builder()
-          .unitId(TestData.BUILDING_ID_1)
+          .rentalUnitId(TestData.BUILDING_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
           .build();
 
       final RentJson commercialRent = ImmutableRentJson.builder()
-          .unitId(TestData.COMMERCIAL_ID_1)
+          .rentalUnitId(TestData.COMMERCIAL_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(2800.0f)
           .build();
 
       final RentJson siteRent = ImmutableRentJson.builder()
-          .unitId(TestData.SITE_ID_1)
+          .rentalUnitId(TestData.SITE_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(150.0f)
           .build();
 
       final RentJson storageRent = ImmutableRentJson.builder()
-          .unitId(TestData.STORAGE_ID_1)
+          .rentalUnitId(TestData.STORAGE_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(75.0f)
@@ -893,12 +893,12 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       assertEquals(1, result.getSiteRents().size());
       assertEquals(1, result.getStorageRents().size());
 
-      assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getUnitId());
-      assertEquals(TestData.PROPERTY_ID_1, result.getPropertyRents().get(0).getUnitId());
-      assertEquals(TestData.BUILDING_ID_1, result.getBuildingRents().get(0).getUnitId());
-      assertEquals(TestData.COMMERCIAL_ID_1, result.getCommercialRents().get(0).getUnitId());
-      assertEquals(TestData.SITE_ID_1, result.getSiteRents().get(0).getUnitId());
-      assertEquals(TestData.STORAGE_ID_1, result.getStorageRents().get(0).getUnitId());
+      assertEquals(TestData.APARTMENT_ID_1, result.getApartmentRents().get(0).getRentalUnitId());
+      assertEquals(TestData.PROPERTY_ID_1, result.getPropertyRents().get(0).getRentalUnitId());
+      assertEquals(TestData.BUILDING_ID_1, result.getBuildingRents().get(0).getRentalUnitId());
+      assertEquals(TestData.COMMERCIAL_ID_1, result.getCommercialRents().get(0).getRentalUnitId());
+      assertEquals(TestData.SITE_ID_1, result.getSiteRents().get(0).getRentalUnitId());
+      assertEquals(TestData.STORAGE_ID_1, result.getStorageRents().get(0).getRentalUnitId());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, result.getId());
@@ -927,7 +927,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson buildingRent = ImmutableRentJson.builder()
-          .unitId(TestData.BUILDING_ID_1)
+          .rentalUnitId(TestData.BUILDING_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
@@ -937,7 +937,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           projectId, created.getId(), UnitType.BUILDING, TestData.BUILDING_ID_1, buildingRent);
 
       assertEquals(1, updated.getBuildingRents().size());
-      assertEquals(TestData.BUILDING_ID_1, updated.getBuildingRents().get(0).getUnitId());
+      assertEquals(TestData.BUILDING_ID_1, updated.getBuildingRents().get(0).getRentalUnitId());
       assertEquals(3500.0f, updated.getBuildingRents().get(0).getBasicRent());
 
       // Verify in DB
@@ -961,7 +961,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson commercialRent = ImmutableRentJson.builder()
-          .unitId(TestData.COMMERCIAL_ID_1)
+          .rentalUnitId(TestData.COMMERCIAL_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(2800.0f)
@@ -972,14 +972,14 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           projectId, created.getId(), UnitType.COMMERCIAL, TestData.COMMERCIAL_ID_1, commercialRent);
 
       assertEquals(1, updated.getCommercialRents().size());
-      assertEquals(TestData.COMMERCIAL_ID_1, updated.getCommercialRents().get(0).getUnitId());
+      assertEquals(TestData.COMMERCIAL_ID_1, updated.getCommercialRents().get(0).getRentalUnitId());
       assertEquals(2800.0f, updated.getCommercialRents().get(0).getBasicRent());
       assertEquals(350.0f, updated.getCommercialRents().get(0).getOperatingCostsPrepayment());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
       assertEquals(1, entity.getCommercialRents().size());
-      assertEquals(TestData.COMMERCIAL_ID_1, entity.getCommercialRents().get(0).getUnitId());
+      assertEquals(TestData.COMMERCIAL_ID_1, entity.getCommercialRents().get(0).getRentalUnitId());
     }
 
     @Test
@@ -998,7 +998,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
 
       final RentJson storageRent = ImmutableRentJson.builder()
-          .unitId(TestData.STORAGE_ID_1)
+          .rentalUnitId(TestData.STORAGE_ID_1)
           .billingCycle(RentModel.BillingCycle.MONTHLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(85.0f)
@@ -1008,13 +1008,13 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           projectId, created.getId(), UnitType.STORAGE, TestData.STORAGE_ID_1, storageRent);
 
       assertEquals(1, updated.getStorageRents().size());
-      assertEquals(TestData.STORAGE_ID_1, updated.getStorageRents().get(0).getUnitId());
+      assertEquals(TestData.STORAGE_ID_1, updated.getStorageRents().get(0).getRentalUnitId());
       assertEquals(85.0f, updated.getStorageRents().get(0).getBasicRent());
 
       // Verify in DB
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, updated.getId());
       assertEquals(1, entity.getStorageRents().size());
-      assertEquals(TestData.STORAGE_ID_1, entity.getStorageRents().get(0).getUnitId());
+      assertEquals(TestData.STORAGE_ID_1, entity.getStorageRents().get(0).getRentalUnitId());
     }
 
     @Test
@@ -1027,7 +1027,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       final RentJson siteRent = ImmutableRentJson.builder()
-          .unitId(TestData.SITE_ID_1)
+          .rentalUnitId(TestData.SITE_ID_1)
           .billingCycle(RentModel.BillingCycle.WEEKLY)
           .firstPaymentDate(LocalDate.of(2025, 1, 6))
           .basicRent(35.0f)

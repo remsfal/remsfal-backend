@@ -36,7 +36,7 @@ class TenancyJsonTest {
 
     private static RentModel rent(final UUID unitId) {
         return new RentModel() {
-            @Override public UUID getUnitId() { return unitId; }
+            @Override public UUID getRentalUnitId() { return unitId; }
             @Override public LocalDate getFirstPaymentDate() { return START; }
             @Override public LocalDate getLastPaymentDate() { return null; }
             @Override public BillingCycle getBillingCycle() { return BillingCycle.MONTHLY; }

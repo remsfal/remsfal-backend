@@ -68,7 +68,7 @@ public abstract class RentalAgreementItemJson {
         }
 
         List<RentalUnitJson> rentalUnits = model.getAllRents().stream()
-            .map(RentModel::getUnitId)
+            .map(RentModel::getRentalUnitId)
             .distinct()
             .map(rentalUnitsMap::get)
             .filter(Objects::nonNull)

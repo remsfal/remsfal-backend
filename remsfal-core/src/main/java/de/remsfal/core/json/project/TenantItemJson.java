@@ -88,7 +88,7 @@ public abstract class TenantItemJson {
         // Collect all rental units from all rental agreements (ever rented)
         List<RentalUnitJson> rentalUnits = rentalAgreements.stream()
             .flatMap(agreement -> getAllRents(agreement).stream())
-            .map(RentModel::getUnitId)
+            .map(RentModel::getRentalUnitId)
             .distinct()
             .map(rentalUnitsMap::get)
             .filter(Objects::nonNull)

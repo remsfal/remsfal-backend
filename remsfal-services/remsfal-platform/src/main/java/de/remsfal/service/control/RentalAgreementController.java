@@ -283,7 +283,7 @@ public class RentalAgreementController {
             final RentModel rentInput, final Supplier<T> factory, final BiConsumer<T, UUID> unitIdSetter) {
 
         final T previousRent = rents.stream()
-            .filter(r -> Objects.equals(r.getUnitId(), rentalUnitId))
+            .filter(r -> Objects.equals(r.getRentalUnitId(), rentalUnitId))
             .filter(r -> r.getLastPaymentDate() == null)
             .findFirst()
             .orElse(null);
@@ -350,7 +350,7 @@ public class RentalAgreementController {
 
     private void removeRentsForUnit(final List<? extends RentEntity> rents, final UUID rentalUnitId) {
         if (rents != null) {
-            rents.removeIf(r -> Objects.equals(r.getUnitId(), rentalUnitId));
+            rents.removeIf(r -> Objects.equals(r.getRentalUnitId(), rentalUnitId));
         }
     }
 
@@ -654,21 +654,21 @@ public class RentalAgreementController {
 
         final Map<RentKey, T> existingByKey = new HashMap<>();
         for (T existing : existingRents) {
-            existingByKey.put(new RentKey(existing.getUnitId(), existing.getFirstPaymentDate()), existing);
+            existingByKey.put(new RentKey(existing.getRentalUnitId(), existing.getFirstPaymentDate()), existing);
         }
 
         final List<T> reconciled = new ArrayList<>();
         for (RentModel rentInput : rentsInput) {
             final LocalDate firstPaymentDate = rentInput.getFirstPaymentDate() != null
                 ? rentInput.getFirstPaymentDate() : agreementStartOfRental;
-            final T existing = existingByKey.remove(new RentKey(rentInput.getUnitId(), firstPaymentDate));
+            final T existing = existingByKey.remove(new RentKey(rentInput.getRentalUnitId(), firstPaymentDate));
 
             final T rent;
             if (existing != null) {
                 rent = existing;
             } else {
                 rent = factory.get();
-                unitIdSetter.accept(rent, rentInput.getUnitId());
+                unitIdSetter.accept(rent, rentInput.getRentalUnitId());
             }
             mapRentFields(rentInput, rent, agreementStartOfRental);
             reconciled.add(rent);

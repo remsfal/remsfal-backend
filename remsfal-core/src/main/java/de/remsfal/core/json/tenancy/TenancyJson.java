@@ -83,7 +83,7 @@ public abstract class TenancyJson implements TenancyModel {
         }
 
         List<RentalUnitJson> rentalUnits = model.getAllRents().stream()
-            .map(RentModel::getUnitId)
+            .map(RentModel::getRentalUnitId)
             .distinct()
             .map(rentalUnitsMap::get)
             .filter(u -> u != null)
@@ -118,25 +118,25 @@ public abstract class TenancyJson implements TenancyModel {
             return null;
         }
         for (RentModel rent : model.getApartmentRents()) {
-            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            AddressJson addr = unitAddressMap.get(rent.getRentalUnitId());
             if (addr != null) {
                 return addr;
             }
         }
         for (RentModel rent : model.getCommercialRents()) {
-            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            AddressJson addr = unitAddressMap.get(rent.getRentalUnitId());
             if (addr != null) {
                 return addr;
             }
         }
         for (RentModel rent : model.getStorageRents()) {
-            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            AddressJson addr = unitAddressMap.get(rent.getRentalUnitId());
             if (addr != null) {
                 return addr;
             }
         }
         for (RentModel rent : model.getSiteRents()) {
-            AddressJson addr = unitAddressMap.get(rent.getUnitId());
+            AddressJson addr = unitAddressMap.get(rent.getRentalUnitId());
             if (addr != null) {
                 return addr;
             }

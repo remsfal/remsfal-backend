@@ -21,7 +21,7 @@ public class CommercialRentEntity extends RentEntity {
     private UUID commercialId;
 
     @Override
-    public UUID getUnitId() {
+    public UUID getRentalUnitId() {
         return commercialId;
     }
 
