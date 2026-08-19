@@ -2,6 +2,7 @@ package de.remsfal.core.api.project;
 
 import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.RentalAgreementListJson;
+import de.remsfal.core.json.project.RentJson;
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
@@ -130,4 +131,43 @@ public interface RentalAgreementEndpoint {
         @PathParam("agreementId") @NotNull UUID agreementId,
         @Parameter(description = "ID of the tenant", required = true)
         @PathParam("tenantId") @NotNull UUID tenantId);
+
+    @POST
+    @Path("/{agreementId}/{rentalUnitType: property|site|building|apartment|storage|commercial}/{rentalUnitId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Add a new rent for a rental unit of a rental agreement")
+    @APIResponse(responseCode = "201", description = "Rent created successfully",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = RentalAgreementJson.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request message")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
+    Response addRent(
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("agreementId") @NotNull UUID agreementId,
+        @Parameter(description = "Type of the rental unit", required = true)
+        @PathParam("rentalUnitType") @NotNull String rentalUnitType,
+        @Parameter(description = "ID of the rental unit", required = true)
+        @PathParam("rentalUnitId") @NotNull UUID rentalUnitId,
+        @Parameter(description = "Rent information", required = true)
+        @Valid @NotNull RentJson rent);
+
+    @DELETE
+    @Path("/{agreementId}/{rentalUnitType: property|site|building|apartment|storage|commercial}/{rentalUnitId}")
+    @Operation(summary = "Delete all rents of a rental unit from a rental agreement")
+    @APIResponse(responseCode = "204", description = "Rents were deleted successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
+    void deleteRents(
+        @Parameter(description = "ID of the project", required = true)
+        @PathParam("projectId") @NotNull UUID projectId,
+        @Parameter(description = "ID of the tenancy", required = true)
+        @PathParam("agreementId") @NotNull UUID agreementId,
+        @Parameter(description = "Type of the rental unit", required = true)
+        @PathParam("rentalUnitType") @NotNull String rentalUnitType,
+        @Parameter(description = "ID of the rental unit", required = true)
+        @PathParam("rentalUnitId") @NotNull UUID rentalUnitId);
 }

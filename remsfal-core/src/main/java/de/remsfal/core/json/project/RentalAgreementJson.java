@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.validation.AtLeastOneRentUnit;
+import de.remsfal.core.validation.NoRentsOnPatch;
+import de.remsfal.core.validation.PatchValidation;
 import de.remsfal.core.validation.PostValidation;
 
 /**
@@ -31,6 +33,7 @@ import de.remsfal.core.validation.PostValidation;
 @JsonDeserialize(as = ImmutableRentalAgreementJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @AtLeastOneRentUnit(groups = PostValidation.class)
+@NoRentsOnPatch(groups = PatchValidation.class)
 public abstract class RentalAgreementJson implements RentalAgreementModel {
 
     @Null
