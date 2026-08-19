@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.project.ImmutablePropertyJson;
 import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -200,6 +201,76 @@ class PropertyControllerTest extends AbstractServiceTest {
         
         assertThrows(NotFoundException.class,
             () -> propertyController.getProperty(TestData.PROJECT_ID_2, TestData.PROPERTY_ID));
+    }
+
+    @Test
+    void isLeafRentalUnit_FALSE_propertyHasSiteAndBuilding() {
+        setupTestProperties();
+        setupTestSites();
+        setupTestBuildings();
+
+        // PROPERTY_ID_1 has both a site and buildings beneath it
+        assertFalse(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.PROPERTY, TestData.PROPERTY_ID_1));
+    }
+
+    @Test
+    void isLeafRentalUnit_FALSE_propertyHasBuildingButNoSite() {
+        setupTestProperties();
+        setupTestBuildings();
+
+        // PROPERTY_ID_2 has buildings but no site beneath it
+        assertFalse(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.PROPERTY, TestData.PROPERTY_ID_2));
+    }
+
+    @Test
+    void isLeafRentalUnit_TRUE_propertyHasNoSiteOrBuilding() {
+        setupTestProperties();
+
+        // A freshly inserted property with no sites or buildings beneath it is a leaf
+        final UUID propertyId = UUID.randomUUID();
+        insertProperty(propertyId, TestData.PROJECT_ID_1, TestData.PROPERTY_TITLE_1,
+            TestData.PROPERTY_LOCATION_1, TestData.PROPERTY_DESCRIPTION_1, TestData.PROPERTY_LAND_REGISTRY_1,
+            TestData.PROPERTY_CADASTRAL_DESTRICT_1, TestData.PROPERTY_SHEET_NUMBER_1,
+            TestData.PROPERTY_PLOT_NUMBER_1, TestData.PROPERTY_CADASTRAL_SECTION_1,
+            TestData.PROPERTY_PLOT_1, TestData.PROPERTY_ECONOMY_TYPE_1, TestData.PROPERTY_PLOT_AREA_1);
+
+        assertTrue(propertyController.isLeafRentalUnit(TestData.PROJECT_ID_1, UnitType.PROPERTY, propertyId));
+    }
+
+    @Test
+    void isLeafRentalUnit_FALSE_buildingHasApartmentsCommercialsAndStorages() {
+        setupTestProperties();
+        setupTestSites();
+        setupTestBuildings();
+
+        // BUILDING_ID_1 has apartments, commercials and storages beneath it
+        assertFalse(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.BUILDING, TestData.BUILDING_ID_1));
+    }
+
+    @Test
+    void isLeafRentalUnit_TRUE_buildingHasNoChildren() {
+        setupTestProperties();
+        setupTestSites();
+        setupTestBuildings();
+
+        // BUILDING_ID_2 has no apartments, commercials or storages beneath it
+        assertTrue(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.BUILDING, TestData.BUILDING_ID_2));
+    }
+
+    @Test
+    void isLeafRentalUnit_TRUE_forSiteApartmentStorageAndCommercial() {
+        assertTrue(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.SITE, UUID.randomUUID()));
+        assertTrue(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.APARTMENT, UUID.randomUUID()));
+        assertTrue(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.STORAGE, UUID.randomUUID()));
+        assertTrue(propertyController.isLeafRentalUnit(
+            TestData.PROJECT_ID_1, UnitType.COMMERCIAL, UUID.randomUUID()));
     }
 
 }

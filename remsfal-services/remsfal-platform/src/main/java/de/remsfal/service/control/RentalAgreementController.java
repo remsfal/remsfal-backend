@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.RentalAgreementKeysModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
@@ -26,6 +27,7 @@ import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDate;
@@ -33,8 +35,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
@@ -60,6 +64,9 @@ public class RentalAgreementController {
     @Inject
     TenantRepository tenantRepository;
 
+    @Inject
+    PropertyController propertyController;
+
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
         return rentalAgreementRepository.findRentalAgreementsByTenant(tenant.getId());
@@ -72,9 +79,11 @@ public class RentalAgreementController {
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
     }
 
-    public List<RentalAgreementEntity> getRentalAgreementsByProject(final UUID projectId) {
-        logger.infov("Retrieving all rental agreements (projectId = {0})", projectId);
-        return rentalAgreementRepository.findRentalAgreementByProject(projectId);
+    public List<RentalAgreementEntity> getRentalAgreementsByProject(final UUID projectId,
+            final UnitType rentalUnitType, final UUID rentalUnitId) {
+        logger.infov("Retrieving all rental agreements (projectId = {0}, rentalUnitType = {1}, rentalUnitId = {2})",
+            projectId, rentalUnitType, rentalUnitId);
+        return rentalAgreementRepository.findRentalAgreementByProject(projectId, rentalUnitType, rentalUnitId);
     }
     
     @Transactional
@@ -123,6 +132,8 @@ public class RentalAgreementController {
             throw new NotFoundException("Project not exist");
         }
 
+        validateLeafRentalUnits(projectId, agreement);
+
         RentalAgreementEntity entity = new RentalAgreementEntity();
         entity.generateId();
         entity.setProjectId(projectId);
@@ -140,6 +151,32 @@ public class RentalAgreementController {
 
         rentalAgreementRepository.persistAndFlush(entity);
         return entity;
+    }
+
+    /**
+     * Validates that every rent in the agreement references a leaf rental unit (i.e. a unit
+     * without sub-units) — rental agreements may only be concluded for leaf units.
+     */
+    private void validateLeafRentalUnits(final UUID projectId, final RentalAgreementModel agreement) {
+        validateLeafRentalUnits(projectId, UnitType.PROPERTY, agreement.getPropertyRents());
+        validateLeafRentalUnits(projectId, UnitType.SITE, agreement.getSiteRents());
+        validateLeafRentalUnits(projectId, UnitType.BUILDING, agreement.getBuildingRents());
+        validateLeafRentalUnits(projectId, UnitType.APARTMENT, agreement.getApartmentRents());
+        validateLeafRentalUnits(projectId, UnitType.STORAGE, agreement.getStorageRents());
+        validateLeafRentalUnits(projectId, UnitType.COMMERCIAL, agreement.getCommercialRents());
+    }
+
+    private void validateLeafRentalUnits(final UUID projectId, final UnitType type,
+            final List<? extends RentModel> rents) {
+        if (rents == null) {
+            return;
+        }
+        for (RentModel rent : rents) {
+            if (!propertyController.isLeafRentalUnit(projectId, type, rent.getRentalUnitId())) {
+                throw new BadRequestException("Rents may only be created for leaf rental units; "
+                    + type + " " + rent.getRentalUnitId() + " has child units");
+            }
+        }
     }
 
     @Transactional
@@ -170,9 +207,6 @@ public class RentalAgreementController {
             entity.setKeys(processKeys(agreement.getKeys()));
         }
 
-        // Update rents (only replace if provided)
-        processRents(entity, agreement);
-
         return rentalAgreementRepository.merge(entity);
     }
 
@@ -200,6 +234,161 @@ public class RentalAgreementController {
 
         entity.removeTenant(tenantId);
         rentalAgreementRepository.merge(entity);
+    }
+
+    /**
+     * Adds a new rent for a rental unit of a rental agreement. If a rent is already active for that
+     * unit (i.e. its {@code lastPaymentDate} is not set), it is ended by setting its
+     * {@code lastPaymentDate} to one day before the new rent's {@code firstPaymentDate}. If
+     * {@code billingCycle} is not set on the input, it is inherited from that previous rent, or
+     * defaults to {@link BillingCycle#MONTHLY} if there is no previous rent.
+     *
+     * @param projectId the project ID
+     * @param agreementId the rental agreement ID
+     * @param rentalUnitType the type of the rental unit
+     * @param rentalUnitId the ID of the rental unit
+     * @param rentInput the rent information; {@code firstPaymentDate} is required
+     * @return the updated rental agreement entity
+     */
+    @Transactional
+    public RentalAgreementEntity addRent(final UUID projectId, final UUID agreementId,
+            final UnitType rentalUnitType, final UUID rentalUnitId, final RentModel rentInput) {
+        logger.infov("Adding a rent to a rental agreement (projectId={0}, agreementId={1}, "
+            + "rentalUnitType={2}, rentalUnitId={3})", projectId, agreementId, rentalUnitType, rentalUnitId);
+        final RentalAgreementEntity entity = rentalAgreementRepository
+            .findRentalAgreementByProject(projectId, agreementId)
+            .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
+
+        if (!propertyController.isLeafRentalUnit(projectId, rentalUnitType, rentalUnitId)) {
+            throw new BadRequestException("Rents may only be created for leaf rental units; "
+                + rentalUnitType + " " + rentalUnitId + " has child units");
+        }
+        if (rentInput.getFirstPaymentDate() == null) {
+            throw new BadRequestException("First payment date is required");
+        }
+        if (entity.getStartOfRental() != null
+                && rentInput.getFirstPaymentDate().isBefore(entity.getStartOfRental())) {
+            throw new BadRequestException("First payment date must not be before start of rental");
+        }
+        if (entity.getEndOfRental() != null) {
+            if (rentInput.getFirstPaymentDate().isAfter(entity.getEndOfRental())) {
+                throw new BadRequestException("First payment date must not be after end of rental");
+            }
+            if (rentInput.getLastPaymentDate() != null
+                    && rentInput.getLastPaymentDate().isAfter(entity.getEndOfRental())) {
+                throw new BadRequestException("Last payment date must not be after end of rental");
+            }
+        }
+
+        switch (rentalUnitType) {
+            case PROPERTY -> addRentToList(getOrInitRents(entity.getPropertyRents(), entity::setPropertyRents),
+                rentalUnitId, rentInput, PropertyRentEntity::new, PropertyRentEntity::setPropertyId);
+            case SITE -> addRentToList(getOrInitRents(entity.getSiteRents(), entity::setSiteRents),
+                rentalUnitId, rentInput, SiteRentEntity::new, SiteRentEntity::setSiteId);
+            case BUILDING -> addRentToList(getOrInitRents(entity.getBuildingRents(), entity::setBuildingRents),
+                rentalUnitId, rentInput, BuildingRentEntity::new, BuildingRentEntity::setBuildingId);
+            case APARTMENT -> addRentToList(getOrInitRents(entity.getApartmentRents(), entity::setApartmentRents),
+                rentalUnitId, rentInput, ApartmentRentEntity::new, ApartmentRentEntity::setApartmentId);
+            case STORAGE -> addRentToList(getOrInitRents(entity.getStorageRents(), entity::setStorageRents),
+                rentalUnitId, rentInput, StorageRentEntity::new, StorageRentEntity::setStorageId);
+            case COMMERCIAL -> addRentToList(getOrInitRents(entity.getCommercialRents(), entity::setCommercialRents),
+                rentalUnitId, rentInput, CommercialRentEntity::new, CommercialRentEntity::setCommercialId);
+        }
+
+        return rentalAgreementRepository.merge(entity);
+    }
+
+    /**
+     * Returns the given rent list, or initializes and sets a new empty list on the entity if it is
+     * currently {@code null}.
+     */
+    private <T extends RentEntity> List<T> getOrInitRents(final List<T> current, final Consumer<List<T>> setter) {
+        if (current != null) {
+            return current;
+        }
+        final List<T> list = new ArrayList<>();
+        setter.accept(list);
+        return list;
+    }
+
+    /**
+     * Ends the currently active rent of the given unit (if any) and appends a new rent to
+     * {@code rents}. Mutates {@code rents} in place, following the same rationale as
+     * {@link #reconcileRents}: the list must stay the same, Hibernate-managed instance.
+     */
+    private <T extends RentEntity> T addRentToList(final List<T> rents, final UUID rentalUnitId,
+            final RentModel rentInput, final Supplier<T> factory, final BiConsumer<T, UUID> unitIdSetter) {
+
+        final T previousRent = rents.stream()
+            .filter(r -> Objects.equals(r.getRentalUnitId(), rentalUnitId))
+            .filter(r -> r.getLastPaymentDate() == null)
+            .findFirst()
+            .orElse(null);
+
+        if (previousRent != null) {
+            previousRent.setLastPaymentDate(rentInput.getFirstPaymentDate().minusDays(1));
+        }
+
+        final BillingCycle billingCycle;
+        if (rentInput.getBillingCycle() != null) {
+            billingCycle = rentInput.getBillingCycle();
+        } else if (previousRent != null) {
+            billingCycle = previousRent.getBillingCycle();
+        } else {
+            billingCycle = BillingCycle.MONTHLY;
+        }
+
+        final T rent = factory.get();
+        unitIdSetter.accept(rent, rentalUnitId);
+        rent.setFirstPaymentDate(rentInput.getFirstPaymentDate());
+        rent.setLastPaymentDate(rentInput.getLastPaymentDate());
+        rent.setBillingCycle(billingCycle);
+        if (rentInput.getBasicRent() != null) {
+            rent.setBasicRent(rentInput.getBasicRent());
+        }
+        if (rentInput.getOperatingCostsPrepayment() != null) {
+            rent.setOperatingCostsPrepayment(rentInput.getOperatingCostsPrepayment());
+        }
+        if (rentInput.getHeatingCostsPrepayment() != null) {
+            rent.setHeatingCostsPrepayment(rentInput.getHeatingCostsPrepayment());
+        }
+        rents.add(rent);
+        return rent;
+    }
+
+    /**
+     * Deletes all rents (active and historic) of a rental unit from a rental agreement.
+     *
+     * @param projectId the project ID
+     * @param agreementId the rental agreement ID
+     * @param rentalUnitType the type of the rental unit
+     * @param rentalUnitId the ID of the rental unit
+     */
+    @Transactional
+    public void deleteRents(final UUID projectId, final UUID agreementId, final UnitType rentalUnitType,
+            final UUID rentalUnitId) {
+        logger.infov("Deleting rents of a rental unit from a rental agreement (projectId={0}, agreementId={1}, "
+            + "rentalUnitType={2}, rentalUnitId={3})", projectId, agreementId, rentalUnitType, rentalUnitId);
+        final RentalAgreementEntity entity = rentalAgreementRepository
+            .findRentalAgreementByProject(projectId, agreementId)
+            .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
+
+        switch (rentalUnitType) {
+            case PROPERTY -> removeRentsForUnit(entity.getPropertyRents(), rentalUnitId);
+            case SITE -> removeRentsForUnit(entity.getSiteRents(), rentalUnitId);
+            case BUILDING -> removeRentsForUnit(entity.getBuildingRents(), rentalUnitId);
+            case APARTMENT -> removeRentsForUnit(entity.getApartmentRents(), rentalUnitId);
+            case STORAGE -> removeRentsForUnit(entity.getStorageRents(), rentalUnitId);
+            case COMMERCIAL -> removeRentsForUnit(entity.getCommercialRents(), rentalUnitId);
+        }
+
+        rentalAgreementRepository.merge(entity);
+    }
+
+    private void removeRentsForUnit(final List<? extends RentEntity> rents, final UUID rentalUnitId) {
+        if (rents != null) {
+            rents.removeIf(r -> Objects.equals(r.getRentalUnitId(), rentalUnitId));
+        }
     }
 
     /**
@@ -502,21 +691,21 @@ public class RentalAgreementController {
 
         final Map<RentKey, T> existingByKey = new HashMap<>();
         for (T existing : existingRents) {
-            existingByKey.put(new RentKey(existing.getUnitId(), existing.getFirstPaymentDate()), existing);
+            existingByKey.put(new RentKey(existing.getRentalUnitId(), existing.getFirstPaymentDate()), existing);
         }
 
         final List<T> reconciled = new ArrayList<>();
         for (RentModel rentInput : rentsInput) {
             final LocalDate firstPaymentDate = rentInput.getFirstPaymentDate() != null
                 ? rentInput.getFirstPaymentDate() : agreementStartOfRental;
-            final T existing = existingByKey.remove(new RentKey(rentInput.getUnitId(), firstPaymentDate));
+            final T existing = existingByKey.remove(new RentKey(rentInput.getRentalUnitId(), firstPaymentDate));
 
             final T rent;
             if (existing != null) {
                 rent = existing;
             } else {
                 rent = factory.get();
-                unitIdSetter.accept(rent, rentInput.getUnitId());
+                unitIdSetter.accept(rent, rentInput.getRentalUnitId());
             }
             mapRentFields(rentInput, rent, agreementStartOfRental);
             reconciled.add(rent);

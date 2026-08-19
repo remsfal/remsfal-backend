@@ -31,7 +31,7 @@ public abstract class RentJson implements RentModel {
     @NotNull(groups = PostValidation.class, message = "Unit ID is required")
     @Schema(required = true)
     @Override
-    public abstract UUID getUnitId();
+    public abstract UUID getRentalUnitId();
 
     @Nullable
     @Override
@@ -65,7 +65,7 @@ public abstract class RentJson implements RentModel {
             return null;
         }
         return ImmutableRentJson.builder()
-            .unitId(model.getUnitId())
+            .rentalUnitId(model.getRentalUnitId())
             .billingCycle(model.getBillingCycle())
             .firstPaymentDate(model.getFirstPaymentDate())
             .lastPaymentDate(model.getLastPaymentDate())

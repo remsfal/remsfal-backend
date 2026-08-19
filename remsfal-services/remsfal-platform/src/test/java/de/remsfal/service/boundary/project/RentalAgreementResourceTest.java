@@ -22,6 +22,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     static final String AGREEMENT_PATH = BASE_PATH + "/{agreementId}";
     static final String AGREEMENT_TENANTS_PATH = AGREEMENT_PATH + "/tenants";
     static final String AGREEMENT_TENANT_PATH = AGREEMENT_TENANTS_PATH + "/{tenantId}";
+    static final String AGREEMENT_RENT_PATH = AGREEMENT_PATH + "/{rentalUnitType}/{rentalUnitId}";
 
     @BeforeEach
     protected void setupTests() {
@@ -220,7 +221,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -241,7 +242,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]," +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]," +
             "\"keys\": [{\"amountOfKeys\":2,\"issuedAt\":\"2023-01-01\",\"keyDescription\":\"Haustürschlüssel\"}]" +
             "}";
 
@@ -264,7 +265,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +
                 "\"tenants\": [{\"firstName\":\"John\", \"lastName\":\"Doe\", \"email\":\"" + TestData.USER_EMAIL_1 + "\"}]," +
-                "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+                "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
                 "}";
 
         given()
@@ -284,7 +285,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
                 "\"startOfRental\":\"2023-01-01\"," +
                 "\"tenants\": [{\"firstName\":\"Jane\", \"lastName\":\"Smith\"}]," +
-                "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+                "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
                 "}";
 
         given()
@@ -424,7 +425,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"lastName\":\"Doe\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -442,7 +443,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"John\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -459,7 +460,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     void createRentalAgreement_FAILURE_missingTenants() {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -534,7 +535,7 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
         String json = "{" +
             "\"startOfRental\":\"2023-01-01\"," +
             "\"tenants\": [{\"firstName\":\"Max\", \"lastName\":\"Mustermann\"}]," +
-            "\"apartmentRents\": [{\"unitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
+            "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"}]" +
             "}";
 
         given()
@@ -692,6 +693,170 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .delete(AGREEMENT_TENANT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
                 UUID.randomUUID().toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    void updateRentalAgreement_FAILURE_rentsNoLongerAllowed() {
+        String json = "{" +
+                "\"apartmentRents\": [{\"rentalUnitId\":\"" + TestData.APARTMENT_ID + "\"," +
+                "\"firstPaymentDate\":\"2021-01-01\"}]" +
+                "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void addRent_SUCCESS_apartmentRentAdded() {
+        String json = "{" +
+                "\"firstPaymentDate\":\"2021-01-01\"," +
+                "\"billingCycle\":\"MONTHLY\"," +
+                "\"basicRent\":1200.0" +
+                "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
+            .then()
+            .log().ifValidationFails()
+            .statusCode(Status.CREATED.getStatusCode())
+            .body("apartmentRents.size()", Matchers.equalTo(1))
+            .body("apartmentRents[0].rentalUnitId", Matchers.equalTo(TestData.APARTMENT_ID.toString()))
+            .body("apartmentRents[0].basicRent", Matchers.equalTo(1200.0f));
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("apartmentRents.size()", Matchers.equalTo(1));
+    }
+
+    @Test
+    void addRent_SUCCESS_endsPreviousActiveRent() {
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "WEEKLY", 500.00, 100.00, 50.00);
+
+        String json = "{" +
+                "\"firstPaymentDate\":\"2021-06-01\"," +
+                "\"basicRent\":600.0" +
+                "}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
+            .then()
+            .log().ifValidationFails()
+            .statusCode(Status.CREATED.getStatusCode())
+            .body("apartmentRents.size()", Matchers.equalTo(2))
+            .body("apartmentRents.find { it.firstPaymentDate == '2021-01-01' }.lastPaymentDate",
+                Matchers.equalTo("2021-05-31"))
+            .body("apartmentRents.find { it.firstPaymentDate == '2021-06-01' }.billingCycle",
+                Matchers.equalTo("WEEKLY"));
+    }
+
+    @Test
+    void addRent_FAILURE_missingFirstPaymentDate() {
+        String json = "{\"basicRent\":1200.0}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void addRent_FAILURE_agreementNotFound() {
+        String json = "{\"firstPaymentDate\":\"2021-01-01\"}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), UUID.randomUUID().toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void addRent_FAILURE_unauthorized() {
+        String json = "{\"firstPaymentDate\":\"2021-01-01\"}";
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
+            .then()
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    void deleteRents_SUCCESS_removesAllRentsForUnit() {
+        insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
+            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .delete(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
+            .then()
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .get(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("apartmentRents.size()", Matchers.equalTo(0));
+    }
+
+    @Test
+    void deleteRents_FAILURE_agreementNotFound() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .delete(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), UUID.randomUUID().toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    void deleteRents_FAILURE_unauthorized() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .delete(AGREEMENT_RENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString(),
+                "apartment", TestData.APARTMENT_ID.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }

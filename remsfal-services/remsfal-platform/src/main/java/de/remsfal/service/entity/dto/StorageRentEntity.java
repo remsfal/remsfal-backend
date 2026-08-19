@@ -21,7 +21,7 @@ public class StorageRentEntity extends RentEntity {
     private UUID storageId;
 
     @Override
-    public UUID getUnitId() {
+    public UUID getRentalUnitId() {
         return storageId;
     }
 

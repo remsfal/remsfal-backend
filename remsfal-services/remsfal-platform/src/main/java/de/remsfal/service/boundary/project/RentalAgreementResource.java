@@ -13,7 +13,9 @@ import de.remsfal.core.api.project.RentalAgreementEndpoint;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.project.RentalAgreementListJson;
+import de.remsfal.core.json.project.RentJson;
 import de.remsfal.core.json.project.TenantJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.control.PropertyController;
@@ -29,10 +31,11 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     PropertyController propertyController;
 
     @Override
-    public RentalAgreementListJson getRentalAgreements(final UUID projectId) {
+    public RentalAgreementListJson getRentalAgreements(final UUID projectId, final UnitType rentalUnitType,
+            final UUID rentalUnitId) {
         checkProjectReadPermissions(projectId);
         final List<? extends RentalAgreementModel> agreements =
-            rentalAgreementController.getRentalAgreementsByProject(projectId);
+            rentalAgreementController.getRentalAgreementsByProject(projectId, rentalUnitType, rentalUnitId);
         final Map<UUID, RentalUnitJson> rentalUnitsMap =
             propertyController.getRentalUnitsMapForProject(projectId);
         return RentalAgreementListJson.valueOf(agreements, rentalUnitsMap);
@@ -85,6 +88,27 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     public void removeTenant(final UUID projectId, final UUID agreementId, final UUID tenantId) {
         checkRentalAgreementWritePermissions(projectId);
         rentalAgreementController.removeTenant(projectId, agreementId, tenantId);
+    }
+
+    @Override
+    public Response addRent(final UUID projectId, final UUID agreementId, final String rentalUnitType,
+            final UUID rentalUnitId, final RentJson rent) {
+        checkRentalAgreementWritePermissions(projectId);
+        final UnitType unitType = UnitType.valueOf(rentalUnitType.toUpperCase());
+        final RentalAgreementModel model =
+            rentalAgreementController.addRent(projectId, agreementId, unitType, rentalUnitId, rent);
+        return Response.status(Response.Status.CREATED)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(RentalAgreementJson.valueOf(model))
+            .build();
+    }
+
+    @Override
+    public void deleteRents(final UUID projectId, final UUID agreementId, final String rentalUnitType,
+            final UUID rentalUnitId) {
+        checkRentalAgreementWritePermissions(projectId);
+        final UnitType unitType = UnitType.valueOf(rentalUnitType.toUpperCase());
+        rentalAgreementController.deleteRents(projectId, agreementId, unitType, rentalUnitId);
     }
 
 }

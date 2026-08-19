@@ -31,4 +31,9 @@ public class CommercialRepository extends AbstractRepository<CommercialEntity> {
             Map.of(PARAM_ID, commercialId, PARAM_PROJECT_ID, projectId));
     }
 
+    public boolean existsByBuildingId(final UUID projectId, final UUID buildingId) {
+        return count("projectId = :projectId and buildingId = :buildingId",
+            Map.of(PARAM_PROJECT_ID, projectId, PARAM_BUILDING_ID, buildingId)) > 0;
+    }
+
 }

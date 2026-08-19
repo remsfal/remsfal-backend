@@ -11,6 +11,7 @@ import de.remsfal.core.json.project.RentalUnitNodeDataJson;
 import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
 import de.remsfal.core.json.project.SiteJson;
 import de.remsfal.core.json.project.StorageJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
@@ -83,6 +84,28 @@ public class PropertyController {
 
     public long countProperties(final UUID projectId) {
         return propertyRepository.countPropertiesByProjectId(projectId);
+    }
+
+    /**
+     * Checks whether a rental unit is a leaf in the rentable-unit hierarchy, i.e. it has no
+     * sub-units. Site, apartment, storage and commercial units are always leaves. A property is a
+     * leaf only if it has no sites and no buildings; a building is a leaf only if it has no
+     * apartments, commercials or storages.
+     *
+     * @param projectId the project ID
+     * @param type the type of the rental unit
+     * @param unitId the ID of the rental unit
+     * @return {@code true} if the unit has no sub-units
+     */
+    public boolean isLeafRentalUnit(final UUID projectId, final UnitType type, final UUID unitId) {
+        return switch (type) {
+            case PROPERTY -> !siteRepository.existsByPropertyId(projectId, unitId)
+                && !buildingRepository.existsByPropertyId(projectId, unitId);
+            case BUILDING -> !apartmentRepository.existsByBuildingId(projectId, unitId)
+                && !commercialRepository.existsByBuildingId(projectId, unitId)
+                && !storageRepository.existsByBuildingId(projectId, unitId);
+            case SITE, APARTMENT, STORAGE, COMMERCIAL -> true;
+        };
     }
 
     @Transactional
