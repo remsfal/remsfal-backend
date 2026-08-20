@@ -22,7 +22,7 @@ public interface ProjectModel {
     String getCareOf();
 
     @Nullable
-    AddressModel getAddress();
+    AddressModel getBillingAddress();
 
     Set<? extends ProjectMemberModel> getMembers();
 
