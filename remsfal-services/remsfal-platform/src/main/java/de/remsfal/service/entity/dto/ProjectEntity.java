@@ -37,7 +37,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "billing_address_id", columnDefinition = "uuid")
-    private AddressEntity address;
+    private AddressEntity billingAddress;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ProjectMembershipEntity> memberships;
@@ -73,12 +73,12 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     }
 
     @Override
-    public AddressModel getAddress() {
-        return address;
+    public AddressModel getBillingAddress() {
+        return billingAddress;
     }
 
-    public void setAddress(final AddressEntity address) {
-        this.address = address;
+    public void setBillingAddress(final AddressEntity billingAddress) {
+        this.billingAddress = billingAddress;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
                 && Objects.equals(title, e.title)
                 && Objects.equals(owner, e.owner)
                 && Objects.equals(careOf, e.careOf)
-                && Objects.equals(address, e.address)
+                && Objects.equals(billingAddress, e.billingAddress)
                 && Objects.equals(memberships, e.memberships);
         }
         return false;

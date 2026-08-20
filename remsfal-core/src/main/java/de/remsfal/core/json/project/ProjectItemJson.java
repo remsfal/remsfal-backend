@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.project.ProjectModel;
 import jakarta.validation.constraints.NotNull;
 
@@ -33,7 +34,7 @@ public abstract class ProjectItemJson {
     public abstract String getName();
 
     @NotNull
-    public abstract ProjectMemberModel.MemberRole getMemberRole();
+    public abstract MemberRole getMemberRole();
 
     public static ProjectItemJson valueOf(final ProjectModel model, final UserModel user) {
         final ImmutableProjectItemJson.Builder builder = ImmutableProjectItemJson.builder()

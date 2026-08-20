@@ -110,8 +110,8 @@ class ProjectControllerTest extends AbstractServiceTest {
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
         assertEquals(TestData.USER_NAME, project.getOwner());
-        assertNotNull(project.getAddress());
-        assertEquals(TestData.ADDRESS_STREET, project.getAddress().getStreet());
+        assertNotNull(project.getBillingAddress());
+        assertEquals(TestData.ADDRESS_STREET, project.getBillingAddress().getStreet());
 
         final Object[] result = (Object[]) entityManager
             .createNativeQuery("SELECT owner, billing_address_id FROM projects WHERE id = :projectId")
@@ -253,16 +253,16 @@ class ProjectControllerTest extends AbstractServiceTest {
 
         final ProjectModel project = projectController.createProject(user,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
-        assertNotNull(project.getAddress());
+        assertNotNull(project.getBillingAddress());
 
         final ProjectModel updatedProject = projectController.updateProject(user, project.getId(),
             ImmutableProjectJson.builder()
                 .id(project.getId())
                 .title(TestData.PROJECT_TITLE)
-                .address(TestData.addressBuilder2().build())
+                .billingAddress(TestData.addressBuilder2().build())
                 .build());
-        assertNotNull(updatedProject.getAddress());
-        assertEquals(TestData.ADDRESS_STREET_2, updatedProject.getAddress().getStreet());
+        assertNotNull(updatedProject.getBillingAddress());
+        assertEquals(TestData.ADDRESS_STREET_2, updatedProject.getBillingAddress().getStreet());
 
         final UUID updatedAddressId = (UUID) entityManager
             .createNativeQuery("SELECT billing_address_id FROM projects WHERE id = :projectId")
@@ -293,10 +293,10 @@ class ProjectControllerTest extends AbstractServiceTest {
             ImmutableProjectJson.builder()
                 .id(project.getId())
                 .title(TestData.PROJECT_TITLE)
-                .address(TestData.addressBuilder3().build())
+                .billingAddress(TestData.addressBuilder3().build())
                 .build());
-        assertNotNull(updatedProject.getAddress());
-        assertEquals(TestData.ADDRESS_STREET_3, updatedProject.getAddress().getStreet());
+        assertNotNull(updatedProject.getBillingAddress());
+        assertEquals(TestData.ADDRESS_STREET_3, updatedProject.getBillingAddress().getStreet());
 
         final UUID projectAddressId = (UUID) entityManager
             .createNativeQuery("SELECT billing_address_id FROM projects WHERE id = :projectId")

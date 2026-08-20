@@ -13,12 +13,14 @@ import java.util.UUID;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.RentalAgreementModel;
+import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.validation.AtLeastOneRentUnit;
 import de.remsfal.core.validation.NoRentsOnPatch;
 import de.remsfal.core.validation.PatchValidation;
@@ -91,6 +93,38 @@ public abstract class RentalAgreementJson implements RentalAgreementModel {
     @Schema(description = "List of commercial rents")
     @Override
     public abstract List<@Valid RentJson> getCommercialRents();
+
+    @JsonIgnore
+    @Override
+    public List<? extends RentModel> getAllRents() {
+        return RentalAgreementModel.super.getAllRents();
+    }
+
+    @JsonIgnore
+    @Override
+    public List<? extends RentModel> getCurrentRents() {
+        return RentalAgreementModel.super.getCurrentRents();
+    }
+
+    @Schema(description = "Sum of basic rent from the currently valid rent of each rental unit", readOnly = true)
+    @Override
+    public Float getBasicRent() {
+        return RentalAgreementModel.super.getBasicRent();
+    }
+
+    @Schema(description = "Sum of operating costs prepayment from the currently valid rent of each rental unit",
+        readOnly = true)
+    @Override
+    public Float getOperatingCostsPrepayment() {
+        return RentalAgreementModel.super.getOperatingCostsPrepayment();
+    }
+
+    @Schema(description = "Sum of heating costs prepayment from the currently valid rent of each rental unit",
+        readOnly = true)
+    @Override
+    public Float getHeatingCostsPrepayment() {
+        return RentalAgreementModel.super.getHeatingCostsPrepayment();
+    }
 
     public static RentalAgreementJson valueOf(final RentalAgreementModel model) {
         if (model == null) {

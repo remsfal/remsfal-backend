@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
-import de.remsfal.core.model.project.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.service.entity.dto.embeddable.ProjectOrganizationKey;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
@@ -52,7 +52,7 @@ public class ProjectOrganizationEntity extends MetaDataEntity implements Organiz
 
     @Column(name = "organization_role")
     @Enumerated(EnumType.STRING)
-    private ProjectMemberModel.MemberRole role;
+    private MemberRole role;
 
     @Override
     public UUID getOrganizationId() {
@@ -81,11 +81,11 @@ public class ProjectOrganizationEntity extends MetaDataEntity implements Organiz
     }
 
     @Override
-    public ProjectMemberModel.MemberRole getRole() {
+    public MemberRole getRole() {
         return role;
     }
 
-    public void setRole(ProjectMemberModel.MemberRole role) {
+    public void setRole(MemberRole role) {
         this.role = role;
     }
 

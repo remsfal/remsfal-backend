@@ -91,7 +91,7 @@ public class ProjectController {
             entity.setOwner(userEntity.getName());
         }
         if (userEntity.getAddress() != null) {
-            entity.setAddress(userEntity.getAddress());
+            entity.setBillingAddress(userEntity.getAddress());
         }
         entity.addMember(userEntity, MemberRole.PROPRIETOR);
         projectRepository.persistAndFlush(entity);
@@ -116,9 +116,9 @@ public class ProjectController {
         if (project.getCareOf() != null) {
             entity.setCareOf(project.getCareOf());
         }
-        if (project.getAddress() != null) {
+        if (project.getBillingAddress() != null) {
             final UserEntity userEntity = userController.getUser(user.getId());
-            entity.setAddress(resolveBillingAddress(userEntity, project));
+            entity.setBillingAddress(resolveBillingAddress(userEntity, project));
         }
         return projectRepository.merge(entity);
         // fetch eager project members
@@ -137,11 +137,11 @@ public class ProjectController {
             .filter(Objects::nonNull)
             .forEach(addresses::add);
         for (AddressEntity candidate : addresses) {
-            if (candidate.equalsIgnoreCase(project.getAddress())) {
+            if (candidate.equalsIgnoreCase(project.getBillingAddress())) {
                 return candidate;
             }
         }
-        return addressController.updateAddress(project.getAddress(), null);
+        return addressController.updateAddress(project.getBillingAddress(), null);
     }
 
     @Transactional

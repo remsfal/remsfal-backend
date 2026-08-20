@@ -1,10 +1,12 @@
 package de.remsfal.core.model.project;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -44,24 +46,26 @@ public interface RentalAgreementModel {
     }
 
     default Float getBasicRent() {
-        return calculateSum(getActiveRents(), RentModel::getBasicRent);
+        return calculateSum(getCurrentRents(), RentModel::getBasicRent);
     }
 
     default Float getOperatingCostsPrepayment() {
-        return calculateSum(getActiveRents(), RentModel::getOperatingCostsPrepayment);
+        return calculateSum(getCurrentRents(), RentModel::getOperatingCostsPrepayment);
     }
 
     default Float getHeatingCostsPrepayment() {
-        return calculateSum(getActiveRents(), RentModel::getHeatingCostsPrepayment);
+        return calculateSum(getCurrentRents(), RentModel::getHeatingCostsPrepayment);
     }
 
-    private List<? extends RentModel> getActiveRents() {
-        return getAllRents().stream().filter(this::isActiveRent).toList();
-    }
-
-    private boolean isActiveRent(final RentModel rent) {
-        return rent.getLastPaymentDate() == null
-            || rent.getLastPaymentDate().isAfter(LocalDate.now());
+    default List<? extends RentModel> getCurrentRents() {
+        return getAllRents().stream()
+            .collect(Collectors.toMap(
+                RentModel::getRentalUnitId,
+                Function.identity(),
+                (a, b) -> a.getFirstPaymentDate().isAfter(b.getFirstPaymentDate()) ? a : b,
+                LinkedHashMap::new))
+            .values().stream()
+            .toList();
     }
 
     private Float calculateSum(final List<? extends RentModel> rents,
@@ -69,14 +73,6 @@ public interface RentalAgreementModel {
         Float sum = rents.stream().map(extractor)
             .filter(v -> v != null).reduce(0.0f, Float::sum);
         return sum > 0 ? sum : null;
-    }
-
-    public default Boolean isActive() {
-        if (this.getEndOfRental() == null) {
-            return true;
-        } else {
-            return this.getEndOfRental().isAfter(LocalDate.now());
-        }
     }
 
 }

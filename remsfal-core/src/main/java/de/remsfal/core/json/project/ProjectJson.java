@@ -62,7 +62,7 @@ public abstract class ProjectJson implements ProjectModel {
     @Nullable
     @Null(groups = PostValidation.class)
     @Override
-    public abstract AddressJson getAddress();
+    public abstract AddressJson getBillingAddress();
 
     @Null
     @Nullable
@@ -76,7 +76,7 @@ public abstract class ProjectJson implements ProjectModel {
             .title(model.getTitle())
             .owner(model.getOwner())
             .careOf(model.getCareOf())
-            .address(AddressJson.valueOf(model.getAddress()));
+            .billingAddress(AddressJson.valueOf(model.getBillingAddress()));
         for (ProjectMemberModel member : model.getMembers()) {
             builder.addMembers(ProjectMemberJson.valueOf(member));
         }
