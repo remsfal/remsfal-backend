@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -63,16 +64,24 @@ public abstract class TenancyJson implements TenancyModel {
     public abstract List<RentalUnitJson> getRentalUnits();
 
     @Nullable
-    @Schema(description = "Sum of basic rent from all currently active rents", readOnly = true)
+    @Schema(description = "Sum of basic rent from the currently valid rent of each rental unit", readOnly = true)
     public abstract Float getBasicRent();
 
     @Nullable
-    @Schema(description = "Sum of operating costs prepayment from all currently active rents", readOnly = true)
+    @Schema(description = "Sum of operating costs prepayment from the currently valid rent of each rental unit",
+        readOnly = true)
     public abstract Float getOperatingCostsPrepayment();
 
     @Nullable
-    @Schema(description = "Sum of heating costs prepayment from all currently active rents", readOnly = true)
+    @Schema(description = "Sum of heating costs prepayment from the currently valid rent of each rental unit",
+        readOnly = true)
     public abstract Float getHeatingCostsPrepayment();
+
+    @JsonIgnore
+    @Override
+    public Boolean isActive() {
+        return TenancyModel.super.isActive();
+    }
 
     public static TenancyJson valueOf(final RentalAgreementModel model,
         final Map<UUID, RentalUnitJson> rentalUnitsMap,

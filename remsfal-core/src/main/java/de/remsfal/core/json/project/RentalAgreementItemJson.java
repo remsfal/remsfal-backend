@@ -36,29 +36,34 @@ public abstract class RentalAgreementItemJson {
     @Schema(description = "Unique identifier of the rental agreement", readOnly = true)
     public abstract UUID getId();
 
-    @Schema(description = "List of tenants in this rental agreement")
+    @Schema(description = "List of tenants in this rental agreement", readOnly = true)
     public abstract List<TenantJson> getTenants();
 
-    @Schema(description = "Start date of the rental period", required = true)
+    @Schema(description = "Start date of the rental period", required = true, readOnly = true)
     public abstract LocalDate getStartOfRental();
 
     @Nullable
-    @Schema(description = "End date of the rental period")
+    @Schema(description = "End date of the rental period", readOnly = true)
     public abstract LocalDate getEndOfRental();
 
-    @Schema(description = "List of rental units in this agreement")
+    @Schema(description = "List of rental units in this agreement", readOnly = true)
     public abstract List<RentalUnitJson> getRentalUnits();
 
+    @Schema(description = "The currently valid rent for each rental unit in this agreement", readOnly = true)
+    public abstract List<RentJson> getCurrentRents();
+
     @Nullable
-    @Schema(description = "Sum of basic rent from all currently active rents")
+    @Schema(description = "Sum of basic rent from the currently valid rent of each rental unit", readOnly = true)
     public abstract Float getBasicRent();
 
     @Nullable
-    @Schema(description = "Sum of operating costs prepayment from all currently active rents")
+    @Schema(description = "Sum of operating costs prepayment from the currently valid rent of each rental unit",
+        readOnly = true)
     public abstract Float getOperatingCostsPrepayment();
 
     @Nullable
-    @Schema(description = "Sum of heating costs prepayment from all currently active rents")
+    @Schema(description = "Sum of heating costs prepayment from the currently valid rent of each rental unit",
+        readOnly = true)
     public abstract Float getHeatingCostsPrepayment();
 
     public static RentalAgreementItemJson valueOf(final RentalAgreementModel model,
@@ -82,6 +87,9 @@ public abstract class RentalAgreementItemJson {
             .startOfRental(model.getStartOfRental())
             .endOfRental(model.getEndOfRental())
             .rentalUnits(rentalUnits)
+            .currentRents(model.getCurrentRents().stream()
+                .map(RentJson::valueOf)
+                .toList())
             .basicRent(model.getBasicRent())
             .operatingCostsPrepayment(model.getOperatingCostsPrepayment())
             .heatingCostsPrepayment(model.getHeatingCostsPrepayment())

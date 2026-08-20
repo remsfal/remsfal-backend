@@ -180,7 +180,7 @@ class TenancyResourceTest extends AbstractResourceTest {
             .and().body("agreements[0].heatingCostsPrepayment", Matchers.equalTo(240f))
             .and().body("agreements[1].agreementId", Matchers.equalTo(TestData.AGREEMENT_ID_3.toString()))
             .and().body("agreements[1].rentalUnits.size()", Matchers.is(1))
-            .and().body("agreements[1].basicRent", Matchers.nullValue())
+            .and().body("agreements[1].basicRent", Matchers.equalTo(100f))
             .and().body("agreements[1].operatingCostsPrepayment", Matchers.nullValue())
             .and().body("agreements[1].heatingCostsPrepayment", Matchers.nullValue());
     }

@@ -94,41 +94,22 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .body("rentalAgreements[0].basicRent", Matchers.equalTo(800.0f))
             .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.equalTo(150.0f))
-            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(75.0f));
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(75.0f))
+            .body("rentalAgreements[0].currentRents.size()", Matchers.equalTo(2));
     }
 
     @Test
-    void getRentalAgreements_SUCCESS_excludesInactiveRentsFromSum() {
-        // Add active rent (no lastPaymentDate)
+    void getRentalAgreements_SUCCESS_usesLatestRentPerUnitInSum() {
+        // Add an earlier rent for the apartment unit
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00);
-
-        // Add inactive rent (lastPaymentDate in the past)
-        insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID,
             java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 300.00, 50.00, 25.00,
-            java.time.LocalDate.parse("2022-12-31"));
+            java.time.LocalDate.parse("2021-05-31"));
 
-        // Only the active rent should be included in sums
-        given()
-            .when()
-            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
-            .get(BASE_PATH, TestData.PROJECT_ID.toString())
-            .then()
-            .statusCode(Status.OK.getStatusCode())
-            .contentType(ContentType.JSON)
-            .body("rentalAgreements[0].basicRent", Matchers.equalTo(500.0f))
-            .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.equalTo(100.0f))
-            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(50.0f));
-    }
-
-    @Test
-    void getRentalAgreements_SUCCESS_includesFutureRentsInSum() {
-        // Add active rent with lastPaymentDate in the future
+        // Add a later rent for the same apartment unit (rent history)
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID,
-            java.time.LocalDate.parse("2021-01-01"), "MONTHLY", 500.00, 100.00, 50.00,
-            java.time.LocalDate.now().plusMonths(6));
+            java.time.LocalDate.parse("2021-06-01"), "MONTHLY", 500.00, 100.00, 50.00);
 
-        // Should be included in sums since lastPaymentDate is in the future
+        // Only the rent with the latest firstPaymentDate for that unit should count
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -138,7 +119,10 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .body("rentalAgreements[0].basicRent", Matchers.equalTo(500.0f))
             .body("rentalAgreements[0].operatingCostsPrepayment", Matchers.equalTo(100.0f))
-            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(50.0f));
+            .body("rentalAgreements[0].heatingCostsPrepayment", Matchers.equalTo(50.0f))
+            .body("rentalAgreements[0].currentRents.size()", Matchers.equalTo(1))
+            .body("rentalAgreements[0].currentRents[0].basicRent", Matchers.equalTo(500.0f))
+            .body("rentalAgreements[0].currentRents[0].firstPaymentDate", Matchers.equalTo("2021-06-01"));
     }
 
     @Test
