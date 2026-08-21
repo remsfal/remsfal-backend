@@ -119,6 +119,7 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("issues", hasSize(1))
+            .body("issues[0].reportedBy", equalTo(TicketingTestData.USER_NAME))
             .body("size", equalTo(1));
     }
 

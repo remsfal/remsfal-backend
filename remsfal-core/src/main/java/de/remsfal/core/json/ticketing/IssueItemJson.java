@@ -60,6 +60,10 @@ public abstract class IssueItemJson {
     @Nullable
     public abstract UUID getAssigneeId();
 
+    @Schema(description = "Name of the user who reported this issue", readOnly = true)
+    @Nullable
+    public abstract String getReportedBy();
+
     public static IssueItemJson valueOfProjectIssue(final IssueModel model) {
         return ImmutableIssueItemJson.builder()
             .id(model.getId())
@@ -71,6 +75,7 @@ public abstract class IssueItemJson {
             .status(model.getStatus())
             .priority(model.getPriority())
             .assigneeId(model.getAssigneeId())
+            .reportedBy(model.getReportedBy())
             .build();
     }
 
