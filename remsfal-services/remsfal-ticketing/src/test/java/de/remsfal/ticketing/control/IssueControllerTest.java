@@ -2,48 +2,59 @@ package de.remsfal.ticketing.control;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
-import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
+
+import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
+import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
-import de.remsfal.ticketing.entity.dto.IssueKey;
+import de.remsfal.ticketing.entity.dto.TimelineEntity;
 import de.remsfal.ticketing.entity.filter.IssueFilter;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 
 /**
- * Covers the multi-partition fan-out/merge that moved from {@link IssueRepository} into
- * {@link IssueController#getTenancyIssues(Map, UUID, Integer)} once the repository was reduced to
- * single-partition queries. Uses a mocked {@link IssueRepository} so the merge/sort/limit logic
- * can be verified without a real Cassandra instance.
+ * Covers {@link IssueController} against a real Cassandra instance (see {@link AbstractTicketingTest}).
+ * {@link RemsfalPrincipal} is the only mocked dependency here, since it only resolves a real identity
+ * from a JWT-authenticated HTTP request ({@code RemsfalPrincipal.getId()}/{@code getName()} read the
+ * current {@code JsonWebToken}), which a bare CDI-injected controller call doesn't have. Everything
+ * else (repository, timeline controller, event producer) is the real bean, same as
+ * {@code de.remsfal.ticketing.boundary.OcrTest} for a comparable
+ * {@code @InjectMock RemsfalPrincipal} + real-DB combination.
  */
-class IssueControllerTest {
+@QuarkusTest
+@QuarkusTestResource(CassandraTestResource.class)
+class IssueControllerTest extends AbstractTicketingTest {
 
-    private IssueEntity issueOf(final UUID projectId, final UUID issueId) {
-        final IssueEntity entity = new IssueEntity();
-        final IssueKey key = new IssueKey();
-        key.setProjectId(projectId);
-        key.setIssueId(issueId);
-        entity.setKey(key);
-        return entity;
-    }
+    @Inject
+    IssueController controller;
+
+    @Inject
+    IssueRepository issueRepository;
+
+    @Inject
+    TimelineController timelineController;
+
+    @InjectMock
+    RemsfalPrincipal principal;
 
     @Test
     void getTenancyIssues_mergesAndSortsAcrossAgreementsByIssueIdDescending() {
@@ -58,20 +69,18 @@ class IssueControllerTest {
         final UUID id3 = new UUID(0, 3);
         final UUID id4 = new UUID(0, 4);
 
+        insertIssue(projectA, id1, "Issue A1", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementA, null, "Issue A1");
+        insertIssue(projectA, id4, "Issue A4", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementA, null, "Issue A4");
+        insertIssue(projectB, id2, "Issue B2", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementB, null, "Issue B2");
+        insertIssue(projectB, id3, "Issue B3", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementB, null, "Issue B3");
+
         final Map<UUID, UUID> tenancyProjects = new LinkedHashMap<>();
         tenancyProjects.put(agreementA, projectA);
         tenancyProjects.put(agreementB, projectB);
-
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(
-            new IssueFilter(projectA, null, agreementA, null, null, null, null, Boolean.TRUE), null, 2))
-            .thenReturn(List.of(issueOf(projectA, id4), issueOf(projectA, id1)));
-        when(repository.findByQuery(
-            new IssueFilter(projectB, null, agreementB, null, null, null, null, Boolean.TRUE), null, 2))
-            .thenReturn(List.of(issueOf(projectB, id3), issueOf(projectB, id2)));
-
-        final IssueController controller = new IssueController();
-        controller.issueRepository = repository;
 
         final List<? extends IssueModel> page = controller.getTenancyIssues(tenancyProjects, null, 2);
 
@@ -85,28 +94,22 @@ class IssueControllerTest {
         final UUID agreementA = UUID.randomUUID();
         final UUID projectA = UUID.randomUUID();
         final UUID cursor = new UUID(0, 5);
+        final UUID id4 = new UUID(0, 4);
+
+        insertIssue(projectA, id4, "Issue A4", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementA, null, "Issue A4");
 
         final Map<UUID, UUID> tenancyProjects = new LinkedHashMap<>();
         tenancyProjects.put(agreementA, projectA);
 
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(
-            new IssueFilter(projectA, null, agreementA, null, null, null, null, Boolean.TRUE), cursor, 10))
-            .thenReturn(List.of(issueOf(projectA, new UUID(0, 4))));
-
-        final IssueController controller = new IssueController();
-        controller.issueRepository = repository;
-
         final List<? extends IssueModel> page = controller.getTenancyIssues(tenancyProjects, cursor, 10);
 
         assertEquals(1, page.size());
-        assertEquals(new UUID(0, 4), page.get(0).getId());
+        assertEquals(id4, page.get(0).getId());
     }
 
     @Test
     void getTenancyIssues_noTenancies_returnsEmptyListWithoutQuerying() {
-        final IssueController controller = new IssueController();
-
         final List<? extends IssueModel> page = controller.getTenancyIssues(Map.of(), null, 10);
 
         assertTrue(page.isEmpty());
@@ -115,39 +118,19 @@ class IssueControllerTest {
     @Test
     void getProjectIssues_delegatesDirectlyToRepositoryForSinglePartition() {
         final UUID projectId = UUID.randomUUID();
-        final UUID cursor = UUID.randomUUID();
-        final IssueEntity expected = issueOf(projectId, UUID.randomUUID());
+        final UUID issueId = new UUID(0, 1);
+        final UUID cursor = new UUID(0, 2);
+
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), null, null, "Issue");
 
         final IssueFilter filter = new IssueFilter(projectId, null, null, null, null,
             null, List.of(IssueStatus.OPEN), null);
 
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByQuery(filter, cursor, 10))
-            .thenReturn(List.of(expected));
-
-        final IssueController controller = new IssueController();
-        controller.issueRepository = repository;
-
         final List<? extends IssueModel> result = controller.getProjectIssues(filter, cursor, 10);
 
-        assertEquals(List.of(expected), result);
-    }
-
-    private IssueController controllerWithMocks(final IssueRepository repository,
-        final TimelineController timelineController, final RemsfalPrincipal principal) {
-        final IssueController controller = new IssueController();
-        controller.logger = Logger.getLogger(IssueControllerTest.class);
-        controller.issueRepository = repository;
-        controller.issueEventProducer = mock(IssueEventProducer.class);
-        controller.timelineController = timelineController;
-        controller.principal = principal;
-        return controller;
-    }
-
-    private IssueRepository insertingRepository() {
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.insert(any(IssueEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        return repository;
+        assertEquals(1, result.size());
+        assertEquals(issueId, result.get(0).getId());
     }
 
     @Test
@@ -166,13 +149,15 @@ class IssueControllerTest {
         when(issue.isVisibleToTenants()).thenReturn(true);
         when(issue.getDescription()).thenReturn("Die Heizung ist defekt");
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
-
         final IssueModel created = controller.createProjectIssue(user, issue);
 
-        verify(timelineController).createTimelineEntry(agreementId, created.getId(), projectId,
-            reporterId, "Max Manager", MessagePurpose.ISSUE_CREATED, "Die Heizung ist defekt");
+        final List<TimelineEntity> entries =
+            timelineController.getTimelineEntries(agreementId, created.getId(), projectId);
+        assertEquals(1, entries.size());
+        assertEquals(MessagePurpose.ISSUE_CREATED, entries.get(0).getPurpose());
+        assertEquals("Die Heizung ist defekt", entries.get(0).getMessage());
+        assertEquals(reporterId, entries.get(0).getSenderId());
+        assertEquals("Max Manager", entries.get(0).getSenderName());
     }
 
     @Test
@@ -189,31 +174,27 @@ class IssueControllerTest {
         when(issue.getAgreementId()).thenReturn(agreementId);
         when(issue.isVisibleToTenants()).thenReturn(false);
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
+        final IssueModel created = controller.createProjectIssue(user, issue);
 
-        controller.createProjectIssue(user, issue);
-
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
+        assertTrue(timelineController.getTimelineEntries(agreementId, created.getId(), projectId).isEmpty());
     }
 
     @Test
     void createIssue_managerCreated_noAgreement_createsNoTimelineEntry() {
+        final UUID projectId = UUID.randomUUID();
+
         final UserModel user = mock(UserModel.class);
         when(user.getId()).thenReturn(UUID.randomUUID());
         when(user.getName()).thenReturn("Max Manager");
 
         final IssueModel issue = mock(IssueModel.class);
-        when(issue.getProjectId()).thenReturn(UUID.randomUUID());
-
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
+        when(issue.getProjectId()).thenReturn(projectId);
 
         controller.createProjectIssue(user, issue);
 
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
+        // without an agreementId there is no tenancy to query the timeline by; assert directly
+        // against the (freshly truncated, see AbstractTicketingTest) table that nothing was written
+        assertEquals(0L, cqlSession.execute("SELECT COUNT(*) FROM remsfal.tenant_timelines").one().getLong(0));
     }
 
     @Test
@@ -234,179 +215,176 @@ class IssueControllerTest {
         when(issue.isVisibleToTenants()).thenReturn(false);
         when(issue.getDescription()).thenReturn("Bitte um Rueckruf");
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(insertingRepository(), timelineController, null);
+        final IssueModel created = controller.createTenancyIssue(user, issue, projectId);
 
-        controller.createTenancyIssue(user, issue, projectId);
+        assertTrue(timelineController.getTimelineEntries(agreementId, created.getId(), projectId).isEmpty());
+    }
 
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any(), any());
+    @Test
+    void updateIssue_locationProvided_updatesLocation() {
+        final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), null, null, "Issue");
+        final IssueEntity existing = issueRepository.findByIssueId(issueId).orElseThrow();
+        existing.setLocation("Keller");
+        issueRepository.update(existing);
+
+        when(principal.getId()).thenReturn(UUID.randomUUID());
+        when(principal.getName()).thenReturn("Max Manager");
+
+        final IssueModel patch = mock(IssueModel.class);
+        when(patch.getLocation()).thenReturn("Dachgeschoss");
+
+        final IssueModel updated = controller.updateIssue(issueId, patch);
+
+        assertEquals("Dachgeschoss", updated.getLocation());
+    }
+
+    @Test
+    void updateIssue_locationNotProvided_keepsExistingLocation() {
+        final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), null, null, "Issue");
+        final IssueEntity existing = issueRepository.findByIssueId(issueId).orElseThrow();
+        existing.setLocation("Keller");
+        issueRepository.update(existing);
+
+        when(principal.getId()).thenReturn(UUID.randomUUID());
+        when(principal.getName()).thenReturn("Max Manager");
+
+        final IssueModel patch = mock(IssueModel.class);
+
+        final IssueModel updated = controller.updateIssue(issueId, patch);
+
+        assertEquals("Keller", updated.getLocation());
     }
 
     @Test
     void updateIssue_statusChangedOnVisibleTenancyIssue_createsStatusChangedTimelineEntry() {
-        final UUID issueId = UUID.randomUUID();
         final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
         final UUID agreementId = UUID.randomUUID();
         final UUID principalId = UUID.randomUUID();
 
-        final IssueEntity existing = issueOf(projectId, issueId);
-        existing.setStatus(IssueStatus.OPEN);
-        existing.setAgreementId(agreementId);
-        existing.setVisibleToTenants(true);
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementId, null, "Issue");
 
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByIssueId(issueId)).thenReturn(Optional.of(existing));
-        when(repository.update(existing)).thenReturn(existing);
-
-        final RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
         when(principal.getId()).thenReturn(principalId);
         when(principal.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, timelineController, principal);
-
         controller.updateIssue(issueId, patch);
 
-        verify(timelineController).createTimelineEntry(agreementId, issueId, projectId,
-            principalId, "Max Manager", MessagePurpose.STATUS_CHANGED, "IN_PROGRESS");
+        final List<TimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
+        assertEquals(1, entries.size());
+        assertEquals(MessagePurpose.STATUS_CHANGED, entries.get(0).getPurpose());
+        assertEquals("IN_PROGRESS", entries.get(0).getMessage());
+        assertEquals(principalId, entries.get(0).getSenderId());
+        assertEquals("Max Manager", entries.get(0).getSenderName());
     }
 
     @Test
     void updateIssue_sameStatusResent_createsNoTimelineEntry() {
-        final UUID issueId = UUID.randomUUID();
         final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
+        final UUID agreementId = UUID.randomUUID();
 
-        final IssueEntity existing = issueOf(projectId, issueId);
-        existing.setStatus(IssueStatus.OPEN);
-        existing.setAgreementId(UUID.randomUUID());
-        existing.setVisibleToTenants(true);
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementId, null, "Issue");
 
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByIssueId(issueId)).thenReturn(Optional.of(existing));
-        when(repository.update(existing)).thenReturn(existing);
+        when(principal.getId()).thenReturn(UUID.randomUUID());
+        when(principal.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.OPEN);
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, timelineController,
-            mock(RemsfalPrincipal.class));
-
         controller.updateIssue(issueId, patch);
 
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
+        assertTrue(timelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
     }
 
     @Test
     void updateIssue_notVisibleToTenants_createsNoTimelineEntry() {
-        final UUID issueId = UUID.randomUUID();
         final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
+        final UUID agreementId = UUID.randomUUID();
 
-        final IssueEntity existing = issueOf(projectId, issueId);
-        existing.setStatus(IssueStatus.OPEN);
-        existing.setAgreementId(UUID.randomUUID());
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), null, null, "Issue");
+        final IssueEntity existing = issueRepository.findByIssueId(issueId).orElseThrow();
+        existing.setAgreementId(agreementId);
         existing.setVisibleToTenants(false);
+        issueRepository.update(existing);
 
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByIssueId(issueId)).thenReturn(Optional.of(existing));
-        when(repository.update(existing)).thenReturn(existing);
+        when(principal.getId()).thenReturn(UUID.randomUUID());
+        when(principal.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, timelineController,
-            mock(RemsfalPrincipal.class));
-
         controller.updateIssue(issueId, patch);
 
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
+        assertTrue(timelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
     }
 
     @Test
     void updateIssue_noAgreement_createsNoTimelineEntry() {
-        final UUID issueId = UUID.randomUUID();
         final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
 
-        final IssueEntity existing = issueOf(projectId, issueId);
-        existing.setStatus(IssueStatus.OPEN);
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), null, null, "Issue");
 
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByIssueId(issueId)).thenReturn(Optional.of(existing));
-        when(repository.update(existing)).thenReturn(existing);
+        when(principal.getId()).thenReturn(UUID.randomUUID());
+        when(principal.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, timelineController,
-            mock(RemsfalPrincipal.class));
-
         controller.updateIssue(issueId, patch);
 
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
+        assertEquals(0L, cqlSession.execute("SELECT COUNT(*) FROM remsfal.tenant_timelines").one().getLong(0));
     }
 
     @Test
     void closeIssue_openVisibleTenancyIssue_createsStatusChangedTimelineEntry() {
-        final UUID issueId = UUID.randomUUID();
         final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
         final UUID agreementId = UUID.randomUUID();
         final UUID principalId = UUID.randomUUID();
 
-        final IssueEntity existing = issueOf(projectId, issueId);
-        existing.setStatus(IssueStatus.OPEN);
-        existing.setAgreementId(agreementId);
-        existing.setVisibleToTenants(true);
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementId, null, "Issue");
 
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByIssueId(issueId)).thenReturn(Optional.of(existing));
-        when(repository.update(existing)).thenReturn(existing);
-
-        final RemsfalPrincipal principal = mock(RemsfalPrincipal.class);
         when(principal.getId()).thenReturn(principalId);
         when(principal.getName()).thenReturn("Tina Tenant");
 
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, timelineController, principal);
-
         controller.closeIssue(issueId);
 
-        verify(timelineController).createTimelineEntry(agreementId, issueId, projectId,
-            principalId, "Tina Tenant", MessagePurpose.STATUS_CHANGED, "CLOSED");
+        final List<TimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
+        assertEquals(1, entries.size());
+        assertEquals(MessagePurpose.STATUS_CHANGED, entries.get(0).getPurpose());
+        assertEquals("CLOSED", entries.get(0).getMessage());
+        assertEquals(principalId, entries.get(0).getSenderId());
+        assertEquals("Tina Tenant", entries.get(0).getSenderName());
     }
 
     @Test
     void closeIssue_alreadyClosed_createsNoAdditionalTimelineEntry() {
-        final UUID issueId = UUID.randomUUID();
         final UUID projectId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
+        final UUID agreementId = UUID.randomUUID();
 
-        final IssueEntity existing = issueOf(projectId, issueId);
-        existing.setStatus(IssueStatus.CLOSED);
-        existing.setAgreementId(UUID.randomUUID());
-        existing.setVisibleToTenants(true);
-
-        final IssueRepository repository = mock(IssueRepository.class);
-        when(repository.findByIssueId(issueId)).thenReturn(Optional.of(existing));
-        when(repository.update(existing)).thenReturn(existing);
-
-        final TimelineController timelineController = mock(TimelineController.class);
-        final IssueController controller = controllerWithMocks(repository, timelineController,
-            mock(RemsfalPrincipal.class));
+        insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.CLOSED, IssuePriority.MEDIUM,
+            UUID.randomUUID(), agreementId, null, "Issue");
 
         controller.closeIssue(issueId);
 
-        verify(timelineController, never()).createTimelineEntry(
-            any(), any(), any(), any(), any(), any(MessagePurpose.class), any());
+        assertTrue(timelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
     }
 
 }

@@ -166,6 +166,9 @@ public class IssueController {
         if (issue.getPriority() != null) {
             entity.setPriority(issue.getPriority());
         }
+        if (issue.getLocation() != null) {
+            entity.setLocation(issue.getLocation());
+        }
         if (issue.getDescription() != null) {
             entity.setDescription(issue.getDescription());
         }
