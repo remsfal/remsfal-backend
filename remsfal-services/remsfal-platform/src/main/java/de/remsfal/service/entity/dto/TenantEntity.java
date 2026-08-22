@@ -17,7 +17,8 @@ import jakarta.persistence.Table;
 
 /**
  * Entity representing a tenant in a rental agreement. Tenants are independent entities with optional linkage to user
- * accounts. Tenant data takes precedence over user data (fallback pattern).
+ * accounts. Tenant data takes precedence over user data (fallback pattern) — except for {@code email}, which has no
+ * fallback since it is the key used to establish/validate the user link.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -117,18 +118,17 @@ public class TenantEntity extends AbstractEntity implements TenantModel, CoTenan
     }
 
     /**
-     * Returns email with fallback to user's email.
+     * Returns the tenant's own email. Unlike the other fields, this has no fallback to the linked
+     * user's email: the email is the key used to establish/validate the user link, so it must always
+     * reflect the tenant's own stored value.
      */
     @Override
     public String getEmail() {
-        if (email != null) {
-            return email;
-        }
-        return user != null ? user.getEmail() : null;
+        return email;
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = email == null ? null : email.trim().toLowerCase();
     }
 
     /**

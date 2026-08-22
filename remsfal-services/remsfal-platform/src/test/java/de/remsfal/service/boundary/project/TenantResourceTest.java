@@ -205,8 +205,9 @@ class TenantResourceTest extends AbstractResourceTest {
 
         // Create a second agreement for the same tenant with a different unit
         insertRentalAgreement(TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_1);
+        // Same name as tenant 1 but no email, since (project_id, email) is now unique per tenant
         insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_1,
-            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.TENANT_EMAIL_1);
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1);
         insertPropertyRent(TestData.PROPERTY_ID, TestData.AGREEMENT_ID_2,
             LocalDate.parse("2021-01-01"), "MONTHLY", 600.00, 120.00, 60.00);
 
