@@ -31,6 +31,7 @@ import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.InjectMock;
 
@@ -42,6 +43,9 @@ class UserControllerTest extends AbstractServiceTest {
 
     @InjectMock
     UserEventProducer userEventProducer;
+
+    @InjectMock
+    NotificationController notificationController;
 
     @Test
     void createUser_SUCCESS_simpleUserCreated() {
@@ -64,6 +68,54 @@ class UserControllerTest extends AbstractServiceTest {
         assertThrows(
             AlreadyExistsException.class,
             () -> controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL));
+    }
+
+    @Test
+    void createUser_SUCCESS_reclaimsPlaceholderUser() {
+        final UserEntity placeholder = runInTransaction(() ->
+            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build()));
+        final UUID placeholderId = placeholder.getId();
+        assertFalse(placeholder.isActive());
+
+        final UserModel reclaimed = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        assertNotNull(reclaimed);
+        assertEquals(placeholderId, reclaimed.getId());
+        assertTrue(reclaimed.isActive());
+        assertEquals(TestData.USER_EMAIL, reclaimed.getEmail());
+        assertEquals("de", ((CustomerModel) reclaimed).getLocale());
+
+        final List<UUID> ids = entityManager
+            .createQuery("SELECT user.id FROM UserEntity user WHERE user.email = :email", UUID.class)
+            .setParameter("email", TestData.USER_EMAIL)
+            .getResultList();
+        assertEquals(1, ids.size(), "There must be exactly one row for that email");
+        assertEquals(placeholderId, ids.get(0));
+    }
+
+    @Test
+    void createUser_SUCCESS_reclaimSendsRegistrationNotification() {
+        runInTransaction(() ->
+            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build()));
+
+        controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        final ArgumentCaptor<CustomerModel> userCaptor = ArgumentCaptor.forClass(CustomerModel.class);
+        verify(notificationController).informUserAboutRegistration(userCaptor.capture());
+        assertEquals(TestData.USER_EMAIL, userCaptor.getValue().getEmail());
+    }
+
+    @Test
+    void createUser_SUCCESS_localeFromParameter() {
+        final UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL, "en");
+
+        assertEquals("en", ((CustomerModel) user).getLocale());
+
+        final String locale = entityManager
+            .createQuery("SELECT user.locale FROM UserEntity user where user.id = :userId", String.class)
+            .setParameter("userId", user.getId())
+            .getSingleResult();
+        assertEquals("en", locale);
     }
 
     @Test
