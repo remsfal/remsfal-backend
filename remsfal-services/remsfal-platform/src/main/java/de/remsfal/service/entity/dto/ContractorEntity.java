@@ -9,11 +9,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -56,9 +54,6 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id", columnDefinition = "uuid")
     private AddressEntity address;
-
-    @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER)
-    private Set<ContractorEmployeeEntity> employees;
 
     @Override
     public UUID getProjectId() {

@@ -52,9 +52,16 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
         return false;
     }
 
-    public List<ContractorEntity> findContractorsByEmployee(final UUID employeeId) {
-        return find("SELECT c FROM ContractorEntity c JOIN c.employees employee WHERE employee.user.id = :userId",
-            Map.of(PARAM_USER_ID, employeeId)).list();
+    /**
+     * Checks whether the given user is an employee of an organization that is linked to at least one contractor.
+     *
+     * @param userId the user ID
+     * @return true if such a contractor exists
+     */
+    public boolean existsByOrganizationEmployeeUserId(final UUID userId) {
+        return count("organization.id IN "
+            + "(SELECT oe.organization.id FROM OrganizationEmployeeEntity oe WHERE oe.user.id = :userId)",
+            Map.of(PARAM_USER_ID, userId)) > 0;
     }
 
     /**

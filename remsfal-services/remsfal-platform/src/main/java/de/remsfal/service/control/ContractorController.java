@@ -38,9 +38,9 @@ public class ContractorController {
     @Inject
     AddressController addressController;
 
-    public List<ContractorEntity> getOrganizations(final UserModel employeeId) {
-        logger.infov("Retrieving all contractors of an employee (employeeId = {0})", employeeId);
-        return contractorRepository.findContractorsByEmployee(employeeId.getId());
+    public boolean isContractorEmployee(final UserModel user) {
+        logger.infov("Checking whether user (id = {0}) belongs to a contractor-linked organization", user.getId());
+        return contractorRepository.existsByOrganizationEmployeeUserId(user.getId());
     }
 
     /**

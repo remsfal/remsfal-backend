@@ -352,17 +352,17 @@ class ContractorControllerTest extends AbstractServiceTest {
     }
 
     @Test
-    void getOrganizations_SUCCESS_returnsContractors() {
-        ContractorJson contractorJson = ImmutableContractorJson.builder()
-            .companyName(COMPANY_NAME_1)
-            .phone(PHONE_1)
-            .email(EMAIL_1)
-            .trade(TRADE_1)
-            .build();
+    void isContractorEmployee_SUCCESS_trueWhenUserBelongsToLinkedOrganization() {
+        final UUID organizationId = UUID.randomUUID();
+        insertOrganization(organizationId, "Test Organization", null, null, null, null);
+        insertEmployee(organizationId, user.getId(), "STAFF");
+        insertContractor(UUID.randomUUID(), projectId, COMPANY_NAME_1, organizationId);
 
-        contractorController.createContractor(user, projectId, contractorJson);
+        assertTrue(contractorController.isContractorEmployee(user));
+    }
 
-        List<ContractorEntity> contractors = contractorController.getOrganizations(user);
-        assertNotNull(contractors);
+    @Test
+    void isContractorEmployee_SUCCESS_falseWhenNoOrganizationLink() {
+        assertFalse(contractorController.isContractorEmployee(user));
     }
 }
