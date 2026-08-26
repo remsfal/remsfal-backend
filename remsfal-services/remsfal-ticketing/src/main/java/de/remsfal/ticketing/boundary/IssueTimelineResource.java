@@ -31,4 +31,9 @@ public class IssueTimelineResource extends AbstractTimelineResource implements T
         return super.createTimelineEntryWithAttachments(issue, input);
     }
 
+    @Override
+    protected String resolveSenderName() {
+        return "Verwalter " + principal.getName();
+    }
+
 }

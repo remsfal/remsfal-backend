@@ -66,7 +66,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             issue.getId(),
             issue.getProjectId(),
             principal.getId(),
-            principal.getName(),
+            resolveSenderName(),
             timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 
@@ -77,6 +77,15 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             .type(MediaType.APPLICATION_JSON)
             .entity(withAttachments(created, issueAttachments))
             .build();
+    }
+
+    /**
+     * The display name stored as {@code sender_name} on a newly created timeline entry. Subclasses
+     * override this to prefix the sender's role (e.g. the manager-facing resource labels its own
+     * entries as coming from the "Verwalter"), since the timeline entity has no separate role column.
+     */
+    protected String resolveSenderName() {
+        return principal.getName();
     }
 
     private List<IssueAttachmentJson> fetchIssueAttachments(final UUID issueId) {
