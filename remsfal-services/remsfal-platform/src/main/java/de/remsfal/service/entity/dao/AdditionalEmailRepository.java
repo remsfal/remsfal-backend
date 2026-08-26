@@ -9,7 +9,7 @@ import java.util.Optional;
 public class AdditionalEmailRepository extends AbstractRepository<AdditionalEmailEntity> {
 
     public boolean existsByEmail(final String email) {
-        return count("email", email) > 0;
+        return count("email", email == null ? null : email.trim().toLowerCase()) > 0;
     }
 
     public Optional<AdditionalEmailEntity> findByVerificationToken(final String verificationToken) {

@@ -11,7 +11,6 @@ import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
-import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
 import de.remsfal.service.entity.dto.BuildingRentEntity;
@@ -22,7 +21,6 @@ import de.remsfal.service.entity.dto.SiteRentEntity;
 import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
 import de.remsfal.service.entity.dto.embeddable.RentalAgreementKeysEntity;
-import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dto.superclass.RentEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -56,9 +54,6 @@ public class RentalAgreementController {
     RentalAgreementRepository rentalAgreementRepository;
 
     @Inject
-    UserRepository userRepository;
-
-    @Inject
     ProjectRepository projectRepository;
 
     @Inject
@@ -66,6 +61,9 @@ public class RentalAgreementController {
 
     @Inject
     PropertyController propertyController;
+
+    @Inject
+    TenantUserLinkController tenantUserLinker;
 
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
@@ -444,14 +442,9 @@ public class RentalAgreementController {
 
         // Optional: link to existing user by email
         if (tenantInput.getEmail() != null && !tenantInput.getEmail().isBlank()) {
-            tenant.setEmail(tenantInput.getEmail());
-
-            UserEntity user = userRepository.findByEmail(tenantInput.getEmail()).orElse(null);
-            if (user != null) {
-                tenant.setUser(user);
-                logger.infov("Linking tenant {0} {1} to user {2}",
-                    tenantInput.getFirstName(), tenantInput.getLastName(), user.getId());
-            }
+            final String normalizedEmail = tenantInput.getEmail().trim().toLowerCase();
+            tenant.setEmail(normalizedEmail);
+            tenantUserLinker.relinkByEmail(tenant, normalizedEmail);
         }
 
         // Set optional phone numbers

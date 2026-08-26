@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
@@ -48,12 +49,20 @@ class TenancyResourceTest extends AbstractResourceTest {
             TestData.AGREEMENT_START_2, TestData.AGREEMENT_END_2, 899f, 150f, 240f);
         insertRentalAgreement(TestData.AGREEMENT_ID_3, TestData.PROJECT_ID,
             TestData.AGREEMENT_START_3, TestData.AGREEMENT_END_3);
-        insertTenant(TestData.TENANT_ID_3, TestData.AGREEMENT_ID_3, TestData.PROJECT_ID, TestData.USER_ID_3,
-            TestData.USER_FIRST_NAME_3, TestData.USER_LAST_NAME_3, TestData.USER_EMAIL_3);
-        insertTenant(TestData.TENANT_ID_4, TestData.AGREEMENT_ID_3, TestData.PROJECT_ID, TestData.USER_ID_4,
-            TestData.USER_FIRST_NAME_4, TestData.USER_LAST_NAME_4, TestData.USER_EMAIL_4);
+        // Same tenants (user_id/email unique per project) as AGREEMENT_ID_1/_2, reused across agreements
+        // via the rental_agreement_tenants join table, rather than duplicate tenant rows.
+        linkTenantToAgreement(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_3);
+        linkTenantToAgreement(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_3);
         insertPropertyRent(TestData.AGREEMENT_ID_3, TestData.PROPERTY_ID_2,
             TestData.AGREEMENT_START_3, TestData.AGREEMENT_END_3, 100f, null, null);
+    }
+
+    private void linkTenantToAgreement(UUID tenantId, UUID agreementId) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO rental_agreement_tenants (rental_agreement_id, tenant_id) VALUES (?,?)")
+                .setParameter(1, agreementId)
+                .setParameter(2, tenantId)
+                .executeUpdate());
     }
 
     protected void insertRentalAgreement(Object... params) {

@@ -20,7 +20,7 @@ public class UserRepository extends AbstractRepository<UserEntity> {
     }
 
     public Optional<UserEntity> findByEmail(final String email) {
-        return find("email", email).singleResultOptional();
+        return find("email", email == null ? null : email.trim().toLowerCase()).singleResultOptional();
     }
 
     public Optional<UserEntity> findByIdWithAdditionalEmails(UUID id) {

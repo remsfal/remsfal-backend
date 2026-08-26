@@ -130,7 +130,8 @@ class MemberResourceTest extends AbstractResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.notNullValue())
-            .and().body("email", Matchers.equalTo("newUser@example.org"))
+            // Emails are normalized to lowercase system-internally, regardless of submitted casing
+            .and().body("email", Matchers.equalTo("newuser@example.org"))
             .and().body("active", Matchers.is(false))
             .and().body("role", Matchers.equalTo("STAFF"));
     }

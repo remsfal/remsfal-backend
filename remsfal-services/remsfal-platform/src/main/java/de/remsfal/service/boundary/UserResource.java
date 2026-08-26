@@ -54,7 +54,7 @@ public class UserResource implements UserEndpoint {
         if (!projectController.getProjects(user, 0, 1).isEmpty()) {
             userContexts.add(UserContext.MANAGER);
         }
-        if (!contractorController.getOrganizations(user).isEmpty()) {
+        if (contractorController.isContractorEmployee(user)) {
             userContexts.add(UserContext.CONTRACTOR);
         }
         if (!agreementController.getRentalAgreements(user).isEmpty()) {

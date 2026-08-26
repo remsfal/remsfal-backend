@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.json.webtoken.JsonWebSignature;
 
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
+import de.remsfal.service.control.UserController;
 import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
@@ -23,6 +25,7 @@ import static org.mockito.Mockito.when;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response.Status;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @QuarkusTest
@@ -35,6 +38,9 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
 
     @Inject
     protected AuthenticationEventObserver observer;
+
+    @Inject
+    UserController userController;
 
     @Test
     void session_SUCCESS_userIsCreated() {
@@ -123,6 +129,67 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .atMost(5, TimeUnit.SECONDS)       // Maximum time to wait
             .pollInterval(500, TimeUnit.MILLISECONDS) // frequency of checking
             .until(() -> observer.getNumberOfEvents() == 1);  // Condition to wait for
+    }
+
+    @Test
+    void session_SUCCESS_reclaimsPlaceholderUserOnFirstLogin() {
+        final String code = "anyRandomCode";
+        final GoogleIdToken.Payload idTokenPayload = new GoogleIdToken.Payload()
+            .setSubject(TestData.USER_TOKEN_1)
+            .setEmail(TestData.USER_EMAIL_1);
+
+        when(authenticator.getIdToken(eq(code), any()))
+            .thenReturn(new GoogleIdToken(new JsonWebSignature.Header(), idTokenPayload, new byte[1], new byte[1]));
+
+        final UUID placeholderId = runInTransaction(() ->
+            userController.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build())
+                .getId());
+
+        given()
+            .when()
+            .queryParam("code", code)
+            .redirects().follow(false)
+            .get(BASE_PATH + "/session")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode());
+
+        final long count = entityManager
+            .createQuery("SELECT count(user) FROM UserEntity user where user.email = :email", Long.class)
+            .setParameter("email", TestData.USER_EMAIL_1)
+            .getSingleResult();
+        assertEquals(1, count);
+
+        final String tokenId = entityManager
+            .createQuery("SELECT user.tokenId FROM UserEntity user where user.id = :id", String.class)
+            .setParameter("id", placeholderId)
+            .getSingleResult();
+        assertEquals(TestData.USER_TOKEN_1, tokenId);
+    }
+
+    @Test
+    void session_SUCCESS_localeDerivedFromAcceptLanguageHeader() {
+        final String code = "anyRandomCode";
+        final GoogleIdToken.Payload idTokenPayload = new GoogleIdToken.Payload()
+            .setSubject(TestData.USER_TOKEN_1)
+            .setEmail(TestData.USER_EMAIL_1);
+
+        when(authenticator.getIdToken(eq(code), any()))
+            .thenReturn(new GoogleIdToken(new JsonWebSignature.Header(), idTokenPayload, new byte[1], new byte[1]));
+
+        given()
+            .when()
+            .header("Accept-Language", "en-US,en;q=0.9")
+            .queryParam("code", code)
+            .redirects().follow(false)
+            .get(BASE_PATH + "/session")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode());
+
+        final String locale = entityManager
+            .createQuery("SELECT user.locale FROM UserEntity user where user.email = :email", String.class)
+            .setParameter("email", TestData.USER_EMAIL_1)
+            .getSingleResult();
+        assertEquals("en", locale);
     }
 
     @Test

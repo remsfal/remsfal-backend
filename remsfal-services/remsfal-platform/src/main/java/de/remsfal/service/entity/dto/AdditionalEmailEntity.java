@@ -46,7 +46,7 @@ public class AdditionalEmailEntity extends AbstractEntity {
     }
 
     public void setEmail(final String email) {
-        this.email = email;
+        this.email = email == null ? null : email.trim().toLowerCase();
     }
 
     public boolean isVerified() {

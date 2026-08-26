@@ -74,8 +74,9 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
      * @return list of tenants
      */
     public List<TenantEntity> findByEmailAndProjectId(String email, UUID projectId) {
+        final String normalizedEmail = email == null ? null : email.trim().toLowerCase();
         return find("email = :email and projectId = :projectId",
-            Map.of("email", email, PARAM_PROJECT_ID, projectId))
+            Map.of("email", normalizedEmail, PARAM_PROJECT_ID, projectId))
                 .list();
     }
 }

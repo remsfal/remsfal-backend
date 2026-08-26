@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-backend-0.1.14-drop-contractor-employees" author="alexander.stanik@htw-berlin.de">
+        <comment>
+            Remove the unused contractor_employees table and its ContractorEmployeeEntity/-Key mapping.
+            The table was never populated by any code path; the CONTRACTOR user context is now derived
+            from organization-employee membership instead (see ContractorRepository.existsByOrganizationEmployeeUserId).
+        </comment>
+        <dropTable tableName="contractor_employees" cascadeConstraints="true"/>
+        <rollback>
+            <createTable tableName="contractor_employees">
+                <column name="contractor_id" type="uuid">
+                    <constraints nullable="false" primaryKey="true" />
+                </column>
+                <column name="user_id" type="uuid">
+                    <constraints nullable="false" primaryKey="true" />
+                </column>
+                <column name="responsibility" type="varchar(255)">
+                    <constraints nullable="true" />
+                </column>
+                <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                    <constraints nullable="false" />
+                </column>
+                <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                    <constraints nullable="false" />
+                </column>
+            </createTable>
+            <addForeignKeyConstraint constraintName="fk_contractor_employee_contractor_id"
+                                     baseTableName="contractor_employees" baseColumnNames="contractor_id"
+                                     referencedTableName="contractors" referencedColumnNames="id"
+                                     onDelete="CASCADE" onUpdate="RESTRICT" />
+            <addForeignKeyConstraint constraintName="fk_contractor_employee_user_id"
+                                     baseTableName="contractor_employees" baseColumnNames="user_id"
+                                     referencedTableName="users" referencedColumnNames="id"
+                                     onDelete="CASCADE" onUpdate="RESTRICT" />
+            <createIndex indexName="idx_contractor_employee_contractor_fk" tableName="contractor_employees">
+                <column name="contractor_id" type="uuid" />
+            </createIndex>
+            <createIndex indexName="idx_contractor_employee_user_fk" tableName="contractor_employees">
+                <column name="user_id" type="uuid" />
+            </createIndex>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -64,19 +64,43 @@ public class UserController {
 
     @Transactional
     protected UserModel createUser(final String googleId, final String email) {
-        logger.infov("Creating a new user (googleId={0}, email={1})", googleId, email);
+        return createUser(googleId, email, null);
+    }
+
+    @Transactional
+    protected UserModel createUser(final String googleId, final String email, final String locale) {
+        final String normalizedEmail = email.toLowerCase();
+        final String resolvedLocale = locale != null && !locale.isBlank() ? locale : DEFAULT_LOCALE;
+
+        if (additionalEmailRepository.existsByEmail(normalizedEmail)) {
+            throw new AlreadyExistsException("Unable to create user");
+        }
+
+        final Optional<UserEntity> existingByEmail = repository.findByEmail(normalizedEmail);
+        if (existingByEmail.isPresent()) {
+            final UserEntity existing = existingByEmail.get();
+            if (existing.isActive()) {
+                throw new AlreadyExistsException("Unable to create user");
+            }
+            logger.infov("Reclaiming placeholder user for first login (id={0}, googleId={1}, email={2})",
+                existing.getId(), googleId, normalizedEmail);
+            existing.setTokenId(googleId);
+            existing.setLocale(resolvedLocale);
+            existing.setAuthenticatedAt(LocalDateTime.now());
+            final UserEntity reclaimed = repository.mergeAndFlush(existing);
+            notificationController.informUserAboutRegistration(reclaimed);
+            return reclaimed;
+        }
+
+        logger.infov("Creating a new user (googleId={0}, email={1})", googleId, normalizedEmail);
         final UserEntity entity = new UserEntity();
         entity.generateId();
         entity.setTokenId(googleId);
-        if (additionalEmailRepository.existsByEmail(email.toLowerCase())) {
-            throw new AlreadyExistsException("Unable to create user");
-        }
-        entity.setEmail(email.toLowerCase());
-        entity.setLocale(DEFAULT_LOCALE);
+        entity.setEmail(normalizedEmail);
+        entity.setLocale(resolvedLocale);
         entity.setAuthenticatedAt(LocalDateTime.now());
         try {
             repository.persistAndFlush(entity);
-            logger.infov("entity: " + entity);
             notificationController.informUserAboutRegistration(entity);
             return entity;
         } catch (PersistenceException e) {
