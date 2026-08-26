@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.project.TenantModel;
+import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dto.TenantEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -21,6 +22,9 @@ public class TenantController {
 
     @Inject
     TenantRepository tenantRepository;
+
+    @Inject
+    TenantUserLinkController tenantUserLinker;
 
     public List<TenantModel> getTenants(final UUID projectId) {
         logger.infov("Retrieving tenants for project {0}", projectId);
@@ -54,7 +58,18 @@ public class TenantController {
 
     private TenantEntity applyJsonToEntity(final TenantJson json, final TenantEntity entity) {
         if (json.getEmail() != null) {
-            entity.setEmail(json.getEmail());
+            final String normalizedEmail = json.getEmail().trim().toLowerCase();
+            if (!normalizedEmail.equals(entity.getEmail())) {
+                tenantRepository.findByEmailAndProjectId(normalizedEmail, entity.getProjectId()).stream()
+                    .filter(t -> !t.getId().equals(entity.getId()))
+                    .findAny()
+                    .ifPresent(t -> {
+                        throw new AlreadyExistsException(
+                            "Email " + normalizedEmail + " is already used by another tenant in this project");
+                    });
+                entity.setEmail(normalizedEmail);
+                tenantUserLinker.relinkByEmail(entity, normalizedEmail);
+            }
         }
         entity.setFirstName(json.getFirstName());
         entity.setLastName(json.getLastName());

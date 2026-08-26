@@ -46,7 +46,7 @@ public class NotificationController {
         logger.infov("Sending information about user registration (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
             .user(UserJson.valueOf(user))
-            .locale(defaultLanguage)
+            .locale(resolveLocale(user))
             .type(EmailEventType.USER_REGISTRATION)
             .link(frontendBaseUrl)
             .build();
@@ -58,7 +58,7 @@ public class NotificationController {
         logger.infov("Sending information about new membership (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
             .user(UserJson.valueOf(user))
-            .locale(defaultLanguage)
+            .locale(resolveLocale(user))
             .type(EmailEventType.PROJECT_ADMISSION)
             .link(frontendBaseUrl + frontendProjectsPath + "/" + projectId)
             .build();
@@ -73,11 +73,15 @@ public class NotificationController {
         final String encodedToken = URLEncoder.encode(verificationToken, StandardCharsets.UTF_8);
         EmailEventJson mail = ImmutableEmailEventJson.builder()
             .user(UserJson.valueOf(user).withEmail(additionalEmail))
-            .locale(defaultLanguage)
+            .locale(resolveLocale(user))
             .type(EmailEventType.ADDITIONAL_EMAIL_VERIFICATION)
             .link(frontendBaseUrl + frontendAdditionalEmailVerificationPath + "?token=" + encodedToken)
             .build();
         notificationEmitter.send(mail);
+    }
+
+    private String resolveLocale(final CustomerModel user) {
+        return user.getLocale() != null && !user.getLocale().isBlank() ? user.getLocale() : defaultLanguage;
     }
 
 }

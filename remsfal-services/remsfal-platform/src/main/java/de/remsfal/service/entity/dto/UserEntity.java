@@ -99,7 +99,7 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     }
 
     public void setEmail(final String email) {
-        this.email = email;
+        this.email = email == null ? null : email.trim().toLowerCase();
     }
 
     public LocalDateTime getAuthenticatedAt() {

@@ -27,6 +27,7 @@ import io.micrometer.core.annotation.Timed;
 import org.jboss.logging.Logger;
 
 import java.net.URI;
+import java.util.Locale;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -89,7 +90,8 @@ public class AuthenticationResource implements AuthenticationEndpoint {
             throw new ForbiddenException("Invalid ID token");
         }
         final Payload payload = idToken.getPayload();
-        final UserModel user = controller.authenticateUser(payload.getSubject(), payload.getEmail().toLowerCase());
+        final UserModel user = controller.authenticateUser(
+            payload.getSubject(), payload.getEmail().toLowerCase(), resolveLocale());
         return createSession(user, state);
     }
 
@@ -106,7 +108,7 @@ public class AuthenticationResource implements AuthenticationEndpoint {
             logger.warn("Dev Services for Authentication are enabled!");
             final String devToken = "dev-token";
             final String devEmail = "dev@remsfal.de";
-            final UserModel user = controller.authenticateUser(devToken, devEmail);
+            final UserModel user = controller.authenticateUser(devToken, devEmail, resolveLocale());
             final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
             final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
             return Response.noContent().cookie(accessToken, refreshToken).build();
@@ -150,6 +152,16 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     public Response verifyAdditionalEmail(final String token) {
         userController.verifyAdditionalEmail(token);
         return Response.noContent().build();
+    }
+
+    private String resolveLocale() {
+        for (final Locale locale : httpHeaders.getAcceptableLanguages()) {
+            final String language = locale.getLanguage();
+            if (language != null && !language.isBlank() && !language.equals("*")) {
+                return language.toLowerCase();
+            }
+        }
+        return null;
     }
 
     private Response.ResponseBuilder redirect(final URI redirectUrl) {

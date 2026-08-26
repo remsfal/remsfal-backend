@@ -36,6 +36,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("type", Matchers.equalTo("PROJECT_ADMISSION"))
+            .json("locale", Matchers.equalTo("de"))
             .json("link", Matchers.equalTo("https://remsfal.de/projects/" + TestData.PROJECT_ID));
     }
 
@@ -55,7 +56,26 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("type", Matchers.equalTo("USER_REGISTRATION"))
+            .json("locale", Matchers.equalTo("de"))
             .json("link", Matchers.equalTo("https://remsfal.de"));
+    }
+
+    @Test
+    void testInformUserAboutRegistration_usesUserLocaleOverDefault() {
+        CustomerModel user =
+            ImmutableUserJson.builder()
+                    .id(TestData.USER_ID)
+                    .email(TestData.USER_EMAIL)
+                    .locale("en")
+                    .build();
+
+        notificationController.informUserAboutRegistration(user);
+
+        given()
+            .topic(EmailEventJson.TOPIC)
+        .assertThat()
+            .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
+            .json("locale", Matchers.equalTo("en"));
     }
 
 }

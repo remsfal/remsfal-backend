@@ -72,7 +72,7 @@ public class AuthorizationController {
     }
 
     @Transactional
-    public UserModel authenticateUser(final String googleId, final String email) {
+    public UserModel authenticateUser(final String googleId, final String email, final String locale) {
         logger.infov("Authenticating a user (googleId={0}, email={1})", googleId, email);
 
         final Optional<UserEntity> entity = userRepository.findByTokenId(googleId);
@@ -81,7 +81,7 @@ public class AuthorizationController {
             return entity.get();
         }
 
-        return userController.createUser(googleId, email);
+        return userController.createUser(googleId, email, locale);
     }
     
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
