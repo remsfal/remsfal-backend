@@ -7,23 +7,23 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.3-chat-messages" author="alexander.stanik@htw-berlin.de">
-        <comment>Create chat messaging schema</comment>
+    <changeSet id="remsfal-ticketing-0.0.15-issue-chat-messages" author="alexander.stanik@htw-berlin.de">
+        <comment>Create table for internal per-issue chat messages between project members</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.chat_messages (
-                session_id UUID,
+            CREATE TABLE IF NOT EXISTS REMSFAL.issue_chat_messages (
+                project_id UUID,
+                issue_id UUID,
                 message_id UUID,
                 sender_id UUID,
-                content_type TEXT,
-                content TEXT,
-                url TEXT,
+                sender_name TEXT,
+                message TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
-                PRIMARY KEY (session_id, message_id)
+                PRIMARY KEY ((project_id, issue_id), message_id)
             ) WITH CLUSTERING ORDER BY (message_id ASC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.chat_messages;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.issue_chat_messages;</sql>
         </rollback>
     </changeSet>
 
