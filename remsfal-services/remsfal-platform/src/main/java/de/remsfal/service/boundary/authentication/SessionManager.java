@@ -231,6 +231,24 @@ public class SessionManager {
         }
     }
 
+    /**
+     * Extracts the subject (user id) from a currently valid access token cookie.
+     *
+     * @param accessToken access token cookie
+     * @return the user id from the token's subject claim, or null if absent/unparsable
+     */
+    public UUID getUserId(final Cookie accessToken) {
+        if (accessToken == null) {
+            return null;
+        }
+        try {
+            JsonWebToken jwt = jwtParser.parse(accessToken.getValue());
+            return UUID.fromString(jwt.getSubject());
+        } catch (ParseException | IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     private String getSameSiteWorkaround() {
         // see: https://github.com/jakartaee/rest/issues/862
         return ";SameSite=" + sessionCookieSameSite.name().substring(0, 1).toUpperCase() +

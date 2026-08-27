@@ -1,6 +1,7 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.core.model.ticketing.ChatMessageModel;
+
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
@@ -8,7 +9,7 @@ import jakarta.nosql.Id;
 import java.util.Optional;
 import java.util.UUID;
 
-@Entity("chat_messages")
+@Entity("issue_chat_messages")
 public class ChatMessageEntity extends AbstractEntity implements ChatMessageModel {
 
     @Id
@@ -17,27 +18,31 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
     @Column("sender_id")
     private UUID senderId;
 
-    @Column("content_type")
-    private String contentType;
+    @Column("sender_name")
+    private String senderName;
 
-    @Column("content")
-    private String content;
-
-    @Column("url")
-    private String url;
+    @Column("message")
+    private String message;
 
     public ChatMessageKey getKey() {
         return key;
     }
 
-    public void setKey(ChatMessageKey key) {
+    public void setKey(final ChatMessageKey key) {
         this.key = key;
     }
 
     @Override
-    public UUID getSessionId() {
+    public UUID getProjectId() {
         return Optional.ofNullable(key)
-            .map(ChatMessageKey::getSessionId)
+            .map(ChatMessageKey::getProjectId)
+            .orElse(null);
+    }
+
+    @Override
+    public UUID getIssueId() {
+        return Optional.ofNullable(key)
+            .map(ChatMessageKey::getIssueId)
             .orElse(null);
     }
 
@@ -53,47 +58,26 @@ public class ChatMessageEntity extends AbstractEntity implements ChatMessageMode
         return senderId;
     }
 
-    public void setSenderId(UUID senderId) {
+    public void setSenderId(final UUID senderId) {
         this.senderId = senderId;
     }
 
     @Override
-    public String getContentType() {
-        return contentType;
+    public String getSenderName() {
+        return senderName;
     }
 
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    @Override
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
+    public void setSenderName(final String senderName) {
+        this.senderName = senderName;
     }
 
     @Override
-    public String getUrl() {
-        return url;
+    public String getMessage() {
+        return message;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setMessage(final String message) {
+        this.message = message;
     }
 
-    @Override
-    public String toString() {
-        return "CassChatMessageEntity{" +
-                "chatSessionId=" + getSessionId() +
-                ", messageId=" + getMessageId() +
-                ", senderId=" + senderId +
-                ", contentType='" + contentType + '\'' +
-                ", content='" + content + '\'' +
-                ", url='" + url + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
-    }
 }

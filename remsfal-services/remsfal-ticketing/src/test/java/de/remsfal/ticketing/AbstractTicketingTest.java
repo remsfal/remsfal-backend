@@ -62,8 +62,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     void cleanColumnDatabase() {
         cqlSession.execute("TRUNCATE issues");
         cqlSession.execute("TRUNCATE issue_attachments");
-        cqlSession.execute("TRUNCATE chat_sessions");
-        cqlSession.execute("TRUNCATE chat_messages");
+        cqlSession.execute("TRUNCATE issue_chat_messages");
         cqlSession.execute("TRUNCATE inbox_messages");
         cqlSession.execute("TRUNCATE quotation_requests");
         cqlSession.execute("TRUNCATE quotations");
@@ -94,11 +93,6 @@ public abstract class AbstractTicketingTest extends AbstractTest {
                     .contentType(mediaType)
                     .build());
         }
-    }
-
-    protected void setupTestFile() throws Exception {
-        uploadTestFile(TicketingTestData.FILE_PNG_PATH, TicketingTestData.FILE_PNG_TYPE,
-            TicketingTestData.FILE_PNG_PATH);
     }
 
     protected void setupTestIssues() {
@@ -202,6 +196,15 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute(insertTimelineCql,
             tenancyId, issueId, timelineId, projectId, attachmentIds, UUID.randomUUID(), TicketingTestData.USER_NAME,
             purpose.name(), "Message " + purpose, Instant.now(), Instant.now());
+    }
+
+    protected void insertChatMessage(UUID projectId, UUID issueId, UUID messageId, UUID senderId,
+            String senderName, String message) {
+        String insertChatMessageCql = "INSERT INTO remsfal.issue_chat_messages "
+            + "(project_id, issue_id, message_id, sender_id, sender_name, message, created_at, modified_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertChatMessageCql,
+            projectId, issueId, messageId, senderId, senderName, message, Instant.now(), Instant.now());
     }
 
 }

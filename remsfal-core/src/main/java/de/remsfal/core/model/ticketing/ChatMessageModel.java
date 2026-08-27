@@ -3,22 +3,19 @@ package de.remsfal.core.model.ticketing;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Represents a chat message in Cassandra.
- */
 public interface ChatMessageModel {
 
-    UUID getSessionId();
+    UUID getProjectId();
+
+    UUID getIssueId();
 
     UUID getMessageId();
 
     UUID getSenderId();
 
-    String getContentType();
+    String getSenderName();
 
-    String getContent();
-
-    String getUrl();
+    String getMessage();
 
     Instant getCreatedAt();
 

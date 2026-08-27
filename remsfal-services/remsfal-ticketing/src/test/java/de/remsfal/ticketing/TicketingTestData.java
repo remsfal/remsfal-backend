@@ -17,10 +17,6 @@ public class TicketingTestData extends TestData {
         AGREEMENT_ID.toString(), PROJECT_ID.toString()
     );
 
-    // Files
-    public static final String FILE_PNG_PATH = "test-image.png";
-    public static final String FILE_PNG_TYPE = "image/png";
-
     // Attachment test data
     public static final UUID ATTACHMENT_ID_1 = UUID.fromString("aa000000-0000-0000-0000-000000000001");
     public static final String ATTACHMENT_FILE_PATH_1 = "Leckage-Steigleitung.jpg";
@@ -113,14 +109,5 @@ public class TicketingTestData extends TestData {
         + "Vielen Dank für Ihre Hilfe.\\n"
         + "\\n"
         + "Mit freundlichen Grüßen";
-
-    // Chat session test data
-    public static final UUID CHAT_SESSION_ID_1 = UUID.fromString("64ab9ef0-25ef-4a1c-81c9-5963f7c7d211");
-    public static final UUID CHAT_SESSION_ID_2 = UUID.fromString("30444d17-56a9-4275-a9a8-e4fb7305359a");
-
-    // Chat message test data
-    public static final UUID CHAT_MESSAGE_ID_1 = UUID.fromString("b9854462-abb8-4213-8b15-be9290a19959");
-    public static final UUID CHAT_MESSAGE_ID_2 = UUID.fromString("3f72a368-48bd-405e-976f-51a5c417a5c2");
-    public static final UUID CHAT_MESSAGE_ID_3 = UUID.fromString("42817454-dc1e-476e-93d5-e073b424f191");
 
 }

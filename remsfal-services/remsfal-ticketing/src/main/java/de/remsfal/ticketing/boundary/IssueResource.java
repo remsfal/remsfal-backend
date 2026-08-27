@@ -47,7 +47,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     Instance<IssueOrderPlacementResource> orderPlacementResource;
 
     @Inject
-    Instance<ChatSessionResource> chatSessionResource;
+    Instance<ChatResource> chatResource;
 
     @Inject
     Instance<IssueTimelineResource> timelineResource;
@@ -157,8 +157,8 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     }
 
     @Override
-    public ChatSessionResource getChatSessionResource() {
-        return resourceContext.initResource(chatSessionResource.get());
+    public ChatResource getChatResource() {
+        return resourceContext.initResource(chatResource.get());
     }
 
     @Override
