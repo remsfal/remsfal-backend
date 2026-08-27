@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.manager;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
@@ -16,8 +16,9 @@ import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
-import de.remsfal.core.api.ticketing.IssueAttachmentEndpoint;
+import de.remsfal.core.api.ticketing.manager.IssueAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
+import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 

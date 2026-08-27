@@ -1,8 +1,9 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.manager;
 
 import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.json.ticketing.TimelineListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.boundary.AbstractTimelineResource;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;

@@ -1,7 +1,8 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.manager;
 
-import de.remsfal.core.api.ticketing.InboxEndpoint;
+import de.remsfal.core.api.ticketing.manager.InboxEndpoint;
 import de.remsfal.core.json.ticketing.InboxMessageJson;
+import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.InboxController;
 import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 

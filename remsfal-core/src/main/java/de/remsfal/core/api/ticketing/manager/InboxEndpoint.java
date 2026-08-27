@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.core.api.ticketing.manager;
 
 import de.remsfal.core.json.ticketing.InboxMessageJson;
 import jakarta.ws.rs.DELETE;

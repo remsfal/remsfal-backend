@@ -1,9 +1,10 @@
-package de.remsfal.ticketing.boundary;
+package de.remsfal.ticketing.boundary.manager;
 
-import de.remsfal.core.api.ticketing.ChatEndpoint;
+import de.remsfal.core.api.ticketing.manager.ChatEndpoint;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.ChatMessageListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.ChatController;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
 

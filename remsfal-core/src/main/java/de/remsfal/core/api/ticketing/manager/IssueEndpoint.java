@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.core.api.ticketing.manager;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -30,6 +30,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
+import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;

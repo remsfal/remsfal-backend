@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.core.api.ticketing.manager;
 
 import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.ChatMessageListJson;

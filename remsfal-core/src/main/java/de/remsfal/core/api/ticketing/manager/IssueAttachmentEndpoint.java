@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing;
+package de.remsfal.core.api.ticketing.manager;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
