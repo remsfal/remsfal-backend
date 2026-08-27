@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.5-quotations" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-005-quotations" author="alexander.stanik@htw-berlin.de">
         <comment>Create quotations table</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.quotations (

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-003-projects" author="alexander.stanik@htw-berlin.de">
+        <comment>Create project schema with projects and membership tables</comment>
+
+        <createTable tableName="projects">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="project_memberships">
+            <column name="project_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="member_role" type="varchar(20)">
+                <constraints nullable="false" checkConstraint="member_role IN ('PROPRIETOR', 'MANAGER', 'LESSOR', 'STAFF', 'COLLABORATOR')" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="project_memberships" constraintName="pk_project_membership"
+                columnNames="project_id,user_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_membership_project_id"
+            baseTableName="project_memberships" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_membership_user_id"
+            baseTableName="project_memberships" baseColumnNames="user_id"
+            referencedTableName="users" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+    </changeSet>
+
+</databaseChangeLog>

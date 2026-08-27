@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-012-contractor" author="efehan.cekic@student.htw-berlin.de">
+        <comment>Create contractor schema with contractors and contractor employees tables</comment>
+
+        <createTable tableName="contractors">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="company_name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="phone" type="varchar(15)" remarks="According to E.164">
+                <constraints nullable="true" />
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="trade" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_contractor_project_id"
+                                 baseTableName="contractors" baseColumnNames="project_id"
+                                 referencedTableName="projects" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_contractor_project_fk" tableName="contractors">
+            <column name="project_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_contractor_company_name" tableName="contractors">
+            <column name="company_name" type="varchar(255)" />
+        </createIndex>
+
+        <createTable tableName="contractor_employees">
+            <column name="contractor_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="responsibility" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_contractor_employee_contractor_id"
+                                 baseTableName="contractor_employees" baseColumnNames="contractor_id"
+                                 referencedTableName="contractors" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_contractor_employee_user_id"
+                                 baseTableName="contractor_employees" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_contractor_employee_contractor_fk" tableName="contractor_employees">
+            <column name="contractor_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_contractor_employee_user_fk" tableName="contractor_employees">
+            <column name="user_id" type="uuid" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

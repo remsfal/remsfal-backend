@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-022-rental-agreement-keys" author="test">
+        <comment>Add rental_agreement_keys element collection table</comment>
+
+        <createTable tableName="rental_agreement_keys">
+            <column name="agreement_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="amount_of_keys" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="issued_at" type="date" />
+            <column name="returned_at" type="date" />
+            <column name="key_description" type="varchar(255)" />
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_rental_agreement_keys_agreement_id"
+                                 baseTableName="rental_agreement_keys" baseColumnNames="agreement_id"
+                                 referencedTableName="rental_agreements" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_rental_agreement_keys_agreement_fk" tableName="rental_agreement_keys">
+            <column name="agreement_id" type="uuid" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
