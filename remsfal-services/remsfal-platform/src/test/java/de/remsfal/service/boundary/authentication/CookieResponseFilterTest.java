@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
@@ -168,8 +169,111 @@ class CookieResponseFilterTest {
 
     @Test
     void testAccessTokenRenewedOnProjectCreation() {
-        when(uriInfo.getPath()).thenReturn("/api/v1/projects");
+        assertSelfAffectingRouteForcesRenewal("POST", "/api/v1/projects", null);
+    }
+
+    @Test
+    void testAccessTokenRenewedOnOrganizationCreation() {
+        assertSelfAffectingRouteForcesRenewal("POST", "/api/v1/organizations", null);
+    }
+
+    @Test
+    void testAccessTokenRenewedOnOrganizationDeletion() {
+        assertSelfAffectingRouteForcesRenewal("DELETE", "/api/v1/organizations/" + UUID.randomUUID(), null);
+    }
+
+    @Test
+    void testAccessTokenRenewedOnProjectDeletion() {
+        assertSelfAffectingRouteForcesRenewal("DELETE", "/api/v1/projects/" + UUID.randomUUID(), null);
+    }
+
+    @Test
+    void testAccessTokenRenewedWhenLeavingOwnOrganization() {
+        UUID actorId = UUID.randomUUID();
+        String path = "/api/v1/organizations/" + UUID.randomUUID() + "/employees/" + actorId;
+        assertSelfAffectingRouteForcesRenewal("DELETE", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenNotRenewedWhenRemovingOtherEmployee() {
+        UUID actorId = UUID.randomUUID();
+        UUID otherId = UUID.randomUUID();
+        String path = "/api/v1/organizations/" + UUID.randomUUID() + "/employees/" + otherId;
+        assertSelfAffectingRouteDoesNotForceRenewal("DELETE", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenRenewedWhenChangingOwnEmployeeRole() {
+        UUID actorId = UUID.randomUUID();
+        String path = "/api/v1/organizations/" + UUID.randomUUID() + "/employees/" + actorId;
+        assertSelfAffectingRouteForcesRenewal("PATCH", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenNotRenewedWhenChangingOtherEmployeeRole() {
+        UUID actorId = UUID.randomUUID();
+        UUID otherId = UUID.randomUUID();
+        String path = "/api/v1/organizations/" + UUID.randomUUID() + "/employees/" + otherId;
+        assertSelfAffectingRouteDoesNotForceRenewal("PATCH", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenRenewedWhenLeavingOwnProject() {
+        UUID actorId = UUID.randomUUID();
+        String path = "/api/v1/projects/" + UUID.randomUUID() + "/members/" + actorId;
+        assertSelfAffectingRouteForcesRenewal("DELETE", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenNotRenewedWhenRemovingOtherMember() {
+        UUID actorId = UUID.randomUUID();
+        UUID otherId = UUID.randomUUID();
+        String path = "/api/v1/projects/" + UUID.randomUUID() + "/members/" + otherId;
+        assertSelfAffectingRouteDoesNotForceRenewal("DELETE", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenRenewedWhenChangingOwnMemberRole() {
+        UUID actorId = UUID.randomUUID();
+        String path = "/api/v1/projects/" + UUID.randomUUID() + "/members/" + actorId;
+        assertSelfAffectingRouteForcesRenewal("PATCH", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenNotRenewedWhenChangingOtherMemberRole() {
+        UUID actorId = UUID.randomUUID();
+        UUID otherId = UUID.randomUUID();
+        String path = "/api/v1/projects/" + UUID.randomUUID() + "/members/" + otherId;
+        assertSelfAffectingRouteDoesNotForceRenewal("PATCH", path, actorId);
+    }
+
+    @Test
+    void testAccessTokenNotRenewedOnFailedSelfAffectingRequest() {
+        when(uriInfo.getPath()).thenReturn("/api/v1/organizations");
         when(requestContext.getMethod()).thenReturn("POST");
+
+        Map<String, Cookie> cookies = new HashMap<>();
+        Cookie accessCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("access.jwt").build();
+        cookies.put(SessionManager.ACCESS_COOKIE_NAME, accessCookie);
+
+        when(requestContext.getCookies()).thenReturn(cookies);
+        when(sessionManager.findAccessTokenCookie(cookies)).thenReturn(accessCookie);
+        when(sessionManager.needsRenewal(accessCookie)).thenReturn(false);
+        when(responseContext.getStatus()).thenReturn(403);
+
+        filter.filter(requestContext, responseContext);
+
+        verify(sessionManager, never()).renewTokens(any());
+        verify(headers, never()).add(eq("Set-Cookie"), any());
+    }
+
+    /**
+     * Asserts that the given method/path forces a token renewal (mocking a successful 200 response),
+     * regardless of {@code sessionManager.needsRenewal} returning false.
+     */
+    private void assertSelfAffectingRouteForcesRenewal(String method, String path, UUID actorId) {
+        when(uriInfo.getPath()).thenReturn(path);
+        when(requestContext.getMethod()).thenReturn(method);
 
         Map<String, Cookie> cookies = new HashMap<>();
         Cookie accessCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("access.jwt").build();
@@ -179,7 +283,11 @@ class CookieResponseFilterTest {
 
         when(requestContext.getCookies()).thenReturn(cookies);
         when(sessionManager.findAccessTokenCookie(cookies)).thenReturn(accessCookie);
-        when(sessionManager.needsRenewal(accessCookie)).thenReturn(false); // Token is valid but we force renewal
+        when(sessionManager.needsRenewal(accessCookie)).thenReturn(false);
+        when(responseContext.getStatus()).thenReturn(200);
+        if (actorId != null) {
+            when(sessionManager.getUserId(accessCookie)).thenReturn(actorId);
+        }
 
         SessionManager.TokenRenewalResponse tokenResponse = mock(SessionManager.TokenRenewalResponse.class);
         NewCookie newAccess = new NewCookie.Builder("newAccess").value("new-access.jwt").build();
@@ -191,11 +299,33 @@ class CookieResponseFilterTest {
 
         filter.filter(requestContext, responseContext);
 
-        verify(sessionManager).findAccessTokenCookie(cookies);
-        // Token renewal should happen even though needsRenewal returns false
         verify(sessionManager).renewTokens(refreshCookie);
         verify(headers).add("Set-Cookie", newAccess);
         verify(headers).add("Set-Cookie", newRefresh);
+    }
+
+    /**
+     * Asserts that the given method/path does NOT force a token renewal for the given actor
+     * (mocking a successful 200 response and a valid, non-expiring token).
+     */
+    private void assertSelfAffectingRouteDoesNotForceRenewal(String method, String path, UUID actorId) {
+        when(uriInfo.getPath()).thenReturn(path);
+        when(requestContext.getMethod()).thenReturn(method);
+
+        Map<String, Cookie> cookies = new HashMap<>();
+        Cookie accessCookie = new Cookie.Builder(SessionManager.ACCESS_COOKIE_NAME).value("access.jwt").build();
+        cookies.put(SessionManager.ACCESS_COOKIE_NAME, accessCookie);
+
+        when(requestContext.getCookies()).thenReturn(cookies);
+        when(sessionManager.findAccessTokenCookie(cookies)).thenReturn(accessCookie);
+        when(sessionManager.needsRenewal(accessCookie)).thenReturn(false);
+        when(responseContext.getStatus()).thenReturn(200);
+        when(sessionManager.getUserId(accessCookie)).thenReturn(actorId);
+
+        filter.filter(requestContext, responseContext);
+
+        verify(sessionManager, never()).renewTokens(any());
+        verify(headers, never()).add(eq("Set-Cookie"), any());
     }
 
     @Test

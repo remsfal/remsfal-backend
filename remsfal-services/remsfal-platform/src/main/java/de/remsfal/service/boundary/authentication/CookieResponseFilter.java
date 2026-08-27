@@ -1,5 +1,7 @@
 package de.remsfal.service.boundary.authentication;
 
+import java.util.UUID;
+
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -31,33 +33,31 @@ public class CookieResponseFilter implements ContainerResponseFilter {
 
         try {
             Cookie accessToken = sessionManager.findAccessTokenCookie(requestContext.getCookies());
-            
+
             // Check if token renewal is needed based on:
             // 1. Token is missing or expires in less than 5 minutes, OR
-            // 2. A new project was created (POST to /api/v1/projects)
-            boolean isProjectCreation = isProjectCreationRequest(requestContext);
-            
-            if (accessToken == null || sessionManager.needsRenewal(accessToken) || isProjectCreation) {
-                // Token needs renewal
+            // 2. The request successfully mutated the acting user's own authorization claims
+            //    (e.g. creating an organization, leaving a project)
+            boolean forceRenewal = accessToken == null || sessionManager.needsRenewal(accessToken);
+
+            if (!forceRenewal && isSuccessful(responseContext.getStatus())) {
+                UUID actorId = sessionManager.getUserId(accessToken);
+                forceRenewal = SelfAffectingRouteMatcher.isForcedRenewalRequest(
+                    requestContext.getMethod(), requestContext.getUriInfo().getPath(), actorId);
+            }
+
+            if (forceRenewal) {
                 renewTokens(requestContext, responseContext);
             }
-            // If access token present, valid and not expiring soon, nothing to do
+            // If access token present, valid, not expiring soon and no self-affecting mutation occurred,
+            // nothing to do
         } catch (Exception e) {
             logger.error("Error in HeaderExtensionResponseFilter: " + e.getMessage());
         }
     }
 
-    /**
-     * Checks if the current request is a project creation request.
-     * Project creation requires immediate token renewal to include new project roles.
-     *
-     * @param requestContext The request context
-     * @return true if this is a POST to /api/v1/projects, false otherwise
-     */
-    private boolean isProjectCreationRequest(ContainerRequestContext requestContext) {
-        String path = requestContext.getUriInfo().getPath();
-        String method = requestContext.getMethod();
-        return "POST".equals(method) && "/api/v1/projects".equals(path);
+    private boolean isSuccessful(final int status) {
+        return status / 100 == 2;
     }
 
     private void renewTokens(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
