@@ -48,7 +48,8 @@ public class ContractorOrganizationLinkController {
         organizationRepository.findByEmail(normalizedEmail).ifPresent(organization -> {
             final boolean alreadyLinkedElsewhere = contractorRepository.findByOrganizationId(organization.getId())
                 .stream()
-                .anyMatch(c -> c.getProjectId().equals(contractor.getProjectId()) && !c.getId().equals(contractor.getId()));
+                .anyMatch(c -> c.getProjectId().equals(contractor.getProjectId())
+                    && !c.getId().equals(contractor.getId()));
             if (alreadyLinkedElsewhere) {
                 throw new AlreadyExistsException(
                     "Organization " + organization.getId() + " is already linked to another contractor "
