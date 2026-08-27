@@ -3,10 +3,8 @@ package de.remsfal.service.control;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.entity.dao.ContractorRepository;
-import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.ContractorEntity;
-import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -33,7 +31,7 @@ public class ContractorController {
     ContractorRepository contractorRepository;
 
     @Inject
-    OrganizationRepository organizationRepository;
+    ContractorOrganizationLinkController contractorOrganizationLinker;
 
     @Inject
     AddressController addressController;
@@ -108,10 +106,8 @@ public class ContractorController {
         entity.setContactPerson(contractor.getContactPerson());
         entity.setRemarks(contractor.getRemarks());
 
-        if (contractor.getOrganizationId() != null) {
-            OrganizationEntity org = organizationRepository.findByIdOptional(contractor.getOrganizationId())
-                .orElseThrow(() -> new NotFoundException("Organization not found"));
-            entity.setOrganization(org);
+        if (entity.getEmail() != null) {
+            contractorOrganizationLinker.relinkByEmail(entity, entity.getEmail());
         }
 
         if (contractor.getAddress() != null) {
@@ -146,7 +142,11 @@ public class ContractorController {
             entity.setPhone(contractor.getPhone());
         }
         if (contractor.getEmail() != null) {
-            entity.setEmail(contractor.getEmail());
+            final String normalizedEmail = contractor.getEmail().trim().toLowerCase();
+            if (!normalizedEmail.equals(entity.getEmail())) {
+                entity.setEmail(normalizedEmail);
+                contractorOrganizationLinker.relinkByEmail(entity, normalizedEmail);
+            }
         }
         if (contractor.getTrade() != null) {
             entity.setTrade(contractor.getTrade());
@@ -156,11 +156,6 @@ public class ContractorController {
         }
         if (contractor.getRemarks() != null) {
             entity.setRemarks(contractor.getRemarks());
-        }
-        if (contractor.getOrganizationId() != null) {
-            OrganizationEntity org = organizationRepository.findByIdOptional(contractor.getOrganizationId())
-                .orElseThrow(() -> new NotFoundException("Organization not found"));
-            entity.setOrganization(org);
         }
         if (contractor.getAddress() != null) {
             entity.setAddress(addressController.updateAddress(contractor.getAddress(), entity.getAddress()));

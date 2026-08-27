@@ -15,7 +15,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Entity class for a contractor.
+ * Entity class for a contractor. Contractors are independent entities with optional linkage to
+ * organizations. Contractor data takes precedence over organization data (fallback pattern) —
+ * except for {@code email}, which has no fallback since it is the key used to establish/validate
+ * the organization link.
  */
 @Entity
 @Table(name = "contractors")
@@ -81,24 +84,41 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
         this.organization = organization;
     }
 
+    /**
+     * Returns the company name with fallback to the linked organization's name.
+     */
     @Override
     public String getCompanyName() {
-        return companyName;
+        if (companyName != null) {
+            return companyName;
+        }
+        return organization != null ? organization.getName() : null;
     }
 
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
     }
 
+    /**
+     * Returns the phone number with fallback to the linked organization's phone number.
+     */
     @Override
     public String getPhone() {
-        return phone;
+        if (phone != null) {
+            return phone;
+        }
+        return organization != null ? organization.getPhone() : null;
     }
 
     public void setPhone(String phone) {
         this.phone = phone;
     }
 
+    /**
+     * Returns the contractor's own email. Unlike the other fields, this has no fallback to the linked
+     * organization's email: the email is the key used to establish/validate the organization link, so
+     * it must always reflect the contractor's own stored value.
+     */
     @Override
     public String getEmail() {
         return email;
@@ -108,9 +128,15 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
         this.email = email == null ? null : email.trim().toLowerCase();
     }
 
+    /**
+     * Returns the trade with fallback to the linked organization's trade.
+     */
     @Override
     public String getTrade() {
-        return trade;
+        if (trade != null) {
+            return trade;
+        }
+        return organization != null ? organization.getTrade() : null;
     }
 
     public void setTrade(String trade) {
@@ -135,9 +161,15 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
         this.remarks = remarks;
     }
 
+    /**
+     * Returns the address with fallback to the linked organization's address.
+     */
     @Override
     public AddressEntity getAddress() {
-        return address;
+        if (address != null) {
+            return address;
+        }
+        return organization != null ? organization.getAddress() : null;
     }
 
     public void setAddress(final AddressEntity address) {

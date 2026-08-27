@@ -1,10 +1,15 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.eventing.AffectedContractorJson;
+import de.remsfal.core.json.eventing.ImmutableAffectedContractorJson;
+import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.model.UserModel;
 
+import de.remsfal.service.boundary.eventing.OrganizationEventProducer;
+import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
@@ -41,6 +46,9 @@ public class OrganizationController {
 
     @Inject
     UserController userController;
+
+    @Inject
+    OrganizationEventProducer organizationEventProducer;
 
     /**
      * Retrieve an organization by id
@@ -93,7 +101,12 @@ public class OrganizationController {
                 throw new BadRequestException(
                     "Organization email must be the owner's primary or a verified additional email.");
             }
-            organizationEntity.setEmail(organization.getEmail());
+            final String normalizedEmail = organization.getEmail().trim().toLowerCase();
+            if (organizationRepository.findByEmail(normalizedEmail).isPresent()) {
+                throw new AlreadyExistsException(
+                    "Email " + normalizedEmail + " is already used by another organization");
+            }
+            organizationEntity.setEmail(normalizedEmail);
         }
         organizationEntity.setPhone(organization.getPhone());
         organizationEntity.setTrade(organization.getTrade());
@@ -105,8 +118,6 @@ public class OrganizationController {
         }
 
         organizationRepository.persistAndFlush(organizationEntity);
-
-        contractorRepository.linkOrganizationByEmail(user.getEmail(), organizationEntity);
 
         return organizationEntity;
     }
@@ -177,6 +188,10 @@ public class OrganizationController {
             .findOrganizationByUserId(user.getId(), organizationId)
             .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
 
+        final boolean contractorRelevantChange = organization.getName() != null || organization.getPhone() != null
+            || organization.getTrade() != null || organization.getAddress() != null
+            || organization.getEmail() != null;
+
         if (organization.getName() != null) {
             organizationEntity.setName(organization.getName());
         }
@@ -186,7 +201,14 @@ public class OrganizationController {
                 throw new BadRequestException(
                     "Organization email must be the owner's primary or a verified additional email.");
             }
-            organizationEntity.setEmail(organization.getEmail());
+            final String normalizedEmail = organization.getEmail().trim().toLowerCase();
+            organizationRepository.findByEmail(normalizedEmail)
+                .filter(o -> !o.getId().equals(organizationId))
+                .ifPresent(o -> {
+                    throw new AlreadyExistsException(
+                        "Email " + normalizedEmail + " is already used by another organization");
+                });
+            organizationEntity.setEmail(normalizedEmail);
         }
 
         if (organization.getPhone() != null) {
@@ -205,7 +227,27 @@ public class OrganizationController {
             organizationEntity.setAddress(addressController.updateAddress(organization.getAddress(), null));
         }
 
-        return organizationRepository.mergeAndFlush(organizationEntity);
+        final OrganizationEntity mergedEntity = organizationRepository.mergeAndFlush(organizationEntity);
+
+        if (contractorRelevantChange) {
+            notifyContractorRelevantOrganizationUpdate(mergedEntity, user);
+        }
+
+        return mergedEntity;
+    }
+
+    private void notifyContractorRelevantOrganizationUpdate(final OrganizationEntity organization,
+        final UserModel changedBy) {
+        final List<AffectedContractorJson> affectedContractors = contractorRepository
+            .findByOrganizationId(organization.getId()).stream()
+            .<AffectedContractorJson>map(contractor -> ImmutableAffectedContractorJson.builder()
+                .contractorId(contractor.getId())
+                .projectId(contractor.getProjectId())
+                .build())
+            .toList();
+        organizationEventProducer.sendOrganizationUpdated(organization.getId(),
+            OrganizationJson.valueOf(organization), affectedContractors,
+            changedBy.getId(), changedBy.getName());
     }
 
     /**

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.ContractorModel;
+import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.validation.PostValidation;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -41,6 +42,12 @@ public abstract class ContractorJson implements ContractorModel {
     @Schema(readOnly = true, description = "ID of the project this contractor belongs to")
     @Override
     public abstract  UUID getProjectId();
+
+    @Null
+    @Schema(readOnly = true, description = "ID of the organization this contractor is linked to "
+        + "(derived by the server from a matching email; cannot be set by the client)")
+    @Override
+    public abstract UUID getOrganizationId();
 
     @NotNull(groups = PostValidation.class)
     @NotBlank(groups = PostValidation.class)
@@ -112,6 +119,28 @@ public abstract class ContractorJson implements ContractorModel {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Creates a {@link ContractorJson} representing the contractor data derived from an organization's
+     * profile, e.g. to propose an update to a contractor record linked to that organization.
+     *
+     * @param organization the source {@link OrganizationModel}
+     * @param contractorId the ID of the contractor record this data applies to
+     * @return an immutable {@link ContractorJson}
+     */
+    public static ContractorJson valueOf(final OrganizationModel organization, final UUID contractorId) {
+        if (organization == null) {
+            return null;
+        }
+        return ImmutableContractorJson.builder()
+            .id(contractorId)
+            .companyName(organization.getName())
+            .phone(organization.getPhone())
+            .email(organization.getEmail())
+            .trade(organization.getTrade())
+            .address(AddressJson.valueOf(organization.getAddress()))
+            .build();
     }
 
 }

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.project.TenantJson;
+import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -94,6 +96,11 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
     // Cassandra's driver a raw TenantJson instead of the JSON string, which has no codec and fails at runtime.
     @Column("tenant_update")
     private String tenantUpdateJson;
+
+    // Named differently from the getContractorUpdate()/setContractorUpdate(ContractorModel) domain
+    // accessors below, for the same reason as tenantUpdateJson above.
+    @Column("contractor_update")
+    private String contractorUpdateJson;
 
     public IssueKey getKey() {
         return key;
@@ -396,6 +403,37 @@ public class IssueEntity extends AbstractEntity implements IssueModel {
 
     public void setTenantUpdateJson(String tenantUpdateJson) {
         this.tenantUpdateJson = tenantUpdateJson;
+    }
+
+    @Override
+    public ContractorJson getContractorUpdate() {
+        if (contractorUpdateJson == null) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readValue(contractorUpdateJson, ContractorJson.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Invalid JSON stored in contractor_update column", e);
+        }
+    }
+
+    public void setContractorUpdate(ContractorModel contractorUpdate) {
+        try {
+            this.contractorUpdateJson = contractorUpdate != null
+                ? OBJECT_MAPPER.writeValueAsString(ContractorJson.valueOf(contractorUpdate))
+                : null;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize contractor update", e);
+        }
+    }
+
+    // Getter/setter for the raw JSON string, required by JNoSQL Lite for field read/write access
+    public String getContractorUpdateJson() {
+        return contractorUpdateJson;
+    }
+
+    public void setContractorUpdateJson(String contractorUpdateJson) {
+        this.contractorUpdateJson = contractorUpdateJson;
     }
 
     /**

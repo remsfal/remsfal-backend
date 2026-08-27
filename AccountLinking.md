@@ -28,13 +28,16 @@ Structurally, two different linking patterns are used:
 1. **Mandatory join-table links** — `project_memberships` and `organization_employees`. The row's primary key
    *is* the `(resource_id, user_id)` pair, so the link cannot exist without a concrete `UserEntity`. Deleting the
    user cascades and removes the link.
-2. **Optional, nullable FK link** — `tenants.user_id`. A tenant is an independent record that may or may not be
-   linked to a user account. The link is established and re-validated by matching email addresses, and deleting
-   the linked user only detaches the link (`SET NULL`); the tenant record itself survives.
+2. **Optional, nullable FK link** — `tenants.user_id` and, identically, `contractors.organization_id`. A tenant
+   (respectively contractor) is an independent record that may or may not be linked to a user account
+   (respectively organization). The link is established and re-validated by matching email addresses, and
+   deleting the linked user/organization only detaches the link (`SET NULL`); the tenant/contractor record
+   itself survives.
 
 Contractors are never linked to a user directly — a contractor is linked to an *organization*
-(`contractors.organization_id`, optional), and that organization's employees inherit the `CONTRACTOR` context
-through their `organization_employees` membership. There is no separate contractor-to-user join table.
+(`contractors.organization_id`, optional, matched by email exactly like Tenant ↔ User below), and that
+organization's employees inherit the `CONTRACTOR` context through their `organization_employees` membership.
+There is no separate contractor-to-user join table.
 
 ## Active vs. Placeholder Accounts
 
@@ -75,12 +78,17 @@ sent, in the locale that was just derived for that account.
 | Tenant ↔ User | `tenants.user_id` | Optional (`@OneToOne`, nullable FK) | `tenants.email` (own column, no fallback to the linked user's email) | `SET NULL` — tenant record survives |
 | Project Membership ↔ User | `project_memberships` | Mandatory (composite PK `project_id, user_id`) | User `id` (or email via `findOrCreateUser` when inviting) | `CASCADE` — membership row is deleted |
 | Organization Employee ↔ User | `organization_employees` | Mandatory (composite PK `organization_id, employee_id`) | User `id` (or email via `findOrCreateUser` when inviting) | `CASCADE` — membership row is deleted |
-| Contractor ↔ Organization | `contractors.organization_id` | Optional (nullable FK) | Explicit `organizationId`, or retroactively by email (`ContractorRepository.linkOrganizationByEmail`, triggered when an organization is created) | `SET NULL` — contractor record survives |
+| Contractor ↔ Organization | `contractors.organization_id` | Optional (`@ManyToOne`, nullable FK — the same organization may be a contractor on many projects, at most once per project) | `contractors.email` (own column, no fallback to the linked organization's email); re-evaluated by `ContractorOrganizationLinkController.relinkByEmail` on contractor creation and whenever a contractor's email changes. `organizationId` is server-derived only — a client cannot set it directly (unlike `userId` on tenants, which also isn't client-settable) | `SET NULL` — contractor record survives |
 | Contractor ↔ User | *(none — derived)* | via Organization Employee | `ContractorRepository.existsByOrganizationEmployeeUserId`: true if the user is an employee of an organization that is `organizationId` on at least one contractor | n/a |
 
 `tenants` additionally carries two partial unique indexes, `uq_tenant_project_user` and `uq_tenant_project_email`
 (both `WHERE ... IS NOT NULL`), so a user can be linked to at most one tenant per project, and an email can be
-used by at most one tenant per project.
+used by at most one tenant per project. `organizations` carries a plain unique index, `uq_organization_email`
+(`WHERE email IS NOT NULL`), so an email can be used by at most one organization system-wide — this is what
+makes it a reliable matching key for contractor linking. `contractors` mirrors the tenant pattern with
+`uq_contractor_project_organization` and `uq_contractor_project_email` (both `WHERE ... IS NOT NULL`), so an
+organization can be linked to at most one contractor per project, and an email can be used by at most one
+contractor per project.
 
 ### Re-validation on change
 
@@ -89,6 +97,23 @@ the user link: it drops a stale link if the new email no longer matches the link
 the tenant to whichever user (if any) now owns that email — but only if that user is not already linked to a
 different tenant in the same project, which would otherwise violate `uq_tenant_project_user`. A conflict here
 surfaces as `409 AlreadyExistsException` rather than a raw database error.
+
+Contractor ↔ Organization linking works identically, via `ContractorOrganizationLinkController.relinkByEmail`,
+called from `ContractorController` on contractor creation and whenever a contractor's email changes on PATCH: it
+drops a stale organization link if the email no longer matches, then links to whichever organization (if any)
+now owns that email — unless that organization is already linked to a different contractor in the same project
+(`uq_contractor_project_organization`), which likewise surfaces as `409 AlreadyExistsException`.
+
+### Contractor-relevant organization updates → self-service issue
+
+Symmetric to the tenant flow described below, when an organization's own profile fields change
+(`OrganizationController.updateOrganization`, not counting a no-op update where every field was omitted),
+`OrganizationEventProducer` publishes an `ORGANIZATION_UPDATED` event on the `organization-events` topic,
+carrying the updated `OrganizationJson` and one `AffectedContractorJson` (contractor id + project id) per
+contractor record currently linked to that organization. `remsfal-ticketing`'s `OrganizationEventConsumer`
+creates one `SELF_SERVICE` issue per affected contractor, storing a `ContractorJson` snapshot derived from the
+organization's new data in `issues.contractor_update` (mirroring `issues.tenant_update` below) for a project
+manager to review.
 
 ## Email as the Linking Key
 

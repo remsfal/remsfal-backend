@@ -7,6 +7,7 @@ import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
@@ -281,16 +282,15 @@ class ContractorControllerTest extends AbstractServiceTest {
     }
 
     @Test
-    void createContractor_SUCCESS_withOrganization() {
+    void createContractor_SUCCESS_autoLinksMatchingOrganizationByEmail() {
         OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
-            ImmutableOrganizationJson.builder().name("Test Org").build(), user);
+            ImmutableOrganizationJson.builder().name("Test Org").email(TestData.USER_EMAIL).build(), user);
 
         ContractorJson contractorJson = ImmutableContractorJson.builder()
             .companyName(COMPANY_NAME_1)
             .phone(PHONE_1)
-            .email(EMAIL_1)
+            .email(TestData.USER_EMAIL)
             .trade(TRADE_1)
-            .organizationId(org.getId())
             .build();
 
         ContractorModel contractor = contractorController.createContractor(user, projectId, contractorJson);
@@ -301,32 +301,53 @@ class ContractorControllerTest extends AbstractServiceTest {
     }
 
     @Test
-    void createContractor_FAILED_organizationNotFound() {
+    void createContractor_SUCCESS_noAutoLinkWhenNoMatchingOrganization() {
         ContractorJson contractorJson = ImmutableContractorJson.builder()
             .companyName(COMPANY_NAME_1)
-            .organizationId(UUID.randomUUID())
+            .email(EMAIL_1)
             .build();
 
-        assertThrows(NotFoundException.class, () ->
-            contractorController.createContractor(user, projectId, contractorJson));
+        ContractorModel contractor = contractorController.createContractor(user, projectId, contractorJson);
+
+        assertNotNull(contractor);
+        assertNull(contractor.getOrganizationId());
     }
 
     @Test
-    void updateContractor_SUCCESS_withOrganization() {
+    void createContractor_FAILED_organizationAlreadyLinkedInSameProject() {
         OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
-            ImmutableOrganizationJson.builder().name("Test Org").build(), user);
+            ImmutableOrganizationJson.builder().name("Test Org").email(TestData.USER_EMAIL).build(), user);
 
-        ContractorJson contractorJson = ImmutableContractorJson.builder()
+        ContractorJson firstContractorJson = ImmutableContractorJson.builder()
             .companyName(COMPANY_NAME_1)
-            .phone(PHONE_1)
-            .email(EMAIL_1)
-            .trade(TRADE_1)
+            .email(TestData.USER_EMAIL)
+            .build();
+        ContractorModel first = contractorController.createContractor(user, projectId, firstContractorJson);
+        assertEquals(org.getId(), first.getOrganizationId());
+
+        ContractorJson secondContractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_2)
+            .email(TestData.USER_EMAIL)
             .build();
 
+        assertThrows(AlreadyExistsException.class, () ->
+            contractorController.createContractor(user, projectId, secondContractorJson));
+    }
+
+    @Test
+    void updateContractor_SUCCESS_autoLinksOnEmailChange() {
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .companyName(COMPANY_NAME_1)
+            .email(EMAIL_1)
+            .build();
         ContractorModel created = contractorController.createContractor(user, projectId, contractorJson);
+        assertNull(created.getOrganizationId());
+
+        OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
+            ImmutableOrganizationJson.builder().name("Test Org").email(TestData.USER_EMAIL).build(), user);
 
         ContractorJson updateJson = ImmutableContractorJson.builder()
-            .organizationId(org.getId())
+            .email(TestData.USER_EMAIL)
             .build();
 
         ContractorModel updated = contractorController.updateContractor(user, projectId, created.getId(), updateJson);
@@ -336,19 +357,24 @@ class ContractorControllerTest extends AbstractServiceTest {
     }
 
     @Test
-    void updateContractor_FAILED_organizationNotFound() {
+    void updateContractor_SUCCESS_dropsStaleLinkOnEmailChange() {
+        OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
+            ImmutableOrganizationJson.builder().name("Test Org").email(TestData.USER_EMAIL).build(), user);
+
         ContractorJson contractorJson = ImmutableContractorJson.builder()
             .companyName(COMPANY_NAME_1)
+            .email(TestData.USER_EMAIL)
             .build();
-
         ContractorModel created = contractorController.createContractor(user, projectId, contractorJson);
+        assertEquals(org.getId(), created.getOrganizationId());
 
         ContractorJson updateJson = ImmutableContractorJson.builder()
-            .organizationId(UUID.randomUUID())
+            .email(EMAIL_2)
             .build();
 
-        assertThrows(NotFoundException.class, () ->
-            contractorController.updateContractor(user, projectId, created.getId(), updateJson));
+        ContractorModel updated = contractorController.updateContractor(user, projectId, created.getId(), updateJson);
+
+        assertNull(updated.getOrganizationId());
     }
 
     @Test

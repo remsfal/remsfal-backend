@@ -327,6 +327,22 @@ class ContractorResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void createContractor_FAILED_organizationIdInBodyRejected() {
+        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"organizationId\":\""
+            + "b9440c43-b5c0-4951-9c29-000000000001\"}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie())
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID_1.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
     void deleteContractor_FAILED_contractorNotFound() {
         given()
             .when()

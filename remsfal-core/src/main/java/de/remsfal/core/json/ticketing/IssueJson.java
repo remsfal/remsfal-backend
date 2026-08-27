@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -153,6 +154,12 @@ public abstract class IssueJson implements IssueModel {
     public abstract TenantJson getTenantUpdate();
 
     @Nullable
+    @Schema(description = "Proposed contractor data change derived from a linked organization update, "
+        + "for manager review")
+    @Override
+    public abstract ContractorJson getContractorUpdate();
+
+    @Nullable
     public abstract List<IssueAttachmentJson> getAttachments();
 
     /**
@@ -190,6 +197,7 @@ public abstract class IssueJson implements IssueModel {
             .blockedBy(model.getBlockedBy())
             .blocks(model.getBlocks())
             .tenantUpdate(TenantJson.valueOf(model.getTenantUpdate()))
+            .contractorUpdate(ContractorJson.valueOf(model.getContractorUpdate()))
             .build();
     }
 

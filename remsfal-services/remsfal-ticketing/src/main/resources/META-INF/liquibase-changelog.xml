@@ -26,5 +26,6 @@
     <include file="META-INF/changesets/013-add-issues-type-index.xml"/>
     <include file="META-INF/changesets/014-add-issues-tenant-update-column.xml"/>
     <include file="META-INF/changesets/015-create-issue-chat-messages-table.xml"/>
+    <include file="META-INF/changesets/016-add-issues-contractor-update-column.xml"/>
 
 </databaseChangeLog>

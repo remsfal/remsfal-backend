@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -26,8 +27,9 @@ import de.remsfal.core.validation.NullOrNotBlank;
 
 /**
  * The issue representation exposed to tenants only: excludes project-management-internal fields
- * (projectId, priority, assigneeId, visibleToTenants, all issue relations, tenantUpdate) that a
- * tenant must never see or set, to avoid leaking data across the manager/tenant boundary.
+ * (projectId, priority, assigneeId, visibleToTenants, all issue relations, tenantUpdate,
+ * contractorUpdate) that a tenant must never see or set, to avoid leaking data across the
+ * manager/tenant boundary.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -183,6 +185,13 @@ public abstract class TenantIssueJson implements IssueModel {
     @Schema(readOnly = true, hidden = true)
     @Override
     public abstract TenantJson getTenantUpdate();
+
+    @Null
+    @Nullable
+    @JsonIgnore
+    @Schema(readOnly = true, hidden = true)
+    @Override
+    public abstract ContractorJson getContractorUpdate();
 
     /**
      * Creates a {@link TenantIssueJson} DTO from the given {@link IssueModel}, exposing only the
