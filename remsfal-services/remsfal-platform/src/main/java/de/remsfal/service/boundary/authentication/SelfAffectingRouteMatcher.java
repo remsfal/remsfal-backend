@@ -1,5 +1,7 @@
 package de.remsfal.service.boundary.authentication;
 
+import jakarta.ws.rs.HttpMethod;
+
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,19 +15,21 @@ import java.util.regex.Pattern;
  */
 public final class SelfAffectingRouteMatcher {
 
+    private static final String TARGET_ID_GROUP = "targetId";
+
     private enum Route {
-        ORGANIZATION_CREATE("POST", "^/api/v1/organizations$", null),
-        ORGANIZATION_DELETE("DELETE", "^/api/v1/organizations/[^/]+$", null),
-        ORGANIZATION_EMPLOYEE_UPDATE("PATCH",
-            "^/api/v1/organizations/[^/]+/employees/(?<targetId>[^/]+)$", "targetId"),
-        ORGANIZATION_EMPLOYEE_DELETE("DELETE",
-            "^/api/v1/organizations/[^/]+/employees/(?<targetId>[^/]+)$", "targetId"),
-        PROJECT_CREATE("POST", "^/api/v1/projects$", null),
-        PROJECT_DELETE("DELETE", "^/api/v1/projects/[^/]+$", null),
-        PROJECT_MEMBER_UPDATE("PATCH",
-            "^/api/v1/projects/[^/]+/members/(?<targetId>[^/]+)$", "targetId"),
-        PROJECT_MEMBER_DELETE("DELETE",
-            "^/api/v1/projects/[^/]+/members/(?<targetId>[^/]+)$", "targetId");
+        ORGANIZATION_CREATE(HttpMethod.POST, "^/api/v1/organizations$", null),
+        ORGANIZATION_DELETE(HttpMethod.DELETE, "^/api/v1/organizations/[^/]+$", null),
+        ORGANIZATION_EMPLOYEE_UPDATE(HttpMethod.PATCH,
+            "^/api/v1/organizations/[^/]+/employees/(?<" + TARGET_ID_GROUP + ">[^/]+)$", TARGET_ID_GROUP),
+        ORGANIZATION_EMPLOYEE_DELETE(HttpMethod.DELETE,
+            "^/api/v1/organizations/[^/]+/employees/(?<" + TARGET_ID_GROUP + ">[^/]+)$", TARGET_ID_GROUP),
+        PROJECT_CREATE(HttpMethod.POST, "^/api/v1/projects$", null),
+        PROJECT_DELETE(HttpMethod.DELETE, "^/api/v1/projects/[^/]+$", null),
+        PROJECT_MEMBER_UPDATE(HttpMethod.PATCH,
+            "^/api/v1/projects/[^/]+/members/(?<" + TARGET_ID_GROUP + ">[^/]+)$", TARGET_ID_GROUP),
+        PROJECT_MEMBER_DELETE(HttpMethod.DELETE,
+            "^/api/v1/projects/[^/]+/members/(?<" + TARGET_ID_GROUP + ">[^/]+)$", TARGET_ID_GROUP);
 
         private final String method;
         private final Pattern pattern;
@@ -51,26 +55,26 @@ public final class SelfAffectingRouteMatcher {
      */
     public static boolean isForcedRenewalRequest(final String method, final String path, final UUID actorId) {
         for (Route route : Route.values()) {
-            if (!route.method.equals(method)) {
-                continue;
-            }
-            Matcher matcher = route.pattern.matcher(path);
-            if (!matcher.matches()) {
-                continue;
-            }
-            if (route.selfParam == null) {
-                return true;
-            }
-            if (actorId == null) {
-                return false;
-            }
-            try {
-                return actorId.equals(UUID.fromString(matcher.group(route.selfParam)));
-            } catch (IllegalArgumentException e) {
-                return false;
+            Matcher matcher = route.method.equals(method) ? route.pattern.matcher(path) : null;
+            if (matcher != null && matcher.matches()) {
+                return isSelfAffecting(route, matcher, actorId);
             }
         }
         return false;
+    }
+
+    private static boolean isSelfAffecting(final Route route, final Matcher matcher, final UUID actorId) {
+        if (route.selfParam == null) {
+            return true;
+        }
+        if (actorId == null) {
+            return false;
+        }
+        try {
+            return actorId.equals(UUID.fromString(matcher.group(route.selfParam)));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
 }

@@ -11,11 +11,15 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.mockito.Mockito.*;
 
@@ -195,26 +199,10 @@ class CookieResponseFilterTest {
     }
 
     @Test
-    void testAccessTokenNotRenewedWhenRemovingOtherEmployee() {
-        UUID actorId = UUID.randomUUID();
-        UUID otherId = UUID.randomUUID();
-        String path = "/api/v1/organizations/" + UUID.randomUUID() + "/employees/" + otherId;
-        assertSelfAffectingRouteDoesNotForceRenewal("DELETE", path, actorId);
-    }
-
-    @Test
     void testAccessTokenRenewedWhenChangingOwnEmployeeRole() {
         UUID actorId = UUID.randomUUID();
         String path = "/api/v1/organizations/" + UUID.randomUUID() + "/employees/" + actorId;
         assertSelfAffectingRouteForcesRenewal("PATCH", path, actorId);
-    }
-
-    @Test
-    void testAccessTokenNotRenewedWhenChangingOtherEmployeeRole() {
-        UUID actorId = UUID.randomUUID();
-        UUID otherId = UUID.randomUUID();
-        String path = "/api/v1/organizations/" + UUID.randomUUID() + "/employees/" + otherId;
-        assertSelfAffectingRouteDoesNotForceRenewal("PATCH", path, actorId);
     }
 
     @Test
@@ -225,26 +213,28 @@ class CookieResponseFilterTest {
     }
 
     @Test
-    void testAccessTokenNotRenewedWhenRemovingOtherMember() {
-        UUID actorId = UUID.randomUUID();
-        UUID otherId = UUID.randomUUID();
-        String path = "/api/v1/projects/" + UUID.randomUUID() + "/members/" + otherId;
-        assertSelfAffectingRouteDoesNotForceRenewal("DELETE", path, actorId);
-    }
-
-    @Test
     void testAccessTokenRenewedWhenChangingOwnMemberRole() {
         UUID actorId = UUID.randomUUID();
         String path = "/api/v1/projects/" + UUID.randomUUID() + "/members/" + actorId;
         assertSelfAffectingRouteForcesRenewal("PATCH", path, actorId);
     }
 
-    @Test
-    void testAccessTokenNotRenewedWhenChangingOtherMemberRole() {
+    private static Stream<Arguments> otherUserRoutes() {
+        return Stream.of(
+            Arguments.of("DELETE", "/api/v1/organizations/%s/employees/%s"),
+            Arguments.of("PATCH", "/api/v1/organizations/%s/employees/%s"),
+            Arguments.of("DELETE", "/api/v1/projects/%s/members/%s"),
+            Arguments.of("PATCH", "/api/v1/projects/%s/members/%s")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("otherUserRoutes")
+    void testAccessTokenNotRenewedWhenActingOnOtherUser(String method, String pathTemplate) {
         UUID actorId = UUID.randomUUID();
         UUID otherId = UUID.randomUUID();
-        String path = "/api/v1/projects/" + UUID.randomUUID() + "/members/" + otherId;
-        assertSelfAffectingRouteDoesNotForceRenewal("PATCH", path, actorId);
+        String path = String.format(pathTemplate, UUID.randomUUID(), otherId);
+        assertSelfAffectingRouteDoesNotForceRenewal(method, path, actorId);
     }
 
     @Test
