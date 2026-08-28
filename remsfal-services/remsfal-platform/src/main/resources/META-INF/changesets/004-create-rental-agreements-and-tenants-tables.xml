@@ -35,6 +35,10 @@
             referencedTableName="projects" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
+        <createIndex indexName="idx_rental_agreement_project_fk" tableName="rental_agreements">
+            <column name="project_id" type="uuid" />
+        </createIndex>
+
         <createTable tableName="tenants">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
@@ -84,25 +88,18 @@
             <column name="address_id" type="uuid" />
         </createIndex>
 
-        <!--
-            Enforce that a user can be linked to at most one tenant per project, and that an email
-            can be used by at most one tenant per project. Both columns are nullable, so partial
-            (filtered) unique indexes are used to exclude NULLs from the uniqueness check.
-        -->
+        <createIndex indexName="idx_tenant_user_fk" tableName="tenants">
+            <column name="user_id" type="uuid" />
+        </createIndex>
+
         <sql>
             CREATE UNIQUE INDEX unique_tenant_project_user ON tenants (project_id, user_id) WHERE user_id IS NOT NULL;
             CREATE UNIQUE INDEX unique_tenant_project_email ON tenants (project_id, email) WHERE email IS NOT NULL;
+            CREATE INDEX idx_tenant_project_name_lookup ON tenants (project_id, LOWER(first_name), LOWER(last_name));
         </sql>
 
-        <!-- Create index for performance -->
         <createIndex indexName="idx_tenant_project_fk" tableName="tenants">
             <column name="project_id" type="uuid" />
-        </createIndex>
-
-        <!-- Create index on first_name and last_name for tenant lookup -->
-        <createIndex indexName="idx_tenant_name_lookup" tableName="tenants">
-            <column name="first_name" type="varchar(255)" />
-            <column name="last_name" type="varchar(255)" />
         </createIndex>
 
         <!-- Create rental_agreement_tenants join table for many-to-many relationship -->
@@ -130,11 +127,6 @@
             baseTableName="rental_agreement_tenants" baseColumnNames="tenant_id"
             referencedTableName="tenants" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
-
-        <!-- Create indexes on join table for performance -->
-        <createIndex indexName="idx_rental_agreement_fk" tableName="rental_agreement_tenants">
-            <column name="rental_agreement_id" type="uuid" />
-        </createIndex>
 
         <createIndex indexName="idx_tenant_fk" tableName="rental_agreement_tenants">
             <column name="tenant_id" type="uuid" />

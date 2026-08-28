@@ -69,13 +69,6 @@
         <addUniqueConstraint tableName="users" columnNames="email" constraintName="unique_user_email" />
         <addUniqueConstraint tableName="users" columnNames="token_id" constraintName="unique_user_token_id" />
 
-        <createIndex indexName="idx_user_email_lookup" tableName="users">
-            <column name="email" type="varchar(255)" />
-        </createIndex>
-        <createIndex indexName="idx_user_token_id_lookup" tableName="users">
-            <column name="token_id" type="varchar(255)" />
-        </createIndex>
-
         <addForeignKeyConstraint constraintName="fk_address_id"
                                  baseTableName="users" baseColumnNames="address_id"
                                  referencedTableName="addresses" referencedColumnNames="id"

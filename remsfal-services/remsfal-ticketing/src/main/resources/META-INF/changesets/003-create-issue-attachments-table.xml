@@ -23,12 +23,8 @@
                 PRIMARY KEY (issue_id, attachment_id)
             ) WITH CLUSTERING ORDER BY (attachment_id DESC);
         </sql>
-        <sql>
-            CREATE INDEX IF NOT EXISTS issue_attachments_attachment_id_idx ON REMSFAL.issue_attachments (attachment_id);
-        </sql>
         <rollback>
             <sql>DROP TABLE IF EXISTS REMSFAL.issue_attachments;</sql>
-            <sql>DROP INDEX IF EXISTS issue_attachments_attachment_id_idx;</sql>
         </rollback>
     </changeSet>
 

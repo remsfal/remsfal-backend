@@ -33,16 +33,11 @@
             ) WITH CLUSTERING ORDER BY (quotation_id DESC);
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS quotations_request_id_idx
-            ON REMSFAL.quotations (request_id);
-        </sql>
-        <sql>
             CREATE INDEX IF NOT EXISTS quotations_organization_id_idx
             ON REMSFAL.quotations (organization_id);
         </sql>
         <rollback>
             <sql>DROP INDEX IF EXISTS quotations_organization_id_idx;</sql>
-            <sql>DROP INDEX IF EXISTS quotations_request_id_idx;</sql>
             <sql>DROP TABLE IF EXISTS REMSFAL.quotations;</sql>
         </rollback>
     </changeSet>

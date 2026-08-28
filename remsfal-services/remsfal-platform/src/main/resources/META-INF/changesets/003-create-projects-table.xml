@@ -74,6 +74,10 @@
             baseTableName="project_memberships" baseColumnNames="user_id"
             referencedTableName="users" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_project_membership_user_fk" tableName="project_memberships">
+            <column name="user_id" type="uuid" />
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>

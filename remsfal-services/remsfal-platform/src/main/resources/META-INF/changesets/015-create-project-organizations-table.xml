@@ -37,10 +37,6 @@
                                  referencedTableName="organizations" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="RESTRICT" />
 
-        <createIndex indexName="idx_project_organizations_project_fk" tableName="project_organizations">
-            <column name="project_id" type="uuid" />
-        </createIndex>
-
         <createIndex indexName="idx_project_organizations_organization_fk" tableName="project_organizations">
             <column name="organization_id" type="uuid" />
         </createIndex>

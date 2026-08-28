@@ -29,9 +29,5 @@
                 referencedTableName="users"
                 referencedColumnNames="id"
                 onDelete="CASCADE"/>
-
-        <createIndex tableName="user_authentications" indexName="idx_user_authentication_user_id">
-            <column name="user_id"/>
-        </createIndex>
     </changeSet>
 </databaseChangeLog>
