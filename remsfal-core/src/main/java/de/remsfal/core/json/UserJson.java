@@ -43,7 +43,7 @@ public abstract class UserJson implements CustomerModel {
 
     @Null(groups = PostValidation.class)
     @Nullable
-    @Schema(readOnly = true)
+    @Schema(readOnly = true, required = true)
     @Override
     public abstract UUID getId();
 
@@ -55,7 +55,7 @@ public abstract class UserJson implements CustomerModel {
     @Email
     @Nullable
     @Size(max = 255, message = "The email cannot be longer than 255 characters")
-    @Schema(readOnly = true, examples = {"user@example.com"})
+    @Schema(readOnly = true, required = true, examples = {"user@example.com"})
     @Override
     public abstract String getEmail();
 
