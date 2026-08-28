@@ -12,6 +12,10 @@ import java.util.UUID;
 @ApplicationScoped
 public class OrganizationRepository extends AbstractRepository<OrganizationEntity> {
 
+    public Optional<OrganizationEntity> findByEmail(final String email) {
+        return find("email", email == null ? null : email.trim().toLowerCase()).singleResultOptional();
+    }
+
     public List<OrganizationEmployeeEntity> findOrganizationEmployeesByOrganizationId(UUID organizationId) {
         return getEntityManager()
             .createNamedQuery(

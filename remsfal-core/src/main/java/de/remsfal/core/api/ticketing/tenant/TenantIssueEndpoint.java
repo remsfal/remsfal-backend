@@ -27,7 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.api.ticketing.IssueEndpoint;
+import de.remsfal.core.api.ticketing.manager.IssueEndpoint;
 import de.remsfal.core.api.ticketing.TimelineEndpoint;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;

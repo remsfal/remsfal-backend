@@ -68,7 +68,7 @@ public class OrderManagementController {
             request.setInitiatedBy(user.getName());
             request.setContractorId(contractor.getId());
             request.setOrganizationId(contractor.getOrganizationId());
-            request.setContractorName(contractor.getCompanyName());
+            request.setContractorName(contractor.getName());
             request.setScopeOfWork(scopeOfWork);
             request.setProjectOwner(projectOwner);
             request.setProjectCareOf(projectCareOf);

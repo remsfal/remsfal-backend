@@ -9,7 +9,9 @@ import de.remsfal.ticketing.entity.dto.InboxMessageEntity;
 import de.remsfal.ticketing.entity.dto.InboxMessageKey;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
+import org.eclipse.jnosql.databases.cassandra.mapping.CassandraTemplate;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.List;
@@ -21,6 +23,9 @@ public class InboxMessageRepository extends AbstractRepository<InboxMessageEntit
 
     @ConfigProperty(name = "quarkus.cassandra.keyspace")
     String keyspace;
+
+    @Inject
+    CassandraTemplate cassandraTemplate;
 
     private static final String TABLE = "inbox_messages";
 
@@ -34,25 +39,22 @@ public class InboxMessageRepository extends AbstractRepository<InboxMessageEntit
     }
 
     public List<InboxMessageEntity> findByUserIdAndRead(String userId, Boolean read) {
-        return template.select(InboxMessageEntity.class)
-            .where(USER_ID).eq(userId)
-            .and("read").eq(read)
-            .result();
+        return cassandraTemplate.<InboxMessageEntity>cql(
+            "SELECT * FROM " + keyspace + "." + TABLE + " WHERE user_id = ? AND read = ? ALLOW FILTERING",
+            userId, read).toList();
     }
 
     public List<InboxMessageEntity> findByUserIdAndEventType(String userId, String eventType) {
-        return template.select(InboxMessageEntity.class)
-            .where(USER_ID).eq(userId)
-            .and("event_type").eq(eventType)
-            .result();
+        return cassandraTemplate.<InboxMessageEntity>cql(
+            "SELECT * FROM " + keyspace + "." + TABLE + " WHERE user_id = ? AND event_type = ? ALLOW FILTERING",
+            userId, eventType).toList();
     }
 
     public List<InboxMessageEntity> findByUserIdAndEventTypeAndRead(String userId, String eventType, Boolean read) {
-        return template.select(InboxMessageEntity.class)
-            .where(USER_ID).eq(userId)
-            .and("event_type").eq(eventType)
-            .and("read").eq(read)
-            .result();
+        return cassandraTemplate.<InboxMessageEntity>cql(
+            "SELECT * FROM " + keyspace + "." + TABLE
+                + " WHERE user_id = ? AND event_type = ? AND read = ? ALLOW FILTERING",
+            userId, eventType, read).toList();
     }
 
     public Optional<InboxMessageEntity> findByUserIdAndId(String userId, UUID id) {

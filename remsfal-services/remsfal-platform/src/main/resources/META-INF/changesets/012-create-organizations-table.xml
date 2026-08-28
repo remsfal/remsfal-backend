@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: Miroslaw Keil [miroslaw.keil@Student.htw-berlin.de]
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-013-organization" author="miroslaw.keil@Student.htw-berlin.de">
+        <comment>Create organization management schema with organization and employee assignment tables</comment>
+
+        <createTable tableName="organizations">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="phone" type="varchar(15)" remarks="According to E.164" />
+            <column name="address_id" type="uuid" />
+            <column name="trade" type="varchar(255)" />
+            <column name="vat_identification_number" type="varchar(255)" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="organizations" columnNames="email" constraintName="unique_organizations_email" />
+
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS pg_trgm;
+            CREATE INDEX idx_organizations_name_trgm ON organizations USING gin (LOWER(name) gin_trgm_ops);
+        </sql>
+
+        <addForeignKeyConstraint constraintName="fk_organizations_address_id"
+                                 baseTableName="organizations" baseColumnNames="address_id"
+                                 referencedTableName="addresses" referencedColumnNames="id"
+                                 onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_organizations_address_fk" tableName="organizations">
+            <column name="address_id" type="uuid" />
+        </createIndex>
+
+        <createTable tableName="organization_employees">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="employee_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="employee_role" type="varchar(255)">
+                <constraints nullable="false" checkConstraint="employee_role IN ('OWNER', 'MANAGER', 'STAFF')"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="organization_employees" constraintName="pk_organization_employees"
+                       columnNames="organization_id,employee_id"/>
+
+        <createIndex indexName="idx_organization_employees_employee_fk" tableName="organization_employees">
+            <column name="employee_id" type="uuid" />
+        </createIndex>
+
+        <addForeignKeyConstraint constraintName="fk_organization_employees_organization_id"
+                                 baseTableName="organization_employees" baseColumnNames="organization_id"
+                                 referencedTableName="organizations" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_organization_employees_employee_id"
+                                 baseTableName="organization_employees" baseColumnNames="employee_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+    </changeSet>
+
+</databaseChangeLog>

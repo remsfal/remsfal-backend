@@ -131,8 +131,8 @@ When implementing a new feature:
 
 ### Data Layer
 
-- **Platform Service**: PostgreSQL with Liquibase migrations in `remsfal-services/remsfal-platform/src/main/resources/META-INF/liquibase-changelog*.xml`
-- **Ticketing Service**: Cassandra for document/chat storage with Liquibase migrations in `remsfal-services/remsfal-ticketing/src/main/resources/META-INF/liquibase-changelog*.xml`
+- **Platform Service**: PostgreSQL with Liquibase migrations; master changelog at `remsfal-services/remsfal-platform/src/main/resources/META-INF/liquibase-changelog.xml`, individual changesets (one per file, numbered `NNN-description.xml`) in `META-INF/changesets/`
+- **Ticketing Service**: Cassandra for document/chat storage with Liquibase migrations; master changelog at `remsfal-services/remsfal-ticketing/src/main/resources/META-INF/liquibase-changelog.xml`, individual changesets (one per file, numbered `NNN-description.xml`) in `META-INF/changesets/`
 - All JPA entities extend from base classes and must end with `Entity` suffix
 - JSON DTOs use `@Immutable` with `@ImmutableStyle` annotation and Jackson for serialization
 

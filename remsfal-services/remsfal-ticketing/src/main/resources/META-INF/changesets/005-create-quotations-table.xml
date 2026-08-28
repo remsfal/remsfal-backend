@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.5-quotations" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-005-quotations" author="alexander.stanik@htw-berlin.de">
         <comment>Create quotations table</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.quotations (
@@ -33,16 +33,11 @@
             ) WITH CLUSTERING ORDER BY (quotation_id DESC);
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS quotations_request_id_idx
-            ON REMSFAL.quotations (request_id);
-        </sql>
-        <sql>
             CREATE INDEX IF NOT EXISTS quotations_organization_id_idx
             ON REMSFAL.quotations (organization_id);
         </sql>
         <rollback>
             <sql>DROP INDEX IF EXISTS quotations_organization_id_idx;</sql>
-            <sql>DROP INDEX IF EXISTS quotations_request_id_idx;</sql>
             <sql>DROP TABLE IF EXISTS REMSFAL.quotations;</sql>
         </rollback>
     </changeSet>

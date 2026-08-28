@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.3-issue-attachments" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-003-issue-attachments" author="alexander.stanik@htw-berlin.de">
         <comment>Create issue attachments table for storing file references from MinIO</comment>
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.issue_attachments (
@@ -23,12 +23,8 @@
                 PRIMARY KEY (issue_id, attachment_id)
             ) WITH CLUSTERING ORDER BY (attachment_id DESC);
         </sql>
-        <sql>
-            CREATE INDEX IF NOT EXISTS issue_attachments_attachment_id_idx ON REMSFAL.issue_attachments (attachment_id);
-        </sql>
         <rollback>
             <sql>DROP TABLE IF EXISTS REMSFAL.issue_attachments;</sql>
-            <sql>DROP INDEX IF EXISTS issue_attachments_attachment_id_idx;</sql>
         </rollback>
     </changeSet>
 

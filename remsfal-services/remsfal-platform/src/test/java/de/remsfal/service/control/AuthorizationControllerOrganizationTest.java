@@ -43,7 +43,8 @@ public class AuthorizationControllerOrganizationTest extends AbstractServiceTest
     void setupEntities() {
         testUser = createUser(TestData.USER_ID_1, TestData.USER_EMAIL_1);
         testProject = createProject(TestData.PROJECT_ID_1, TestData.USER_ID_1);
-        testOrganization = createOrganization(TestData.ORGANIZATION_ID_1, TestData.ORGANIZATION_NAME_1);
+        testOrganization = createOrganization(TestData.ORGANIZATION_ID_1, TestData.ORGANIZATION_NAME_1,
+                TestData.ORGANIZATION_EMAIL_1);
     }
 
     /**
@@ -346,11 +347,12 @@ public class AuthorizationControllerOrganizationTest extends AbstractServiceTest
         });
     }
 
-    private OrganizationEntity createOrganization(UUID id, String name) {
+    private OrganizationEntity createOrganization(UUID id, String name, String email) {
         return runInTransaction(() -> {
             OrganizationEntity organization = new OrganizationEntity();
             organization.setId(id);
             organization.setName(name);
+            organization.setEmail(email);
             entityManager.persist(organization);
             entityManager.flush();
             return organization;

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-009-storage" author="alexander.stanik@htw-berlin.de">
+        <comment>Create storage schema with storages and storage rental tables</comment>
+
+        <createTable tableName="storages">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="building_id" type="uuid">
+                <constraints nullable="false" />
+             </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="location" type="varchar(255)" />
+            <column name="description" type="clob" />
+            <column name="usable_space" type="DECIMAL(10, 2)" />
+            <column name="heating_space" type="DECIMAL(10, 2)" />
+            <column name="is_heated" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_storage_project_id"
+            baseTableName="storages" baseColumnNames="project_id"
+            referencedTableName="projects" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_storage_building_id"
+            baseTableName="storages" baseColumnNames="building_id"
+            referencedTableName="buildings" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_storage_project_fk" tableName="storages">
+            <column name="project_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_storage_building_fk" tableName="storages">
+            <column name="building_id" type="uuid" />
+        </createIndex>
+
+        <createTable tableName="storage_rents">
+            <column name="agreement_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="storage_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="first_payment" type="date">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_payment" type="date" />
+            <column name="billing_cycle" type="varchar(20)" defaultValue="MONTHLY">
+                <constraints nullable="false" checkConstraint="billing_cycle IN ('WEEKLY', 'MONTHLY', 'YEARLY')" />
+            </column>
+            <column name="basic_rent" type="decimal(10, 2)" />
+            <column name="operating_costs_prepayment" type="decimal(10, 2)" />
+            <column name="heating_costs_prepayment" type="decimal(10, 2)" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addPrimaryKey constraintName="pk_storage_rents"
+            tableName="storage_rents"
+            columnNames="storage_id,first_payment" />
+
+        <addForeignKeyConstraint constraintName="fk_storage_rent_agreement_id"
+            baseTableName="storage_rents" baseColumnNames="agreement_id"
+            referencedTableName="rental_agreements" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_storage_rent_storage_id"
+            baseTableName="storage_rents" baseColumnNames="storage_id"
+            referencedTableName="storages" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_storage_rent_agreement_fk" tableName="storage_rents">
+            <column name="agreement_id" type="uuid" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-012-contractor" author="efehan.cekic@Student.htw-berlin.de">
+        <comment>Create contractor schema with contractors and contractor employees tables</comment>
+
+        <createTable tableName="contractors">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="uuid" />
+            <column name="email" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="phone" type="varchar(15)" remarks="According to E.164" />
+            <column name="address_id" type="uuid" />
+            <column name="trade" type="varchar(255)" />
+            <column name="contact_person" type="varchar(255)" />
+            <column name="remarks" type="text" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_contractor_project_id"
+                                 baseTableName="contractors" baseColumnNames="project_id"
+                                 referencedTableName="projects" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_contractor_organization_id"
+                                 baseTableName="contractors" baseColumnNames="organization_id"
+                                 referencedTableName="organizations" referencedColumnNames="id"
+                                 onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="fk_contractor_address_id"
+                                 baseTableName="contractors" baseColumnNames="address_id"
+                                 referencedTableName="addresses" referencedColumnNames="id"
+                                 onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <!--
+            A contractor's email (and the organization it resolves to) must be unique per project,
+            so at most one contractor record per project can represent a given organization. Both
+            columns are nullable, so partial (filtered) unique indexes are used to exclude NULLs
+            from the uniqueness check.
+        -->
+        <sql>
+            CREATE UNIQUE INDEX unique_contractor_project_organization ON contractors (project_id, organization_id) WHERE organization_id IS NOT NULL;
+            CREATE UNIQUE INDEX unique_contractor_project_email ON contractors (project_id, email) WHERE email IS NOT NULL;
+        </sql>
+
+        <createIndex indexName="idx_contractor_project_fk" tableName="contractors">
+            <column name="project_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_contractor_address_fk" tableName="contractors">
+            <column name="address_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_contractor_organization_fk" tableName="contractors">
+            <column name="organization_id" type="uuid" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

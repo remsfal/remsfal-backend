@@ -7,13 +7,18 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.2-issues-indexes" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-002-issues-indexes" author="alexander.stanik@htw-berlin.de">
         <comment>Add SAI (Storage-Attached Index) to issues table for flexible filtering.
                  SAI supports filtering combined with IN on the partition key without ALLOW FILTERING,
                  and is stable from Cassandra 5.0 onwards.</comment>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_status_sai
             ON REMSFAL.issues (status)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_type_sai
+            ON REMSFAL.issues (type)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
@@ -43,6 +48,7 @@
         </sql>
         <rollback>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_status_sai;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_type_sai;</sql>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_assignee_id_sai;</sql>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_agreement_id_sai;</sql>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_visible_to_tenants_sai;</sql>

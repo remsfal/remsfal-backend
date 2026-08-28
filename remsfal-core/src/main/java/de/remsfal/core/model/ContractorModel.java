@@ -31,11 +31,11 @@ public interface ContractorModel {
     UUID getOrganizationId();
 
     /**
-     * Get the company name of the contractor.
+     * Get the name of the contractor.
      *
-     * @return the company name
+     * @return the name
      */
-    String getCompanyName();
+    String getName();
 
     /**
      * Get the phone number of the contractor.

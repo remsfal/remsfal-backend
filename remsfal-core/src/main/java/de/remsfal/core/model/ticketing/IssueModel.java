@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
+import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.TenantModel;
 
@@ -115,5 +116,7 @@ public interface IssueModel {
     Set<UUID> getBlocks();
 
     TenantModel getTenantUpdate();
+
+    ContractorModel getContractorUpdate();
 
 }

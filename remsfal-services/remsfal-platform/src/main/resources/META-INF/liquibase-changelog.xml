@@ -9,27 +9,21 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <include file="META-INF/liquibase-changelog-0_0_1.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_2.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_3.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_4.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_5.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_6.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_7.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_8.xml"/>
-    <include file="META-INF/liquibase-changelog-0_0_9.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_0.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_2.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_3.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_4.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_5.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_6.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_7.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_8.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_9.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_10.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_11.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_12.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_13.xml"/>
-    <include file="META-INF/liquibase-changelog-0_1_14.xml"/>
+    <include file="META-INF/changesets/000-optimize-liquibase-tables.xml"/>
+    <include file="META-INF/changesets/001-create-addresses-and-users-tables.xml"/>
+    <include file="META-INF/changesets/002-create-address-validations-table.xml"/>
+    <include file="META-INF/changesets/003-create-projects-table.xml"/>
+    <include file="META-INF/changesets/004-create-rental-agreements-and-tenants-tables.xml"/>
+    <include file="META-INF/changesets/005-create-properties-table.xml"/>
+    <include file="META-INF/changesets/006-create-sites-table.xml"/>
+    <include file="META-INF/changesets/007-create-buildings-table.xml"/>
+    <include file="META-INF/changesets/008-create-apartments-table.xml"/>
+    <include file="META-INF/changesets/009-create-storages-table.xml"/>
+    <include file="META-INF/changesets/010-create-commercials-table.xml"/>
+    <include file="META-INF/changesets/011-create-user-authentication-table.xml"/>
+    <include file="META-INF/changesets/012-create-organizations-table.xml"/>
+    <include file="META-INF/changesets/013-create-contractors-table.xml"/>
+    <include file="META-INF/changesets/014-create-user-additional-email-table.xml"/>
+    <include file="META-INF/changesets/015-create-project-organizations-table.xml"/>
+    <include file="META-INF/changesets/016-create-rental-agreement-keys-table.xml"/>
 </databaseChangeLog>

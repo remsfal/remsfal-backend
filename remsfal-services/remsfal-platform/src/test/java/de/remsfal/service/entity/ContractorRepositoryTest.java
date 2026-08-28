@@ -61,7 +61,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
         // Insert test contractors
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO contractors (id, project_id, company_name, phone, email, trade) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO contractors (id, project_id, name, phone, email, trade) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_1)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_1)
@@ -71,7 +71,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
                 .executeUpdate());
 
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO contractors (id, project_id, company_name, phone, email, trade) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO contractors (id, project_id, name, phone, email, trade) VALUES (?,?,?,?,?,?)")
                 .setParameter(1, CONTRACTOR_ID_2)
                 .setParameter(2, TestData.PROJECT_ID)
                 .setParameter(3, COMPANY_NAME_2)
@@ -92,7 +92,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
                 .findFirst()
                 .orElse(null);
         assertNotNull(contractor1);
-        assertEquals(COMPANY_NAME_1, contractor1.getCompanyName());
+        assertEquals(COMPANY_NAME_1, contractor1.getName());
         assertEquals(PHONE_1, contractor1.getPhone());
         assertEquals(EMAIL_1, contractor1.getEmail());
         assertEquals(TRADE_1, contractor1.getTrade());
@@ -102,7 +102,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
                 .findFirst()
                 .orElse(null);
         assertNotNull(contractor2);
-        assertEquals(COMPANY_NAME_2, contractor2.getCompanyName());
+        assertEquals(COMPANY_NAME_2, contractor2.getName());
         assertEquals(PHONE_2, contractor2.getPhone());
         assertEquals(EMAIL_2, contractor2.getEmail());
         assertEquals(TRADE_2, contractor2.getTrade());
@@ -121,7 +121,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
 
         ContractorEntity contractor = optionalContractor.get();
         assertEquals(CONTRACTOR_ID_1, contractor.getId());
-        assertEquals(COMPANY_NAME_1, contractor.getCompanyName());
+        assertEquals(COMPANY_NAME_1, contractor.getName());
         assertEquals(PHONE_1, contractor.getPhone());
         assertEquals(EMAIL_1, contractor.getEmail());
         assertEquals(TRADE_1, contractor.getTrade());
@@ -143,7 +143,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         ProjectEntity project = entityManager.find(ProjectEntity.class, TestData.PROJECT_ID);
         contractor.setProject(project);
 
-        contractor.setCompanyName("New Contractor");
+        contractor.setName("New Contractor");
         contractor.setPhone("+491234567892");
         contractor.setEmail("new.contractor@example.com");
         contractor.setTrade("Carpentry");
@@ -156,7 +156,7 @@ class ContractorRepositoryTest extends AbstractServiceTest {
         // Verify the contractor was created
         Optional<ContractorEntity> optionalContractor = repository.findByProjectIdAndContractorId(TestData.PROJECT_ID, contractor.getId());
         assertTrue(optionalContractor.isPresent());
-        assertEquals("New Contractor", optionalContractor.get().getCompanyName());
+        assertEquals("New Contractor", optionalContractor.get().getName());
 
         // Delete the contractor within a transaction
         boolean deleted = runInTransaction(() -> repository.deleteById(contractor.getId()));

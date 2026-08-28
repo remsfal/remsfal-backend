@@ -80,7 +80,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
 
         // Create quotation request linked to the organization
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}],"
+            + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}],"
             + "\"scopeOfWork\":\"Bitte Angebot einreichen.\" }";
         given()
             .when()
@@ -130,7 +130,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
@@ -181,7 +181,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
@@ -227,7 +227,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .extract().path("id");
 
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
             + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
             + "\"projectCareOf\":\"Max Mustermann\","
             + "\"billingAddress\":{"
@@ -282,7 +282,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .extract().path("id");
 
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Owner Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }";
+            + "\",\"name\":\"Owner Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -328,7 +328,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);

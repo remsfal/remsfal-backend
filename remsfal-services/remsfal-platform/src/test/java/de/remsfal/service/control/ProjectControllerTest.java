@@ -245,6 +245,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         final OrganizationEntity organization = organizationController.createOrganization(
             ImmutableOrganizationJson.builder()
                 .name("Test Organization")
+                .email(TestData.USER_EMAIL)
                 .address(TestData.addressBuilder2().build())
                 .build(),
             user

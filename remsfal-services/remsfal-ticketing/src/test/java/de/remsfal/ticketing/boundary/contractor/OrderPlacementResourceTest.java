@@ -47,7 +47,7 @@ class OrderPlacementResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(ISSUE_BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);

@@ -47,9 +47,68 @@ class InboxControllerTest extends AbstractTicketingTest {
         assertEquals("Test Title", results.get(0).getTitle());
     }
 
-    // Note: Tests for findByUserIdAndRead, findByUserIdAndEventType, and findByUserIdAndEventTypeAndRead
-    // are skipped because they require Cassandra secondary indexes which are not created in test environment.
-    // These methods are tested indirectly through controller tests that use findByUserId.
+    @Test
+    void testRepository_findByUserIdAndRead() {
+        String userId = "user-read-filter";
+
+        InboxMessageEntity read = createTestMessage(userId, "Read Message");
+        read.setRead(true);
+        repository.saveInboxMessage(read);
+
+        InboxMessageEntity unread = createTestMessage(userId, "Unread Message");
+        unread.setRead(false);
+        repository.saveInboxMessage(unread);
+
+        List<InboxMessageEntity> readResults = repository.findByUserIdAndRead(userId, true);
+        assertEquals(1, readResults.size());
+        assertEquals("Read Message", readResults.get(0).getTitle());
+
+        List<InboxMessageEntity> unreadResults = repository.findByUserIdAndRead(userId, false);
+        assertEquals(1, unreadResults.size());
+        assertEquals("Unread Message", unreadResults.get(0).getTitle());
+    }
+
+    @Test
+    void testRepository_findByUserIdAndEventType() {
+        String userId = "user-event-type-filter";
+
+        InboxMessageEntity created = createTestMessage(userId, "Created Message");
+        created.setEventType("ISSUE_CREATED");
+        repository.saveInboxMessage(created);
+
+        InboxMessageEntity updated = createTestMessage(userId, "Updated Message");
+        updated.setEventType("ISSUE_UPDATED");
+        repository.saveInboxMessage(updated);
+
+        List<InboxMessageEntity> results = repository.findByUserIdAndEventType(userId, "ISSUE_UPDATED");
+        assertEquals(1, results.size());
+        assertEquals("Updated Message", results.get(0).getTitle());
+    }
+
+    @Test
+    void testRepository_findByUserIdAndEventTypeAndRead() {
+        String userId = "user-event-type-and-read-filter";
+
+        InboxMessageEntity match = createTestMessage(userId, "Matching Message");
+        match.setEventType("ISSUE_UPDATED");
+        match.setRead(false);
+        repository.saveInboxMessage(match);
+
+        InboxMessageEntity wrongEventType = createTestMessage(userId, "Wrong Event Type");
+        wrongEventType.setEventType("ISSUE_CREATED");
+        wrongEventType.setRead(false);
+        repository.saveInboxMessage(wrongEventType);
+
+        InboxMessageEntity wrongReadStatus = createTestMessage(userId, "Wrong Read Status");
+        wrongReadStatus.setEventType("ISSUE_UPDATED");
+        wrongReadStatus.setRead(true);
+        repository.saveInboxMessage(wrongReadStatus);
+
+        List<InboxMessageEntity> results =
+            repository.findByUserIdAndEventTypeAndRead(userId, "ISSUE_UPDATED", false);
+        assertEquals(1, results.size());
+        assertEquals("Matching Message", results.get(0).getTitle());
+    }
 
     @Test
     void testRepository_findByUserIdAndId() {
@@ -164,7 +223,22 @@ class InboxControllerTest extends AbstractTicketingTest {
         assertEquals("userId cannot be null", exception.getMessage());
     }
 
-    // Note: Test for getInboxMessages with read filter skipped - requires Cassandra secondary index
+    @Test
+    void testController_getInboxMessages_readFilter() {
+        String userId = "user-controller-read-filter";
+
+        InboxMessageEntity read = createTestMessage(userId, "Read Message");
+        read.setRead(true);
+        repository.saveInboxMessage(read);
+
+        InboxMessageEntity unread = createTestMessage(userId, "Unread Message");
+        unread.setRead(false);
+        repository.saveInboxMessage(unread);
+
+        List<InboxMessageEntity> readMessages = controller.getInboxMessages(true, userId);
+        assertEquals(1, readMessages.size());
+        assertEquals("Read Message", readMessages.get(0).getTitle());
+    }
 
     @Test
     void testController_getInboxMessages_noFilter() {
@@ -309,8 +383,6 @@ class InboxControllerTest extends AbstractTicketingTest {
         assertEquals(1, user2Messages.size());
         assertEquals("User 2 Message", user2Messages.get(0).getTitle());
     }
-
-    // Note: Test for complex filtering scenario skipped - requires Cassandra secondary index
 
     // ========================================
     // Helper Methods

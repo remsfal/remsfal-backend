@@ -84,7 +84,7 @@ class QuotationResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
@@ -147,7 +147,7 @@ class QuotationResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}],"
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}],"
                 + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
                 + "\"projectCareOf\":\"Max Mustermann\","
                 + "\"billingAddress\":{"
@@ -243,7 +243,7 @@ class QuotationResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Owner Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"name\":\"Owner Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);

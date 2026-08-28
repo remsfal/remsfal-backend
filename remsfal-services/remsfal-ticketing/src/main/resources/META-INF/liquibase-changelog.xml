@@ -20,11 +20,10 @@
     <include file="META-INF/changesets/005-create-quotations-table.xml"/>
     <include file="META-INF/changesets/006-create-order-placements-table.xml"/>
     <include file="META-INF/changesets/007-create-order-attachments-table.xml"/>
-    <include file="META-INF/changesets/010-create-inbox-messages-table.xml"/>
-    <include file="META-INF/changesets/011-create-tenant-timelines-table.xml"/>
-    <include file="META-INF/changesets/012-rename-tenant-timelines-title-to-purpose.xml"/>
-    <include file="META-INF/changesets/013-add-issues-type-index.xml"/>
-    <include file="META-INF/changesets/014-add-issues-tenant-update-column.xml"/>
-    <include file="META-INF/changesets/015-create-issue-chat-messages-table.xml"/>
+    <include file="META-INF/changesets/008-create-issue-chat-messages-table.xml"/>
+    <include file="META-INF/changesets/009-create-tenant-timelines-table.xml"/>
+    <include file="META-INF/changesets/010-add-issues-tenant-update-column.xml"/>
+    <include file="META-INF/changesets/011-add-issues-contractor-update-column.xml"/>
+    <include file="META-INF/changesets/012-create-inbox-messages-table.xml"/>
 
 </databaseChangeLog>

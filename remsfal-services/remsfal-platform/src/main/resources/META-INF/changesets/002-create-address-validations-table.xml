@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Author: Alexander Stanik [alexander.stanik@htw-berlin.de]
+#
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-002-address-validations" author="alexander.stanik@htw-berlin.de">
+        <comment>Create address validation table with German postal codes and cities</comment>
+
+        <createTable tableName="address_validations">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="country" type="varchar(2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="province" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="city" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="zip" type="varchar(10)">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="address_validations" columnNames="country,province,city,zip" constraintName="unique_city_per_zip" />
+
+        <loadData tableName="address_validations" file="META-INF/germany_city2zip.csv" separator=";" encoding="UTF-8">
+            <column header="osm_id" type="SKIP" />
+            <column header="landkreis" type="SKIP" />
+            <column name="country" header="land" />
+            <column name="province" header="bundesland" />
+            <column name="city" header="ort" />
+            <column name="zip" header="plz" />
+        </loadData>
+
+        <createIndex indexName="idx_address_validation_zip_lookup" tableName="address_validations">
+            <column name="zip" type="varchar(255)" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
