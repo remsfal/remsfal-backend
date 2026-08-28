@@ -51,6 +51,9 @@
             </column>
             <column name="first_name" type="varchar(255)" />
             <column name="last_name" type="varchar(255)" />
+            <column name="place_of_birth" type="varchar(255)" />
+            <column name="date_of_birth" type="date" />
+            <column name="locale" type="varchar(2)" />
             <column name="address_id" type="uuid" />
             <column name="mobile_phone_number" type="varchar(15)" remarks="According to E.164" />
             <column name="business_phone_number" type="varchar(15)" remarks="According to E.164"/>
@@ -63,13 +66,13 @@
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="users" columnNames="email" constraintName="unique_email" />
-        <addUniqueConstraint tableName="users" columnNames="token_id" constraintName="unique_token_id" />
+        <addUniqueConstraint tableName="users" columnNames="email" constraintName="unique_user_email" />
+        <addUniqueConstraint tableName="users" columnNames="token_id" constraintName="unique_user_token_id" />
 
-        <createIndex indexName="idx_email_lookup" tableName="users">
+        <createIndex indexName="idx_user_email_lookup" tableName="users">
             <column name="email" type="varchar(255)" />
         </createIndex>
-        <createIndex indexName="idx_token_id_lookup" tableName="users">
+        <createIndex indexName="idx_user_token_id_lookup" tableName="users">
             <column name="token_id" type="varchar(255)" />
         </createIndex>
 
@@ -77,6 +80,10 @@
                                  baseTableName="users" baseColumnNames="address_id"
                                  referencedTableName="addresses" referencedColumnNames="id"
                                  onDelete="SET NULL" onUpdate="RESTRICT" />
+
+        <createIndex indexName="idx_users_address_fk" tableName="users">
+            <column name="address_id" type="uuid" />
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>

@@ -3,7 +3,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-platform-017-project-organizations" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-platform-015-project-organizations" author="alexander.stanik@htw-berlin.de">
         <comment>Create project organization assignment schema</comment>
 
         <createTable tableName="project_organizations">

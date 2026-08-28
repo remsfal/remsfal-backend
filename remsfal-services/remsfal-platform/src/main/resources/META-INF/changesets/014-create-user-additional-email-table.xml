@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-platform-016-user-additional-email" author="AlexandraRuzina">
+    <changeSet id="remsfal-platform-014-user-additional-email" author="Alexandra.Ruzina@Student.htw-berlin.de">
         <comment>Create table for additional user email addresses</comment>
 
         <createTable tableName="user_additional_email">
@@ -20,6 +20,8 @@
             <column name="verified" type="boolean" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
+            <column name="verification_token" type="varchar(255)"/>
+            <column name="verification_token_expires_at" type="timestamp"/>
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false"/>
             </column>
@@ -29,6 +31,11 @@
         </createTable>
 
         <addUniqueConstraint tableName="user_additional_email" columnNames="email" constraintName="unique_additional_email"/>
+
+        <addUniqueConstraint
+                tableName="user_additional_email"
+                columnNames="verification_token"
+                constraintName="unique_additional_email_verification_token"/>
 
         <createIndex
                 tableName="user_additional_email"

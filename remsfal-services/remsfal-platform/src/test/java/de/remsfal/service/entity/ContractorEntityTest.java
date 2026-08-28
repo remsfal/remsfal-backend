@@ -64,7 +64,7 @@ class ContractorEntityTest {
 
         entity1 = new ContractorEntity();
         entity1.setProject(project1);
-        entity1.setCompanyName("Test Company");
+        entity1.setName("Test Company");
         entity1.setPhone("+49123456789");
         entity1.setEmail("test@company.com");
         entity1.setTrade("Plumbing");
@@ -72,7 +72,7 @@ class ContractorEntityTest {
 
         entity2 = new ContractorEntity();
         entity2.setProject(project1);
-        entity2.setCompanyName("Test Company");
+        entity2.setName("Test Company");
         entity2.setPhone("+49123456789");
         entity2.setEmail("test@company.com");
         entity2.setTrade("Plumbing");
@@ -111,9 +111,9 @@ class ContractorEntityTest {
     }
 
     @Test
-    @DisplayName("Tests two unequal objects (different company name)")
-    void testEqualsDifferentCompanyNames() {
-        entity2.setCompanyName("Other Company");
+    @DisplayName("Tests two unequal objects (different name)")
+    void testEqualsDifferentNames() {
+        entity2.setName("Other Company");
         assertNotEquals(entity1, entity2);
     }
 

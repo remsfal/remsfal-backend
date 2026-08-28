@@ -33,6 +33,7 @@
             <column name="living_space" type="DECIMAL(10, 2)" />
             <column name="usable_space" type="DECIMAL(10, 2)" />
             <column name="heating_space" type="DECIMAL(10, 2)" />
+            <column name="commercial_heating_space" type="DECIMAL(10, 2)" />
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>
@@ -51,12 +52,21 @@
             referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
+        <addForeignKeyConstraint constraintName="fk_building_address_id"
+            baseTableName="buildings" baseColumnNames="address_id"
+            referencedTableName="addresses" referencedColumnNames="id"
+            onDelete="SET NULL" onUpdate="RESTRICT" />
+
         <createIndex indexName="idx_building_project_fk" tableName="buildings">
             <column name="project_id" type="uuid" />
         </createIndex>
 
         <createIndex indexName="idx_building_property_fk" tableName="buildings">
             <column name="property_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_building_address_fk" tableName="buildings">
+            <column name="address_id" type="uuid" />
         </createIndex>
 
         <createTable tableName="building_rents">

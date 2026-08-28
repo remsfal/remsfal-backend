@@ -17,6 +17,11 @@
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS issues_type_sai
+            ON REMSFAL.issues (type)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_assignee_id_sai
             ON REMSFAL.issues (assignee_id)
             USING 'StorageAttachedIndex';
@@ -43,6 +48,7 @@
         </sql>
         <rollback>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_status_sai;</sql>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issues_type_sai;</sql>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_assignee_id_sai;</sql>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_agreement_id_sai;</sql>
             <sql>DROP INDEX IF EXISTS REMSFAL.issues_visible_to_tenants_sai;</sql>

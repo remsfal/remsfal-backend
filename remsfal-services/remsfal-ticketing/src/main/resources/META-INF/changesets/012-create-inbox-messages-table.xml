@@ -9,7 +9,7 @@
             http://www.liquibase.org/xml/ns/dbchangelog-ext
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-008-create-inbox-messages-table" author="Hoang.Nguyen@Student.HTW-Berlin.de">
+    <changeSet id="remsfal-ticketing-012-create-inbox-messages-table" author="Hoang.Nguyen@Student.HTW-Berlin.de">
         <comment>Create inbox messaging schema</comment>
 
         <sql>

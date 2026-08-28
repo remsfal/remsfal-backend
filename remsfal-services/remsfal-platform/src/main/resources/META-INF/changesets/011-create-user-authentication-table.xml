@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-platform-011-user-authentication" author="gflachs">
+    <changeSet id="remsfal-platform-011-user-authentication" author="gregor.flachs@Student.htw-berlin.de">
         <comment>Create user authentication table for refresh token management</comment>
 
         <createTable tableName="user_authentications">

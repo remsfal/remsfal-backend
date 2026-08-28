@@ -46,12 +46,21 @@
             referencedTableName="properties" referencedColumnNames="id"
             onDelete="CASCADE" onUpdate="RESTRICT" />
 
+        <addForeignKeyConstraint constraintName="fk_site_address_id"
+            baseTableName="sites" baseColumnNames="address_id"
+            referencedTableName="addresses" referencedColumnNames="id"
+            onDelete="SET NULL" onUpdate="RESTRICT" />
+
         <createIndex indexName="idx_site_project_fk" tableName="sites">
             <column name="project_id" type="uuid" />
         </createIndex>
 
         <createIndex indexName="idx_site_property_fk" tableName="sites">
             <column name="property_id" type="uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_site_address_fk" tableName="sites">
+            <column name="address_id" type="uuid" />
         </createIndex>
 
         <createTable tableName="site_rents">

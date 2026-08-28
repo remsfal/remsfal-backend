@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-012-issues-tenant-update-column" author="alexander.stanik@htw-berlin.de">
+    <changeSet id="remsfal-ticketing-010-issues-tenant-update-column" author="alexander.stanik@htw-berlin.de">
         <comment>Add tenant_update column to store a JSON snapshot of a user-proposed self-service
         data change (e.g. a TenantJson payload) for later review/approval by the project manager.</comment>
         <sql>ALTER TABLE REMSFAL.issues ADD tenant_update TEXT;</sql>

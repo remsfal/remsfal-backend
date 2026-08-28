@@ -3,7 +3,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remsfal-platform-022-rental-agreement-keys" author="test">
+    <changeSet id="remsfal-platform-017-rental-agreement-keys" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
         <comment>Add rental_agreement_keys element collection table</comment>
 
         <createTable tableName="rental_agreement_keys">

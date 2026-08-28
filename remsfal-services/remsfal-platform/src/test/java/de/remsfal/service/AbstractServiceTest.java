@@ -431,7 +431,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
     protected void insertContractor(Object... params) {
         runInTransaction(() -> entityManager
             .createNativeQuery(
-                "INSERT INTO contractors (id, project_id, company_name, organization_id) VALUES (?,?,?,?)")
+                "INSERT INTO contractors (id, project_id, name, organization_id) VALUES (?,?,?,?)")
             .setParameter(1, params[0])
             .setParameter(2, params[1])
             .setParameter(3, params[2])

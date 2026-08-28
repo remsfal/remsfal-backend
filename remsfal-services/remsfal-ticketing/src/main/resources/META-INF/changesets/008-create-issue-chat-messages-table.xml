@@ -7,15 +7,23 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-011-issues-type-index" author="alexander.stanik@htw-berlin.de">
-        <comment>Add SAI (Storage-Attached Index) to the issues table's type column for filtering by issue type.</comment>
+    <changeSet id="remsfal-ticketing-008-issue-chat-messages" author="Parham.Rahmani@Student.HTW-Berlin.de">
+        <comment>Create table for internal per-issue chat messages between project members</comment>
         <sql>
-            CREATE CUSTOM INDEX IF NOT EXISTS issues_type_sai
-            ON REMSFAL.issues (type)
-            USING 'StorageAttachedIndex';
+            CREATE TABLE IF NOT EXISTS REMSFAL.issue_chat_messages (
+                project_id UUID,
+                issue_id UUID,
+                message_id UUID,
+                sender_id UUID,
+                sender_name TEXT,
+                message TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY ((project_id, issue_id), message_id)
+            ) WITH CLUSTERING ORDER BY (message_id ASC);
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_type_sai;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.issue_chat_messages;</sql>
         </rollback>
     </changeSet>
 

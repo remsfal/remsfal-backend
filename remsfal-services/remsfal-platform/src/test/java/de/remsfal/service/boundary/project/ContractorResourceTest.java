@@ -55,7 +55,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}")
+            .body("{ \"name\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}")
             .post(BASE_PATH, TestData.PROJECT_ID_1.toString())
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
@@ -79,7 +79,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(100)))
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{ \"companyName\":\"" + COMPANY_NAME_2 + "\"}")
+            .body("{ \"name\":\"" + COMPANY_NAME_2 + "\"}")
             .patch(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), "b9440c43-b5c0-4951-9c29-000000000001")
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
@@ -98,7 +98,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
     @Test
     void createContractor_SUCCESS_contractorCreated() {
-        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
+        String json = "{ \"name\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
 
         String contractorId = given()
             .when()
@@ -112,7 +112,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID_1.toString()) + "/"))
             .and().body("id", Matchers.notNullValue())
-            .and().body("companyName", Matchers.equalTo(COMPANY_NAME_1))
+            .and().body("name", Matchers.equalTo(COMPANY_NAME_1))
             .and().body("phone", Matchers.equalTo(PHONE_1))
             .and().body("email", Matchers.equalTo(EMAIL_1))
             .and().body("trade", Matchers.equalTo(TRADE_1))
@@ -129,12 +129,12 @@ class ContractorResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("contractors.size()", Matchers.equalTo(1))
             .and().body("contractors[0].id", Matchers.equalTo(contractorId))
-            .and().body("contractors[0].companyName", Matchers.equalTo(COMPANY_NAME_1));
+            .and().body("contractors[0].name", Matchers.equalTo(COMPANY_NAME_1));
     }
 
     @Test
     void createContractor_SUCCESS_contractorCreatedWithAddress() {
-        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\", " +
+        String json = "{ \"name\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\", " +
             "\"address\": { \"street\":\"" + TestData.ADDRESS_STREET + "\", \"city\":\"" + TestData.ADDRESS_CITY + "\", \"province\":\"" + TestData.ADDRESS_PROVINCE + "\", \"zip\":\"" + TestData.ADDRESS_ZIP + "\", \"countryCode\":\"" + TestData.ADDRESS_COUNTRY + "\"}}";
 
         String contractorId = given()
@@ -149,7 +149,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .header("location", Matchers.containsString(BASE_PATH.replace("{projectId}", TestData.PROJECT_ID_1.toString()) + "/"))
             .and().body("id", Matchers.notNullValue())
-            .and().body("companyName", Matchers.equalTo(COMPANY_NAME_1))
+            .and().body("name", Matchers.equalTo(COMPANY_NAME_1))
             .and().body("phone", Matchers.equalTo(PHONE_1))
             .and().body("email", Matchers.equalTo(EMAIL_1))
             .and().body("trade", Matchers.equalTo(TRADE_1))
@@ -189,7 +189,7 @@ class ContractorResourceTest extends AbstractResourceTest {
     @Test
     void getContractor_SUCCESS_contractorReturned() {
         // Create a contractor
-        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
+        String json = "{ \"name\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
 
         String contractorId = given()
             .when()
@@ -212,7 +212,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(contractorId))
-            .and().body("companyName", Matchers.equalTo(COMPANY_NAME_1))
+            .and().body("name", Matchers.equalTo(COMPANY_NAME_1))
             .and().body("phone", Matchers.equalTo(PHONE_1))
             .and().body("email", Matchers.equalTo(EMAIL_1))
             .and().body("trade", Matchers.equalTo(TRADE_1));
@@ -232,7 +232,7 @@ class ContractorResourceTest extends AbstractResourceTest {
     @Test
     void updateContractor_SUCCESS_contractorUpdated() {
         // Create a contractor
-        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
+        String json = "{ \"name\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
 
         String contractorId = given()
             .when()
@@ -246,7 +246,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .extract().path("id");
 
         // Update the contractor
-        String updateJson = "{ \"companyName\":\"" + COMPANY_NAME_2 + "\", \"phone\":\"" + PHONE_2 + "\", \"email\":\"" + EMAIL_2 + "\", \"trade\":\"" + TRADE_2 + "\"}";
+        String updateJson = "{ \"name\":\"" + COMPANY_NAME_2 + "\", \"phone\":\"" + PHONE_2 + "\", \"email\":\"" + EMAIL_2 + "\", \"trade\":\"" + TRADE_2 + "\"}";
 
         given()
             .when()
@@ -259,7 +259,7 @@ class ContractorResourceTest extends AbstractResourceTest {
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(contractorId))
-            .and().body("companyName", Matchers.equalTo(COMPANY_NAME_2))
+            .and().body("name", Matchers.equalTo(COMPANY_NAME_2))
             .and().body("phone", Matchers.equalTo(PHONE_2))
             .and().body("email", Matchers.equalTo(EMAIL_2))
             .and().body("trade", Matchers.equalTo(TRADE_2));
@@ -273,12 +273,12 @@ class ContractorResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("companyName", Matchers.equalTo(COMPANY_NAME_2));
+            .and().body("name", Matchers.equalTo(COMPANY_NAME_2));
     }
 
     @Test
     void updateContractor_FAILED_contractorNotFound() {
-        String updateJson = "{ \"companyName\":\"" + COMPANY_NAME_2 + "\"}";
+        String updateJson = "{ \"name\":\"" + COMPANY_NAME_2 + "\"}";
 
         given()
             .when()
@@ -294,7 +294,7 @@ class ContractorResourceTest extends AbstractResourceTest {
     @Test
     void deleteContractor_SUCCESS_contractorDeleted() {
         // Create a contractor
-        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
+        String json = "{ \"name\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1 + "\", \"trade\":\"" + TRADE_1 + "\"}";
 
         String contractorId = given()
             .when()
@@ -328,7 +328,7 @@ class ContractorResourceTest extends AbstractResourceTest {
 
     @Test
     void createContractor_FAILED_organizationIdInBodyRejected() {
-        String json = "{ \"companyName\":\"" + COMPANY_NAME_1 + "\", \"organizationId\":\""
+        String json = "{ \"name\":\"" + COMPANY_NAME_1 + "\", \"organizationId\":\""
             + "b9440c43-b5c0-4951-9c29-000000000001\"}";
 
         given()

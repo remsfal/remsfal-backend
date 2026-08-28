@@ -52,8 +52,8 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         UUID contractorId1 = UUID.randomUUID();
         UUID contractorId2 = UUID.randomUUID();
         String requestJson = "{ \"contractors\":["
-            + "{\"id\":\"" + contractorId1 + "\",\"companyName\":\"Contractor A\"},"
-            + "{\"id\":\"" + contractorId2 + "\",\"companyName\":\"Contractor B\"}"
+            + "{\"id\":\"" + contractorId1 + "\",\"name\":\"Contractor A\"},"
+            + "{\"id\":\"" + contractorId2 + "\",\"name\":\"Contractor B\"}"
             + "],\"scopeOfWork\":\"Please submit your quotation.\" }";
 
         given()
@@ -108,7 +108,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
 
         UUID contractorId = UUID.randomUUID();
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Bauservice GmbH\"}],"
+            + "\",\"name\":\"Bauservice GmbH\"}],"
             + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
             + "\"projectCareOf\":\"Max Mustermann\","
             + "\"billingAddress\":{"
@@ -162,7 +162,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
 
         UUID contractorId = UUID.randomUUID();
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Test Contractor\"}] }";
+            + "\",\"name\":\"Test Contractor\"}] }";
 
         given()
             .when()
@@ -197,7 +197,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         UUID contractorId = UUID.randomUUID();
         UUID organizationId = TicketingTestData.ORGANIZATION_ID;
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Test GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
+            + "\",\"name\":\"Test GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
             + "\"scopeOfWork\":\"Bitte Angebot einreichen.\" }";
         given()
             .when()
@@ -265,7 +265,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
 
         UUID contractorId = UUID.randomUUID();
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Test GmbH\"}],\"scopeOfWork\":\"Anfrage.\" }";
+            + "\",\"name\":\"Test GmbH\"}],\"scopeOfWork\":\"Anfrage.\" }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -313,7 +313,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
 
         UUID contractorId = UUID.randomUUID();
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"companyName\":\"Test GmbH\"}],\"scopeOfWork\":\"Original.\" }";
+            + "\",\"name\":\"Test GmbH\"}],\"scopeOfWork\":\"Original.\" }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -365,7 +365,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
-            .body("{ \"contractors\":[{\"id\":\"" + contractorId + "\",\"companyName\":\"Test GmbH\"}] }")
+            .body("{ \"contractors\":[{\"id\":\"" + contractorId + "\",\"name\":\"Test GmbH\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
@@ -413,7 +413,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"companyName\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);

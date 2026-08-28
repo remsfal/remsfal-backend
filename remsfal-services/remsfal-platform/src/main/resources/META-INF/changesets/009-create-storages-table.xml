@@ -28,6 +28,9 @@
             <column name="description" type="clob" />
             <column name="usable_space" type="DECIMAL(10, 2)" />
             <column name="heating_space" type="DECIMAL(10, 2)" />
+            <column name="is_heated" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />
             </column>

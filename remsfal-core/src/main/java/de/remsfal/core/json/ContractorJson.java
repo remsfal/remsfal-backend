@@ -53,7 +53,7 @@ public abstract class ContractorJson implements ContractorModel {
     @NotBlank(groups = PostValidation.class)
     @Size(max = 255)
     @Override
-    public abstract  String getCompanyName();
+    public abstract  String getName();
 
     @Pattern(regexp = "^\\+?[0-9]{10,14}$", message = "Phone number must be in E.164 format")
     @Size(max = 15)
@@ -104,7 +104,7 @@ public abstract class ContractorJson implements ContractorModel {
             .id(model.getId())
             .projectId(model.getProjectId())
             .organizationId(model.getOrganizationId())
-            .companyName(model.getCompanyName())
+            .name(model.getName())
             .phone(model.getPhone())
             .email(model.getEmail())
             .trade(model.getTrade())
@@ -135,7 +135,7 @@ public abstract class ContractorJson implements ContractorModel {
         }
         return ImmutableContractorJson.builder()
             .id(contractorId)
-            .companyName(organization.getName())
+            .name(organization.getName())
             .phone(organization.getPhone())
             .email(organization.getEmail())
             .trade(organization.getTrade())

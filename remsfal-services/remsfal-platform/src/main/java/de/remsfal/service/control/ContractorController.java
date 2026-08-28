@@ -99,7 +99,7 @@ public class ContractorController {
         ContractorEntity entity = new ContractorEntity();
         entity.generateId();
         entity.setProject(projectEntity);
-        entity.setCompanyName(contractor.getCompanyName());
+        entity.setName(contractor.getName());
         entity.setPhone(contractor.getPhone());
         entity.setEmail(contractor.getEmail());
         entity.setTrade(contractor.getTrade());
@@ -135,8 +135,8 @@ public class ContractorController {
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
             .orElseThrow(() -> new NotFoundException("Contractor not found"));
 
-        if (contractor.getCompanyName() != null) {
-            entity.setCompanyName(contractor.getCompanyName());
+        if (contractor.getName() != null) {
+            entity.setName(contractor.getName());
         }
         if (contractor.getPhone() != null) {
             entity.setPhone(contractor.getPhone());

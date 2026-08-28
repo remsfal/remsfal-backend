@@ -21,20 +21,9 @@
     <include file="META-INF/changesets/009-create-storages-table.xml"/>
     <include file="META-INF/changesets/010-create-commercials-table.xml"/>
     <include file="META-INF/changesets/011-create-user-authentication-table.xml"/>
-    <include file="META-INF/changesets/012-create-contractors-table.xml"/>
-    <include file="META-INF/changesets/013-add-address-to-contractor.xml"/>
-    <include file="META-INF/changesets/014-add-locale-to-users.xml"/>
-    <include file="META-INF/changesets/015-create-organizations-table.xml"/>
-    <include file="META-INF/changesets/016-create-user-additional-email-table.xml"/>
-    <include file="META-INF/changesets/017-create-project-organizations-table.xml"/>
-    <include file="META-INF/changesets/018-add-additional-email-verification-token.xml"/>
-    <include file="META-INF/changesets/019-add-contractor-organization-link.xml"/>
-    <include file="META-INF/changesets/020-add-project-billing-recipient.xml"/>
-    <include file="META-INF/changesets/021-add-user-birth-info.xml"/>
-    <include file="META-INF/changesets/022-create-rental-agreement-keys-table.xml"/>
-    <include file="META-INF/changesets/023-add-storage-is-heated.xml"/>
-    <include file="META-INF/changesets/024-add-building-commercial-heating-space.xml"/>
-    <include file="META-INF/changesets/025-tenant-unique-user-email-per-project.xml"/>
-    <include file="META-INF/changesets/026-drop-contractor-employees-table.xml"/>
-    <include file="META-INF/changesets/027-organization-contractor-unique-email.xml"/>
+    <include file="META-INF/changesets/012-create-organizations-table.xml"/>
+    <include file="META-INF/changesets/013-create-contractors-table.xml"/>
+    <include file="META-INF/changesets/014-create-user-additional-email-table.xml"/>
+    <include file="META-INF/changesets/015-create-project-organizations-table.xml"/>
+    <include file="META-INF/changesets/016-create-rental-agreement-keys-table.xml"/>
 </databaseChangeLog>

@@ -32,7 +32,7 @@ class ContractorJsonTest {
         assertNotNull(json);
         assertEquals(model.getId(), json.getId());
         assertEquals(model.getProjectId(), json.getProjectId());
-        assertEquals(model.getCompanyName(), json.getCompanyName());
+        assertEquals(model.getName(), json.getName());
         assertEquals(model.getPhone(), json.getPhone());
         assertEquals(model.getEmail(), json.getEmail());
         assertEquals(model.getTrade(), json.getTrade());
@@ -58,7 +58,7 @@ class ContractorJsonTest {
         assertNotNull(json);
         assertEquals(model.getId(), json.getId());
         assertEquals(model.getProjectId(), json.getProjectId());
-        assertEquals(model.getCompanyName(), json.getCompanyName());
+        assertEquals(model.getName(), json.getName());
         assertEquals(model.getPhone(), json.getPhone());
         assertEquals(model.getEmail(), json.getEmail());
         assertEquals(model.getTrade(), json.getTrade());
@@ -163,16 +163,16 @@ class ContractorJsonTest {
     static class ContractorModelEntity implements ContractorModel {
         private final UUID id;
         private final UUID projectId;
-        private final String companyName;
+        private final String name;
         private final String phone;
         private final String email;
         private final String trade;
         private final AddressModel address;
 
-        public ContractorModelEntity(UUID id, UUID projectId, String companyName, String phone, String email, String trade, AddressModel address) {
+        public ContractorModelEntity(UUID id, UUID projectId, String name, String phone, String email, String trade, AddressModel address) {
             this.id = id;
             this.projectId = projectId;
-            this.companyName = companyName;
+            this.name = name;
             this.phone = phone;
             this.email = email;
             this.trade = trade;
@@ -190,8 +190,8 @@ class ContractorJsonTest {
         }
 
         @Override
-        public String getCompanyName() {
-            return companyName;
+        public String getName() {
+            return name;
         }
 
         @Override

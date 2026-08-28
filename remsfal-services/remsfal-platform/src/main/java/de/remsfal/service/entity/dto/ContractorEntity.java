@@ -36,8 +36,8 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     @JoinColumn(name = "organization_id", columnDefinition = "uuid")
     private OrganizationEntity organization;
 
-    @Column(name = "company_name", nullable = false)
-    private String companyName;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Column(name = "phone")
     private String phone;
@@ -85,18 +85,18 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
     }
 
     /**
-     * Returns the company name with fallback to the linked organization's name.
+     * Returns the name with fallback to the linked organization's name.
      */
     @Override
-    public String getCompanyName() {
-        if (companyName != null) {
-            return companyName;
+    public String getName() {
+        if (name != null) {
+            return name;
         }
         return organization != null ? organization.getName() : null;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -185,7 +185,7 @@ public class ContractorEntity extends AbstractEntity implements ContractorModel 
             return super.equals(e)
                 && Objects.equals(project, e.project)
                 && Objects.equals(organization, e.organization)
-                && Objects.equals(companyName, e.companyName)
+                && Objects.equals(name, e.name)
                 && Objects.equals(phone, e.phone)
                 && Objects.equals(email, e.email)
                 && Objects.equals(trade, e.trade)

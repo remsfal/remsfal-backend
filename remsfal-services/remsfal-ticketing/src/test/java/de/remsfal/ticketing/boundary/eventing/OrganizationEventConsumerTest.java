@@ -119,7 +119,7 @@ class OrganizationEventConsumerTest {
             assertEquals(changedByUserId, entity.getReporterId());
             assertEquals(TestData.USER_NAME, entity.getReportedBy());
             assertEquals(Boolean.FALSE, entity.isVisibleToTenants());
-            assertEquals(TestData.ORGANIZATION_NAME, entity.getContractorUpdate().getCompanyName());
+            assertEquals(TestData.ORGANIZATION_NAME, entity.getContractorUpdate().getName());
             assertEquals(TestData.ORGANIZATION_PHONE, entity.getContractorUpdate().getPhone());
             assertEquals(TestData.ORGANIZATION_EMAIL, entity.getContractorUpdate().getEmail());
             assertEquals(TestData.ADDRESS_STREET, entity.getContractorUpdate().getAddress().getStreet());
