@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-0.0.13-create-contractor-timelines" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
+        <comment>Create contractor timelines table for the communication between a property manager
+        and a single contractor organization about one quotation request</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.contractor_timelines (
+                request_id UUID,
+                timeline_id UUID,
+                issue_id UUID,
+                attachment_id LIST&lt;UUID&gt;,
+                sender_id UUID,
+                sender_name TEXT,
+                sender_role TEXT,
+                recipient TEXT,
+                title TEXT,
+                purpose TEXT,
+                message TEXT,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY ((request_id), timeline_id)
+            ) WITH CLUSTERING ORDER BY (timeline_id ASC);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.contractor_timelines;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
