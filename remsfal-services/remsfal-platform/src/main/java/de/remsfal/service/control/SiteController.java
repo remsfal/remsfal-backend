@@ -30,7 +30,7 @@ public class SiteController {
     @Transactional
     public SiteModel createSite(final UUID projectId, final UUID propertyId, final SiteModel site) {
         logger.infov("Creating a site (projectId={0}, propertyId={1}, site={2})", projectId, propertyId, site);
-        final SiteEntity entity = updateSite(site, new SiteEntity());
+        final SiteEntity entity = mergeSiteFields(site, new SiteEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
@@ -52,10 +52,10 @@ public class SiteController {
             projectId, siteId, site);
         final SiteEntity entity = repository.findSiteById(projectId, siteId)
             .orElseThrow(() -> new NotFoundException("Site not exist or user has no membership"));
-        return repository.merge(updateSite(site, entity));
+        return repository.merge(mergeSiteFields(site, entity));
     }
 
-    private SiteEntity updateSite(final SiteModel model, final SiteEntity entity) {
+    private SiteEntity mergeSiteFields(final SiteModel model, final SiteEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());
         }

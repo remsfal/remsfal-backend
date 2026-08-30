@@ -41,22 +41,6 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
     }
 
     /**
-     * Find tenants by first name and last name within a specific project. Used for deduplication when creating rental
-     * agreements.
-     *
-     * @param projectId the project ID
-     * @param firstName the first name (case-insensitive)
-     * @param lastName the last name (case-insensitive)
-     * @return list of matching tenants
-     */
-    public List<TenantEntity> findByNameInProject(final UUID projectId, final String firstName, final String lastName) {
-        return find(
-            "LOWER(firstName) = LOWER(:firstName) AND LOWER(lastName) = LOWER(:lastName) AND projectId = :projectId",
-            Map.of("firstName", firstName, "lastName", lastName, PARAM_PROJECT_ID, projectId))
-                .list();
-    }
-
-    /**
      * Find all tenants linked to a specific user.
      *
      * @param userId the user ID

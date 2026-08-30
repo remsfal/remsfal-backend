@@ -92,10 +92,8 @@ public class OrganizationController {
 
         UserEntity userEntity = userController.findOrCreateUser(user);
 
-        OrganizationEntity organizationEntity = new OrganizationEntity();
-
+        OrganizationEntity organizationEntity = mergeOrganizationFields(organization, new OrganizationEntity());
         organizationEntity.generateId();
-        organizationEntity.setName(organization.getName());
         if (organization.getEmail() != null) {
             if (!userController.isVerifiedEmailForUser(user.getId(), organization.getEmail())) {
                 throw new BadRequestException(
@@ -108,14 +106,7 @@ public class OrganizationController {
             }
             organizationEntity.setEmail(normalizedEmail);
         }
-        organizationEntity.setPhone(organization.getPhone());
-        organizationEntity.setTrade(organization.getTrade());
-        organizationEntity.setVatIdentificationNumber(organization.getVatIdentificationNumber());
         organizationEntity.addEmployee(userEntity, EmployeeRole.OWNER);
-
-        if (organization.getAddress() != null) {
-            organizationEntity.setAddress(addressController.updateAddress(organization.getAddress(), null));
-        }
 
         organizationRepository.persistAndFlush(organizationEntity);
 
@@ -192,10 +183,6 @@ public class OrganizationController {
             || organization.getTrade() != null || organization.getAddress() != null
             || organization.getEmail() != null;
 
-        if (organization.getName() != null) {
-            organizationEntity.setName(organization.getName());
-        }
-
         if (organization.getEmail() != null) {
             if (!userController.isVerifiedEmailForUser(user.getId(), organization.getEmail())) {
                 throw new BadRequestException(
@@ -211,21 +198,7 @@ public class OrganizationController {
             organizationEntity.setEmail(normalizedEmail);
         }
 
-        if (organization.getPhone() != null) {
-            organizationEntity.setPhone(organization.getPhone());
-        }
-
-        if (organization.getTrade() != null) {
-            organizationEntity.setTrade(organization.getTrade());
-        }
-
-        if (organization.getVatIdentificationNumber() != null) {
-            organizationEntity.setVatIdentificationNumber(organization.getVatIdentificationNumber());
-        }
-
-        if (organization.getAddress() != null) {
-            organizationEntity.setAddress(addressController.updateAddress(organization.getAddress(), null));
-        }
+        mergeOrganizationFields(organization, organizationEntity);
 
         final OrganizationEntity mergedEntity = organizationRepository.mergeAndFlush(organizationEntity);
 
@@ -234,6 +207,25 @@ public class OrganizationController {
         }
 
         return mergedEntity;
+    }
+
+    private OrganizationEntity mergeOrganizationFields(final OrganizationModel model, final OrganizationEntity entity) {
+        if (model.getName() != null) {
+            entity.setName(model.getName());
+        }
+        if (model.getPhone() != null) {
+            entity.setPhone(model.getPhone());
+        }
+        if (model.getTrade() != null) {
+            entity.setTrade(model.getTrade());
+        }
+        if (model.getVatIdentificationNumber() != null) {
+            entity.setVatIdentificationNumber(model.getVatIdentificationNumber());
+        }
+        if (model.getAddress() != null) {
+            entity.setAddress(addressController.updateAddress(model.getAddress(), null));
+        }
+        return entity;
     }
 
     private void notifyContractorRelevantOrganizationUpdate(final OrganizationEntity organization,

@@ -10,6 +10,7 @@ import de.remsfal.core.json.project.RentalAgreementKeysJson;
 import de.remsfal.core.json.project.ImmutableRentalAgreementKeysJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.RentModel;
+import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
 import io.quarkus.test.junit.QuarkusTest;
@@ -1795,6 +1796,38 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             controller.addTenant(projectId, created2.getId(), tenant);
 
         assertEquals(firstTenantId, addedTenant.getId());
+    }
+
+    @Test
+    void addTenant_FAILED_emailAlreadyUsedByDifferentNamedTenant() {
+        final UUID projectId = TestData.PROJECT_ID_1;
+        final TenantJson firstTenant = ImmutableTenantJson.builder()
+            .firstName("Max")
+            .lastName("Schmidt")
+            .email("shared@example.com")
+            .build();
+
+        final RentalAgreementJson agreement1 = ImmutableRentalAgreementJson.builder()
+            .startOfRental(LocalDate.now())
+            .addTenants(firstTenant)
+            .build();
+        controller.createRentalAgreement(projectId, agreement1);
+
+        final RentalAgreementJson agreement2 = ImmutableRentalAgreementJson.builder()
+            .startOfRental(LocalDate.now())
+            .tenants(List.of())
+            .build();
+        RentalAgreementEntity created2 = controller.createRentalAgreement(projectId, agreement2);
+
+        final TenantJson differentNamedTenant = ImmutableTenantJson.builder()
+            .firstName("Erika")
+            .lastName("Mustermann")
+            .email("shared@example.com")
+            .build();
+
+        assertThrows(AlreadyExistsException.class,
+            () -> controller.addTenant(projectId, created2.getId(), differentNamedTenant),
+            "Should fail because the email is already used by a differently-named tenant in this project.");
     }
 
     @Test
