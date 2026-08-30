@@ -96,22 +96,13 @@ public class ContractorController {
         ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not found"));
 
-        ContractorEntity entity = new ContractorEntity();
+        ContractorEntity entity = mergeContractorFields(contractor, new ContractorEntity());
         entity.generateId();
         entity.setProject(projectEntity);
-        entity.setName(contractor.getName());
-        entity.setPhone(contractor.getPhone());
         entity.setEmail(contractor.getEmail());
-        entity.setTrade(contractor.getTrade());
-        entity.setContactPerson(contractor.getContactPerson());
-        entity.setRemarks(contractor.getRemarks());
 
         if (entity.getEmail() != null) {
             contractorOrganizationLinker.relinkByEmail(entity, entity.getEmail());
-        }
-
-        if (contractor.getAddress() != null) {
-            entity.setAddress(addressController.updateAddress(contractor.getAddress(), null));
         }
 
         contractorRepository.persistAndFlush(entity);
@@ -135,12 +126,6 @@ public class ContractorController {
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
             .orElseThrow(() -> new NotFoundException("Contractor not found"));
 
-        if (contractor.getName() != null) {
-            entity.setName(contractor.getName());
-        }
-        if (contractor.getPhone() != null) {
-            entity.setPhone(contractor.getPhone());
-        }
         if (contractor.getEmail() != null) {
             final String normalizedEmail = contractor.getEmail().trim().toLowerCase();
             if (!normalizedEmail.equals(entity.getEmail())) {
@@ -148,20 +133,30 @@ public class ContractorController {
                 contractorOrganizationLinker.relinkByEmail(entity, normalizedEmail);
             }
         }
-        if (contractor.getTrade() != null) {
-            entity.setTrade(contractor.getTrade());
-        }
-        if (contractor.getContactPerson() != null) {
-            entity.setContactPerson(contractor.getContactPerson());
-        }
-        if (contractor.getRemarks() != null) {
-            entity.setRemarks(contractor.getRemarks());
-        }
-        if (contractor.getAddress() != null) {
-            entity.setAddress(addressController.updateAddress(contractor.getAddress(), entity.getAddress()));
-        }
 
-        return contractorRepository.merge(entity);
+        return contractorRepository.merge(mergeContractorFields(contractor, entity));
+    }
+
+    private ContractorEntity mergeContractorFields(final ContractorModel model, final ContractorEntity entity) {
+        if (model.getName() != null) {
+            entity.setName(model.getName());
+        }
+        if (model.getPhone() != null) {
+            entity.setPhone(model.getPhone());
+        }
+        if (model.getTrade() != null) {
+            entity.setTrade(model.getTrade());
+        }
+        if (model.getContactPerson() != null) {
+            entity.setContactPerson(model.getContactPerson());
+        }
+        if (model.getRemarks() != null) {
+            entity.setRemarks(model.getRemarks());
+        }
+        if (model.getAddress() != null) {
+            entity.setAddress(addressController.updateAddress(model.getAddress(), entity.getAddress()));
+        }
+        return entity;
     }
 
     /**

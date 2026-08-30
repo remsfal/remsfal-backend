@@ -19,6 +19,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -37,10 +38,11 @@ public abstract class TenantJson implements TenantModel {
 
     @Null(groups = PostValidation.class)
     @Nullable
-    @Schema(readOnly = true)
+    @Schema(readOnly = true, required = true)
     @Override
     public abstract UUID getId();
 
+    @NotNull(groups = PostValidation.class)
     @NotBlank(groups = PostValidation.class, message = "First name is required")
     @Nullable
     @Size(min = 1, max = 255, message = "First name must be between 1 and 255 characters")
@@ -48,6 +50,7 @@ public abstract class TenantJson implements TenantModel {
     @Override
     public abstract String getFirstName();
 
+    @NotNull(groups = PostValidation.class)
     @NotBlank(groups = PostValidation.class, message = "Last name is required")
     @Nullable
     @Size(min = 1, max = 255, message = "Last name must be between 1 and 255 characters")
