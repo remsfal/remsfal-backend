@@ -1,12 +1,10 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.json.project.TenantJson;
-import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
-import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -33,6 +31,9 @@ public class TenantController {
 
     @Inject
     TenantUserLinkController tenantUserLinker;
+
+    @Inject
+    AddressController addressController;
 
     public List<TenantModel> getTenants(final UUID projectId) {
         logger.infov("Retrieving tenants for project {0}", projectId);
@@ -224,15 +225,7 @@ public class TenantController {
             entity.setDateOfBirth(model.getDateOfBirth());
         }
         if (model.getAddress() != null) {
-            final AddressModel addressModel = model.getAddress();
-            final AddressEntity address = new AddressEntity();
-            address.generateId();
-            address.setStreet(addressModel.getStreet());
-            address.setCity(addressModel.getCity());
-            address.setProvince(addressModel.getProvince());
-            address.setZip(addressModel.getZip());
-            address.setCountry(addressModel.getCountry());
-            entity.setAddress(address);
+            entity.setAddress(addressController.updateAddress(model.getAddress(), entity.getAddress()));
         }
         return entity;
     }

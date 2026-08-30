@@ -223,7 +223,7 @@ public class OrganizationController {
             entity.setVatIdentificationNumber(model.getVatIdentificationNumber());
         }
         if (model.getAddress() != null) {
-            entity.setAddress(addressController.updateAddress(model.getAddress(), null));
+            entity.setAddress(addressController.updateAddress(model.getAddress(), entity.getAddress()));
         }
         return entity;
     }
