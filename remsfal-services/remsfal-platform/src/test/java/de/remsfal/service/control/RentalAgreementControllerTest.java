@@ -1818,6 +1818,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .tenants(List.of())
             .build();
         RentalAgreementEntity created2 = controller.createRentalAgreement(projectId, agreement2);
+        final UUID agreementId2 = created2.getId();
 
         final TenantJson differentNamedTenant = ImmutableTenantJson.builder()
             .firstName("Erika")
@@ -1826,7 +1827,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .build();
 
         assertThrows(AlreadyExistsException.class,
-            () -> controller.addTenant(projectId, created2.getId(), differentNamedTenant),
+            () -> controller.addTenant(projectId, agreementId2, differentNamedTenant),
             "Should fail because the email is already used by a differently-named tenant in this project.");
     }
 
