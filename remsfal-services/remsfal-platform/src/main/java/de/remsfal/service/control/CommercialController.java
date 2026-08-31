@@ -29,7 +29,7 @@ public class CommercialController {
         final CommercialModel commercial) {
         logger.infov("Creating a commercial (projectId={0}, buildingId={1}, commercial={2})",
             projectId, buildingId, commercial);
-        CommercialEntity entity = updateCommercial(commercial, new CommercialEntity());
+        CommercialEntity entity = mergeCommercialFields(commercial, new CommercialEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -51,10 +51,10 @@ public class CommercialController {
         logger.infov("Updating a commercial (projectId={0}, commercialId={1})", projectId, commercialId);
         CommercialEntity entity = commercialRepository.findCommercialById(projectId, commercialId)
             .orElseThrow(() -> new NotFoundException("Commercial not exist"));
-        return commercialRepository.merge(updateCommercial(commercial, entity));
+        return commercialRepository.merge(mergeCommercialFields(commercial, entity));
     }
 
-    private CommercialEntity updateCommercial(final CommercialModel model, final CommercialEntity entity) {
+    private CommercialEntity mergeCommercialFields(final CommercialModel model, final CommercialEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());
         }

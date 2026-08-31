@@ -144,33 +144,8 @@ public class UserController {
             || user.getAddress() != null || user.getMobilePhoneNumber() != null
             || user.getBusinessPhoneNumber() != null || user.getPrivatePhoneNumber() != null;
 
-        if (user.getFirstName() != null) {
-            entity.setFirstName(user.getFirstName());
-        }
-        if (user.getLastName() != null) {
-            entity.setLastName(user.getLastName());
-        }
-        if (user.getAddress() != null) {
-            entity.setAddress(addressController.updateAddress(user.getAddress(), entity.getAddress()));
-        }
-        if (user.getMobilePhoneNumber() != null) {
-            entity.setMobilePhoneNumber(user.getMobilePhoneNumber());
-        }
-        if (user.getBusinessPhoneNumber() != null) {
-            entity.setBusinessPhoneNumber(user.getBusinessPhoneNumber());
-        }
-        if (user.getPrivatePhoneNumber() != null) {
-            entity.setPrivatePhoneNumber(user.getPrivatePhoneNumber());
-        }
-        if (user.getLocale() != null) {
-            entity.setLocale(user.getLocale());
-        }
-        if (user.getPlaceOfBirth() != null) {
-            entity.setPlaceOfBirth(user.getPlaceOfBirth());
-        }
-        if (user.getDateOfBirth() != null) {
-            entity.setDateOfBirth(user.getDateOfBirth());
-        }
+        mergeUserFields(user, entity);
+
         final UserEntity mergedEntity;
         if (user.getAdditionalEmails() != null) {
             final List<AdditionalEmailEntity> createdEmails = syncAdditionalEmails(entity, user.getAdditionalEmails());
@@ -188,6 +163,37 @@ public class UserController {
             notifyTenantRelevantUserUpdate(userId, mergedEntity);
         }
         return mergedEntity;
+    }
+
+    private UserEntity mergeUserFields(final CustomerModel model, final UserEntity entity) {
+        if (model.getFirstName() != null) {
+            entity.setFirstName(model.getFirstName());
+        }
+        if (model.getLastName() != null) {
+            entity.setLastName(model.getLastName());
+        }
+        if (model.getAddress() != null) {
+            entity.setAddress(addressController.updateAddress(model.getAddress(), entity.getAddress()));
+        }
+        if (model.getMobilePhoneNumber() != null) {
+            entity.setMobilePhoneNumber(model.getMobilePhoneNumber());
+        }
+        if (model.getBusinessPhoneNumber() != null) {
+            entity.setBusinessPhoneNumber(model.getBusinessPhoneNumber());
+        }
+        if (model.getPrivatePhoneNumber() != null) {
+            entity.setPrivatePhoneNumber(model.getPrivatePhoneNumber());
+        }
+        if (model.getLocale() != null) {
+            entity.setLocale(model.getLocale());
+        }
+        if (model.getPlaceOfBirth() != null) {
+            entity.setPlaceOfBirth(model.getPlaceOfBirth());
+        }
+        if (model.getDateOfBirth() != null) {
+            entity.setDateOfBirth(model.getDateOfBirth());
+        }
+        return entity;
     }
 
     private void notifyTenantRelevantUserUpdate(final UUID userId, final UserEntity updatedUser) {

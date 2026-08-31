@@ -15,6 +15,7 @@
         <version.cdi-api>4.1.0</version.cdi-api>
         <version.annotation-api>3.0.0</version.annotation-api>
         <version.xml-bind>4.0.5</version.xml-bind>
+        <version.xml-bind-runtime>4.0.9</version.xml-bind-runtime>
         <version.jax-rs>4.0.0</version.jax-rs>
         <version.open-api>4.1.1</version.open-api>
         <jaxb2-plugin.version>4.1.0</jaxb2-plugin.version>
@@ -68,6 +69,14 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- jakarta.xml.bind-api is provided (a container is expected to supply an implementation
+                 at runtime); tests need a concrete implementation on the classpath to actually marshal. -->
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${version.xml-bind-runtime}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

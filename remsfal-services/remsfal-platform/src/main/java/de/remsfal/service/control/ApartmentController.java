@@ -29,7 +29,7 @@ public class ApartmentController {
         final ApartmentModel apartment) {
         logger.infov("Creating an apartment (projectId={0}, buildingId={1}, apartment={2})",
             projectId, buildingId, apartment);
-        final ApartmentEntity entity = updateApartment(apartment, new ApartmentEntity());
+        final ApartmentEntity entity = mergeApartmentFields(apartment, new ApartmentEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -52,10 +52,10 @@ public class ApartmentController {
             projectId, apartmentId, apartment);
         final ApartmentEntity entity = apartmentRepository.findByIds(projectId, apartmentId)
             .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
-        return apartmentRepository.merge(updateApartment(apartment, entity));
+        return apartmentRepository.merge(mergeApartmentFields(apartment, entity));
     }
 
-    private ApartmentEntity updateApartment(final ApartmentModel model, final ApartmentEntity entity) {
+    private ApartmentEntity mergeApartmentFields(final ApartmentModel model, final ApartmentEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());
         }
