@@ -1,6 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.RentalAgreementKeysModel;
@@ -10,8 +9,6 @@ import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
-import de.remsfal.service.entity.dao.TenantRepository;
-import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
 import de.remsfal.service.entity.dto.BuildingRentEntity;
 import de.remsfal.service.entity.dto.CommercialRentEntity;
@@ -57,13 +54,10 @@ public class RentalAgreementController {
     ProjectRepository projectRepository;
 
     @Inject
-    TenantRepository tenantRepository;
-
-    @Inject
     PropertyController propertyController;
 
     @Inject
-    TenantUserLinkController tenantUserLinker;
+    TenantController tenantController;
 
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
@@ -132,14 +126,12 @@ public class RentalAgreementController {
 
         validateLeafRentalUnits(projectId, agreement);
 
-        RentalAgreementEntity entity = new RentalAgreementEntity();
+        RentalAgreementEntity entity = mergeRentalAgreementFields(agreement, new RentalAgreementEntity());
         entity.generateId();
         entity.setProjectId(projectId);
-        entity.setStartOfRental(agreement.getStartOfRental());
-        entity.setEndOfRental(agreement.getEndOfRental());
 
         // Process tenants
-        entity.setTenants(processTenants(projectId, agreement.getTenants()));
+        entity.setTenants(tenantController.resolveOrCreateTenants(projectId, agreement.getTenants()));
 
         // Process keys
         entity.setKeys(processKeys(agreement.getKeys()));
@@ -185,18 +177,13 @@ public class RentalAgreementController {
             .findRentalAgreementByProject(projectId, agreementId)
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
 
-        if (agreement.getStartOfRental() != null) {
-            entity.setStartOfRental(agreement.getStartOfRental());
-        }
-        if (agreement.getEndOfRental() != null) {
-            entity.setEndOfRental(agreement.getEndOfRental());
-        }
+        mergeRentalAgreementFields(agreement, entity);
 
         // Update tenants (replace entire list)
         final List<? extends TenantModel> tenants = agreement.getTenants();
         if (tenants != null && !tenants.isEmpty()) {
             entity.getTenants().clear();
-            List<TenantEntity> tenantEntities = processTenants(projectId, tenants);
+            List<TenantEntity> tenantEntities = tenantController.resolveOrCreateTenants(projectId, tenants);
             entity.getTenants().addAll(tenantEntities);
         }
 
@@ -208,6 +195,22 @@ public class RentalAgreementController {
         return rentalAgreementRepository.merge(entity);
     }
 
+    /**
+     * Pure field-merge: copies the trivial scalar fields from {@code model} onto {@code entity}.
+     * Tenants, keys and rents are handled separately by their own processing methods since they
+     * involve repository/controller calls and can throw, unlike this pure merge.
+     */
+    private RentalAgreementEntity mergeRentalAgreementFields(final RentalAgreementModel model,
+            final RentalAgreementEntity entity) {
+        if (model.getStartOfRental() != null) {
+            entity.setStartOfRental(model.getStartOfRental());
+        }
+        if (model.getEndOfRental() != null) {
+            entity.setEndOfRental(model.getEndOfRental());
+        }
+        return entity;
+    }
+
     @Transactional
     public TenantEntity addTenant(final UUID projectId, final UUID agreementId, final TenantModel tenantInput) {
         logger.infov("Adding a tenant to a rental agreement (projectId={0}, agreementId={1})",
@@ -216,7 +219,7 @@ public class RentalAgreementController {
             .findRentalAgreementByProject(projectId, agreementId)
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
 
-        final TenantEntity tenant = processTenants(projectId, List.of(tenantInput)).get(0);
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(projectId, tenantInput);
         entity.addTenant(tenant);
         rentalAgreementRepository.merge(entity);
         return tenant;
@@ -387,181 +390,6 @@ public class RentalAgreementController {
         if (rents != null) {
             rents.removeIf(r -> Objects.equals(r.getRentalUnitId(), rentalUnitId));
         }
-    }
-
-    /**
-     * Process tenant models and create or reuse tenant entities.
-     * If a tenant matches an existing tenant in the project (based on business equality),
-     * the existing tenant is reused. If a tenant has an email, attempts to link to an existing user account.
-     *
-     * @param projectId the project ID
-     * @param tenantsInput the tenant models from the request
-     * @return list of tenant entities
-     */
-    private List<TenantEntity> processTenants(final UUID projectId, final List<? extends TenantModel> tenantsInput) {
-        List<TenantEntity> tenantEntities = new ArrayList<>();
-
-        for (TenantModel tenantInput : tenantsInput) {
-            // Look up existing tenants in the project by first and last name
-            List<TenantEntity> candidates = tenantRepository.findByNameInProject(
-                projectId, tenantInput.getFirstName(), tenantInput.getLastName());
-
-            // Try to find a matching tenant using business equality (ignoring ID when null)
-            TenantEntity existingTenant = findMatchingTenantEntity(tenantInput, candidates);
-
-            if (existingTenant != null) {
-                // Reuse existing tenant from the project
-                logger.infov("Reusing existing tenant {0} {1} (id={2}) from project",
-                    existingTenant.getFirstName(), existingTenant.getLastName(), existingTenant.getId());
-                tenantEntities.add(existingTenant);
-            } else {
-                // Create new tenant
-                TenantEntity tenant = createNewTenant(projectId, tenantInput);
-                tenantEntities.add(tenant);
-            }
-        }
-
-        return tenantEntities;
-    }
-
-    /**
-     * Creates a new tenant entity from the input model.
-     *
-     * @param projectId the project ID
-     * @param tenantInput the tenant input model
-     * @return new tenant entity
-     */
-    private TenantEntity createNewTenant(final UUID projectId, final TenantModel tenantInput) {
-        TenantEntity tenant = new TenantEntity();
-        tenant.generateId();
-        tenant.setProjectId(projectId);
-
-        // Set required fields
-        tenant.setFirstName(tenantInput.getFirstName());
-        tenant.setLastName(tenantInput.getLastName());
-
-        // Optional: link to existing user by email
-        if (tenantInput.getEmail() != null && !tenantInput.getEmail().isBlank()) {
-            final String normalizedEmail = tenantInput.getEmail().trim().toLowerCase();
-            tenant.setEmail(normalizedEmail);
-            tenantUserLinker.relinkByEmail(tenant, normalizedEmail);
-        }
-
-        // Set optional phone numbers
-        if (tenantInput.getMobilePhoneNumber() != null) {
-            tenant.setMobilePhoneNumber(tenantInput.getMobilePhoneNumber());
-        }
-        if (tenantInput.getBusinessPhoneNumber() != null) {
-            tenant.setBusinessPhoneNumber(tenantInput.getBusinessPhoneNumber());
-        }
-        if (tenantInput.getPrivatePhoneNumber() != null) {
-            tenant.setPrivatePhoneNumber(tenantInput.getPrivatePhoneNumber());
-        }
-
-        // Set optional birth information
-        if (tenantInput.getPlaceOfBirth() != null) {
-            tenant.setPlaceOfBirth(tenantInput.getPlaceOfBirth());
-        }
-        if (tenantInput.getDateOfBirth() != null) {
-            tenant.setDateOfBirth(tenantInput.getDateOfBirth());
-        }
-
-        // Handle address if provided
-        if (tenantInput.getAddress() != null) {
-            AddressModel addressModel = tenantInput.getAddress();
-            AddressEntity address = new AddressEntity();
-            address.generateId();
-            address.setStreet(addressModel.getStreet());
-            address.setCity(addressModel.getCity());
-            address.setProvince(addressModel.getProvince());
-            address.setZip(addressModel.getZip());
-            address.setCountry(addressModel.getCountry());
-            tenant.setAddress(address);
-        }
-
-        logger.infov("Creating new tenant {0} {1} in project",
-            tenantInput.getFirstName(), tenantInput.getLastName());
-
-        return tenant;
-    }
-
-    /**
-     * Checks if two tenants match based on business equality (not ID).
-     * Two tenants match if they have the same first name, last name, and:
-     * - Same email (if at least one has an email)
-     * - Same date of birth (if at least one has a date of birth)
-     *
-     * If either email or date of birth differs, the tenants are considered different.
-     * First name and last name are required fields and cannot be null.
-     *
-     * @param input the tenant input from the POST request
-     * @param existing the existing tenant entity
-     * @return true if tenants match, false otherwise
-     */
-    private boolean tenantsMatch(final TenantModel input, final TenantEntity existing) {
-        // First name and last name are required fields (validated at API level)
-        // They must match (case-insensitive)
-        if (input.getFirstName() == null || existing.getFirstName() == null) {
-            return false;
-        }
-        if (!input.getFirstName().equalsIgnoreCase(existing.getFirstName())) {
-            return false;
-        }
-        
-        if (input.getLastName() == null || existing.getLastName() == null) {
-            return false;
-        }
-        if (!input.getLastName().equalsIgnoreCase(existing.getLastName())) {
-            return false;
-        }
-
-        // If at least one has an email, they must match (or both must be null/empty)
-        String inputEmail = input.getEmail();
-        String existingEmail = existing.getEmail();
-        if (inputEmail != null || existingEmail != null) {
-            // At least one has an email - they must match
-            if (inputEmail == null || existingEmail == null) {
-                // One has email, the other doesn't - not a match
-                return false;
-            }
-            if (!inputEmail.equalsIgnoreCase(existingEmail)) {
-                // Different emails - not a match
-                return false;
-            }
-        }
-
-        // If at least one has a date of birth, they must match
-        if (input.getDateOfBirth() != null || existing.getDateOfBirth() != null) {
-            // At least one has a date of birth - they must match
-            if (input.getDateOfBirth() == null || existing.getDateOfBirth() == null) {
-                // One has date of birth, the other doesn't - not a match
-                return false;
-            }
-            if (!input.getDateOfBirth().equals(existing.getDateOfBirth())) {
-                // Different dates of birth - not a match
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Finds a matching tenant from a list of candidate tenant entities using business equality.
-     * This is the key method for tenant deduplication across the project.
-     *
-     * @param input the tenant input from the POST request
-     * @param candidates list of candidate tenant entities from the database
-     * @return matching tenant entity or null if no match found
-     */
-    private TenantEntity findMatchingTenantEntity(final TenantModel input, final List<TenantEntity> candidates) {
-        for (TenantEntity candidate : candidates) {
-            // Use business equality check (ignoring IDs)
-            if (tenantsMatch(input, candidate)) {
-                return candidate;
-            }
-        }
-        return null;
     }
 
     /**

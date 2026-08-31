@@ -30,7 +30,7 @@ public class BuildingController {
     public BuildingModel createBuilding(final UUID projectId, final UUID propertyId, final BuildingModel building) {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
             projectId, propertyId, building);
-        final BuildingEntity entity = updateBuilding(building, new BuildingEntity());
+        final BuildingEntity entity = mergeBuildingFields(building, new BuildingEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setPropertyId(propertyId);
@@ -58,10 +58,10 @@ public class BuildingController {
             projectId, buildingId, building);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
             .orElseThrow(() -> new NotFoundException("Building not exist"));
-        return buildingRepository.merge(updateBuilding(building, entity));
+        return buildingRepository.merge(mergeBuildingFields(building, entity));
     }
 
-    private BuildingEntity updateBuilding(final BuildingModel model, final BuildingEntity entity) {
+    private BuildingEntity mergeBuildingFields(final BuildingModel model, final BuildingEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());
         }

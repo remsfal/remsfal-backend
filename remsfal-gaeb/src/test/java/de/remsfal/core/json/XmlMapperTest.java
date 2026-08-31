@@ -7,6 +7,7 @@ import de.remsfal.gaeb.da94.ObjectFactory;
 import de.remsfal.gaeb.da94.TgGAEB;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XmlMapperTest {
 
@@ -16,10 +17,11 @@ class XmlMapperTest {
         TgGAEB doc = factory.createTgGAEB();
         doc.setPrjInfo(factory.createTgPrjInfo());
         doc.getPrjInfo().setNamePrj("Sample Project");
-        
-        XmlMapper mapper = new XmlMapper();
-        mapper.print(doc);
 
-        assertNotNull(doc);
+        XmlMapper mapper = new XmlMapper();
+        String xml = mapper.marshal(doc);
+
+        assertNotNull(xml);
+        assertTrue(xml.contains("Sample Project"));
     }
 }
