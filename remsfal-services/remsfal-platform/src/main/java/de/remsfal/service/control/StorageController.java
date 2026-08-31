@@ -25,7 +25,7 @@ public class StorageController {
     public StorageModel createStorage(final UUID projectId, final UUID buildingId, final StorageModel storage) {
         logger.infov("Creating a storage (projectId={0}, buildingId={1}, storage={2})",
             projectId, buildingId, storage);
-        StorageEntity entity = updateStorage(storage, new StorageEntity());
+        StorageEntity entity = mergeStorageFields(storage, new StorageEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         entity.setBuildingId(buildingId);
@@ -47,10 +47,10 @@ public class StorageController {
             projectId, storageId, storage);
         final StorageEntity entity = storageRepository.findByIds(projectId, storageId)
             .orElseThrow(() -> new NotFoundException("Storage does not exist"));
-        return storageRepository.merge(updateStorage(storage, entity));
+        return storageRepository.merge(mergeStorageFields(storage, entity));
     }
 
-    private StorageEntity updateStorage(final StorageModel model, final StorageEntity entity) {
+    private StorageEntity mergeStorageFields(final StorageModel model, final StorageEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());
         }

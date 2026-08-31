@@ -25,6 +25,17 @@ public class RentalAgreementRepository extends AbstractRepository<RentalAgreemen
             Map.of(PARAM_USER_ID, tenantId)).list();
     }
 
+    /**
+     * Find all rental agreements a given tenant entity is linked to (by tenant entity id, not user id).
+     *
+     * @param tenantId the {@code TenantEntity} id
+     * @return list of rental agreements
+     */
+    public List<RentalAgreementEntity> findRentalAgreementsByTenantId(final UUID tenantId) {
+        return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant WHERE tenant.id = :id",
+            Map.of(PARAM_ID, tenantId)).list();
+    }
+
     public Optional<RentalAgreementEntity> findRentalAgreementByTenant(final UUID tenantId, final UUID agreementId) {
         return find("SELECT a FROM RentalAgreementEntity a JOIN a.tenants tenant "
                 + "WHERE a.id = :id and tenant.user.id = :userId",

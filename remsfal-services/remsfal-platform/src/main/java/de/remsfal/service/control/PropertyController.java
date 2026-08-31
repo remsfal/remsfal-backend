@@ -62,7 +62,7 @@ public class PropertyController {
     @Transactional
     public PropertyModel createProperty(final UUID projectId, final PropertyModel property) {
         logger.infov("Creating a property (projectId={0})", projectId);
-        PropertyEntity entity = updateProperty(property, new PropertyEntity());
+        PropertyEntity entity = mergePropertyFields(property, new PropertyEntity());
         entity.generateId();
         entity.setProjectId(projectId);
         propertyRepository.persistAndFlush(entity);
@@ -114,10 +114,10 @@ public class PropertyController {
             projectId, propertyId, property);
         final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
-        return propertyRepository.merge(updateProperty(property, entity));
+        return propertyRepository.merge(mergePropertyFields(property, entity));
     }
 
-    private PropertyEntity updateProperty(final PropertyModel model, final PropertyEntity entity) {
+    private PropertyEntity mergePropertyFields(final PropertyModel model, final PropertyEntity entity) {
         if (model.getTitle() != null) {
             entity.setTitle(model.getTitle());
         }

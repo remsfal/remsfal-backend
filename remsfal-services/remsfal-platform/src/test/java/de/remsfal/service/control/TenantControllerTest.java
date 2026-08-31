@@ -5,6 +5,8 @@ import de.remsfal.core.json.project.ImmutableTenantJson;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.exception.AlreadyExistsException;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
+import de.remsfal.service.entity.dto.TenantEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -117,5 +119,33 @@ public class TenantControllerTest extends AbstractServiceTest {
         assertThrows(AlreadyExistsException.class,
                 () -> tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch),
                 "Should fail because the email is already used by another tenant in this project.");
+    }
+
+    @Test
+    void updateTenant_SUCCESS_mergesWithSameNamedTenantOnEmailConflict() {
+        insertRentalAgreement(TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_1);
+
+        // Loser: same name as the tenant being edited, already holds the target email, linked to AGREEMENT_ID_1
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "shared@example.org");
+        // Survivor: the tenant being edited via PATCH, linked to AGREEMENT_ID_2
+        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "own@example.org");
+
+        TenantJson patch = ImmutableTenantJson.builder()
+                .email("shared@example.org")
+                .build();
+
+        TenantModel result = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch);
+
+        assertEquals(TestData.TENANT_ID_2, result.getId(), "The edited tenant (URL tenantId) must remain the survivor");
+        assertEquals("shared@example.org", result.getEmail());
+        assertNull(entityManager.find(TenantEntity.class, TestData.TENANT_ID_1),
+            "The duplicate (loser) tenant must be deleted after the merge");
+
+        RentalAgreementEntity agreement1 = entityManager.find(RentalAgreementEntity.class, TestData.AGREEMENT_ID_1);
+        assertTrue(agreement1.getTenants().stream().anyMatch(t -> t.getId().equals(TestData.TENANT_ID_2)),
+            "The loser's rental agreement must be relinked to the surviving tenant");
+        assertTrue(agreement1.getTenants().stream().noneMatch(t -> t.getId().equals(TestData.TENANT_ID_1)));
     }
 }
