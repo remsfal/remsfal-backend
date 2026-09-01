@@ -15,12 +15,18 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ImmutableContractorTimelineJson;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.core.model.ticketing.ParticipantRole;
 import de.remsfal.ticketing.AbstractTicketingTest;
+import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
+import de.remsfal.ticketing.entity.dao.TimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
+import de.remsfal.ticketing.entity.dto.TimelineEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -34,6 +40,9 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
 
     @Inject
     ContractorTimelineRepository repository;
+
+    @Inject
+    TimelineRepository timelineRepository;
 
     @Test
     void testCreateTimelineEntry_persistsEntity() {
@@ -85,6 +94,55 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
         assertTrue(entries.stream().anyMatch(e -> e.getTimelineId().equals(first.getTimelineId())));
         assertTrue(entries.stream().anyMatch(e -> e.getTimelineId().equals(second.getTimelineId())));
         assertFalse(entries.stream().anyMatch(e -> e.getTimelineId().equals(otherRequest.getTimelineId())));
+    }
+
+    @Test
+    void testCreateTimelineEntry_recipientTenant_mirrorsToTenantTimeline() {
+        final UUID issueId = UUID.randomUUID();
+        final UUID agreementId = UUID.randomUUID();
+        insertIssue(TicketingTestData.PROJECT_ID, issueId, "Heizung defekt", IssueType.TASK,
+            IssueStatus.OPEN, IssuePriority.MEDIUM, UUID.randomUUID(), agreementId, null,
+            "Beschreibung");
+
+        final UUID requestId = UUID.randomUUID();
+        final UUID senderId = UUID.randomUUID();
+        final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
+            .recipient(ParticipantRole.TENANT)
+            .purpose(MessagePurpose.MESSAGE_SENT)
+            .message("Der Techniker kommt morgen vorbei")
+            .build();
+
+        controller.createTimelineEntry(requestId, issueId, senderId, "Bauservice GmbH",
+            ParticipantRole.CONTRACTOR, entry);
+
+        final List<TimelineEntity> mirrored = timelineRepository.findByIssue(
+            agreementId, issueId, TicketingTestData.PROJECT_ID);
+
+        assertEquals(1, mirrored.size());
+        assertEquals(senderId, mirrored.get(0).getSenderId());
+        assertEquals("Bauservice GmbH", mirrored.get(0).getSenderName());
+        assertEquals(MessagePurpose.MESSAGE_SENT, mirrored.get(0).getPurpose());
+        assertEquals("Der Techniker kommt morgen vorbei", mirrored.get(0).getMessage());
+    }
+
+    @Test
+    void testCreateTimelineEntry_recipientTenant_issueWithoutAgreement_doesNotMirror() {
+        final UUID issueId = UUID.randomUUID();
+        insertIssue(TicketingTestData.PROJECT_ID, issueId, "Heizung defekt", IssueType.TASK,
+            IssueStatus.OPEN, IssuePriority.MEDIUM, UUID.randomUUID(), null, null,
+            "Beschreibung");
+
+        final UUID requestId = UUID.randomUUID();
+        final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
+            .recipient(ParticipantRole.TENANT)
+            .purpose(MessagePurpose.MESSAGE_SENT)
+            .message("Ohne Mietvertrag")
+            .build();
+
+        final ContractorTimelineEntity created = controller.createTimelineEntry(requestId, issueId,
+            UUID.randomUUID(), "Bauservice GmbH", ParticipantRole.CONTRACTOR, entry);
+
+        assertTrue(repository.findById(created.getKey()).isPresent());
     }
 
     private ContractorTimelineEntity createEntity(final UUID requestId, final UUID timelineId,

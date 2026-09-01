@@ -6,6 +6,7 @@ import de.remsfal.core.model.ticketing.ParticipantRole;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
+import de.remsfal.ticketing.entity.dto.IssueEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,6 +26,12 @@ public class ContractorTimelineController {
 
     @Inject
     ContractorTimelineRepository contractorTimelineRepository;
+
+    @Inject
+    IssueController issueController;
+
+    @Inject
+    TimelineController timelineController;
 
     public List<ContractorTimelineEntity> getTimelineEntries(final UUID requestId) {
         logger.infov("Retrieving contractor timeline entries (requestId={0})", requestId);
@@ -57,7 +64,23 @@ public class ContractorTimelineController {
         entity.setCreatedAt(now);
         entity.setModifiedAt(now);
 
-        return contractorTimelineRepository.insert(entity);
+        final ContractorTimelineEntity created = contractorTimelineRepository.insert(entity);
+
+        if (entry.getRecipient() == ParticipantRole.TENANT) {
+            mirrorToTenantTimeline(issueId, senderId, senderName, entry);
+        }
+
+        return created;
+    }
+
+    private void mirrorToTenantTimeline(final UUID issueId, final UUID senderId, final String senderName,
+        final ContractorTimelineJson entry) {
+        final IssueEntity issue = issueController.getIssue(issueId);
+        if (issue.getAgreementId() == null) {
+            return;
+        }
+        timelineController.createTimelineEntry(issue.getAgreementId(), issueId, issue.getProjectId(),
+            senderId, senderName, entry.getPurpose(), entry.getMessage());
     }
 
 }
