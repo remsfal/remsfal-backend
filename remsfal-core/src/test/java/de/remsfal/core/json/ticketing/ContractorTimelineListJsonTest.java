@@ -18,13 +18,14 @@ class ContractorTimelineListJsonTest {
         return new ContractorTimelineModel() {
             @Override public UUID getRequestId() { return UUID.randomUUID(); }
             @Override public UUID getIssueId() { return UUID.randomUUID(); }
+            @Override public UUID getTenancyId() { return null; }
             @Override public UUID getTimelineId() { return timelineId; }
+            @Override public UUID getProjectId() { return null; }
             @Override public List<UUID> getAttachmentIds() { return List.of(); }
             @Override public UUID getSenderId() { return UUID.randomUUID(); }
             @Override public String getSenderName() { return "Contractor GmbH"; }
             @Override public ParticipantRole getSenderRole() { return ParticipantRole.CONTRACTOR; }
             @Override public ParticipantRole getRecipient() { return ParticipantRole.MANAGER; }
-            @Override public String getTitle() { return null; }
             @Override public MessagePurpose getPurpose() { return MessagePurpose.MESSAGE_SENT; }
             @Override public String getMessage() { return message; }
             @Override public Instant getCreatedAt() { return Instant.now(); }

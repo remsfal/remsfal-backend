@@ -20,7 +20,6 @@
                 sender_name TEXT,
                 sender_role TEXT,
                 recipient TEXT,
-                title TEXT,
                 purpose TEXT,
                 message TEXT,
                 created_at TIMESTAMP,
