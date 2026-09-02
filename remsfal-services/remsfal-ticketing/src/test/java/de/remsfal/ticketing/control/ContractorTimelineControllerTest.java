@@ -45,11 +45,10 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
             .purpose(MessagePurpose.MESSAGE_SENT)
             .message("Bitte um Rueckmeldung")
-            .attachmentIds(attachmentIds)
             .build();
 
         final ContractorTimelineEntity created = controller.createTimelineEntry(
-            requestId, issueId, senderId, "Bauservice GmbH", ParticipantRole.CONTRACTOR, entry);
+            requestId, issueId, senderId, "Bauservice GmbH", ParticipantRole.CONTRACTOR, entry, attachmentIds);
 
         assertNotNull(created.getTimelineId());
         assertEquals(requestId, created.getRequestId());

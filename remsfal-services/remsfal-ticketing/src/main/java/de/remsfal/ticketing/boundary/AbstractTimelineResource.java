@@ -14,7 +14,6 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,29 +85,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
     }
 
     private TimelineJson extractTimelineJson(final MultipartFormDataInput input) {
-        try {
-            final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-            final List<InputPart> timelineParts = formDataMap.get("timeline");
-            if (timelineParts == null || timelineParts.isEmpty()) {
-                throw new BadRequestException("Missing 'timeline' part in multipart request");
-            }
-            if (timelineParts.size() > 1) {
-                throw new BadRequestException("Multiple 'timeline' parts found in multipart request");
-            }
-            if (timelineParts.get(0).getMediaType() == null
-                || !timelineParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
-                throw new BadRequestException("Timeline part must be of type application/json");
-            }
-
-            final TimelineJson timeline = timelineParts.get(0)
-                .getBody(TimelineJson.class, TimelineJson.class);
-            if (timeline == null) {
-                throw new BadRequestException("Unable to parse timeline data from request");
-            }
-            return timeline;
-        } catch (IOException e) {
-            throw new BadRequestException("Failed to parse timeline data", e);
-        }
+        return MultipartAttachmentProcessor.extractJsonPart(input, "timeline", TimelineJson.class);
     }
 
     /**

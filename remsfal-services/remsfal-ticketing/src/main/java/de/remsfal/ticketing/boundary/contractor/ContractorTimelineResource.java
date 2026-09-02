@@ -1,7 +1,6 @@
 package de.remsfal.ticketing.boundary.contractor;
 
 import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
-import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
 import de.remsfal.core.model.ticketing.ParticipantRole;
 import de.remsfal.ticketing.boundary.AbstractContractorTimelineResource;
@@ -15,6 +14,8 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.Set;
 import java.util.UUID;
+
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
  * Contractor-timeline operations for contractors only. A manager cannot query this endpoint on
@@ -38,11 +39,11 @@ public class ContractorTimelineResource extends AbstractContractorTimelineResour
     }
 
     @Override
-    public Response createTimelineEntry(final UUID requestId, final ContractorTimelineJson entry) {
+    public Response createTimelineEntryWithAttachments(final UUID requestId, final MultipartFormDataInput input) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
             orderManagementController.getRequestForQuotationByOrganizationIds(eligibleOrgIds, requestId);
-        return super.createTimelineEntry(request, ParticipantRole.CONTRACTOR, entry);
+        return super.createTimelineEntryWithAttachments(request, ParticipantRole.CONTRACTOR, input);
     }
 
 }

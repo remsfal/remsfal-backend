@@ -34,7 +34,7 @@ public class ContractorTimelineController {
     @Transactional
     public ContractorTimelineEntity createTimelineEntry(final UUID requestId, final UUID issueId,
         final UUID senderId, final String senderName, final ParticipantRole senderRole,
-        final ContractorTimelineJson entry) {
+        final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
         logger.infov("Creating contractor timeline entry (requestId={0}, issueId={1})", requestId, issueId);
 
         final ContractorTimelineKey key = new ContractorTimelineKey();
@@ -44,7 +44,7 @@ public class ContractorTimelineController {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
         entity.setKey(key);
         entity.setIssueId(issueId);
-        entity.setAttachmentIds(entry.getAttachmentIds());
+        entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(senderId);
         entity.setSenderName(senderName);
         entity.setSenderRole(senderRole);

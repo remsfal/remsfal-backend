@@ -8,6 +8,8 @@ import de.remsfal.core.model.ticketing.ParticipantRole;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -45,11 +47,18 @@ public abstract class ContractorTimelineJson implements ContractorTimelineModel 
     @Override
     public abstract UUID getTimelineId();
 
+    @Null
     @Nullable
-    @Schema(description = "IDs of attachments (uploaded via the quotation request's attachments"
-        + " endpoint) to link to this timeline entry")
+    @JsonIgnore
+    @Schema(readOnly = true, hidden = true)
     @Override
     public abstract List<UUID> getAttachmentIds();
+
+    @Null
+    @Nullable
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(readOnly = true)
+    public abstract List<OrderAttachmentJson> getAttachments();
 
     @Null
     @Nullable
@@ -100,7 +109,7 @@ public abstract class ContractorTimelineJson implements ContractorTimelineModel 
     public abstract Instant getModifiedAt();
 
     public static ContractorTimelineJson valueOf(final ContractorTimelineModel model) {
-        return ImmutableContractorTimelineJson.builder()
+        final ImmutableContractorTimelineJson.Builder builder = ImmutableContractorTimelineJson.builder()
             .requestId(model.getRequestId())
             .issueId(model.getIssueId())
             .timelineId(model.getTimelineId())
@@ -113,8 +122,16 @@ public abstract class ContractorTimelineJson implements ContractorTimelineModel 
             .purpose(model.getPurpose())
             .message(model.getMessage())
             .createdAt(model.getCreatedAt())
-            .modifiedAt(model.getModifiedAt())
-            .build();
+            .modifiedAt(model.getModifiedAt());
+
+        if (model instanceof ContractorTimelineJson contractorTimelineJson
+            && contractorTimelineJson.getAttachments() != null) {
+            builder.attachments(contractorTimelineJson.getAttachments());
+        }
+
+        return builder.build();
     }
+
+    public abstract ContractorTimelineJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
 
 }
