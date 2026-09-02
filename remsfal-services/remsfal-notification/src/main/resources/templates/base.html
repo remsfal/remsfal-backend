@@ -3,12 +3,16 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>{#insert title}REMSFAL{/}</title>
 <style media="all" type="text/css">
+v\:roundrect, v\:fill, v\:stroke, v\:textbox {
+	behavior: url(#default#VML);
+	display: inline-block;
+}
+
 @media all {
-	.btn-primary table td:hover {
-		background-color: #2a862d !important;
-	}
 	.btn-primary a:hover {
 		background-color: #2a862d !important;
 		border-color: #2a862d !important;
@@ -19,21 +23,13 @@
 	.main p, .main td, .main span {
 		font-size: 16px !important;
 	}
-	.wrapper {
-		padding: 8px !important;
-	}
-	.content {
-		padding: 0 !important;
+	.wrapper, .footer {
+		padding: 16px !important;
 	}
 	.container {
 		padding: 0 !important;
 		padding-top: 8px !important;
 		width: 100% !important;
-	}
-	.main {
-		border-left-width: 0 !important;
-		border-radius: 0 !important;
-		border-right-width: 0 !important;
 	}
 	.btn table {
 		max-width: 100% !important;
@@ -71,14 +67,26 @@
 		line-height: inherit;
 	}
 }
+
+@media only screen and (prefers-color-scheme: dark) {
+	.dark-bg { background-color: #141414 !important; }
+	.dark-font { color: #ffffff !important; }
+	.dark-muted { color: #c4c4c4 !important; }
+	.dark-border { border-color: #333333 !important; }
+}
+
+[data-ogsc] .dark-bg { background-color: #141414 !important; }
+[data-ogsc] .dark-font { color: #ffffff !important; }
+[data-ogsc] .dark-muted { color: #c4c4c4 !important; }
+[data-ogsc] .dark-border { border-color: #333333 !important; }
 </style>
 </head>
-<body
-	style="font-family: Helvetica, sans-serif; -webkit-font-smoothing: antialiased; font-size: 16px; line-height: 1.3; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; background-color: #f4f5f6; margin: 0; padding: 0;">
+<body class="dark-bg"
+	style="font-family: Helvetica, sans-serif; -webkit-font-smoothing: antialiased; font-size: 16px; line-height: 1.3; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; background-color: #ffffff; margin: 0; padding: 0;">
 	<table role="presentation" border="0" cellpadding="0" cellspacing="0"
-		class="body"
-		style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f4f5f6; width: 100%;"
-		width="100%" bgcolor="#f4f5f6">
+		class="body dark-bg"
+		style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #ffffff; width: 100%;"
+		width="100%" bgcolor="#ffffff">
 		<tr>
 			<td
 				style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top;"
@@ -89,19 +97,16 @@
 				<div class="content"
 					style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 0;">
 
-					<!-- START CENTERED WHITE CONTAINER -->
-					<!-- span class="preheader"
-						style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">This
-						is preheader text. Some clients will show this text as a preview.</span -->
+					<!-- START EMAIL BODY: header, content and footer share one continuous background, no boxed/rounded "card" so nothing can look cut off at the end -->
 					<table role="presentation" border="0" cellpadding="0"
 						cellspacing="0" class="main"
-						style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border: 1px solid #eaebed; border-radius: 16px; width: 100%;"
+						style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;"
 						width="100%">
 
 						<!-- HEADER -->
 						<tr>
 							<td class="header"
-								style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; background-color: #1e5f20; border-top-left-radius: 16px; border-top-right-radius: 16px; text-align: center; padding: 24px 0;"
+								style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; background-color: #1e5f20; text-align: center; padding: 24px 0;"
 								valign="top" bgcolor="#1e5f20" align="center">
 								<h1 style="color: #ffffff; font-size: 24px; margin: 0; padding: 0; font-weight: normal;">
 									{#insert title}REMSFAL{/}
@@ -111,17 +116,17 @@
 
 						<!-- START MAIN CONTENT AREA -->
 						<tr>
-							<td class="wrapper"
-								style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 24px;"
+							<td class="wrapper dark-bg"
+								style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 24px; background-color: #ffffff;"
 								valign="top">
-								<p
-									style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+								<p class="dark-font"
+									style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
 									{greeting} {name},
 								</p>
-								<p
-									style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+								<div class="dark-font"
+									style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
 									{#insert introduction}{/}
-								</p>
+								</div>
 								{#if showButton}
 								<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary"
 									style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; min-width: 100%;"
@@ -130,29 +135,28 @@
 										<tr>
 											<td align="left" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; padding-bottom: 16px;"
 												valign="top">
-												<table role="presentation" border="0" cellpadding="0" cellspacing="0"
-													style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
-													<tbody>
-														<tr>
-															<td style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; border-radius: 4px; text-align: center; background-color: #1e5f20;"
-																valign="top" align="center" bgcolor="#1e5f20">
-																<a href={buttonLink} target="_blank"
-																style="border: solid 2px #1e5f20; border-radius: 4px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; text-transform: capitalize; background-color: #1e5f20; border-color: #1e5f20; color: #ffffff;">
-																{buttonText}
-																</a>
-															</td>
-														</tr>
-													</tbody>
-												</table>
+												<!--[if mso]>
+												<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+													href="{buttonLink}" style="height:48px;v-text-anchor:middle;width:240px;" arcsize="17%" fillcolor="#1e5f20" strokecolor="#1e5f20">
+													<w:anchorlock/>
+													<center style="color:#ffffff;font-family:Helvetica,sans-serif;font-size:16px;font-weight:bold;">{buttonText}</center>
+												</v:roundrect>
+												<![endif]-->
+												<!--[if !mso]><!-->
+												<a href="{buttonLink}" target="_blank"
+													style="border: solid 2px #1e5f20; border-radius: 8px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; background-color: #1e5f20; border-color: #1e5f20; color: #ffffff;">
+													{buttonText}
+												</a>
+												<!--<![endif]-->
 											</td>
 										</tr>
 									</tbody>
 								</table>
 								{/if}
-								<p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+								<div class="dark-font" style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
 								    {#insert conclusion}{/}
-								</p>
-								<p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+								</div>
+								<p class="dark-font" style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
 								{farewell},<br>
 								{sender}
 								</p>
@@ -160,44 +164,26 @@
 						</tr>
 
 						<!-- END MAIN CONTENT AREA -->
-					</table>
 
-					<!-- START FOOTER -->
-					<div class="footer"
-						style="clear: both; padding-top: 24px; text-align: center; width: 100%;">
-						<table role="presentation" border="0" cellpadding="0"
-							cellspacing="0"
-							style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;"
-							width="100%">
-							<tr>
-								<td class="content-block"
-									style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;"
-									valign="top" align="center">
-									<!-- Logo --> <img src="https://remsfal.de/remsfal-logo.svg"
+						<!-- FOOTER: same background as the content above, only separated by a thin divider - never a separately colored box -->
+						<tr>
+							<td class="footer dark-bg dark-border"
+								style="font-family: Helvetica, sans-serif; vertical-align: top; box-sizing: border-box; padding: 24px; text-align: center; background-color: #ffffff; border-top: 1px solid #eaebed;"
+								valign="top" align="center">
+								<!-- Logo -->
+								<img src="https://remsfal.de/remsfal-logo.svg"
 									alt="REMSFAL"
 									style="max-width: 120px; height: auto; margin-bottom: 12px;">
-									<br>
-									<!--  span class="apple-link"
-									style="color: #9a9ea6; font-size: 16px; text-align: center;">Company
-										Inc, 7-11 Commercial Ct, Belfast BT1 2NB</span> <br> Don't like
-									these emails? <a href="http://htmlemail.io/blog"
-									style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>.
-									-->
-								</td>
-							</tr>
-							<tr>
-								<td class="content-block powered-by"
-									style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;"
-									valign="top" align="center">Powered by <a
-									href="https://remsfal.de"
-									style="color: #9a9ea6; font-size: 16px; text-align: center; text-decoration: none;">remsfal.de</a>
-								</td>
-							</tr>
-						</table>
-					</div>
-
-					<!-- END FOOTER -->
-					<!-- END CENTERED WHITE CONTAINER -->
+								<br>
+								<span class="dark-muted" style="color: #9a9ea6; font-size: 14px;">
+									Powered by <a href="https://remsfal.de"
+										class="dark-muted"
+										style="color: #9a9ea6; font-size: 14px; text-decoration: none;">remsfal.de</a>
+								</span>
+							</td>
+						</tr>
+					</table>
+					<!-- END EMAIL BODY -->
 				</div>
 			</td>
 			<td
