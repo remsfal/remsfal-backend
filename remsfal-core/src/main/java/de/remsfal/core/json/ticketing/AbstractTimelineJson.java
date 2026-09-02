@@ -19,7 +19,7 @@ import java.util.UUID;
 
 /**
  * Fields shared by every timeline entry (tenant/manager issue timeline, contractor quotation
- * timeline). Not itself {@code @Immutable} — concrete leaf DTOs ({@link TimelineJson},
+ * timeline). Not itself {@code @Immutable} — concrete leaf DTOs ({@link TenantTimelineJson},
  * {@link ContractorTimelineJson}) extend this and add whatever is specific to their context.
  */
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
