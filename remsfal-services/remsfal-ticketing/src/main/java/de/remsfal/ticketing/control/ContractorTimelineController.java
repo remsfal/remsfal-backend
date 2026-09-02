@@ -49,7 +49,6 @@ public class ContractorTimelineController {
         entity.setSenderName(senderName);
         entity.setSenderRole(senderRole);
         entity.setRecipient(entry.getRecipient());
-        entity.setTitle(entry.getTitle());
         entity.setPurpose(entry.getPurpose());
         entity.setMessage(entry.getMessage());
 
