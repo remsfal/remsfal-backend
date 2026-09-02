@@ -1,19 +1,17 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
-import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.core.model.ticketing.ParticipantRole;
 
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Entity("contractor_timelines")
-public class ContractorTimelineEntity extends AbstractEntity implements ContractorTimelineModel {
+public class ContractorTimelineEntity extends AbstractTimelineEntity implements ContractorTimelineModel {
 
     @Id
     private ContractorTimelineKey key;
@@ -21,26 +19,11 @@ public class ContractorTimelineEntity extends AbstractEntity implements Contract
     @Column("issue_id")
     private UUID issueId;
 
-    @Column("attachment_id")
-    private List<UUID> attachmentIds;
-
-    @Column("sender_id")
-    private UUID senderId;
-
-    @Column("sender_name")
-    private String senderName;
-
     @Column("sender_role")
     private String senderRole;
 
     @Column("recipient")
     private String recipient;
-
-    @Column("purpose")
-    private String purpose;
-
-    @Column("message")
-    private String message;
 
     public ContractorTimelineKey getKey() {
         return key;
@@ -98,33 +81,6 @@ public class ContractorTimelineEntity extends AbstractEntity implements Contract
     }
 
     @Override
-    public List<UUID> getAttachmentIds() {
-        return attachmentIds;
-    }
-
-    public void setAttachmentIds(final List<UUID> attachmentIds) {
-        this.attachmentIds = attachmentIds;
-    }
-
-    @Override
-    public UUID getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(final UUID senderId) {
-        this.senderId = senderId;
-    }
-
-    @Override
-    public String getSenderName() {
-        return senderName;
-    }
-
-    public void setSenderName(final String senderName) {
-        this.senderName = senderName;
-    }
-
-    @Override
     public ParticipantRole getSenderRole() {
         return senderRole != null ? ParticipantRole.valueOf(senderRole) : null;
     }
@@ -148,28 +104,6 @@ public class ContractorTimelineEntity extends AbstractEntity implements Contract
 
     public void setRecipient(final String recipient) {
         this.recipient = recipient;
-    }
-
-    @Override
-    public MessagePurpose getPurpose() {
-        return purpose != null ? MessagePurpose.valueOf(purpose) : null;
-    }
-
-    public void setPurpose(final MessagePurpose purpose) {
-        this.purpose = purpose != null ? purpose.name() : null;
-    }
-
-    public void setPurpose(final String purpose) {
-        this.purpose = purpose;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(final String message) {
-        this.message = message;
     }
 
 }
