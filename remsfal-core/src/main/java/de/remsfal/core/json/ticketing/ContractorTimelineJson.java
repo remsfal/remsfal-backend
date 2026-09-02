@@ -2,7 +2,6 @@ package de.remsfal.core.json.ticketing;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
-import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.core.model.ticketing.ParticipantRole;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -15,10 +14,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +24,7 @@ import java.util.UUID;
 @Schema(description = "A contractor timeline entry")
 @JsonDeserialize(as = ImmutableContractorTimelineJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class ContractorTimelineJson implements ContractorTimelineModel {
+public abstract class ContractorTimelineJson extends AbstractTimelineJson implements ContractorTimelineModel {
 
     @Null
     @Nullable
@@ -37,40 +34,10 @@ public abstract class ContractorTimelineJson implements ContractorTimelineModel 
 
     @Null
     @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UUID getIssueId();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UUID getTimelineId();
-
-    @Null
-    @Nullable
     @JsonIgnore
     @Schema(readOnly = true, hidden = true)
     @Override
-    public abstract List<UUID> getAttachmentIds();
-
-    @Null
-    @Nullable
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(readOnly = true)
-    public abstract List<OrderAttachmentJson> getAttachments();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UUID getSenderId();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract String getSenderName();
+    public abstract UUID getTenancyId();
 
     @Null
     @Nullable
@@ -82,31 +49,11 @@ public abstract class ContractorTimelineJson implements ContractorTimelineModel 
     @Override
     public abstract ParticipantRole getRecipient();
 
-    @Nullable
-    @Override
-    public abstract String getTitle();
-
-    @NotNull
-    @Nullable
-    @Override
-    public abstract MessagePurpose getPurpose();
-
-    @NotNull
-    @Nullable
-    @Override
-    public abstract String getMessage();
-
     @Null
     @Nullable
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(readOnly = true)
-    @Override
-    public abstract Instant getCreatedAt();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract Instant getModifiedAt();
+    public abstract List<OrderAttachmentJson> getAttachments();
 
     public static ContractorTimelineJson valueOf(final ContractorTimelineModel model) {
         final ImmutableContractorTimelineJson.Builder builder = ImmutableContractorTimelineJson.builder()
@@ -118,7 +65,6 @@ public abstract class ContractorTimelineJson implements ContractorTimelineModel 
             .senderName(model.getSenderName())
             .senderRole(model.getSenderRole())
             .recipient(model.getRecipient())
-            .title(model.getTitle())
             .purpose(model.getPurpose())
             .message(model.getMessage())
             .createdAt(model.getCreatedAt())
