@@ -85,29 +85,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
     }
 
     private TenantTimelineJson extractTenantTimelineJson(final MultipartFormDataInput input) {
-        try {
-            final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-            final List<InputPart> timelineParts = formDataMap.get("timeline");
-            if (timelineParts == null || timelineParts.isEmpty()) {
-                throw new BadRequestException("Missing 'timeline' part in multipart request");
-            }
-            if (timelineParts.size() > 1) {
-                throw new BadRequestException("Multiple 'timeline' parts found in multipart request");
-            }
-            if (timelineParts.get(0).getMediaType() == null
-                || !timelineParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
-                throw new BadRequestException("Timeline part must be of type application/json");
-            }
-
-            final TenantTimelineJson timeline = timelineParts.get(0)
-                .getBody(TenantTimelineJson.class, TenantTimelineJson.class);
-            if (timeline == null) {
-                throw new BadRequestException("Unable to parse timeline data from request");
-            }
-            return timeline;
-        } catch (IOException e) {
-            throw new BadRequestException("Failed to parse timeline data", e);
-        }
+        return MultipartAttachmentProcessor.extractJsonPart(input, "timeline", TenantTimelineJson.class);
     }
 
     /**
