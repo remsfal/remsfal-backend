@@ -164,14 +164,12 @@ class ContractorTimelineEntityTest {
         entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(senderId);
         entity.setSenderName("Bauservice GmbH");
-        entity.setTitle("Angebot eingereicht");
         entity.setMessage("Bitte um Rueckmeldung");
 
         assertEquals(issueId, entity.getIssueId());
         assertEquals(attachmentIds, entity.getAttachmentIds());
         assertEquals(senderId, entity.getSenderId());
         assertEquals("Bauservice GmbH", entity.getSenderName());
-        assertEquals("Angebot eingereicht", entity.getTitle());
         assertEquals("Bitte um Rueckmeldung", entity.getMessage());
     }
 

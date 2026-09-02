@@ -36,9 +36,6 @@ public class ContractorTimelineEntity extends AbstractEntity implements Contract
     @Column("recipient")
     private String recipient;
 
-    @Column("title")
-    private String title;
-
     @Column("purpose")
     private String purpose;
 
@@ -88,6 +85,16 @@ public class ContractorTimelineEntity extends AbstractEntity implements Contract
 
     public void setIssueId(final UUID issueId) {
         this.issueId = issueId;
+    }
+
+    @Override
+    public UUID getTenancyId() {
+        return null;
+    }
+
+    @Override
+    public UUID getProjectId() {
+        return null;
     }
 
     @Override
@@ -141,15 +148,6 @@ public class ContractorTimelineEntity extends AbstractEntity implements Contract
 
     public void setRecipient(final String recipient) {
         this.recipient = recipient;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(final String title) {
-        this.title = title;
     }
 
     @Override
