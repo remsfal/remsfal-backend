@@ -2,7 +2,6 @@ package de.remsfal.core.json.ticketing;
 
 import jakarta.annotation.Nullable;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -21,7 +20,7 @@ import de.remsfal.core.model.ticketing.OrderProcessPhase;
 @Schema(description = "An attachment associated with a quotation request, quotation, or order placement")
 @JsonDeserialize(as = ImmutableOrderAttachmentJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class OrderAttachmentJson implements OrderAttachmentModel {
+public abstract class OrderAttachmentJson extends AttachmentJson implements OrderAttachmentModel {
 
     @Nullable
     @Override
@@ -30,34 +29,6 @@ public abstract class OrderAttachmentJson implements OrderAttachmentModel {
     @Nullable
     @Override
     public abstract UUID getProcessId();
-
-    @Nullable
-    @Override
-    public abstract UUID getAttachmentId();
-
-    @Nullable
-    @Override
-    public abstract String getFileName();
-
-    @Nullable
-    @Override
-    public abstract String getContentType();
-
-    @Nullable
-    @Override
-    public abstract String getObjectName();
-
-    @Nullable
-    @Override
-    public abstract UUID getUploaderId();
-
-    @Nullable
-    @Override
-    public abstract String getUploadedBy();
-
-    @Nullable
-    @Override
-    public abstract Instant getCreatedAt();
 
     public static OrderAttachmentJson valueOf(final OrderAttachmentModel model) {
         return ImmutableOrderAttachmentJson.builder()
