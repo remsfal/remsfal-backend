@@ -19,9 +19,9 @@ import java.util.List;
 @Immutable
 @ImmutableStyle
 @Schema(description = "An issue timeline entry")
-@JsonDeserialize(as = ImmutableTimelineJson.class)
+@JsonDeserialize(as = ImmutableTenantTimelineJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TimelineJson extends AbstractTimelineJson {
+public abstract class TenantTimelineJson extends AbstractTimelineJson {
 
     @Null
     @Nullable
@@ -29,8 +29,8 @@ public abstract class TimelineJson extends AbstractTimelineJson {
     @Schema(readOnly = true)
     public abstract List<IssueAttachmentJson> getAttachments();
 
-    public static TimelineJson valueOf(final TimelineModel model) {
-        final ImmutableTimelineJson.Builder builder = ImmutableTimelineJson.builder()
+    public static TenantTimelineJson valueOf(final TimelineModel model) {
+        final ImmutableTenantTimelineJson.Builder builder = ImmutableTenantTimelineJson.builder()
             .issueId(model.getIssueId())
             .tenancyId(model.getTenancyId())
             .timelineId(model.getTimelineId())
@@ -42,13 +42,13 @@ public abstract class TimelineJson extends AbstractTimelineJson {
             .modifiedAt(model.getModifiedAt());
         // projectId and attachmentIds are omitted
 
-        if (model instanceof TimelineJson timelineJson && timelineJson.getAttachments() != null) {
-            builder.attachments(timelineJson.getAttachments());
+        if (model instanceof TenantTimelineJson tenantTimelineJson && tenantTimelineJson.getAttachments() != null) {
+            builder.attachments(tenantTimelineJson.getAttachments());
         }
 
         return builder.build();
     }
 
-    public abstract TimelineJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
+    public abstract TenantTimelineJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }
