@@ -15,7 +15,7 @@ class TimelineKeyTest {
         UUID timelineId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
 
-        TimelineKey key = new TimelineKey();
+        TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
         key.setTimelineId(timelineId);

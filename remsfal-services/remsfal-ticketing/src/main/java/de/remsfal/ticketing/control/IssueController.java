@@ -41,7 +41,7 @@ public class IssueController {
     IssueEventProducer issueEventProducer;
 
     @Inject
-    TimelineController timelineController;
+    TenantTimelineController timelineController;
 
     private static final String ISSUE_NOT_FOUND = "Issue not found";
 
