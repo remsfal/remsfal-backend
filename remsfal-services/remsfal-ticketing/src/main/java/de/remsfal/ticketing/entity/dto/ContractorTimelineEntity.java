@@ -22,9 +22,6 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
     @Column("sender_role")
     private String senderRole;
 
-    @Column("recipient")
-    private String recipient;
-
     public ContractorTimelineKey getKey() {
         return key;
     }
@@ -45,6 +42,34 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
             this.key = new ContractorTimelineKey();
         }
         this.key.setRequestId(requestId);
+    }
+
+    @Override
+    public UUID getContractorId() {
+        return Optional.ofNullable(key)
+            .map(ContractorTimelineKey::getContractorId)
+            .orElse(null);
+    }
+
+    public void setContractorId(final UUID contractorId) {
+        if (this.key == null) {
+            this.key = new ContractorTimelineKey();
+        }
+        this.key.setContractorId(contractorId);
+    }
+
+    @Override
+    public UUID getOrganizationId() {
+        return Optional.ofNullable(key)
+            .map(ContractorTimelineKey::getOrganizationId)
+            .orElse(null);
+    }
+
+    public void setOrganizationId(final UUID organizationId) {
+        if (this.key == null) {
+            this.key = new ContractorTimelineKey();
+        }
+        this.key.setOrganizationId(organizationId);
     }
 
     @Override
@@ -91,19 +116,6 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
 
     public void setSenderRole(final String senderRole) {
         this.senderRole = senderRole;
-    }
-
-    @Override
-    public ParticipantRole getRecipient() {
-        return recipient != null ? ParticipantRole.valueOf(recipient) : null;
-    }
-
-    public void setRecipient(final ParticipantRole recipient) {
-        this.recipient = recipient != null ? recipient.name() : null;
-    }
-
-    public void setRecipient(final String recipient) {
-        this.recipient = recipient;
     }
 
 }

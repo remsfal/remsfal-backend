@@ -104,28 +104,37 @@ class ContractorTimelineEntityTest {
     }
 
     @Test
-    void testGetRecipient_isNullWhenNotSet() {
+    void testGetContractorId_isNullWhenKeyNotSet() {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
-        assertNull(entity.getRecipient());
+        assertNull(entity.getContractorId());
     }
 
     @Test
-    void testSetRecipient_enum_roundTrips() {
+    void testSetContractorId_createsKeyLazily() {
+        final UUID contractorId = UUID.randomUUID();
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
-        entity.setRecipient(ParticipantRole.TENANT);
+        entity.setContractorId(contractorId);
 
-        assertEquals(ParticipantRole.TENANT, entity.getRecipient());
+        assertEquals(contractorId, entity.getContractorId());
     }
 
     @Test
-    void testSetRecipient_string_forCassandraMapping_isReadableAsEnum() {
+    void testGetOrganizationId_isNullWhenKeyNotSet() {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
-        entity.setRecipient("CONTRACTOR");
+        assertNull(entity.getOrganizationId());
+    }
 
-        assertEquals(ParticipantRole.CONTRACTOR, entity.getRecipient());
+    @Test
+    void testSetOrganizationId_createsKeyLazily() {
+        final UUID organizationId = UUID.randomUUID();
+        final ContractorTimelineEntity entity = new ContractorTimelineEntity();
+
+        entity.setOrganizationId(organizationId);
+
+        assertEquals(organizationId, entity.getOrganizationId());
     }
 
     @Test

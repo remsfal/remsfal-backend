@@ -17,6 +17,8 @@ class ContractorTimelineListJsonTest {
     private static ContractorTimelineModel model(final UUID timelineId, final String message) {
         return new ContractorTimelineModel() {
             @Override public UUID getRequestId() { return UUID.randomUUID(); }
+            @Override public UUID getContractorId() { return UUID.randomUUID(); }
+            @Override public UUID getOrganizationId() { return UUID.randomUUID(); }
             @Override public UUID getIssueId() { return UUID.randomUUID(); }
             @Override public UUID getTenancyId() { return null; }
             @Override public UUID getTimelineId() { return timelineId; }
@@ -25,7 +27,6 @@ class ContractorTimelineListJsonTest {
             @Override public UUID getSenderId() { return UUID.randomUUID(); }
             @Override public String getSenderName() { return "Contractor GmbH"; }
             @Override public ParticipantRole getSenderRole() { return ParticipantRole.CONTRACTOR; }
-            @Override public ParticipantRole getRecipient() { return ParticipantRole.MANAGER; }
             @Override public MessagePurpose getPurpose() { return MessagePurpose.MESSAGE_SENT; }
             @Override public String getMessage() { return message; }
             @Override public Instant getCreatedAt() { return Instant.now(); }
