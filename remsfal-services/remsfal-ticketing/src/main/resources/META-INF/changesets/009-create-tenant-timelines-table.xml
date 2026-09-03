@@ -19,7 +19,7 @@
                 sender_name TEXT,
                 purpose TEXT,
                 message TEXT,
-                attachment_id LIST&lt;UUID&gt;,
+                attachment_ids LIST&lt;UUID&gt;,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY ((tenancy_id, issue_id, project_id), timeline_id)

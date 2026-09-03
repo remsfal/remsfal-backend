@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public abstract class AbstractTimelineEntity extends AbstractEntity {
 
-    @Column("attachment_id")
+    @Column("attachment_ids")
     protected List<UUID> attachmentIds;
 
     @Column("sender_id")

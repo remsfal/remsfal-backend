@@ -32,5 +32,4 @@
             <sql>DROP TABLE IF EXISTS REMSFAL.contractor_timelines;</sql>
         </rollback>
     </changeSet>
-
 </databaseChangeLog>
