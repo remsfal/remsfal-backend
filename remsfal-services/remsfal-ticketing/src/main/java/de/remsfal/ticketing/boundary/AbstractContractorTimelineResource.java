@@ -46,7 +46,8 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
         final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(request.getRequestId());
 
         return ContractorTimelineListJson.valueOf(
-            contractorTimelineController.getTimelineEntries(request.getRequestId()).stream()
+            contractorTimelineController.getTimelineEntries(
+                request.getRequestId(), request.getContractorId(), request.getOrganizationId()).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
                 .toList());
     }
@@ -61,8 +62,9 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             .toList();
 
         final ContractorTimelineEntity created = contractorTimelineController.createTimelineEntry(
-            request.getRequestId(), request.getIssueId(), principal.getId(), principal.getName(),
-            senderRole, timeline, attachmentIds.isEmpty() ? null : attachmentIds);
+            request.getRequestId(), request.getContractorId(), request.getOrganizationId(), request.getIssueId(),
+            principal.getId(), principal.getName(), senderRole, timeline,
+            attachmentIds.isEmpty() ? null : attachmentIds);
 
         final URI location = uri.getAbsolutePathBuilder().path(created.getTimelineId().toString()).build();
         return Response.created(location)

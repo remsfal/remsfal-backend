@@ -48,7 +48,7 @@ class ManagerContractorTimelineResourceTest extends AbstractTicketingTest {
             .extract().path("id");
 
         final String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
-            + "\",\"name\":\"Bauservice GmbH\"}] }";
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + UUID.randomUUID() + "\"}] }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))

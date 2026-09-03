@@ -26,19 +26,23 @@ public class ContractorTimelineController {
     @Inject
     ContractorTimelineRepository contractorTimelineRepository;
 
-    public List<ContractorTimelineEntity> getTimelineEntries(final UUID requestId) {
-        logger.infov("Retrieving contractor timeline entries (requestId={0})", requestId);
-        return contractorTimelineRepository.findByRequest(requestId);
+    public List<ContractorTimelineEntity> getTimelineEntries(final UUID requestId, final UUID contractorId,
+        final UUID organizationId) {
+        logger.infov("Retrieving contractor timeline entries (requestId={0}, contractorId={1}, organizationId={2})",
+            requestId, contractorId, organizationId);
+        return contractorTimelineRepository.findByRequest(requestId, contractorId, organizationId);
     }
 
     @Transactional
-    public ContractorTimelineEntity createTimelineEntry(final UUID requestId, final UUID issueId,
-        final UUID senderId, final String senderName, final ParticipantRole senderRole,
-        final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
+    public ContractorTimelineEntity createTimelineEntry(final UUID requestId, final UUID contractorId,
+        final UUID organizationId, final UUID issueId, final UUID senderId, final String senderName,
+        final ParticipantRole senderRole, final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
         logger.infov("Creating contractor timeline entry (requestId={0}, issueId={1})", requestId, issueId);
 
         final ContractorTimelineKey key = new ContractorTimelineKey();
         key.setRequestId(requestId);
+        key.setContractorId(contractorId);
+        key.setOrganizationId(organizationId);
         key.setTimelineId(UUIDv7.randomUUID());
 
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
@@ -48,7 +52,6 @@ public class ContractorTimelineController {
         entity.setSenderId(senderId);
         entity.setSenderName(senderName);
         entity.setSenderRole(senderRole);
-        entity.setRecipient(entry.getRecipient());
         entity.setPurpose(entry.getPurpose());
         entity.setMessage(entry.getMessage());
 
