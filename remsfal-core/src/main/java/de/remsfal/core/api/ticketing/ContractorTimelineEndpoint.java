@@ -1,7 +1,5 @@
 package de.remsfal.core.api.ticketing;
 
-import de.remsfal.core.json.ticketing.TenantTimelineJson;
-import de.remsfal.core.json.ticketing.TenantTimelineListJson;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -23,32 +21,35 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
+import de.remsfal.core.json.ticketing.ContractorTimelineJson;
+import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
+
 /**
- * Timeline operations for an issue, shared by the manager-facing and tenant-facing sub-resources.
- * Both mount this interface as a sub-resource of their own issue endpoint; the implementing
- * boundary class is responsible for enforcing role-exclusive access (see
- * {@code IssueTimelineResource} for managers and {@code TenantTimelineResource} for tenants).
- *
- * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
+ * Timeline operations for a quotation request, shared by the manager-facing and contractor-facing
+ * sub-resources. Both mount this interface as a sub-resource of their own quotation-request
+ * endpoint; the implementing boundary class is responsible for enforcing role-exclusive access
+ * (see {@code manager.ManagerContractorTimelineResource} for managers and
+ * {@code contractor.ContractorTimelineResource} for contractors).
  */
-public interface TimelineEndpoint {
+public interface ContractorTimelineEndpoint {
 
     String SERVICE = "timeline";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get all timeline entries for an issue")
-    @APIResponse(responseCode = "200", description = "Timeline entries retrieved")
+    @Operation(summary = "Retrieve the timeline entries for a quotation request.")
+    @APIResponse(responseCode = "200", description = "Timeline entries retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "Issue not found")
-    TenantTimelineListJson getTimelineEntries(
-        @Parameter(description = "ID of the issue", required = true)
-        @PathParam("issueId") @NotNull UUID issueId);
+    @APIResponse(responseCode = "403", description = "User does not have permission to access this request")
+    @APIResponse(responseCode = "404", description = "The quotation request does not exist")
+    ContractorTimelineListJson getTimelineEntries(
+        @Parameter(description = "ID of the quotation request", required = true)
+        @PathParam("requestId") @NotNull UUID requestId);
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new timeline entry with attachments for an issue")
+    @Operation(summary = "Create a new timeline entry with attachments for a quotation request.")
     @RequestBody(
         required = true,
         content = @Content(
@@ -57,7 +58,7 @@ public interface TimelineEndpoint {
                 type = SchemaType.OBJECT,
                 requiredProperties = {"timeline"},
                 properties = {
-                    @SchemaProperty(name = "timeline", implementation = TenantTimelineJson.class,
+                    @SchemaProperty(name = "timeline", implementation = ContractorTimelineJson.class,
                         description = "Timeline entry information as JSON"),
                     @SchemaProperty(name = "attachment", type = SchemaType.ARRAY, implementation = java.io.File.class,
                         description = "One or more files to attach to the timeline entry")
@@ -65,15 +66,16 @@ public interface TimelineEndpoint {
             )
         )
     )
-    @APIResponse(responseCode = "201", description = "Timeline entry created",
+    @APIResponse(responseCode = "201", description = "Timeline entry created successfully",
         content = @Content(mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = TenantTimelineJson.class)))
+            schema = @Schema(implementation = ContractorTimelineJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
-    @APIResponse(responseCode = "404", description = "Issue not found")
+    @APIResponse(responseCode = "403", description = "User does not have permission to access this request")
+    @APIResponse(responseCode = "404", description = "The quotation request does not exist")
     Response createTimelineEntryWithAttachments(
-        @Parameter(description = "ID of the issue", required = true)
-        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "ID of the quotation request", required = true)
+        @PathParam("requestId") @NotNull UUID requestId,
         @Parameter(hidden = true) MultipartFormDataInput input);
 
 }

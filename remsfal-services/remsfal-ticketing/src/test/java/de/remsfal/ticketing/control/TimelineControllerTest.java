@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.core.json.ticketing.ImmutableTimelineJson;
-import de.remsfal.core.json.ticketing.TimelineJson;
+import de.remsfal.core.json.ticketing.ImmutableTenantTimelineJson;
+import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.TimelineRepository;
@@ -43,7 +43,7 @@ class TimelineControllerTest extends AbstractTicketingTest {
         UUID senderId = UUID.randomUUID();
         List<UUID> attachmentIds = List.of(UUID.randomUUID(), UUID.randomUUID());
 
-        TimelineJson timeline = ImmutableTimelineJson.builder()
+        TenantTimelineJson timeline = ImmutableTenantTimelineJson.builder()
             .purpose(MessagePurpose.MESSAGE_SENT)
             .message("Eintrag aus Controller-Test")
             .build();
