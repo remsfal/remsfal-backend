@@ -6,8 +6,10 @@ public interface ContractorTimelineModel extends TimelineModel {
 
     UUID getRequestId();
 
-    ParticipantRole getSenderRole();
+    UUID getContractorId();
 
-    ParticipantRole getRecipient();
+    UUID getOrganizationId();
+
+    ParticipantRole getSenderRole();
 
 }

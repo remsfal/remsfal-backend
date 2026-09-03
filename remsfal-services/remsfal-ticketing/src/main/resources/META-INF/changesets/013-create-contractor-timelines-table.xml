@@ -13,23 +13,23 @@
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.contractor_timelines (
                 request_id UUID,
+                contractor_id UUID,
+                organization_id UUID,
                 timeline_id UUID,
                 issue_id UUID,
-                attachment_id LIST&lt;UUID&gt;,
+                attachment_ids LIST&lt;UUID&gt;,
                 sender_id UUID,
                 sender_name TEXT,
                 sender_role TEXT,
-                recipient TEXT,
                 purpose TEXT,
                 message TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
-                PRIMARY KEY ((request_id), timeline_id)
+                PRIMARY KEY ((request_id, contractor_id, organization_id), timeline_id)
             ) WITH CLUSTERING ORDER BY (timeline_id ASC);
         </sql>
         <rollback>
             <sql>DROP TABLE IF EXISTS REMSFAL.contractor_timelines;</sql>
         </rollback>
     </changeSet>
-
 </databaseChangeLog>
