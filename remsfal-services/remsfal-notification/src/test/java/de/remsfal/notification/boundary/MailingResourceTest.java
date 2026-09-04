@@ -58,7 +58,7 @@ class MailingResourceTest extends AbstractTest {
         List<MailMessage> sent = mailbox. getMailMessagesSentTo("test@example.com");
         assertEquals(8, sent.size());
         MailMessage actual = sent.get(2);
-        assertTrue(actual.getHtml().contains("You have been added to a new project."));
+        assertTrue(actual.getHtml().contains("You have been added to the project Test Project."));
         assertEquals("You’ve been added to a new project", actual.getSubject());
         assertEquals(8, mailbox.getTotalMessagesSent());
     }

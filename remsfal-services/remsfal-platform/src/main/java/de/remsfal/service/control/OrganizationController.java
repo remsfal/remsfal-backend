@@ -306,7 +306,7 @@ public class OrganizationController {
 
         UserEntity userEntity = userController.findOrCreateUser(employee);
         organization.addEmployee(userEntity, employee.getEmployeeRole());
-        notificationController.informUserAboutOrganizationMembership(userEntity, organizationId);
+        notificationController.informUserAboutOrganizationMembership(userEntity, organization);
         organizationRepository.mergeAndFlush(organization);
         return organizationRepository
             .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, userEntity.getId())

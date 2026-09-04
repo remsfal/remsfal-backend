@@ -15,7 +15,12 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.eventing.EmailEventJson.NotificationEventType;
 import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
+import de.remsfal.core.json.organization.ImmutableOrganizationJson;
+import de.remsfal.core.json.organization.OrganizationJson;
+import de.remsfal.core.json.project.ImmutableProjectJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.notification.control.MailingController;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
@@ -50,12 +55,12 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .email("test@example.com")
                 .firstName("Test")
                 .lastName("Consumer")
+                .locale("en")
                 .build();
 
         ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
                 .user(user)
-                .locale("en")
-                .type(EmailEventJson.EmailEventType.USER_REGISTRATION)
+                .notificationEventType(NotificationEventType.USER_REGISTRATION)
                 .link("https://remsfal.de")
                 .build();
 
@@ -78,13 +83,19 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .email("test2@example.com")
                 .firstName("Test")
                 .lastName("Membership")
+                .locale("de")
+                .build();
+
+        ProjectJson project = ImmutableProjectJson.builder()
+                .id(UUID.randomUUID())
+                .title("Test Project")
                 .build();
 
         ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
                 .user(user)
-                .locale("de")
-                .type(EmailEventJson.EmailEventType.PROJECT_ADMISSION)
+                .notificationEventType(NotificationEventType.PROJECT_ADMISSION)
                 .link("https://remsfal.de")
+                .project(project)
                 .build();
 
         companion.produce(ImmutableEmailEventJson.class)
@@ -95,7 +106,7 @@ class NotificationConsumerTest extends AbstractKafkaTest {
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() ->
                 verify(mailingController, atLeastOnce())
-                    .sendNewMembershipEmail(user, "https://remsfal.de", Locale.GERMAN)
+                    .sendNewMembershipEmail(user, "https://remsfal.de", Locale.GERMAN, project)
                 );
     }
 
@@ -106,13 +117,23 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .email("test3@example.com")
                 .firstName("Test")
                 .lastName("Employment")
+                .locale("de")
+                .build();
+
+        OrganizationJson organization = ImmutableOrganizationJson.builder()
+                .id(UUID.randomUUID())
+                .name("Test Organization")
+                .phone("+491234567890")
+                .email("organization@example.com")
+                .trade("Property Management")
+                .vatIdentificationNumber("DE123456789")
                 .build();
 
         ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
                 .user(user)
-                .locale("de")
-                .type(EmailEventJson.EmailEventType.ORGANIZATION_ADMISSION)
+                .notificationEventType(NotificationEventType.ORGANIZATION_ADMISSION)
                 .link("https://remsfal.de")
+                .organization(organization)
                 .build();
 
         companion.produce(ImmutableEmailEventJson.class)
@@ -123,7 +144,7 @@ class NotificationConsumerTest extends AbstractKafkaTest {
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() ->
                 verify(mailingController, atLeastOnce())
-                    .sendNewEmploymentEmail(user, "https://remsfal.de", Locale.GERMAN)
+                    .sendNewEmploymentEmail(user, "https://remsfal.de", Locale.GERMAN, organization)
                 );
     }
 
@@ -134,12 +155,12 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .email("additional@example.com")
                 .firstName("Test")
                 .lastName("Verification")
+                .locale("en")
                 .build();
 
         ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
                 .user(user)
-                .locale("en")
-                .type(EmailEventJson.EmailEventType.ADDITIONAL_EMAIL_VERIFICATION)
+                .notificationEventType(NotificationEventType.ADDITIONAL_EMAIL_VERIFICATION)
                 .link("https://remsfal.de/api/v1/authentication/verify-additional-email?token=token")
                 .build();
 

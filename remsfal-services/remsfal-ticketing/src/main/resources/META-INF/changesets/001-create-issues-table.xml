@@ -33,6 +33,8 @@
                 duplicate_of_issue_ids set&lt;UUID&gt;,
                 blocked_by_issue_ids set&lt;UUID&gt;,
                 blocks_issue_ids set&lt;UUID&gt;,
+                tenant_update TEXT,
+                contractor_update TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY (project_id, issue_id)

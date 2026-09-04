@@ -31,15 +31,16 @@ public class NotificationConsumer {
 
         String email = mail.getUser().getEmail();
         String link = mail.getLink();
-        Locale locale = mail.getLocale() != null ? Locale.forLanguageTag(mail.getLocale()) : Locale.GERMAN;
+        String userLocale = mail.getUser().getLocale();
+        Locale locale = userLocale != null ? Locale.forLanguageTag(userLocale) : Locale.GERMAN;
 
         logger.infov("Received user-notification for user email: {0}", email);
-        logger.infov("Type: {0}", mail.getType());
+        logger.infov("Type: {0}", mail.getNotificationEventType());
 
         Uni<Void> sendUni;
-        switch (mail.getType()) {
+        switch (mail.getNotificationEventType()) {
             case PROJECT_ADMISSION:
-                sendUni = mailingController.sendNewMembershipEmail(mail.getUser(), link, locale);
+                sendUni = mailingController.sendNewMembershipEmail(mail.getUser(), link, locale, mail.getProject());
                 break;
             case USER_REGISTRATION:
                 sendUni = mailingController.sendWelcomeEmail(mail.getUser(), link, locale);
@@ -48,7 +49,8 @@ public class NotificationConsumer {
                 sendUni = mailingController.sendAdditionalEmailVerificationEmail(mail.getUser(), link, locale);
                 break;
             case ORGANIZATION_ADMISSION:
-                sendUni = mailingController.sendNewEmploymentEmail(mail.getUser(), link, locale);
+                sendUni = mailingController.sendNewEmploymentEmail(
+                    mail.getUser(), link, locale, mail.getOrganization());
                 break;
             default:
                 sendUni = Uni.createFrom().voidItem();

@@ -1,7 +1,13 @@
 package de.remsfal.service.control;
 
+import java.util.Set;
+
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.organization.ImmutableOrganizationJson;
+import de.remsfal.core.json.organization.OrganizationJson;
+import de.remsfal.core.json.project.ImmutableProjectJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
@@ -28,15 +34,22 @@ class NotificationControllerTest extends AbstractKafkaTest {
                         .email(TestData.USER_EMAIL)
                         .build();
 
-        notificationController.informUserAboutProjectMembership(user, TestData.PROJECT_ID);
+        ProjectJson project = ImmutableProjectJson.builder()
+                .id(TestData.PROJECT_ID)
+                .title("Test Project")
+                .members(Set.of())
+                .build();
+
+        notificationController.informUserAboutProjectMembership(user, project);
 
         given()
             .topic(EmailEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
-            .json("type", Matchers.equalTo("PROJECT_ADMISSION"))
-            .json("locale", Matchers.equalTo("de"))
+            .json("user.locale", Matchers.equalTo("de"))
+            .json("notificationEventType", Matchers.equalTo("PROJECT_ADMISSION"))
+            .json("project.title", Matchers.equalTo("Test Project"))
             .json("link", Matchers.equalTo("https://remsfal.de/projects/" + TestData.PROJECT_ID));
     }
 
@@ -48,15 +61,25 @@ class NotificationControllerTest extends AbstractKafkaTest {
                         .email(TestData.USER_EMAIL)
                         .build();
 
-        notificationController.informUserAboutOrganizationMembership(user, TestData.ORGANIZATION_ID);
+        OrganizationJson organization = ImmutableOrganizationJson.builder()
+                .id(TestData.ORGANIZATION_ID)
+                .name("Test Organization")
+                .phone("+491234567890")
+                .email("organization@example.com")
+                .trade("Property Management")
+                .vatIdentificationNumber("DE123456789")
+                .build();
+
+        notificationController.informUserAboutOrganizationMembership(user, organization);
 
         given()
             .topic(EmailEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
-            .json("type", Matchers.equalTo("ORGANIZATION_ADMISSION"))
-            .json("locale", Matchers.equalTo("de"))
+            .json("user.locale", Matchers.equalTo("de"))
+            .json("notificationEventType", Matchers.equalTo("ORGANIZATION_ADMISSION"))
+            .json("organization.name", Matchers.equalTo("Test Organization"))
             .json("link", Matchers.equalTo("https://remsfal.de/organizations/" + TestData.ORGANIZATION_ID));
     }
 
@@ -75,8 +98,8 @@ class NotificationControllerTest extends AbstractKafkaTest {
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
-            .json("type", Matchers.equalTo("USER_REGISTRATION"))
-            .json("locale", Matchers.equalTo("de"))
+            .json("user.locale", Matchers.equalTo("de"))
+            .json("notificationEventType", Matchers.equalTo("USER_REGISTRATION"))
             .json("link", Matchers.equalTo("https://remsfal.de"));
     }
 
@@ -95,7 +118,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .topic(EmailEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
-            .json("locale", Matchers.equalTo("en"));
+            .json("user.locale", Matchers.equalTo("en"));
     }
 
 }

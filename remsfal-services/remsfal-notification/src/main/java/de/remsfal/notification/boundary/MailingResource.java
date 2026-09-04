@@ -16,6 +16,10 @@ import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
+import de.remsfal.core.json.organization.ImmutableOrganizationJson;
+import de.remsfal.core.json.organization.OrganizationJson;
+import de.remsfal.core.json.project.ImmutableProjectJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
@@ -42,12 +46,19 @@ public class MailingResource {
     public Response sendTestEmails(@QueryParam("to") @NotNull @Email final String to) {
         final UserModel recipient = createMockUserModel(to);
 
+        final ProjectJson project = createMockProject();
+        final OrganizationJson organization = createMockOrganization();
+
         controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
         controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
-        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
-        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
-        controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
-        controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
+        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.ENGLISH, project)
+            .await().indefinitely();
+        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.GERMAN, project)
+            .await().indefinitely();
+        controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.ENGLISH, organization)
+            .await().indefinitely();
+        controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.GERMAN, organization)
+            .await().indefinitely();
         controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.ENGLISH)
             .await().indefinitely();
         controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.GERMAN)
@@ -60,9 +71,12 @@ public class MailingResource {
     @Blocking
     public Response testNewEmployment(@QueryParam("to") @NotNull @Email final String to) {
         final UserModel recipient = createMockUserModel(to);
+        final OrganizationJson organization = createMockOrganization();
         try {
-            controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
-            controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
+            controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.ENGLISH, organization)
+                .await().indefinitely();
+            controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.GERMAN, organization)
+                .await().indefinitely();
             return Response.accepted().entity("New employment email sent successfully").build();
         } catch (Exception e) {
             return Response.serverError().entity(ERROR_SEND_EMAIL).build();
@@ -149,6 +163,24 @@ public class MailingResource {
                 return true;
             }
         };
+    }
+
+    private ProjectJson createMockProject() {
+        return ImmutableProjectJson.builder()
+            .id(UUID.randomUUID())
+            .title("Test Project")
+            .build();
+    }
+
+    private OrganizationJson createMockOrganization() {
+        return ImmutableOrganizationJson.builder()
+            .id(UUID.randomUUID())
+            .name("Test Organization")
+            .phone("+491234567890")
+            .email("organization@example.com")
+            .trade("Property Management")
+            .vatIdentificationNumber("DE123456789")
+            .build();
     }
 
     private UserJson createMockRecipient(final String email) {
