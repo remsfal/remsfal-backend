@@ -15,19 +15,19 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
-import de.remsfal.ticketing.entity.dao.TimelineRepository;
-import de.remsfal.ticketing.entity.dto.TimelineEntity;
-import de.remsfal.ticketing.entity.dto.TimelineKey;
+import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
+import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
+import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class TimelineRepositoryTest extends AbstractTicketingTest {
+class TenantTimelineRepositoryTest extends AbstractTicketingTest {
 
     @Inject
-    TimelineRepository repository;
+    TenantTimelineRepository repository;
 
     @Test
     void testInsertAndFindById() {
@@ -36,11 +36,11 @@ class TimelineRepositoryTest extends AbstractTicketingTest {
         UUID projectId = UUID.randomUUID();
         UUID timelineId = UUID.randomUUID();
 
-        TimelineEntity entity = createEntity(tenancyId, issueId, projectId, timelineId,
+        TenantTimelineEntity entity = createEntity(tenancyId, issueId, projectId, timelineId,
             MessagePurpose.ISSUE_CREATED, "Nachricht 1");
         repository.insert(entity);
 
-        Optional<TimelineEntity> found = repository.findById(entity.getKey());
+        Optional<TenantTimelineEntity> found = repository.findById(entity.getKey());
 
         assertTrue(found.isPresent());
         assertEquals(timelineId, found.get().getTimelineId());
@@ -55,18 +55,18 @@ class TimelineRepositoryTest extends AbstractTicketingTest {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
 
-        TimelineEntity first = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
+        TenantTimelineEntity first = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
             MessagePurpose.MESSAGE_SENT, "Nachricht A");
-        TimelineEntity second = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
+        TenantTimelineEntity second = createEntity(tenancyId, issueId, projectId, UUID.randomUUID(),
             MessagePurpose.MESSAGE_SENT, "Nachricht B");
-        TimelineEntity otherIssue = createEntity(tenancyId, UUID.randomUUID(), projectId, UUID.randomUUID(),
+        TenantTimelineEntity otherIssue = createEntity(tenancyId, UUID.randomUUID(), projectId, UUID.randomUUID(),
             MessagePurpose.MESSAGE_SENT, "Andere Nachricht");
 
         repository.insert(first);
         repository.insert(second);
         repository.insert(otherIssue);
 
-        List<TimelineEntity> result = repository.findByIssue(tenancyId, issueId, projectId);
+        List<TenantTimelineEntity> result = repository.findByIssue(tenancyId, issueId, projectId);
 
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(first.getTimelineId())));
@@ -76,7 +76,7 @@ class TimelineRepositoryTest extends AbstractTicketingTest {
 
     @Test
     void testFindById_notFound() {
-        TimelineKey key = new TimelineKey();
+        TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(UUID.randomUUID());
         key.setIssueId(UUID.randomUUID());
         key.setProjectId(UUID.randomUUID());
@@ -85,15 +85,15 @@ class TimelineRepositoryTest extends AbstractTicketingTest {
         assertTrue(repository.findById(key).isEmpty());
     }
 
-    private TimelineEntity createEntity(final UUID tenancyId, final UUID issueId, final UUID projectId,
+    private TenantTimelineEntity createEntity(final UUID tenancyId, final UUID issueId, final UUID projectId,
         final UUID timelineId, final MessagePurpose purpose, final String message) {
-        TimelineKey key = new TimelineKey();
+        TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
         key.setProjectId(projectId);
         key.setTimelineId(timelineId);
 
-        TimelineEntity entity = new TimelineEntity();
+        TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
         entity.setAttachmentIds(List.of(UUID.randomUUID(), UUID.randomUUID()));
         entity.setSenderId(UUID.randomUUID());

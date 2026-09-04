@@ -14,6 +14,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
 import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
@@ -74,5 +75,8 @@ public interface QuotationRequestEndpoint {
 
     @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
     OrderAttachmentEndpoint getAttachmentResource();
+
+    @Path("/{requestId}/" + ContractorTimelineEndpoint.SERVICE)
+    ContractorTimelineEndpoint getTimelineResource();
 
 }

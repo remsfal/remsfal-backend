@@ -6,15 +6,14 @@ import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.json.ticketing.TenantTimelineListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.AttachmentController;
-import de.remsfal.ticketing.control.TimelineController;
-import de.remsfal.ticketing.entity.dto.TimelineEntity;
+import de.remsfal.ticketing.control.TenantTimelineController;
+import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +25,14 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
  * Shared logic for the manager- and tenant-facing timeline endpoints. Concrete subclasses
- * implement {@code TimelineEndpoint} directly and keep their {@code @Override} methods visible;
+ * implement {@code TenantTimelineEndpoint} directly and keep their {@code @Override} methods visible;
  * each one performs its own permission check, resolves the {@link IssueModel}, and delegates to
  * the corresponding method here.
  */
 public abstract class AbstractTimelineResource extends AbstractTicketingResource {
 
     @Inject
-    TimelineController timelineController;
+    TenantTimelineController timelineController;
 
     @Inject
     AttachmentController attachmentController;
@@ -43,7 +42,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             return TenantTimelineListJson.valueOf(List.of());
         }
 
-        final List<TimelineEntity> entries = timelineController.getTimelineEntries(
+        final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(
             issue.getAgreementId(), issue.getId(), issue.getProjectId());
 
         final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issue.getId());
@@ -61,7 +60,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
         final TenantTimelineJson timeline = extractTenantTimelineJson(input);
         final List<UUID> attachmentIds = collectAttachmentIds(issue.getId(), input);
 
-        final TimelineEntity created = timelineController.createTimelineEntry(
+        final TenantTimelineEntity created = timelineController.createTimelineEntry(
             issue.getAgreementId(),
             issue.getId(),
             issue.getProjectId(),
@@ -86,29 +85,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
     }
 
     private TenantTimelineJson extractTenantTimelineJson(final MultipartFormDataInput input) {
-        try {
-            final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-            final List<InputPart> timelineParts = formDataMap.get("timeline");
-            if (timelineParts == null || timelineParts.isEmpty()) {
-                throw new BadRequestException("Missing 'timeline' part in multipart request");
-            }
-            if (timelineParts.size() > 1) {
-                throw new BadRequestException("Multiple 'timeline' parts found in multipart request");
-            }
-            if (timelineParts.get(0).getMediaType() == null
-                || !timelineParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
-                throw new BadRequestException("Timeline part must be of type application/json");
-            }
-
-            final TenantTimelineJson timeline = timelineParts.get(0)
-                .getBody(TenantTimelineJson.class, TenantTimelineJson.class);
-            if (timeline == null) {
-                throw new BadRequestException("Unable to parse timeline data from request");
-            }
-            return timeline;
-        } catch (IOException e) {
-            throw new BadRequestException("Failed to parse timeline data", e);
-        }
+        return MultipartAttachmentProcessor.extractJsonPart(input, "timeline", TenantTimelineJson.class);
     }
 
     /**
@@ -134,7 +111,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
         return attachmentIds;
     }
 
-    private TenantTimelineJson withAttachments(final TimelineEntity entry,
+    private TenantTimelineJson withAttachments(final TenantTimelineEntity entry,
         final List<IssueAttachmentJson> issueAttachments) {
         final TenantTimelineJson json = TenantTimelineJson.valueOf(entry);
         if (entry.getAttachmentIds() == null || entry.getAttachmentIds().isEmpty()) {

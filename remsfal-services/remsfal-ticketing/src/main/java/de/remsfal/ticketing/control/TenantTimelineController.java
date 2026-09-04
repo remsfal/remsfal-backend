@@ -3,9 +3,9 @@ package de.remsfal.ticketing.control;
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.ticketing.entity.dao.TimelineRepository;
-import de.remsfal.ticketing.entity.dto.TimelineEntity;
-import de.remsfal.ticketing.entity.dto.TimelineKey;
+import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
+import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
+import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,15 +21,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class TimelineController {
+public class TenantTimelineController {
 
     @Inject
     Logger logger;
 
     @Inject
-    TimelineRepository timelineRepository;
+    TenantTimelineRepository timelineRepository;
 
-    public List<TimelineEntity> getTimelineEntries(
+    public List<TenantTimelineEntity> getTimelineEntries(
         final UUID tenancyId,
         final UUID issueId,
         final UUID projectId) {
@@ -40,18 +40,18 @@ public class TimelineController {
 
     /**
      * Attachments are only visible to a tenant if they are referenced by some
-     * {@link TimelineEntity} of the issue — this computes that visible set.
+     * {@link TenantTimelineEntity} of the issue — this computes that visible set.
      */
     public Set<UUID> getVisibleAttachmentIds(final UUID tenancyId, final UUID issueId, final UUID projectId) {
         return getTimelineEntries(tenancyId, issueId, projectId).stream()
-            .map(TimelineEntity::getAttachmentIds)
+            .map(TenantTimelineEntity::getAttachmentIds)
             .filter(Objects::nonNull)
             .flatMap(List::stream)
             .collect(Collectors.toSet());
     }
 
     @Transactional
-    public TimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
+    public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
         final UUID senderId, final String senderName, final TenantTimelineJson timeline,
         final List<UUID> attachmentIds) {
         return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName,
@@ -59,25 +59,25 @@ public class TimelineController {
     }
 
     @Transactional
-    public TimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
+    public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
         final UUID senderId, final String senderName, final MessagePurpose purpose, final String message) {
         return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName, purpose, message, null);
     }
 
     @Transactional
-    public TimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
+    public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
         final UUID senderId, final String senderName, final MessagePurpose purpose, final String message,
         final List<UUID> attachmentIds) {
         logger.infov("Creating timeline entry (issueId={0}, projectId={1}, tenancyId={2})",
             issueId, projectId, tenancyId);
 
-        final TimelineKey key = new TimelineKey();
+        final TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
         key.setProjectId(projectId);
         key.setTimelineId(UUIDv7.randomUUID());
 
-        final TimelineEntity entity = new TimelineEntity();
+        final TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
         entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(senderId);

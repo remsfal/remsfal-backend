@@ -26,7 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 /**
  * Internal, text-only chat between project members for a single issue. Not visible to tenants —
- * see {@code TimelineEndpoint} for tenant/manager communication.
+ * see {@code TenantTimelineEndpoint} for tenant/manager communication.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */

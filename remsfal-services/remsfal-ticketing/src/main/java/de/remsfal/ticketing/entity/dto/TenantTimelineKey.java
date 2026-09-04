@@ -6,7 +6,7 @@ import jakarta.nosql.Embeddable;
 import java.util.UUID;
 
 @Embeddable
-public class TimelineKey {
+public class TenantTimelineKey {
 
     @Column("tenancy_id")
     private UUID tenancyId;
