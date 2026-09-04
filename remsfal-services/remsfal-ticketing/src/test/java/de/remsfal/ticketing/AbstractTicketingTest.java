@@ -184,7 +184,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     }
 
     /**
-     * Inserts a {@code TimelineEntity} fixture, optionally referencing attachment ids —
+     * Inserts a {@code TenantTimelineEntity} fixture, optionally referencing attachment ids —
      * that's what makes an {@code IssueAttachment} visible to a tenant (see issue #801).
      */
     protected void insertTimelineEntry(UUID issueId, UUID projectId, UUID tenancyId, UUID timelineId,
