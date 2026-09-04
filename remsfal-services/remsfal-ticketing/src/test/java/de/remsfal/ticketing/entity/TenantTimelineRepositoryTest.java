@@ -24,7 +24,7 @@ import jakarta.inject.Inject;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class TimelineRepositoryTest extends AbstractTicketingTest {
+class TenantTimelineRepositoryTest extends AbstractTicketingTest {
 
     @Inject
     TenantTimelineRepository repository;

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.ticketing.MessagePurpose;
 
-class TimelineEntityTest {
+class TenantTimelineEntityTest {
 
     @Test
     void testKeyBackedGetters_returnNullWhenKeyMissing() {

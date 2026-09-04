@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-class TimelineKeyTest {
+class TenantTimelineKeyTest {
 
     @Test
     void testGettersAndSetters() {
