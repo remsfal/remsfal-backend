@@ -47,6 +47,9 @@ public class NotificationConsumer {
             case ADDITIONAL_EMAIL_VERIFICATION:
                 sendUni = mailingController.sendAdditionalEmailVerificationEmail(mail.getUser(), link, locale);
                 break;
+            case ORGANIZATION_ADMISSION:
+                sendUni = mailingController.sendNewEmploymentEmail(mail.getUser(), link, locale);
+                break;
             default:
                 sendUni = Uni.createFrom().voidItem();
         }

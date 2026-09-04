@@ -17,7 +17,6 @@ import jakarta.validation.constraints.Size;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -58,12 +57,6 @@ public abstract class UserJson implements CustomerModel {
     @Schema(readOnly = true, required = true, examples = {"user@example.com"})
     @Override
     public abstract String getEmail();
-
-    @JsonIgnore
-    @Null
-    @Nullable
-    @Override
-    public abstract String getName();
 
     @Nullable
     @Size(min = 3, max = 255, message = "The name must be between 3 and 255 characters")

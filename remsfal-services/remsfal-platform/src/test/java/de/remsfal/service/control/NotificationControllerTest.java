@@ -41,6 +41,26 @@ class NotificationControllerTest extends AbstractKafkaTest {
     }
 
     @Test
+    void testInformUserAboutOrganizationMembership() {
+        CustomerModel user =
+                ImmutableUserJson.builder()
+                        .id(TestData.USER_ID)
+                        .email(TestData.USER_EMAIL)
+                        .build();
+
+        notificationController.informUserAboutOrganizationMembership(user, TestData.ORGANIZATION_ID);
+
+        given()
+            .topic(EmailEventJson.TOPIC)
+        .assertThat()
+            .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
+            .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
+            .json("type", Matchers.equalTo("ORGANIZATION_ADMISSION"))
+            .json("locale", Matchers.equalTo("de"))
+            .json("link", Matchers.equalTo("https://remsfal.de/organizations/" + TestData.ORGANIZATION_ID));
+    }
+
+    @Test
     void testInformUserAboutRegistration() {
         CustomerModel user =
             ImmutableUserJson.builder()

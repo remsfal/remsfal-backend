@@ -119,6 +119,7 @@ v\:roundrect, v\:fill, v\:stroke, v\:textbox {
 							<td class="wrapper dark-bg"
 								style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 24px; background-color: #ffffff;"
 								valign="top">
+								<!-- LETTER: greeting through closing signature, always together, no table/button inside -->
 								<p class="dark-font"
 									style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
 									{greeting} {name},
@@ -127,39 +128,67 @@ v\:roundrect, v\:fill, v\:stroke, v\:textbox {
 									style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
 									{#insert introduction}{/}
 								</div>
-								{#if showButton}
-								<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary"
-									style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; min-width: 100%;"
-									width="100%">
-									<tbody>
-										<tr>
-											<td align="left" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; padding-bottom: 16px;"
-												valign="top">
-												<!--[if mso]>
-												<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-													href="{buttonLink}" style="height:48px;v-text-anchor:middle;width:240px;" arcsize="17%" fillcolor="#1e5f20" strokecolor="#1e5f20">
-													<w:anchorlock/>
-													<center style="color:#ffffff;font-family:Helvetica,sans-serif;font-size:16px;font-weight:bold;">{buttonText}</center>
-												</v:roundrect>
-												<![endif]-->
-												<!--[if !mso]><!-->
-												<a href="{buttonLink}" target="_blank"
-													style="border: solid 2px #1e5f20; border-radius: 8px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; background-color: #1e5f20; border-color: #1e5f20; color: #ffffff;">
-													{buttonText}
-												</a>
-												<!--<![endif]-->
-											</td>
-										</tr>
-									</tbody>
-								</table>
-								{/if}
 								<div class="dark-font" style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
 								    {#insert conclusion}{/}
 								</div>
-								<p class="dark-font" style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px; color: #222222;">
+								<p class="dark-font" style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; color: #222222;">
 								{farewell},<br>
 								{sender}
 								</p>
+
+								{#if showDetails}
+								<!-- OPTIONAL: separator + details table -->
+								<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; margin-top: 24px;">
+									<tr>
+										<td class="dark-border" style="border-top: 1px solid #eaebed; padding-top: 24px;">
+											{#insert details}{/}
+										</td>
+									</tr>
+								</table>
+								{/if}
+
+								{#if showButton}
+								<!-- OPTIONAL: separator + bordered frame with button(s) and the no-reply notice -->
+								<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; margin-top: 24px;">
+									<tr>
+										<td class="dark-border" style="border-top: 1px solid #eaebed; padding-top: 24px;">
+											<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="dark-border" width="100%" style="border: 1px solid #eaebed; border-radius: 8px; width: 100%;">
+												<tr>
+													<td align="center" style="padding: 24px 16px; text-align: center;">
+														<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary"
+															style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; margin: 0 auto;">
+															<tbody>
+																<tr>
+																	<td align="center" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top;"
+																		valign="top">
+																		<!--[if mso]>
+																		<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+																			href="{buttonLink}" style="height:48px;v-text-anchor:middle;width:240px;" arcsize="17%" fillcolor="#1e5f20" strokecolor="#1e5f20">
+																			<w:anchorlock/>
+																			<center style="color:#ffffff;font-family:Helvetica,sans-serif;font-size:16px;font-weight:bold;">{buttonText}</center>
+																		</v:roundrect>
+																		<![endif]-->
+																		<!--[if !mso]><!-->
+																		<a href="{buttonLink}" target="_blank"
+																			style="border: solid 2px #1e5f20; border-radius: 8px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; background-color: #1e5f20; border-color: #1e5f20; color: #ffffff;">
+																			{buttonText}
+																		</a>
+																		<!--<![endif]-->
+																	</td>
+																</tr>
+															</tbody>
+														</table>
+														<p class="dark-muted" style="font-family: Helvetica, sans-serif; font-size: 13px; line-height: 20px; margin: 16px 0 0; color: #9a9ea6; text-align: center;">
+															{button_notice_line1}<br>
+															{button_notice_line2}
+														</p>
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+								{/if}
 							</td>
 						</tr>
 

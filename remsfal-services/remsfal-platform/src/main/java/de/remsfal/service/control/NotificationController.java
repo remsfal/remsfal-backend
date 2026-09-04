@@ -27,6 +27,9 @@ public class NotificationController {
     @ConfigProperty(name = "de.remsfal.frontend.path.projects", defaultValue = "/projects")
     public String frontendProjectsPath;
 
+    @ConfigProperty(name = "de.remsfal.frontend.path.organizations", defaultValue = "/organizations")
+    public String frontendOrganizationsPath;
+
     @ConfigProperty(name = "de.remsfal.frontend.path.additional-email-verification",
         defaultValue = "/api/v1/authentication/verify-additional-email")
     public String frontendAdditionalEmailVerificationPath;
@@ -62,7 +65,18 @@ public class NotificationController {
             .type(EmailEventType.PROJECT_ADMISSION)
             .link(frontendBaseUrl + frontendProjectsPath + "/" + projectId)
             .build();
-        logger.info("Test: " + mail.toString());
+        notificationEmitter.send(mail);
+    }
+
+    @WithSpan("NotificationController.informUserAboutOrganizationMembership")
+    public void informUserAboutOrganizationMembership(final CustomerModel user, final UUID organizationId) {
+        logger.infov("Sending information about new organization membership (email={0})", user.getEmail());
+        EmailEventJson mail = ImmutableEmailEventJson.builder()
+            .user(UserJson.valueOf(user))
+            .locale(resolveLocale(user))
+            .type(EmailEventType.ORGANIZATION_ADMISSION)
+            .link(frontendBaseUrl + frontendOrganizationsPath + "/" + organizationId)
+            .build();
         notificationEmitter.send(mail);
     }
 

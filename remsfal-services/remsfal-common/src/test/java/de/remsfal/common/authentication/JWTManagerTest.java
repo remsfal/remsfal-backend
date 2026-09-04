@@ -51,7 +51,7 @@ class JWTManagerTest extends AbstractTest {
         ImmutableUserJson user = ImmutableUserJson.builder()
             .id(TestData.USER_ID_1)
             .email(TestData.USER_EMAIL_1)
-            .name(TestData.USER_FIRST_NAME_1)
+            .firstName(TestData.USER_FIRST_NAME_1)
             .active(true)
             .build();
         Map<String, String> projectRoles = Map.of(

@@ -100,6 +100,34 @@ class NotificationConsumerTest extends AbstractKafkaTest {
     }
 
     @Test
+    void testConsumeUserNotification_NewEmployment() {
+        UserJson user = ImmutableUserJson.builder()
+                .id(UUID.randomUUID())
+                .email("test3@example.com")
+                .firstName("Test")
+                .lastName("Employment")
+                .build();
+
+        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
+                .user(user)
+                .locale("de")
+                .type(EmailEventJson.EmailEventType.ORGANIZATION_ADMISSION)
+                .link("https://remsfal.de")
+                .build();
+
+        companion.produce(ImmutableEmailEventJson.class)
+            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+            .awaitCompletion();
+
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+                verify(mailingController, atLeastOnce())
+                    .sendNewEmploymentEmail(user, "https://remsfal.de", Locale.GERMAN)
+                );
+    }
+
+    @Test
     void testConsumeUserNotification_AdditionalEmailVerification() {
         UserJson user = ImmutableUserJson.builder()
                 .id(UUID.randomUUID())

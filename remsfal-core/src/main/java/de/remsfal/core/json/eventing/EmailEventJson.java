@@ -20,7 +20,8 @@ public interface EmailEventJson {
     public enum EmailEventType {
         USER_REGISTRATION,
         PROJECT_ADMISSION,
-        ADDITIONAL_EMAIL_VERIFICATION
+        ADDITIONAL_EMAIL_VERIFICATION,
+        ORGANIZATION_ADMISSION
     }
 
     /*

@@ -48,6 +48,10 @@ public class MailingController {
     Template newMembership;
 
     @Inject
+    @Location("new-employment.html")
+    Template newEmployment;
+
+    @Inject
     @Location("additional-email-verification.html")
     Template additionalEmailVerification;
 
@@ -78,6 +82,17 @@ public class MailingController {
         logger.infov("Sending new membership email to {0}", recipient.getEmail());
         final TemplateInstance instance = newMembership.data("name", recipient.getName()).data("buttonLink", link);
         final String subject = getSubject("new-membership", locale);
+
+        String html = setTemplateProperties(instance, locale).render();
+        Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
+        return sendWithAlias(mail, "info");
+    }
+
+    @WithSpan("MailingController.sendNewEmploymentEmail")
+    public Uni<Void> sendNewEmploymentEmail(final UserModel recipient, final String link, final Locale locale) {
+        logger.infov("Sending new employment email to {0}", recipient.getEmail());
+        final TemplateInstance instance = newEmployment.data("name", recipient.getName()).data("buttonLink", link);
+        final String subject = getSubject("new-employment", locale);
 
         String html = setTemplateProperties(instance, locale).render();
         Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
