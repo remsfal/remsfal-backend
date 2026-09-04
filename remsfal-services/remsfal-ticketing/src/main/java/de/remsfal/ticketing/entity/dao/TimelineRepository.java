@@ -12,8 +12,8 @@ import java.util.UUID;
 @ApplicationScoped
 public class TimelineRepository extends AbstractRepository<TimelineEntity, TimelineKey> {
 
-    private static final String COL_TENANCY_ID = "tenancy_id";
-    private static final String COL_TIMELINE_ID = "timeline_id";
+    static final String TENANCY_ID = "tenancy_id";
+    static final String TIMELINE_ID = "timeline_id";
 
     public TimelineEntity insert(final TimelineEntity entity) {
         return template.insert(entity);
@@ -21,16 +21,16 @@ public class TimelineRepository extends AbstractRepository<TimelineEntity, Timel
 
     public Optional<TimelineEntity> findById(final TimelineKey key) {
         return template.select(TimelineEntity.class)
-            .where(COL_TENANCY_ID).eq(key.getTenancyId())
+            .where(TENANCY_ID).eq(key.getTenancyId())
             .and(ISSUE_ID).eq(key.getIssueId())
             .and(PROJECT_ID).eq(key.getProjectId())
-            .and(COL_TIMELINE_ID).eq(key.getTimelineId())
+            .and(TIMELINE_ID).eq(key.getTimelineId())
             .singleResult();
     }
 
     public List<TimelineEntity> findByIssue(final UUID tenancyId, final UUID issueId, final UUID projectId) {
         return template.select(TimelineEntity.class)
-            .where(COL_TENANCY_ID).eq(tenancyId)
+            .where(TENANCY_ID).eq(tenancyId)
             .and(ISSUE_ID).eq(issueId)
             .and(PROJECT_ID).eq(projectId)
             .result();

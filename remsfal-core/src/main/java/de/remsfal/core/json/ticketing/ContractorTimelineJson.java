@@ -34,6 +34,18 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract UUID getContractorId();
+
+    @Null
+    @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract UUID getOrganizationId();
+
+    @Null
+    @Nullable
     @JsonIgnore
     @Schema(readOnly = true, hidden = true)
     @Override
@@ -45,10 +57,6 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     @Override
     public abstract ParticipantRole getSenderRole();
 
-    @Nullable
-    @Override
-    public abstract ParticipantRole getRecipient();
-
     @Null
     @Nullable
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -58,13 +66,14 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     public static ContractorTimelineJson valueOf(final ContractorTimelineModel model) {
         final ImmutableContractorTimelineJson.Builder builder = ImmutableContractorTimelineJson.builder()
             .requestId(model.getRequestId())
+            .contractorId(model.getContractorId())
+            .organizationId(model.getOrganizationId())
             .issueId(model.getIssueId())
             .timelineId(model.getTimelineId())
             .attachmentIds(model.getAttachmentIds())
             .senderId(model.getSenderId())
             .senderName(model.getSenderName())
             .senderRole(model.getSenderRole())
-            .recipient(model.getRecipient())
             .purpose(model.getPurpose())
             .message(model.getMessage())
             .createdAt(model.getCreatedAt())

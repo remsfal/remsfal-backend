@@ -5,29 +5,31 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
-                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-009-tenant-timelines" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
-        <comment>Create tenant timelines table</comment>
+    <changeSet id="remsfal-ticketing-0.0.13-create-contractor-timelines" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
+        <comment>Create contractor timelines table for the communication between a property manager
+        and a single contractor organization about one quotation request</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.tenant_timelines (
-                tenancy_id UUID,
-                issue_id UUID,
+            CREATE TABLE IF NOT EXISTS REMSFAL.contractor_timelines (
+                request_id UUID,
+                contractor_id UUID,
+                organization_id UUID,
                 timeline_id UUID,
-                project_id UUID,
+                issue_id UUID,
+                attachment_ids LIST&lt;UUID&gt;,
                 sender_id UUID,
                 sender_name TEXT,
+                sender_role TEXT,
                 purpose TEXT,
                 message TEXT,
-                attachment_ids LIST&lt;UUID&gt;,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
-                PRIMARY KEY ((tenancy_id, issue_id, project_id), timeline_id)
+                PRIMARY KEY ((request_id, contractor_id, organization_id), timeline_id)
             ) WITH CLUSTERING ORDER BY (timeline_id ASC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.tenant_timelines;</sql>
+            <sql>DROP TABLE IF EXISTS REMSFAL.contractor_timelines;</sql>
         </rollback>
     </changeSet>
-
 </databaseChangeLog>
