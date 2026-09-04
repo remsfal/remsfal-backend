@@ -16,6 +16,10 @@ import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
+import de.remsfal.core.json.organization.ImmutableOrganizationJson;
+import de.remsfal.core.json.organization.OrganizationJson;
+import de.remsfal.core.json.project.ImmutableProjectJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
@@ -40,33 +44,59 @@ public class MailingResource {
     @GET
     @Blocking
     public Response sendTestEmails(@QueryParam("to") @NotNull @Email final String to) {
-        final UserModel recipient = new UserModel() {
-            @Override
-            public UUID getId() {
-                return UUID.randomUUID();
-            }
+        final UserModel recipient = createMockUserModel(to);
 
-            @Override
-            public String getEmail() {
-                return to;
-            }
-
-            @Override
-            public String getName() {
-                return "Max Mustermann";
-            }
-
-            @Override
-            public Boolean isActive() {
-                return true;
-            }
-        };
+        final ProjectJson project = createMockProject();
+        final OrganizationJson organization = createMockOrganization();
 
         controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
         controller.sendWelcomeEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
-        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.ENGLISH).await().indefinitely();
-        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.GERMAN).await().indefinitely();
+        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.ENGLISH, project)
+            .await().indefinitely();
+        controller.sendNewMembershipEmail(recipient, "https://remsfal.de", Locale.GERMAN, project)
+            .await().indefinitely();
+        controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.ENGLISH, organization)
+            .await().indefinitely();
+        controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.GERMAN, organization)
+            .await().indefinitely();
+        controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.ENGLISH)
+            .await().indefinitely();
+        controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.GERMAN)
+            .await().indefinitely();
         return Response.accepted().build();
+    }
+
+    @GET
+    @Path("/new-employment")
+    @Blocking
+    public Response testNewEmployment(@QueryParam("to") @NotNull @Email final String to) {
+        final UserModel recipient = createMockUserModel(to);
+        final OrganizationJson organization = createMockOrganization();
+        try {
+            controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.ENGLISH, organization)
+                .await().indefinitely();
+            controller.sendNewEmploymentEmail(recipient, "https://remsfal.de", Locale.GERMAN, organization)
+                .await().indefinitely();
+            return Response.accepted().entity("New employment email sent successfully").build();
+        } catch (Exception e) {
+            return Response.serverError().entity(ERROR_SEND_EMAIL).build();
+        }
+    }
+
+    @GET
+    @Path("/additional-email-verification")
+    @Blocking
+    public Response testAdditionalEmailVerification(@QueryParam("to") @NotNull @Email final String to) {
+        final UserModel recipient = createMockUserModel(to);
+        try {
+            controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.ENGLISH)
+                .await().indefinitely();
+            controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.GERMAN)
+                .await().indefinitely();
+            return Response.accepted().entity("Additional email verification email sent successfully").build();
+        } catch (Exception e) {
+            return Response.serverError().entity(ERROR_SEND_EMAIL).build();
+        }
     }
 
     @GET
@@ -111,11 +141,52 @@ public class MailingResource {
         }
     }
 
+    private UserModel createMockUserModel(final String email) {
+        return new UserModel() {
+            @Override
+            public UUID getId() {
+                return UUID.randomUUID();
+            }
+
+            @Override
+            public String getEmail() {
+                return email;
+            }
+
+            @Override
+            public String getName() {
+                return "Max Mustermann";
+            }
+
+            @Override
+            public Boolean isActive() {
+                return true;
+            }
+        };
+    }
+
+    private ProjectJson createMockProject() {
+        return ImmutableProjectJson.builder()
+            .id(UUID.randomUUID())
+            .title("Test Project")
+            .build();
+    }
+
+    private OrganizationJson createMockOrganization() {
+        return ImmutableOrganizationJson.builder()
+            .id(UUID.randomUUID())
+            .name("Test Organization")
+            .phone("+491234567890")
+            .email("organization@example.com")
+            .trade("Property Management")
+            .vatIdentificationNumber("DE123456789")
+            .build();
+    }
+
     private UserJson createMockRecipient(final String email) {
         return ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email(email)
-            .name(null)
             .firstName(null)
             .lastName(null)
             .build();
@@ -130,13 +201,15 @@ public class MailingResource {
         UserJson actor = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("actor@example.com")
-            .name("Test Actor")
+            .firstName("Test")
+            .lastName("Actor")
             .build();
 
         UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("assignee@example.com")
-            .name("Test Owner")
+            .firstName("Test")
+            .lastName("Owner")
             .build();
 
         return ImmutableIssueEventJson.builder()

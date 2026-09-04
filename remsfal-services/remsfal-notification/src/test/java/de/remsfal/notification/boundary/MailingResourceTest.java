@@ -53,13 +53,42 @@ class MailingResourceTest extends AbstractTest {
                 .then()
                 .statusCode(Status.ACCEPTED.getStatusCode());
 
-        // verify that it was sent
+        // verify that it was sent: welcome, new-membership, new-employment and
+        // additional-email-verification, each in English and German
         List<MailMessage> sent = mailbox. getMailMessagesSentTo("test@example.com");
-        assertEquals(4, sent.size());
+        assertEquals(8, sent.size());
         MailMessage actual = sent.get(2);
-        assertTrue(actual.getHtml().contains("You have been added to a new project."));
+        assertTrue(actual.getHtml().contains("You have been added to the project Test Project."));
         assertEquals("You’ve been added to a new project", actual.getSubject());
-        assertEquals(4, mailbox.getTotalMessagesSent());
+        assertEquals(8, mailbox.getTotalMessagesSent());
+    }
+
+    @Test
+    void testNewEmploymentEmail() {
+        given()
+                .queryParam("to", "employment@example.com")
+                .when()
+                .get(BASE_PATH + "/new-employment")
+                .then()
+                .statusCode(Status.ACCEPTED.getStatusCode());
+
+        List<MailMessage> sent = mailbox.getMailMessagesSentTo("employment@example.com");
+        assertEquals(2, sent.size());
+        assertEquals(2, mailbox.getTotalMessagesSent());
+    }
+
+    @Test
+    void testAdditionalEmailVerificationEmail() {
+        given()
+                .queryParam("to", "verify@example.com")
+                .when()
+                .get(BASE_PATH + "/additional-email-verification")
+                .then()
+                .statusCode(Status.ACCEPTED.getStatusCode());
+
+        List<MailMessage> sent = mailbox.getMailMessagesSentTo("verify@example.com");
+        assertEquals(2, sent.size());
+        assertEquals(2, mailbox.getTotalMessagesSent());
     }
 
     @Test
@@ -109,8 +138,8 @@ class MailingResourceTest extends AbstractTest {
         assertEquals(1, sent.size());
         
         MailMessage actual = sent.get(0);
-        // Should default to "User" greeting in the configured (English) locale
-        assertTrue(actual.getHtml().contains("Dear User"));
+        // With no first/last name set, the name falls back to the recipient's email address
+        assertTrue(actual.getHtml().contains("Dear noname@example.com"));
         assertEquals(1, mailbox.getTotalMessagesSent());
     }
 }

@@ -190,7 +190,7 @@ public class ProjectController {
             throw new AlreadyExistsException("User is already a member of this project");
         }
         projectEntity.addMember(userEntity, member.getRole());
-        notificationController.informUserAboutProjectMembership(userEntity, projectId);
+        notificationController.informUserAboutProjectMembership(userEntity, projectEntity);
         projectRepository.mergeAndFlush(projectEntity);
         return projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
