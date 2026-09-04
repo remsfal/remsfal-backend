@@ -7,7 +7,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext
                                        http://www.liquibase.org/xml/ns/dbchangelog-ext.xsd">
 
-    <changeSet id="remsfal-ticketing-0.0.13-create-contractor-timelines" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
+    <changeSet id="remsfal-ticketing-010-contractor-timelines" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
         <comment>Create contractor timelines table for the communication between a property manager
         and a single contractor organization about one quotation request</comment>
         <sql>

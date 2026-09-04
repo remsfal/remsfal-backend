@@ -60,13 +60,15 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("assignee@example.com")
-            .name("Test Owner")
+            .firstName("Test")
+            .lastName("Owner")
             .build();
 
         UserJson creator = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("creator@example.com")
-            .name("Test Creator")
+            .firstName("Test")
+            .lastName("Creator")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -113,7 +115,8 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson user = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("user@example.com")
-            .name("Test User")
+            .firstName("Test")
+            .lastName("User")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -157,13 +160,15 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("assignee@example.com")
-            .name("Test Owner")
+            .firstName("Test")
+            .lastName("Owner")
             .build();
 
         UserJson updater = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("updater@example.com")
-            .name("Test Updater")
+            .firstName("Test")
+            .lastName("Updater")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -209,13 +214,14 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson newOwner = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("newassignee@example.com")
-            .name("New Owner")
+            .firstName("New")
+            .lastName("Owner")
             .build();
 
         UserJson assigner = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("assigner@example.com")
-            .name("Assigner")
+            .firstName("Assigner")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -261,7 +267,8 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson user = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("user@example.com")
-            .name("Test User")
+            .firstName("Test")
+            .lastName("User")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -307,7 +314,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson creator = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("creator@example.com")
-            .name("Creator")
+            .firstName("Creator")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -349,7 +356,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("assignee@example.com")
-            .name("Owner")
+            .firstName("Owner")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
@@ -392,7 +399,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
         UserJson assignee = ImmutableUserJson.builder()
             .id(UUID.randomUUID())
             .email("assignee@example.com")
-            .name("Owner")
+            .firstName("Owner")
             .build();
 
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
