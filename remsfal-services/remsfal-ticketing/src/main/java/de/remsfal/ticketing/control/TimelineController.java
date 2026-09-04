@@ -1,7 +1,7 @@
 package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
-import de.remsfal.core.json.ticketing.TimelineJson;
+import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.entity.dao.TimelineRepository;
 import de.remsfal.ticketing.entity.dto.TimelineEntity;
@@ -52,7 +52,7 @@ public class TimelineController {
 
     @Transactional
     public TimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UUID senderId, final String senderName, final TimelineJson timeline,
+        final UUID senderId, final String senderName, final TenantTimelineJson timeline,
         final List<UUID> attachmentIds) {
         return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName,
             timeline.getPurpose(), timeline.getMessage(), attachmentIds);

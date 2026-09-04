@@ -2,7 +2,6 @@ package de.remsfal.core.json.ticketing;
 
 import jakarta.annotation.Nullable;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -20,39 +19,11 @@ import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 @Schema(description = "An issue attachment")
 @JsonDeserialize(as = ImmutableIssueAttachmentJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class IssueAttachmentJson implements IssueAttachmentModel {
+public abstract class IssueAttachmentJson extends AttachmentJson implements IssueAttachmentModel {
 
     @Nullable
     @Override
     public abstract UUID getIssueId();
-
-    @Nullable
-    @Override
-    public abstract UUID getAttachmentId();
-
-    @Nullable
-    @Override
-    public abstract String getFileName();
-
-    @Nullable
-    @Override
-    public abstract String getContentType();
-
-    @Nullable
-    @Override
-    public abstract String getObjectName();
-
-    @Nullable
-    @Override
-    public abstract UUID getUploaderId();
-
-    @Nullable
-    @Override
-    public abstract String getUploadedBy();
-
-    @Nullable
-    @Override
-    public abstract Instant getCreatedAt();
 
     public static IssueAttachmentJson valueOf(final IssueAttachmentModel model) {
         return ImmutableIssueAttachmentJson.builder()

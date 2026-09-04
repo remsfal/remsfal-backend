@@ -25,5 +25,6 @@
     <include file="META-INF/changesets/010-add-issues-tenant-update-column.xml"/>
     <include file="META-INF/changesets/011-add-issues-contractor-update-column.xml"/>
     <include file="META-INF/changesets/012-create-inbox-messages-table.xml"/>
+    <include file="META-INF/changesets/013-create-contractor-timelines-table.xml"/>
 
 </databaseChangeLog>

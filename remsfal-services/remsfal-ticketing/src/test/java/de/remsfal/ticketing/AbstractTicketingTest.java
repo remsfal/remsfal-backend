@@ -190,7 +190,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     protected void insertTimelineEntry(UUID issueId, UUID projectId, UUID tenancyId, UUID timelineId,
             MessagePurpose purpose, List<UUID> attachmentIds) {
         String insertTimelineCql = "INSERT INTO remsfal.tenant_timelines "
-            + "(tenancy_id, issue_id, timeline_id, project_id, attachment_id, sender_id, sender_name, "
+            + "(tenancy_id, issue_id, timeline_id, project_id, attachment_ids, sender_id, sender_name, "
             + "purpose, message, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertTimelineCql,
