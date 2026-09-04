@@ -31,7 +31,7 @@ public class ContractorTimelineController {
     IssueController issueController;
 
     @Inject
-    TimelineController timelineController;
+    TenantTimelineController timelineController;
 
     public List<ContractorTimelineEntity> getTimelineEntries(final UUID requestId, final UUID contractorId,
         final UUID organizationId) {

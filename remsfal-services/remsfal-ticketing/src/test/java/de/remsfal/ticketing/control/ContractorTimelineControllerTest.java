@@ -23,10 +23,10 @@ import de.remsfal.core.model.ticketing.ParticipantRole;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
-import de.remsfal.ticketing.entity.dao.TimelineRepository;
+import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
-import de.remsfal.ticketing.entity.dto.TimelineEntity;
+import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -42,7 +42,7 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
     ContractorTimelineRepository repository;
 
     @Inject
-    TimelineRepository timelineRepository;
+    TenantTimelineRepository timelineRepository;
 
     @Test
     void testCreateTimelineEntry_persistsEntity() {
@@ -105,7 +105,6 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
         assertFalse(entries.stream().anyMatch(e -> e.getTimelineId().equals(otherRequest.getTimelineId())));
     }
 
-<<<<<<< HEAD
     @Test
     void testCreateTimelineEntry_recipientTenant_mirrorsToTenantTimeline() {
         final UUID issueId = UUID.randomUUID();
@@ -115,6 +114,8 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
             "Beschreibung");
 
         final UUID requestId = UUID.randomUUID();
+        final UUID contractorId = UUID.randomUUID();
+        final UUID organizationId = UUID.randomUUID();
         final UUID senderId = UUID.randomUUID();
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
             .recipient(ParticipantRole.TENANT)
@@ -122,10 +123,10 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
             .message("Der Techniker kommt morgen vorbei")
             .build();
 
-        controller.createTimelineEntry(requestId, issueId, senderId, "Bauservice GmbH",
-            ParticipantRole.CONTRACTOR, entry);
+        controller.createTimelineEntry(requestId, contractorId, organizationId, issueId, senderId,
+            "Bauservice GmbH", ParticipantRole.CONTRACTOR, entry, List.of());
 
-        final List<TimelineEntity> mirrored = timelineRepository.findByIssue(
+        final List<TenantTimelineEntity> mirrored = timelineRepository.findByIssue(
             agreementId, issueId, TicketingTestData.PROJECT_ID);
 
         assertEquals(1, mirrored.size());
@@ -143,14 +144,17 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
             "Beschreibung");
 
         final UUID requestId = UUID.randomUUID();
+        final UUID contractorId = UUID.randomUUID();
+        final UUID organizationId = UUID.randomUUID();
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
             .recipient(ParticipantRole.TENANT)
             .purpose(MessagePurpose.MESSAGE_SENT)
             .message("Ohne Mietvertrag")
             .build();
 
-        final ContractorTimelineEntity created = controller.createTimelineEntry(requestId, issueId,
-            UUID.randomUUID(), "Bauservice GmbH", ParticipantRole.CONTRACTOR, entry);
+        final ContractorTimelineEntity created = controller.createTimelineEntry(requestId, contractorId,
+            organizationId, issueId, UUID.randomUUID(), "Bauservice GmbH", ParticipantRole.CONTRACTOR, entry,
+            List.of());
 
         assertTrue(repository.findById(created.getKey()).isPresent());
     }
