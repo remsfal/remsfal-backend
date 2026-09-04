@@ -1,7 +1,7 @@
 package de.remsfal.core.api.ticketing;
 
-import de.remsfal.core.json.ticketing.TimelineJson;
-import de.remsfal.core.json.ticketing.TimelineListJson;
+import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.json.ticketing.TenantTimelineListJson;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -31,7 +31,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TimelineEndpoint {
+public interface TenantTimelineEndpoint {
 
     String SERVICE = "timeline";
 
@@ -41,7 +41,7 @@ public interface TimelineEndpoint {
     @APIResponse(responseCode = "200", description = "Timeline entries retrieved")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "Issue not found")
-    TimelineListJson getTimelineEntries(
+    TenantTimelineListJson getTimelineEntries(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId);
 
@@ -57,7 +57,7 @@ public interface TimelineEndpoint {
                 type = SchemaType.OBJECT,
                 requiredProperties = {"timeline"},
                 properties = {
-                    @SchemaProperty(name = "timeline", implementation = TimelineJson.class,
+                    @SchemaProperty(name = "timeline", implementation = TenantTimelineJson.class,
                         description = "Timeline entry information as JSON"),
                     @SchemaProperty(name = "attachment", type = SchemaType.ARRAY, implementation = java.io.File.class,
                         description = "One or more files to attach to the timeline entry")
@@ -67,7 +67,7 @@ public interface TimelineEndpoint {
     )
     @APIResponse(responseCode = "201", description = "Timeline entry created",
         content = @Content(mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = TimelineJson.class)))
+            schema = @Schema(implementation = TenantTimelineJson.class)))
     @APIResponse(responseCode = "400", description = "Invalid input")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "Issue not found")

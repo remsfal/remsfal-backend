@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
+import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -110,8 +112,7 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(timelineJson)
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(timelinePath())
             .then()
             .statusCode(201)
@@ -133,11 +134,52 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(UUID.randomUUID(), "other@test.com", "Other Contractor",
                 Map.of(), Map.of(UUID.randomUUID().toString(), "MANAGER"), Map.of()))
-            .contentType(ContentType.JSON)
-            .body(timelineJson)
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(timelinePath())
             .then()
             .statusCode(404);
+    }
+
+    @Test
+    void createTimelineEntryWithAttachments_FAILED_missingTimelinePart() {
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .multiPart("notTimeline", "{}", MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .post(timelinePath())
+            .then()
+            .statusCode(400);
+    }
+
+    @Test
+    void createTimelineEntryWithAttachments_SUCCESS_uploadedAttachmentIsLinkedAndVisible() {
+        final String timelineJson = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"Angebot in Vorbereitung\""
+            + "}";
+        final InputStream attachmentStream = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1);
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1,
+                attachmentStream, TicketingTestData.ATTACHMENT_FILE_TYPE_1)
+            .post(timelinePath())
+            .then()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("attachments", hasSize(1))
+            .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1));
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(timelinePath())
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(1))
+            .body("timelines[0].attachments", hasSize(1));
     }
 
     @Test
@@ -149,8 +191,7 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(timelineJson)
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(timelinePath())
             .then()
             .statusCode(201);

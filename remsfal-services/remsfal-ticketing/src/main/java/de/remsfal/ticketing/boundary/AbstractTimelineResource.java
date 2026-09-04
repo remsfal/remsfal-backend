@@ -2,19 +2,18 @@ package de.remsfal.ticketing.boundary;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
-import de.remsfal.core.json.ticketing.TimelineJson;
-import de.remsfal.core.json.ticketing.TimelineListJson;
+import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.json.ticketing.TenantTimelineListJson;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.AttachmentController;
-import de.remsfal.ticketing.control.TimelineController;
-import de.remsfal.ticketing.entity.dto.TimelineEntity;
+import de.remsfal.ticketing.control.TenantTimelineController;
+import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,29 +25,29 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
  * Shared logic for the manager- and tenant-facing timeline endpoints. Concrete subclasses
- * implement {@code TimelineEndpoint} directly and keep their {@code @Override} methods visible;
+ * implement {@code TenantTimelineEndpoint} directly and keep their {@code @Override} methods visible;
  * each one performs its own permission check, resolves the {@link IssueModel}, and delegates to
  * the corresponding method here.
  */
 public abstract class AbstractTimelineResource extends AbstractTicketingResource {
 
     @Inject
-    TimelineController timelineController;
+    TenantTimelineController timelineController;
 
     @Inject
     AttachmentController attachmentController;
 
-    protected TimelineListJson getTimelineEntries(final IssueModel issue) {
+    protected TenantTimelineListJson getTimelineEntries(final IssueModel issue) {
         if (issue.getAgreementId() == null) {
-            return TimelineListJson.valueOf(List.of());
+            return TenantTimelineListJson.valueOf(List.of());
         }
 
-        final List<TimelineEntity> entries = timelineController.getTimelineEntries(
+        final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(
             issue.getAgreementId(), issue.getId(), issue.getProjectId());
 
         final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issue.getId());
 
-        return TimelineListJson.valueOf(entries.stream()
+        return TenantTimelineListJson.valueOf(entries.stream()
             .map(entry -> withAttachments(entry, issueAttachments))
             .toList());
     }
@@ -58,10 +57,10 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             throw new BadRequestException("Timeline requires issue agreementId");
         }
 
-        final TimelineJson timeline = extractTimelineJson(input);
+        final TenantTimelineJson timeline = extractTenantTimelineJson(input);
         final List<UUID> attachmentIds = collectAttachmentIds(issue.getId(), input);
 
-        final TimelineEntity created = timelineController.createTimelineEntry(
+        final TenantTimelineEntity created = timelineController.createTimelineEntry(
             issue.getAgreementId(),
             issue.getId(),
             issue.getProjectId(),
@@ -85,30 +84,8 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             .toList();
     }
 
-    private TimelineJson extractTimelineJson(final MultipartFormDataInput input) {
-        try {
-            final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-            final List<InputPart> timelineParts = formDataMap.get("timeline");
-            if (timelineParts == null || timelineParts.isEmpty()) {
-                throw new BadRequestException("Missing 'timeline' part in multipart request");
-            }
-            if (timelineParts.size() > 1) {
-                throw new BadRequestException("Multiple 'timeline' parts found in multipart request");
-            }
-            if (timelineParts.get(0).getMediaType() == null
-                || !timelineParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
-                throw new BadRequestException("Timeline part must be of type application/json");
-            }
-
-            final TimelineJson timeline = timelineParts.get(0)
-                .getBody(TimelineJson.class, TimelineJson.class);
-            if (timeline == null) {
-                throw new BadRequestException("Unable to parse timeline data from request");
-            }
-            return timeline;
-        } catch (IOException e) {
-            throw new BadRequestException("Failed to parse timeline data", e);
-        }
+    private TenantTimelineJson extractTenantTimelineJson(final MultipartFormDataInput input) {
+        return MultipartAttachmentProcessor.extractJsonPart(input, "timeline", TenantTimelineJson.class);
     }
 
     /**
@@ -134,9 +111,9 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
         return attachmentIds;
     }
 
-    private TimelineJson withAttachments(final TimelineEntity entry,
+    private TenantTimelineJson withAttachments(final TenantTimelineEntity entry,
         final List<IssueAttachmentJson> issueAttachments) {
-        final TimelineJson json = TimelineJson.valueOf(entry);
+        final TenantTimelineJson json = TenantTimelineJson.valueOf(entry);
         if (entry.getAttachmentIds() == null || entry.getAttachmentIds().isEmpty()) {
             return json.withAttachments(List.of());
         }

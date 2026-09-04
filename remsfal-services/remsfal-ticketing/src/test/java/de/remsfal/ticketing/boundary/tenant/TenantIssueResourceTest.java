@@ -373,7 +373,7 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
     @Test
     void downloadAttachment_SUCCESS_tenantDownloadsAttachment() throws Exception {
         setupTestIssuesWithAttachment();
-        // only attachments referenced by a TimelineEntity are visible to the tenant (issue #801)
+        // only attachments referenced by a TenantTimelineEntity are visible to the tenant (issue #801)
         insertTimelineEntry(TicketingTestData.ISSUE_ID_2, TicketingTestData.PROJECT_ID_1,
             TicketingTestData.AGREEMENT_ID_1, UUID.randomUUID(), MessagePurpose.ISSUE_CREATED,
             List.of(TicketingTestData.ATTACHMENT_ID_1));
@@ -393,7 +393,7 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
     @Test
     void downloadAttachment_FAILED_attachmentNotVisibleToTenant() throws Exception {
         setupTestIssuesWithAttachment();
-        // no TimelineEntity references ATTACHMENT_ID_1 here, so it stays invisible to the tenant
+        // no TenantTimelineEntity references ATTACHMENT_ID_1 here, so it stays invisible to the tenant
 
         given()
             .when()
