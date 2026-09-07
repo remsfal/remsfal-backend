@@ -166,7 +166,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     }
 
     @Override
-    public IssueTimelineResource getTimelineResource() {
+    public IssueTimelineResource getTenantTimelineResource() {
         return resourceContext.initResource(timelineResource.get());
     }
 

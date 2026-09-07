@@ -202,7 +202,7 @@ public interface IssueEndpoint {
     ChatEndpoint getChatResource();
 
     @Path("/{issueId}/tenant-" + TenantTimelineEndpoint.SERVICE)
-    TenantTimelineEndpoint getTimelineResource();
+    TenantTimelineEndpoint getTenantTimelineResource();
 
     @Path("/{issueId}/contractor-" + ContractorTimelineEndpoint.SERVICE)
     ContractorTimelineEndpoint getContractorTimelineResource();
