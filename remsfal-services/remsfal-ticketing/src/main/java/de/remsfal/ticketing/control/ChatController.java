@@ -1,7 +1,11 @@
 package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
+import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.ChatMessageEntity;
 import de.remsfal.ticketing.entity.dto.ChatMessageKey;
 
@@ -23,6 +27,12 @@ public class ChatController {
 
     @Inject
     ChatMessageRepository chatMessageRepository;
+
+    @Inject
+    IssueRepository issueRepository;
+
+    @Inject
+    IssueEventProducer issueEventProducer;
 
     public List<ChatMessageEntity> getChatMessages(final UUID issueId, final UUID projectId) {
         logger.infov("Retrieving chat messages (issueId={0}, projectId={1})", issueId, projectId);
@@ -49,7 +59,13 @@ public class ChatController {
         entity.setCreatedAt(now);
         entity.setModifiedAt(now);
 
-        return chatMessageRepository.insert(entity);
+        final ChatMessageEntity created = chatMessageRepository.insert(entity);
+
+        final IssueModel issue = issueRepository.findByIssueId(issueId).orElse(null);
+        issueEventProducer.sendActivityEvent(IssueEventType.CHAT_MESSAGE_CREATED, issue,
+            senderId, senderName, message, null, null);
+
+        return created;
     }
 
 }

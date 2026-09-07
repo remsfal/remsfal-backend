@@ -55,7 +55,14 @@ public interface IssueEventJson {
         ISSUE_CREATED,
         ISSUE_UPDATED,
         ISSUE_ASSIGNED,
-        ISSUE_MENTIONED
+        ISSUE_MENTIONED,
+        TIMELINE_ENTRY_CREATED,
+        CHAT_MESSAGE_CREATED,
+        QUOTATION_REQUEST_CREATED,
+        QUOTATION_REQUEST_STATUS_CHANGED,
+        QUOTATION_CREATED,
+        ORDER_PLACED,
+        ORDER_PLACEMENT_STATUS_CHANGED
     }
 
     IssueEventType getIssueEventType();
@@ -148,4 +155,16 @@ public interface IssueEventJson {
      */
     @Nullable
     UserJson getMentionedUser();
+
+    /**
+     * Contractor organization involved in a quotation/order-placement activity event.
+     */
+    @Nullable
+    UUID getOrganizationId();
+
+    /**
+     * Contractor involved in a quotation/order-placement activity event.
+     */
+    @Nullable
+    UUID getContractorId();
 }

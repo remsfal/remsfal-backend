@@ -1,8 +1,12 @@
 package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
+import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
+import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.TimelineRepository;
 import de.remsfal.ticketing.entity.dto.TimelineEntity;
 import de.remsfal.ticketing.entity.dto.TimelineKey;
@@ -28,6 +32,12 @@ public class TimelineController {
 
     @Inject
     TimelineRepository timelineRepository;
+
+    @Inject
+    IssueRepository issueRepository;
+
+    @Inject
+    IssueEventProducer issueEventProducer;
 
     public List<TimelineEntity> getTimelineEntries(
         final UUID tenancyId,
@@ -89,7 +99,13 @@ public class TimelineController {
         entity.setCreatedAt(now);
         entity.setModifiedAt(now);
 
-        return timelineRepository.insert(entity);
+        final TimelineEntity created = timelineRepository.insert(entity);
+
+        final IssueModel issue = issueRepository.findByIssueId(issueId).orElse(null);
+        issueEventProducer.sendActivityEvent(IssueEventType.TIMELINE_ENTRY_CREATED, issue,
+            senderId, senderName, message, null, null);
+
+        return created;
     }
 
 }
