@@ -25,15 +25,6 @@ import java.util.stream.Collectors;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-/**
- * Shared logic for the manager- and contractor-facing contractor-timeline endpoints. Concrete
- * subclasses implement {@code ContractorTimelineEndpoint} directly and keep their {@code @Override}
- * methods visible; each one performs its own permission check, resolves the
- * {@link QuotationRequestEntity}, and delegates to the corresponding method here. The resolved
- * entity is passed in rather than the raw {@code requestId} so these methods don't share an erased
- * signature with the interface method, which would trip Bean Validation's "parallel methods must
- * not declare parameter constraints" rule once a subclass implements both.
- */
 public abstract class AbstractContractorTimelineResource extends AbstractTicketingResource {
 
     @Inject
