@@ -13,7 +13,6 @@
         <sql>
             CREATE TABLE IF NOT EXISTS REMSFAL.contractor_timelines (
                 issue_id UUID,
-                contractor_id UUID,
                 organization_id UUID,
                 timeline_id UUID,
                 attachment_ids LIST&lt;UUID&gt;,
@@ -24,7 +23,7 @@
                 message TEXT,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
-                PRIMARY KEY ((issue_id, contractor_id, organization_id), timeline_id)
+                PRIMARY KEY ((issue_id, organization_id), timeline_id)
             ) WITH CLUSTERING ORDER BY (timeline_id ASC);
         </sql>
         <rollback>

@@ -39,9 +39,6 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
     @Inject
     Instance<OrderAttachmentResource> attachmentResource;
 
-    @Inject
-    Instance<ManagerContractorTimelineResource> timelineResource;
-
     @Override
     public Response createRequestsForQuotation(final UUID issueId, final CreateQuotationRequestJson request) {
         checkProjectIssueOrderPermissions(issueId);
@@ -79,11 +76,6 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
     public OrderAttachmentResource getAttachmentResource() {
         return resourceContext.initResource(attachmentResource.get())
             .configure(OrderProcessPhase.QUOTATION_REQUEST);
-    }
-
-    @Override
-    public ManagerContractorTimelineResource getTimelineResource() {
-        return resourceContext.initResource(timelineResource.get());
     }
 
     private QuotationRequestJson withAttachments(final QuotationRequestJson json, final UUID requestId) {

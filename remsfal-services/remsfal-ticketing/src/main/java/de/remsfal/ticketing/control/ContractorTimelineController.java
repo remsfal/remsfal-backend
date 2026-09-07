@@ -26,22 +26,20 @@ public class ContractorTimelineController {
     @Inject
     ContractorTimelineRepository contractorTimelineRepository;
 
-    public List<ContractorTimelineEntity> getTimelineEntries(final UUID issueId, final UUID contractorId,
-        final UUID organizationId) {
-        logger.infov("Retrieving contractor timeline entries (issueId={0}, contractorId={1}, organizationId={2})",
-            issueId, contractorId, organizationId);
-        return contractorTimelineRepository.findByIssue(issueId, contractorId, organizationId);
+    public List<ContractorTimelineEntity> getTimelineEntries(final UUID issueId, final UUID organizationId) {
+        logger.infov("Retrieving contractor timeline entries (issueId={0}, organizationId={1})",
+            issueId, organizationId);
+        return contractorTimelineRepository.findByIssue(issueId, organizationId);
     }
 
     @Transactional
-    public ContractorTimelineEntity createTimelineEntry(final UUID issueId, final UUID contractorId,
+    public ContractorTimelineEntity createTimelineEntry(final UUID issueId,
         final UUID organizationId, final UUID senderId, final String senderName,
         final ParticipantRole senderRole, final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
-        logger.infov("Creating contractor timeline entry (issueId={0}, contractorId={1})", issueId, contractorId);
+        logger.infov("Creating contractor timeline entry (issueId={0}, organizationId={1})", issueId, organizationId);
 
         final ContractorTimelineKey key = new ContractorTimelineKey();
         key.setIssueId(issueId);
-        key.setContractorId(contractorId);
         key.setOrganizationId(organizationId);
         key.setTimelineId(UUIDv7.randomUUID());
 

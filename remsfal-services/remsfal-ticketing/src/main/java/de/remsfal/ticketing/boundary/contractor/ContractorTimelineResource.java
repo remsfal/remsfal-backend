@@ -18,11 +18,6 @@ import java.util.UUID;
 
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-/**
- * Contractor-timeline operations for contractors only. A manager cannot query this endpoint on
- * behalf of a contractor; see {@code manager.ManagerContractorTimelineResource} for the
- * manager-facing equivalent.
- */
 @Authenticated
 @RequestScoped
 public class ContractorTimelineResource extends AbstractContractorTimelineResource
@@ -43,7 +38,8 @@ public class ContractorTimelineResource extends AbstractContractorTimelineResour
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final MultipartFormDataInput input) {
+    public Response createTimelineEntryWithAttachments(final UUID organizationId,
+        final MultipartFormDataInput input) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);

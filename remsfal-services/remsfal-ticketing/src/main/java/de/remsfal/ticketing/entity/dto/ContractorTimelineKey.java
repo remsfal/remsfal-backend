@@ -11,9 +11,6 @@ public class ContractorTimelineKey {
     @Column("issue_id")
     private UUID issueId;
 
-    @Column("contractor_id")
-    private UUID contractorId;
-
     @Column("organization_id")
     private UUID organizationId;
 
@@ -26,14 +23,6 @@ public class ContractorTimelineKey {
 
     public void setIssueId(final UUID issueId) {
         this.issueId = issueId;
-    }
-
-    public UUID getContractorId() {
-        return contractorId;
-    }
-
-    public void setContractorId(final UUID contractorId) {
-        this.contractorId = contractorId;
     }
 
     public UUID getOrganizationId() {

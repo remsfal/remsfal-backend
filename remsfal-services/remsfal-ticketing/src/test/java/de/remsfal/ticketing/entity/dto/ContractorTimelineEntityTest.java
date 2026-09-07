@@ -104,23 +104,6 @@ class ContractorTimelineEntityTest {
     }
 
     @Test
-    void testGetContractorId_isNullWhenKeyNotSet() {
-        final ContractorTimelineEntity entity = new ContractorTimelineEntity();
-
-        assertNull(entity.getContractorId());
-    }
-
-    @Test
-    void testSetContractorId_createsKeyLazily() {
-        final UUID contractorId = UUID.randomUUID();
-        final ContractorTimelineEntity entity = new ContractorTimelineEntity();
-
-        entity.setContractorId(contractorId);
-
-        assertEquals(contractorId, entity.getContractorId());
-    }
-
-    @Test
     void testGetOrganizationId_isNullWhenKeyNotSet() {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 

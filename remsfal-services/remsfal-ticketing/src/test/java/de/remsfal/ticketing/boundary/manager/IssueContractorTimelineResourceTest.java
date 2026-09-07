@@ -1,11 +1,10 @@
 package de.remsfal.ticketing.boundary.manager;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
 
-import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,15 +22,16 @@ import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
-class ManagerContractorTimelineResourceTest extends AbstractTicketingTest {
+class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
 
     static final String BASE_PATH = "/ticketing/v1/issues";
 
     String issueId;
-    String requestId;
+    final UUID firstOrganizationId = UUID.randomUUID();
+    final UUID secondOrganizationId = UUID.randomUUID();
 
     @BeforeEach
-    void setUpIssueAndQuotationRequest() {
+    void setUpIssueAndQuotationRequests() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\","
@@ -47,8 +47,12 @@ class ManagerContractorTimelineResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        final String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
-            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + UUID.randomUUID() + "\"}] }";
+        final String requestJson = "{ \"contractors\":["
+            + "{\"id\":\"" + UUID.randomUUID() + "\",\"name\":\"Bauservice GmbH\","
+            + "\"organizationId\":\"" + firstOrganizationId + "\"},"
+            + "{\"id\":\"" + UUID.randomUUID() + "\",\"name\":\"Elektro Schmidt\","
+            + "\"organizationId\":\"" + secondOrganizationId + "\"}"
+            + "] }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -57,18 +61,10 @@ class ManagerContractorTimelineResourceTest extends AbstractTicketingTest {
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
-
-        requestId = given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(BASE_PATH + "/" + issueId + "/quotation-request")
-            .then()
-            .statusCode(200)
-            .extract().path("items[0].id");
     }
 
     private String timelinePath() {
-        return BASE_PATH + "/" + issueId + "/quotation-request/" + requestId + "/timeline";
+        return BASE_PATH + "/" + issueId + "/contractor-timeline";
     }
 
     @Test
@@ -95,95 +91,84 @@ class ManagerContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createTimelineEntry_SUCCESS_asManager() {
+    void createTimelineEntry_SUCCESS_targetsSelectedOrganization() {
         final String timelineJson = "{"
             + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\""
+            + "\"message\":\"An Bauservice GmbH\""
             + "}";
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .queryParam("organizationId", firstOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201)
             .contentType(ContentType.JSON)
-            .body("timelineId", notNullValue())
+            .body("organizationId", equalTo(firstOrganizationId.toString()))
             .body("senderRole", equalTo("MANAGER"))
-            .body("purpose", equalTo("MESSAGE_SENT"))
-            .body("message", equalTo("Bitte um Rueckmeldung"));
+            .body("message", equalTo("An Bauservice GmbH"));
     }
 
     @Test
-    void createTimelineEntry_FAILED_noPermission() {
+    void createTimelineEntry_FAILED_missingOrganizationId() {
         final String timelineJson = "{"
             + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\""
+            + "\"message\":\"An Bauservice GmbH\""
             + "}";
 
         given()
             .when()
-            .cookie(buildCookie(UUID.randomUUID(), "unauthorized@test.com",
-                "Unauthorized", Map.of(), Map.of(), Map.of()))
-            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .post(timelinePath())
-            .then()
-            .statusCode(403);
-    }
-
-    @Test
-    void createTimelineEntryWithAttachments_FAILED_missingTimelinePart() {
-        given()
-            .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .multiPart("notTimeline", "{}", MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(timelinePath())
             .then()
             .statusCode(400);
     }
 
     @Test
-    void createTimelineEntryWithAttachments_SUCCESS_uploadedAttachmentIsLinkedAndVisible() {
+    void createTimelineEntry_FAILED_unknownOrganization() {
         final String timelineJson = "{"
             + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\""
+            + "\"message\":\"An Bauservice GmbH\""
             + "}";
-        final InputStream attachmentStream = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1);
 
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1,
-                attachmentStream, TicketingTestData.ATTACHMENT_FILE_TYPE_1)
+            .queryParam("organizationId", UUID.randomUUID())
             .post(timelinePath())
             .then()
-            .statusCode(201)
-            .contentType(ContentType.JSON)
-            .body("attachments", hasSize(1))
-            .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1));
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(timelinePath())
-            .then()
-            .statusCode(200)
-            .body("timelines", hasSize(1))
-            .body("timelines[0].attachments", hasSize(1));
+            .statusCode(404);
     }
 
     @Test
-    void getTimelineEntries_SUCCESS_afterCreatingEntry() {
-        final String timelineJson = "{"
+    void getTimelineEntries_SUCCESS_aggregatesEntriesFromBothContractors() {
+        final String firstMessage = "{"
             + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Bitte um Rueckmeldung\""
+            + "\"message\":\"An Bauservice GmbH\""
             + "}";
+        final String secondMessage = "{"
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"An Elektro Schmidt\""
+            + "}";
+
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .multiPart("timeline", firstMessage, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .queryParam("organizationId", firstOrganizationId)
+            .post(timelinePath())
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .multiPart("timeline", secondMessage, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .queryParam("organizationId", secondOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201);
@@ -194,8 +179,9 @@ class ManagerContractorTimelineResourceTest extends AbstractTicketingTest {
             .get(timelinePath())
             .then()
             .statusCode(200)
-            .body("timelines", hasSize(1))
-            .body("timelines[0].message", equalTo("Bitte um Rueckmeldung"));
+            .body("timelines", hasSize(2))
+            .body("timelines.organizationId", containsInAnyOrder(
+                firstOrganizationId.toString(), secondOrganizationId.toString()));
     }
 
 }

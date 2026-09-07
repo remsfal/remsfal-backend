@@ -28,20 +28,6 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
     }
 
     @Override
-    public UUID getContractorId() {
-        return Optional.ofNullable(key)
-            .map(ContractorTimelineKey::getContractorId)
-            .orElse(null);
-    }
-
-    public void setContractorId(final UUID contractorId) {
-        if (this.key == null) {
-            this.key = new ContractorTimelineKey();
-        }
-        this.key.setContractorId(contractorId);
-    }
-
-    @Override
     public UUID getOrganizationId() {
         return Optional.ofNullable(key)
             .map(ContractorTimelineKey::getOrganizationId)

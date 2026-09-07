@@ -33,11 +33,10 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
     @Test
     void testInsertAndFindById() {
         final UUID issueId = UUID.randomUUID();
-        final UUID contractorId = UUID.randomUUID();
         final UUID organizationId = UUID.randomUUID();
         final UUID timelineId = UUID.randomUUID();
 
-        final ContractorTimelineEntity entity = createEntity(issueId, contractorId, organizationId, timelineId,
+        final ContractorTimelineEntity entity = createEntity(issueId, organizationId, timelineId,
             MessagePurpose.MESSAGE_SENT, "Bitte um Rueckmeldung");
         repository.insert(entity);
 
@@ -45,7 +44,6 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
 
         assertTrue(found.isPresent());
         assertEquals(issueId, found.get().getIssueId());
-        assertEquals(contractorId, found.get().getContractorId());
         assertEquals(organizationId, found.get().getOrganizationId());
         assertEquals(timelineId, found.get().getTimelineId());
         assertEquals(MessagePurpose.MESSAGE_SENT, found.get().getPurpose());
@@ -57,22 +55,20 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
     @Test
     void testFindByIssue_returnsOnlyMatchingEntries() {
         final UUID issueId = UUID.randomUUID();
-        final UUID contractorId = UUID.randomUUID();
         final UUID organizationId = UUID.randomUUID();
 
-        final ContractorTimelineEntity first = createEntity(issueId, contractorId, organizationId,
+        final ContractorTimelineEntity first = createEntity(issueId, organizationId,
             UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht A");
-        final ContractorTimelineEntity second = createEntity(issueId, contractorId, organizationId,
+        final ContractorTimelineEntity second = createEntity(issueId, organizationId,
             UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht B");
-        final ContractorTimelineEntity otherIssue = createEntity(UUID.randomUUID(), UUID.randomUUID(),
+        final ContractorTimelineEntity otherIssue = createEntity(UUID.randomUUID(),
             UUID.randomUUID(), UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Andere Nachricht");
 
         repository.insert(first);
         repository.insert(second);
         repository.insert(otherIssue);
 
-        final List<ContractorTimelineEntity> result = repository.findByIssue(issueId, contractorId,
-            organizationId);
+        final List<ContractorTimelineEntity> result = repository.findByIssue(issueId, organizationId);
 
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(first.getTimelineId())));
@@ -84,18 +80,16 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
     void testFindById_notFound() {
         final ContractorTimelineKey key = new ContractorTimelineKey();
         key.setIssueId(UUID.randomUUID());
-        key.setContractorId(UUID.randomUUID());
         key.setOrganizationId(UUID.randomUUID());
         key.setTimelineId(UUID.randomUUID());
 
         assertTrue(repository.findById(key).isEmpty());
     }
 
-    private ContractorTimelineEntity createEntity(final UUID issueId, final UUID contractorId,
+    private ContractorTimelineEntity createEntity(final UUID issueId,
         final UUID organizationId, final UUID timelineId, final MessagePurpose purpose, final String message) {
         final ContractorTimelineKey key = new ContractorTimelineKey();
         key.setIssueId(issueId);
-        key.setContractorId(contractorId);
         key.setOrganizationId(organizationId);
         key.setTimelineId(timelineId);
 
