@@ -18,7 +18,7 @@ public interface CustomerModel extends UserModel {
             return this.getEmail();
         }
 
-        return String.format("%s %s", this.getFirstName(), this.getLastName()).trim();
+        return String.format("%s %s", firstName, lastName).trim();
     }
 
     String getFirstName();

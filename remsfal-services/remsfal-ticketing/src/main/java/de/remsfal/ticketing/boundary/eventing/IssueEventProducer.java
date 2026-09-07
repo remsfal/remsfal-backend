@@ -119,7 +119,11 @@ public class IssueEventProducer {
             builder.email(email);
         }
         if (name != null) {
-            builder.name(name);
+            final String[] parts = name.split(" ", 2);
+            builder.firstName(parts[0]);
+            if (parts.length > 1) {
+                builder.lastName(parts[1]);
+            }
         }
         return builder.build();
     }
