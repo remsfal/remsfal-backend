@@ -174,6 +174,14 @@ public class OrderManagementController {
             .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
     }
 
+    public QuotationRequestEntity getRequestForIssueByOrganizationIds(final Set<UUID> organizationIds,
+        final UUID issueId) {
+        return quotationRequestRepository.findByIssueId(issueId).stream()
+            .filter(r -> organizationIds.contains(r.getOrganizationId()))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
+    }
+
     public QuotationEntity createQuotationByContractor(final Set<UUID> organizationIds, final UUID requestId,
         final QuotationJson body) {
         final QuotationRequestEntity request = organizationIds.stream()

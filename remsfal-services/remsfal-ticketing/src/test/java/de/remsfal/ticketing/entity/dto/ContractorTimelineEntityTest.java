@@ -14,21 +14,21 @@ import de.remsfal.core.model.ticketing.ParticipantRole;
 class ContractorTimelineEntityTest {
 
     @Test
-    void testGetRequestIdAndTimelineId_returnNullWhenKeyNotSet() {
+    void testGetIssueIdAndTimelineId_returnNullWhenKeyNotSet() {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
-        assertNull(entity.getRequestId());
+        assertNull(entity.getIssueId());
         assertNull(entity.getTimelineId());
     }
 
     @Test
-    void testSetRequestId_createsKeyLazily() {
-        final UUID requestId = UUID.randomUUID();
+    void testSetIssueId_createsKeyLazily() {
+        final UUID issueId = UUID.randomUUID();
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
-        entity.setRequestId(requestId);
+        entity.setIssueId(issueId);
 
-        assertEquals(requestId, entity.getRequestId());
+        assertEquals(issueId, entity.getIssueId());
     }
 
     @Test
@@ -42,29 +42,29 @@ class ContractorTimelineEntityTest {
     }
 
     @Test
-    void testSetRequestIdAndTimelineId_shareSameKey() {
-        final UUID requestId = UUID.randomUUID();
+    void testSetIssueIdAndTimelineId_shareSameKey() {
+        final UUID issueId = UUID.randomUUID();
         final UUID timelineId = UUID.randomUUID();
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
-        entity.setRequestId(requestId);
+        entity.setIssueId(issueId);
         entity.setTimelineId(timelineId);
 
-        assertEquals(requestId, entity.getKey().getRequestId());
+        assertEquals(issueId, entity.getKey().getIssueId());
         assertEquals(timelineId, entity.getKey().getTimelineId());
     }
 
     @Test
     void testSetAndGetKey() {
         final ContractorTimelineKey key = new ContractorTimelineKey();
-        key.setRequestId(UUID.randomUUID());
+        key.setIssueId(UUID.randomUUID());
         key.setTimelineId(UUID.randomUUID());
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
         entity.setKey(key);
 
         assertEquals(key, entity.getKey());
-        assertEquals(key.getRequestId(), entity.getRequestId());
+        assertEquals(key.getIssueId(), entity.getIssueId());
         assertEquals(key.getTimelineId(), entity.getTimelineId());
     }
 
@@ -101,23 +101,6 @@ class ContractorTimelineEntityTest {
         entity.setSenderRole((ParticipantRole) null);
 
         assertNull(entity.getSenderRole());
-    }
-
-    @Test
-    void testGetContractorId_isNullWhenKeyNotSet() {
-        final ContractorTimelineEntity entity = new ContractorTimelineEntity();
-
-        assertNull(entity.getContractorId());
-    }
-
-    @Test
-    void testSetContractorId_createsKeyLazily() {
-        final UUID contractorId = UUID.randomUUID();
-        final ContractorTimelineEntity entity = new ContractorTimelineEntity();
-
-        entity.setContractorId(contractorId);
-
-        assertEquals(contractorId, entity.getContractorId());
     }
 
     @Test

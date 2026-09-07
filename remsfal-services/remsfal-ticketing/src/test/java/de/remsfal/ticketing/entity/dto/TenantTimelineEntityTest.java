@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.ticketing.MessagePurpose;
 
-class TimelineEntityTest {
+class TenantTimelineEntityTest {
 
     @Test
     void testKeyBackedGetters_returnNullWhenKeyMissing() {
-        TimelineEntity entity = new TimelineEntity();
+        TenantTimelineEntity entity = new TenantTimelineEntity();
 
         assertNull(entity.getIssueId());
         assertNull(entity.getTenancyId());
@@ -25,7 +25,7 @@ class TimelineEntityTest {
 
     @Test
     void testSetProjectId_initializesKeyAndStoresValue() {
-        TimelineEntity entity = new TimelineEntity();
+        TenantTimelineEntity entity = new TenantTimelineEntity();
         UUID projectId = UUID.randomUUID();
 
         entity.setProjectId(projectId);
@@ -44,13 +44,13 @@ class TimelineEntityTest {
         UUID senderId = UUID.randomUUID();
         UUID attachmentId = UUID.randomUUID();
 
-        TimelineKey key = new TimelineKey();
+        TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(tenancyId);
         key.setIssueId(issueId);
         key.setTimelineId(timelineId);
         key.setProjectId(projectId);
 
-        TimelineEntity entity = new TimelineEntity();
+        TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
         entity.setSenderId(senderId);
         entity.setSenderName("Tester");

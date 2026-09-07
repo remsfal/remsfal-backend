@@ -30,18 +30,6 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     @Nullable
     @Schema(readOnly = true)
     @Override
-    public abstract UUID getRequestId();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UUID getContractorId();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
     public abstract UUID getOrganizationId();
 
     @Null
@@ -65,8 +53,6 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
 
     public static ContractorTimelineJson valueOf(final ContractorTimelineModel model) {
         final ImmutableContractorTimelineJson.Builder builder = ImmutableContractorTimelineJson.builder()
-            .requestId(model.getRequestId())
-            .contractorId(model.getContractorId())
             .organizationId(model.getOrganizationId())
             .issueId(model.getIssueId())
             .timelineId(model.getTimelineId())

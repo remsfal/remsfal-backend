@@ -31,7 +31,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public interface TimelineEndpoint {
+public interface TenantTimelineEndpoint {
 
     String SERVICE = "timeline";
 
