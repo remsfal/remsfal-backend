@@ -69,6 +69,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute("TRUNCATE order_placements");
         cqlSession.execute("TRUNCATE order_attachments");
         cqlSession.execute("TRUNCATE tenant_timelines");
+        cqlSession.execute("TRUNCATE contractor_timelines");
     }
 
     protected InputStream getTestFileStream(final String path) {
@@ -184,7 +185,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     }
 
     /**
-     * Inserts a {@code TimelineEntity} fixture, optionally referencing attachment ids —
+     * Inserts a {@code TenantTimelineEntity} fixture, optionally referencing attachment ids —
      * that's what makes an {@code IssueAttachment} visible to a tenant (see issue #801).
      */
     protected void insertTimelineEntry(UUID issueId, UUID projectId, UUID tenancyId, UUID timelineId,

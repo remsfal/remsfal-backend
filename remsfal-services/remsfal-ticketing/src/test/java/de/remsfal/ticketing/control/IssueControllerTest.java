@@ -24,7 +24,7 @@ import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
-import de.remsfal.ticketing.entity.dto.TimelineEntity;
+import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.filter.IssueFilter;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -51,7 +51,7 @@ class IssueControllerTest extends AbstractTicketingTest {
     IssueRepository issueRepository;
 
     @Inject
-    TimelineController timelineController;
+    TenantTimelineController timelineController;
 
     @InjectMock
     RemsfalPrincipal principal;
@@ -151,7 +151,7 @@ class IssueControllerTest extends AbstractTicketingTest {
 
         final IssueModel created = controller.createProjectIssue(user, issue);
 
-        final List<TimelineEntity> entries =
+        final List<TenantTimelineEntity> entries =
             timelineController.getTimelineEntries(agreementId, created.getId(), projectId);
         assertEquals(1, entries.size());
         assertEquals(MessagePurpose.ISSUE_CREATED, entries.get(0).getPurpose());
@@ -279,7 +279,7 @@ class IssueControllerTest extends AbstractTicketingTest {
 
         controller.updateIssue(issueId, patch);
 
-        final List<TimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
+        final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
         assertEquals(1, entries.size());
         assertEquals(MessagePurpose.STATUS_CHANGED, entries.get(0).getPurpose());
         assertEquals("IN_PROGRESS", entries.get(0).getMessage());
@@ -365,7 +365,7 @@ class IssueControllerTest extends AbstractTicketingTest {
 
         controller.closeIssue(issueId);
 
-        final List<TimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
+        final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
         assertEquals(1, entries.size());
         assertEquals(MessagePurpose.STATUS_CHANGED, entries.get(0).getPurpose());
         assertEquals("CLOSED", entries.get(0).getMessage());

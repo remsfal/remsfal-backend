@@ -32,7 +32,7 @@ import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.boundary.manager.IssueResource;
 import de.remsfal.ticketing.control.AttachmentController;
-import de.remsfal.ticketing.control.TimelineController;
+import de.remsfal.ticketing.control.TenantTimelineController;
 import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import io.quarkus.security.Authenticated;
 
@@ -56,7 +56,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     AttachmentController attachmentController;
 
     @Inject
-    TimelineController timelineController;
+    TenantTimelineController timelineController;
 
     @Inject
     Instance<TenantTimelineResource> tenantTimelineResource;
