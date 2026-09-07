@@ -1,6 +1,6 @@
 package de.remsfal.notification.boundary.eventing;
 
-import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.eventing.NotificationEventJson;
 import de.remsfal.notification.control.MailingController;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
@@ -24,17 +24,17 @@ public class NotificationConsumer {
     MailingController mailingController;
 
     @Blocking
-    @Incoming(EmailEventJson.TOPIC)
+    @Incoming(NotificationEventJson.TOPIC)
     @WithSpan("NotificationConsumer.consumeUserNotification")
-    public CompletionStage<Void> consumeUserNotification(Message<EmailEventJson> msg) {
-        EmailEventJson mail = msg.getPayload();
+    public CompletionStage<Void> consumeUserNotification(Message<NotificationEventJson> msg) {
+        NotificationEventJson mail = msg.getPayload();
 
         String email = mail.getUser().getEmail();
         String link = mail.getLink();
         String userLocale = mail.getUser().getLocale();
         Locale locale = userLocale != null ? Locale.forLanguageTag(userLocale) : Locale.GERMAN;
 
-        logger.infov("Received user-notification for user email: {0}", email);
+        logger.infov("Received user-notifications for user email: {0}", email);
         logger.infov("Type: {0}", mail.getNotificationEventType());
 
         Uni<Void> sendUni;

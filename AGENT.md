@@ -21,7 +21,7 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 
 ### Service Communication
 
-- Services communicate asynchronously via **Kafka** (topics: `user-notification`, `ocr.documents.*`)
+- Services communicate asynchronously via **Kafka** (topics: `user-notifications`, `ocr.documents.*`)
 - Each microservice has its own port, database, and configuration
 - JWT tokens are shared across services using SmallRye JWT with cookie-based authentication (`remsfal_access_token`)
 - Platform service must be running for other services to validate JWTs via JWKS endpoint at `GET /api/v1/authentication/jwks`

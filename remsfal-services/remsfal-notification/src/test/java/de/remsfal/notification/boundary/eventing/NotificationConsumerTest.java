@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.json.eventing.EmailEventJson;
-import de.remsfal.core.json.eventing.EmailEventJson.NotificationEventType;
-import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
+import de.remsfal.core.json.eventing.NotificationEventJson;
+import de.remsfal.core.json.eventing.NotificationEventJson.NotificationEventType;
+import de.remsfal.core.json.eventing.ImmutableNotificationEventJson;
 import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.project.ImmutableProjectJson;
@@ -44,8 +44,8 @@ class NotificationConsumerTest extends AbstractKafkaTest {
     @BeforeEach
     protected void clearAllTopics() {
         // Skipping topic clearing to avoid offset issues
-        companion.registerSerde(ImmutableEmailEventJson.class,
-            new ObjectMapperSerde<>(ImmutableEmailEventJson.class));
+        companion.registerSerde(ImmutableNotificationEventJson.class,
+            new ObjectMapperSerde<>(ImmutableNotificationEventJson.class));
     }
 
     @Test
@@ -58,14 +58,14 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .locale("en")
                 .build();
 
-        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
+        ImmutableNotificationEventJson json = ImmutableNotificationEventJson.builder()
                 .user(user)
                 .notificationEventType(NotificationEventType.USER_REGISTRATION)
                 .link("https://remsfal.de")
                 .build();
 
-        companion.produce(ImmutableEmailEventJson.class)
-            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+        companion.produce(ImmutableNotificationEventJson.class)
+            .fromRecords(new ProducerRecord<>(NotificationEventJson.TOPIC, json))
             .awaitCompletion();
 
         Awaitility.await()
@@ -91,15 +91,15 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .title("Test Project")
                 .build();
 
-        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
+        ImmutableNotificationEventJson json = ImmutableNotificationEventJson.builder()
                 .user(user)
                 .notificationEventType(NotificationEventType.PROJECT_ADMISSION)
                 .link("https://remsfal.de")
                 .project(project)
                 .build();
 
-        companion.produce(ImmutableEmailEventJson.class)
-            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+        companion.produce(ImmutableNotificationEventJson.class)
+            .fromRecords(new ProducerRecord<>(NotificationEventJson.TOPIC, json))
             .awaitCompletion();
 
         Awaitility.await()
@@ -129,15 +129,15 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .vatIdentificationNumber("DE123456789")
                 .build();
 
-        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
+        ImmutableNotificationEventJson json = ImmutableNotificationEventJson.builder()
                 .user(user)
                 .notificationEventType(NotificationEventType.ORGANIZATION_ADMISSION)
                 .link("https://remsfal.de")
                 .organization(organization)
                 .build();
 
-        companion.produce(ImmutableEmailEventJson.class)
-            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+        companion.produce(ImmutableNotificationEventJson.class)
+            .fromRecords(new ProducerRecord<>(NotificationEventJson.TOPIC, json))
             .awaitCompletion();
 
         Awaitility.await()
@@ -158,14 +158,14 @@ class NotificationConsumerTest extends AbstractKafkaTest {
                 .locale("en")
                 .build();
 
-        ImmutableEmailEventJson json = ImmutableEmailEventJson.builder()
+        ImmutableNotificationEventJson json = ImmutableNotificationEventJson.builder()
                 .user(user)
                 .notificationEventType(NotificationEventType.ADDITIONAL_EMAIL_VERIFICATION)
                 .link("https://remsfal.de/api/v1/authentication/verify-additional-email?token=token")
                 .build();
 
-        companion.produce(ImmutableEmailEventJson.class)
-            .fromRecords(new ProducerRecord<>(EmailEventJson.TOPIC, json))
+        companion.produce(ImmutableNotificationEventJson.class)
+            .fromRecords(new ProducerRecord<>(NotificationEventJson.TOPIC, json))
             .awaitCompletion();
 
         Awaitility.await()

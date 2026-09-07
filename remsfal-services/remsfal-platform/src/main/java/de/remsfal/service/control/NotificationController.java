@@ -9,9 +9,9 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.json.eventing.EmailEventJson;
-import de.remsfal.core.json.eventing.EmailEventJson.NotificationEventType;
-import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
+import de.remsfal.core.json.eventing.NotificationEventJson;
+import de.remsfal.core.json.eventing.NotificationEventJson.NotificationEventType;
+import de.remsfal.core.json.eventing.ImmutableNotificationEventJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.model.CustomerModel;
@@ -44,13 +44,13 @@ public class NotificationController {
     Logger logger;
 
     @Inject
-    @Channel(EmailEventJson.TOPIC)
-    Emitter<EmailEventJson> notificationEmitter;
+    @Channel(NotificationEventJson.TOPIC)
+    Emitter<NotificationEventJson> notificationEmitter;
 
     @WithSpan("NotificationController.informUserAboutRegistration")
     public void informUserAboutRegistration(final CustomerModel user) {
         logger.infov("Sending information about user registration (email={0})", user.getEmail());
-        EmailEventJson mail = ImmutableEmailEventJson.builder()
+        NotificationEventJson mail = ImmutableNotificationEventJson.builder()
             .user(UserJson.valueOf(user).withLocale(resolveLocale(user)))
             .notificationEventType(NotificationEventType.USER_REGISTRATION)
             .link(frontendBaseUrl)
@@ -61,7 +61,7 @@ public class NotificationController {
     @WithSpan("NotificationController.informUserAboutProjectMembership")
     public void informUserAboutProjectMembership(final CustomerModel user, final ProjectModel project) {
         logger.infov("Sending information about new membership (email={0})", user.getEmail());
-        EmailEventJson mail = ImmutableEmailEventJson.builder()
+        NotificationEventJson mail = ImmutableNotificationEventJson.builder()
             .user(UserJson.valueOf(user).withLocale(resolveLocale(user)))
             .notificationEventType(NotificationEventType.PROJECT_ADMISSION)
             .link(frontendBaseUrl + frontendProjectsPath + "/" + project.getId())
@@ -73,7 +73,7 @@ public class NotificationController {
     @WithSpan("NotificationController.informUserAboutOrganizationMembership")
     public void informUserAboutOrganizationMembership(final CustomerModel user, final OrganizationModel organization) {
         logger.infov("Sending information about new organization membership (email={0})", user.getEmail());
-        EmailEventJson mail = ImmutableEmailEventJson.builder()
+        NotificationEventJson mail = ImmutableNotificationEventJson.builder()
             .user(UserJson.valueOf(user).withLocale(resolveLocale(user)))
             .notificationEventType(NotificationEventType.ORGANIZATION_ADMISSION)
             .link(frontendBaseUrl + frontendOrganizationsPath + "/" + organization.getId())
@@ -87,7 +87,7 @@ public class NotificationController {
         final String verificationToken) {
         logger.infov("Sending information about additional email verification (email={0})", additionalEmail);
         final String encodedToken = URLEncoder.encode(verificationToken, StandardCharsets.UTF_8);
-        EmailEventJson mail = ImmutableEmailEventJson.builder()
+        NotificationEventJson mail = ImmutableNotificationEventJson.builder()
             .user(UserJson.valueOf(user).withEmail(additionalEmail).withLocale(resolveLocale(user)))
             .notificationEventType(NotificationEventType.ADDITIONAL_EMAIL_VERIFICATION)
             .link(frontendBaseUrl + frontendAdditionalEmailVerificationPath + "?token=" + encodedToken)
