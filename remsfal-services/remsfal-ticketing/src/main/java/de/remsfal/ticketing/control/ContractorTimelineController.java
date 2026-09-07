@@ -2,7 +2,7 @@ package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
@@ -35,7 +35,7 @@ public class ContractorTimelineController {
     @Transactional
     public ContractorTimelineEntity createTimelineEntry(final UUID issueId,
         final UUID organizationId, final UUID senderId, final String senderName,
-        final ParticipantRole senderRole, final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
+        final UserContext senderRole, final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
         logger.infov("Creating contractor timeline entry (issueId={0}, organizationId={1})", issueId, organizationId);
 
         final ContractorTimelineKey key = new ContractorTimelineKey();

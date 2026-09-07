@@ -3,7 +3,7 @@ package de.remsfal.ticketing.boundary.manager;
 import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractContractorTimelineResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
@@ -53,7 +53,7 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
         }
         final QuotationRequestEntity request = orderManagementController
             .getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
-        return super.createTimelineEntryWithAttachments(request, ParticipantRole.MANAGER, input);
+        return super.createTimelineEntryWithAttachments(request, UserContext.MANAGER, input);
     }
 
 }

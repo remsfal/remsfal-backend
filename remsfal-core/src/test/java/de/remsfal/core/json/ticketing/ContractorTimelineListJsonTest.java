@@ -2,7 +2,7 @@ package de.remsfal.core.json.ticketing;
 
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -24,7 +24,7 @@ class ContractorTimelineListJsonTest {
             @Override public List<UUID> getAttachmentIds() { return List.of(); }
             @Override public UUID getSenderId() { return UUID.randomUUID(); }
             @Override public String getSenderName() { return "Contractor GmbH"; }
-            @Override public ParticipantRole getSenderRole() { return ParticipantRole.CONTRACTOR; }
+            @Override public UserContext getSenderRole() { return UserContext.CONTRACTOR; }
             @Override public MessagePurpose getPurpose() { return MessagePurpose.MESSAGE_SENT; }
             @Override public String getMessage() { return message; }
             @Override public Instant getCreatedAt() { return Instant.now(); }
