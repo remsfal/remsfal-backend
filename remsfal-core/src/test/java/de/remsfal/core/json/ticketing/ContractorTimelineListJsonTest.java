@@ -16,7 +16,6 @@ class ContractorTimelineListJsonTest {
 
     private static ContractorTimelineModel model(final UUID timelineId, final String message) {
         return new ContractorTimelineModel() {
-            @Override public UUID getRequestId() { return UUID.randomUUID(); }
             @Override public UUID getContractorId() { return UUID.randomUUID(); }
             @Override public UUID getOrganizationId() { return UUID.randomUUID(); }
             @Override public UUID getIssueId() { return UUID.randomUUID(); }

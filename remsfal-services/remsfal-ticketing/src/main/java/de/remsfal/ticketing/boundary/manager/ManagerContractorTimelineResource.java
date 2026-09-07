@@ -30,18 +30,21 @@ public class ManagerContractorTimelineResource extends AbstractContractorTimelin
     @PathParam("issueId")
     UUID issueId;
 
+    @PathParam("requestId")
+    UUID requestId;
+
     @Inject
     OrderManagementController orderManagementController;
 
     @Override
-    public ContractorTimelineListJson getTimelineEntries(final UUID requestId) {
+    public ContractorTimelineListJson getTimelineEntries() {
         checkProjectIssueAccessPermissions(issueId);
         final QuotationRequestEntity request = orderManagementController.getRequestForQuotation(issueId, requestId);
         return super.getTimelineEntries(request);
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final UUID requestId, final MultipartFormDataInput input) {
+    public Response createTimelineEntryWithAttachments(final MultipartFormDataInput input) {
         checkProjectIssueAccessPermissions(issueId);
         final QuotationRequestEntity request = orderManagementController.getRequestForQuotation(issueId, requestId);
         return super.createTimelineEntryWithAttachments(request, ParticipantRole.MANAGER, input);

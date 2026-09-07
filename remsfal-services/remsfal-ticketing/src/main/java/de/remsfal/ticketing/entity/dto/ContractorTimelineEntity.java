@@ -16,9 +16,6 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
     @Id
     private ContractorTimelineKey key;
 
-    @Column("issue_id")
-    private UUID issueId;
-
     @Column("sender_role")
     private String senderRole;
 
@@ -28,20 +25,6 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
 
     public void setKey(final ContractorTimelineKey key) {
         this.key = key;
-    }
-
-    @Override
-    public UUID getRequestId() {
-        return Optional.ofNullable(key)
-            .map(ContractorTimelineKey::getRequestId)
-            .orElse(null);
-    }
-
-    public void setRequestId(final UUID requestId) {
-        if (this.key == null) {
-            this.key = new ContractorTimelineKey();
-        }
-        this.key.setRequestId(requestId);
     }
 
     @Override
@@ -88,11 +71,16 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
 
     @Override
     public UUID getIssueId() {
-        return issueId;
+        return Optional.ofNullable(key)
+            .map(ContractorTimelineKey::getIssueId)
+            .orElse(null);
     }
 
     public void setIssueId(final UUID issueId) {
-        this.issueId = issueId;
+        if (this.key == null) {
+            this.key = new ContractorTimelineKey();
+        }
+        this.key.setIssueId(issueId);
     }
 
     @Override

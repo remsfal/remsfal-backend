@@ -32,19 +32,19 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
 
     @Test
     void testInsertAndFindById() {
-        final UUID requestId = UUID.randomUUID();
+        final UUID issueId = UUID.randomUUID();
         final UUID contractorId = UUID.randomUUID();
         final UUID organizationId = UUID.randomUUID();
         final UUID timelineId = UUID.randomUUID();
 
-        final ContractorTimelineEntity entity = createEntity(requestId, contractorId, organizationId, timelineId,
+        final ContractorTimelineEntity entity = createEntity(issueId, contractorId, organizationId, timelineId,
             MessagePurpose.MESSAGE_SENT, "Bitte um Rueckmeldung");
         repository.insert(entity);
 
         final Optional<ContractorTimelineEntity> found = repository.findById(entity.getKey());
 
         assertTrue(found.isPresent());
-        assertEquals(requestId, found.get().getRequestId());
+        assertEquals(issueId, found.get().getIssueId());
         assertEquals(contractorId, found.get().getContractorId());
         assertEquals(organizationId, found.get().getOrganizationId());
         assertEquals(timelineId, found.get().getTimelineId());
@@ -55,35 +55,35 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
     }
 
     @Test
-    void testFindByRequest_returnsOnlyMatchingEntries() {
-        final UUID requestId = UUID.randomUUID();
+    void testFindByIssue_returnsOnlyMatchingEntries() {
+        final UUID issueId = UUID.randomUUID();
         final UUID contractorId = UUID.randomUUID();
         final UUID organizationId = UUID.randomUUID();
 
-        final ContractorTimelineEntity first = createEntity(requestId, contractorId, organizationId,
+        final ContractorTimelineEntity first = createEntity(issueId, contractorId, organizationId,
             UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht A");
-        final ContractorTimelineEntity second = createEntity(requestId, contractorId, organizationId,
+        final ContractorTimelineEntity second = createEntity(issueId, contractorId, organizationId,
             UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht B");
-        final ContractorTimelineEntity otherRequest = createEntity(UUID.randomUUID(), UUID.randomUUID(),
+        final ContractorTimelineEntity otherIssue = createEntity(UUID.randomUUID(), UUID.randomUUID(),
             UUID.randomUUID(), UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Andere Nachricht");
 
         repository.insert(first);
         repository.insert(second);
-        repository.insert(otherRequest);
+        repository.insert(otherIssue);
 
-        final List<ContractorTimelineEntity> result = repository.findByRequest(requestId, contractorId,
+        final List<ContractorTimelineEntity> result = repository.findByIssue(issueId, contractorId,
             organizationId);
 
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(first.getTimelineId())));
         assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(second.getTimelineId())));
-        assertFalse(result.stream().anyMatch(entry -> entry.getTimelineId().equals(otherRequest.getTimelineId())));
+        assertFalse(result.stream().anyMatch(entry -> entry.getTimelineId().equals(otherIssue.getTimelineId())));
     }
 
     @Test
     void testFindById_notFound() {
         final ContractorTimelineKey key = new ContractorTimelineKey();
-        key.setRequestId(UUID.randomUUID());
+        key.setIssueId(UUID.randomUUID());
         key.setContractorId(UUID.randomUUID());
         key.setOrganizationId(UUID.randomUUID());
         key.setTimelineId(UUID.randomUUID());
@@ -91,17 +91,16 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
         assertTrue(repository.findById(key).isEmpty());
     }
 
-    private ContractorTimelineEntity createEntity(final UUID requestId, final UUID contractorId,
+    private ContractorTimelineEntity createEntity(final UUID issueId, final UUID contractorId,
         final UUID organizationId, final UUID timelineId, final MessagePurpose purpose, final String message) {
         final ContractorTimelineKey key = new ContractorTimelineKey();
-        key.setRequestId(requestId);
+        key.setIssueId(issueId);
         key.setContractorId(contractorId);
         key.setOrganizationId(organizationId);
         key.setTimelineId(timelineId);
 
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
         entity.setKey(key);
-        entity.setIssueId(UUID.randomUUID());
         entity.setAttachmentIds(List.of(UUID.randomUUID(), UUID.randomUUID()));
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Bauservice GmbH");

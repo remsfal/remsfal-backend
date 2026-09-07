@@ -12,7 +12,6 @@ import java.util.UUID;
 @ApplicationScoped
 public class ContractorTimelineRepository extends AbstractRepository<ContractorTimelineEntity, ContractorTimelineKey> {
 
-    static final String REQUEST_ID = "request_id";
     static final String CONTRACTOR_ID = "contractor_id";
     static final String ORGANIZATION_ID = "organization_id";
     static final String TIMELINE_ID = "timeline_id";
@@ -23,17 +22,17 @@ public class ContractorTimelineRepository extends AbstractRepository<ContractorT
 
     public Optional<ContractorTimelineEntity> findById(final ContractorTimelineKey key) {
         return template.select(ContractorTimelineEntity.class)
-            .where(REQUEST_ID).eq(key.getRequestId())
+            .where(ISSUE_ID).eq(key.getIssueId())
             .and(CONTRACTOR_ID).eq(key.getContractorId())
             .and(ORGANIZATION_ID).eq(key.getOrganizationId())
             .and(TIMELINE_ID).eq(key.getTimelineId())
             .singleResult();
     }
 
-    public List<ContractorTimelineEntity> findByRequest(final UUID requestId, final UUID contractorId,
+    public List<ContractorTimelineEntity> findByIssue(final UUID issueId, final UUID contractorId,
         final UUID organizationId) {
         return template.select(ContractorTimelineEntity.class)
-            .where(REQUEST_ID).eq(requestId)
+            .where(ISSUE_ID).eq(issueId)
             .and(CONTRACTOR_ID).eq(contractorId)
             .and(ORGANIZATION_ID).eq(organizationId)
             .result();

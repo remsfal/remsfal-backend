@@ -15,14 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class ContractorTimelineJsonTest {
 
     private static ContractorTimelineModel model(
-            final UUID requestId, final UUID contractorId, final UUID organizationId,
+            final UUID contractorId, final UUID organizationId,
             final UUID issueId, final UUID timelineId,
             final List<UUID> attachmentIds, final UUID senderId, final String senderName,
             final ParticipantRole senderRole,
             final MessagePurpose purpose, final String message,
             final Instant createdAt, final Instant modifiedAt) {
         return new ContractorTimelineModel() {
-            @Override public UUID getRequestId() { return requestId; }
             @Override public UUID getContractorId() { return contractorId; }
             @Override public UUID getOrganizationId() { return organizationId; }
             @Override public UUID getIssueId() { return issueId; }
@@ -42,7 +41,6 @@ class ContractorTimelineJsonTest {
 
     @Test
     void valueOf_copiesAllFieldsFromModel() {
-        final UUID requestId = UUID.randomUUID();
         final UUID contractorId = UUID.randomUUID();
         final UUID organizationId = UUID.randomUUID();
         final UUID issueId = UUID.randomUUID();
@@ -52,14 +50,13 @@ class ContractorTimelineJsonTest {
         final Instant createdAt = Instant.now();
         final Instant modifiedAt = Instant.now();
 
-        final ContractorTimelineModel m = model(requestId, contractorId, organizationId, issueId, timelineId,
+        final ContractorTimelineModel m = model(contractorId, organizationId, issueId, timelineId,
             attachmentIds, senderId, "Max Mustermann", ParticipantRole.CONTRACTOR,
             MessagePurpose.MESSAGE_SENT, "Bitte um Rueckmeldung",
             createdAt, modifiedAt);
 
         final ContractorTimelineJson json = ContractorTimelineJson.valueOf(m);
 
-        assertEquals(requestId, json.getRequestId());
         assertEquals(contractorId, json.getContractorId());
         assertEquals(organizationId, json.getOrganizationId());
         assertEquals(issueId, json.getIssueId());
@@ -76,13 +73,12 @@ class ContractorTimelineJsonTest {
 
     @Test
     void valueOf_allowsNullOptionalFields() {
-        final ContractorTimelineModel m = model(null, null, null, null, null,
+        final ContractorTimelineModel m = model(null, null, null, null,
             null, null, null, null, MessagePurpose.STATUS_CHANGED, "Status geaendert",
             null, null);
 
         final ContractorTimelineJson json = ContractorTimelineJson.valueOf(m);
 
-        assertNull(json.getRequestId());
         assertNull(json.getAttachmentIds());
         assertEquals(MessagePurpose.STATUS_CHANGED, json.getPurpose());
         assertEquals("Status geaendert", json.getMessage());

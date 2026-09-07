@@ -8,8 +8,8 @@ import java.util.UUID;
 @Embeddable
 public class ContractorTimelineKey {
 
-    @Column("request_id")
-    private UUID requestId;
+    @Column("issue_id")
+    private UUID issueId;
 
     @Column("contractor_id")
     private UUID contractorId;
@@ -20,12 +20,12 @@ public class ContractorTimelineKey {
     @Column("timeline_id")
     private UUID timelineId;
 
-    public UUID getRequestId() {
-        return requestId;
+    public UUID getIssueId() {
+        return issueId;
     }
 
-    public void setRequestId(final UUID requestId) {
-        this.requestId = requestId;
+    public void setIssueId(final UUID issueId) {
+        this.issueId = issueId;
     }
 
     public UUID getContractorId() {

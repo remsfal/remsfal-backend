@@ -28,11 +28,10 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 /**
  * Shared logic for the manager- and contractor-facing contractor-timeline endpoints. Concrete
  * subclasses implement {@code ContractorTimelineEndpoint} directly and keep their {@code @Override}
- * methods visible; each one performs its own permission check, resolves the
- * {@link QuotationRequestEntity}, and delegates to the corresponding method here. The resolved
- * entity is passed in rather than the raw {@code requestId} so these methods don't share an erased
- * signature with the interface method, which would trip Bean Validation's "parallel methods must
- * not declare parameter constraints" rule once a subclass implements both.
+ * methods visible; each one resolves its own id(s) via field-level {@code @PathParam} injection
+ * (the shared interface declares none, since the two mounts bind different path variables),
+ * performs its own permission check, resolves the {@link QuotationRequestEntity}, and delegates to
+ * the corresponding method here.
  */
 public abstract class AbstractContractorTimelineResource extends AbstractTicketingResource {
 
@@ -47,7 +46,7 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
-                request.getRequestId(), request.getContractorId(), request.getOrganizationId()).stream()
+                request.getIssueId(), request.getContractorId(), request.getOrganizationId()).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
                 .toList());
     }
@@ -62,7 +61,7 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             .toList();
 
         final ContractorTimelineEntity created = contractorTimelineController.createTimelineEntry(
-            request.getRequestId(), request.getContractorId(), request.getOrganizationId(), request.getIssueId(),
+            request.getIssueId(), request.getContractorId(), request.getOrganizationId(),
             principal.getId(), principal.getName(), senderRole, timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 

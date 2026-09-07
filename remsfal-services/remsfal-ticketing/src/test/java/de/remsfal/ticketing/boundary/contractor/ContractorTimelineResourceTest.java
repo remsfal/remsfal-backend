@@ -26,12 +26,12 @@ import jakarta.ws.rs.core.MediaType;
 class ContractorTimelineResourceTest extends AbstractTicketingTest {
 
     static final String ISSUE_BASE_PATH = "/ticketing/v1/issues";
-    static final String QUOTATION_PATH = "/ticketing/v1/order-management/quotation-requests";
+    static final String ORDER_MANAGEMENT_PATH = "/ticketing/v1/order-management";
 
     final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
     final UUID contractorUserId = UUID.randomUUID();
 
-    String requestId;
+    String issueId;
 
     @BeforeEach
     void setUpIssueAndQuotationRequest() {
@@ -40,7 +40,7 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             + "\"type\":\"TASK\","
             + "\"visibleToTenants\":false"
             + "}";
-        final String issueId = given()
+        issueId = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
@@ -60,14 +60,6 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .post(ISSUE_BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
-
-        requestId = given()
-            .when()
-            .cookie(contractorCookie())
-            .get(QUOTATION_PATH)
-            .then()
-            .statusCode(200)
-            .extract().path("items[0].id");
     }
 
     private io.restassured.http.Cookie contractorCookie() {
@@ -76,7 +68,7 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     private String timelinePath() {
-        return QUOTATION_PATH + "/" + requestId + "/timeline";
+        return ORDER_MANAGEMENT_PATH + "/" + issueId + "/timeline";
     }
 
     @Test

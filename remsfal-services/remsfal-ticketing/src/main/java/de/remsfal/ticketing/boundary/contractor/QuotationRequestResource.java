@@ -37,9 +37,6 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
     @Inject
     Instance<OrderAttachmentResource> attachmentResource;
 
-    @Inject
-    Instance<ContractorTimelineResource> timelineResource;
-
     @Override
     public QuotationRequestListJson getQuotationRequests() {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
@@ -74,11 +71,6 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
     public OrderAttachmentEndpoint getAttachmentResource() {
         return resourceContext.initResource(attachmentResource.get())
             .configure(OrderProcessPhase.QUOTATION_REQUEST);
-    }
-
-    @Override
-    public ContractorTimelineResource getTimelineResource() {
-        return resourceContext.initResource(timelineResource.get());
     }
 
 }

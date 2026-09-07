@@ -10,6 +10,7 @@ import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Set;
@@ -27,22 +28,25 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 public class ContractorTimelineResource extends AbstractContractorTimelineResource
     implements ContractorTimelineEndpoint {
 
+    @PathParam("issueId")
+    UUID issueId;
+
     @Inject
     OrderManagementController orderManagementController;
 
     @Override
-    public ContractorTimelineListJson getTimelineEntries(final UUID requestId) {
+    public ContractorTimelineListJson getTimelineEntries() {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
-            orderManagementController.getRequestForQuotationByOrganizationIds(eligibleOrgIds, requestId);
+            orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
         return super.getTimelineEntries(request);
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final UUID requestId, final MultipartFormDataInput input) {
+    public Response createTimelineEntryWithAttachments(final MultipartFormDataInput input) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
-            orderManagementController.getRequestForQuotationByOrganizationIds(eligibleOrgIds, requestId);
+            orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
         return super.createTimelineEntryWithAttachments(request, ParticipantRole.CONTRACTOR, input);
     }
 

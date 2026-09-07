@@ -5,6 +5,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
+import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
 import de.remsfal.core.api.ticketing.contractor.OrderManagementEndpoint;
 import de.remsfal.core.api.ticketing.contractor.OrderPlacementEndpoint;
 import de.remsfal.core.api.ticketing.contractor.QuotationEndpoint;
@@ -26,6 +27,9 @@ public class OrderManagementResource extends AbstractTicketingResource implement
     @Inject
     Instance<QuotationResource> quotationResource;
 
+    @Inject
+    Instance<ContractorTimelineResource> timelineResource;
+
     @Override
     public QuotationRequestResource getQuotationRequestResource() {
         return resourceContext.initResource(quotationRequestResource.get());
@@ -39,6 +43,11 @@ public class OrderManagementResource extends AbstractTicketingResource implement
     @Override
     public QuotationEndpoint getQuotationResource() {
         return resourceContext.initResource(quotationResource.get());
+    }
+
+    @Override
+    public ContractorTimelineEndpoint getTimelineResource() {
+        return resourceContext.initResource(timelineResource.get());
     }
 
 }
