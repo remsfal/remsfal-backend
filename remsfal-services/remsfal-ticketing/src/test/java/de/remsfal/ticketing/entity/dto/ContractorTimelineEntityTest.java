@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 
 class ContractorTimelineEntityTest {
 
@@ -79,9 +79,9 @@ class ContractorTimelineEntityTest {
     void testSetSenderRole_enum_roundTrips() {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
 
-        entity.setSenderRole(ParticipantRole.CONTRACTOR);
+        entity.setSenderRole(UserContext.CONTRACTOR);
 
-        assertEquals(ParticipantRole.CONTRACTOR, entity.getSenderRole());
+        assertEquals(UserContext.CONTRACTOR, entity.getSenderRole());
     }
 
     @Test
@@ -90,15 +90,15 @@ class ContractorTimelineEntityTest {
 
         entity.setSenderRole("MANAGER");
 
-        assertEquals(ParticipantRole.MANAGER, entity.getSenderRole());
+        assertEquals(UserContext.MANAGER, entity.getSenderRole());
     }
 
     @Test
     void testSetSenderRole_null_clearsColumn() {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
-        entity.setSenderRole(ParticipantRole.TENANT);
+        entity.setSenderRole(UserContext.TENANT);
 
-        entity.setSenderRole((ParticipantRole) null);
+        entity.setSenderRole((UserContext) null);
 
         assertNull(entity.getSenderRole());
     }

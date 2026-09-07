@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
@@ -48,7 +48,7 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
         assertEquals(timelineId, found.get().getTimelineId());
         assertEquals(MessagePurpose.MESSAGE_SENT, found.get().getPurpose());
         assertEquals("Bitte um Rueckmeldung", found.get().getMessage());
-        assertEquals(ParticipantRole.CONTRACTOR, found.get().getSenderRole());
+        assertEquals(UserContext.CONTRACTOR, found.get().getSenderRole());
         assertEquals(2, found.get().getAttachmentIds().size());
     }
 
@@ -98,7 +98,7 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
         entity.setAttachmentIds(List.of(UUID.randomUUID(), UUID.randomUUID()));
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Bauservice GmbH");
-        entity.setSenderRole(ParticipantRole.CONTRACTOR);
+        entity.setSenderRole(UserContext.CONTRACTOR);
         entity.setPurpose(purpose);
         entity.setMessage(message);
 

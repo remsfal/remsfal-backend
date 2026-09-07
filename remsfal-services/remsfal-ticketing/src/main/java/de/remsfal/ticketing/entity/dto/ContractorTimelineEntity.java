@@ -1,7 +1,7 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
@@ -80,11 +80,11 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
     }
 
     @Override
-    public ParticipantRole getSenderRole() {
-        return senderRole != null ? ParticipantRole.valueOf(senderRole) : null;
+    public UserContext getSenderRole() {
+        return senderRole != null ? UserContext.valueOf(senderRole) : null;
     }
 
-    public void setSenderRole(final ParticipantRole senderRole) {
+    public void setSenderRole(final UserContext senderRole) {
         this.senderRole = senderRole != null ? senderRole.name() : null;
     }
 
