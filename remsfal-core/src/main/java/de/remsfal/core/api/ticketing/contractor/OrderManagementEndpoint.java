@@ -2,6 +2,8 @@ package de.remsfal.core.api.ticketing.contractor;
 
 import jakarta.ws.rs.Path;
 
+import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
@@ -21,5 +23,8 @@ public interface OrderManagementEndpoint {
 
     @Path("/" + QuotationEndpoint.SERVICE)
     QuotationEndpoint getQuotationResource();
+
+    @Path("/{issueId}/" + ContractorTimelineEndpoint.SERVICE)
+    ContractorTimelineEndpoint getTimelineResource();
 
 }

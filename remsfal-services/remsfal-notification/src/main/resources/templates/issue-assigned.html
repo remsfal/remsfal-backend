@@ -1,10 +1,10 @@
 {#let showButton?=true}
 {#let buttonText?=issue_button}
+{#let showDetails?=true}
 {#include base}
   {#title}{issue-assigned_title}{/title}
-  {#introduction}
-    <div style="margin-bottom: 12px;">{issue-assigned_introduction}</div>
-
+  {#introduction}{issue-assigned_introduction}{/introduction}
+  {#details}
     {#include issue-details-table /}
-  {/introduction}
+  {/details}
 {/include}

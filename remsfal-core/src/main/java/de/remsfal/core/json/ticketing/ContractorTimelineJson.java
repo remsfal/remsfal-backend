@@ -2,7 +2,7 @@ package de.remsfal.core.json.ticketing;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -30,18 +30,6 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     @Nullable
     @Schema(readOnly = true)
     @Override
-    public abstract UUID getRequestId();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UUID getContractorId();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
     public abstract UUID getOrganizationId();
 
     @Null
@@ -55,7 +43,7 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     @Nullable
     @Schema(readOnly = true)
     @Override
-    public abstract ParticipantRole getSenderRole();
+    public abstract UserContext getSenderRole();
 
     @Null
     @Nullable
@@ -65,8 +53,6 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
 
     public static ContractorTimelineJson valueOf(final ContractorTimelineModel model) {
         final ImmutableContractorTimelineJson.Builder builder = ImmutableContractorTimelineJson.builder()
-            .requestId(model.getRequestId())
-            .contractorId(model.getContractorId())
             .organizationId(model.getOrganizationId())
             .issueId(model.getIssueId())
             .timelineId(model.getTimelineId())

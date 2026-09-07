@@ -2,11 +2,10 @@ package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
-import de.remsfal.ticketing.entity.dto.IssueEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,34 +26,25 @@ public class ContractorTimelineController {
     @Inject
     ContractorTimelineRepository contractorTimelineRepository;
 
-    @Inject
-    IssueController issueController;
-
-    @Inject
-    TenantTimelineController timelineController;
-
-    public List<ContractorTimelineEntity> getTimelineEntries(final UUID requestId, final UUID contractorId,
-        final UUID organizationId) {
-        logger.infov("Retrieving contractor timeline entries (requestId={0}, contractorId={1}, organizationId={2})",
-            requestId, contractorId, organizationId);
-        return contractorTimelineRepository.findByRequest(requestId, contractorId, organizationId);
+    public List<ContractorTimelineEntity> getTimelineEntries(final UUID issueId, final UUID organizationId) {
+        logger.infov("Retrieving contractor timeline entries (issueId={0}, organizationId={1})",
+            issueId, organizationId);
+        return contractorTimelineRepository.findByIssue(issueId, organizationId);
     }
 
     @Transactional
-    public ContractorTimelineEntity createTimelineEntry(final UUID requestId, final UUID contractorId,
-        final UUID organizationId, final UUID issueId, final UUID senderId, final String senderName,
-        final ParticipantRole senderRole, final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
-        logger.infov("Creating contractor timeline entry (requestId={0}, issueId={1})", requestId, issueId);
+    public ContractorTimelineEntity createTimelineEntry(final UUID issueId,
+        final UUID organizationId, final UUID senderId, final String senderName,
+        final UserContext senderRole, final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
+        logger.infov("Creating contractor timeline entry (issueId={0}, organizationId={1})", issueId, organizationId);
 
         final ContractorTimelineKey key = new ContractorTimelineKey();
-        key.setRequestId(requestId);
-        key.setContractorId(contractorId);
+        key.setIssueId(issueId);
         key.setOrganizationId(organizationId);
         key.setTimelineId(UUIDv7.randomUUID());
 
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
         entity.setKey(key);
-        entity.setIssueId(issueId);
         entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(senderId);
         entity.setSenderName(senderName);
@@ -66,23 +56,7 @@ public class ContractorTimelineController {
         entity.setCreatedAt(now);
         entity.setModifiedAt(now);
 
-        final ContractorTimelineEntity created = contractorTimelineRepository.insert(entity);
-
-        if (entry.getRecipient() == ParticipantRole.TENANT) {
-            mirrorToTenantTimeline(issueId, senderId, senderName, entry);
-        }
-
-        return created;
-    }
-
-    private void mirrorToTenantTimeline(final UUID issueId, final UUID senderId, final String senderName,
-        final ContractorTimelineJson entry) {
-        final IssueEntity issue = issueController.getIssue(issueId);
-        if (issue.getAgreementId() == null) {
-            return;
-        }
-        timelineController.createTimelineEntry(issue.getAgreementId(), issueId, issue.getProjectId(),
-            senderId, senderName, entry.getPurpose(), entry.getMessage());
+        return contractorTimelineRepository.insert(entity);
     }
 
 }

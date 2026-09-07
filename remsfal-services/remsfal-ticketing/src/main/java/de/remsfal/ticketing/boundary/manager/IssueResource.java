@@ -53,6 +53,9 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Inject
     Instance<IssueTimelineResource> timelineResource;
 
+    @Inject
+    Instance<IssueContractorTimelineResource> contractorTimelineResource;
+
     @Override
     public IssueListJson getIssues(final UUID projectId, final UUID assigneeId, final UUID agreementId,
         final UnitType rentalUnitType, final UUID rentalUnitId, final List<IssueType> type,
@@ -163,8 +166,13 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     }
 
     @Override
-    public IssueTimelineResource getTimelineResource() {
+    public IssueTimelineResource getTenantTimelineResource() {
         return resourceContext.initResource(timelineResource.get());
+    }
+
+    @Override
+    public IssueContractorTimelineResource getContractorTimelineResource() {
+        return resourceContext.initResource(contractorTimelineResource.get());
     }
 
 }

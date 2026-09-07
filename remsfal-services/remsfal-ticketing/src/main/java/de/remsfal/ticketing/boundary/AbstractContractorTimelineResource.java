@@ -5,7 +5,7 @@ import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
 import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.model.ticketing.OrderProcessPhase;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.control.ContractorTimelineController;
 import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
@@ -47,13 +47,13 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
-                request.getRequestId(), request.getContractorId(), request.getOrganizationId()).stream()
+                request.getIssueId(), request.getOrganizationId()).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
                 .toList());
     }
 
     protected Response createTimelineEntryWithAttachments(final QuotationRequestEntity request,
-        final ParticipantRole senderRole, final MultipartFormDataInput input) {
+        final UserContext senderRole, final MultipartFormDataInput input) {
         final ContractorTimelineJson timeline = MultipartAttachmentProcessor.extractJsonPart(
             input, "timeline", ContractorTimelineJson.class);
         final List<OrderAttachmentJson> uploadedAttachments = collectAttachments(request.getRequestId(), input);
@@ -62,7 +62,7 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             .toList();
 
         final ContractorTimelineEntity created = contractorTimelineController.createTimelineEntry(
-            request.getRequestId(), request.getContractorId(), request.getOrganizationId(), request.getIssueId(),
+            request.getIssueId(), request.getOrganizationId(),
             principal.getId(), principal.getName(), senderRole, timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 

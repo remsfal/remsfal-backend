@@ -1,6 +1,5 @@
 package de.remsfal.service.control;
 
-import java.util.UUID;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -11,9 +10,13 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.EmailEventJson;
-import de.remsfal.core.json.eventing.EmailEventJson.EmailEventType;
+import de.remsfal.core.json.eventing.EmailEventJson.NotificationEventType;
 import de.remsfal.core.json.eventing.ImmutableEmailEventJson;
+import de.remsfal.core.json.organization.OrganizationJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.model.OrganizationModel;
+import de.remsfal.core.model.project.ProjectModel;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -26,6 +29,9 @@ public class NotificationController {
 
     @ConfigProperty(name = "de.remsfal.frontend.path.projects", defaultValue = "/projects")
     public String frontendProjectsPath;
+
+    @ConfigProperty(name = "de.remsfal.frontend.path.organizations", defaultValue = "/organizations")
+    public String frontendOrganizationsPath;
 
     @ConfigProperty(name = "de.remsfal.frontend.path.additional-email-verification",
         defaultValue = "/api/v1/authentication/verify-additional-email")
@@ -45,24 +51,34 @@ public class NotificationController {
     public void informUserAboutRegistration(final CustomerModel user) {
         logger.infov("Sending information about user registration (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
-            .user(UserJson.valueOf(user))
-            .locale(resolveLocale(user))
-            .type(EmailEventType.USER_REGISTRATION)
+            .user(UserJson.valueOf(user).withLocale(resolveLocale(user)))
+            .notificationEventType(NotificationEventType.USER_REGISTRATION)
             .link(frontendBaseUrl)
             .build();
         notificationEmitter.send(mail);
     }
 
     @WithSpan("NotificationController.informUserAboutProjectMembership")
-    public void informUserAboutProjectMembership(final CustomerModel user, final UUID projectId) {
+    public void informUserAboutProjectMembership(final CustomerModel user, final ProjectModel project) {
         logger.infov("Sending information about new membership (email={0})", user.getEmail());
         EmailEventJson mail = ImmutableEmailEventJson.builder()
-            .user(UserJson.valueOf(user))
-            .locale(resolveLocale(user))
-            .type(EmailEventType.PROJECT_ADMISSION)
-            .link(frontendBaseUrl + frontendProjectsPath + "/" + projectId)
+            .user(UserJson.valueOf(user).withLocale(resolveLocale(user)))
+            .notificationEventType(NotificationEventType.PROJECT_ADMISSION)
+            .link(frontendBaseUrl + frontendProjectsPath + "/" + project.getId())
+            .project(ProjectJson.valueOf(project))
             .build();
-        logger.info("Test: " + mail.toString());
+        notificationEmitter.send(mail);
+    }
+
+    @WithSpan("NotificationController.informUserAboutOrganizationMembership")
+    public void informUserAboutOrganizationMembership(final CustomerModel user, final OrganizationModel organization) {
+        logger.infov("Sending information about new organization membership (email={0})", user.getEmail());
+        EmailEventJson mail = ImmutableEmailEventJson.builder()
+            .user(UserJson.valueOf(user).withLocale(resolveLocale(user)))
+            .notificationEventType(NotificationEventType.ORGANIZATION_ADMISSION)
+            .link(frontendBaseUrl + frontendOrganizationsPath + "/" + organization.getId())
+            .organization(OrganizationJson.valueOf(organization))
+            .build();
         notificationEmitter.send(mail);
     }
 
@@ -72,9 +88,8 @@ public class NotificationController {
         logger.infov("Sending information about additional email verification (email={0})", additionalEmail);
         final String encodedToken = URLEncoder.encode(verificationToken, StandardCharsets.UTF_8);
         EmailEventJson mail = ImmutableEmailEventJson.builder()
-            .user(UserJson.valueOf(user).withEmail(additionalEmail))
-            .locale(resolveLocale(user))
-            .type(EmailEventType.ADDITIONAL_EMAIL_VERIFICATION)
+            .user(UserJson.valueOf(user).withEmail(additionalEmail).withLocale(resolveLocale(user)))
+            .notificationEventType(NotificationEventType.ADDITIONAL_EMAIL_VERIFICATION)
             .link(frontendBaseUrl + frontendAdditionalEmailVerificationPath + "?token=" + encodedToken)
             .build();
         notificationEmitter.send(mail);
