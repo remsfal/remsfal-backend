@@ -12,7 +12,7 @@
     </parent>
 
     <properties>
-        <google.version>2.9.0</google.version>
+        <google.version>2.9.1</google.version>
     </properties>
 
     <dependencies>
