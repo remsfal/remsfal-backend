@@ -16,7 +16,7 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ImmutableContractorTimelineJson;
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
@@ -49,14 +49,14 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
 
         final ContractorTimelineEntity created = controller.createTimelineEntry(
             issueId, organizationId, senderId, "Bauservice GmbH",
-            ParticipantRole.CONTRACTOR, entry, attachmentIds);
+            UserContext.CONTRACTOR, entry, attachmentIds);
 
         assertNotNull(created.getTimelineId());
         assertEquals(issueId, created.getIssueId());
         assertEquals(organizationId, created.getOrganizationId());
         assertEquals(senderId, created.getSenderId());
         assertEquals("Bauservice GmbH", created.getSenderName());
-        assertEquals(ParticipantRole.CONTRACTOR, created.getSenderRole());
+        assertEquals(UserContext.CONTRACTOR, created.getSenderRole());
         assertEquals(MessagePurpose.MESSAGE_SENT, created.getPurpose());
         assertEquals("Bitte um Rueckmeldung", created.getMessage());
         assertEquals(attachmentIds, created.getAttachmentIds());
@@ -101,7 +101,7 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
         entity.setKey(key);
         entity.setSenderId(UUID.randomUUID());
         entity.setSenderName("Tester");
-        entity.setSenderRole(ParticipantRole.CONTRACTOR);
+        entity.setSenderRole(UserContext.CONTRACTOR);
         entity.setPurpose(MessagePurpose.MESSAGE_SENT);
         entity.setMessage(message);
 

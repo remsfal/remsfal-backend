@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.model.UserContext;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -33,12 +34,6 @@ import de.remsfal.core.model.CustomerModel;
 @JsonDeserialize(as = ImmutableUserJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class UserJson implements CustomerModel {
-
-    public enum UserContext {
-        MANAGER,   // Verwalter
-        TENANT,    // Mieter
-        CONTRACTOR // Auftragnehmer
-    }
 
     @Null(groups = PostValidation.class)
     @Nullable

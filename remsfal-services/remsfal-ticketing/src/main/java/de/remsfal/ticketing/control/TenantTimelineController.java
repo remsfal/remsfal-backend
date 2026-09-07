@@ -99,7 +99,7 @@ public class TenantTimelineController {
         entity.setCreatedAt(now);
         entity.setModifiedAt(now);
 
-        final TimelineEntity created = timelineRepository.insert(entity);
+        final TenantTimelineEntity created = timelineRepository.insert(entity);
 
         final IssueModel issue = issueRepository.findByIssueId(issueId).orElse(null);
         issueEventProducer.sendActivityEvent(IssueEventType.TIMELINE_ENTRY_CREATED, issue,

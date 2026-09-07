@@ -2,7 +2,7 @@ package de.remsfal.core.json.ticketing;
 
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.core.model.ticketing.ParticipantRole;
+import de.remsfal.core.model.UserContext;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -18,7 +18,7 @@ class ContractorTimelineJsonTest {
             final UUID organizationId,
             final UUID issueId, final UUID timelineId,
             final List<UUID> attachmentIds, final UUID senderId, final String senderName,
-            final ParticipantRole senderRole,
+            final UserContext senderRole,
             final MessagePurpose purpose, final String message,
             final Instant createdAt, final Instant modifiedAt) {
         return new ContractorTimelineModel() {
@@ -30,7 +30,7 @@ class ContractorTimelineJsonTest {
             @Override public List<UUID> getAttachmentIds() { return attachmentIds; }
             @Override public UUID getSenderId() { return senderId; }
             @Override public String getSenderName() { return senderName; }
-            @Override public ParticipantRole getSenderRole() { return senderRole; }
+            @Override public UserContext getSenderRole() { return senderRole; }
             @Override public MessagePurpose getPurpose() { return purpose; }
             @Override public String getMessage() { return message; }
             @Override public Instant getCreatedAt() { return createdAt; }
@@ -49,7 +49,7 @@ class ContractorTimelineJsonTest {
         final Instant modifiedAt = Instant.now();
 
         final ContractorTimelineModel m = model(organizationId, issueId, timelineId,
-            attachmentIds, senderId, "Max Mustermann", ParticipantRole.CONTRACTOR,
+            attachmentIds, senderId, "Max Mustermann", UserContext.CONTRACTOR,
             MessagePurpose.MESSAGE_SENT, "Bitte um Rueckmeldung",
             createdAt, modifiedAt);
 
@@ -61,7 +61,7 @@ class ContractorTimelineJsonTest {
         assertEquals(attachmentIds, json.getAttachmentIds());
         assertEquals(senderId, json.getSenderId());
         assertEquals("Max Mustermann", json.getSenderName());
-        assertEquals(ParticipantRole.CONTRACTOR, json.getSenderRole());
+        assertEquals(UserContext.CONTRACTOR, json.getSenderRole());
         assertEquals(MessagePurpose.MESSAGE_SENT, json.getPurpose());
         assertEquals("Bitte um Rueckmeldung", json.getMessage());
         assertEquals(createdAt, json.getCreatedAt());
