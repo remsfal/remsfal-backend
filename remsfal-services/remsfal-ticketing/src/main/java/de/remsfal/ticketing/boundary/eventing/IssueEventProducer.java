@@ -12,6 +12,7 @@ import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -72,20 +73,8 @@ public class IssueEventProducer {
         final IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(type)
             .issueId(issue.getId())
-            .projectId(issue.getProjectId())
-            .title(issue.getTitle())
-            .issueType(issue.getType())
-            .status(issue.getStatus())
-            .reporterId(issue.getReporterId())
-            .agreementId(issue.getAgreementId())
-            .assigneeId(issue.getAssigneeId())
-            .description(issue.getDescription())
-            .parentIssue(issue.getParentIssue())
-            .childrenIssues(issue.getChildrenIssues())
-            .blockedBy(issue.getBlockedBy())
-            .relatedTo(issue.getRelatedTo())
-            .blocks(issue.getBlocks())
-            .duplicateOf(issue.getDuplicateOf())
+            .issue(IssueJson.valueOf(issue))
+            .activityText(issue.getDescription())
             .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName()))
             .assignee(assignee)
             .mentionedUser(mentionedUser)
@@ -110,13 +99,8 @@ public class IssueEventProducer {
         final IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(type)
             .issueId(issue.getId())
-            .projectId(issue.getProjectId())
-            .title(issue.getTitle())
-            .issueType(issue.getType())
-            .status(issue.getStatus())
-            .agreementId(issue.getAgreementId())
-            .assigneeId(issue.getAssigneeId())
-            .description(description)
+            .issue(IssueJson.valueOf(issue))
+            .activityText(description)
             .user(toUserJson(actorId, null, actorName))
             .assignee(toUserJson(issue.getAssigneeId(), null, null))
             .organizationId(organizationId)
@@ -129,7 +113,7 @@ public class IssueEventProducer {
     private void emit(final IssueEventJson event, final IssueEventType type, final UUID issueId) {
         try {
             logger.infov("Sending issue event (type={0}, issueId={1}, projectId={2})", type, issueId,
-                event.getProjectId());
+                event.getIssue() != null ? event.getIssue().getProjectId() : null);
             CompletionStage<Void> ack = emitter.send(event);
             ack.whenComplete((res, ex) -> {
                 if (ex != null) {

@@ -1,6 +1,5 @@
 package de.remsfal.core.json.eventing;
 
-import java.util.Set;
 import java.util.UUID;
 
 import org.immutables.value.Value.Immutable;
@@ -11,8 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.core.json.ticketing.IssueJson;
 import jakarta.annotation.Nullable;
 
 /**
@@ -70,76 +68,36 @@ public interface IssueEventJson {
     UUID getIssueId();
 
     /**
-     * Project identifier for direct lookups.
+     * The full issue data as stored in the issue table. Attachments are always {@code null}
+     * here, consistent with {@link IssueJson#valueOf} which never populates them.
      */
-    UUID getProjectId();
+    @Nullable
+    IssueJson getIssue();
 
     /**
      * Optional enriched project details. When present, provides the project title and metadata
-     * to avoid additional database queries. Both projectId and project may be present;
-     * use projectId for database operations and project for display purposes.
+     * to avoid additional database queries.
      */
     @Nullable
     ProjectEventJson getProject();
 
-    @Nullable
-    String getTitle();
-
     /**
      * Frontend link to the issue detail/edit view.
      * Should be populated by the enricher service to enable direct access from email notifications.
-     * If null, a fallback link should be constructed using projectId and issueId.
+     * If null, a fallback link should be constructed using the issue's projectId and issueId.
      */
     @Nullable
     String getLink();
 
-    @Nullable
-    IssueType getIssueType();
-
-    @Nullable
-    IssueStatus getStatus();
-
-    @Nullable
-    UUID getReporterId();
-
-    @Nullable
-    UUID getAgreementId();
-
-    @Nullable
-    UUID getAssigneeId();
-
-    @Nullable
-    String getDescription();
-
-    @Nullable
-    UUID getParentIssue();
-
-    @Nullable
-    Set<UUID> getChildrenIssues();
-
     /**
-     * Identifier of a ticket that blocks this issue from progressing.
-     * Reserved for future notification types (e.g., dependency updates).
+     * The descriptive text to display for this event. For the core issue lifecycle events
+     * (ISSUE_CREATED, ISSUE_UPDATED, ISSUE_ASSIGNED, ISSUE_MENTIONED) this mirrors
+     * {@code getIssue().getDescription()}. For activity events (timeline entries, chat
+     * messages, quotation/order status changes) it carries that activity's own text instead,
+     * which is why it is a distinct field rather than being read off {@link #getIssue()}.
      */
     @Nullable
-    Set<UUID> getBlockedBy();
-
-    /**
-     * Identifier of a ticket that is related to this issue (non-blocking relation).
-     * Intended for future email content linking related work items.
-     */
-    @Nullable
-    Set<UUID> getRelatedTo();
-
-    @Nullable
-    Set<UUID> getBlocks();
-
-    /**
-     * Identifier of the original ticket when this issue is marked as a duplicate.
-     * May be used by future templates to guide users to the canonical ticket.
-     */
-    @Nullable
-    Set<UUID> getDuplicateOf();
+    String getActivityText();
 
     @Nullable
     UserJson getUser();

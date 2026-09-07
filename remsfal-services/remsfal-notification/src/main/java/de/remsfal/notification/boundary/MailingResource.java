@@ -20,6 +20,8 @@ import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.ticketing.ImmutableIssueJson;
+import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
@@ -212,19 +214,27 @@ public class MailingResource {
             .lastName("Owner")
             .build();
 
-        return ImmutableIssueEventJson.builder()
-            .issueEventType(eventType)
-            .issueId(UUID.fromString("5505b407-d8a7-41a7-848c-77eff4c9fc81"))
-            .project(project)
+        final UUID issueId = UUID.fromString("5505b407-d8a7-41a7-848c-77eff4c9fc81");
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Test Issue Title")
-            .link("https://remsfal.de/projects/bf9f-5bf1-4fd7-9ba4-2a6cb/issueedit/5507-d8a7-41a7-848c-77e81")
-            .issueType(IssueType.DEFECT)
+            .type(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(assignee.getId())
             .description("Das ist eine Test Issue")
+            .build();
+
+        return ImmutableIssueEventJson.builder()
+            .issueEventType(eventType)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/projects/bf9f-5bf1-4fd7-9ba4-2a6cb/issueedit/5507-d8a7-41a7-848c-77e81")
+            .activityText("Das ist eine Test Issue")
             .user(actor)
             .assignee(assignee)
             .build();

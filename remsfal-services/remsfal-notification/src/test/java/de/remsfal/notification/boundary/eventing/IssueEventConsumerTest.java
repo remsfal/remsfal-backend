@@ -22,6 +22,8 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
+import de.remsfal.core.json.ticketing.ImmutableIssueJson;
+import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.notification.control.MailingController;
@@ -71,19 +73,26 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .lastName("Creator")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Test Issue")
-            .link("https://remsfal.de/issue/123")
-            .issueType(IssueType.DEFECT)
+            .type(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(assignee.getId())
             .description("Test description")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/123")
+            .activityText("Test description")
             .user(creator)
             .assignee(assignee)
             .build();
@@ -119,19 +128,26 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .lastName("User")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Test Issue")
-            .link("https://remsfal.de/issue/123")
-            .issueType(IssueType.DEFECT)
+            .type(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(user.getId())
             .description("Test description")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/123")
+            .activityText("Test description")
             .user(user)
             .assignee(user)
             .build();
@@ -171,19 +187,26 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .lastName("Updater")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_UPDATED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Updated Issue")
-            .link("https://remsfal.de/issue/456")
-            .issueType(IssueType.TASK)
+            .type(IssueType.TASK)
             .status(IssueStatus.IN_PROGRESS)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(assignee.getId())
             .description("Updated description")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_UPDATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/456")
+            .activityText("Updated description")
             .user(updater)
             .assignee(assignee)
             .build();
@@ -224,19 +247,26 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .firstName("Assigner")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_ASSIGNED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Assigned Issue")
-            .link("https://remsfal.de/issue/789")
-            .issueType(IssueType.APPLICATION)
+            .type(IssueType.APPLICATION)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(newOwner.getId())
             .description("Assignment description")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_ASSIGNED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/789")
+            .activityText("Assignment description")
             .user(assigner)
             .assignee(newOwner)
             .build();
@@ -271,19 +301,26 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .lastName("User")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_MENTIONED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Mentioned Issue")
-            .link("https://remsfal.de/issue/999")
-            .issueType(IssueType.DEFECT)
+            .type(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(user.getId())
             .description("Mention description")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_MENTIONED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/999")
+            .activityText("Mention description")
             .user(user)
             .assignee(user)
             .build();
@@ -317,18 +354,25 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .firstName("Creator")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Unassigned Issue")
-            .link("https://remsfal.de/issue/111")
-            .issueType(IssueType.DEFECT)
+            .type(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .description("No assignee")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/111")
+            .activityText("No assignee")
             .user(creator)
             .build();
 
@@ -359,19 +403,26 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .firstName("Owner")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("No User Issue")
-            .link("https://remsfal.de/issue/222")
-            .issueType(IssueType.DEFECT)
+            .type(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(assignee.getId())
             .description("No user")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/222")
+            .activityText("No user")
             .assignee(assignee)
             .build();
 
@@ -402,19 +453,26 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .firstName("Owner")
             .build();
 
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
-            .issueId(UUID.randomUUID())
-            .project(project)
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(project.getId())
             .title("Exception Issue")
-            .link("https://remsfal.de/issue/333")
-            .issueType(IssueType.DEFECT)
+            .type(IssueType.DEFECT)
             .status(IssueStatus.OPEN)
             .reporterId(UUID.randomUUID())
             .agreementId(UUID.randomUUID())
             .assigneeId(assignee.getId())
             .description("Will throw exception")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_CREATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/333")
+            .activityText("Will throw exception")
             .assignee(assignee)
             .build();
 

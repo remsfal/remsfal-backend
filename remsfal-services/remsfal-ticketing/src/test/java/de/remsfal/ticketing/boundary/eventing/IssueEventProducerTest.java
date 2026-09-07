@@ -71,17 +71,19 @@ class IssueEventProducerTest {
 
         assertEquals(IssueEventType.ISSUE_CREATED, event.getIssueEventType());
         assertEquals(issue.getId(), event.getIssueId());
-        assertEquals(issue.getProjectId(), event.getProjectId());
-        assertEquals(issue.getTitle(), event.getTitle());
-        assertEquals(issue.getType(), event.getIssueType());
-        assertEquals(issue.getStatus(), event.getStatus());
-        assertEquals(issue.getReporterId(), event.getReporterId());
-        assertEquals(issue.getAgreementId(), event.getAgreementId());
-        assertEquals(issue.getAssigneeId(), event.getAssigneeId());
-        assertEquals(issue.getDescription(), event.getDescription());
-        assertEquals(issue.getBlockedBy(), event.getBlockedBy());
-        assertEquals(issue.getRelatedTo(), event.getRelatedTo());
-        assertEquals(issue.getDuplicateOf(), event.getDuplicateOf());
+        assertNotNull(event.getIssue());
+        assertEquals(issue.getProjectId(), event.getIssue().getProjectId());
+        assertEquals(issue.getTitle(), event.getIssue().getTitle());
+        assertEquals(issue.getType(), event.getIssue().getType());
+        assertEquals(issue.getStatus(), event.getIssue().getStatus());
+        assertEquals(issue.getReporterId(), event.getIssue().getReporterId());
+        assertEquals(issue.getAgreementId(), event.getIssue().getAgreementId());
+        assertEquals(issue.getAssigneeId(), event.getIssue().getAssigneeId());
+        assertEquals(issue.getDescription(), event.getIssue().getDescription());
+        assertEquals(issue.getDescription(), event.getActivityText());
+        assertEquals(issue.getBlockedBy(), event.getIssue().getBlockedBy());
+        assertEquals(issue.getRelatedTo(), event.getIssue().getRelatedTo());
+        assertEquals(issue.getDuplicateOf(), event.getIssue().getDuplicateOf());
         assertNotNull(event.getUser());
         assertEquals(actor.getId(), event.getUser().getId());
         assertEquals(actor.getEmail(), event.getUser().getEmail());
@@ -105,7 +107,7 @@ class IssueEventProducerTest {
 
         assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getIssueEventType());
         assertEquals(newAssigneeId, Objects.requireNonNull(event.getAssignee()).getId());
-        assertEquals(newAssigneeId, event.getAssigneeId());
+        assertEquals(newAssigneeId, event.getIssue().getAssigneeId());
     }
 
     @Test

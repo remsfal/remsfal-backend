@@ -48,20 +48,20 @@ public class ActivityFeedEventConsumer {
 
         final NewActivity activity = new NewActivity(
             event.getAssignee().getId(),
-            event.getProjectId(),
+            event.getIssue().getProjectId(),
             event.getIssueId(),
             event.getIssueEventType(),
-            event.getTitle(),
-            event.getDescription(),
+            event.getIssue().getTitle(),
+            event.getActivityText(),
             event.getLink(),
             event.getUser() != null ? event.getUser().getId() : null,
             actorName(event.getUser()),
-            event.getIssueType(),
-            event.getStatus(),
-            event.getAgreementId(),
+            event.getIssue().getType(),
+            event.getIssue().getStatus(),
+            event.getIssue().getAgreementId(),
             event.getOrganizationId(),
             event.getContractorId(),
-            event.getAssigneeId());
+            event.getIssue().getAssigneeId());
 
         controller.recordActivity(activity);
 

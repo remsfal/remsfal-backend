@@ -7,6 +7,8 @@ import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.json.ticketing.ImmutableIssueJson;
+import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.entity.dao.ActivityFeedRepository;
@@ -78,14 +80,20 @@ class ActivityFeedEventConsumerTest {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
 
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
+            .projectId(projectId)
+            .title("New Issue Created")
+            .type(IssueType.TASK)
+            .status(IssueStatus.OPEN)
+            .description("Test description")
+            .build();
+
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(issueId)
-            .projectId(projectId)
-            .title("New Issue Created")
-            .issueType(IssueType.TASK)
-            .status(IssueStatus.OPEN)
-            .description("Test description")
+            .issue(issue)
+            .activityText("Test description")
             .link("/api/issues/" + issueId)
             .user(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
@@ -128,14 +136,19 @@ class ActivityFeedEventConsumerTest {
         UUID assigneeId = UUID.randomUUID();
         UUID issueId = UUID.randomUUID();
 
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
+            .projectId(UUID.randomUUID())
+            .title("Issue With Timeline")
+            .type(IssueType.DEFECT)
+            .status(IssueStatus.IN_PROGRESS)
+            .build();
+
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.TIMELINE_ENTRY_CREATED)
             .issueId(issueId)
-            .projectId(UUID.randomUUID())
-            .title("Issue With Timeline")
-            .issueType(IssueType.DEFECT)
-            .status(IssueStatus.IN_PROGRESS)
-            .description("Tenant left a message")
+            .issue(issue)
+            .activityText("Tenant left a message")
             .link("/api/issues/" + issueId)
             .assignee(ImmutableUserJson.builder()
                 .id(assigneeId)
@@ -163,14 +176,19 @@ class ActivityFeedEventConsumerTest {
         UUID organizationId = UUID.randomUUID();
         UUID contractorId = UUID.randomUUID();
 
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
+            .projectId(UUID.randomUUID())
+            .title("Order Placed Issue")
+            .type(IssueType.MAINTENANCE)
+            .status(IssueStatus.IN_PROGRESS)
+            .build();
+
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ORDER_PLACED)
             .issueId(issueId)
-            .projectId(UUID.randomUUID())
-            .title("Order Placed Issue")
-            .issueType(IssueType.MAINTENANCE)
-            .status(IssueStatus.IN_PROGRESS)
-            .description("Order placed with Acme Corp")
+            .issue(issue)
+            .activityText("Order placed with Acme Corp")
             .link("/api/issues/" + issueId)
             .organizationId(organizationId)
             .contractorId(contractorId)
@@ -195,13 +213,17 @@ class ActivityFeedEventConsumerTest {
 
     @Test
     void testConsume_eventWithNullAssignee_skipped() {
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(UUID.randomUUID())
+            .title("No Assignee Issue")
+            .type(IssueType.TASK)
+            .status(IssueStatus.OPEN)
+            .build();
+
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
-            .projectId(UUID.randomUUID())
-            .title("No Assignee Issue")
-            .issueType(IssueType.TASK)
-            .status(IssueStatus.OPEN)
+            .issue(issue)
             .link("/api/issues/test")
             .user(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
@@ -224,13 +246,17 @@ class ActivityFeedEventConsumerTest {
 
     @Test
     void testConsume_eventWithNullAssigneeId_skipped() {
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(UUID.randomUUID())
+            .title("No Assignee ID")
+            .type(IssueType.TASK)
+            .status(IssueStatus.OPEN)
+            .build();
+
         ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
-            .projectId(UUID.randomUUID())
-            .title("No Assignee ID")
-            .issueType(IssueType.TASK)
-            .status(IssueStatus.OPEN)
+            .issue(issue)
             .link("/api/issues/test")
             .assignee(ImmutableUserJson.builder().build())
             .build();
@@ -253,24 +279,32 @@ class ActivityFeedEventConsumerTest {
     void testConsume_multipleEventsForSameUser_allStored() {
         UUID assigneeId = UUID.randomUUID();
 
+        IssueJson issue1 = ImmutableIssueJson.builder()
+            .projectId(UUID.randomUUID())
+            .title("First Issue")
+            .type(IssueType.TASK)
+            .status(IssueStatus.OPEN)
+            .build();
+
         ImmutableIssueEventJson event1 = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
-            .projectId(UUID.randomUUID())
-            .title("First Issue")
-            .issueType(IssueType.TASK)
-            .status(IssueStatus.OPEN)
+            .issue(issue1)
             .link("/api/issues/1")
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
+            .build();
+
+        IssueJson issue2 = ImmutableIssueJson.builder()
+            .projectId(UUID.randomUUID())
+            .title("Second Issue")
+            .type(IssueType.DEFECT)
+            .status(IssueStatus.CLOSED)
             .build();
 
         ImmutableIssueEventJson event2 = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(UUID.randomUUID())
-            .projectId(UUID.randomUUID())
-            .title("Second Issue")
-            .issueType(IssueType.DEFECT)
-            .status(IssueStatus.CLOSED)
+            .issue(issue2)
             .link("/api/issues/2")
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
             .build();
@@ -295,24 +329,32 @@ class ActivityFeedEventConsumerTest {
         UUID assignee1 = UUID.randomUUID();
         UUID assignee2 = UUID.randomUUID();
 
+        IssueJson issue1 = ImmutableIssueJson.builder()
+            .projectId(UUID.randomUUID())
+            .title("Issue for Assignee 1")
+            .type(IssueType.TASK)
+            .status(IssueStatus.OPEN)
+            .build();
+
         ImmutableIssueEventJson event1 = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
-            .projectId(UUID.randomUUID())
-            .title("Issue for Assignee 1")
-            .issueType(IssueType.TASK)
-            .status(IssueStatus.OPEN)
+            .issue(issue1)
             .link("/api/issues/1")
             .assignee(ImmutableUserJson.builder().id(assignee1).build())
+            .build();
+
+        IssueJson issue2 = ImmutableIssueJson.builder()
+            .projectId(UUID.randomUUID())
+            .title("Issue for Assignee 2")
+            .type(IssueType.DEFECT)
+            .status(IssueStatus.OPEN)
             .build();
 
         ImmutableIssueEventJson event2 = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(UUID.randomUUID())
-            .projectId(UUID.randomUUID())
-            .title("Issue for Assignee 2")
-            .issueType(IssueType.DEFECT)
-            .status(IssueStatus.OPEN)
+            .issue(issue2)
             .link("/api/issues/2")
             .assignee(ImmutableUserJson.builder().id(assignee2).build())
             .build();

@@ -144,45 +144,45 @@ public class MailingController {
     public Uni<Void> sendIssueCreatedEmail(IssueEventJson event, UserJson recipient) {
         logger.infov("Sending issue-created email to {0}", recipient.getEmail());
         TemplateInstance instance = createIssueTemplateInstance(issueCreated, event, recipient);
-        String subject = "[Issue Created] " + event.getTitle();
+        String subject = "[Issue Created] " + event.getIssue().getTitle();
         return sendIssueEmail(recipient.getEmail(), subject, instance);
     }
 
     public Uni<Void> sendIssueUpdatedEmail(IssueEventJson event, UserJson recipient) {
         logger.infov("Sending issue-updated email to {0}", recipient.getEmail());
         TemplateInstance instance = createIssueTemplateInstance(issueUpdated, event, recipient);
-        String subject = "[Issue Updated] " + event.getTitle();
+        String subject = "[Issue Updated] " + event.getIssue().getTitle();
         return sendIssueEmail(recipient.getEmail(), subject, instance);
     }
 
     public Uni<Void> sendIssueAssignedEmail(IssueEventJson event, UserJson recipient) {
         logger.infov("Sending issue-assigned email to {0}", recipient.getEmail());
         TemplateInstance instance = createIssueTemplateInstance(issueAssigned, event, recipient);
-        String subject = "[Issue Assigned] " + event.getTitle();
+        String subject = "[Issue Assigned] " + event.getIssue().getTitle();
         return sendIssueEmail(recipient.getEmail(), subject, instance);
     }
 
     private TemplateInstance createIssueTemplateInstance(Template template, IssueEventJson event, UserJson recipient) {
-        String statusName = event.getStatus() != null ? event.getStatus().name() : "N/A";
+        String statusName = event.getIssue().getStatus() != null ? event.getIssue().getStatus().name() : "N/A";
         StatusColor statusColor = statusName.equals("N/A") ? null : StatusColor.valueOf(statusName);
-        
+
         String recipientName = recipient.getName() != null && !recipient.getName().isBlank()
             ? recipient.getName()
             : "User";
-        
+
         // Use event link if available, otherwise construct a fallback
         String buttonLink = event.getLink();
-        if (buttonLink == null && event.getProjectId() != null && event.getIssueId() != null) {
+        if (buttonLink == null && event.getIssue().getProjectId() != null && event.getIssueId() != null) {
             buttonLink = String.format("%s/projects/%s/issueedit/%s",
-                frontendBaseUrl, event.getProjectId(), event.getIssueId());
+                frontendBaseUrl, event.getIssue().getProjectId(), event.getIssueId());
         }
 
         TemplateInstance instance = template
             .data("name", recipientName)
             .data("projectTitle", event.getProject() != null ? event.getProject().getTitle() : "N/A")
-            .data("issueTitle", event.getTitle())
+            .data("issueTitle", event.getIssue().getTitle())
             .data("issueId", event.getIssueId().toString())
-            .data("issueType", event.getIssueType() != null ? event.getIssueType().name() : "N/A")
+            .data("issueType", event.getIssue().getType() != null ? event.getIssue().getType().name() : "N/A")
             .data("status", statusName)
             .data("ownerName", event.getAssignee() != null ? event.getAssignee().getName() : "N/A")
             .data("ownerEmail", event.getAssignee() != null ? event.getAssignee().getEmail() : "N/A")
