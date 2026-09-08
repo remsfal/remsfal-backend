@@ -4,8 +4,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.json.ImmutableUserJson;
@@ -18,13 +16,12 @@ import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
-import io.smallrye.common.annotation.Blocking;
 import jakarta.transaction.Transactional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class IssueEventEnricher {
+public class IssueEventEnrichmentController {
 
     @Inject
     @ConfigProperty(name = "de.remsfal.frontend.url.base")
@@ -39,9 +36,6 @@ public class IssueEventEnricher {
     @Inject
     ProjectRepository projectRepository;
 
-    @Blocking
-    @Incoming(IssueEventJson.TOPIC_BASIC)
-    @Outgoing(IssueEventJson.TOPIC_ENRICHED)
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
         UserJson enrichedAssignee = enrichAssignee(event.getAssignee());

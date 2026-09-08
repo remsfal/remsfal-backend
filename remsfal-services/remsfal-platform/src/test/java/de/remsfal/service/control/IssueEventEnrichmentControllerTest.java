@@ -34,7 +34,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 
 @QuarkusTest
-class IssueEventEnricherTest {
+class IssueEventEnrichmentControllerTest {
 
     @InjectMock
     UserRepository userRepository;
@@ -43,7 +43,7 @@ class IssueEventEnricherTest {
     ProjectRepository projectRepository;
 
     @Inject
-    IssueEventEnricher enricher;
+    IssueEventEnrichmentController controller;
 
     @Inject
     @ConfigProperty(name = "de.remsfal.frontend.url.base")
@@ -104,7 +104,7 @@ class IssueEventEnricherTest {
             .mentionedUser(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         assertNotNull(enriched.getAssignee());
@@ -153,7 +153,7 @@ class IssueEventEnricherTest {
             .assignee(assigneeWithoutId)
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertEquals(assigneeWithoutId, enriched.getAssignee());
         verifyNoInteractions(userRepository);
@@ -179,7 +179,7 @@ class IssueEventEnricherTest {
             .project(ImmutableProjectEventJson.builder().id(projectId).title("Provided project").build())
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
@@ -195,9 +195,9 @@ class IssueEventEnricherTest {
         when(event.getIssueId()).thenReturn(null);
         when(event.getIssue()).thenReturn(null);
 
-        var buildLink = IssueEventEnricher.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
+        var buildLink = IssueEventEnrichmentController.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
         buildLink.setAccessible(true);
-        String link = (String) buildLink.invoke(enricher, event);
+        String link = (String) buildLink.invoke(controller, event);
 
         assertEquals(frontendBaseUrl, link);
         verifyNoInteractions(userRepository);
@@ -226,7 +226,7 @@ class IssueEventEnricherTest {
             .user(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertNull(enriched.getAssignee());
         assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
@@ -263,7 +263,7 @@ class IssueEventEnricherTest {
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertNotNull(enriched.getAssignee());
         assertEquals(assigneeId, enriched.getAssignee().getId());
@@ -277,10 +277,10 @@ class IssueEventEnricherTest {
 
     @Test
     void buildIssueLink_withNullEvent_usesFrontendBaseUrl() throws Exception {
-        var buildLink = IssueEventEnricher.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
+        var buildLink = IssueEventEnrichmentController.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
         buildLink.setAccessible(true);
 
-        String link = (String) buildLink.invoke(enricher, new Object[] { null });
+        String link = (String) buildLink.invoke(controller, new Object[] { null });
 
         assertEquals(frontendBaseUrl, link);
         verifyNoInteractions(userRepository);
