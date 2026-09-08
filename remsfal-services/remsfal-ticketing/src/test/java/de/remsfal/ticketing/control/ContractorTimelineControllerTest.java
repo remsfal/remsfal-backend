@@ -15,12 +15,18 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ImmutableContractorTimelineJson;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.AbstractTicketingTest;
+import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
+import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
+import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -34,6 +40,9 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
 
     @Inject
     ContractorTimelineRepository repository;
+
+    @Inject
+    TenantTimelineRepository tenantTimelineRepository;
 
     @Test
     void testCreateTimelineEntry_persistsEntity() {
@@ -88,6 +97,73 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
         assertTrue(entries.stream().anyMatch(e -> e.getTimelineId().equals(first.getTimelineId())));
         assertTrue(entries.stream().anyMatch(e -> e.getTimelineId().equals(second.getTimelineId())));
         assertFalse(entries.stream().anyMatch(e -> e.getTimelineId().equals(otherIssue.getTimelineId())));
+    }
+
+    @Test
+    void testCreateTimelineEntry_messageToTenantTrue_copiesToTenantTimeline() {
+        final UUID issueId = UUID.randomUUID();
+        final UUID organizationId = UUID.randomUUID();
+        insertIssue(TicketingTestData.PROJECT_ID, issueId, TicketingTestData.ISSUE_TITLE, IssueType.TASK,
+            IssueStatus.OPEN, IssuePriority.MEDIUM, TicketingTestData.USER_ID_1, TicketingTestData.AGREEMENT_ID,
+            null, "Beschreibung");
+
+        final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
+            .purpose(MessagePurpose.MESSAGE_SENT)
+            .message("Termin am Montag")
+            .messageToTenant(true)
+            .build();
+
+        controller.createTimelineEntry(issueId, organizationId, UUID.randomUUID(), "Bauservice GmbH",
+            UserContext.CONTRACTOR, entry, null);
+
+        final List<TenantTimelineEntity> tenantEntries = tenantTimelineRepository.findByIssue(
+            TicketingTestData.AGREEMENT_ID, issueId, TicketingTestData.PROJECT_ID);
+        assertEquals(1, tenantEntries.size());
+        assertEquals("Termin am Montag", tenantEntries.get(0).getMessage());
+        assertEquals(MessagePurpose.MESSAGE_SENT, tenantEntries.get(0).getPurpose());
+    }
+
+    @Test
+    void testCreateTimelineEntry_messageToTenantFalse_doesNotCopy() {
+        final UUID issueId = UUID.randomUUID();
+        final UUID organizationId = UUID.randomUUID();
+        insertIssue(TicketingTestData.PROJECT_ID, issueId, TicketingTestData.ISSUE_TITLE, IssueType.TASK,
+            IssueStatus.OPEN, IssuePriority.MEDIUM, TicketingTestData.USER_ID_1, TicketingTestData.AGREEMENT_ID,
+            null, "Beschreibung");
+
+        final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
+            .purpose(MessagePurpose.MESSAGE_SENT)
+            .message("Nur intern")
+            .build();
+
+        controller.createTimelineEntry(issueId, organizationId, UUID.randomUUID(), "Bauservice GmbH",
+            UserContext.CONTRACTOR, entry, null);
+
+        final List<TenantTimelineEntity> tenantEntries = tenantTimelineRepository.findByIssue(
+            TicketingTestData.AGREEMENT_ID, issueId, TicketingTestData.PROJECT_ID);
+        assertTrue(tenantEntries.isEmpty());
+    }
+
+    @Test
+    void testCreateTimelineEntry_messageToTenantTrue_noAgreement_skipsCopyWithoutFailing() {
+        final UUID issueId = UUID.randomUUID();
+        final UUID organizationId = UUID.randomUUID();
+        insertIssue(TicketingTestData.PROJECT_ID, issueId, TicketingTestData.ISSUE_TITLE, IssueType.TASK,
+            IssueStatus.OPEN, IssuePriority.MEDIUM, TicketingTestData.USER_ID_1, null,
+            null, "Beschreibung");
+
+        final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
+            .purpose(MessagePurpose.MESSAGE_SENT)
+            .message("Ohne Mietverhaeltnis")
+            .messageToTenant(true)
+            .build();
+
+        final ContractorTimelineEntity created = controller.createTimelineEntry(
+            issueId, organizationId, UUID.randomUUID(), "Bauservice GmbH",
+            UserContext.CONTRACTOR, entry, null);
+
+        assertNotNull(created.getTimelineId());
+        assertTrue(repository.findById(created.getKey()).isPresent());
     }
 
     private ContractorTimelineEntity createEntity(final UUID issueId,

@@ -51,6 +51,10 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     @Schema(readOnly = true)
     public abstract List<OrderAttachmentJson> getAttachments();
 
+    @Nullable
+    @Schema(description = "If true, the message is also copied into the tenant timeline of the issue")
+    public abstract Boolean getMessageToTenant();
+
     public static ContractorTimelineJson valueOf(final ContractorTimelineModel model) {
         final ImmutableContractorTimelineJson.Builder builder = ImmutableContractorTimelineJson.builder()
             .organizationId(model.getOrganizationId())
