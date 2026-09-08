@@ -15,7 +15,7 @@ import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 
 @ApplicationScoped
-public class NotificationConsumer {
+public class NotificationEventConsumer {
 
     @Inject
     Logger logger;

@@ -32,13 +32,13 @@ import jakarta.inject.Inject;
 
 @QuarkusTest
 @QuarkusTestResource(KafkaCompanionResource.class)
-class NotificationConsumerTest extends AbstractKafkaTest {
+class NotificationEventConsumerTest extends AbstractKafkaTest {
 
     @InjectSpy
     MailingController mailingController;
 
     @Inject
-    NotificationConsumer consumer;
+    NotificationEventConsumer consumer;
 
     @Override
     @BeforeEach
