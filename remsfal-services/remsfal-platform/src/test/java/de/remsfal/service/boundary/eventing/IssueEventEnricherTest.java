@@ -8,9 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
-import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.json.ticketing.ImmutableIssueJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.test.kafka.AbstractKafkaTest;
@@ -59,7 +59,7 @@ class IssueEventEnricherTest extends AbstractKafkaTest {
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .issue(issue)
-            .project(ImmutableProjectEventJson.builder().id(projectId).title("Provided project").build())
+            .project(ImmutableProjectJson.builder().id(projectId).title("Provided project").build())
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)

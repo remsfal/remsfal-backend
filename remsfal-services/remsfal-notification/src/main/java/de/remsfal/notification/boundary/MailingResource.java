@@ -12,9 +12,7 @@ import jakarta.ws.rs.core.Response;
 
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
-import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.ImmutableUserJson;
-import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
@@ -195,7 +193,7 @@ public class MailingResource {
     }
 
     private IssueEventJson createMockIssueEvent(IssueEventJson.IssueEventType eventType) {
-        ProjectEventJson project = ImmutableProjectEventJson.builder()
+        ProjectJson project = ImmutableProjectJson.builder()
             .id(UUID.fromString("bcf74f9f-5bf1-4fd7-9ba4-2a6cba11e67f"))
             .title("Test Project")
             .build();

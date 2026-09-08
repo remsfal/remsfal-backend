@@ -9,13 +9,11 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
-import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
-import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.UserEntity;
-import de.remsfal.service.entity.dto.ProjectEntity;
 import jakarta.transaction.Transactional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -39,7 +37,7 @@ public class IssueEventEnrichmentController {
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
         UserJson enrichedAssignee = enrichAssignee(event.getAssignee());
-        ProjectEventJson project = enrichProject(event);
+        ProjectJson project = enrichProject(event);
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
             .issueEventType(event.getIssueEventType())
             .issueId(event.getIssueId())
@@ -58,7 +56,7 @@ public class IssueEventEnrichmentController {
         return enrichedEvent;
     }
 
-    private ProjectEventJson enrichProject(final IssueEventJson event) {
+    private ProjectJson enrichProject(final IssueEventJson event) {
         if (event == null) {
             return null;
         }
@@ -70,15 +68,8 @@ public class IssueEventEnrichmentController {
             return event.getProject();
         }
         return projectRepository.findByIdOptional(projectId)
-            .map(this::toProjectEventJson)
+            .map(ProjectJson::valueOf)
             .orElse(event.getProject());
-    }
-
-    private ProjectEventJson toProjectEventJson(final ProjectEntity project) {
-        return ImmutableProjectEventJson.builder()
-            .id(project.getId())
-            .title(project.getTitle())
-            .build();
     }
 
     private UserJson enrichAssignee(final UserJson assignee) {
