@@ -15,11 +15,11 @@ import jakarta.annotation.Nullable;
 
 @Immutable
 @ImmutableStyle
-@JsonDeserialize(as = ImmutableEmailEventJson.class)
+@JsonDeserialize(as = ImmutableNotificationEventJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public interface EmailEventJson {
+public interface NotificationEventJson {
 
-    String TOPIC = "user-notification";
+    String TOPIC = "user-notifications";
 
     enum NotificationEventType {
         USER_REGISTRATION,

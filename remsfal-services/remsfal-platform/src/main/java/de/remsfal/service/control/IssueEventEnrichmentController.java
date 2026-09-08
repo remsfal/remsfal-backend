@@ -1,10 +1,9 @@
 package de.remsfal.service.control;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.json.ImmutableUserJson;
@@ -17,13 +16,12 @@ import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
-import io.smallrye.common.annotation.Blocking;
 import jakarta.transaction.Transactional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class IssueEventEnricher {
+public class IssueEventEnrichmentController {
 
     @Inject
     @ConfigProperty(name = "de.remsfal.frontend.url.base")
@@ -38,9 +36,6 @@ public class IssueEventEnricher {
     @Inject
     ProjectRepository projectRepository;
 
-    @Blocking
-    @Incoming(IssueEventJson.TOPIC_BASIC)
-    @Outgoing(IssueEventJson.TOPIC_ENRICHED)
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
         UserJson enrichedAssignee = enrichAssignee(event.getAssignee());
@@ -48,26 +43,18 @@ public class IssueEventEnricher {
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
             .issueEventType(event.getIssueEventType())
             .issueId(event.getIssueId())
-            .projectId(event.getProjectId())
+            .issue(event.getIssue())
             .project(project)
-            .title(event.getTitle())
             .link(buildIssueLink(event))
-            .issueType(event.getIssueType())
-            .status(event.getStatus())
-            .reporterId(event.getReporterId())
-            .agreementId(event.getAgreementId())
-            .assigneeId(event.getAssigneeId())
-            .description(event.getDescription())
-            .parentIssue(event.getParentIssue())
-            .childrenIssues(event.getChildrenIssues())
-            .blockedBy(event.getBlockedBy())
-            .relatedTo(event.getRelatedTo())
-            .duplicateOf(event.getDuplicateOf())
+            .activityText(event.getActivityText())
             .user(event.getUser())
             .assignee(enrichedAssignee)
             .mentionedUser(event.getMentionedUser())
+            .organizationId(event.getOrganizationId())
+            .contractorId(event.getContractorId())
             .build();
-        logger.infov("Enriched issue event (issueId={0}, projectId={1})", event.getIssueId(), event.getProjectId());
+        logger.infov("Enriched issue event (issueId={0}, projectId={1})", event.getIssueId(),
+            event.getIssue() != null ? event.getIssue().getProjectId() : null);
         return enrichedEvent;
     }
 
@@ -78,10 +65,11 @@ public class IssueEventEnricher {
         if (event.getProject() != null && event.getProject().getTitle() != null) {
             return event.getProject();
         }
-        if (event.getProjectId() == null) {
+        final UUID projectId = event.getIssue() != null ? event.getIssue().getProjectId() : null;
+        if (projectId == null) {
             return event.getProject();
         }
-        return projectRepository.findByIdOptional(event.getProjectId())
+        return projectRepository.findByIdOptional(projectId)
             .map(this::toProjectEventJson)
             .orElse(event.getProject());
     }
@@ -111,9 +99,10 @@ public class IssueEventEnricher {
     }
 
     String buildIssueLink(final IssueEventJson event) {
-        if (event == null || event.getIssueId() == null || event.getProjectId() == null) {
+        final UUID projectId = event != null && event.getIssue() != null ? event.getIssue().getProjectId() : null;
+        if (event == null || event.getIssueId() == null || projectId == null) {
             return frontendBaseUrl;
         }
-        return frontendBaseUrl + "/projects/" + event.getProjectId() + "/issueedit/" + event.getIssueId();
+        return frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + event.getIssueId();
     }
 }

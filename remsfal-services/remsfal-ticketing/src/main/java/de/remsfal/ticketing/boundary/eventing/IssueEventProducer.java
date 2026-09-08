@@ -12,6 +12,7 @@ import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -72,38 +73,57 @@ public class IssueEventProducer {
         final IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(type)
             .issueId(issue.getId())
-            .projectId(issue.getProjectId())
-            .title(issue.getTitle())
-            .issueType(issue.getType())
-            .status(issue.getStatus())
-            .reporterId(issue.getReporterId())
-            .agreementId(issue.getAgreementId())
-            .assigneeId(issue.getAssigneeId())
-            .description(issue.getDescription())
-            .parentIssue(issue.getParentIssue())
-            .childrenIssues(issue.getChildrenIssues())
-            .blockedBy(issue.getBlockedBy())
-            .relatedTo(issue.getRelatedTo())
-            .blocks(issue.getBlocks())
-            .duplicateOf(issue.getDuplicateOf())
+            .issue(IssueJson.valueOf(issue))
+            .activityText(issue.getDescription())
             .user(toUserJson(actor.getId(), actor.getEmail(), actor.getName()))
             .assignee(assignee)
             .mentionedUser(mentionedUser)
             .build();
 
+        emit(event, type, issue.getId());
+    }
+
+    /**
+     * Sends an activity event for a domain action outside the core issue-mutation flow (a tenant
+     * timeline entry, a chat message, or a quotation/order-placement status change) so it can be
+     * picked up by the activity feed consumer alongside regular issue events. Reuses the
+     * {@code IssueEventJson} schema since these activities are always tied to one issue.
+     */
+    public void sendActivityEvent(final IssueEventType type, final IssueModel issue, final UUID actorId,
+        final String actorName, final String description, final UUID organizationId, final UUID contractorId) {
+        if (issue == null) {
+            logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
+            return;
+        }
+
+        final IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(type)
+            .issueId(issue.getId())
+            .issue(IssueJson.valueOf(issue))
+            .activityText(description)
+            .user(toUserJson(actorId, null, actorName))
+            .assignee(toUserJson(issue.getAssigneeId(), null, null))
+            .organizationId(organizationId)
+            .contractorId(contractorId)
+            .build();
+
+        emit(event, type, issue.getId());
+    }
+
+    private void emit(final IssueEventJson event, final IssueEventType type, final UUID issueId) {
         try {
-            logger.infov("Sending issue event (type={0}, issueId={1}, projectId={2})", type, issue.getId(),
-                issue.getProjectId());
+            logger.infov("Sending issue event (type={0}, issueId={1}, projectId={2})", type, issueId,
+                event.getIssue() != null ? event.getIssue().getProjectId() : null);
             CompletionStage<Void> ack = emitter.send(event);
             ack.whenComplete((res, ex) -> {
                 if (ex != null) {
-                    logger.errorv(ex, "Failed to send issue event (type={0}, issueId={1})", type, issue.getId());
+                    logger.errorv(ex, "Failed to send issue event (type={0}, issueId={1})", type, issueId);
                 } else {
-                    logger.infov("Issue event sent (type={0}, issueId={1})", type, issue.getId());
+                    logger.infov("Issue event sent (type={0}, issueId={1})", type, issueId);
                 }
             });
         } catch (Exception e) {
-            logger.errorv(e, "Error while sending issue event (type={0}, issueId={1})", type, issue.getId());
+            logger.errorv(e, "Error while sending issue event (type={0}, issueId={1})", type, issueId);
         }
     }
 

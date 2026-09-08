@@ -63,7 +63,7 @@ public class IssueEventConsumer {
     }
 
     private Uni<Void> handleIssueCreated(IssueEventJson event) {
-        logger.infov("Handling ISSUE_CREATED for issue: {0}", event.getTitle());
+        logger.infov("Handling ISSUE_CREATED for issue: {0}", event.getIssue().getTitle());
         Uni<Void> result = Uni.createFrom().voidItem();
         if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
             result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getAssignee()));
@@ -77,7 +77,7 @@ public class IssueEventConsumer {
     }
 
     private Uni<Void> handleIssueUpdated(IssueEventJson event) {
-        logger.infov("Handling ISSUE_UPDATED for issue: {0}", event.getTitle());
+        logger.infov("Handling ISSUE_UPDATED for issue: {0}", event.getIssue().getTitle());
         Uni<Void> result = Uni.createFrom().voidItem();
         if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
             result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getAssignee()));
@@ -91,7 +91,7 @@ public class IssueEventConsumer {
     }
 
     private Uni<Void> handleIssueAssigned(IssueEventJson event) {
-        logger.infov("Handling ISSUE_ASSIGNED for issue: {0}", event.getTitle());
+        logger.infov("Handling ISSUE_ASSIGNED for issue: {0}", event.getIssue().getTitle());
         Uni<Void> result = Uni.createFrom().voidItem();
         if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
             result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getAssignee()));
