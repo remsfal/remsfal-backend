@@ -172,9 +172,12 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
 
     @Test
     void testController_updateActivityStatus_notFound() {
+        UUID userId = UUID.randomUUID();
+        UUID activityId = UUID.randomUUID();
+
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> controller.updateActivityStatus(UUID.randomUUID(), UUID.randomUUID(), true)
+            () -> controller.updateActivityStatus(userId, activityId, true)
         );
         assertEquals("Activity not found for user", exception.getMessage());
     }
@@ -192,9 +195,12 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
 
     @Test
     void testController_deleteActivity_notFound() {
+        UUID userId = UUID.randomUUID();
+        UUID activityId = UUID.randomUUID();
+
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> controller.deleteActivity(UUID.randomUUID(), UUID.randomUUID())
+            () -> controller.deleteActivity(userId, activityId)
         );
         assertEquals("Activity not found for user", exception.getMessage());
     }

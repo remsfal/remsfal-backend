@@ -234,14 +234,14 @@ class ActivityFeedEventConsumerTest {
             .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
             .awaitCompletion();
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        List<ActivityFeedEntity> allActivities = repository.findByQuery(UUID.randomUUID(), NO_FILTER, null, 50);
-        assertEquals(0, allActivities.size());
+        Awaitility.await()
+            .during(Duration.ofSeconds(2))
+            .atMost(Duration.ofSeconds(3))
+            .untilAsserted(() -> {
+                List<ActivityFeedEntity> allActivities =
+                    repository.findByQuery(UUID.randomUUID(), NO_FILTER, null, 50);
+                assertEquals(0, allActivities.size());
+            });
     }
 
     @Test
@@ -265,14 +265,14 @@ class ActivityFeedEventConsumerTest {
             .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
             .awaitCompletion();
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        List<ActivityFeedEntity> allActivities = repository.findByQuery(UUID.randomUUID(), NO_FILTER, null, 50);
-        assertEquals(0, allActivities.size());
+        Awaitility.await()
+            .during(Duration.ofSeconds(2))
+            .atMost(Duration.ofSeconds(3))
+            .untilAsserted(() -> {
+                List<ActivityFeedEntity> allActivities =
+                    repository.findByQuery(UUID.randomUUID(), NO_FILTER, null, 50);
+                assertEquals(0, allActivities.size());
+            });
     }
 
     @Test
