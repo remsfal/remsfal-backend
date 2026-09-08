@@ -8,7 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 
-import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.eventing.NotificationEventJson;
 import de.remsfal.test.AbstractTest;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.kafka.InjectKafkaCompanion;
@@ -29,7 +29,7 @@ public abstract class AbstractKafkaTest extends AbstractTest {
 
     @BeforeEach
     protected void clearAllTopics() {
-        Set<String> topics = Set.of(EmailEventJson.TOPIC);
+        Set<String> topics = Set.of(NotificationEventJson.TOPIC);
         for (String topic : topics) {
             companion.topics().clearIfExists(topic);
         }

@@ -3,7 +3,7 @@ package de.remsfal.service.control;
 import java.util.Set;
 
 import de.remsfal.core.json.ImmutableUserJson;
-import de.remsfal.core.json.eventing.EmailEventJson;
+import de.remsfal.core.json.eventing.NotificationEventJson;
 import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.project.ImmutableProjectJson;
@@ -43,7 +43,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         notificationController.informUserAboutProjectMembership(user, project);
 
         given()
-            .topic(EmailEventJson.TOPIC)
+            .topic(NotificationEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
@@ -73,7 +73,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         notificationController.informUserAboutOrganizationMembership(user, organization);
 
         given()
-            .topic(EmailEventJson.TOPIC)
+            .topic(NotificationEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
@@ -94,7 +94,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         notificationController.informUserAboutRegistration(user);
 
         given()
-            .topic(EmailEventJson.TOPIC)
+            .topic(NotificationEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
@@ -115,7 +115,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         notificationController.informUserAboutRegistration(user);
 
         given()
-            .topic(EmailEventJson.TOPIC)
+            .topic(NotificationEventJson.TOPIC)
         .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.locale", Matchers.equalTo("en"));

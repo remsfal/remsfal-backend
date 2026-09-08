@@ -21,6 +21,8 @@ import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
+import de.remsfal.core.json.ticketing.ImmutableIssueJson;
+import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.service.entity.dao.ProjectRepository;
@@ -32,7 +34,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 
 @QuarkusTest
-class IssueEventEnricherTest {
+class IssueEventEnrichmentControllerTest {
 
     @InjectMock
     UserRepository userRepository;
@@ -41,7 +43,7 @@ class IssueEventEnricherTest {
     ProjectRepository projectRepository;
 
     @Inject
-    IssueEventEnricher enricher;
+    IssueEventEnrichmentController controller;
 
     @Inject
     @ConfigProperty(name = "de.remsfal.frontend.url.base")
@@ -75,12 +77,11 @@ class IssueEventEnricherTest {
         project.setTitle(projectTitle);
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
-        IssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventType.ISSUE_ASSIGNED)
-            .issueId(issueId)
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
             .projectId(projectId)
             .title("Ticket title")
-            .issueType(IssueType.MAINTENANCE)
+            .type(IssueType.MAINTENANCE)
             .status(IssueStatus.OPEN)
             .reporterId(reporterId)
             .agreementId(tenancyId)
@@ -92,12 +93,18 @@ class IssueEventEnricherTest {
             .blocks(blocks)
             .parentIssue(parent)
             .childrenIssues(childOf)
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ISSUE_ASSIGNED)
+            .issueId(issueId)
+            .issue(issue)
             .user(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
             .mentionedUser(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         assertNotNull(enriched.getAssignee());
@@ -107,13 +114,13 @@ class IssueEventEnricherTest {
         assertEquals("Person", enriched.getAssignee().getLastName());
         assertEquals(event.getUser(), enriched.getUser());
         assertEquals(event.getMentionedUser(), enriched.getMentionedUser());
-        assertEquals(reporterId, enriched.getReporterId());
-        assertEquals(tenancyId, enriched.getAgreementId());
-        assertEquals(assigneeId, enriched.getAssigneeId());
-        assertEquals("Fixture broken", enriched.getDescription());
-        assertEquals(blockedBy, enriched.getBlockedBy());
-        assertEquals(relatedTo, enriched.getRelatedTo());
-        assertEquals(duplicateOf, enriched.getDuplicateOf());
+        assertEquals(reporterId, enriched.getIssue().getReporterId());
+        assertEquals(tenancyId, enriched.getIssue().getAgreementId());
+        assertEquals(assigneeId, enriched.getIssue().getAssigneeId());
+        assertEquals("Fixture broken", enriched.getIssue().getDescription());
+        assertEquals(blockedBy, enriched.getIssue().getBlockedBy());
+        assertEquals(relatedTo, enriched.getIssue().getRelatedTo());
+        assertEquals(duplicateOf, enriched.getIssue().getDuplicateOf());
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
         assertEquals(projectTitle, enriched.getProject().getTitle());
@@ -134,15 +141,19 @@ class IssueEventEnricherTest {
         project.setTitle("Assigneeless project");
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Assignee without id")
+            .build();
+
         IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(UUID.randomUUID())
-            .projectId(projectId)
-            .title("Assignee without id")
+            .issue(issue)
             .assignee(assigneeWithoutId)
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertEquals(assigneeWithoutId, enriched.getAssignee());
         verifyNoInteractions(userRepository);
@@ -156,15 +167,19 @@ class IssueEventEnricherTest {
     void enrich_usesExistingProjectWhenProvided() {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
-        IssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventType.ISSUE_UPDATED)
-            .issueId(issueId)
+        IssueJson issue = ImmutableIssueJson.builder()
             .projectId(projectId)
-            .project(ImmutableProjectEventJson.builder().id(projectId).title("Provided project").build())
             .title("Existing project info")
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(ImmutableProjectEventJson.builder().id(projectId).title("Provided project").build())
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
 
         assertNotNull(enriched.getProject());
         assertEquals(projectId, enriched.getProject().getId());
@@ -178,11 +193,11 @@ class IssueEventEnricherTest {
     void buildIssueLink_returnsBaseUrlWhenIdentifiersMissing() throws Exception {
         IssueEventJson event = mock(IssueEventJson.class);
         when(event.getIssueId()).thenReturn(null);
-        when(event.getProjectId()).thenReturn(null);
+        when(event.getIssue()).thenReturn(null);
 
-        var buildLink = IssueEventEnricher.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
+        var buildLink = IssueEventEnrichmentController.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
         buildLink.setAccessible(true);
-        String link = (String) buildLink.invoke(enricher, event);
+        String link = (String) buildLink.invoke(controller, event);
 
         assertEquals(frontendBaseUrl, link);
         verifyNoInteractions(userRepository);
@@ -197,17 +212,21 @@ class IssueEventEnricherTest {
         project.setId(projectId);
         project.setTitle("No assignee project");
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("No assignee")
+            .type(IssueType.TASK)
+            .status(IssueStatus.IN_PROGRESS)
+            .build();
+
         IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
-            .projectId(projectId)
-            .title("No assignee")
-            .issueType(IssueType.TASK)
-            .status(IssueStatus.IN_PROGRESS)
+            .issue(issue)
             .user(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertNull(enriched.getAssignee());
         assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
@@ -230,17 +249,21 @@ class IssueEventEnricherTest {
         project.setTitle("Project unknown assignee");
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Unknown assignee")
+            .type(IssueType.APPLICATION)
+            .status(IssueStatus.PENDING)
+            .build();
+
         IssueEventJson event = ImmutableIssueEventJson.builder()
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
-            .projectId(projectId)
-            .title("Unknown assignee")
-            .issueType(IssueType.APPLICATION)
-            .status(IssueStatus.PENDING)
+            .issue(issue)
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
             .build();
 
-        IssueEventJson enriched = enricher.enrich(event);
+        IssueEventJson enriched = controller.enrich(event);
 
         assertNotNull(enriched.getAssignee());
         assertEquals(assigneeId, enriched.getAssignee().getId());
@@ -254,10 +277,10 @@ class IssueEventEnricherTest {
 
     @Test
     void buildIssueLink_withNullEvent_usesFrontendBaseUrl() throws Exception {
-        var buildLink = IssueEventEnricher.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
+        var buildLink = IssueEventEnrichmentController.class.getDeclaredMethod("buildIssueLink", IssueEventJson.class);
         buildLink.setAccessible(true);
 
-        String link = (String) buildLink.invoke(enricher, new Object[] { null });
+        String link = (String) buildLink.invoke(controller, new Object[] { null });
 
         assertEquals(frontendBaseUrl, link);
         verifyNoInteractions(userRepository);

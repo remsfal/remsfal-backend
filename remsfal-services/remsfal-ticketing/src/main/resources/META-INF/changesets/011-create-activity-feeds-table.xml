@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-011-create-activity-feeds-table" author="alexander.stanik@htw-berlin.de">
+        <comment>Create activity feed schema</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.activity_feeds (
+                user_id UUID,
+                activity_id UUID,
+                project_id UUID,
+                issue_id UUID,
+                activity_type TEXT,
+                title TEXT,
+                description TEXT,
+                issue_type TEXT,
+                status TEXT,
+                link TEXT,
+                actor_id UUID,
+                actor_name TEXT,
+                agreement_id UUID,
+                organization_id UUID,
+                contractor_id UUID,
+                assignee_id UUID,
+                read BOOLEAN,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY (user_id, activity_id)
+            ) WITH CLUSTERING ORDER BY (activity_id DESC);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.activity_feeds;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

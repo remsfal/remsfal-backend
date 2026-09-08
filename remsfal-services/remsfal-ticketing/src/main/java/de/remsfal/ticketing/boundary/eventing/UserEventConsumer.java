@@ -10,22 +10,20 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.json.eventing.AffectedTenantJson;
 import de.remsfal.core.json.eventing.UserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson.UserEventType;
-import de.remsfal.core.json.project.TenantJson;
-import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.ticketing.control.SelfServiceIssueController;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
-import de.remsfal.ticketing.entity.dto.IssueEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class UserEventConsumer {
 
-    private static final String SELF_SERVICE_ISSUE_TITLE = "Selbstständige Datensatzänderung";
-
     @Inject
     IssueRepository issueRepository;
+
+    @Inject
+    SelfServiceIssueController selfServiceIssueController;
 
     @Inject
     Logger logger;
@@ -60,18 +58,8 @@ public class UserEventConsumer {
         }
 
         for (final AffectedTenantJson affectedTenant : affectedTenants) {
-            final IssueEntity entity = new IssueEntity();
-            entity.generateId();
-            entity.setProjectId(affectedTenant.getProjectId());
-            entity.setTitle(SELF_SERVICE_ISSUE_TITLE);
-            entity.setType(IssueType.SELF_SERVICE);
-            entity.setStatus(IssueStatus.PENDING);
-            entity.setPriority(IssuePriority.UNCLASSIFIED);
-            entity.setReporterId(event.getUserId());
-            entity.setReportedBy(event.getUser().getName());
-            entity.setVisibleToTenants(false);
-            entity.setTenantUpdate(TenantJson.valueOf(event.getUser(), affectedTenant.getTenantId()));
-            issueRepository.insert(entity);
+            selfServiceIssueController.createIssueForAffectedTenant(event.getUserId(), event.getUser(),
+                affectedTenant);
         }
         logger.infov("Processed user update event (userId={0}, createdIssues={1})",
             event.getUserId(), affectedTenants.size());

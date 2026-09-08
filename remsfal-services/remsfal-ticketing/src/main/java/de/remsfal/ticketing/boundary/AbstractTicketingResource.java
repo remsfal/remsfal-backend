@@ -15,6 +15,7 @@ import de.remsfal.common.boundary.AbstractResource;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.ticketing.ActivityFeedModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.IssueController;
 
@@ -127,6 +128,20 @@ public class AbstractTicketingResource extends AbstractResource {
             return null;
         }
         return issues.get(issues.size() - 1).getId().toString();
+    }
+
+    /**
+     * Computes the cursor for the next page from the current page's activities, same logic as
+     * {@link #nextCursorOf(List, Integer)} above. Named differently (rather than overloaded) since
+     * both {@code List<? extends IssueModel>} and {@code List<? extends ActivityFeedModel>} erase
+     * to the same raw {@code List} parameter type.
+     */
+    protected static String nextActivityCursorOf(final List<? extends ActivityFeedModel> activities,
+        final Integer limit) {
+        if (activities.size() < limit) {
+            return null;
+        }
+        return activities.get(activities.size() - 1).getId().toString();
     }
 
 }
