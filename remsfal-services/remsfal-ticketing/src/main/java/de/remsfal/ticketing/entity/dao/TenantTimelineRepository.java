@@ -4,6 +4,9 @@ import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.eclipse.jnosql.databases.cassandra.mapping.CassandraTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +17,9 @@ public class TenantTimelineRepository extends AbstractRepository<TenantTimelineE
 
     static final String TENANCY_ID = "tenancy_id";
     static final String TIMELINE_ID = "timeline_id";
+
+    @Inject
+    CassandraTemplate cassandraTemplate;
 
     public TenantTimelineEntity insert(final TenantTimelineEntity entity) {
         return template.insert(entity);
@@ -34,5 +40,28 @@ public class TenantTimelineRepository extends AbstractRepository<TenantTimelineE
             .and(ISSUE_ID).eq(issueId)
             .and(PROJECT_ID).eq(projectId)
             .result();
+    }
+
+    /**
+     * Finds all tenant timeline entries for an issue, regardless of {@code tenancy_id}/{@code project_id}
+     * (part of the table's partition key). Relies on an SAI index on {@code issue_id}.
+     */
+    public List<TenantTimelineEntity> findByIssueIdOnly(final UUID issueId) {
+        return cassandraTemplate.<TenantTimelineEntity>cql(
+            "SELECT * FROM remsfal.tenant_timelines WHERE " + ISSUE_ID + " = ? ALLOW FILTERING", issueId)
+            .toList();
+    }
+
+    public int deleteByIssueId(final UUID issueId) {
+        final List<TenantTimelineEntity> rows = findByIssueIdOnly(issueId);
+        for (final TenantTimelineEntity row : rows) {
+            template.delete(TenantTimelineEntity.class)
+                .where(TENANCY_ID).eq(row.getKey().getTenancyId())
+                .and(ISSUE_ID).eq(row.getKey().getIssueId())
+                .and(PROJECT_ID).eq(row.getKey().getProjectId())
+                .and(TIMELINE_ID).eq(row.getKey().getTimelineId())
+                .execute();
+        }
+        return rows.size();
     }
 }

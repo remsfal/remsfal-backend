@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-012-activity-feeds-project-id-index" author="alexander.stanik@htw-berlin.de">
+        <comment>Add SAI index on activity_feeds.project_id so all activities of a deleted project
+                 can be found and removed, even though the table is partitioned by user_id.</comment>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS activity_feeds_project_id_sai
+            ON REMSFAL.activity_feeds (project_id)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS REMSFAL.activity_feeds_project_id_sai;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

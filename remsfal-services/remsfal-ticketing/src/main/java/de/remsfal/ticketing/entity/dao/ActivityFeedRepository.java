@@ -109,4 +109,22 @@ public class ActivityFeedRepository extends AbstractRepository<ActivityFeedEntit
             .execute();
     }
 
+    /**
+     * Finds all activity feed entries for a project, regardless of {@code user_id} (the table's
+     * partition key). Relies on an SAI index on {@code project_id}.
+     */
+    public List<ActivityFeedEntity> findByProjectId(final UUID projectId) {
+        return cassandraTemplate.<ActivityFeedEntity>cql(
+            "SELECT * FROM remsfal.activity_feeds WHERE project_id = ? ALLOW FILTERING", projectId)
+            .toList();
+    }
+
+    public int deleteByProjectId(final UUID projectId) {
+        final List<ActivityFeedEntity> rows = findByProjectId(projectId);
+        for (final ActivityFeedEntity row : rows) {
+            delete(row.getKey());
+        }
+        return rows.size();
+    }
+
 }

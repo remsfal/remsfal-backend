@@ -24,5 +24,8 @@
     <include file="META-INF/changesets/009-create-tenant-timelines-table.xml"/>
     <include file="META-INF/changesets/010-create-contractor-timelines-table.xml"/>
     <include file="META-INF/changesets/011-create-activity-feeds-table.xml"/>
+    <include file="META-INF/changesets/012-add-activity-feeds-project-id-index.xml"/>
+    <include file="META-INF/changesets/013-add-contractor-timelines-issue-id-index.xml"/>
+    <include file="META-INF/changesets/014-add-tenant-timelines-issue-id-index.xml"/>
 
 </databaseChangeLog>

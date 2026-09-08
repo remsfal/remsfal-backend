@@ -75,6 +75,44 @@ class TenantTimelineRepositoryTest extends AbstractTicketingTest {
     }
 
     @Test
+    void testFindByIssueIdOnly_returnsEntriesAcrossDifferentTenancies() {
+        final UUID issueId = UUID.randomUUID();
+
+        final TenantTimelineEntity first = createEntity(UUID.randomUUID(), issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht A");
+        final TenantTimelineEntity second = createEntity(UUID.randomUUID(), issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht B");
+        final TenantTimelineEntity otherIssue = createEntity(UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Andere Nachricht");
+
+        repository.insert(first);
+        repository.insert(second);
+        repository.insert(otherIssue);
+
+        final List<TenantTimelineEntity> result = repository.findByIssueIdOnly(issueId);
+
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(first.getTimelineId())));
+        assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(second.getTimelineId())));
+    }
+
+    @Test
+    void testDeleteByIssueId_removesAllEntriesAcrossTenancies() {
+        final UUID issueId = UUID.randomUUID();
+        final TenantTimelineEntity first = createEntity(UUID.randomUUID(), issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht A");
+        final TenantTimelineEntity second = createEntity(UUID.randomUUID(), issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht B");
+        repository.insert(first);
+        repository.insert(second);
+
+        final int deleted = repository.deleteByIssueId(issueId);
+
+        assertEquals(2, deleted);
+        assertTrue(repository.findByIssueIdOnly(issueId).isEmpty());
+    }
+
+    @Test
     void testFindById_notFound() {
         TenantTimelineKey key = new TenantTimelineKey();
         key.setTenancyId(UUID.randomUUID());

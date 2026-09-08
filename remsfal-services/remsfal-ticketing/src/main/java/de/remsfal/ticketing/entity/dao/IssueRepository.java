@@ -24,6 +24,7 @@ import java.util.List;
 public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     private static final String AND = " AND ";
+    private static final int CASCADE_PAGE_SIZE = 500;
 
     // ---- Issue columns ----
     static final String PRIORITY           = "priority";
@@ -68,6 +69,62 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
             update(issue);
         }
         return issues.size();
+    }
+
+    /**
+     * Nulls out {@code agreement_id} on all issues of a project that reference the given, now
+     * deleted, rental agreement. Paginates through {@link #findByQuery} rather than issuing a
+     * single unscoped scan, since a project partition may hold more issues than fit in one page.
+     */
+    public int clearAgreementId(final UUID projectId, final UUID agreementId) {
+        if (projectId == null || agreementId == null) {
+            return 0;
+        }
+        final IssueFilter filter = new IssueFilter(projectId, null, agreementId, null, null, null, null, null);
+        int updated = 0;
+        UUID cursor = null;
+        List<IssueEntity> page;
+        do {
+            page = findByQuery(filter, cursor, CASCADE_PAGE_SIZE);
+            for (final IssueEntity issue : page) {
+                issue.setAgreementId(null);
+                update(issue);
+                updated++;
+            }
+            if (!page.isEmpty()) {
+                cursor = page.get(page.size() - 1).getId();
+            }
+        } while (page.size() == CASCADE_PAGE_SIZE);
+        return updated;
+    }
+
+    /**
+     * Fetches all issues of a project's partition, paginating through {@link #findByQuery}.
+     * Used to resolve the issueIds that need cascading cleanup when a whole project is deleted.
+     */
+    public List<IssueEntity> findAllByProjectId(final UUID projectId) {
+        final IssueFilter filter = new IssueFilter(projectId, null, null, null, null, null, null, null);
+        final List<IssueEntity> all = new ArrayList<>();
+        UUID cursor = null;
+        List<IssueEntity> page;
+        do {
+            page = findByQuery(filter, cursor, CASCADE_PAGE_SIZE);
+            all.addAll(page);
+            if (!page.isEmpty()) {
+                cursor = page.get(page.size() - 1).getId();
+            }
+        } while (page.size() == CASCADE_PAGE_SIZE);
+        return all;
+    }
+
+    /**
+     * Deletes the entire {@code issues} partition of a project. Used when the whole project has
+     * been deleted upstream and none of its issues can be reached any more.
+     */
+    public void deleteByProjectId(final UUID projectId) {
+        template.delete(IssueEntity.class)
+            .where(PROJECT_ID).eq(projectId)
+            .execute();
     }
 
     /**

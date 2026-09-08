@@ -77,6 +77,44 @@ class ContractorTimelineRepositoryTest extends AbstractTicketingTest {
     }
 
     @Test
+    void testFindByIssueIdOnly_returnsEntriesAcrossDifferentOrganizations() {
+        final UUID issueId = UUID.randomUUID();
+
+        final ContractorTimelineEntity first = createEntity(issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht A");
+        final ContractorTimelineEntity second = createEntity(issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht B");
+        final ContractorTimelineEntity otherIssue = createEntity(UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Andere Nachricht");
+
+        repository.insert(first);
+        repository.insert(second);
+        repository.insert(otherIssue);
+
+        final List<ContractorTimelineEntity> result = repository.findByIssueIdOnly(issueId);
+
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(first.getTimelineId())));
+        assertTrue(result.stream().anyMatch(entry -> entry.getTimelineId().equals(second.getTimelineId())));
+    }
+
+    @Test
+    void testDeleteByIssueId_removesAllEntriesAcrossOrganizations() {
+        final UUID issueId = UUID.randomUUID();
+        final ContractorTimelineEntity first = createEntity(issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht A");
+        final ContractorTimelineEntity second = createEntity(issueId, UUID.randomUUID(),
+            UUID.randomUUID(), MessagePurpose.MESSAGE_SENT, "Nachricht B");
+        repository.insert(first);
+        repository.insert(second);
+
+        final int deleted = repository.deleteByIssueId(issueId);
+
+        assertEquals(2, deleted);
+        assertTrue(repository.findByIssueIdOnly(issueId).isEmpty());
+    }
+
+    @Test
     void testFindById_notFound() {
         final ContractorTimelineKey key = new ContractorTimelineKey();
         key.setIssueId(UUID.randomUUID());

@@ -2,6 +2,7 @@ package de.remsfal.ticketing.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -177,6 +178,64 @@ class IssueRepositoryTest extends AbstractTicketingTest {
             new IssueFilter(projectId, null, null, null, null, null, null, null), cursorOlderThanAnyUuidV7, 10);
 
         assertTrue(page.isEmpty());
+    }
+
+    @Test
+    void testClearAgreementId_clearsOnlyMatchingIssues() {
+        UUID projectId = UUID.randomUUID();
+        UUID agreementId = UUID.randomUUID();
+        UUID otherAgreementId = UUID.randomUUID();
+        UUID issueId1 = UUID.randomUUID();
+        UUID issueId2 = UUID.randomUUID();
+        UUID issueId3 = UUID.randomUUID();
+
+        insertIssue(projectId, issueId1, "Issue 1", IssueType.TASK, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), agreementId, null, null);
+        insertIssue(projectId, issueId2, "Issue 2", IssueType.TASK, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), agreementId, null, null);
+        insertIssue(projectId, issueId3, "Issue 3", IssueType.TASK, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), otherAgreementId, null, null);
+
+        int updated = repository.clearAgreementId(projectId, agreementId);
+
+        assertEquals(2, updated);
+        assertNull(repository.findByIssueId(issueId1).orElseThrow().getAgreementId());
+        assertNull(repository.findByIssueId(issueId2).orElseThrow().getAgreementId());
+        assertEquals(otherAgreementId, repository.findByIssueId(issueId3).orElseThrow().getAgreementId());
+    }
+
+    @Test
+    void testFindAllByProjectId_returnsAllIssuesOfProject() {
+        UUID projectId = UUID.randomUUID();
+        UUID otherProjectId = UUID.randomUUID();
+        for (int i = 0; i < 3; i++) {
+            insertIssue(projectId, UUIDv7.randomUUID(), "Issue " + i, IssueType.TASK, IssueStatus.OPEN,
+                IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+        }
+        insertIssue(otherProjectId, UUIDv7.randomUUID(), "Other project issue", IssueType.TASK, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+
+        List<IssueEntity> issues = repository.findAllByProjectId(projectId);
+
+        assertEquals(3, issues.size());
+        issues.forEach(issue -> assertEquals(projectId, issue.getProjectId()));
+    }
+
+    @Test
+    void testDeleteByProjectId_removesEntirePartition() {
+        UUID projectId = UUID.randomUUID();
+        UUID otherProjectId = UUID.randomUUID();
+        UUID issueId = UUID.randomUUID();
+        UUID otherIssueId = UUID.randomUUID();
+        insertIssue(projectId, issueId, "Issue", IssueType.TASK, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+        insertIssue(otherProjectId, otherIssueId, "Other issue", IssueType.TASK, IssueStatus.OPEN,
+            IssuePriority.MEDIUM, UUID.randomUUID(), null, null, null);
+
+        repository.deleteByProjectId(projectId);
+
+        assertTrue(repository.findByIssueId(issueId).isEmpty());
+        assertTrue(repository.findByIssueId(otherIssueId).isPresent());
     }
 
     @Test

@@ -22,14 +22,16 @@ public class NotificationController {
     @ConfigProperty(name = "de.remsfal.frontend.url.base")
     public String frontendBaseUrl;
 
-    @ConfigProperty(name = "de.remsfal.frontend.path.projects", defaultValue = "/projects")
+    @ConfigProperty(name = "de.remsfal.frontend.path.projects",
+        defaultValue = "/projects")
     public String frontendProjectsPath;
 
-    @ConfigProperty(name = "de.remsfal.frontend.path.organizations", defaultValue = "/organizations")
+    @ConfigProperty(name = "de.remsfal.frontend.path.organizations",
+        defaultValue = "/organizations")
     public String frontendOrganizationsPath;
 
     @ConfigProperty(name = "de.remsfal.frontend.path.additional-email-verification",
-        defaultValue = "/api/v1/authentication/verify-additional-email")
+        defaultValue = "/verify-additional-email")
     public String frontendAdditionalEmailVerificationPath;
 
     @ConfigProperty(name = "de.remsfal.user.language.default", defaultValue = "de")

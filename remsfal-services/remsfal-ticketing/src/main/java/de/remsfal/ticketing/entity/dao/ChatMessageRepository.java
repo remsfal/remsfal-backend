@@ -21,4 +21,11 @@ public class ChatMessageRepository extends AbstractRepository<ChatMessageEntity,
             .and(PROJECT_ID).eq(projectId)
             .result();
     }
+
+    public void deleteByIssue(final UUID issueId, final UUID projectId) {
+        template.delete(ChatMessageEntity.class)
+            .where(ISSUE_ID).eq(issueId)
+            .and(PROJECT_ID).eq(projectId)
+            .execute();
+    }
 }

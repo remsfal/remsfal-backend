@@ -52,4 +52,10 @@ public class OrderPlacementRepository extends AbstractRepository<OrderPlacementE
             .result();
     }
 
+    public void deleteByIssueId(final UUID issueId) {
+        template.delete(OrderPlacementEntity.class)
+            .where(ISSUE_ID).eq(issueId)
+            .execute();
+    }
+
 }

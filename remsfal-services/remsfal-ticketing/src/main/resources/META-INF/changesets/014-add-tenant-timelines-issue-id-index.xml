@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-014-tenant-timelines-issue-id-index" author="alexander.stanik@htw-berlin.de">
+        <comment>Add SAI index on tenant_timelines.issue_id so all timeline entries of a deleted
+                 issue can be found and removed without knowing tenancy_id/project_id in advance
+                 (part of the table's partition key, and tenancy_id may already be null after a
+                 prior RENTAL_AGREEMENT_DELETED event).</comment>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS tenant_timelines_issue_id_sai
+            ON REMSFAL.tenant_timelines (issue_id)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS REMSFAL.tenant_timelines_issue_id_sai;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
