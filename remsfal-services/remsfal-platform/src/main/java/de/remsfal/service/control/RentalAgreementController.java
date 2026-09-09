@@ -7,6 +7,7 @@ import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.TenantModel;
+import de.remsfal.service.boundary.eventing.ProjectEventProducer;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
@@ -59,6 +60,9 @@ public class RentalAgreementController {
     @Inject
     TenantController tenantController;
 
+    @Inject
+    ProjectEventProducer projectEventProducer;
+
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
         return rentalAgreementRepository.findRentalAgreementsByTenant(tenant.getId());
@@ -82,7 +86,11 @@ public class RentalAgreementController {
     public boolean deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
         logger.infov("Deleting a Rental Agreement (projectId={0}, agreementId={1})",
             projectId, agreementId);
-        return rentalAgreementRepository.removeRentalAgreementByIds(projectId, agreementId) > 0;
+        final boolean deleted = rentalAgreementRepository.removeRentalAgreementByIds(projectId, agreementId) > 0;
+        if (deleted) {
+            projectEventProducer.sendRentalAgreementDeleted(projectId, agreementId);
+        }
+        return deleted;
     }
 
     /**

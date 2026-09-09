@@ -20,7 +20,7 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
-import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
+import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.json.ticketing.ImmutableIssueJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
@@ -75,6 +75,7 @@ class IssueEventEnrichmentControllerTest {
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
         project.setTitle(projectTitle);
+        project.setMembers(Set.of());
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueJson issue = ImmutableIssueJson.builder()
@@ -139,6 +140,7 @@ class IssueEventEnrichmentControllerTest {
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
         project.setTitle("Assigneeless project");
+        project.setMembers(Set.of());
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueJson issue = ImmutableIssueJson.builder()
@@ -176,7 +178,7 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .issue(issue)
-            .project(ImmutableProjectEventJson.builder().id(projectId).title("Provided project").build())
+            .project(ImmutableProjectJson.builder().id(projectId).title("Provided project").build())
             .build();
 
         IssueEventJson enriched = controller.enrich(event);
@@ -211,6 +213,7 @@ class IssueEventEnrichmentControllerTest {
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
         project.setTitle("No assignee project");
+        project.setMembers(Set.of());
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
         IssueJson issue = ImmutableIssueJson.builder()
             .projectId(projectId)
@@ -247,6 +250,7 @@ class IssueEventEnrichmentControllerTest {
         ProjectEntity project = new ProjectEntity();
         project.setId(projectId);
         project.setTitle("Project unknown assignee");
+        project.setMembers(Set.of());
         when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
 
         IssueJson issue = ImmutableIssueJson.builder()

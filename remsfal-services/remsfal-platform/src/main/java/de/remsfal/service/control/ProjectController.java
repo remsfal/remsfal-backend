@@ -16,6 +16,7 @@ import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
+import de.remsfal.service.boundary.eventing.ProjectEventProducer;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectOrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
@@ -63,6 +64,9 @@ public class ProjectController {
 
     @Inject
     AuthorizationController authorizationController;
+
+    @Inject
+    ProjectEventProducer projectEventProducer;
 
     @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
@@ -151,7 +155,11 @@ public class ProjectController {
         if (entity == null) {
             return false;
         } else if (entity.isMember(user)) {
-            return projectRepository.deleteById(projectId);
+            final boolean deleted = projectRepository.deleteById(projectId);
+            if (deleted) {
+                projectEventProducer.sendProjectDeleted(projectId);
+            }
+            return deleted;
         } else {
             throw new ForbiddenException("User is not a member of this project");
         }

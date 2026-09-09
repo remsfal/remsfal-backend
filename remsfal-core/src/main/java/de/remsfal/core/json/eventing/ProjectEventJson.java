@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import jakarta.annotation.Nullable;
 
 @Immutable
 @ImmutableStyle
@@ -16,8 +17,20 @@ import de.remsfal.core.ImmutableStyle;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public interface ProjectEventJson {
 
-    UUID getId();
+    String TOPIC = "project-events";
 
-    String getTitle();
+    enum ProjectEventType {
+        PROJECT_DELETED,
+        RENTAL_AGREEMENT_DELETED
+    }
 
+    ProjectEventType getProjectEventType();
+
+    UUID getProjectId();
+
+    /**
+     * The deleted rental agreement's id. Only present for {@link ProjectEventType#RENTAL_AGREEMENT_DELETED}.
+     */
+    @Nullable
+    UUID getAgreementId();
 }

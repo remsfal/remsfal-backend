@@ -40,4 +40,10 @@ public class QuotationRepository extends AbstractRepository<QuotationEntity, Quo
             .result();
     }
 
+    public void deleteByIssueId(final UUID issueId) {
+        template.delete(QuotationEntity.class)
+            .where(ISSUE_ID).eq(issueId)
+            .execute();
+    }
+
 }

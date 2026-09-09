@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import jakarta.annotation.Nullable;
 
@@ -79,7 +80,7 @@ public interface IssueEventJson {
      * to avoid additional database queries.
      */
     @Nullable
-    ProjectEventJson getProject();
+    ProjectJson getProject();
 
     /**
      * Frontend link to the issue detail/edit view.

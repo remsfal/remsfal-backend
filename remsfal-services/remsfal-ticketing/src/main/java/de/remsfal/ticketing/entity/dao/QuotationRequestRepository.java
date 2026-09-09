@@ -48,4 +48,10 @@ public class QuotationRequestRepository
             .where(ORGANIZATION_ID).eq(organizationId)
             .result();
     }
+
+    public void deleteByIssueId(final UUID issueId) {
+        template.delete(QuotationRequestEntity.class)
+            .where(ISSUE_ID).eq(issueId)
+            .execute();
+    }
 }

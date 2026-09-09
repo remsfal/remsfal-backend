@@ -22,14 +22,16 @@ public class NotificationController {
     @ConfigProperty(name = "de.remsfal.frontend.url.base")
     public String frontendBaseUrl;
 
-    @ConfigProperty(name = "de.remsfal.frontend.path.projects", defaultValue = "/projects")
+    @ConfigProperty(name = "de.remsfal.frontend.path.projects",
+        defaultValue = "/projects")
     public String frontendProjectsPath;
 
-    @ConfigProperty(name = "de.remsfal.frontend.path.organizations", defaultValue = "/organizations")
+    @ConfigProperty(name = "de.remsfal.frontend.path.organizations",
+        defaultValue = "/contractor/account-settings")
     public String frontendOrganizationsPath;
 
     @ConfigProperty(name = "de.remsfal.frontend.path.additional-email-verification",
-        defaultValue = "/api/v1/authentication/verify-additional-email")
+        defaultValue = "/verify-additional-email")
     public String frontendAdditionalEmailVerificationPath;
 
     @ConfigProperty(name = "de.remsfal.user.language.default", defaultValue = "de")
@@ -47,14 +49,14 @@ public class NotificationController {
     @WithSpan("NotificationController.informUserAboutProjectMembership")
     public void informUserAboutProjectMembership(final CustomerModel user, final ProjectModel project) {
         final UserJson userJson = UserJson.valueOf(user).withLocale(resolveLocale(user));
-        final String link = frontendBaseUrl + frontendProjectsPath + "/" + project.getId();
+        final String link = frontendBaseUrl + frontendProjectsPath + "/" + project.getId() + "/dashboard";
         notificationEventProducer.sendProjectAdmission(userJson, link, ProjectJson.valueOf(project));
     }
 
     @WithSpan("NotificationController.informUserAboutOrganizationMembership")
     public void informUserAboutOrganizationMembership(final CustomerModel user, final OrganizationModel organization) {
         final UserJson userJson = UserJson.valueOf(user).withLocale(resolveLocale(user));
-        final String link = frontendBaseUrl + frontendOrganizationsPath + "/" + organization.getId();
+        final String link = frontendBaseUrl + frontendOrganizationsPath;
         notificationEventProducer.sendOrganizationAdmission(userJson, link, OrganizationJson.valueOf(organization));
     }
 
