@@ -39,6 +39,12 @@ public class OrderManagementController {
 
     static final String QUOTATION_REQUEST_NOT_FOUND = "Quotation request not found";
 
+    private static final Set<RequestStatus> OPEN_REQUEST_STATUSES = Set.of(
+        RequestStatus.REQUESTED,
+        RequestStatus.VIEWING_REQUIRED,
+        RequestStatus.CONSULTATION_REQUIRED
+    );
+
     @Inject
     Logger logger;
 
@@ -69,7 +75,19 @@ public class OrderManagementController {
         final String projectOwner, final String projectCareOf, final AddressModel billingAddress) {
         IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException("Issue not found"));
+        final List<QuotationRequestEntity> existingRequests = quotationRequestRepository.findByIssueId(issueId);
         return contractors.stream().distinct().map(contractor -> {
+            existingRequests.stream()
+                .filter(r -> contractor.getId().equals(r.getContractorId()))
+                .filter(r -> OPEN_REQUEST_STATUSES.contains(r.getStatus()))
+                .forEach(oldRequest -> {
+                    oldRequest.setStatus(RequestStatus.WITHDRAWN);
+                    quotationRequestRepository.update(oldRequest);
+                    issueEventProducer.sendActivityEvent(IssueEventType.QUOTATION_REQUEST_STATUS_CHANGED, issue,
+                        user.getId(), user.getName(),
+                        "Quotation request superseded by new request to " + contractor.getName(),
+                        oldRequest.getOrganizationId(), oldRequest.getContractorId());
+                });
             QuotationRequestEntity request = new QuotationRequestEntity();
             request.generateId();
             request.setIssueId(issueId);

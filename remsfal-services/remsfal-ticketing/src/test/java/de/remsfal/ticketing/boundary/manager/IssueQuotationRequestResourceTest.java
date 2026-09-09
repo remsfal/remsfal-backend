@@ -175,6 +175,167 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(403);
     }
 
+    @Test
+    void createRequestsForQuotation_SUCCESS_closesPreviousOpenRequestToSameContractor() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"name\":\"Bauservice GmbH\"}],\"scopeOfWork\":\"Erste Anfrage.\" }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT request_id, status FROM remsfal.quotation_requests WHERE issue_id = ? AND contractor_id = ?"
+                + " ALLOW FILTERING",
+            UUID.fromString(issueId), contractorId)
+            .all();
+
+        assertEquals(2, rows.size());
+        List<String> statuses = rows.stream().map(row -> row.getString("status")).sorted().toList();
+        assertEquals(List.of("REQUESTED", "WITHDRAWN"), statuses);
+    }
+
+    @Test
+    void createRequestsForQuotation_SUCCESS_doesNotCloseRequestToDifferentContractor() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorIdA = UUID.randomUUID();
+        UUID contractorIdB = UUID.randomUUID();
+        String requestJsonA = "{ \"contractors\":[{\"id\":\"" + contractorIdA
+            + "\",\"name\":\"Contractor A\"}] }";
+        String requestJsonB = "{ \"contractors\":[{\"id\":\"" + contractorIdB
+            + "\",\"name\":\"Contractor B\"}] }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJsonA)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJsonB)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT contractor_id, status FROM remsfal.quotation_requests WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .all();
+
+        assertEquals(2, rows.size());
+        assertTrue(rows.stream().allMatch(row -> "REQUESTED".equals(row.getString("status"))));
+    }
+
+    @Test
+    void createRequestsForQuotation_SUCCESS_doesNotCloseAlreadySubmittedRequest() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"name\":\"Bauservice GmbH\"}] }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        UUID firstRequestId = cqlSession.execute(
+            "SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .one().getUuid("request_id");
+
+        cqlSession.execute("UPDATE remsfal.quotation_requests SET status = 'SUBMITTED'"
+            + " WHERE issue_id = ? AND request_id = ?",
+            UUID.fromString(issueId), firstRequestId);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT request_id, status FROM remsfal.quotation_requests WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .all();
+
+        assertEquals(2, rows.size());
+        String firstRequestStatus = rows.stream()
+            .filter(row -> firstRequestId.equals(row.getUuid("request_id")))
+            .findFirst().orElseThrow().getString("status");
+        assertEquals("SUBMITTED", firstRequestStatus);
+    }
+
     // --- Get Quotation Requests ---
 
     @Test
