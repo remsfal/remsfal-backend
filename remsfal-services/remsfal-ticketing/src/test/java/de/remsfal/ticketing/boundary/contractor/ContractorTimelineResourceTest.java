@@ -87,7 +87,7 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getTimelineEntries_SUCCESS_canMessageTenantFalse_whenIssueHasNoAgreement() {
+    void getTimelineEntries_SUCCESS_visibleToTenantFalse_whenIssueHasNoAgreement() {
         given()
             .when()
             .cookie(contractorCookie())
@@ -95,11 +95,11 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("canMessageTenant", equalTo(false));
+            .body("visibleToTenant", equalTo(false));
     }
 
     @Test
-    void getTimelineEntries_SUCCESS_canMessageTenantTrue_whenIssueVisibleToTenants() {
+    void getTimelineEntries_SUCCESS_visibleToTenantTrue_whenIssueVisibleToTenants() {
         final UUID issueWithAgreementId = UUID.randomUUID();
         insertIssue(TicketingTestData.PROJECT_ID, issueWithAgreementId, TicketingTestData.ISSUE_TITLE,
             IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, TicketingTestData.USER_ID_1,
@@ -123,7 +123,7 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("canMessageTenant", equalTo(true));
+            .body("visibleToTenant", equalTo(true));
     }
 
     @Test

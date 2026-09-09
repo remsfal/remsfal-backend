@@ -24,19 +24,19 @@ public abstract class ContractorTimelineListJson {
     public abstract List<ContractorTimelineJson> getTimelines();
 
     @Schema(description = "Whether a new timeline entry can be sent to the tenant", readOnly = true)
-    public abstract boolean isCanMessageTenant();
+    public abstract boolean isVisibleToTenant();
 
     public static ContractorTimelineListJson valueOf(final List<? extends ContractorTimelineModel> timelines) {
         return valueOf(timelines, false);
     }
 
     public static ContractorTimelineListJson valueOf(final List<? extends ContractorTimelineModel> timelines,
-        final boolean canMessageTenant) {
+        final boolean visibleToTenant) {
         return ImmutableContractorTimelineListJson.builder()
             .timelines(timelines.stream()
                 .map(ContractorTimelineJson::valueOf)
                 .toList())
-            .canMessageTenant(canMessageTenant)
+            .visibleToTenant(visibleToTenant)
             .build();
     }
 
