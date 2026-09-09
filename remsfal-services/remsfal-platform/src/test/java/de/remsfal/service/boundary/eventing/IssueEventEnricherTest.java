@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.eventing;
 
-import java.util.Set;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;

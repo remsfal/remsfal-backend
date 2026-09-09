@@ -29,73 +29,74 @@ class NotificationControllerTest extends AbstractKafkaTest {
     @Test
     void testInformUserAboutProjectMembership() {
         CustomerModel user =
-                ImmutableUserJson.builder()
-                        .id(TestData.USER_ID)
-                        .email(TestData.USER_EMAIL)
-                        .build();
+            ImmutableUserJson.builder()
+                .id(TestData.USER_ID)
+                .email(TestData.USER_EMAIL)
+                .build();
 
         ProjectJson project = ImmutableProjectJson.builder()
-                .id(TestData.PROJECT_ID)
-                .title("Test Project")
-                .members(Set.of())
-                .build();
+            .id(TestData.PROJECT_ID)
+            .title("Test Project")
+            .members(Set.of())
+            .build();
 
         notificationController.informUserAboutProjectMembership(user, project);
 
         given()
             .topic(NotificationEventJson.TOPIC)
-        .assertThat()
+            .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("user.locale", Matchers.equalTo("de"))
             .json("notificationEventType", Matchers.equalTo("PROJECT_ADMISSION"))
             .json("project.title", Matchers.equalTo("Test Project"))
-            .json("link", Matchers.equalTo("https://remsfal.de/projects/" + TestData.PROJECT_ID));
+            .json("link", Matchers.equalTo("https://remsfal.de/projects/" + TestData.PROJECT_ID 
+                 + "/dashboard"));
     }
 
     @Test
     void testInformUserAboutOrganizationMembership() {
         CustomerModel user =
-                ImmutableUserJson.builder()
-                        .id(TestData.USER_ID)
-                        .email(TestData.USER_EMAIL)
-                        .build();
+            ImmutableUserJson.builder()
+                .id(TestData.USER_ID)
+                .email(TestData.USER_EMAIL)
+                .build();
 
         OrganizationJson organization = ImmutableOrganizationJson.builder()
-                .id(TestData.ORGANIZATION_ID)
-                .name("Test Organization")
-                .phone("+491234567890")
-                .email("organization@example.com")
-                .trade("Property Management")
-                .vatIdentificationNumber("DE123456789")
-                .build();
+            .id(TestData.ORGANIZATION_ID)
+            .name("Test Organization")
+            .phone("+491234567890")
+            .email("organization@example.com")
+            .trade("Property Management")
+            .vatIdentificationNumber("DE123456789")
+            .build();
 
         notificationController.informUserAboutOrganizationMembership(user, organization);
 
         given()
             .topic(NotificationEventJson.TOPIC)
-        .assertThat()
+            .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("user.locale", Matchers.equalTo("de"))
             .json("notificationEventType", Matchers.equalTo("ORGANIZATION_ADMISSION"))
             .json("organization.name", Matchers.equalTo("Test Organization"))
-            .json("link", Matchers.equalTo("https://remsfal.de/organizations/" + TestData.ORGANIZATION_ID));
+            .json("link", Matchers.equalTo("https://remsfal.de/contractor/account-settings"));
     }
 
     @Test
     void testInformUserAboutRegistration() {
         CustomerModel user =
             ImmutableUserJson.builder()
-                    .id(TestData.USER_ID)
-                    .email(TestData.USER_EMAIL)
-                    .build();
+                .id(TestData.USER_ID)
+                .email(TestData.USER_EMAIL)
+                .build();
 
         notificationController.informUserAboutRegistration(user);
 
         given()
             .topic(NotificationEventJson.TOPIC)
-        .assertThat()
+            .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
             .json("user.locale", Matchers.equalTo("de"))
@@ -107,16 +108,16 @@ class NotificationControllerTest extends AbstractKafkaTest {
     void testInformUserAboutRegistration_usesUserLocaleOverDefault() {
         CustomerModel user =
             ImmutableUserJson.builder()
-                    .id(TestData.USER_ID)
-                    .email(TestData.USER_EMAIL)
-                    .locale("en")
-                    .build();
+                .id(TestData.USER_ID)
+                .email(TestData.USER_EMAIL)
+                .locale("en")
+                .build();
 
         notificationController.informUserAboutRegistration(user);
 
         given()
             .topic(NotificationEventJson.TOPIC)
-        .assertThat()
+            .assertThat()
             .json("user.id", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("user.locale", Matchers.equalTo("en"));
     }
