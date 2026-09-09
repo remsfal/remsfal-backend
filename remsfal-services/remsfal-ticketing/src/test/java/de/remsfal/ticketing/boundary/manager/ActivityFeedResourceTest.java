@@ -1,153 +1,409 @@
 package de.remsfal.ticketing.boundary.manager;
 
-import jakarta.ws.rs.NotFoundException;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.common.boundary.AbstractResource;
-import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
-import de.remsfal.core.json.ticketing.ActivityFeedJson;
-import de.remsfal.core.json.ticketing.ActivityFeedListJson;
-import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.IssueModel.IssueType;
-import de.remsfal.ticketing.control.ActivityFeedController;
-import de.remsfal.ticketing.entity.dto.ActivityFeedEntity;
-import de.remsfal.ticketing.entity.dto.ActivityFeedKey;
-import de.remsfal.ticketing.entity.filter.ActivityFeedFilter;
-
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Field;
-import java.time.Instant;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import com.datastax.oss.quarkus.test.CassandraTestResource;
+
+import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.ticketing.AbstractTicketingTest;
+import de.remsfal.ticketing.TicketingTestData;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
+import io.restassured.http.Cookie;
 
 @QuarkusTest
-class ActivityFeedResourceTest {
+@QuarkusTestResource(CassandraTestResource.class)
+class ActivityFeedResourceTest extends AbstractTicketingTest {
 
-    @InjectMock
-    ActivityFeedController controller;
+    static final String ACTIVITIES_PATH = "/ticketing/v1/activities";
+    static final String STATUS_PATH = "/ticketing/v1/activities/{activityId}/status";
+    static final String ACTIVITY_PATH = "/ticketing/v1/activities/{activityId}";
 
-    @InjectMock
-    RemsfalPrincipal principal;
+    static final UUID USER_ID = TicketingTestData.USER_ID_1;
+    static final UUID OTHER_USER_ID = TicketingTestData.USER_ID_2;
 
-    ActivityFeedResource resource;
+    static final UUID PROJECT_ID = UUID.randomUUID();
+    static final UUID ISSUE_ID = UUID.randomUUID();
+    static final UUID AGREEMENT_ID = UUID.randomUUID();
+    static final UUID ORGANIZATION_ID = UUID.randomUUID();
+    static final UUID CONTRACTOR_ID = UUID.randomUUID();
+    static final UUID ASSIGNEE_ID = UUID.randomUUID();
 
-    UUID userId;
+    private UUID insertOwnActivity(String title) {
+        return insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            title, "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
+    }
 
-    @BeforeEach
-    void setup() throws Exception {
-        resource = new ActivityFeedResource();
-        Field principalField = AbstractResource.class.getDeclaredField("principal");
-        principalField.setAccessible(true);
-        principalField.set(resource, principal);
+    private Cookie ownCookie() {
+        return buildCookie(USER_ID, TicketingTestData.USER_EMAIL_1, TicketingTestData.USER_NAME, Map.of(),
+            Map.of(), Map.of());
+    }
 
-        Field controllerField = ActivityFeedResource.class.getDeclaredField("controller");
-        controllerField.setAccessible(true);
-        controllerField.set(resource, controller);
-
-        userId = UUID.randomUUID();
-        when(principal.getId()).thenReturn(userId);
+    private Cookie otherUserCookie() {
+        return buildCookie(OTHER_USER_ID, TicketingTestData.USER_EMAIL_2, TicketingTestData.USER_NAME, Map.of(),
+            Map.of(), Map.of());
     }
 
     @Test
-    void testGetActivities_success() {
-        ActivityFeedEntity entity = createTestActivity(userId, "Test Issue");
-
-        when(controller.getActivities(eq(userId), any(ActivityFeedFilter.class), any(), eq(50)))
-            .thenReturn(List.of(entity));
-
-        ActivityFeedListJson result = resource.getActivities(null, null, null, null, null, null, null, 50);
-
-        assertEquals(1, result.getSize());
-        assertNull(result.getNextCursor());
-        verify(controller).getActivities(eq(userId), any(ActivityFeedFilter.class), any(), eq(50));
+    void getActivities_FAILED_noAuthentication() {
+        given()
+            .when()
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(401);
     }
 
     @Test
-    void testGetActivities_fullPage_returnsNextCursor() {
-        ActivityFeedEntity entity = createTestActivity(userId, "Test Issue");
-
-        when(controller.getActivities(eq(userId), any(ActivityFeedFilter.class), any(), eq(1)))
-            .thenReturn(List.of(entity));
-
-        ActivityFeedListJson result = resource.getActivities(null, null, null, null, null, null, null, 1);
-
-        assertEquals(entity.getId().toString(), result.getNextCursor());
+    void getActivities_SUCCESS_emptyWhenNoActivities() {
+        given()
+            .when()
+            .cookie(ownCookie())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("size", equalTo(0))
+            .body("nextCursor", nullValue())
+            .body("activities", hasSize(0));
     }
 
     @Test
-    void testUpdateActivityStatus_success() {
-        UUID activityId = UUID.randomUUID();
-        ActivityFeedEntity updated = createTestActivity(userId, "Updated Issue");
+    void getActivities_SUCCESS_returnsOwnActivitiesNewestFirst() {
+        insertOwnActivity("First activity");
+        final UUID secondActivityId = insertOwnActivity("Second activity");
+        insertActivity(OTHER_USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other user's activity", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
 
-        when(controller.updateActivityStatus(userId, activityId, true)).thenReturn(updated);
-
-        ActivityFeedJson result = resource.updateActivityStatus(activityId, true);
-
-        assertNotNull(result);
-        verify(controller).updateActivityStatus(userId, activityId, true);
+        given()
+            .when()
+            .cookie(ownCookie())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("size", equalTo(2))
+            .body("nextCursor", nullValue())
+            .body("activities", hasSize(2))
+            .body("activities[0].id", equalTo(secondActivityId.toString()))
+            .body("activities[0].title", equalTo("Second activity"))
+            .body("activities[0].projectId", equalTo(PROJECT_ID.toString()))
+            .body("activities[0].issueId", equalTo(ISSUE_ID.toString()))
+            .body("activities[0].activityType", equalTo("ISSUE_CREATED"))
+            .body("activities[0].description", equalTo("Test description"))
+            .body("activities[0].link", equalTo("/api/issues/" + ISSUE_ID))
+            .body("activities[0].actorName", equalTo("Actor"))
+            .body("activities[0].issueType", equalTo("TASK"))
+            .body("activities[0].status", equalTo("OPEN"))
+            .body("activities[0].agreementId", equalTo(AGREEMENT_ID.toString()))
+            .body("activities[0].organizationId", equalTo(ORGANIZATION_ID.toString()))
+            .body("activities[0].contractorId", equalTo(CONTRACTOR_ID.toString()))
+            .body("activities[0].assigneeId", equalTo(ASSIGNEE_ID.toString()))
+            .body("activities[0].read", equalTo(false))
+            .body("activities[0].createdAt", notNullValue());
     }
 
     @Test
-    void testUpdateActivityStatus_notFound() {
-        UUID activityId = UUID.randomUUID();
+    void getActivities_SUCCESS_filtersByProjectId() {
+        final UUID otherProjectId = UUID.randomUUID();
+        insertOwnActivity("Matching project");
+        insertActivity(USER_ID, otherProjectId, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other project", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
 
-        when(controller.updateActivityStatus(any(), any(), anyBoolean()))
-            .thenThrow(new IllegalArgumentException("missing"));
-
-        assertThrows(NotFoundException.class,
-            () -> resource.updateActivityStatus(activityId, true)
-        );
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("projectId", PROJECT_ID.toString())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1))
+            .body("activities[0].title", equalTo("Matching project"));
     }
 
     @Test
-    void testDeleteActivity_success() {
-        UUID activityId = UUID.randomUUID();
+    void getActivities_SUCCESS_filtersByIssueId() {
+        final UUID otherIssueId = UUID.randomUUID();
+        insertOwnActivity("Matching issue");
+        insertActivity(USER_ID, PROJECT_ID, otherIssueId, IssueEventType.ISSUE_CREATED,
+            "Other issue", "Test description", "/api/issues/" + otherIssueId, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
 
-        resource.deleteActivity(activityId);
-
-        verify(controller).deleteActivity(userId, activityId);
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("issueId", ISSUE_ID.toString())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1))
+            .body("activities[0].title", equalTo("Matching issue"));
     }
 
     @Test
-    void testDeleteActivity_notFound() {
-        UUID activityId = UUID.randomUUID();
+    void getActivities_SUCCESS_filtersByAgreementId() {
+        final UUID otherAgreementId = UUID.randomUUID();
+        insertOwnActivity("Matching agreement");
+        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other agreement", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, otherAgreementId, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
 
-        doThrow(new IllegalArgumentException("not found"))
-            .when(controller).deleteActivity(any(), any());
-
-        assertThrows(NotFoundException.class,
-            () -> resource.deleteActivity(activityId)
-        );
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("agreementId", AGREEMENT_ID.toString())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1))
+            .body("activities[0].title", equalTo("Matching agreement"));
     }
 
-    private ActivityFeedEntity createTestActivity(UUID userId, String title) {
-        ActivityFeedKey key = new ActivityFeedKey();
-        key.setUserId(userId);
-        key.setActivityId(UUID.randomUUID());
+    @Test
+    void getActivities_SUCCESS_filtersByOrganizationId() {
+        final UUID otherOrganizationId = UUID.randomUUID();
+        insertOwnActivity("Matching organization");
+        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other organization", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, otherOrganizationId, CONTRACTOR_ID, ASSIGNEE_ID, false);
 
-        ActivityFeedEntity entity = new ActivityFeedEntity();
-        entity.setKey(key);
-        entity.setActivityType(IssueEventType.ISSUE_CREATED);
-        entity.setIssueId(UUID.randomUUID());
-        entity.setProjectId(UUID.randomUUID());
-        entity.setTitle(title);
-        entity.setIssueType(IssueType.TASK);
-        entity.setStatus(IssueStatus.OPEN);
-        entity.setDescription("Test description");
-        entity.setLink("/api/issues/" + entity.getIssueId());
-        entity.setCreatedAt(Instant.now());
-        entity.setReadFlag(false);
-
-        return entity;
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("organizationId", ORGANIZATION_ID.toString())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1))
+            .body("activities[0].title", equalTo("Matching organization"));
     }
+
+    @Test
+    void getActivities_SUCCESS_filtersByContractorId() {
+        final UUID otherContractorId = UUID.randomUUID();
+        insertOwnActivity("Matching contractor");
+        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other contractor", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, otherContractorId, ASSIGNEE_ID, false);
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("contractorId", CONTRACTOR_ID.toString())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1))
+            .body("activities[0].title", equalTo("Matching contractor"));
+    }
+
+    @Test
+    void getActivities_SUCCESS_filtersByAssigneeId() {
+        final UUID otherAssigneeId = UUID.randomUUID();
+        insertOwnActivity("Matching assignee");
+        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other assignee", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, otherAssigneeId, false);
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("assigneeId", ASSIGNEE_ID.toString())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1))
+            .body("activities[0].title", equalTo("Matching assignee"));
+    }
+
+    @Test
+    void getActivities_SUCCESS_fullPageReturnsNextCursorForPagination() {
+        insertOwnActivity("Activity 1");
+        insertOwnActivity("Activity 2");
+        insertOwnActivity("Activity 3");
+
+        final String firstPageNextCursor = given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("limit", 2)
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(2))
+            .body("nextCursor", notNullValue())
+            .body("activities[0].title", equalTo("Activity 3"))
+            .body("activities[1].title", equalTo("Activity 2"))
+            .extract()
+            .path("nextCursor");
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("limit", 2)
+            .queryParam("cursor", firstPageNextCursor)
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1))
+            .body("nextCursor", nullValue())
+            .body("activities[0].title", equalTo("Activity 1"));
+    }
+
+    @Test
+    void updateActivityStatus_SUCCESS_marksAsRead() {
+        final UUID activityId = insertOwnActivity("Activity");
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("read", true)
+            .patch(STATUS_PATH, activityId)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("id", equalTo(activityId.toString()))
+            .body("read", equalTo(true));
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("activities[0].read", equalTo(true));
+    }
+
+    @Test
+    void updateActivityStatus_SUCCESS_marksAsUnread() {
+        final UUID activityId = insertOwnActivity("Activity");
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("read", true)
+            .patch(STATUS_PATH, activityId)
+            .then()
+            .statusCode(200);
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("read", false)
+            .patch(STATUS_PATH, activityId)
+            .then()
+            .statusCode(200)
+            .body("read", equalTo(false));
+    }
+
+    @Test
+    void updateActivityStatus_FAILED_noAuthentication() {
+        final UUID activityId = insertOwnActivity("Activity");
+
+        given()
+            .when()
+            .queryParam("read", true)
+            .patch(STATUS_PATH, activityId)
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
+    void updateActivityStatus_FAILED_notFoundForNonexistentActivity() {
+        given()
+            .when()
+            .cookie(ownCookie())
+            .queryParam("read", true)
+            .patch(STATUS_PATH, UUID.randomUUID())
+            .then()
+            .statusCode(404);
+    }
+
+    @Test
+    void updateActivityStatus_FAILED_notFoundForOtherUsersActivity() {
+        final UUID activityId = insertOwnActivity("Activity");
+
+        given()
+            .when()
+            .cookie(otherUserCookie())
+            .queryParam("read", true)
+            .patch(STATUS_PATH, activityId)
+            .then()
+            .statusCode(404);
+    }
+
+    @Test
+    void deleteActivity_SUCCESS() {
+        final UUID activityId = insertOwnActivity("Activity");
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .delete(ACTIVITY_PATH, activityId)
+            .then()
+            .statusCode(204);
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(0));
+    }
+
+    @Test
+    void deleteActivity_FAILED_noAuthentication() {
+        final UUID activityId = insertOwnActivity("Activity");
+
+        given()
+            .when()
+            .delete(ACTIVITY_PATH, activityId)
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
+    void deleteActivity_FAILED_notFoundForNonexistentActivity() {
+        given()
+            .when()
+            .cookie(ownCookie())
+            .delete(ACTIVITY_PATH, UUID.randomUUID())
+            .then()
+            .statusCode(404);
+    }
+
+    @Test
+    void deleteActivity_FAILED_notFoundForOtherUsersActivity() {
+        final UUID activityId = insertOwnActivity("Activity");
+
+        given()
+            .when()
+            .cookie(otherUserCookie())
+            .delete(ACTIVITY_PATH, activityId)
+            .then()
+            .statusCode(404);
+
+        given()
+            .when()
+            .cookie(ownCookie())
+            .get(ACTIVITIES_PATH)
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(1));
+    }
+
 }

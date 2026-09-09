@@ -28,7 +28,7 @@ import de.remsfal.core.json.ticketing.ActivityFeedListJson;
 @Path(ActivityFeedEndpoint.CONTEXT + "/" + ActivityFeedEndpoint.VERSION + "/" + ActivityFeedEndpoint.SERVICE)
 public interface ActivityFeedEndpoint {
 
-    String CONTEXT = "api";
+    String CONTEXT = "ticketing";
     String VERSION = "v1";
     String SERVICE = "activities";
 

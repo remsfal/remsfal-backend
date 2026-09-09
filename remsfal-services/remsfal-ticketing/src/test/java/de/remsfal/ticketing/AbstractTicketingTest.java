@@ -10,6 +10,8 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import com.datastax.oss.driver.api.core.CqlSession;
 
+import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
@@ -197,6 +199,28 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute(insertTimelineCql,
             tenancyId, issueId, timelineId, projectId, attachmentIds, UUID.randomUUID(), TicketingTestData.USER_NAME,
             purpose.name(), "Message " + purpose, Instant.now(), Instant.now());
+    }
+
+    /**
+     * Inserts an {@code ActivityFeedEntity} fixture directly, using a UUIDv7 activity id so
+     * entries sort the same way {@code ActivityFeedController.recordActivity} produces them
+     * (newest first, via the table's native clustering order on {@code activity_id}).
+     */
+    protected UUID insertActivity(UUID userId, UUID projectId, UUID issueId, IssueEventType activityType,
+            String title, String description, String link, UUID actorId, String actorName,
+            IssueType issueType, IssueStatus status, UUID agreementId, UUID organizationId,
+            UUID contractorId, UUID assigneeId, boolean read) {
+        final UUID activityId = UUIDv7.randomUUID();
+        String insertActivityCql = "INSERT INTO remsfal.activity_feeds "
+            + "(user_id, activity_id, project_id, issue_id, activity_type, title, description, link,"
+            + " actor_id, actor_name, issue_type, status, agreement_id, organization_id, contractor_id,"
+            + " assignee_id, read, created_at, modified_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        cqlSession.execute(insertActivityCql,
+            userId, activityId, projectId, issueId, activityType.name(), title, description, link,
+            actorId, actorName, issueType != null ? issueType.name() : null, status != null ? status.name() : null,
+            agreementId, organizationId, contractorId, assigneeId, read, Instant.now(), Instant.now());
+        return activityId;
     }
 
     protected void insertChatMessage(UUID projectId, UUID issueId, UUID messageId, UUID senderId,
