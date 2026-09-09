@@ -87,6 +87,46 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void getTimelineEntries_SUCCESS_canMessageTenantFalse_whenIssueHasNoAgreement() {
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(timelinePath())
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("canMessageTenant", equalTo(false));
+    }
+
+    @Test
+    void getTimelineEntries_SUCCESS_canMessageTenantTrue_whenIssueVisibleToTenants() {
+        final UUID issueWithAgreementId = UUID.randomUUID();
+        insertIssue(TicketingTestData.PROJECT_ID, issueWithAgreementId, TicketingTestData.ISSUE_TITLE,
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, TicketingTestData.USER_ID_1,
+            TicketingTestData.AGREEMENT_ID, null, "Beschreibung");
+
+        final String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(ISSUE_BASE_PATH + "/" + issueWithAgreementId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(ORDER_MANAGEMENT_PATH + "/" + issueWithAgreementId + "/timeline")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("canMessageTenant", equalTo(true));
+    }
+
+    @Test
     void getTimelineEntries_FAILED_wrongOrganization() {
         given()
             .when()
