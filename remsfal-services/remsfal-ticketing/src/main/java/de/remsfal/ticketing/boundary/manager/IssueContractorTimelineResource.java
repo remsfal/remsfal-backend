@@ -12,7 +12,6 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Comparator;
@@ -27,14 +26,11 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 public class IssueContractorTimelineResource extends AbstractContractorTimelineResource
     implements ContractorTimelineEndpoint {
 
-    @PathParam("issueId")
-    UUID issueId;
-
     @Inject
     OrderManagementController orderManagementController;
 
     @Override
-    public ContractorTimelineListJson getTimelineEntries() {
+    public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
         checkProjectIssueAccessPermissions(issueId);
         final List<ContractorTimelineJson> entries = orderManagementController
             .getRequestsForQuotation(issueId).stream()
@@ -45,7 +41,7 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final UUID organizationId,
+    public Response createTimelineEntryWithAttachments(final UUID issueId, final UUID organizationId,
         final MultipartFormDataInput input) {
         checkProjectIssueAccessPermissions(issueId);
         if (organizationId == null) {

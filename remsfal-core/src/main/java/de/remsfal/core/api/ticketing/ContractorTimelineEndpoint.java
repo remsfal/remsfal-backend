@@ -1,8 +1,10 @@
 package de.remsfal.core.api.ticketing;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
@@ -34,7 +36,9 @@ public interface ContractorTimelineEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to access this request")
     @APIResponse(responseCode = "404", description = "The quotation request does not exist")
-    ContractorTimelineListJson getTimelineEntries();
+    ContractorTimelineListJson getTimelineEntries(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId);
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -65,6 +69,8 @@ public interface ContractorTimelineEndpoint {
     @APIResponse(responseCode = "403", description = "User does not have permission to access this request")
     @APIResponse(responseCode = "404", description = "The quotation request does not exist")
     Response createTimelineEntryWithAttachments(
+        @Parameter(description = "ID of the issue", required = true)
+        @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the contractor organization to address; required only when"
             + " creating via the issue-level combined view, ignored by the contractor's own mount"
             + " which already knows its own organization")

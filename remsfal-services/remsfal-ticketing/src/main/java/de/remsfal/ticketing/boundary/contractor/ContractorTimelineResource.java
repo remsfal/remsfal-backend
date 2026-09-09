@@ -10,7 +10,6 @@ import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Set;
@@ -23,14 +22,11 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 public class ContractorTimelineResource extends AbstractContractorTimelineResource
     implements ContractorTimelineEndpoint {
 
-    @PathParam("issueId")
-    UUID issueId;
-
     @Inject
     OrderManagementController orderManagementController;
 
     @Override
-    public ContractorTimelineListJson getTimelineEntries() {
+    public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
@@ -38,7 +34,7 @@ public class ContractorTimelineResource extends AbstractContractorTimelineResour
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final UUID organizationId,
+    public Response createTimelineEntryWithAttachments(final UUID issueId, final UUID organizationId,
         final MultipartFormDataInput input) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
