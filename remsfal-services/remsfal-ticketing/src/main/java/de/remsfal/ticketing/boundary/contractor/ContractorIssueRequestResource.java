@@ -48,7 +48,7 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
 
         final IssueRequestEntity created = issueRequestController.createRequest(issueId,
-            quotationRequest.getOrganizationId(), principal.getId(), principal.getName(), request);
+            quotationRequest.getOrganizationId(), request);
 
         return Response.status(Response.Status.CREATED)
             .type(MediaType.APPLICATION_JSON)
