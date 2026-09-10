@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-016-issue-requests-issue-id-index" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
+        <comment>Add SAI index on issue_requests.issue_id so all requests of an issue can be found
+                 across organizations (part of the table's partition key), needed for the tenant view.</comment>
+        <sql>
+            CREATE CUSTOM INDEX IF NOT EXISTS issue_requests_issue_id_sai
+            ON REMSFAL.issue_requests (issue_id)
+            USING 'StorageAttachedIndex';
+        </sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS REMSFAL.issue_requests_issue_id_sai;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
