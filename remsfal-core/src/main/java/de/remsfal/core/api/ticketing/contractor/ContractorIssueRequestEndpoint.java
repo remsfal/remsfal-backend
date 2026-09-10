@@ -7,6 +7,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.util.UUID;
 
@@ -55,7 +56,7 @@ public interface ContractorIssueRequestEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to access this request")
     @APIResponse(responseCode = "404", description = "The issue does not exist")
-    IssueRequestJson createRequest(
+    Response createRequest(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
         @NotNull IssueRequestJson request);
