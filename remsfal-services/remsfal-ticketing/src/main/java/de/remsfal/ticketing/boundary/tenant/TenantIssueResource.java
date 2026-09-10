@@ -61,6 +61,9 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     @Inject
     Instance<TenantTimelineResource> tenantTimelineResource;
 
+    @Inject
+    Instance<TenantIssueRequestResource> issueRequestResource;
+
     @Override
     public TenantIssueListJson getIssues(final UUID cursor, final Integer limit) {
         final Map<UUID, UUID> tenancyProjects = principal.getTenancyProjects();
@@ -172,6 +175,11 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     @Override
     public TenantTimelineResource getTenantTimelineResource() {
         return resourceContext.initResource(tenantTimelineResource.get());
+    }
+
+    @Override
+    public TenantIssueRequestResource getIssueRequestResource() {
+        return resourceContext.initResource(issueRequestResource.get());
     }
 
 }
