@@ -131,4 +131,7 @@ public interface TenantIssueEndpoint {
     @Path("/{issueId}/" + TenantTimelineEndpoint.SERVICE)
     TenantTimelineEndpoint getTenantTimelineResource();
 
+    @Path("/{issueId}/" + TenantIssueRequestEndpoint.SERVICE)
+    TenantIssueRequestEndpoint getIssueRequestResource();
+
 }
