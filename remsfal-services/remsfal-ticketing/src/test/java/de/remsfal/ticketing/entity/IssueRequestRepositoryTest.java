@@ -93,4 +93,24 @@ class IssueRequestRepositoryTest extends AbstractTicketingTest {
         assertTrue(result.stream().anyMatch(e -> e.getIssueRequestId().equals(fromOrgB.getIssueRequestId())));
         assertFalse(result.stream().anyMatch(e -> e.getIssueRequestId().equals(otherIssue.getIssueRequestId())));
     }
+
+    private IssueRequestEntity createEntity(final UUID issueId, final UUID organizationId,
+        final UUID issueRequestId, final String message, final List<UUID> attachmentIds) {
+        final IssueRequestKey key = new IssueRequestKey();
+        key.setIssueId(issueId);
+        key.setOrganizationId(organizationId);
+        key.setIssueRequestId(issueRequestId);
+
+        final IssueRequestEntity entity = new IssueRequestEntity();
+        entity.setKey(key);
+        entity.setMessage(message);
+        entity.setAttachmentIds(attachmentIds);
+
+        final Instant now = Instant.now();
+        entity.setCreatedAt(now);
+        entity.setModifiedAt(now);
+
+        return entity;
+    }
+
 }
