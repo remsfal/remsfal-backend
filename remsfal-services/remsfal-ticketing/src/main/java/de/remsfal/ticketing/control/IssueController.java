@@ -174,7 +174,7 @@ public class IssueController {
         }
         if (issue.getAssigneeId() != null) {
             entity.setAssigneeId(issue.getAssigneeId());
-            issueEventProducer.sendIssueAssigned(entity, principal, issue.getAssigneeId());
+            issueEventProducer.sendIssueAssigned(entity, principal);
         } else {
             issueEventProducer.sendIssueUpdated(entity, principal);
         }

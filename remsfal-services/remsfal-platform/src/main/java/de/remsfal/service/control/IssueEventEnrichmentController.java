@@ -6,11 +6,13 @@ import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.UserEntity;
@@ -34,6 +36,9 @@ public class IssueEventEnrichmentController {
     @Inject
     ProjectRepository projectRepository;
 
+    @Inject
+    ContractorRepository contractorRepository;
+
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
         ProjectJson project = enrichProject(event);
@@ -46,9 +51,8 @@ public class IssueEventEnrichmentController {
             .principal(enrichUser(event.getPrincipal()))
             .assignee(enrichUser(event.getAssignee()))
             .reporter(enrichUser(event.getReporter()))
-            .sender(enrichUser(event.getSender()))
             .initiator(enrichUser(event.getInitiator()))
-            .contractor(enrichUser(event.getContractor()))
+            .contractor(enrichContractor(event.getContractor()))
             .confirmor(enrichUser(event.getConfirmor()))
             .offerer(enrichUser(event.getOfferer()))
             .chatMessage(event.getChatMessage())
@@ -93,6 +97,15 @@ public class IssueEventEnrichmentController {
             .firstName(found.getFirstName())
             .lastName(found.getLastName())
             .build();
+    }
+
+    private ContractorJson enrichContractor(final ContractorJson contractor) {
+        if (contractor == null || contractor.getId() == null) {
+            return contractor;
+        }
+        return contractorRepository.findByIdOptional(contractor.getId())
+            .map(ContractorJson::valueOf)
+            .orElse(contractor);
     }
 
     String buildIssueLink(final IssueEventJson event) {

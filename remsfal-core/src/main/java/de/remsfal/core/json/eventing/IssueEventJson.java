@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
@@ -66,7 +67,6 @@ public interface IssueEventJson {
         ISSUE_CREATED,
         ISSUE_UPDATED,
         ISSUE_ASSIGNED,
-        ISSUE_MENTIONED,
         TIMELINE_ENTRY_CREATED,
         CHAT_MESSAGE_CREATED,
         QUOTATION_REQUEST_CREATED,
@@ -124,22 +124,16 @@ public interface IssueEventJson {
     UserJson getReporter();
 
     /**
-     * The sender of a tenant timeline entry or chat message.
-     */
-    @Nullable
-    UserJson getSender();
-
-    /**
      * The platform-side (manager) user who initiated a quotation request or order placement.
      */
     @Nullable
     UserJson getInitiator();
 
     /**
-     * The contractor-side user who changed a quotation request's status.
+     * The contractor that is involved in this order management.
      */
     @Nullable
-    UserJson getContractor();
+    ContractorJson getContractor();
 
     /**
      * The contractor-side user who confirmed or rejected an order placement.

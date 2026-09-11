@@ -284,59 +284,6 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
     }
 
     @Test
-    void testConsumeIssueMentioned_IsIgnored() {
-        ProjectJson project = ImmutableProjectJson.builder()
-            .id(UUID.randomUUID())
-            .title("Test Project")
-            .build();
-
-        UserJson user = ImmutableUserJson.builder()
-            .id(UUID.randomUUID())
-            .email("user@example.com")
-            .firstName("Test")
-            .lastName("User")
-            .build();
-
-        UUID issueId = UUID.randomUUID();
-        IssueJson issue = ImmutableIssueJson.builder()
-            .id(issueId)
-            .projectId(project.getId())
-            .title("Mentioned Issue")
-            .type(IssueType.DEFECT)
-            .status(IssueStatus.OPEN)
-            .reporterId(UUID.randomUUID())
-            .agreementId(UUID.randomUUID())
-            .assigneeId(user.getId())
-            .description("Mention description")
-            .build();
-
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_MENTIONED)
-            .issueId(issueId)
-            .issue(issue)
-            .project(project)
-            .link("https://remsfal.de/issue/999")
-            .principal(user)
-            .assignee(user)
-            .build();
-
-        companion.produce(ImmutableIssueEventJson.class)
-            .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
-            .awaitCompletion();
-
-        // Wait a bit to ensure consumer processes the message
-        Awaitility.await()
-            .pollDelay(Duration.ofSeconds(2))
-            .atMost(Duration.ofSeconds(5))
-            .untilAsserted(() -> {
-                // Verify no emails were sent for ISSUE_MENTIONED
-                verify(mailingController, never()).sendIssueCreatedEmail(any(), any());
-                verify(mailingController, never()).sendIssueUpdatedEmail(any(), any());
-                verify(mailingController, never()).sendIssueAssignedEmail(any(), any());
-            });
-    }
-
-    @Test
     void testConsumeIssueCreated_HandlesNullOwner() {
         ProjectJson project = ImmutableProjectJson.builder()
             .id(UUID.randomUUID())

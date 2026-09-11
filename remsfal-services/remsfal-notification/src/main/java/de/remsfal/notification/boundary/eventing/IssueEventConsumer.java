@@ -45,10 +45,6 @@ public class IssueEventConsumer {
             case ISSUE_ASSIGNED:
                 processUni = handleIssueAssigned(event);
                 break;
-            case ISSUE_MENTIONED:
-                logger.debugv("ISSUE_MENTIONED event ignored (not implemented)");
-                processUni = Uni.createFrom().voidItem();
-                break;
             default:
                 logger.warnv("Unhandled issue event type: {0} (issueId={1})",
                     event.getIssueEventType(), event.getIssueId());

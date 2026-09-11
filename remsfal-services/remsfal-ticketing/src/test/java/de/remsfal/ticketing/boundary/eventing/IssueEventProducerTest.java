@@ -106,7 +106,7 @@ class IssueEventProducerTest {
         UUID newAssigneeId = TestData.USER_ID_3;
         issue.setAssigneeId(newAssigneeId);
 
-        issueEventProducer.sendIssueAssigned(issue, actor, newAssigneeId);
+        issueEventProducer.sendIssueAssigned(issue, actor);
 
         ArgumentCaptor<IssueEventJson> eventCaptor = ArgumentCaptor.forClass(IssueEventJson.class);
         verify(emitter).send(eventCaptor.capture());
@@ -115,21 +115,6 @@ class IssueEventProducerTest {
         assertEquals(IssueEventType.ISSUE_ASSIGNED, event.getIssueEventType());
         assertEquals(newAssigneeId, Objects.requireNonNull(event.getAssignee()).getId());
         assertEquals(newAssigneeId, event.getIssue().getAssigneeId());
-    }
-
-    @Test
-    void sendIssueMentioned_setsPrincipal() {
-        IssueEntity issue = createIssue();
-
-        issueEventProducer.sendIssueMentioned(issue, actor);
-
-        ArgumentCaptor<IssueEventJson> eventCaptor = ArgumentCaptor.forClass(IssueEventJson.class);
-        verify(emitter).send(eventCaptor.capture());
-        IssueEventJson event = eventCaptor.getValue();
-
-        assertEquals(IssueEventType.ISSUE_MENTIONED, event.getIssueEventType());
-        assertNotNull(event.getPrincipal());
-        assertEquals(actor.getId(), event.getPrincipal().getId());
     }
 
     @Test
@@ -142,15 +127,7 @@ class IssueEventProducerTest {
 
     @Test
     void sendIssueAssigned_withNullIssue_doesNotPublish() {
-        issueEventProducer.sendIssueAssigned(null, actor, UUID.randomUUID());
-
-        verify(emitter, never()).send(any(IssueEventJson.class));
-        verify(logger).warn("Skipping issue event because issue is null");
-    }
-
-    @Test
-    void sendIssueMentioned_withNullIssue_doesNotPublish() {
-        issueEventProducer.sendIssueMentioned(null, actor);
+        issueEventProducer.sendIssueAssigned(null, actor);
 
         verify(emitter, never()).send(any(IssueEventJson.class));
         verify(logger).warn("Skipping issue event because issue is null");
@@ -166,7 +143,8 @@ class IssueEventProducerTest {
         ArgumentCaptor<IssueEventJson> eventCaptor = ArgumentCaptor.forClass(IssueEventJson.class);
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
-        assertNull(event.getAssignee());
+        assertNotNull(event.getAssignee());
+        assertNull(event.getAssignee().getId());
     }
 
     @Test
@@ -200,24 +178,13 @@ class IssueEventProducerTest {
     void sendIssueAssigned_logsInfoOnSuccess() {
         IssueEntity issue = createIssue();
         UUID newAssigneeId = TestData.USER_ID_3;
+        issue.setAssigneeId(newAssigneeId);
 
-        issueEventProducer.sendIssueAssigned(issue, actor, newAssigneeId);
+        issueEventProducer.sendIssueAssigned(issue, actor);
 
         verify(logger).infov(
             "Issue event sent (type={0}, issueId={1})",
             IssueEventType.ISSUE_ASSIGNED,
-            issue.getId());
-    }
-
-    @Test
-    void sendIssueMentioned_logsInfoOnSuccess() {
-        IssueEntity issue = createIssue();
-
-        issueEventProducer.sendIssueMentioned(issue, actor);
-
-        verify(logger).infov(
-            "Issue event sent (type={0}, issueId={1})",
-            IssueEventType.ISSUE_MENTIONED,
             issue.getId());
     }
 
@@ -238,7 +205,7 @@ class IssueEventProducerTest {
     }
 
     @Test
-    void sendChatMessageCreated_setsSenderAndChatMessage() {
+    void sendChatMessageCreated_setsPrincipalAndChatMessage() {
         IssueEntity issue = createIssue();
         ChatMessageEntity chatMessage = createChatMessage(issue);
         UserModel sender = mock(UserModel.class);
@@ -252,9 +219,8 @@ class IssueEventProducerTest {
         IssueEventJson event = eventCaptor.getValue();
 
         assertEquals(IssueEventType.CHAT_MESSAGE_CREATED, event.getIssueEventType());
-        assertNotNull(event.getSender());
-        assertEquals(chatMessage.getSenderId(), event.getSender().getId());
-        assertEquals(event.getPrincipal(), event.getSender());
+        assertNotNull(event.getPrincipal());
+        assertEquals(chatMessage.getSenderId(), event.getPrincipal().getId());
         assertNotNull(event.getChatMessage());
         assertEquals(chatMessage.getMessage(), event.getChatMessage().getMessage());
         assertNotNull(event.getReporter());
@@ -262,7 +228,7 @@ class IssueEventProducerTest {
     }
 
     @Test
-    void sendQuotationRequestCreated_setsInitiatorAndQuotationRequest() {
+    void sendQuotationRequestCreated_setsInitiatorContractorAndQuotationRequest() {
         IssueEntity issue = createIssue();
         QuotationRequestEntity request = createQuotationRequest(issue);
 
@@ -275,28 +241,38 @@ class IssueEventProducerTest {
         assertEquals(IssueEventType.QUOTATION_REQUEST_CREATED, event.getIssueEventType());
         assertNotNull(event.getInitiator());
         assertEquals(request.getInitiatorId(), event.getInitiator().getId());
-        assertNull(event.getContractor());
+        assertNotNull(event.getContractor());
+        assertEquals(request.getContractorId(), event.getContractor().getId());
         assertNotNull(event.getQuotationRequest());
         assertEquals(request.getContractorId(), event.getQuotationRequest().getContractorId());
     }
 
     @Test
-    void sendQuotationRequestStatusChanged_byContractor_setsContractorRole() {
+    void sendQuotationRequestStatusChanged_setsInitiatorContractorAndPrincipal() {
         IssueEntity issue = createIssue();
         QuotationRequestEntity request = createQuotationRequest(issue);
         request.setStatus(RequestStatus.REJECTED);
 
+        UserModel contractorActor = mock(UserModel.class);
+        when(contractorActor.getId()).thenReturn(TestData.USER_ID_4);
+        when(contractorActor.getName()).thenReturn(TestData.USER_FIRST_NAME_4 + " " + TestData.USER_LAST_NAME_4);
+
         issueEventProducer.sendQuotationRequestStatusChanged(issue, QuotationRequestJson.valueOf(request),
-            actor, true);
+            contractorActor);
 
         ArgumentCaptor<IssueEventJson> eventCaptor = ArgumentCaptor.forClass(IssueEventJson.class);
         verify(emitter).send(eventCaptor.capture());
         IssueEventJson event = eventCaptor.getValue();
 
         assertEquals(IssueEventType.QUOTATION_REQUEST_STATUS_CHANGED, event.getIssueEventType());
+        // initiator/contractor are facts of the request itself, not the actor performing this change
+        assertNotNull(event.getInitiator());
+        assertEquals(request.getInitiatorId(), event.getInitiator().getId());
         assertNotNull(event.getContractor());
-        assertEquals(actor.getId(), event.getContractor().getId());
-        assertNull(event.getInitiator());
+        assertEquals(request.getContractorId(), event.getContractor().getId());
+        // the actor who performed the status change is only carried as the principal
+        assertNotNull(event.getPrincipal());
+        assertEquals(contractorActor.getId(), event.getPrincipal().getId());
         assertEquals(RequestStatus.REJECTED, event.getQuotationRequest().getStatus());
     }
 

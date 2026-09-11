@@ -11,6 +11,7 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
+import de.remsfal.core.json.ImmutableContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.IssueJson;
@@ -41,8 +42,7 @@ public class IssueEventProducer {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
-        emit(baseBuilder(IssueEventType.ISSUE_CREATED, issue, actor).build(),
-            IssueEventType.ISSUE_CREATED, issue.getId());
+        emit(baseBuilder(IssueEventType.ISSUE_CREATED, issue, actor).build());
     }
 
     public void sendIssueUpdated(final IssueModel issue, final UserModel actor) {
@@ -50,28 +50,15 @@ public class IssueEventProducer {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
-        emit(baseBuilder(IssueEventType.ISSUE_UPDATED, issue, actor).build(),
-            IssueEventType.ISSUE_UPDATED, issue.getId());
+        emit(baseBuilder(IssueEventType.ISSUE_UPDATED, issue, actor).build());
     }
 
-    public void sendIssueAssigned(final IssueModel issue, final UserModel actor, final UUID assigneeId) {
+    public void sendIssueAssigned(final IssueModel issue, final UserModel actor) {
         if (issue == null) {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
-        final IssueEventJson event = baseBuilder(IssueEventType.ISSUE_ASSIGNED, issue, actor)
-            .assignee(toUserJson(assigneeId, null, null))
-            .build();
-        emit(event, IssueEventType.ISSUE_ASSIGNED, issue.getId());
-    }
-
-    public void sendIssueMentioned(final IssueModel issue, final UserModel actor) {
-        if (issue == null) {
-            logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
-            return;
-        }
-        emit(baseBuilder(IssueEventType.ISSUE_MENTIONED, issue, actor).build(),
-            IssueEventType.ISSUE_MENTIONED, issue.getId());
+        emit(baseBuilder(IssueEventType.ISSUE_ASSIGNED, issue, actor).build());
     }
 
     public void sendChatMessageCreated(final IssueModel issue, final ChatMessageJson chatMessage,
@@ -81,10 +68,9 @@ public class IssueEventProducer {
             return;
         }
         final IssueEventJson event = baseBuilder(IssueEventType.CHAT_MESSAGE_CREATED, issue, sender)
-            .sender(UserJson.valueOf(sender))
             .chatMessage(chatMessage)
             .build();
-        emit(event, IssueEventType.CHAT_MESSAGE_CREATED, issue.getId());
+        emit(event);
     }
 
     public void sendTimelineEntryCreated(final IssueModel issue, final TenantTimelineJson timelineEntry,
@@ -94,10 +80,9 @@ public class IssueEventProducer {
             return;
         }
         final IssueEventJson event = baseBuilder(IssueEventType.TIMELINE_ENTRY_CREATED, issue, sender)
-            .sender(UserJson.valueOf(sender))
             .timelineEntry(timelineEntry)
             .build();
-        emit(event, IssueEventType.TIMELINE_ENTRY_CREATED, issue.getId());
+        emit(event);
     }
 
     public void sendQuotationRequestCreated(final IssueModel issue, final QuotationRequestJson request,
@@ -108,27 +93,24 @@ public class IssueEventProducer {
         }
         final IssueEventJson event = baseBuilder(IssueEventType.QUOTATION_REQUEST_CREATED, issue, initiator)
             .initiator(UserJson.valueOf(initiator))
+            .contractor(ImmutableContractorJson.builder().id(request.getContractorId()).build())
             .quotationRequest(request)
             .build();
-        emit(event, IssueEventType.QUOTATION_REQUEST_CREATED, issue.getId());
+        emit(event);
     }
 
     public void sendQuotationRequestStatusChanged(final IssueModel issue, final QuotationRequestJson request,
-        final UserModel actor, final boolean byContractor) {
+        final UserModel actor) {
         if (issue == null) {
             logger.warn(SKIPPING_ISSUE_EVENT_BECAUSE_ISSUE_IS_NULL);
             return;
         }
-        final UserJson actorJson = UserJson.valueOf(actor);
-        final ImmutableIssueEventJson.Builder builder = baseBuilder(IssueEventType.QUOTATION_REQUEST_STATUS_CHANGED,
-            issue, actor)
-            .quotationRequest(request);
-        if (byContractor) {
-            builder.contractor(actorJson);
-        } else {
-            builder.initiator(actorJson);
-        }
-        emit(builder.build(), IssueEventType.QUOTATION_REQUEST_STATUS_CHANGED, issue.getId());
+        final IssueEventJson event = baseBuilder(IssueEventType.QUOTATION_REQUEST_STATUS_CHANGED, issue, actor)
+            .initiator(ImmutableUserJson.builder().id(request.getInitiatorId()).build())
+            .contractor(ImmutableContractorJson.builder().id(request.getContractorId()).build())
+            .quotationRequest(request)
+            .build();
+        emit(event);
     }
 
     public void sendQuotationCreated(final IssueModel issue, final QuotationJson quotation,
@@ -139,9 +121,10 @@ public class IssueEventProducer {
         }
         final IssueEventJson event = baseBuilder(IssueEventType.QUOTATION_CREATED, issue, offerer)
             .offerer(UserJson.valueOf(offerer))
+            .contractor(ImmutableContractorJson.builder().id(quotation.getContractorId()).build())
             .quotation(quotation)
             .build();
-        emit(event, IssueEventType.QUOTATION_CREATED, issue.getId());
+        emit(event);
     }
 
     public void sendOrderPlaced(final IssueModel issue, final OrderPlacementJson orderPlacement,
@@ -151,10 +134,10 @@ public class IssueEventProducer {
             return;
         }
         final IssueEventJson event = baseBuilder(IssueEventType.ORDER_PLACED, issue, orderer)
-            .initiator(UserJson.valueOf(orderer))
+            .contractor(ImmutableContractorJson.builder().id(orderPlacement.getContractorId()).build())
             .orderPlacement(orderPlacement)
             .build();
-        emit(event, IssueEventType.ORDER_PLACED, issue.getId());
+        emit(event);
     }
 
     public void sendOrderPlacementWithdrawn(final IssueModel issue, final OrderPlacementJson orderPlacement,
@@ -164,10 +147,10 @@ public class IssueEventProducer {
             return;
         }
         final IssueEventJson event = baseBuilder(IssueEventType.ORDER_PLACEMENT_STATUS_CHANGED, issue, actor)
-            .initiator(UserJson.valueOf(actor))
+            .contractor(ImmutableContractorJson.builder().id(orderPlacement.getContractorId()).build())
             .orderPlacement(orderPlacement)
             .build();
-        emit(event, IssueEventType.ORDER_PLACEMENT_STATUS_CHANGED, issue.getId());
+        emit(event);
     }
 
     public void sendOrderPlacementStatusChangedByContractor(final IssueModel issue,
@@ -178,9 +161,10 @@ public class IssueEventProducer {
         }
         final IssueEventJson event = baseBuilder(IssueEventType.ORDER_PLACEMENT_STATUS_CHANGED, issue, confirmor)
             .confirmor(UserJson.valueOf(confirmor))
+            .contractor(ImmutableContractorJson.builder().id(orderPlacement.getContractorId()).build())
             .orderPlacement(orderPlacement)
             .build();
-        emit(event, IssueEventType.ORDER_PLACEMENT_STATUS_CHANGED, issue.getId());
+        emit(event);
     }
 
     /**
@@ -195,11 +179,13 @@ public class IssueEventProducer {
             .issueId(issue.getId())
             .issue(IssueJson.valueOf(issue))
             .principal(UserJson.valueOf(actor))
-            .assignee(toUserJson(issue.getAssigneeId(), null, null))
-            .reporter(toUserJson(issue.getReporterId(), null, issue.getReportedBy()));
+            .assignee(ImmutableUserJson.builder().id(issue.getAssigneeId()).build())
+            .reporter(ImmutableUserJson.builder().id(issue.getReporterId()).build());
     }
 
-    private void emit(final IssueEventJson event, final IssueEventType type, final UUID issueId) {
+    private void emit(final IssueEventJson event) {
+        final IssueEventType type = event.getIssueEventType();
+        final UUID issueId = event.getIssueId();
         try {
             logger.infov("Sending issue event (type={0}, issueId={1}, projectId={2})", type, issueId,
                 event.getIssue() != null ? event.getIssue().getProjectId() : null);
@@ -216,28 +202,4 @@ public class IssueEventProducer {
         }
     }
 
-    /**
-     * Builds a partial {@link UserJson} from denormalized id/name snapshot fields (e.g. an issue's
-     * assignee or reporter) where no full {@link UserModel} is available.
-     */
-    private UserJson toUserJson(final UUID userId, final String email, final String name) {
-        if (userId == null && email == null && name == null) {
-            return null;
-        }
-        final ImmutableUserJson.Builder builder = ImmutableUserJson.builder();
-        if (userId != null) {
-            builder.id(userId);
-        }
-        if (email != null) {
-            builder.email(email);
-        }
-        if (name != null) {
-            final String[] parts = name.split(" ", 2);
-            builder.firstName(parts[0]);
-            if (parts.length > 1) {
-                builder.lastName(parts[1]);
-            }
-        }
-        return builder.build();
-    }
 }

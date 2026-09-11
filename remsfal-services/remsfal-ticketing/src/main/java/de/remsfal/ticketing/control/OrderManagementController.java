@@ -129,7 +129,7 @@ public class OrderManagementController {
         QuotationRequestEntity entity = mergeQuotationRequestFields(body, getRequestForQuotation(issueId, requestId));
         final QuotationRequestEntity updated = quotationRequestRepository.update(entity);
         issueEventProducer.sendQuotationRequestStatusChanged(findIssue(entity.getIssueId()),
-            QuotationRequestJson.valueOf(updated), principal, false);
+            QuotationRequestJson.valueOf(updated), principal);
         return updated;
     }
 
@@ -152,7 +152,7 @@ public class OrderManagementController {
         entity.setStatus(body.getStatus());
         final QuotationRequestEntity updated = quotationRequestRepository.update(entity);
         issueEventProducer.sendQuotationRequestStatusChanged(findIssue(entity.getIssueId()),
-            QuotationRequestJson.valueOf(updated), principal, true);
+            QuotationRequestJson.valueOf(updated), principal);
         return updated;
     }
 
@@ -280,7 +280,7 @@ public class OrderManagementController {
                 oldRequest.setStatus(RequestStatus.WITHDRAWN);
                 quotationRequestRepository.update(oldRequest);
                 issueEventProducer.sendQuotationRequestStatusChanged(issue,
-                    QuotationRequestJson.valueOf(oldRequest), user, false);
+                    QuotationRequestJson.valueOf(oldRequest), user);
             });
     }
 

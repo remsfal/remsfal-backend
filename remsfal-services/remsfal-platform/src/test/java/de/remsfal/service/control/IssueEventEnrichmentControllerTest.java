@@ -15,6 +15,8 @@ import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ImmutableContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
@@ -25,8 +27,10 @@ import de.remsfal.core.json.ticketing.ImmutableIssueJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.InjectMock;
@@ -41,6 +45,9 @@ class IssueEventEnrichmentControllerTest {
 
     @InjectMock
     ProjectRepository projectRepository;
+
+    @InjectMock
+    ContractorRepository contractorRepository;
 
     @Inject
     IssueEventEnrichmentController controller;
@@ -310,17 +317,87 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.CHAT_MESSAGE_CREATED)
             .issueId(issueId)
             .issue(issue)
-            .sender(ImmutableUserJson.builder().id(senderId).build())
+            .principal(ImmutableUserJson.builder().id(senderId).build())
             .chatMessage(chatMessage)
             .build();
 
         IssueEventJson enriched = controller.enrich(event);
 
-        assertNotNull(enriched.getSender());
-        assertEquals("sender@example.com", enriched.getSender().getEmail());
+        assertNotNull(enriched.getPrincipal());
+        assertEquals("sender@example.com", enriched.getPrincipal().getEmail());
         assertNotNull(enriched.getChatMessage());
         assertEquals("Hi there", enriched.getChatMessage().getMessage());
         verify(userRepository).findByIdOptional(senderId);
+    }
+
+    @Test
+    void enrich_enrichesContractorDetails() {
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID contractorId = UUID.randomUUID();
+
+        ContractorEntity contractorEntity = new ContractorEntity();
+        contractorEntity.setId(contractorId);
+        contractorEntity.setName("Bauservice GmbH");
+        contractorEntity.setEmail("contact@bauservice.example");
+        when(contractorRepository.findByIdOptional(contractorId)).thenReturn(Optional.of(contractorEntity));
+
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Order project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Order issue")
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ORDER_PLACED)
+            .issueId(issueId)
+            .issue(issue)
+            .contractor(ImmutableContractorJson.builder().id(contractorId).build())
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertNotNull(enriched.getContractor());
+        assertEquals(contractorId, enriched.getContractor().getId());
+        assertEquals("Bauservice GmbH", enriched.getContractor().getName());
+        assertEquals("contact@bauservice.example", enriched.getContractor().getEmail());
+        verify(contractorRepository).findByIdOptional(contractorId);
+    }
+
+    @Test
+    void enrich_contractorWithoutId_returnsSameContractorAndSkipsLookup() {
+        ContractorJson contractorWithoutId = ImmutableContractorJson.builder()
+            .name("Unknown contractor")
+            .build();
+
+        UUID projectId = UUID.randomUUID();
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Contractorless project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Contractor without id")
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ORDER_PLACED)
+            .issueId(UUID.randomUUID())
+            .issue(issue)
+            .contractor(contractorWithoutId)
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertEquals(contractorWithoutId, enriched.getContractor());
+        verifyNoInteractions(contractorRepository);
     }
 
     @Test
