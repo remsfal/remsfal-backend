@@ -49,10 +49,6 @@ public abstract class IssueRequestJson implements IssueRequestModel {
     @Override
     public abstract List<UUID> getAttachmentIds();
 
-    @Nullable
-    @Schema(description = "If true, the message is also copied into the tenant timeline of the issue")
-    public abstract Boolean getMessageToTenant();
-
     @Null
     @Nullable
     @Schema(readOnly = true)
