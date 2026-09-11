@@ -12,6 +12,7 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
@@ -23,7 +24,7 @@ import jakarta.annotation.Nullable;
 /**
  * Enriched issue event schema for Kafka messaging between microservices.
  *
- * <h3>Schema Version: 2.0</h3>
+ * <h3>Schema Version: 2.0.1</h3>
  *
  * This interface defines the public contract for issue events exchanged between:
  * <ul>
@@ -93,6 +94,14 @@ public interface IssueEventJson {
      */
     @Nullable
     ProjectJson getProject();
+
+    /**
+     * Optional enriched rental agreement details. When present (i.e. the issue is linked to a
+     * tenancy via {@code issue.getAgreementId()}), provides the agreement's tenants and rent
+     * data to avoid additional database queries.
+     */
+    @Nullable
+    RentalAgreementJson getRentalAgreement();
 
     /**
      * Frontend link to the issue detail/edit view.

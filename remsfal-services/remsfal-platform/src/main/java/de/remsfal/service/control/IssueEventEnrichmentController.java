@@ -12,9 +12,11 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.transaction.Transactional;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,14 +41,19 @@ public class IssueEventEnrichmentController {
     @Inject
     ContractorRepository contractorRepository;
 
+    @Inject
+    RentalAgreementRepository rentalAgreementRepository;
+
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
         ProjectJson project = enrichProject(event);
+        RentalAgreementJson rentalAgreement = enrichRentalAgreement(event);
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
             .issueEventType(event.getIssueEventType())
             .issueId(event.getIssueId())
             .issue(event.getIssue())
             .project(project)
+            .rentalAgreement(rentalAgreement)
             .link(buildIssueLink(event))
             .principal(enrichUser(event.getPrincipal()))
             .assignee(enrichUser(event.getAssignee()))
@@ -70,9 +77,6 @@ public class IssueEventEnrichmentController {
         if (event == null) {
             return null;
         }
-        if (event.getProject() != null && event.getProject().getTitle() != null) {
-            return event.getProject();
-        }
         final UUID projectId = event.getIssue() != null ? event.getIssue().getProjectId() : null;
         if (projectId == null) {
             return event.getProject();
@@ -80,6 +84,19 @@ public class IssueEventEnrichmentController {
         return projectRepository.findByIdOptional(projectId)
             .map(ProjectJson::valueOf)
             .orElse(event.getProject());
+    }
+
+    private RentalAgreementJson enrichRentalAgreement(final IssueEventJson event) {
+        if (event == null) {
+            return null;
+        }
+        final UUID agreementId = event.getIssue() != null ? event.getIssue().getAgreementId() : null;
+        if (agreementId == null) {
+            return event.getRentalAgreement();
+        }
+        return rentalAgreementRepository.findByIdOptional(agreementId)
+            .map(RentalAgreementJson::valueOf)
+            .orElse(event.getRentalAgreement());
     }
 
     private UserJson enrichUser(final UserJson user) {
