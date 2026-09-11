@@ -100,9 +100,8 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.ISSUE_ASSIGNED)
             .issueId(issueId)
             .issue(issue)
-            .user(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
+            .principal(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
-            .mentionedUser(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
         IssueEventJson enriched = controller.enrich(event);
@@ -113,8 +112,7 @@ class IssueEventEnrichmentControllerTest {
         assertEquals("assignee@example.com", enriched.getAssignee().getEmail());
         assertEquals("Assignee", enriched.getAssignee().getFirstName());
         assertEquals("Person", enriched.getAssignee().getLastName());
-        assertEquals(event.getUser(), enriched.getUser());
-        assertEquals(event.getMentionedUser(), enriched.getMentionedUser());
+        assertEquals(event.getPrincipal(), enriched.getPrincipal());
         assertEquals(reporterId, enriched.getIssue().getReporterId());
         assertEquals(tenancyId, enriched.getIssue().getAgreementId());
         assertEquals(assigneeId, enriched.getIssue().getAssigneeId());
@@ -226,7 +224,6 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .issue(issue)
-            .user(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
         IssueEventJson enriched = controller.enrich(event);
@@ -277,6 +274,53 @@ class IssueEventEnrichmentControllerTest {
         assertEquals(projectId, enriched.getProject().getId());
         assertEquals("Project unknown assignee", enriched.getProject().getTitle());
         verify(projectRepository).findByIdOptional(projectId);
+    }
+
+    @Test
+    void enrich_enrichesAllRolesAndPassesThroughRichPayloads() {
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID senderId = UUID.randomUUID();
+
+        UserEntity senderEntity = new UserEntity();
+        senderEntity.setId(senderId);
+        senderEntity.setEmail("sender@example.com");
+        senderEntity.setFirstName("Sender");
+        senderEntity.setLastName("Person");
+        when(userRepository.findByIdOptional(senderId)).thenReturn(Optional.of(senderEntity));
+
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Chat project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Chat issue")
+            .build();
+
+        de.remsfal.core.json.ticketing.ChatMessageJson chatMessage =
+            de.remsfal.core.json.ticketing.ImmutableChatMessageJson.builder()
+                .message("Hi there")
+                .senderId(senderId)
+                .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.CHAT_MESSAGE_CREATED)
+            .issueId(issueId)
+            .issue(issue)
+            .sender(ImmutableUserJson.builder().id(senderId).build())
+            .chatMessage(chatMessage)
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertNotNull(enriched.getSender());
+        assertEquals("sender@example.com", enriched.getSender().getEmail());
+        assertNotNull(enriched.getChatMessage());
+        assertEquals("Hi there", enriched.getChatMessage().getMessage());
+        verify(userRepository).findByIdOptional(senderId);
     }
 
     @Test

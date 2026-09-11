@@ -1,8 +1,8 @@
 package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
-import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
@@ -62,21 +62,21 @@ public class TenantTimelineController {
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UUID senderId, final String senderName, final TenantTimelineJson timeline,
+        final UserModel sender, final TenantTimelineJson timeline,
         final List<UUID> attachmentIds) {
-        return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName,
+        return createTimelineEntry(tenancyId, issueId, projectId, sender,
             timeline.getPurpose(), timeline.getMessage(), attachmentIds);
     }
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UUID senderId, final String senderName, final MessagePurpose purpose, final String message) {
-        return createTimelineEntry(tenancyId, issueId, projectId, senderId, senderName, purpose, message, null);
+        final UserModel sender, final MessagePurpose purpose, final String message) {
+        return createTimelineEntry(tenancyId, issueId, projectId, sender, purpose, message, null);
     }
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UUID senderId, final String senderName, final MessagePurpose purpose, final String message,
+        final UserModel sender, final MessagePurpose purpose, final String message,
         final List<UUID> attachmentIds) {
         logger.infov("Creating timeline entry (issueId={0}, projectId={1}, tenancyId={2})",
             issueId, projectId, tenancyId);
@@ -90,8 +90,8 @@ public class TenantTimelineController {
         final TenantTimelineEntity entity = new TenantTimelineEntity();
         entity.setKey(key);
         entity.setAttachmentIds(attachmentIds);
-        entity.setSenderId(senderId);
-        entity.setSenderName(senderName);
+        entity.setSenderId(sender.getId());
+        entity.setSenderName(sender.getName());
         entity.setPurpose(purpose);
         entity.setMessage(message);
 
@@ -102,8 +102,7 @@ public class TenantTimelineController {
         final TenantTimelineEntity created = timelineRepository.insert(entity);
 
         final IssueModel issue = issueRepository.findByIssueId(issueId).orElse(null);
-        issueEventProducer.sendActivityEvent(IssueEventType.TIMELINE_ENTRY_CREATED, issue,
-            senderId, senderName, message, null, null);
+        issueEventProducer.sendTimelineEntryCreated(issue, TenantTimelineJson.valueOf(created), sender);
 
         return created;
     }

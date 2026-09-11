@@ -8,9 +8,12 @@ import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.ticketing.ImmutableIssueJson;
+import de.remsfal.core.json.ticketing.ImmutableOrderPlacementJson;
+import de.remsfal.core.json.ticketing.ImmutableTenantTimelineJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import de.remsfal.ticketing.entity.dao.ActivityFeedRepository;
 import de.remsfal.ticketing.entity.dto.ActivityFeedEntity;
 import de.remsfal.ticketing.entity.filter.ActivityFeedFilter;
@@ -93,9 +96,8 @@ class ActivityFeedEventConsumerTest {
             .issueEventType(IssueEventType.ISSUE_CREATED)
             .issueId(issueId)
             .issue(issue)
-            .activityText("Test description")
             .link("/api/issues/" + issueId)
-            .user(ImmutableUserJson.builder()
+            .principal(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
                 .firstName("Actor")
                 .lastName("Person")
@@ -148,7 +150,9 @@ class ActivityFeedEventConsumerTest {
             .issueEventType(IssueEventType.TIMELINE_ENTRY_CREATED)
             .issueId(issueId)
             .issue(issue)
-            .activityText("Tenant left a message")
+            .timelineEntry(ImmutableTenantTimelineJson.builder()
+                .message("Tenant left a message")
+                .build())
             .link("/api/issues/" + issueId)
             .assignee(ImmutableUserJson.builder()
                 .id(assigneeId)
@@ -188,10 +192,13 @@ class ActivityFeedEventConsumerTest {
             .issueEventType(IssueEventType.ORDER_PLACED)
             .issueId(issueId)
             .issue(issue)
-            .activityText("Order placed with Acme Corp")
+            .orderPlacement(ImmutableOrderPlacementJson.builder()
+                .organizationId(organizationId)
+                .contractorId(contractorId)
+                .contractorName("Acme Corp")
+                .status(OrderPlacementStatus.PLACED)
+                .build())
             .link("/api/issues/" + issueId)
-            .organizationId(organizationId)
-            .contractorId(contractorId)
             .assignee(ImmutableUserJson.builder()
                 .id(assigneeId)
                 .build())
@@ -225,7 +232,7 @@ class ActivityFeedEventConsumerTest {
             .issueId(UUID.randomUUID())
             .issue(issue)
             .link("/api/issues/test")
-            .user(ImmutableUserJson.builder()
+            .principal(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
                 .build())
             .build();

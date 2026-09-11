@@ -36,7 +36,6 @@ public class IssueEventEnrichmentController {
 
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
-        UserJson enrichedAssignee = enrichAssignee(event.getAssignee());
         ProjectJson project = enrichProject(event);
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
             .issueEventType(event.getIssueEventType())
@@ -44,12 +43,19 @@ public class IssueEventEnrichmentController {
             .issue(event.getIssue())
             .project(project)
             .link(buildIssueLink(event))
-            .activityText(event.getActivityText())
-            .user(event.getUser())
-            .assignee(enrichedAssignee)
-            .mentionedUser(event.getMentionedUser())
-            .organizationId(event.getOrganizationId())
-            .contractorId(event.getContractorId())
+            .principal(enrichUser(event.getPrincipal()))
+            .assignee(enrichUser(event.getAssignee()))
+            .reporter(enrichUser(event.getReporter()))
+            .sender(enrichUser(event.getSender()))
+            .initiator(enrichUser(event.getInitiator()))
+            .contractor(enrichUser(event.getContractor()))
+            .confirmor(enrichUser(event.getConfirmor()))
+            .offerer(enrichUser(event.getOfferer()))
+            .chatMessage(event.getChatMessage())
+            .timelineEntry(event.getTimelineEntry())
+            .quotationRequest(event.getQuotationRequest())
+            .quotation(event.getQuotation())
+            .orderPlacement(event.getOrderPlacement())
             .build();
         logger.infov("Enriched issue event (issueId={0}, projectId={1})", event.getIssueId(),
             event.getIssue() != null ? event.getIssue().getProjectId() : null);
@@ -72,20 +78,20 @@ public class IssueEventEnrichmentController {
             .orElse(event.getProject());
     }
 
-    private UserJson enrichAssignee(final UserJson assignee) {
-        if (assignee == null || assignee.getId() == null) {
-            return assignee;
+    private UserJson enrichUser(final UserJson user) {
+        if (user == null || user.getId() == null) {
+            return user;
         }
-        Optional<UserEntity> entity = userRepository.findByIdOptional(assignee.getId());
+        Optional<UserEntity> entity = userRepository.findByIdOptional(user.getId());
         if (entity.isEmpty()) {
-            return assignee;
+            return user;
         }
-        UserEntity user = entity.get();
+        UserEntity found = entity.get();
         return ImmutableUserJson.builder()
-            .id(user.getId())
-            .email(user.getEmail())
-            .firstName(user.getFirstName())
-            .lastName(user.getLastName())
+            .id(found.getId())
+            .email(found.getEmail())
+            .firstName(found.getFirstName())
+            .lastName(found.getLastName())
             .build();
     }
 

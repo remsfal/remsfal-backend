@@ -93,7 +93,7 @@ public class IssueController {
         if (createTimelineEntry && entity.getAgreementId() != null
             && Boolean.TRUE.equals(entity.isVisibleToTenants())) {
             timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
-                entity.getProjectId(), user.getId(), user.getName(),
+                entity.getProjectId(), user,
                 MessagePurpose.ISSUE_CREATED, entity.getDescription());
         }
         return entity;
@@ -184,7 +184,7 @@ public class IssueController {
         if (entity.getAgreementId() != null && Boolean.TRUE.equals(entity.isVisibleToTenants())
             && issue.getStatus() != null && issue.getStatus() != oldStatus) {
             timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
-                entity.getProjectId(), principal.getId(), principal.getName(),
+                entity.getProjectId(), principal,
                 MessagePurpose.STATUS_CHANGED, entity.getStatus().name());
         }
 
@@ -211,7 +211,7 @@ public class IssueController {
             if (oldStatus != IssueStatus.CLOSED && e.getAgreementId() != null
                 && Boolean.TRUE.equals(e.isVisibleToTenants())) {
                 timelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
-                    principal.getId(), principal.getName(), MessagePurpose.STATUS_CHANGED,
+                    principal, MessagePurpose.STATUS_CHANGED,
                     IssueStatus.CLOSED.name());
             }
         });

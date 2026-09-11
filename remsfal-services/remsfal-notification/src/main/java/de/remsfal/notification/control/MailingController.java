@@ -186,8 +186,10 @@ public class MailingController {
             .data("status", statusName)
             .data("ownerName", event.getAssignee() != null ? event.getAssignee().getName() : "N/A")
             .data("ownerEmail", event.getAssignee() != null ? event.getAssignee().getEmail() : "N/A")
-            .data("actorName", event.getUser() != null ? event.getUser().getName() : "N/A")
-            .data("actorEmail", event.getUser() != null ? event.getUser().getEmail() : "N/A")
+            .data("actorName", event.getPrincipal() != null ? event.getPrincipal().getName() : "N/A")
+            .data("actorEmail", event.getPrincipal() != null ? event.getPrincipal().getEmail() : "N/A")
+            .data("reporterName", event.getReporter() != null ? event.getReporter().getName() : "N/A")
+            .data("reporterEmail", event.getReporter() != null ? event.getReporter().getEmail() : "N/A")
             .data("buttonLink", buttonLink);
         
         if (statusColor != null) {

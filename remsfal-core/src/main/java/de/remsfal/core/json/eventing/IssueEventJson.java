@@ -11,21 +11,33 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.IssueJson;
+import de.remsfal.core.json.ticketing.OrderPlacementJson;
+import de.remsfal.core.json.ticketing.QuotationJson;
+import de.remsfal.core.json.ticketing.QuotationRequestJson;
+import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import jakarta.annotation.Nullable;
 
 /**
  * Enriched issue event schema for Kafka messaging between microservices.
  *
- * <h3>Schema Version: 1.0</h3>
+ * <h3>Schema Version: 2.0</h3>
  *
  * This interface defines the public contract for issue events exchanged between:
  * <ul>
  *   <li>ticketing-service: Producer of basic issue events (ISSUE_CREATED, ISSUE_UPDATED,
- *   ISSUE_ASSIGNED, ISSUE_MENTIONED)</li>
- *   <li>platform-service: Enricher of events (adds project and user details)</li>
- *   <li>notification-service: Consumer of enriched events (sends email notifications)</li>
+ *   ISSUE_ASSIGNED, ISSUE_MENTIONED, and the activity events below)</li>
+ *   <li>platform-service: Enricher of events (resolves project details and role stubs to full
+ *   user profiles)</li>
+ *   <li>notification-service / ticketing-service: Consumers of enriched events (send email
+ *   notifications, record activity feed entries)</li>
  * </ul>
+ *
+ * <p>Instead of a single free-text {@code activityText} and a generic {@code user} actor, each
+ * activity event carries the full domain object it relates to ({@link #getChatMessage()},
+ * {@link #getQuotationRequest()}, ...) plus the specific role(s) that apply to it, so consumers
+ * can build detailed, localizable messages instead of relying on a pre-baked string.
  *
  * <h3>Versioning Guidelines</h3>
  * When modifying this schema:
@@ -91,39 +103,87 @@ public interface IssueEventJson {
     String getLink();
 
     /**
-     * The descriptive text to display for this event. For the core issue lifecycle events
-     * (ISSUE_CREATED, ISSUE_UPDATED, ISSUE_ASSIGNED, ISSUE_MENTIONED) this mirrors
-     * {@code getIssue().getDescription()}. For activity events (timeline entries, chat
-     * messages, quotation/order status changes) it carries that activity's own text instead,
-     * which is why it is a distinct field rather than being read off {@link #getIssue()}.
+     * The user who directly triggered this event. Always populated by the producer, present on
+     * every event type regardless of which role fields below also apply.
      */
     @Nullable
-    String getActivityText();
-
-    @Nullable
-    UserJson getUser();
+    UserJson getPrincipal();
 
     /**
-     * Target user for owner assignment events.
+     * Target user for owner assignment events. Also carried on every event as the issue's
+     * current assignee ({@code issue.getAssigneeId()}).
      */
     @Nullable
     UserJson getAssignee();
 
     /**
-     * Target user for mention events.
+     * The user who reported the issue ({@code issue.getReporterId()}). Carried on every event
+     * since the issue is always embedded.
      */
     @Nullable
-    UserJson getMentionedUser();
+    UserJson getReporter();
 
     /**
-     * Contractor organization involved in a quotation/order-placement activity event.
+     * The sender of a tenant timeline entry or chat message.
      */
     @Nullable
-    UUID getOrganizationId();
+    UserJson getSender();
 
     /**
-     * Contractor involved in a quotation/order-placement activity event.
+     * The platform-side (manager) user who initiated a quotation request or order placement.
      */
     @Nullable
-    UUID getContractorId();
+    UserJson getInitiator();
+
+    /**
+     * The contractor-side user who changed a quotation request's status.
+     */
+    @Nullable
+    UserJson getContractor();
+
+    /**
+     * The contractor-side user who confirmed or rejected an order placement.
+     */
+    @Nullable
+    UserJson getConfirmor();
+
+    /**
+     * The contractor-side user who submitted a quotation.
+     */
+    @Nullable
+    UserJson getOfferer();
+
+    /**
+     * The chat message that was created. Set only for {@link IssueEventType#CHAT_MESSAGE_CREATED}.
+     */
+    @Nullable
+    ChatMessageJson getChatMessage();
+
+    /**
+     * The tenant timeline entry that was created. Set only for
+     * {@link IssueEventType#TIMELINE_ENTRY_CREATED}.
+     */
+    @Nullable
+    TenantTimelineJson getTimelineEntry();
+
+    /**
+     * The quotation request this event relates to. Set for
+     * {@link IssueEventType#QUOTATION_REQUEST_CREATED} and
+     * {@link IssueEventType#QUOTATION_REQUEST_STATUS_CHANGED}.
+     */
+    @Nullable
+    QuotationRequestJson getQuotationRequest();
+
+    /**
+     * The quotation that was submitted. Set only for {@link IssueEventType#QUOTATION_CREATED}.
+     */
+    @Nullable
+    QuotationJson getQuotation();
+
+    /**
+     * The order placement this event relates to. Set for {@link IssueEventType#ORDER_PLACED} and
+     * {@link IssueEventType#ORDER_PLACEMENT_STATUS_CHANGED}.
+     */
+    @Nullable
+    OrderPlacementJson getOrderPlacement();
 }
