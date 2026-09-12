@@ -1,9 +1,7 @@
 package de.remsfal.ticketing.control;
 
-import io.minio.ListObjectsArgs;
-import io.minio.Result;
-import io.minio.messages.Item;
 import io.quarkus.test.junit.QuarkusTest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
@@ -108,16 +106,12 @@ public class FileStorageControllerTest extends AbstractTicketingTest {
 
         fileStorageController.deleteFile(fileName);
 
-        boolean found = false;
-        for (Result<Item> r : minioClient.listObjects(
-            ListObjectsArgs.builder()
-                .bucket(FileStorage.DEFAULT_BUCKET_NAME)
-                .build())) {
-            if (r.get().objectName().equals(fileName)) {
-                found = true;
-                break;
-            }
-        }
+        boolean found = s3Client.listObjectsV2(
+                ListObjectsV2Request.builder()
+                    .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                    .build())
+            .contents().stream()
+            .anyMatch(o -> o.key().equals(fileName));
         assertFalse(found, "Object should have been deleted");
     }
 
