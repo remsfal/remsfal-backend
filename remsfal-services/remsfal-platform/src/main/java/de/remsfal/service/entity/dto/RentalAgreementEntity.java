@@ -46,7 +46,7 @@ public class RentalAgreementEntity extends AbstractEntity implements RentalAgree
 
     @Column(name = "end_of_rental", columnDefinition = "date")
     private LocalDate endOfRental;
-    
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "rental_agreement_keys",
         joinColumns = @JoinColumn(name = "agreement_id", nullable = false, columnDefinition = "uuid"))

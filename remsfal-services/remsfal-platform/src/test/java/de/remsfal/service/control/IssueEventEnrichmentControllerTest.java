@@ -15,23 +15,32 @@ import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ImmutableContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.project.ImmutableProjectJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
 import de.remsfal.core.json.ticketing.ImmutableIssueJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+
+import java.time.LocalDate;
 
 @QuarkusTest
 class IssueEventEnrichmentControllerTest {
@@ -41,6 +50,12 @@ class IssueEventEnrichmentControllerTest {
 
     @InjectMock
     ProjectRepository projectRepository;
+
+    @InjectMock
+    ContractorRepository contractorRepository;
+
+    @InjectMock
+    RentalAgreementRepository rentalAgreementRepository;
 
     @Inject
     IssueEventEnrichmentController controller;
@@ -100,9 +115,8 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.ISSUE_ASSIGNED)
             .issueId(issueId)
             .issue(issue)
-            .user(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
+            .principal(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
-            .mentionedUser(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
         IssueEventJson enriched = controller.enrich(event);
@@ -113,8 +127,7 @@ class IssueEventEnrichmentControllerTest {
         assertEquals("assignee@example.com", enriched.getAssignee().getEmail());
         assertEquals("Assignee", enriched.getAssignee().getFirstName());
         assertEquals("Person", enriched.getAssignee().getLastName());
-        assertEquals(event.getUser(), enriched.getUser());
-        assertEquals(event.getMentionedUser(), enriched.getMentionedUser());
+        assertEquals(event.getPrincipal(), enriched.getPrincipal());
         assertEquals(reporterId, enriched.getIssue().getReporterId());
         assertEquals(tenancyId, enriched.getIssue().getAgreementId());
         assertEquals(assigneeId, enriched.getIssue().getAssigneeId());
@@ -166,9 +179,11 @@ class IssueEventEnrichmentControllerTest {
     }
 
     @Test
-    void enrich_usesExistingProjectWhenProvided() {
+    void enrich_fallsBackToProvidedProjectWhenNotFound() {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.empty());
+
         IssueJson issue = ImmutableIssueJson.builder()
             .projectId(projectId)
             .title("Existing project info")
@@ -188,7 +203,7 @@ class IssueEventEnrichmentControllerTest {
         assertEquals("Provided project", enriched.getProject().getTitle());
         assertEquals(frontendBaseUrl + "/projects/" + projectId + "/issueedit/" + issueId, enriched.getLink());
         verifyNoInteractions(userRepository);
-        verifyNoInteractions(projectRepository);
+        verify(projectRepository).findByIdOptional(projectId);
     }
 
     @Test
@@ -226,7 +241,6 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.ISSUE_UPDATED)
             .issueId(issueId)
             .issue(issue)
-            .user(ImmutableUserJson.builder().id(UUID.randomUUID()).build())
             .build();
 
         IssueEventJson enriched = controller.enrich(event);
@@ -277,6 +291,221 @@ class IssueEventEnrichmentControllerTest {
         assertEquals(projectId, enriched.getProject().getId());
         assertEquals("Project unknown assignee", enriched.getProject().getTitle());
         verify(projectRepository).findByIdOptional(projectId);
+    }
+
+    @Test
+    void enrich_enrichesAllRolesAndPassesThroughRichPayloads() {
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID senderId = UUID.randomUUID();
+
+        UserEntity senderEntity = new UserEntity();
+        senderEntity.setId(senderId);
+        senderEntity.setEmail("sender@example.com");
+        senderEntity.setFirstName("Sender");
+        senderEntity.setLastName("Person");
+        when(userRepository.findByIdOptional(senderId)).thenReturn(Optional.of(senderEntity));
+
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Chat project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Chat issue")
+            .build();
+
+        de.remsfal.core.json.ticketing.ChatMessageJson chatMessage =
+            de.remsfal.core.json.ticketing.ImmutableChatMessageJson.builder()
+                .message("Hi there")
+                .senderId(senderId)
+                .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.CHAT_MESSAGE_CREATED)
+            .issueId(issueId)
+            .issue(issue)
+            .principal(ImmutableUserJson.builder().id(senderId).build())
+            .chatMessage(chatMessage)
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertNotNull(enriched.getPrincipal());
+        assertEquals("sender@example.com", enriched.getPrincipal().getEmail());
+        assertNotNull(enriched.getChatMessage());
+        assertEquals("Hi there", enriched.getChatMessage().getMessage());
+        verify(userRepository).findByIdOptional(senderId);
+    }
+
+    @Test
+    void enrich_enrichesContractorDetails() {
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID contractorId = UUID.randomUUID();
+
+        ContractorEntity contractorEntity = new ContractorEntity();
+        contractorEntity.setId(contractorId);
+        contractorEntity.setName("Bauservice GmbH");
+        contractorEntity.setEmail("contact@bauservice.example");
+        when(contractorRepository.findByIdOptional(contractorId)).thenReturn(Optional.of(contractorEntity));
+
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Order project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Order issue")
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ORDER_PLACED)
+            .issueId(issueId)
+            .issue(issue)
+            .contractor(ImmutableContractorJson.builder().id(contractorId).build())
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertNotNull(enriched.getContractor());
+        assertEquals(contractorId, enriched.getContractor().getId());
+        assertEquals("Bauservice GmbH", enriched.getContractor().getName());
+        assertEquals("contact@bauservice.example", enriched.getContractor().getEmail());
+        verify(contractorRepository).findByIdOptional(contractorId);
+    }
+
+    @Test
+    void enrich_contractorWithoutId_returnsSameContractorAndSkipsLookup() {
+        ContractorJson contractorWithoutId = ImmutableContractorJson.builder()
+            .name("Unknown contractor")
+            .build();
+
+        UUID projectId = UUID.randomUUID();
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Contractorless project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("Contractor without id")
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ORDER_PLACED)
+            .issueId(UUID.randomUUID())
+            .issue(issue)
+            .contractor(contractorWithoutId)
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertEquals(contractorWithoutId, enriched.getContractor());
+        verifyNoInteractions(contractorRepository);
+    }
+
+    @Test
+    void enrich_enrichesRentalAgreementDetails() {
+        UUID issueId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID agreementId = UUID.randomUUID();
+        LocalDate start = LocalDate.of(2023, 1, 1);
+
+        RentalAgreementEntity agreementEntity = new RentalAgreementEntity();
+        agreementEntity.setId(agreementId);
+        agreementEntity.setStartOfRental(start);
+        when(rentalAgreementRepository.findByIdOptional(agreementId)).thenReturn(Optional.of(agreementEntity));
+
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Tenancy project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .agreementId(agreementId)
+            .title("Tenancy issue")
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
+            .issueId(issueId)
+            .issue(issue)
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertNotNull(enriched.getRentalAgreement());
+        assertEquals(agreementId, enriched.getRentalAgreement().getId());
+        assertEquals(start, enriched.getRentalAgreement().getStartOfRental());
+        verify(rentalAgreementRepository).findByIdOptional(agreementId);
+    }
+
+    @Test
+    void enrich_missingAgreementId_skipsRentalAgreementLookup() {
+        UUID projectId = UUID.randomUUID();
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("No tenancy project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .title("No tenancy issue")
+            .build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
+            .issueId(UUID.randomUUID())
+            .issue(issue)
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertNull(enriched.getRentalAgreement());
+        verifyNoInteractions(rentalAgreementRepository);
+    }
+
+    @Test
+    void enrich_fallsBackToProvidedRentalAgreementWhenNotFound() {
+        UUID projectId = UUID.randomUUID();
+        UUID agreementId = UUID.randomUUID();
+        when(rentalAgreementRepository.findByIdOptional(agreementId)).thenReturn(Optional.empty());
+
+        ProjectEntity project = new ProjectEntity();
+        project.setId(projectId);
+        project.setTitle("Stale agreement project");
+        project.setMembers(Set.of());
+        when(projectRepository.findByIdOptional(projectId)).thenReturn(Optional.of(project));
+
+        IssueJson issue = ImmutableIssueJson.builder()
+            .projectId(projectId)
+            .agreementId(agreementId)
+            .title("Stale agreement issue")
+            .build();
+
+        de.remsfal.core.json.project.RentalAgreementJson providedAgreement =
+            ImmutableRentalAgreementJson.builder().id(agreementId).build();
+
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.ISSUE_UPDATED)
+            .issueId(UUID.randomUUID())
+            .issue(issue)
+            .rentalAgreement(providedAgreement)
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertEquals(providedAgreement, enriched.getRentalAgreement());
+        verify(rentalAgreementRepository).findByIdOptional(agreementId);
     }
 
     @Test

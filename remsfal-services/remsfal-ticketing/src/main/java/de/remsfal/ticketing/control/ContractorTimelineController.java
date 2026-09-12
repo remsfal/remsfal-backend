@@ -3,6 +3,7 @@ package de.remsfal.ticketing.control;
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.model.UserContext;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
@@ -41,7 +42,7 @@ public class ContractorTimelineController {
 
     @Transactional
     public ContractorTimelineEntity createTimelineEntry(final UUID issueId,
-        final UUID organizationId, final UUID senderId, final String senderName,
+        final UUID organizationId, final UserModel sender,
         final UserContext senderRole, final ContractorTimelineJson entry, final List<UUID> attachmentIds) {
         logger.infov("Creating contractor timeline entry (issueId={0}, organizationId={1})", issueId, organizationId);
 
@@ -53,8 +54,8 @@ public class ContractorTimelineController {
         final ContractorTimelineEntity entity = new ContractorTimelineEntity();
         entity.setKey(key);
         entity.setAttachmentIds(attachmentIds);
-        entity.setSenderId(senderId);
-        entity.setSenderName(senderName);
+        entity.setSenderId(sender.getId());
+        entity.setSenderName(sender.getName());
         entity.setSenderRole(senderRole);
         entity.setPurpose(entry.getPurpose());
         entity.setMessage(entry.getMessage());
@@ -66,19 +67,19 @@ public class ContractorTimelineController {
         final ContractorTimelineEntity created = contractorTimelineRepository.insert(entity);
 
         if (Boolean.TRUE.equals(entry.getMessageToTenant())) {
-            copyToTenantTimeline(issueId, senderId, senderName, entry);
+            copyToTenantTimeline(issueId, sender, entry);
         }
 
         return created;
     }
 
-    private void copyToTenantTimeline(final UUID issueId, final UUID senderId, final String senderName,
+    private void copyToTenantTimeline(final UUID issueId, final UserModel sender,
         final ContractorTimelineJson entry) {
         final IssueEntity issue = issueController.getIssue(issueId);
         if (issue.getAgreementId() != null && Boolean.TRUE.equals(issue.isVisibleToTenants())) {
             logger.infov("Copying contractor timeline entry to tenant timeline (issueId={0})", issueId);
             tenantTimelineController.createTimelineEntry(issue.getAgreementId(), issueId, issue.getProjectId(),
-                senderId, senderName, entry.getPurpose(), entry.getMessage());
+                sender, entry.getPurpose(), entry.getMessage());
         }
     }
 

@@ -68,7 +68,7 @@ jobs:
 
   check-branches:
     name: "Check Pull Request Conditions"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       contents: read
     if: github.event_name == 'pull_request' && github.actor != 'remsfal-bot[bot]'

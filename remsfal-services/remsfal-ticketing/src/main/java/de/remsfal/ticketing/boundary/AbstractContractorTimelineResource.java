@@ -59,7 +59,7 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
 
         final ContractorTimelineEntity created = contractorTimelineController.createTimelineEntry(
             request.getIssueId(), request.getOrganizationId(),
-            principal.getId(), principal.getName(), senderRole, timeline,
+            principal, senderRole, timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 
         final URI location = uri.getAbsolutePathBuilder().path(created.getTimelineId().toString()).build();

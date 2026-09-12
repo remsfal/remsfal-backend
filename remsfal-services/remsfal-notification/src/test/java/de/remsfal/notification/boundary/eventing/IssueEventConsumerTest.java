@@ -92,8 +92,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/123")
-            .activityText("Test description")
-            .user(creator)
+            .principal(creator)
             .assignee(assignee)
             .build();
 
@@ -147,8 +146,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/123")
-            .activityText("Test description")
-            .user(user)
+            .principal(user)
             .assignee(user)
             .build();
 
@@ -206,8 +204,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/456")
-            .activityText("Updated description")
-            .user(updater)
+            .principal(updater)
             .assignee(assignee)
             .build();
 
@@ -266,8 +263,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/789")
-            .activityText("Assignment description")
-            .user(assigner)
+            .principal(assigner)
             .assignee(newOwner)
             .build();
 
@@ -284,60 +280,6 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
                 verify(mailingController, atLeastOnce()).sendIssueAssignedEmail(
                     any(IssueEventJson.class),
                     argThat(user -> "assigner@example.com".equals(user.getEmail())));
-            });
-    }
-
-    @Test
-    void testConsumeIssueMentioned_IsIgnored() {
-        ProjectJson project = ImmutableProjectJson.builder()
-            .id(UUID.randomUUID())
-            .title("Test Project")
-            .build();
-
-        UserJson user = ImmutableUserJson.builder()
-            .id(UUID.randomUUID())
-            .email("user@example.com")
-            .firstName("Test")
-            .lastName("User")
-            .build();
-
-        UUID issueId = UUID.randomUUID();
-        IssueJson issue = ImmutableIssueJson.builder()
-            .id(issueId)
-            .projectId(project.getId())
-            .title("Mentioned Issue")
-            .type(IssueType.DEFECT)
-            .status(IssueStatus.OPEN)
-            .reporterId(UUID.randomUUID())
-            .agreementId(UUID.randomUUID())
-            .assigneeId(user.getId())
-            .description("Mention description")
-            .build();
-
-        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
-            .issueEventType(IssueEventJson.IssueEventType.ISSUE_MENTIONED)
-            .issueId(issueId)
-            .issue(issue)
-            .project(project)
-            .link("https://remsfal.de/issue/999")
-            .activityText("Mention description")
-            .user(user)
-            .assignee(user)
-            .build();
-
-        companion.produce(ImmutableIssueEventJson.class)
-            .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
-            .awaitCompletion();
-
-        // Wait a bit to ensure consumer processes the message
-        Awaitility.await()
-            .pollDelay(Duration.ofSeconds(2))
-            .atMost(Duration.ofSeconds(5))
-            .untilAsserted(() -> {
-                // Verify no emails were sent for ISSUE_MENTIONED
-                verify(mailingController, never()).sendIssueCreatedEmail(any(), any());
-                verify(mailingController, never()).sendIssueUpdatedEmail(any(), any());
-                verify(mailingController, never()).sendIssueAssignedEmail(any(), any());
             });
     }
 
@@ -372,8 +314,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/111")
-            .activityText("No assignee")
-            .user(creator)
+            .principal(creator)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -422,7 +363,6 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/222")
-            .activityText("No user")
             .assignee(assignee)
             .build();
 
@@ -472,7 +412,6 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/333")
-            .activityText("Will throw exception")
             .assignee(assignee)
             .build();
 
