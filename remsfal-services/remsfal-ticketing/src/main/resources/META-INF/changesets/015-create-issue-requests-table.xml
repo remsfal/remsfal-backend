@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-015-issue-requests" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
+        <comment>Create issue requests table for requests a contractor sends to the tenant about an
+        issue (e.g. asking for additional images)</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS REMSFAL.issue_requests (
+                issue_id UUID,
+                organization_id UUID,
+                issue_request_id UUID,
+                message TEXT,
+                attachment_ids LIST&lt;UUID&gt;,
+                created_at TIMESTAMP,
+                modified_at TIMESTAMP,
+                PRIMARY KEY ((issue_id, organization_id), issue_request_id)
+            ) WITH CLUSTERING ORDER BY (issue_request_id ASC);
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS REMSFAL.issue_requests;</sql>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

@@ -27,4 +27,7 @@ public interface OrderManagementEndpoint {
     @Path("/{issueId}/" + ContractorTimelineEndpoint.SERVICE)
     ContractorTimelineEndpoint getTimelineResource();
 
+    @Path("/{issueId}/" + ContractorIssueRequestEndpoint.SERVICE)
+    ContractorIssueRequestEndpoint getIssueRequestResource();
+
 }
