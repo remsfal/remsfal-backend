@@ -20,6 +20,7 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.core.model.UserContext;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
@@ -49,6 +50,7 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
         final UUID issueId = UUID.randomUUID();
         final UUID organizationId = UUID.randomUUID();
         final UUID senderId = UUID.randomUUID();
+        final UserModel sender = TicketingTestData.userModel(senderId, "Bauservice GmbH");
         final List<UUID> attachmentIds = List.of(UUID.randomUUID());
 
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
@@ -57,7 +59,7 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
             .build();
 
         final ContractorTimelineEntity created = controller.createTimelineEntry(
-            issueId, organizationId, senderId, "Bauservice GmbH",
+            issueId, organizationId, sender,
             UserContext.CONTRACTOR, entry, attachmentIds);
 
         assertNotNull(created.getTimelineId());
@@ -113,7 +115,8 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
             .messageToTenant(true)
             .build();
 
-        controller.createTimelineEntry(issueId, organizationId, UUID.randomUUID(), "Bauservice GmbH",
+        controller.createTimelineEntry(issueId, organizationId,
+            TicketingTestData.userModel(UUID.randomUUID(), "Bauservice GmbH"),
             UserContext.CONTRACTOR, entry, null);
 
         final List<TenantTimelineEntity> tenantEntries = tenantTimelineRepository.findByIssue(
@@ -136,7 +139,8 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
             .message("Nur intern")
             .build();
 
-        controller.createTimelineEntry(issueId, organizationId, UUID.randomUUID(), "Bauservice GmbH",
+        controller.createTimelineEntry(issueId, organizationId,
+            TicketingTestData.userModel(UUID.randomUUID(), "Bauservice GmbH"),
             UserContext.CONTRACTOR, entry, null);
 
         final List<TenantTimelineEntity> tenantEntries = tenantTimelineRepository.findByIssue(
@@ -159,7 +163,7 @@ class ContractorTimelineControllerTest extends AbstractTicketingTest {
             .build();
 
         final ContractorTimelineEntity created = controller.createTimelineEntry(
-            issueId, organizationId, UUID.randomUUID(), "Bauservice GmbH",
+            issueId, organizationId, TicketingTestData.userModel(UUID.randomUUID(), "Bauservice GmbH"),
             UserContext.CONTRACTOR, entry, null);
 
         assertNotNull(created.getTimelineId());

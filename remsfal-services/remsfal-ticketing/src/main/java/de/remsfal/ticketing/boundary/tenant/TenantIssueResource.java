@@ -91,7 +91,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
             .map(IssueAttachmentJson::getAttachmentId)
             .toList();
         timelineController.createTimelineEntry(createdIssue.getAgreementId(), createdIssue.getId(),
-            createdIssue.getProjectId(), principal.getId(), principal.getName(),
+            createdIssue.getProjectId(), principal,
             MessagePurpose.ISSUE_CREATED, createdIssue.getDescription(),
             attachmentIds.isEmpty() ? null : attachmentIds);
 

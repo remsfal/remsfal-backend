@@ -1,7 +1,8 @@
 package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
-import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.json.ticketing.ChatMessageJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
@@ -41,7 +42,7 @@ public class ChatController {
 
     @Transactional
     public ChatMessageEntity createChatMessage(final UUID issueId, final UUID projectId,
-        final UUID senderId, final String senderName, final String message) {
+        final UserModel sender, final String message) {
         logger.infov("Creating chat message (issueId={0}, projectId={1})", issueId, projectId);
 
         final ChatMessageKey key = new ChatMessageKey();
@@ -51,8 +52,8 @@ public class ChatController {
 
         final ChatMessageEntity entity = new ChatMessageEntity();
         entity.setKey(key);
-        entity.setSenderId(senderId);
-        entity.setSenderName(senderName);
+        entity.setSenderId(sender.getId());
+        entity.setSenderName(sender.getName());
         entity.setMessage(message);
 
         final Instant now = Instant.now();
@@ -62,8 +63,7 @@ public class ChatController {
         final ChatMessageEntity created = chatMessageRepository.insert(entity);
 
         final IssueModel issue = issueRepository.findByIssueId(issueId).orElse(null);
-        issueEventProducer.sendActivityEvent(IssueEventType.CHAT_MESSAGE_CREATED, issue,
-            senderId, senderName, message, null, null);
+        issueEventProducer.sendChatMessageCreated(issue, ChatMessageJson.valueOf(created), sender);
 
         return created;
     }

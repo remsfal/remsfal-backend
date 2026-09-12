@@ -6,13 +6,17 @@ import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.transaction.Transactional;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -34,22 +38,35 @@ public class IssueEventEnrichmentController {
     @Inject
     ProjectRepository projectRepository;
 
+    @Inject
+    ContractorRepository contractorRepository;
+
+    @Inject
+    RentalAgreementRepository rentalAgreementRepository;
+
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
-        UserJson enrichedAssignee = enrichAssignee(event.getAssignee());
         ProjectJson project = enrichProject(event);
+        RentalAgreementJson rentalAgreement = enrichRentalAgreement(event);
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
             .issueEventType(event.getIssueEventType())
             .issueId(event.getIssueId())
             .issue(event.getIssue())
             .project(project)
+            .rentalAgreement(rentalAgreement)
             .link(buildIssueLink(event))
-            .activityText(event.getActivityText())
-            .user(event.getUser())
-            .assignee(enrichedAssignee)
-            .mentionedUser(event.getMentionedUser())
-            .organizationId(event.getOrganizationId())
-            .contractorId(event.getContractorId())
+            .principal(enrichUser(event.getPrincipal()))
+            .assignee(enrichUser(event.getAssignee()))
+            .reporter(enrichUser(event.getReporter()))
+            .initiator(enrichUser(event.getInitiator()))
+            .contractor(enrichContractor(event.getContractor()))
+            .confirmor(enrichUser(event.getConfirmor()))
+            .offerer(enrichUser(event.getOfferer()))
+            .chatMessage(event.getChatMessage())
+            .timelineEntry(event.getTimelineEntry())
+            .quotationRequest(event.getQuotationRequest())
+            .quotation(event.getQuotation())
+            .orderPlacement(event.getOrderPlacement())
             .build();
         logger.infov("Enriched issue event (issueId={0}, projectId={1})", event.getIssueId(),
             event.getIssue() != null ? event.getIssue().getProjectId() : null);
@@ -60,9 +77,6 @@ public class IssueEventEnrichmentController {
         if (event == null) {
             return null;
         }
-        if (event.getProject() != null && event.getProject().getTitle() != null) {
-            return event.getProject();
-        }
         final UUID projectId = event.getIssue() != null ? event.getIssue().getProjectId() : null;
         if (projectId == null) {
             return event.getProject();
@@ -72,21 +86,43 @@ public class IssueEventEnrichmentController {
             .orElse(event.getProject());
     }
 
-    private UserJson enrichAssignee(final UserJson assignee) {
-        if (assignee == null || assignee.getId() == null) {
-            return assignee;
+    private RentalAgreementJson enrichRentalAgreement(final IssueEventJson event) {
+        if (event == null) {
+            return null;
         }
-        Optional<UserEntity> entity = userRepository.findByIdOptional(assignee.getId());
+        final UUID agreementId = event.getIssue() != null ? event.getIssue().getAgreementId() : null;
+        if (agreementId == null) {
+            return event.getRentalAgreement();
+        }
+        return rentalAgreementRepository.findByIdOptional(agreementId)
+            .map(RentalAgreementJson::valueOf)
+            .orElse(event.getRentalAgreement());
+    }
+
+    private UserJson enrichUser(final UserJson user) {
+        if (user == null || user.getId() == null) {
+            return user;
+        }
+        Optional<UserEntity> entity = userRepository.findByIdOptional(user.getId());
         if (entity.isEmpty()) {
-            return assignee;
+            return user;
         }
-        UserEntity user = entity.get();
+        UserEntity found = entity.get();
         return ImmutableUserJson.builder()
-            .id(user.getId())
-            .email(user.getEmail())
-            .firstName(user.getFirstName())
-            .lastName(user.getLastName())
+            .id(found.getId())
+            .email(found.getEmail())
+            .firstName(found.getFirstName())
+            .lastName(found.getLastName())
             .build();
+    }
+
+    private ContractorJson enrichContractor(final ContractorJson contractor) {
+        if (contractor == null || contractor.getId() == null) {
+            return contractor;
+        }
+        return contractorRepository.findByIdOptional(contractor.getId())
+            .map(ContractorJson::valueOf)
+            .orElse(contractor);
     }
 
     String buildIssueLink(final IssueEventJson event) {

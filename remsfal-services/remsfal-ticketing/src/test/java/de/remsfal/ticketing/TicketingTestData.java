@@ -3,9 +3,40 @@ package de.remsfal.ticketing;
 import java.util.Map;
 import java.util.UUID;
 
+import de.remsfal.core.model.UserModel;
 import de.remsfal.test.TestData;
 
 public class TicketingTestData extends TestData {
+
+    /**
+     * A minimal {@link UserModel} for tests that only care about a sender/actor's id and name,
+     * without pulling in a full CustomerModel mock.
+     */
+    public static UserModel userModel(final UUID id, final String name) {
+        return new SimpleUserModel(id, name);
+    }
+
+    private record SimpleUserModel(UUID id, String name) implements UserModel {
+        @Override
+        public UUID getId() {
+            return id;
+        }
+
+        @Override
+        public String getEmail() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Boolean isActive() {
+            return null;
+        }
+    }
 
     // Test user credentials with project roles for testing
     public static final Map<String, String> MANAGER_PROJECT_ROLES = Map.of(

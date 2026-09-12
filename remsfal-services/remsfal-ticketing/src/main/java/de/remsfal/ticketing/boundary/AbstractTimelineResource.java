@@ -64,8 +64,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             issue.getAgreementId(),
             issue.getId(),
             issue.getProjectId(),
-            principal.getId(),
-            principal.getName(),
+            principal,
             timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 

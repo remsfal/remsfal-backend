@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserContext;
+import de.remsfal.core.model.UserModel;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -151,6 +152,30 @@ public abstract class UserJson implements CustomerModel {
     public static UserJson valueOf(final CustomerModel model, final Set<UserContext> userContexts) {
         return UserJson.valueOf(model)
             .withUserContexts(userContexts);
+    }
+
+    /**
+     * Builds a slim UserJson from a plain {@link UserModel}, which only exposes id, email and a
+     * single combined name (split here into first/last) - unlike {@link #valueOf(CustomerModel)},
+     * no address, phone numbers, or other profile fields are available to populate.
+     */
+    public static UserJson valueOf(final UserModel model) {
+        final ImmutableUserJson.Builder builder = ImmutableUserJson.builder();
+        if (model.getId() != null) {
+            builder.id(model.getId());
+        }
+        if (model.getEmail() != null) {
+            builder.email(model.getEmail());
+        }
+        final String name = model.getName();
+        if (name != null) {
+            final String[] parts = name.split(" ", 2);
+            builder.firstName(parts[0]);
+            if (parts.length > 1) {
+                builder.lastName(parts[1]);
+            }
+        }
+        return builder.build();
     }
 
 }

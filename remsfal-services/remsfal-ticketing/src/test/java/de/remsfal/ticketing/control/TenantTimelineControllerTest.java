@@ -16,8 +16,10 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.json.ticketing.ImmutableTenantTimelineJson;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
+import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
@@ -41,6 +43,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID senderId = UUID.randomUUID();
+        UserModel sender = TicketingTestData.userModel(senderId, "Max Mustermann");
         List<UUID> attachmentIds = List.of(UUID.randomUUID(), UUID.randomUUID());
 
         TenantTimelineJson timeline = ImmutableTenantTimelineJson.builder()
@@ -52,8 +55,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
             tenancyId,
             issueId,
             projectId,
-            senderId,
-            "Max Mustermann",
+            sender,
             timeline,
             attachmentIds);
 
@@ -149,13 +151,13 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         UUID issueId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID senderId = UUID.randomUUID();
+        UserModel sender = TicketingTestData.userModel(senderId, "System");
 
         TenantTimelineEntity created = controller.createTimelineEntry(
             tenancyId,
             issueId,
             projectId,
-            senderId,
-            "System",
+            sender,
             MessagePurpose.ISSUE_CREATED,
             "Die Heizung ist defekt");
 

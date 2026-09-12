@@ -41,7 +41,7 @@ public class ChatResource extends AbstractTicketingResource implements ChatEndpo
     public Response createChatMessage(final UUID issueId, final ChatMessageJson message) {
         final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
         final ChatMessageEntity created = chatController.createChatMessage(
-            issueId, issue.getProjectId(), principal.getId(), principal.getName(), message.getMessage());
+            issueId, issue.getProjectId(), principal, message.getMessage());
 
         final URI location = uri.getAbsolutePathBuilder().path(created.getMessageId().toString()).build();
         return Response.created(location)
