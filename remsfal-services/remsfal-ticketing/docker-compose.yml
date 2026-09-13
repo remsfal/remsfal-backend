@@ -1,20 +1,18 @@
 services:
-  minio:
-    image: minio/minio
-    container_name: minio
+  localstack:
+    image: localstack/localstack:4.9
+    container_name: localstack
     restart: unless-stopped
     depends_on:
       cassandra:
         condition: service_healthy
     environment:
-      - MINIO_ROOT_USER=remsfalAdmin
-      - MINIO_ROOT_PASSWORD=remsfalSecret
-    command: server /data --console-address ":9001"
+      - SERVICES=s3
+      - PERSISTENCE=1
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9000:4566"
     volumes:
-      - ./data/minio:/data
+      - localstack_data:/var/lib/localstack
     networks:
       - remsfal
 
@@ -52,14 +50,15 @@ services:
     depends_on:
       kafka-broker:
         condition: service_healthy
-      minio:
+      localstack:
         condition: service_started
     environment:
       - KAFKA_BROKER=kafka-broker:29092
-      - MINIO_ENDPOINT=minio:9000
+      - S3_ENDPOINT=localstack:4566
       - PYTHONUNBUFFERED=1
     networks:
       - remsfal
 
 volumes:
   cassandra_data:
+  localstack_data:

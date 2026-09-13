@@ -18,8 +18,12 @@ import java.util.Map;
 public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, DevServicesContext.ContextAware {
 
     public static final String KAFKA_IMAGE = "apache/kafka:latest";
-    public static final String MINIO_IMAGE = "minio/minio:latest";
+    public static final String LOCALSTACK_IMAGE = "localstack/localstack:4.9";
     public static final String RFOCR_IMAGE = "ghcr.io/remsfal/remsfal-ocr:latest";
+
+    private static final String LOCALSTACK_ACCESS_KEY = "test";
+    private static final String LOCALSTACK_SECRET_KEY = "test";
+    private static final String LOCALSTACK_REGION = "us-east-1";
 
     private static Logger logger = Logger.getLogger(OcrServiceResource.class);
 
@@ -27,7 +31,7 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
 
     private GenericContainer<?> ocrContainer;
 
-    private GenericContainer<?> minioContainer;
+    private GenericContainer<?> localstackContainer;
 
     private Network network;
 
@@ -64,24 +68,24 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
             .withLabel("quarkus-dev-service-kafka", "OcrServiceResourceKafka")
             .withExposedPorts(39092, kafkaPort);
 
-        logger.debugv("Creating container for image: {0}", MINIO_IMAGE);
-        minioContainer = new GenericContainer<>(MINIO_IMAGE)
+        logger.debugv("Creating container for image: {0}", LOCALSTACK_IMAGE);
+        localstackContainer = new GenericContainer<>(LOCALSTACK_IMAGE)
             .withNetwork(network)
-            .withNetworkAliases("minio")
-            .withCommand("server /data")
-            .withEnv("MINIO_ROOT_USER", "minioadmin")
-            .withEnv("MINIO_ROOT_PASSWORD", "minioadminpassword")
-            .withExposedPorts(9000);
+            .withNetworkAliases("localstack")
+            .withEnv("SERVICES", "s3")
+            .withEnv("DEFAULT_REGION", LOCALSTACK_REGION)
+            .withExposedPorts(4566)
+            .waitingFor(Wait.forHttp("/_localstack/health").forPort(4566));
 
         logger.debugv("Creating container for image: {0}", RFOCR_IMAGE);
         ocrContainer = new GenericContainer<>(RFOCR_IMAGE)
             .withNetwork(network)
             .withEnv("KAFKA_BROKER", "kafka-broker:29092")
             .dependsOn(kafkaContainer)
-            .withEnv("MINIO_ENDPOINT", "minio:9000")
-            .withEnv("MINIO_ACCESS_KEY", "minioadmin")
-            .withEnv("MINIO_SECRET_KEY", "minioadminpassword")
-            .dependsOn(minioContainer)
+            .withEnv("S3_ENDPOINT", "localstack:4566")
+            .withEnv("S3_ACCESS_KEY", LOCALSTACK_ACCESS_KEY)
+            .withEnv("S3_SECRET_KEY", LOCALSTACK_SECRET_KEY)
+            .dependsOn(localstackContainer)
             .withEnv("PYTHONUNBUFFERED", "1")
             .withLogConsumer(new JBossLogConsumer(logger, "[OCR] "))
             .waitingFor(Wait.forLogMessage(".*Listening to topic.*", 1))
@@ -91,8 +95,8 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
 
         kafkaContainer.start();
         logger.debugv("Container {0} is starting: {1}", KAFKA_IMAGE, kafkaContainer);
-        minioContainer.start();
-        logger.debugv("Container {0} is starting: {1}", MINIO_IMAGE, minioContainer);
+        localstackContainer.start();
+        logger.debugv("Container {0} is starting: {1}", LOCALSTACK_IMAGE, localstackContainer);
         ocrContainer.start();
         logger.debugv("Container {0} is starting: {1}", RFOCR_IMAGE, ocrContainer);
 
@@ -103,11 +107,12 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
         props.put("mp.messaging.connector.smallrye-kafka.bootstrap.servers", kafkaBootstrapServers);
         props.put("kafka.bootstrap.servers", kafkaBootstrapServers);
         props.put("quarkus.kafka.bootstrap-servers", kafkaBootstrapServers);
-        props.put("quarkus.minio.host", "http://localhost");
-        props.put("quarkus.minio.port", String.valueOf(minioContainer.getMappedPort(9000)));
-        props.put("quarkus.minio.access-key", "minioadmin");
-        props.put("quarkus.minio.secret-key", "minioadminpassword");
-        props.put("quarkus.minio.secure", String.valueOf(false));
+        props.put("quarkus.s3.endpoint-override", "http://localhost:" + localstackContainer.getMappedPort(4566));
+        props.put("quarkus.s3.aws.region", LOCALSTACK_REGION);
+        props.put("quarkus.s3.aws.credentials.type", "static");
+        props.put("quarkus.s3.aws.credentials.static-provider.access-key-id", LOCALSTACK_ACCESS_KEY);
+        props.put("quarkus.s3.aws.credentials.static-provider.secret-access-key", LOCALSTACK_SECRET_KEY);
+        props.put("quarkus.s3.path-style-access", "true");
         return props;
     }
 
@@ -123,8 +128,8 @@ public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, 
         }
         if (kafkaContainer != null)
             kafkaContainer.stop();
-        if (minioContainer != null)
-            minioContainer.stop();
+        if (localstackContainer != null)
+            localstackContainer.stop();
         if (network != null)
             network.close();
     }

@@ -18,13 +18,14 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.test.AbstractTest;
 import de.remsfal.ticketing.entity.storage.FileStorage;
-import io.minio.ListObjectsArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectsArgs;
-import io.minio.Result;
-import io.minio.messages.DeleteRequest;
-import io.minio.messages.Item;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 public abstract class AbstractTicketingTest extends AbstractTest {
 
@@ -32,30 +33,28 @@ public abstract class AbstractTicketingTest extends AbstractTest {
     protected CqlSession cqlSession;
 
     @Inject
-    protected MinioClient minioClient;
+    protected S3Client s3Client;
 
     @BeforeEach
     public void cleanObjectStorage() throws Exception {
-        // find objects in a bucket (recursive)
-        Iterable<Result<Item>> results = minioClient.listObjects(
-            ListObjectsArgs.builder()
+        // find objects in the bucket
+        ListObjectsV2Response results = s3Client.listObjectsV2(
+            ListObjectsV2Request.builder()
                 .bucket(FileStorage.DEFAULT_BUCKET_NAME)
-                .recursive(true)
                 .build());
 
         // collect delete command
-        List<DeleteRequest.Object> toDelete = new ArrayList<>();
-        for (Result<Item> result : results) {
-            String objectName = result.get().objectName();
-            toDelete.add(new DeleteRequest.Object(objectName));
+        List<ObjectIdentifier> toDelete = new ArrayList<>();
+        for (var object : results.contents()) {
+            toDelete.add(ObjectIdentifier.builder().key(object.key()).build());
         }
 
         // remove objects
         if (!toDelete.isEmpty()) {
-            minioClient.removeObjects(
-                RemoveObjectsArgs.builder()
+            s3Client.deleteObjects(
+                DeleteObjectsRequest.builder()
                     .bucket(FileStorage.DEFAULT_BUCKET_NAME)
-                    .objects(toDelete)
+                    .delete(Delete.builder().objects(toDelete).build())
                     .build());
         }
     }
@@ -89,13 +88,13 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         final String objectPath) throws Exception {
         try (InputStream imageStream = getTestFileStream(testFile)) {
             // upload files
-            minioClient.putObject(
-                PutObjectArgs.builder()
+            s3Client.putObject(
+                PutObjectRequest.builder()
                     .bucket(FileStorage.DEFAULT_BUCKET_NAME)
-                    .object(objectPath)
-                    .stream(imageStream, -1L, 5L * 1024 * 1024)
+                    .key(objectPath)
                     .contentType(mediaType)
-                    .build());
+                    .build(),
+                RequestBody.fromBytes(imageStream.readAllBytes()));
         }
     }
 

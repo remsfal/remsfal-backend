@@ -1,12 +1,5 @@
 package de.remsfal.ticketing.entity.storage;
 
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.GetObjectArgs;
-import io.minio.StatObjectArgs;
-import io.minio.RemoveObjectArgs;
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -15,12 +8,23 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 
-import io.minio.errors.ErrorResponseException;
 import java.io.InputStream;
 
 import org.jboss.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 /**
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
@@ -29,38 +33,41 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class FileStorage {
 
-    public static final long DEFAULT_OBJECT_SIZE = -1;
-
-    public static final long DEFAULT_PART_SIZE = 5L * 1024L * 1024L;
-
     public static final String DEFAULT_BUCKET_NAME = "remsfal-ticketing";
 
-    @ConfigProperty(name = "quarkus.minio.bucket-name", defaultValue = DEFAULT_BUCKET_NAME)
+    @ConfigProperty(name = "remsfal.ticketing.storage.bucket-name", defaultValue = DEFAULT_BUCKET_NAME)
     String bucketName;
 
     @Inject
     Logger logger;
 
     @Inject
-    MinioClient minioClient;
+    S3Client s3Client;
 
     public void onStartup(@Observes StartupEvent event) throws Exception {
         logger.info("Initializing File Storage ...");
 
-        boolean bucketExists = minioClient.bucketExists(
-            BucketExistsArgs.builder()
-            .bucket(bucketName)
-            .build());
-        if (!bucketExists) {
-            // Create bucket
-            minioClient.makeBucket(
-                MakeBucketArgs.builder()
+        try {
+            s3Client.headBucket(HeadBucketRequest.builder()
                 .bucket(bucketName)
                 .build());
-            logger.infov("Bucket '{0}' was created.", bucketName);
-        } else {
             logger.infov("Bucket '{0}' already exists.", bucketName);
+        } catch (NoSuchBucketException e) {
+            createBucket();
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) {
+                createBucket();
+            } else {
+                throw e;
+            }
         }
+    }
+
+    private void createBucket() {
+        s3Client.createBucket(CreateBucketRequest.builder()
+            .bucket(bucketName)
+            .build());
+        logger.infov("Bucket '{0}' was created.", bucketName);
     }
 
     public String uploadFile(final InputStream inputStream,
@@ -68,13 +75,14 @@ public class FileStorage {
         try {
             final String finalFileName = generateUniqueFileName(fileName);
             logger.infov("Uploading file {0} to bucket {1}", finalFileName, bucketName);
-            minioClient.putObject(
-                PutObjectArgs.builder()
+            final byte[] bytes = inputStream.readAllBytes();
+            s3Client.putObject(
+                PutObjectRequest.builder()
                 .bucket(bucketName)
-                .object(finalFileName)
-                .stream(inputStream, DEFAULT_OBJECT_SIZE, DEFAULT_PART_SIZE)
+                .key(finalFileName)
                 .contentType(contentType.toString())
-                .build());
+                .build(),
+                RequestBody.fromBytes(bytes));
             return finalFileName;
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while uploading file", e);
@@ -84,13 +92,16 @@ public class FileStorage {
     public InputStream downloadFile(final String fileName) {
         try {
             logger.infov("Downloading file {0} from bucket {1}", fileName, bucketName);
-            return minioClient.getObject(
-                GetObjectArgs.builder()
+            return s3Client.getObject(
+                GetObjectRequest.builder()
                     .bucket(bucketName)
-                    .object(fileName)
+                    .key(fileName)
                     .build());
-        } catch (ErrorResponseException e) {
-            if (e.response().code() == 404) {
+        } catch (NoSuchKeyException e) {
+            logger.warnv("File {0} does not exist in bucket {1}", fileName, bucketName);
+            throw new NotFoundException(e);
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) {
                 logger.warnv("File {0} does not exist in bucket {1}", fileName, bucketName);
                 throw new NotFoundException(e);
             }
@@ -103,10 +114,10 @@ public class FileStorage {
     public void deleteFile(final String fileName) {
         try {
             logger.infov("Deleting file {0} from bucket {1}", fileName, bucketName);
-            minioClient.removeObject(
-                RemoveObjectArgs.builder()
+            s3Client.deleteObject(
+                DeleteObjectRequest.builder()
                 .bucket(bucketName)
-                .object(fileName)
+                .key(fileName)
                 .build());
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while deleting file", e);
@@ -116,15 +127,18 @@ public class FileStorage {
     private boolean fileExists(final String fileName) {
         try {
             logger.debugv("Checking if file name {0} exists in bucket {1}", fileName, bucketName);
-            minioClient.statObject(
-                StatObjectArgs.builder()
+            s3Client.headObject(
+                HeadObjectRequest.builder()
                 .bucket(bucketName)
-                .object(fileName)
+                .key(fileName)
                 .build());
             logger.infov("File name {0} already exists in bucket {1}", fileName, bucketName);
             return true;
-        } catch (ErrorResponseException e) {
-            if (e.response().code() == 404) {
+        } catch (NoSuchKeyException e) {
+            logger.debugv("File name {0} does not exist in bucket {1}", fileName, bucketName);
+            return false;
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) {
                 logger.debugv("File name {0} does not exist in bucket {1}", fileName, bucketName);
                 return false;
             }

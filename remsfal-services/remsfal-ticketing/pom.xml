@@ -12,7 +12,6 @@
     </parent>
 
     <properties>
-        <quarkus-minio.version>3.9.1</quarkus-minio.version>
         <quarkus-cassandra.version>3.5.0</quarkus-cassandra.version>
     </properties>
 
@@ -31,11 +30,14 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
-        <!-- File Storage dependencies - Minio -->
+        <!-- File Storage dependencies - Amazon S3 (S3-compatible, used against IONOS S3 in production) -->
         <dependency>
-            <groupId>io.quarkiverse.minio</groupId>
-            <artifactId>quarkus-minio</artifactId>
-            <version>${quarkus-minio.version}</version>
+            <groupId>io.quarkiverse.amazonservices</groupId>
+            <artifactId>quarkus-amazon-s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
         </dependency>
         <!-- Cassandra dependencies -->
         <dependency>

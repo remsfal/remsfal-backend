@@ -39,7 +39,7 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 ### Initial Setup
 
 ```bash
-# Start infrastructure (PostgreSQL, Kafka, Cassandra, MinIO, Grafana)
+# Start infrastructure (PostgreSQL, Kafka, Cassandra, LocalStack (S3), Grafana)
 docker compose up -d
 ```
 
