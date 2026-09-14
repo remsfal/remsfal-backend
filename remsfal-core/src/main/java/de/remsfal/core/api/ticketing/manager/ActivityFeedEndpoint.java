@@ -50,8 +50,6 @@ public interface ActivityFeedEndpoint {
         @QueryParam("organizationId") UUID organizationId,
         @Parameter(description = "Filter to return only activities involving a specific contractor")
         @QueryParam("contractorId") UUID contractorId,
-        @Parameter(description = "Filter to return only activities of issues assigned to a specific user")
-        @QueryParam("assigneeId") UUID assigneeId,
         @Parameter(description = "Opaque cursor returned by a previous call to fetch the next page")
         @QueryParam("cursor") UUID cursor,
         @Parameter(description = "Maximum number of activities to return")

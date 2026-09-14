@@ -3,6 +3,7 @@ package de.remsfal.ticketing.boundary.eventing;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import de.remsfal.core.json.ImmutableContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
@@ -46,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @QuarkusTestResource(CassandraTestResource.class)
 class ActivityFeedEventConsumerTest {
 
-    private static final ActivityFeedFilter NO_FILTER = new ActivityFeedFilter(null, null, null, null, null, null);
+    private static final ActivityFeedFilter NO_FILTER = new ActivityFeedFilter(null, null, null, null, null);
 
     @InjectKafkaCompanion
     KafkaCompanion companion;
@@ -121,11 +122,9 @@ class ActivityFeedEventConsumerTest {
                 assertEquals(assigneeId, stored.getUserId());
                 assertEquals(issueId, stored.getIssueId());
                 assertEquals(projectId, stored.getProjectId());
-                assertEquals("New Issue Created", stored.getTitle());
+                assertEquals("New Issue Created", stored.getIssueTitle());
                 assertEquals(IssueType.TASK, stored.getIssueType());
-                assertEquals(IssueStatus.OPEN, stored.getStatus());
-                assertEquals("Test description", stored.getDescription());
-                assertEquals("/api/issues/" + issueId, stored.getLink());
+                assertEquals(IssueStatus.OPEN, stored.getIssueStatus());
                 assertEquals(IssueEventType.ISSUE_CREATED, stored.getActivityType());
                 assertEquals("Actor Person", stored.getActorName());
                 assertFalse(stored.isRead());
@@ -169,7 +168,6 @@ class ActivityFeedEventConsumerTest {
                 List<ActivityFeedEntity> activities = repository.findByQuery(assigneeId, NO_FILTER, null, 50);
                 assertEquals(1, activities.size());
                 assertEquals(IssueEventType.TIMELINE_ENTRY_CREATED, activities.get(0).getActivityType());
-                assertEquals("Tenant left a message", activities.get(0).getDescription());
             });
     }
 
@@ -198,6 +196,14 @@ class ActivityFeedEventConsumerTest {
                 .contractorName("Acme Corp")
                 .status(OrderPlacementStatus.PLACED)
                 .build())
+            .contractor(ImmutableContractorJson.builder()
+                .id(contractorId)
+                .organizationId(organizationId)
+                .name("Acme Corp")
+                .phone("+49123456789")
+                .email("acme@example.com")
+                .trade("General")
+                .build())
             .link("/api/issues/" + issueId)
             .assignee(ImmutableUserJson.builder()
                 .id(assigneeId)
@@ -215,6 +221,7 @@ class ActivityFeedEventConsumerTest {
                 assertEquals(1, activities.size());
                 assertEquals(organizationId, activities.get(0).getOrganizationId());
                 assertEquals(contractorId, activities.get(0).getContractorId());
+                assertEquals("Acme Corp", activities.get(0).getContractorName());
             });
     }
 
@@ -379,12 +386,12 @@ class ActivityFeedEventConsumerTest {
                 List<ActivityFeedEntity> assignee1Activities = repository.findByQuery(
                     assignee1, NO_FILTER, null, 50);
                 assertEquals(1, assignee1Activities.size());
-                assertEquals("Issue for Assignee 1", assignee1Activities.get(0).getTitle());
+                assertEquals("Issue for Assignee 1", assignee1Activities.get(0).getIssueTitle());
 
                 List<ActivityFeedEntity> assignee2Activities = repository.findByQuery(
                     assignee2, NO_FILTER, null, 50);
                 assertEquals(1, assignee2Activities.size());
-                assertEquals("Issue for Assignee 2", assignee2Activities.get(0).getTitle());
+                assertEquals("Issue for Assignee 2", assignee2Activities.get(0).getIssueTitle());
             });
     }
 }

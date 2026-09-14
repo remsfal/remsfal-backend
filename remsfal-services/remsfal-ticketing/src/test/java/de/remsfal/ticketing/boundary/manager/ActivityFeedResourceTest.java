@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
@@ -39,12 +41,15 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
     static final UUID AGREEMENT_ID = UUID.randomUUID();
     static final UUID ORGANIZATION_ID = UUID.randomUUID();
     static final UUID CONTRACTOR_ID = UUID.randomUUID();
-    static final UUID ASSIGNEE_ID = UUID.randomUUID();
 
-    private UUID insertOwnActivity(String title) {
-        return insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
-            title, "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
+    static final String PROJECT_TITLE = "Project Title";
+    static final String CONTRACTOR_NAME = "Contractor Co";
+
+    private UUID insertOwnActivity(String issueTitle) {
+        return insertActivity(USER_ID, PROJECT_ID, PROJECT_TITLE, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            issueTitle, UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, AGREEMENT_ID, List.of("Tenant One"),
+            ORGANIZATION_ID, CONTRACTOR_ID, CONTRACTOR_NAME, false);
     }
 
     private Cookie ownCookie() {
@@ -84,9 +89,10 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
     void getActivities_SUCCESS_returnsOwnActivitiesNewestFirst() {
         insertOwnActivity("First activity");
         final UUID secondActivityId = insertOwnActivity("Second activity");
-        insertActivity(OTHER_USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
-            "Other user's activity", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
+        insertActivity(OTHER_USER_ID, PROJECT_ID, PROJECT_TITLE, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other user's activity", UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, AGREEMENT_ID, List.of("Tenant One"),
+            ORGANIZATION_ID, CONTRACTOR_ID, CONTRACTOR_NAME, false);
 
         given()
             .when()
@@ -99,19 +105,21 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .body("nextCursor", nullValue())
             .body("activities", hasSize(2))
             .body("activities[0].id", equalTo(secondActivityId.toString()))
-            .body("activities[0].title", equalTo("Second activity"))
+            .body("activities[0].issueTitle", equalTo("Second activity"))
             .body("activities[0].projectId", equalTo(PROJECT_ID.toString()))
+            .body("activities[0].projectTitle", equalTo(PROJECT_TITLE))
             .body("activities[0].issueId", equalTo(ISSUE_ID.toString()))
             .body("activities[0].activityType", equalTo("ISSUE_CREATED"))
-            .body("activities[0].description", equalTo("Test description"))
-            .body("activities[0].link", equalTo("/api/issues/" + ISSUE_ID))
             .body("activities[0].actorName", equalTo("Actor"))
             .body("activities[0].issueType", equalTo("TASK"))
-            .body("activities[0].status", equalTo("OPEN"))
+            .body("activities[0].issueStatus", equalTo("OPEN"))
+            .body("activities[0].issuePriority", equalTo("MEDIUM"))
             .body("activities[0].agreementId", equalTo(AGREEMENT_ID.toString()))
+            .body("activities[0].tenantNames", hasSize(1))
+            .body("activities[0].tenantNames[0]", equalTo("Tenant One"))
             .body("activities[0].organizationId", equalTo(ORGANIZATION_ID.toString()))
             .body("activities[0].contractorId", equalTo(CONTRACTOR_ID.toString()))
-            .body("activities[0].assigneeId", equalTo(ASSIGNEE_ID.toString()))
+            .body("activities[0].contractorName", equalTo(CONTRACTOR_NAME))
             .body("activities[0].read", equalTo(false))
             .body("activities[0].createdAt", notNullValue());
     }
@@ -120,9 +128,10 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
     void getActivities_SUCCESS_filtersByProjectId() {
         final UUID otherProjectId = UUID.randomUUID();
         insertOwnActivity("Matching project");
-        insertActivity(USER_ID, otherProjectId, ISSUE_ID, IssueEventType.ISSUE_CREATED,
-            "Other project", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
+        insertActivity(USER_ID, otherProjectId, PROJECT_TITLE, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other project", UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, AGREEMENT_ID, List.of("Tenant One"),
+            ORGANIZATION_ID, CONTRACTOR_ID, CONTRACTOR_NAME, false);
 
         given()
             .when()
@@ -132,16 +141,17 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("size", equalTo(1))
-            .body("activities[0].title", equalTo("Matching project"));
+            .body("activities[0].issueTitle", equalTo("Matching project"));
     }
 
     @Test
     void getActivities_SUCCESS_filtersByIssueId() {
         final UUID otherIssueId = UUID.randomUUID();
         insertOwnActivity("Matching issue");
-        insertActivity(USER_ID, PROJECT_ID, otherIssueId, IssueEventType.ISSUE_CREATED,
-            "Other issue", "Test description", "/api/issues/" + otherIssueId, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
+        insertActivity(USER_ID, PROJECT_ID, PROJECT_TITLE, otherIssueId, IssueEventType.ISSUE_CREATED,
+            "Other issue", UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, AGREEMENT_ID, List.of("Tenant One"),
+            ORGANIZATION_ID, CONTRACTOR_ID, CONTRACTOR_NAME, false);
 
         given()
             .when()
@@ -151,16 +161,17 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("size", equalTo(1))
-            .body("activities[0].title", equalTo("Matching issue"));
+            .body("activities[0].issueTitle", equalTo("Matching issue"));
     }
 
     @Test
     void getActivities_SUCCESS_filtersByAgreementId() {
         final UUID otherAgreementId = UUID.randomUUID();
         insertOwnActivity("Matching agreement");
-        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
-            "Other agreement", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, otherAgreementId, ORGANIZATION_ID, CONTRACTOR_ID, ASSIGNEE_ID, false);
+        insertActivity(USER_ID, PROJECT_ID, PROJECT_TITLE, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other agreement", UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, otherAgreementId, List.of("Tenant One"),
+            ORGANIZATION_ID, CONTRACTOR_ID, CONTRACTOR_NAME, false);
 
         given()
             .when()
@@ -170,16 +181,17 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("size", equalTo(1))
-            .body("activities[0].title", equalTo("Matching agreement"));
+            .body("activities[0].issueTitle", equalTo("Matching agreement"));
     }
 
     @Test
     void getActivities_SUCCESS_filtersByOrganizationId() {
         final UUID otherOrganizationId = UUID.randomUUID();
         insertOwnActivity("Matching organization");
-        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
-            "Other organization", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, otherOrganizationId, CONTRACTOR_ID, ASSIGNEE_ID, false);
+        insertActivity(USER_ID, PROJECT_ID, PROJECT_TITLE, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other organization", UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, AGREEMENT_ID, List.of("Tenant One"),
+            otherOrganizationId, CONTRACTOR_ID, CONTRACTOR_NAME, false);
 
         given()
             .when()
@@ -189,16 +201,17 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("size", equalTo(1))
-            .body("activities[0].title", equalTo("Matching organization"));
+            .body("activities[0].issueTitle", equalTo("Matching organization"));
     }
 
     @Test
     void getActivities_SUCCESS_filtersByContractorId() {
         final UUID otherContractorId = UUID.randomUUID();
         insertOwnActivity("Matching contractor");
-        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
-            "Other contractor", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, otherContractorId, ASSIGNEE_ID, false);
+        insertActivity(USER_ID, PROJECT_ID, PROJECT_TITLE, ISSUE_ID, IssueEventType.ISSUE_CREATED,
+            "Other contractor", UUID.randomUUID(), "Actor",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, AGREEMENT_ID, List.of("Tenant One"),
+            ORGANIZATION_ID, otherContractorId, CONTRACTOR_NAME, false);
 
         given()
             .when()
@@ -208,26 +221,7 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("size", equalTo(1))
-            .body("activities[0].title", equalTo("Matching contractor"));
-    }
-
-    @Test
-    void getActivities_SUCCESS_filtersByAssigneeId() {
-        final UUID otherAssigneeId = UUID.randomUUID();
-        insertOwnActivity("Matching assignee");
-        insertActivity(USER_ID, PROJECT_ID, ISSUE_ID, IssueEventType.ISSUE_CREATED,
-            "Other assignee", "Test description", "/api/issues/" + ISSUE_ID, UUID.randomUUID(), "Actor",
-            IssueType.TASK, IssueStatus.OPEN, AGREEMENT_ID, ORGANIZATION_ID, CONTRACTOR_ID, otherAssigneeId, false);
-
-        given()
-            .when()
-            .cookie(ownCookie())
-            .queryParam("assigneeId", ASSIGNEE_ID.toString())
-            .get(ACTIVITIES_PATH)
-            .then()
-            .statusCode(200)
-            .body("size", equalTo(1))
-            .body("activities[0].title", equalTo("Matching assignee"));
+            .body("activities[0].issueTitle", equalTo("Matching contractor"));
     }
 
     @Test
@@ -245,8 +239,8 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("size", equalTo(2))
             .body("nextCursor", notNullValue())
-            .body("activities[0].title", equalTo("Activity 3"))
-            .body("activities[1].title", equalTo("Activity 2"))
+            .body("activities[0].issueTitle", equalTo("Activity 3"))
+            .body("activities[1].issueTitle", equalTo("Activity 2"))
             .extract()
             .path("nextCursor");
 
@@ -260,7 +254,7 @@ class ActivityFeedResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("size", equalTo(1))
             .body("nextCursor", nullValue())
-            .body("activities[0].title", equalTo("Activity 1"));
+            .body("activities[0].issueTitle", equalTo("Activity 1"));
     }
 
     @Test

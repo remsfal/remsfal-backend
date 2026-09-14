@@ -2,12 +2,14 @@ package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.model.ticketing.ActivityFeedModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,20 +22,26 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
     @Column("project_id")
     private UUID projectId;
 
-    @Column("issue_id")
-    private UUID issueId;
+    @Column("project_title")
+    private String projectTitle;
 
     @Column("activity_type")
     private String activityType;
 
-    @Column("title")
-    private String title;
+    @Column("issue_id")
+    private UUID issueId;
 
-    @Column("description")
-    private String description;
+    @Column("issue_title")
+    private String issueTitle;
 
-    @Column("link")
-    private String link;
+    @Column("issue_type")
+    private String issueType;
+
+    @Column("issue_status")
+    private String issueStatus;
+
+    @Column("issue_priority")
+    private String issuePriority;
 
     @Column("actor_id")
     private UUID actorId;
@@ -41,14 +49,11 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
     @Column("actor_name")
     private String actorName;
 
-    @Column("issue_type")
-    private String issueType;
-
-    @Column("status")
-    private String status;
-
     @Column("agreement_id")
     private UUID agreementId;
+
+    @Column("tenant_names")
+    private List<String> tenantNames;
 
     @Column("organization_id")
     private UUID organizationId;
@@ -56,8 +61,8 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
     @Column("contractor_id")
     private UUID contractorId;
 
-    @Column("assignee_id")
-    private UUID assigneeId;
+    @Column("contractor_name")
+    private String contractorName;
 
     // Named differently from the isRead() domain accessor below, for the same reason as
     // tenantUpdateJson/contractorUpdateJson in IssueEntity: JNoSQL Lite's annotation processor
@@ -98,6 +103,15 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
     }
 
     @Override
+    public String getProjectTitle() {
+        return projectTitle;
+    }
+
+    public void setProjectTitle(String projectTitle) {
+        this.projectTitle = projectTitle;
+    }
+
+    @Override
     public UUID getIssueId() {
         return issueId;
     }
@@ -121,30 +135,12 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
     }
 
     @Override
-    public String getTitle() {
-        return title;
+    public String getIssueTitle() {
+        return issueTitle;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
+    public void setIssueTitle(String issueTitle) {
+        this.issueTitle = issueTitle;
     }
 
     @Override
@@ -180,17 +176,31 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
     }
 
     @Override
-    public IssueStatus getStatus() {
-        return status != null ? IssueStatus.valueOf(status) : null;
+    public IssueStatus getIssueStatus() {
+        return issueStatus != null ? IssueStatus.valueOf(issueStatus) : null;
     }
 
-    public void setStatus(IssueStatus status) {
-        this.status = status != null ? status.name() : null;
+    public void setIssueStatus(IssueStatus issueStatus) {
+        this.issueStatus = issueStatus != null ? issueStatus.name() : null;
     }
 
-    // Setter for string status for Cassandra mapping
-    public void setStatus(String status) {
-        this.status = status;
+    // Setter for string issue status for Cassandra mapping
+    public void setIssueStatus(String issueStatus) {
+        this.issueStatus = issueStatus;
+    }
+
+    @Override
+    public IssuePriority getIssuePriority() {
+        return issuePriority != null ? IssuePriority.valueOf(issuePriority) : null;
+    }
+
+    public void setIssuePriority(IssuePriority issuePriority) {
+        this.issuePriority = issuePriority != null ? issuePriority.name() : null;
+    }
+
+    // Setter for string issue priority for Cassandra mapping
+    public void setIssuePriority(String issuePriority) {
+        this.issuePriority = issuePriority;
     }
 
     @Override
@@ -200,6 +210,15 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
 
     public void setAgreementId(UUID agreementId) {
         this.agreementId = agreementId;
+    }
+
+    @Override
+    public List<String> getTenantNames() {
+        return tenantNames;
+    }
+
+    public void setTenantNames(List<String> tenantNames) {
+        this.tenantNames = tenantNames;
     }
 
     @Override
@@ -221,12 +240,12 @@ public class ActivityFeedEntity extends AbstractEntity implements ActivityFeedMo
     }
 
     @Override
-    public UUID getAssigneeId() {
-        return assigneeId;
+    public String getContractorName() {
+        return contractorName;
     }
 
-    public void setAssigneeId(UUID assigneeId) {
-        this.assigneeId = assigneeId;
+    public void setContractorName(String contractorName) {
+        this.contractorName = contractorName;
     }
 
     @Override

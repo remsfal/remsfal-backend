@@ -205,20 +205,22 @@ public abstract class AbstractTicketingTest extends AbstractTest {
      * entries sort the same way {@code ActivityFeedController.recordActivity} produces them
      * (newest first, via the table's native clustering order on {@code activity_id}).
      */
-    protected UUID insertActivity(UUID userId, UUID projectId, UUID issueId, IssueEventType activityType,
-            String title, String description, String link, UUID actorId, String actorName,
-            IssueType issueType, IssueStatus status, UUID agreementId, UUID organizationId,
-            UUID contractorId, UUID assigneeId, boolean read) {
+    protected UUID insertActivity(UUID userId, UUID projectId, String projectTitle, UUID issueId,
+            IssueEventType activityType, String issueTitle, UUID actorId, String actorName,
+            IssueType issueType, IssueStatus issueStatus, IssuePriority issuePriority, UUID agreementId,
+            List<String> tenantNames, UUID organizationId, UUID contractorId, String contractorName,
+            boolean read) {
         final UUID activityId = UUIDv7.randomUUID();
         String insertActivityCql = "INSERT INTO remsfal.activity_feeds "
-            + "(user_id, activity_id, project_id, issue_id, activity_type, title, description, link,"
-            + " actor_id, actor_name, issue_type, status, agreement_id, organization_id, contractor_id,"
-            + " assignee_id, read, created_at, modified_at) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "(user_id, activity_id, project_id, project_title, activity_type, issue_id, issue_title,"
+            + " issue_type, issue_status, issue_priority, actor_id, actor_name, agreement_id, tenant_names,"
+            + " organization_id, contractor_id, contractor_name, read, created_at, modified_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertActivityCql,
-            userId, activityId, projectId, issueId, activityType.name(), title, description, link,
-            actorId, actorName, issueType != null ? issueType.name() : null, status != null ? status.name() : null,
-            agreementId, organizationId, contractorId, assigneeId, read, Instant.now(), Instant.now());
+            userId, activityId, projectId, projectTitle, activityType.name(), issueId, issueTitle,
+            issueType != null ? issueType.name() : null, issueStatus != null ? issueStatus.name() : null,
+            issuePriority != null ? issuePriority.name() : null, actorId, actorName, agreementId, tenantNames,
+            organizationId, contractorId, contractorName, read, Instant.now(), Instant.now());
         return activityId;
     }
 

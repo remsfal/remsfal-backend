@@ -61,7 +61,7 @@ class ActivityFeedRepositoryTest extends AbstractTicketingTest {
     }
 
     private ActivityFeedEntity createEntity(final UUID userId, final UUID activityId, final UUID projectId,
-        final String title) {
+        final String issueTitle) {
         final ActivityFeedKey key = new ActivityFeedKey();
         key.setUserId(userId);
         key.setActivityId(activityId);
@@ -69,7 +69,7 @@ class ActivityFeedRepositoryTest extends AbstractTicketingTest {
         final ActivityFeedEntity entity = new ActivityFeedEntity();
         entity.setKey(key);
         entity.setProjectId(projectId);
-        entity.setTitle(title);
+        entity.setIssueTitle(issueTitle);
 
         final Instant now = Instant.now();
         entity.setCreatedAt(now);
