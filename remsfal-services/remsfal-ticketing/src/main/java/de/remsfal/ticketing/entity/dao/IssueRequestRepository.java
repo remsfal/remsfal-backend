@@ -19,11 +19,6 @@ public class IssueRequestRepository extends AbstractRepository<IssueRequestEntit
         return template.insert(entity);
     }
 
-    /**
-     * Looks up a single issue request, scoped to the given {@code organization_id} for
-     * authorization. Relies on the SAI index on {@code organization_id}, since it is no longer
-     * part of the table's primary key.
-     */
     public Optional<IssueRequestEntity> findById(final IssueRequestKey key) {
         return template.select(IssueRequestEntity.class)
             .where(ISSUE_ID).eq(key.getIssueId())
@@ -32,12 +27,6 @@ public class IssueRequestRepository extends AbstractRepository<IssueRequestEntit
             .singleResult();
     }
 
-    /**
-     * Deletes by the table's actual primary key ({@code issue_id}, {@code issue_request_id}).
-     * Cassandra does not allow filtering a DELETE by non-primary-key columns (even indexed ones),
-     * so authorization against {@code organization_id} must happen beforehand, e.g. via {@link
-     * #findById(IssueRequestKey)}.
-     */
     public void delete(final IssueRequestKey key) {
         template.delete(IssueRequestEntity.class)
             .where(ISSUE_ID).eq(key.getIssueId())
