@@ -34,6 +34,7 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
         checkProjectIssueAccessPermissions(issueId);
         final List<ContractorTimelineJson> entries = orderManagementController
             .getRequestsForQuotation(issueId).stream()
+            .filter(request -> request.getOrganizationId() != null)
             .flatMap(request -> super.getTimelineEntries(request).getTimelines().stream())
             .sorted(Comparator.comparing(ContractorTimelineJson::getTimelineId))
             .toList();
