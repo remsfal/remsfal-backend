@@ -1,4 +1,4 @@
-package de.remsfal.core.api.ticketing.tenant;
+package de.remsfal.core.api.ticketing;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
@@ -20,17 +20,17 @@ import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.json.ticketing.IssueRequestListJson;
 
 /**
- * Read-only view for a tenant on the requests a contractor has sent about an issue.
+ * Shared request operations between a tenant and a contractor about an issue.
  * <p>
- * This is a pure sub-resource, mounted under {@code TenantIssueEndpoint}.
+ * This is a pure sub-resource, mounted under a role-specific issue endpoint.
  */
-public interface TenantIssueRequestEndpoint {
+public interface IssueRequestEndpoint {
 
     String SERVICE = "requests";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Retrieve the requests a contractor has sent to the tenant about an issue.")
+    @Operation(summary = "Retrieve the requests exchanged between tenant and contractor about an issue.")
     @APIResponse(responseCode = "200", description = "Requests retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to access this request")
@@ -42,7 +42,7 @@ public interface TenantIssueRequestEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Create a new request from the calling tenant to the contractor about an issue.")
+    @Operation(summary = "Create a new request about an issue.")
     @APIResponse(responseCode = "200", description = "Request created successfully",
         content = @Content(mediaType = MediaType.APPLICATION_JSON,
             schema = @Schema(implementation = IssueRequestJson.class)))

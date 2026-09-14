@@ -1,6 +1,6 @@
 package de.remsfal.ticketing.boundary.tenant;
 
-import de.remsfal.core.api.ticketing.tenant.TenantIssueRequestEndpoint;
+import de.remsfal.core.api.ticketing.IssueRequestEndpoint;
 import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.json.ticketing.IssueRequestListJson;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
@@ -18,7 +18,7 @@ import java.util.UUID;
  */
 @Authenticated
 @RequestScoped
-public class TenantIssueRequestResource extends AbstractTicketingResource implements TenantIssueRequestEndpoint {
+public class TenantIssueRequestResource extends AbstractTicketingResource implements IssueRequestEndpoint {
 
     @Inject
     IssueRequestController issueRequestController;
