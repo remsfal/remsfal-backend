@@ -79,7 +79,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .body(requestJson)
             .post(requestsPath())
             .then()
-            .statusCode(201);
+            .statusCode(200);
 
         given()
             .when()
@@ -93,6 +93,87 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void deleteRequest_SUCCESS_removesRequest() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+        final String issueRequestId = given()
+            .when()
+            .cookie(contractorCookie())
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(requestsPath())
+            .then()
+            .statusCode(200)
+            .extract().path("issueRequestId");
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .delete(requestsPath() + "/" + issueRequestId)
+            .then()
+            .statusCode(204);
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(requestsPath())
+            .then()
+            .statusCode(200)
+            .body("requests", hasSize(0));
+    }
+
+    @Test
+    void deleteRequest_FAILED_unknownIssueRequestId_returns404() {
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .delete(requestsPath() + "/" + UUID.randomUUID())
+            .then()
+            .statusCode(404);
+    }
+
+    @Test
+    void deleteRequest_FAILED_staffOrgRole_returns403() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+        final String issueRequestId = given()
+            .when()
+            .cookie(contractorCookie())
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(requestsPath())
+            .then()
+            .statusCode(200)
+            .extract().path("issueRequestId");
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor Staff",
+                Map.of(), Map.of(organizationId.toString(), "STAFF"), Map.of()))
+            .delete(requestsPath() + "/" + issueRequestId)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void deleteRequest_FAILED_organizationHasNoQuotationRequestForIssue_returns404() {
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "other@test.com", "Other Contractor",
+                Map.of(), Map.of(UUID.randomUUID().toString(), "MANAGER"), Map.of()))
+            .delete(requestsPath() + "/" + UUID.randomUUID())
+            .then()
+            .statusCode(404);
+    }
+
+    @Test
+    void deleteRequest_FAILED_unauthenticated_returns401() {
+        given()
+            .when()
+            .delete(requestsPath() + "/" + UUID.randomUUID())
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
     void createRequest_FAILED_missingMessageField_characterizeActualStatusCode() {
         final String requestJson = "{ }";
 
@@ -103,7 +184,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .body(requestJson)
             .post(requestsPath())
             .then()
-            .statusCode(201);
+            .statusCode(200);
     }
 
     @Test
@@ -201,7 +282,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .body(ownRequestJson)
             .post(requestsPath())
             .then()
-            .statusCode(201);
+            .statusCode(200);
 
         final UUID otherOrganizationId = UUID.randomUUID();
         final String otherRequestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
@@ -222,7 +303,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .body("{ \"message\":\"Fremde Anfrage\" }")
             .post(requestsPath())
             .then()
-            .statusCode(201);
+            .statusCode(200);
 
         given()
             .when()

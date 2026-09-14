@@ -16,6 +16,9 @@ public class IssueRequestEntity extends AbstractEntity implements IssueRequestMo
     @Id
     private IssueRequestKey key;
 
+    @Column("agreement_id")
+    private UUID agreementId;
+
     @Column("message")
     private String message;
 
@@ -58,6 +61,7 @@ public class IssueRequestEntity extends AbstractEntity implements IssueRequestMo
         this.key.setOrganizationId(organizationId);
     }
 
+    @Override
     public UUID getIssueRequestId() {
         return Optional.ofNullable(key)
             .map(IssueRequestKey::getIssueRequestId)
@@ -69,6 +73,15 @@ public class IssueRequestEntity extends AbstractEntity implements IssueRequestMo
             this.key = new IssueRequestKey();
         }
         this.key.setIssueRequestId(issueRequestId);
+    }
+
+    @Override
+    public UUID getAgreementId() {
+        return agreementId;
+    }
+
+    public void setAgreementId(final UUID agreementId) {
+        this.agreementId = agreementId;
     }
 
     @Override

@@ -1,7 +1,10 @@
 package de.remsfal.ticketing.boundary.tenant;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
 import java.util.UUID;
@@ -57,7 +60,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             ImmutableIssueRequestJson.builder().message("Nachricht Firma A").build());
         issueRequestController.createRequest(ISSUE_ID_WITH_AGREEMENT, UUID.randomUUID(),
             ImmutableIssueRequestJson.builder().message("Nachricht Firma B").build());
-        issueRequestController.createRequest(UUID.randomUUID(), UUID.randomUUID(),
+        issueRequestController.createRequest(ISSUE_ID_WITHOUT_AGREEMENT, UUID.randomUUID(),
             ImmutableIssueRequestJson.builder().message("Anderes Issue").build());
 
         given()
@@ -68,6 +71,75 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("requests", hasSize(2));
+    }
+
+    @Test
+    void createRequest_SUCCESS_persistsAndReturnsRequest() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung vom Mieter\" }";
+
+        given()
+            .when()
+            .cookie(tenantCookie())
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(REQUESTS_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("issueRequestId", notNullValue())
+            .body("message", equalTo("Bitte um Rueckmeldung vom Mieter"))
+            .body("organizationId", nullValue())
+            .body("agreementId", equalTo(AGREEMENT_ID.toString()));
+
+        given()
+            .when()
+            .cookie(tenantCookie())
+            .get(REQUESTS_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(200)
+            .body("requests", hasSize(1));
+    }
+
+    @Test
+    void createRequest_FAILED_issueHasNoAgreement_returns403() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "tenant@example.com", "Tenant", Map.of(), Map.of(),
+                Map.of()))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(REQUESTS_PATH, ISSUE_ID_WITHOUT_AGREEMENT)
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void createRequest_FAILED_unknownIssueId_returns404() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+
+        given()
+            .when()
+            .cookie(tenantCookie())
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(REQUESTS_PATH, UUID.randomUUID())
+            .then()
+            .statusCode(404);
+    }
+
+    @Test
+    void createRequest_FAILED_unauthenticated_returns401() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+
+        given()
+            .when()
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(REQUESTS_PATH, ISSUE_ID_WITH_AGREEMENT)
+            .then()
+            .statusCode(401);
     }
 
     @Test

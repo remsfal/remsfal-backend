@@ -15,7 +15,10 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 import de.remsfal.core.json.ticketing.ImmutableIssueRequestJson;
 import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.ticketing.AbstractTicketingTest;
+import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.IssueRequestRepository;
+import de.remsfal.ticketing.entity.dto.IssueEntity;
+import de.remsfal.ticketing.entity.dto.IssueKey;
 import de.remsfal.ticketing.entity.dto.IssueRequestEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -31,9 +34,28 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
     @Inject
     IssueRequestRepository repository;
 
+    @Inject
+    IssueRepository issueRepository;
+
+    private UUID createIssue(final UUID agreementId) {
+        final UUID issueId = UUID.randomUUID();
+
+        final IssueKey key = new IssueKey();
+        key.setProjectId(UUID.randomUUID());
+        key.setIssueId(issueId);
+
+        final IssueEntity issue = new IssueEntity();
+        issue.setKey(key);
+        issue.setAgreementId(agreementId);
+
+        issueRepository.insert(issue);
+        return issueId;
+    }
+
     @Test
     void testCreateRequest_persistsEntityWithGeneratedKeyAndTimestamps() {
-        final UUID issueId = UUID.randomUUID();
+        final UUID agreementId = UUID.randomUUID();
+        final UUID issueId = createIssue(agreementId);
         final UUID organizationId = UUID.randomUUID();
         final List<UUID> attachmentIds = List.of(UUID.randomUUID());
 
@@ -47,6 +69,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         assertNotNull(created.getIssueRequestId());
         assertEquals(issueId, created.getIssueId());
         assertEquals(organizationId, created.getOrganizationId());
+        assertEquals(agreementId, created.getAgreementId());
         assertEquals("Bitte um Rueckmeldung", created.getMessage());
         assertEquals(attachmentIds, created.getAttachmentIds());
         assertNotNull(created.getCreatedAt());
@@ -59,7 +82,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
 
     @Test
     void testGetRequestsForContractor_returnsOnlyMatchingOrganization() {
-        final UUID issueId = UUID.randomUUID();
+        final UUID issueId = createIssue(UUID.randomUUID());
         final UUID organizationA = UUID.randomUUID();
         final UUID organizationB = UUID.randomUUID();
 
@@ -76,7 +99,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
 
     @Test
     void testGetRequestsForTenant_returnsRequestsAcrossAllOrganizations() {
-        final UUID issueId = UUID.randomUUID();
+        final UUID issueId = createIssue(UUID.randomUUID());
         final UUID organizationA = UUID.randomUUID();
         final UUID organizationB = UUID.randomUUID();
 

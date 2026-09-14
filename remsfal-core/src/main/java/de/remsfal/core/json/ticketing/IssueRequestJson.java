@@ -28,6 +28,12 @@ public abstract class IssueRequestJson implements IssueRequestModel {
 
     @Null
     @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract UUID getIssueRequestId();
+
+    @Null
+    @Nullable
     @JsonIgnore
     @Schema(readOnly = true, hidden = true)
     @Override
@@ -38,6 +44,12 @@ public abstract class IssueRequestJson implements IssueRequestModel {
     @Schema(readOnly = true)
     @Override
     public abstract UUID getOrganizationId();
+
+    @Null
+    @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract UUID getAgreementId();
 
     @NotNull
     @Nullable
@@ -63,8 +75,10 @@ public abstract class IssueRequestJson implements IssueRequestModel {
 
     public static IssueRequestJson valueOf(final IssueRequestModel model) {
         return ImmutableIssueRequestJson.builder()
+            .issueRequestId(model.getIssueRequestId())
             .issueId(model.getIssueId())
             .organizationId(model.getOrganizationId())
+            .agreementId(model.getAgreementId())
             .message(model.getMessage())
             .attachmentIds(model.getAttachmentIds())
             .createdAt(model.getCreatedAt())

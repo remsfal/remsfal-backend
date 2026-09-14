@@ -12,8 +12,6 @@ import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import java.util.Set;
 import java.util.UUID;
@@ -42,7 +40,7 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
     }
 
     @Override
-    public Response createRequest(final UUID issueId, final IssueRequestJson request) {
+    public IssueRequestJson createRequest(final UUID issueId, final IssueRequestJson request) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity quotationRequest =
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
@@ -50,10 +48,16 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
         final IssueRequestEntity created = issueRequestController.createRequest(issueId,
             quotationRequest.getOrganizationId(), request);
 
-        return Response.status(Response.Status.CREATED)
-            .type(MediaType.APPLICATION_JSON)
-            .entity(IssueRequestJson.valueOf(created))
-            .build();
+        return IssueRequestJson.valueOf(created);
+    }
+
+    @Override
+    public void deleteRequest(final UUID issueId, final UUID issueRequestId) {
+        final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
+        final QuotationRequestEntity quotationRequest =
+            orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
+
+        issueRequestController.deleteRequest(issueId, quotationRequest.getOrganizationId(), issueRequestId);
     }
 
 }

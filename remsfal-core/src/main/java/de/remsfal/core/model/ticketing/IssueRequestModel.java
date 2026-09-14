@@ -6,9 +6,13 @@ import java.util.UUID;
 
 public interface IssueRequestModel {
 
+    UUID getIssueRequestId();
+
     UUID getIssueId();
 
     UUID getOrganizationId();
+
+    UUID getAgreementId();
 
     String getMessage();
 
