@@ -35,14 +35,28 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
     OrderAttachmentController orderAttachmentController;
 
     protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request) {
-        final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(request.getRequestId());
-        final IssueEntity issue = issueController.getIssue(request.getIssueId());
+        return getTimelineEntries(List.of(request));
+    }
+
+    /**
+     * Aggregates timeline entries for all {@code QuotationRequestEntity} rows belonging to the same
+     * organization (an organization can accumulate several request rows over time, e.g. when a
+     * request is withdrawn and re-sent). All rows must share the same {@code issueId} and
+     * {@code organizationId}; attachments are collected across all of them so entries created against
+     * an earlier (e.g. withdrawn) request still resolve their attachments.
+     */
+    protected ContractorTimelineListJson getTimelineEntries(final List<QuotationRequestEntity> requests) {
+        final QuotationRequestEntity representative = requests.get(0);
+        final List<OrderAttachmentJson> requestAttachments = requests.stream()
+            .flatMap(request -> fetchRequestAttachments(request.getRequestId()).stream())
+            .toList();
+        final IssueEntity issue = issueController.getIssue(representative.getIssueId());
         final boolean visibleToTenant = issue.getAgreementId() != null
             && Boolean.TRUE.equals(issue.isVisibleToTenants());
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
-                request.getIssueId(), request.getOrganizationId()).stream()
+                representative.getIssueId(), representative.getOrganizationId()).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
                 .toList(),
             visibleToTenant);

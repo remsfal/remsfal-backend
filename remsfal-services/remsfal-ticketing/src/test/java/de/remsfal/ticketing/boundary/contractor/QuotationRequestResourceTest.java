@@ -4,7 +4,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -154,6 +156,72 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("status", equalTo("SUBMITTED"));
+    }
+
+    @Test
+    void updateQuotationRequest_SUCCESS_writesStatusChangedContractorTimelineEntry() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"contractors\":[{\"id\":\"" + contractorId
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .get(QUOTATION_PATH)
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"SUBMITTED\" }")
+            .patch(QUOTATION_PATH + "/" + requestId)
+            .then()
+            .statusCode(200);
+
+        final List<Map<String, Object>> timelines = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/contractor-timeline")
+            .then()
+            .statusCode(200)
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(2, timelines.size());
+        final Map<String, Object> statusChanged = timelines.stream()
+            .filter(t -> "STATUS_CHANGED".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals("SUBMITTED", statusChanged.get("message"));
+        assertEquals(organizationId.toString(), statusChanged.get("organizationId"));
+        assertEquals("CONTRACTOR", statusChanged.get("senderRole"));
     }
 
     @Test

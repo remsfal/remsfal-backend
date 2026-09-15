@@ -4,8 +4,10 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -75,7 +77,7 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getTimelineEntries_SUCCESS_returnsEmptyListInitially() {
+    void getTimelineEntries_SUCCESS_containsQuotationRequestedEntryInitially() {
         given()
             .when()
             .cookie(contractorCookie())
@@ -83,7 +85,8 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("timelines", hasSize(0));
+            .body("timelines", hasSize(1))
+            .body("timelines[0].purpose", equalTo("QUOTATION_REQUESTED"));
     }
 
     @Test
@@ -207,14 +210,19 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .body("attachments", hasSize(1))
             .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1));
 
-        given()
+        final List<Map<String, Object>> timelines = given()
             .when()
             .cookie(contractorCookie())
             .get(timelinePath())
             .then()
             .statusCode(200)
-            .body("timelines", hasSize(1))
-            .body("timelines[0].attachments", hasSize(1));
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(2, timelines.size());
+        final Map<String, Object> messageSent = timelines.stream()
+            .filter(t -> "MESSAGE_SENT".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals(1, ((List<?>) messageSent.get("attachments")).size());
     }
 
     @Test
@@ -274,14 +282,19 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(201);
 
-        given()
+        final List<Map<String, Object>> timelines = given()
             .when()
             .cookie(contractorCookie())
             .get(timelinePath())
             .then()
             .statusCode(200)
-            .body("timelines", hasSize(1))
-            .body("timelines[0].message", equalTo("Angebot in Vorbereitung"));
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(2, timelines.size());
+        final Map<String, Object> messageSent = timelines.stream()
+            .filter(t -> "MESSAGE_SENT".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals("Angebot in Vorbereitung", messageSent.get("message"));
     }
 
 }
