@@ -186,9 +186,11 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
     @Test
     void testAnswerRequest_unknownIssueRequestId_throwsNotFound() {
         final UUID issueId = createIssue(UUID.randomUUID());
+        final IssueRequestJson response = ImmutableIssueRequestJson.builder()
+            .message("Termin bestaetigt")
+            .build();
 
         assertThrows(NotFoundException.class,
-            () -> controller.answerRequest(issueId, UUID.randomUUID(), TENANT_USER,
-                ImmutableIssueRequestJson.builder().message("Termin bestaetigt").build()));
+            () -> controller.answerRequest(issueId, UUID.randomUUID(), TENANT_USER, response));
     }
 }
