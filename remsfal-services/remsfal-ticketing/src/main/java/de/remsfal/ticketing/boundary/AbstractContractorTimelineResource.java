@@ -38,13 +38,6 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
         return getTimelineEntries(List.of(request));
     }
 
-    /**
-     * Aggregates timeline entries for all {@code QuotationRequestEntity} rows belonging to the same
-     * organization (an organization can accumulate several request rows over time, e.g. when a
-     * request is withdrawn and re-sent). All rows must share the same {@code issueId} and
-     * {@code organizationId}; attachments are collected across all of them so entries created against
-     * an earlier (e.g. withdrawn) request still resolve their attachments.
-     */
     protected ContractorTimelineListJson getTimelineEntries(final List<QuotationRequestEntity> requests) {
         final QuotationRequestEntity representative = requests.get(0);
         final List<OrderAttachmentJson> requestAttachments = requests.stream()
