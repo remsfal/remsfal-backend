@@ -4,7 +4,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -146,6 +148,32 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
             .statusCode(201);
     }
 
+    @Test
+    void placeOrder_SUCCESS_writesOrderPlacedContractorTimelineEntry() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final UUID contractorUserId = UUID.randomUUID();
+
+        final String issueId = createIssue();
+        final String quotationId = setupQuotation(issueId, contractorId, organizationId, contractorUserId);
+        placeOrder(issueId, quotationId);
+
+        final List<Map<String, Object>> timelines = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/contractor-timeline")
+            .then()
+            .statusCode(200)
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(2, timelines.size());
+        final Map<String, Object> orderPlaced = timelines.stream()
+            .filter(t -> "ORDER_PLACED".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals(organizationId.toString(), orderPlaced.get("organizationId"));
+        assertEquals("MANAGER", orderPlaced.get("senderRole"));
+    }
+
     // --- GET orders (list) ---
 
     @Test
@@ -282,6 +310,40 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("status", equalTo("WITHDRAWN"));
+    }
+
+    @Test
+    void withdrawOrderPlacement_SUCCESS_writesStatusChangedContractorTimelineEntry() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final UUID contractorUserId = UUID.randomUUID();
+
+        final String issueId = createIssue();
+        final String quotationId = setupQuotation(issueId, contractorId, organizationId, contractorUserId);
+        final String orderId = placeOrder(issueId, quotationId);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .delete(orderPath(issueId, orderId))
+            .then()
+            .statusCode(204);
+
+        final List<Map<String, Object>> timelines = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/contractor-timeline")
+            .then()
+            .statusCode(200)
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(3, timelines.size());
+        final Map<String, Object> statusChanged = timelines.stream()
+            .filter(t -> "STATUS_CHANGED".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals("WITHDRAWN", statusChanged.get("message"));
+        assertEquals(organizationId.toString(), statusChanged.get("organizationId"));
+        assertEquals("MANAGER", statusChanged.get("senderRole"));
     }
 
 }

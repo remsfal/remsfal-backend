@@ -35,14 +35,21 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
     OrderAttachmentController orderAttachmentController;
 
     protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request) {
-        final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(request.getRequestId());
-        final IssueEntity issue = issueController.getIssue(request.getIssueId());
+        return getTimelineEntries(List.of(request));
+    }
+
+    protected ContractorTimelineListJson getTimelineEntries(final List<QuotationRequestEntity> requests) {
+        final QuotationRequestEntity representative = requests.get(0);
+        final List<OrderAttachmentJson> requestAttachments = requests.stream()
+            .flatMap(request -> fetchRequestAttachments(request.getRequestId()).stream())
+            .toList();
+        final IssueEntity issue = issueController.getIssue(representative.getIssueId());
         final boolean visibleToTenant = issue.getAgreementId() != null
             && Boolean.TRUE.equals(issue.isVisibleToTenants());
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
-                request.getIssueId(), request.getOrganizationId()).stream()
+                representative.getIssueId(), representative.getOrganizationId()).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
                 .toList(),
             visibleToTenant);

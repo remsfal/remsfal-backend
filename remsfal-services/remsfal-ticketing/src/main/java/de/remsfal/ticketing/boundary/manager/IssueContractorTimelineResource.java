@@ -16,8 +16,10 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
@@ -32,10 +34,12 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
     @Override
     public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
         checkProjectIssueAccessPermissions(issueId);
-        final List<ContractorTimelineJson> entries = orderManagementController
+        final Map<UUID, List<QuotationRequestEntity>> requestsByOrganization = orderManagementController
             .getRequestsForQuotation(issueId).stream()
             .filter(request -> request.getOrganizationId() != null)
-            .flatMap(request -> super.getTimelineEntries(request).getTimelines().stream())
+            .collect(Collectors.groupingBy(QuotationRequestEntity::getOrganizationId));
+        final List<ContractorTimelineJson> entries = requestsByOrganization.values().stream()
+            .flatMap(requests -> super.getTimelineEntries(requests).getTimelines().stream())
             .sorted(Comparator.comparing(ContractorTimelineJson::getTimelineId))
             .toList();
         return ContractorTimelineListJson.valueOf(entries);
