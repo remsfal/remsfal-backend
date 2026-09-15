@@ -6,6 +6,7 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
+import de.remsfal.core.api.ticketing.contractor.ContractorIssueRequestEndpoint;
 import de.remsfal.core.api.ticketing.contractor.OrderManagementEndpoint;
 import de.remsfal.core.api.ticketing.contractor.OrderPlacementEndpoint;
 import de.remsfal.core.api.ticketing.contractor.QuotationEndpoint;
@@ -30,6 +31,9 @@ public class OrderManagementResource extends AbstractTicketingResource implement
     @Inject
     Instance<ContractorTimelineResource> timelineResource;
 
+    @Inject
+    Instance<ContractorIssueRequestResource> issueRequestResource;
+
     @Override
     public QuotationRequestResource getQuotationRequestResource() {
         return resourceContext.initResource(quotationRequestResource.get());
@@ -48,6 +52,11 @@ public class OrderManagementResource extends AbstractTicketingResource implement
     @Override
     public ContractorTimelineEndpoint getTimelineResource() {
         return resourceContext.initResource(timelineResource.get());
+    }
+
+    @Override
+    public ContractorIssueRequestEndpoint getIssueRequestResource() {
+        return resourceContext.initResource(issueRequestResource.get());
     }
 
 }

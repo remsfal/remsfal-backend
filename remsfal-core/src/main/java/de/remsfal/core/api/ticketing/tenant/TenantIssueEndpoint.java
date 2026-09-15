@@ -27,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.remsfal.core.api.ticketing.IssueRequestEndpoint;
 import de.remsfal.core.api.ticketing.manager.IssueEndpoint;
 import de.remsfal.core.api.ticketing.TenantTimelineEndpoint;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
@@ -130,5 +131,8 @@ public interface TenantIssueEndpoint {
 
     @Path("/{issueId}/" + TenantTimelineEndpoint.SERVICE)
     TenantTimelineEndpoint getTenantTimelineResource();
+
+    @Path("/{issueId}/" + IssueRequestEndpoint.SERVICE)
+    IssueRequestEndpoint getIssueRequestResource();
 
 }
