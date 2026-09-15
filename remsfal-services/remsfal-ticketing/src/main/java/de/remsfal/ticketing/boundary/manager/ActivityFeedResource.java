@@ -28,10 +28,10 @@ public class ActivityFeedResource extends AbstractTicketingResource implements A
 
     @Override
     public ActivityFeedListJson getActivities(final UUID projectId, final UUID issueId, final UUID agreementId,
-        final UUID organizationId, final UUID contractorId, final UUID assigneeId,
+        final UUID organizationId, final UUID contractorId,
         final UUID cursor, final Integer limit) {
         final ActivityFeedFilter filter = new ActivityFeedFilter(projectId, issueId, agreementId,
-            organizationId, contractorId, assigneeId);
+            organizationId, contractorId);
         final List<ActivityFeedEntity> activities =
             controller.getActivities(principal.getId(), filter, cursor, limit);
         return ActivityFeedListJson.valueOf(activities, nextActivityCursorOf(activities, limit));

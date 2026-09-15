@@ -4,6 +4,7 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
@@ -31,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @QuarkusTestResource(CassandraTestResource.class)
 class ActivityFeedControllerTest extends AbstractTicketingTest {
 
-    private static final ActivityFeedFilter NO_FILTER = new ActivityFeedFilter(null, null, null, null, null, null);
+    private static final ActivityFeedFilter NO_FILTER = new ActivityFeedFilter(null, null, null, null, null);
 
     @Inject
     ActivityFeedController controller;
@@ -50,7 +51,7 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
 
         List<ActivityFeedEntity> results = repository.findByQuery(userId, NO_FILTER, null, 50);
         assertEquals(1, results.size());
-        assertEquals("Test Title", results.get(0).getTitle());
+        assertEquals("Test Title", results.get(0).getIssueTitle());
     }
 
     @Test
@@ -66,11 +67,11 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
         other.setProjectId(UUID.randomUUID());
         repository.insert(other);
 
-        ActivityFeedFilter filter = new ActivityFeedFilter(projectId, null, null, null, null, null);
+        ActivityFeedFilter filter = new ActivityFeedFilter(projectId, null, null, null, null);
         List<ActivityFeedEntity> results = repository.findByQuery(userId, filter, null, 50);
 
         assertEquals(1, results.size());
-        assertEquals("Matching Project", results.get(0).getTitle());
+        assertEquals("Matching Project", results.get(0).getIssueTitle());
     }
 
     @Test
@@ -83,11 +84,11 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
         repository.insert(matching);
         repository.insert(createTestActivity(userId, "Other Issue"));
 
-        ActivityFeedFilter filter = new ActivityFeedFilter(null, issueId, null, null, null, null);
+        ActivityFeedFilter filter = new ActivityFeedFilter(null, issueId, null, null, null);
         List<ActivityFeedEntity> results = repository.findByQuery(userId, filter, null, 50);
 
         assertEquals(1, results.size());
-        assertEquals("Matching Issue", results.get(0).getTitle());
+        assertEquals("Matching Issue", results.get(0).getIssueTitle());
     }
 
     @Test
@@ -101,12 +102,12 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
 
         List<ActivityFeedEntity> firstPage = repository.findByQuery(userId, NO_FILTER, null, 1);
         assertEquals(1, firstPage.size());
-        assertEquals("Newer", firstPage.get(0).getTitle());
+        assertEquals("Newer", firstPage.get(0).getIssueTitle());
 
         List<ActivityFeedEntity> secondPage = repository.findByQuery(
             userId, NO_FILTER, firstPage.get(0).getId(), 1);
         assertEquals(1, secondPage.size());
-        assertEquals("Older", secondPage.get(0).getTitle());
+        assertEquals("Older", secondPage.get(0).getIssueTitle());
     }
 
     @Test
@@ -154,8 +155,8 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
         List<ActivityFeedEntity> activities = controller.getActivities(userId, NO_FILTER, null, 50);
 
         assertEquals(2, activities.size());
-        assertEquals("Newer Message", activities.get(0).getTitle());
-        assertEquals("Older Message", activities.get(1).getTitle());
+        assertEquals("Newer Message", activities.get(0).getIssueTitle());
+        assertEquals("Older Message", activities.get(1).getIssueTitle());
     }
 
     @Test
@@ -212,9 +213,9 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
         UUID issueId = UUID.randomUUID();
         UUID actorId = UUID.randomUUID();
 
-        NewActivity activity = new NewActivity(userId, projectId, issueId, IssueEventType.CHAT_MESSAGE_CREATED,
-            "Chat Issue", "Hello there", "/api/issues/" + issueId, actorId, "Jane Doe",
-            IssueType.TASK, IssueStatus.OPEN, null, null, null, null);
+        NewActivity activity = new NewActivity(userId, projectId, "Project Title", issueId,
+            IssueEventType.CHAT_MESSAGE_CREATED, "Chat Issue", actorId, "Jane Doe",
+            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, null, null, null, null, null);
 
         controller.recordActivity(activity);
 
@@ -224,7 +225,7 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
         assertEquals(projectId, entity.getProjectId());
         assertEquals(issueId, entity.getIssueId());
         assertEquals(IssueEventType.CHAT_MESSAGE_CREATED, entity.getActivityType());
-        assertEquals("Hello there", entity.getDescription());
+        assertEquals("Chat Issue", entity.getIssueTitle());
         assertEquals(actorId, entity.getActorId());
         assertEquals("Jane Doe", entity.getActorName());
         assertFalse(entity.isRead());
@@ -241,11 +242,11 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
 
         List<ActivityFeedEntity> user1Activities = controller.getActivities(user1, NO_FILTER, null, 50);
         assertEquals(1, user1Activities.size());
-        assertEquals("User 1 Message", user1Activities.get(0).getTitle());
+        assertEquals("User 1 Message", user1Activities.get(0).getIssueTitle());
 
         List<ActivityFeedEntity> user2Activities = controller.getActivities(user2, NO_FILTER, null, 50);
         assertEquals(1, user2Activities.size());
-        assertEquals("User 2 Message", user2Activities.get(0).getTitle());
+        assertEquals("User 2 Message", user2Activities.get(0).getIssueTitle());
     }
 
     // ========================================
@@ -262,11 +263,9 @@ class ActivityFeedControllerTest extends AbstractTicketingTest {
         entity.setActivityType(IssueEventType.ISSUE_CREATED);
         entity.setIssueId(UUID.randomUUID());
         entity.setProjectId(UUID.randomUUID());
-        entity.setTitle(title);
+        entity.setIssueTitle(title);
         entity.setIssueType(IssueType.TASK);
-        entity.setStatus(IssueStatus.OPEN);
-        entity.setDescription("Test description");
-        entity.setLink("/api/issues/" + entity.getIssueId());
+        entity.setIssueStatus(IssueStatus.OPEN);
         entity.setActorId(UUID.randomUUID());
         entity.setActorName("Actor Name");
         entity.setCreatedAt(Instant.now());
