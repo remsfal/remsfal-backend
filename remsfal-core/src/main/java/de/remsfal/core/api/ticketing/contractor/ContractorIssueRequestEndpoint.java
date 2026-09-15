@@ -23,8 +23,6 @@ import de.remsfal.core.json.ticketing.IssueRequestListJson;
 
 /**
  * Request operations for a contractor's own communication about an issue.
- * <p>
- * This is a pure sub-resource, mounted under {@code OrderManagementEndpoint}.
  */
 public interface ContractorIssueRequestEndpoint {
 

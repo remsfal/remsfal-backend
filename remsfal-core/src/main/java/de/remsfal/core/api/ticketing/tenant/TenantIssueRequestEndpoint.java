@@ -20,8 +20,6 @@ import de.remsfal.core.json.ticketing.IssueRequestListJson;
 
 /**
  * Request operations for a tenant on the requests a contractor has sent about an issue.
- * <p>
- * This is a pure sub-resource, mounted under {@code TenantIssueEndpoint}.
  */
 public interface TenantIssueRequestEndpoint {
 
