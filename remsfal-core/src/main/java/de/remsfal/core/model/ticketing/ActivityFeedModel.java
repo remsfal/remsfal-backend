@@ -1,9 +1,11 @@
 package de.remsfal.core.model.ticketing;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 
@@ -22,15 +24,13 @@ public interface ActivityFeedModel {
 
     UUID getProjectId();
 
+    String getProjectTitle();
+
     UUID getIssueId();
 
     IssueEventType getActivityType();
 
-    String getTitle();
-
-    String getDescription();
-
-    String getLink();
+    String getIssueTitle();
 
     UUID getActorId();
 
@@ -38,15 +38,19 @@ public interface ActivityFeedModel {
 
     IssueType getIssueType();
 
-    IssueStatus getStatus();
+    IssueStatus getIssueStatus();
+
+    IssuePriority getIssuePriority();
 
     UUID getAgreementId();
+
+    List<String> getTenantNames();
 
     UUID getOrganizationId();
 
     UUID getContractorId();
 
-    UUID getAssigneeId();
+    String getContractorName();
 
     boolean isRead();
 

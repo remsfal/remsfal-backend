@@ -2,6 +2,7 @@ package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.entity.dao.ActivityFeedRepository;
@@ -60,19 +61,20 @@ public class ActivityFeedController {
         final ActivityFeedEntity entity = new ActivityFeedEntity();
         entity.setKey(key);
         entity.setProjectId(activity.projectId());
+        entity.setProjectTitle(activity.projectTitle());
         entity.setIssueId(activity.issueId());
         entity.setActivityType(activity.activityType());
-        entity.setTitle(activity.title());
-        entity.setDescription(activity.description());
-        entity.setLink(activity.link());
+        entity.setIssueTitle(activity.issueTitle());
         entity.setActorId(activity.actorId());
         entity.setActorName(activity.actorName());
         entity.setIssueType(activity.issueType());
-        entity.setStatus(activity.status());
+        entity.setIssueStatus(activity.issueStatus());
+        entity.setIssuePriority(activity.issuePriority());
         entity.setAgreementId(activity.agreementId());
+        entity.setTenantNames(activity.tenantNames());
         entity.setOrganizationId(activity.organizationId());
         entity.setContractorId(activity.contractorId());
-        entity.setAssigneeId(activity.assigneeId());
+        entity.setContractorName(activity.contractorName());
         entity.setReadFlag(false);
 
         repository.insert(entity);
@@ -84,19 +86,20 @@ public class ActivityFeedController {
     public record NewActivity(
         UUID userId,
         UUID projectId,
+        String projectTitle,
         UUID issueId,
         IssueEventType activityType,
-        String title,
-        String description,
-        String link,
+        String issueTitle,
         UUID actorId,
         String actorName,
         IssueType issueType,
-        IssueStatus status,
+        IssueStatus issueStatus,
+        IssuePriority issuePriority,
         UUID agreementId,
+        List<String> tenantNames,
         UUID organizationId,
         UUID contractorId,
-        UUID assigneeId) {
+        String contractorName) {
     }
 
 }
