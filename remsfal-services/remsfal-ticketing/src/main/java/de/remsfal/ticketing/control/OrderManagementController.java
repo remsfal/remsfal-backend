@@ -187,7 +187,7 @@ public class OrderManagementController {
     public QuotationRequestEntity getRequestForIssueByOrganizationIds(final Set<UUID> organizationIds,
         final UUID issueId) {
         return quotationRequestRepository.findByIssueId(issueId).stream()
-            .filter(r -> organizationIds.contains(r.getOrganizationId()))
+            .filter(r -> r.getOrganizationId() != null && organizationIds.contains(r.getOrganizationId()))
             .findFirst()
             .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
     }
