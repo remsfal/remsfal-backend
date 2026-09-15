@@ -47,4 +47,11 @@ public class IssueRequestRepository extends AbstractRepository<IssueRequestEntit
             .result();
     }
 
+    public Optional<IssueRequestEntity> findByIssueAndRequestId(final UUID issueId, final UUID issueRequestId) {
+        return template.select(IssueRequestEntity.class)
+            .where(ISSUE_ID).eq(issueId)
+            .and(ISSUE_REQUEST_ID).eq(issueRequestId)
+            .singleResult();
+    }
+
 }
