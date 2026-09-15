@@ -93,6 +93,30 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void createRequest_SUCCESS_writesRequestCreatedContractorTimelineEntry() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(requestsPath())
+            .then()
+            .statusCode(200);
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(ORDER_MANAGEMENT_PATH + "/" + issueId + "/timeline")
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(1))
+            .body("timelines[0].purpose", equalTo("REQUEST_CREATED"))
+            .body("timelines[0].message", equalTo("Bitte um Rueckmeldung"))
+            .body("timelines[0].senderRole", equalTo("CONTRACTOR"));
+    }
+
+    @Test
     void deleteRequest_SUCCESS_removesRequest() {
         final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
         final String issueRequestId = given()
