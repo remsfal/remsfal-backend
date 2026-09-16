@@ -17,6 +17,5 @@ public record ActivityFeedFilter(
     UUID issueId,
     UUID agreementId,
     UUID organizationId,
-    UUID contractorId,
-    UUID assigneeId) {
+    UUID contractorId) {
 }

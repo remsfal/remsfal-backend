@@ -73,10 +73,6 @@ public class ActivityFeedRepository extends AbstractRepository<ActivityFeedEntit
             cql.append(AND).append("contractor_id = ?");
             params.add(filter.contractorId());
         }
-        if (filter.assigneeId() != null) {
-            cql.append(AND).append("assignee_id = ?");
-            params.add(filter.assigneeId());
-        }
         if (cursor != null) {
             cql.append(AND).append(ACTIVITY_ID).append(" < ?");
             params.add(cursor);

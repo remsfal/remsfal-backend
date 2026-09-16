@@ -4,11 +4,13 @@ import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
 import de.remsfal.core.json.ticketing.ActivityFeedJson;
 import de.remsfal.core.json.ticketing.ImmutableActivityFeedJson;
 import de.remsfal.core.model.ticketing.ActivityFeedModel;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,26 +29,30 @@ class ActivityFeedJsonTest {
         final ActivityFeedJson json = ImmutableActivityFeedJson.builder()
             .id(id)
             .projectId(projectId)
+            .projectTitle("Sunset Apartments")
             .issueId(issueId)
             .activityType(IssueEventType.ISSUE_CREATED)
-            .title("Critical Bug")
-            .description("System crashed")
-            .link("https://remsfal.de/issues/123")
+            .issueTitle("Critical Bug")
             .issueType(IssueType.DEFECT)
-            .status(IssueStatus.OPEN)
+            .issueStatus(IssueStatus.OPEN)
+            .issuePriority(IssuePriority.HIGH)
+            .tenantNames(List.of("Jane Tenant"))
+            .contractorName("Acme Corp")
             .read(true)
             .createdAt(createdAt)
             .build();
 
         assertEquals(id, json.getId());
         assertEquals(projectId, json.getProjectId());
+        assertEquals("Sunset Apartments", json.getProjectTitle());
         assertEquals(issueId, json.getIssueId());
         assertEquals(IssueEventType.ISSUE_CREATED, json.getActivityType());
-        assertEquals("Critical Bug", json.getTitle());
-        assertEquals("System crashed", json.getDescription());
-        assertEquals("https://remsfal.de/issues/123", json.getLink());
+        assertEquals("Critical Bug", json.getIssueTitle());
         assertEquals(IssueType.DEFECT, json.getIssueType());
-        assertEquals(IssueStatus.OPEN, json.getStatus());
+        assertEquals(IssueStatus.OPEN, json.getIssueStatus());
+        assertEquals(IssuePriority.HIGH, json.getIssuePriority());
+        assertEquals(List.of("Jane Tenant"), json.getTenantNames());
+        assertEquals("Acme Corp", json.getContractorName());
         assertTrue(json.isRead());
         assertEquals(createdAt, json.getCreatedAt());
     }
@@ -96,6 +102,11 @@ class ActivityFeedJsonTest {
         }
 
         @Override
+        public String getProjectTitle() {
+            return null;
+        }
+
+        @Override
         public UUID getIssueId() {
             return null;
         }
@@ -106,17 +117,7 @@ class ActivityFeedJsonTest {
         }
 
         @Override
-        public String getTitle() {
-            return null;
-        }
-
-        @Override
-        public String getDescription() {
-            return null;
-        }
-
-        @Override
-        public String getLink() {
+        public String getIssueTitle() {
             return null;
         }
 
@@ -136,12 +137,22 @@ class ActivityFeedJsonTest {
         }
 
         @Override
-        public IssueStatus getStatus() {
+        public IssueStatus getIssueStatus() {
+            return null;
+        }
+
+        @Override
+        public IssuePriority getIssuePriority() {
             return null;
         }
 
         @Override
         public UUID getAgreementId() {
+            return null;
+        }
+
+        @Override
+        public List<String> getTenantNames() {
             return null;
         }
 
@@ -156,7 +167,7 @@ class ActivityFeedJsonTest {
         }
 
         @Override
-        public UUID getAssigneeId() {
+        public String getContractorName() {
             return null;
         }
 
