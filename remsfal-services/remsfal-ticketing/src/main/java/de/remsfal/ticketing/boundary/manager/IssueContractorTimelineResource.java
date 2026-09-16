@@ -14,7 +14,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,11 +35,9 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
         checkProjectIssueAccessPermissions(issueId);
         final Map<UUID, List<QuotationRequestEntity>> requestsByOrganization = orderManagementController
             .getRequestsForQuotation(issueId).stream()
-            .filter(request -> request.getOrganizationId() != null)
             .collect(Collectors.groupingBy(QuotationRequestEntity::getOrganizationId));
         final List<ContractorTimelineJson> entries = requestsByOrganization.values().stream()
             .flatMap(requests -> super.getTimelineEntries(requests).getTimelines().stream())
-            .sorted(Comparator.comparing(ContractorTimelineJson::getTimelineId))
             .toList();
         return ContractorTimelineListJson.valueOf(entries);
     }
