@@ -46,15 +46,14 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final UUID issueId, final UUID organizationId,
-        final MultipartFormDataInput input) {
+    public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
         checkProjectIssueAccessPermissions(issueId);
-        if (organizationId == null) {
-            throw new BadRequestException("organizationId is required to address a specific contractor");
-        }
-        final QuotationRequestEntity request = orderManagementController
-            .getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
-        return super.createTimelineEntryWithAttachments(request, UserContext.MANAGER, input);
+        return super.createTimelineEntryWithAttachments(organizationId -> {
+            if (organizationId == null) {
+                throw new BadRequestException("organizationId is required to address a specific contractor");
+            }
+            return orderManagementController.getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
+        }, UserContext.MANAGER, input);
     }
 
 }

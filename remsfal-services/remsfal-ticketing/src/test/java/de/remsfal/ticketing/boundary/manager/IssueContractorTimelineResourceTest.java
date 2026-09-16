@@ -98,6 +98,7 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void createTimelineEntry_SUCCESS_targetsSelectedOrganization() {
         final String timelineJson = "{"
+            + "\"organizationId\":\"" + firstOrganizationId + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Bauservice GmbH\""
             + "}";
@@ -106,7 +107,6 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", firstOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201)
@@ -135,6 +135,7 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void createTimelineEntry_FAILED_unknownOrganization() {
         final String timelineJson = "{"
+            + "\"organizationId\":\"" + UUID.randomUUID() + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Bauservice GmbH\""
             + "}";
@@ -143,7 +144,6 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", UUID.randomUUID())
             .post(timelinePath())
             .then()
             .statusCode(404);
@@ -152,10 +152,12 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void getTimelineEntries_SUCCESS_aggregatesEntriesFromBothContractors() {
         final String firstMessage = "{"
+            + "\"organizationId\":\"" + firstOrganizationId + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Bauservice GmbH\""
             + "}";
         final String secondMessage = "{"
+            + "\"organizationId\":\"" + secondOrganizationId + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Elektro Schmidt\""
             + "}";
@@ -164,7 +166,6 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", firstMessage, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", firstOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201);
@@ -173,7 +174,6 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", secondMessage, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", secondOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201);

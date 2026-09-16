@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -55,10 +56,12 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             visibleToTenant);
     }
 
-    protected Response createTimelineEntryWithAttachments(final QuotationRequestEntity request,
+    protected Response createTimelineEntryWithAttachments(
+        final Function<UUID, QuotationRequestEntity> requestResolver,
         final UserContext senderRole, final MultipartFormDataInput input) {
         final ContractorTimelineJson timeline = MultipartAttachmentProcessor.extractJsonPart(
             input, "timeline", ContractorTimelineJson.class);
+        final QuotationRequestEntity request = requestResolver.apply(timeline.getOrganizationId());
         final List<OrderAttachmentJson> uploadedAttachments = collectAttachments(request.getRequestId(), input);
         final List<UUID> attachmentIds = uploadedAttachments.stream()
             .map(OrderAttachmentJson::getAttachmentId)

@@ -34,12 +34,11 @@ public class ContractorTimelineResource extends AbstractContractorTimelineResour
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final UUID issueId, final UUID organizationId,
-        final MultipartFormDataInput input) {
+    public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
-        final QuotationRequestEntity request =
-            orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
-        return super.createTimelineEntryWithAttachments(request, UserContext.CONTRACTOR, input);
+        return super.createTimelineEntryWithAttachments(
+            organizationId -> orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId),
+            UserContext.CONTRACTOR, input);
     }
 
 }
