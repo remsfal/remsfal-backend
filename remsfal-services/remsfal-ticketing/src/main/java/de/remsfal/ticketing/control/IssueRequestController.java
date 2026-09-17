@@ -134,7 +134,7 @@ public class IssueRequestController {
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
         tenantTimelineController.createTimelineEntry(entity.getAgreementId(), issueId, issue.getProjectId(),
-            sender, MessagePurpose.MESSAGE_SENT, response.getMessage());
+            sender, MessagePurpose.MESSAGE_SENT, response.getMessage(), response.getAttachmentIds());
 
         final List<UUID> copiedAttachmentIds = copyAttachmentsToOrder(
             issueId, entity.getOrganizationId(), sender, response.getAttachmentIds());
@@ -152,7 +152,7 @@ public class IssueRequestController {
     private List<UUID> copyAttachmentsToOrder(final UUID issueId, final UUID organizationId,
         final UserModel sender, final List<UUID> attachmentIds) {
         if (attachmentIds == null || attachmentIds.isEmpty()) {
-            return null;
+            return List.of();
         }
 
         final QuotationRequestEntity request = orderManagementController

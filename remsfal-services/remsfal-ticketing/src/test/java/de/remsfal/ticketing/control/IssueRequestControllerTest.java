@@ -239,6 +239,14 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
                 && UserContext.TENANT.equals(e.getSenderRole()))
             .findFirst().orElseThrow();
         assertEquals(List.of(copiedAttachment.getAttachmentId()), answerEntry.getAttachmentIds());
+
+        final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
+        final List<TenantTimelineEntity> tenantTimeline =
+            tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId);
+        final TenantTimelineEntity tenantAnswerEntry = tenantTimeline.stream()
+            .filter(e -> "Hier das Foto".equals(e.getMessage()))
+            .findFirst().orElseThrow();
+        assertEquals(List.of(TicketingTestData.ATTACHMENT_ID_1), tenantAnswerEntry.getAttachmentIds());
     }
 
     @Test
