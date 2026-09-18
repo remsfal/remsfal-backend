@@ -124,7 +124,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .extract().jsonPath().getList("timelines");
 
-        assertEquals(2, tenantTimeline.size());
+        assertEquals(1, tenantTimeline.size());
         final Map<String, Object> answerEntry = tenantTimeline.stream()
             .filter(t -> "REQUEST_ANSWERED".equals(t.get("purpose")))
             .findFirst().orElseThrow();
