@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -34,19 +35,28 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
     OrderAttachmentController orderAttachmentController;
 
     protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request) {
-        final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(request.getRequestId());
+        return getTimelineEntries(List.of(request));
+    }
+
+    protected ContractorTimelineListJson getTimelineEntries(final List<QuotationRequestEntity> requests) {
+        final QuotationRequestEntity representative = requests.get(0);
+        final List<OrderAttachmentJson> requestAttachments = requests.stream()
+            .flatMap(request -> fetchRequestAttachments(request.getRequestId()).stream())
+            .toList();
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
-                request.getIssueId(), request.getOrganizationId()).stream()
+                representative.getIssueId(), representative.getOrganizationId()).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
                 .toList());
     }
 
-    protected Response createTimelineEntryWithAttachments(final QuotationRequestEntity request,
+    protected Response createTimelineEntryWithAttachments(
+        final Function<UUID, QuotationRequestEntity> requestResolver,
         final UserContext senderRole, final MultipartFormDataInput input) {
         final ContractorTimelineJson timeline = MultipartAttachmentProcessor.extractJsonPart(
             input, "timeline", ContractorTimelineJson.class);
+        final QuotationRequestEntity request = requestResolver.apply(timeline.getOrganizationId());
         final List<OrderAttachmentJson> uploadedAttachments = collectAttachments(request.getRequestId(), input);
         final List<UUID> attachmentIds = uploadedAttachments.stream()
             .map(OrderAttachmentJson::getAttachmentId)
