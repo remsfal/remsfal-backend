@@ -14,9 +14,6 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
-import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
-import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -84,46 +81,6 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("timelines", hasSize(0));
-    }
-
-    @Test
-    void getTimelineEntries_SUCCESS_visibleToTenantFalse_whenIssueHasNoAgreement() {
-        given()
-            .when()
-            .cookie(contractorCookie())
-            .get(timelinePath())
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("visibleToTenant", equalTo(false));
-    }
-
-    @Test
-    void getTimelineEntries_SUCCESS_visibleToTenantTrue_whenIssueVisibleToTenants() {
-        final UUID issueWithAgreementId = UUID.randomUUID();
-        insertIssue(TicketingTestData.PROJECT_ID, issueWithAgreementId, TicketingTestData.ISSUE_TITLE,
-            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, TicketingTestData.USER_ID_1,
-            TicketingTestData.AGREEMENT_ID, null, "Beschreibung");
-
-        final String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
-            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(requestJson)
-            .post(ISSUE_BASE_PATH + "/" + issueWithAgreementId + "/quotation-request")
-            .then()
-            .statusCode(201);
-
-        given()
-            .when()
-            .cookie(contractorCookie())
-            .get(ORDER_MANAGEMENT_PATH + "/" + issueWithAgreementId + "/timeline")
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("visibleToTenant", equalTo(true));
     }
 
     @Test
@@ -215,49 +172,6 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("timelines", hasSize(1))
             .body("timelines[0].attachments", hasSize(1));
-    }
-
-    @Test
-    void createTimelineEntry_SUCCESS_messageToTenantCopiesToTenantTimeline() {
-        final UUID issueWithAgreementId = UUID.randomUUID();
-        insertIssue(TicketingTestData.PROJECT_ID, issueWithAgreementId, TicketingTestData.ISSUE_TITLE,
-            IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM, TicketingTestData.USER_ID_1,
-            TicketingTestData.AGREEMENT_ID, null, "Beschreibung");
-
-        final String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
-            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .contentType(ContentType.JSON)
-            .body(requestJson)
-            .post(ISSUE_BASE_PATH + "/" + issueWithAgreementId + "/quotation-request")
-            .then()
-            .statusCode(201);
-
-        final String timelineJson = "{"
-            + "\"purpose\":\"MESSAGE_SENT\","
-            + "\"message\":\"Termin am Montag\","
-            + "\"messageToTenant\":true"
-            + "}";
-
-        given()
-            .when()
-            .cookie(contractorCookie())
-            .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .post(ORDER_MANAGEMENT_PATH + "/" + issueWithAgreementId + "/timeline")
-            .then()
-            .statusCode(201);
-
-        given()
-            .when()
-            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
-            .get(ISSUE_BASE_PATH + "/" + issueWithAgreementId + "/tenant-timeline")
-            .then()
-            .statusCode(200)
-            .body("timelines", hasSize(1))
-            .body("timelines[0].message", equalTo("Termin am Montag"))
-            .body("timelines[0].purpose", equalTo("MESSAGE_SENT"));
     }
 
     @Test

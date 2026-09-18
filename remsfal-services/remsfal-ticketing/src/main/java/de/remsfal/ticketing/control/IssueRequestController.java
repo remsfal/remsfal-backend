@@ -104,7 +104,6 @@ public class IssueRequestController {
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
             .purpose(MessagePurpose.REQUEST_CREATED)
             .message(request.getMessage())
-            .messageToTenant(true)
             .build();
         contractorTimelineController.createTimelineEntry(issueId, organizationId, sender,
             UserContext.CONTRACTOR, entry, inserted.getAttachmentIds());
