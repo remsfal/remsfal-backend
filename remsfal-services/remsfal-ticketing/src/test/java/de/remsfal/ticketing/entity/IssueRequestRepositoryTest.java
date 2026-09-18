@@ -94,6 +94,28 @@ class IssueRequestRepositoryTest extends AbstractTicketingTest {
         assertFalse(result.stream().anyMatch(e -> e.getIssueRequestId().equals(otherIssue.getIssueRequestId())));
     }
 
+    @Test
+    void testFindByIssueAndRequestId_returnsEntityWithoutKnowingOrganizationId() {
+        final UUID issueId = UUID.randomUUID();
+        final UUID organizationId = UUID.randomUUID();
+        final UUID issueRequestId = UUID.randomUUID();
+
+        repository.insert(createEntity(issueId, organizationId, issueRequestId, "Termin?", null));
+
+        final IssueRequestEntity found = repository.findByIssueAndRequestId(issueId, issueRequestId)
+            .orElseThrow();
+
+        assertEquals(issueId, found.getIssueId());
+        assertEquals(organizationId, found.getOrganizationId());
+        assertEquals(issueRequestId, found.getIssueRequestId());
+        assertEquals("Termin?", found.getMessage());
+    }
+
+    @Test
+    void testFindByIssueAndRequestId_unknownId_returnsEmpty() {
+        assertTrue(repository.findByIssueAndRequestId(UUID.randomUUID(), UUID.randomUUID()).isEmpty());
+    }
+
     private IssueRequestEntity createEntity(final UUID issueId, final UUID organizationId,
         final UUID issueRequestId, final String message, final List<UUID> attachmentIds) {
         final IssueRequestKey key = new IssueRequestKey();
