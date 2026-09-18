@@ -1,11 +1,10 @@
 package de.remsfal.ticketing.boundary.tenant;
 
-import de.remsfal.core.api.ticketing.IssueRequestEndpoint;
+import de.remsfal.core.api.ticketing.tenant.TenantIssueRequestEndpoint;
 import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.json.ticketing.IssueRequestListJson;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.IssueRequestController;
-import de.remsfal.ticketing.entity.dto.IssueRequestEntity;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
@@ -14,11 +13,11 @@ import jakarta.inject.Inject;
 import java.util.UUID;
 
 /**
- * Read-only view for a tenant on the requests a contractor has sent about an issue.
+ * Request operations for a tenant on the requests a contractor has sent about an issue.
  */
 @Authenticated
 @RequestScoped
-public class TenantIssueRequestResource extends AbstractTicketingResource implements IssueRequestEndpoint {
+public class TenantIssueRequestResource extends AbstractTicketingResource implements TenantIssueRequestEndpoint {
 
     @Inject
     IssueRequestController issueRequestController;
@@ -30,10 +29,9 @@ public class TenantIssueRequestResource extends AbstractTicketingResource implem
     }
 
     @Override
-    public IssueRequestJson createRequest(final UUID issueId, final IssueRequestJson request) {
+    public void answerRequest(final UUID issueId, final UUID issueRequestId, final IssueRequestJson response) {
         checkTenancyIssueAccessPermissions(issueId);
-        final IssueRequestEntity created = issueRequestController.createRequest(issueId, null, request);
-        return IssueRequestJson.valueOf(created);
+        issueRequestController.answerRequest(issueId, issueRequestId, principal, response);
     }
 
 }

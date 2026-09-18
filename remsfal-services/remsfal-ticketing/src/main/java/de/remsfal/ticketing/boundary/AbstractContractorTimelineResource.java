@@ -9,7 +9,6 @@ import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.control.ContractorTimelineController;
 import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
-import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 
 import jakarta.inject.Inject;
@@ -44,16 +43,12 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
         final List<OrderAttachmentJson> requestAttachments = requests.stream()
             .flatMap(request -> fetchRequestAttachments(request.getRequestId()).stream())
             .toList();
-        final IssueEntity issue = issueController.getIssue(representative.getIssueId());
-        final boolean visibleToTenant = issue.getAgreementId() != null
-            && Boolean.TRUE.equals(issue.isVisibleToTenants());
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
                 representative.getIssueId(), representative.getOrganizationId()).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
-                .toList(),
-            visibleToTenant);
+                .toList());
     }
 
     protected Response createTimelineEntryWithAttachments(
