@@ -33,12 +33,22 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
 
     @BeforeEach
     void setUpIssueAndQuotationRequest() {
+        issueId = createIssueWithQuotationRequest(true);
+    }
+
+    /**
+     * Creates an issue (visible to a tenant depending on {@code visibleToTenants}) and registers a
+     * quotation request for it on behalf of {@link #organizationId}, so {@link #contractorCookie()}
+     * is an eligible contractor for it.
+     */
+    private String createIssueWithQuotationRequest(final boolean visibleToTenants) {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\","
-            + "\"visibleToTenants\":false"
+            + (visibleToTenants ? "\"agreementId\":\"" + UUID.randomUUID() + "\"," : "")
+            + "\"visibleToTenants\":" + visibleToTenants
             + "}";
-        issueId = given()
+        final String createdIssueId = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
@@ -55,9 +65,11 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body(requestJson)
-            .post(ISSUE_BASE_PATH + "/" + issueId + "/quotation-request")
+            .post(ISSUE_BASE_PATH + "/" + createdIssueId + "/quotation-request")
             .then()
             .statusCode(201);
+
+        return createdIssueId;
     }
 
     private Cookie contractorCookie() {
@@ -198,7 +210,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createRequest_FAILED_missingMessageField_characterizeActualStatusCode() {
+    void createRequest_FAILED_missingMessageField_returns400() {
         final String requestJson = "{ }";
 
         given()
@@ -208,7 +220,22 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .body(requestJson)
             .post(requestsPath())
             .then()
-            .statusCode(200);
+            .statusCode(400);
+    }
+
+    @Test
+    void createRequest_FAILED_issueNotVisibleToTenant_returns400() {
+        final String notVisibleIssueId = createIssueWithQuotationRequest(false);
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(ORDER_MANAGEMENT_PATH + "/" + notVisibleIssueId + "/requests")
+            .then()
+            .statusCode(400);
     }
 
     @Test

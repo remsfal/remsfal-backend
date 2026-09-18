@@ -13,6 +13,7 @@ import de.remsfal.ticketing.control.IssueRequestController;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,9 @@ public class TenantIssueRequestResource extends AbstractTicketingResource implem
 
         final IssueRequestJson response = MultipartAttachmentProcessor.extractJsonPart(
             input, "response", IssueRequestJson.class);
+        if (response.getMessage() == null || response.getMessage().isBlank()) {
+            throw new BadRequestException("Message is required");
+        }
         final List<UUID> attachmentIds = collectAttachmentIds(issueId, input);
 
         final IssueRequestJson enrichedResponse = ImmutableIssueRequestJson.builder()

@@ -21,6 +21,7 @@ import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
@@ -79,6 +80,9 @@ public class IssueRequestController {
 
         final IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
+        if (issue.getAgreementId() == null || !Boolean.TRUE.equals(issue.isVisibleToTenants())) {
+            throw new BadRequestException("Issue is not visible to a tenant, cannot request a tenant response");
+        }
 
         final IssueRequestKey key = new IssueRequestKey();
         key.setIssueId(issueId);
@@ -133,20 +137,22 @@ public class IssueRequestController {
         final IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
+        // Delete first: @Transactional has no effect against Cassandra/JNoSQL, so if a later step
+        // fails we only lose a timeline entry instead of leaving the request answerable again.
+        issueRequestRepository.delete(entity.getKey());
+
         tenantTimelineController.createTimelineEntry(entity.getAgreementId(), issueId, issue.getProjectId(),
-            sender, MessagePurpose.MESSAGE_SENT, response.getMessage(), response.getAttachmentIds());
+            sender, MessagePurpose.REQUEST_ANSWERED, response.getMessage(), response.getAttachmentIds());
 
         final List<UUID> copiedAttachmentIds = copyAttachmentsToOrder(
             issueId, entity.getOrganizationId(), sender, response.getAttachmentIds());
 
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
-            .purpose(MessagePurpose.MESSAGE_SENT)
+            .purpose(MessagePurpose.REQUEST_ANSWERED)
             .message(response.getMessage())
             .build();
         contractorTimelineController.createTimelineEntry(issueId, entity.getOrganizationId(), sender,
             UserContext.TENANT, entry, copiedAttachmentIds);
-
-        issueRequestRepository.delete(entity.getKey());
     }
 
     private List<UUID> copyAttachmentsToOrder(final UUID issueId, final UUID organizationId,
