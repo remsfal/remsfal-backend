@@ -1,7 +1,6 @@
 package de.remsfal.ticketing.boundary.tenant;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,6 +30,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -101,8 +101,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(tenantCookie())
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT,
                 created.getIssueRequestId())
             .then()
@@ -148,8 +147,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(tenantCookie())
-            .contentType(ContentType.JSON)
-            .body("{ }")
+            .multiPart("response", "{ }", MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT,
                 created.getIssueRequestId())
             .then()
@@ -163,8 +161,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(tenantCookie())
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT, UUID.randomUUID())
             .then()
             .statusCode(404);
@@ -178,8 +175,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(UUID.randomUUID(), "tenant@example.com", "Tenant", Map.of(), Map.of(),
                 Map.of()))
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITHOUT_AGREEMENT, UUID.randomUUID())
             .then()
             .statusCode(403);
@@ -191,8 +187,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
 
         given()
             .when()
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT, UUID.randomUUID())
             .then()
             .statusCode(401);

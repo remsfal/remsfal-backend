@@ -2,6 +2,7 @@ package de.remsfal.ticketing.control;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,14 +19,18 @@ import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.MessagePurpose;
+import de.remsfal.core.model.ticketing.OrderAttachmentModel;
+import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.IssueRequestRepository;
+import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueKey;
 import de.remsfal.ticketing.entity.dto.IssueRequestEntity;
+import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -56,6 +61,12 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
 
     @Inject
     TenantTimelineController tenantTimelineController;
+
+    @Inject
+    OrderAttachmentController orderAttachmentController;
+
+    @Inject
+    QuotationRequestRepository quotationRequestRepository;
 
     private UUID createIssue(final UUID agreementId) {
         return createIssue(agreementId, true);
@@ -189,6 +200,61 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             .filter(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose()))
             .findFirst().orElseThrow();
         assertEquals("Termin bestaetigt", tenantAnswerEntry.getMessage());
+    }
+
+    @Test
+    void testAnswerRequest_copiesTenantAttachmentsIntoOrderAttachmentStore() throws Exception {
+        final UUID agreementId = UUID.randomUUID();
+        final UUID issueId = createIssue(agreementId);
+        final UUID organizationId = UUID.randomUUID();
+
+        final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
+            ImmutableIssueRequestJson.builder().message("Bitte Foto vom Schaden").build());
+
+        final QuotationRequestEntity quotationRequest = new QuotationRequestEntity();
+        quotationRequest.generateId();
+        quotationRequest.setIssueId(issueId);
+        quotationRequest.setOrganizationId(organizationId);
+        quotationRequestRepository.insert(quotationRequest);
+
+        final String objectName = "/issues/" + issueId + "/attachments/"
+            + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1;
+        uploadTestFile(TicketingTestData.ATTACHMENT_FILE_PATH_1, TicketingTestData.ATTACHMENT_FILE_TYPE_1,
+            objectName);
+        insertAttachment(issueId, TicketingTestData.ATTACHMENT_ID_1, TicketingTestData.ATTACHMENT_FILE_PATH_1,
+            TicketingTestData.ATTACHMENT_FILE_TYPE_1, objectName, TENANT_USER.getId());
+
+        final IssueRequestJson response = ImmutableIssueRequestJson.builder()
+            .message("Hier das Foto")
+            .attachmentIds(List.of(TicketingTestData.ATTACHMENT_ID_1))
+            .build();
+
+        controller.answerRequest(issueId, created.getIssueRequestId(), TENANT_USER, response);
+
+        final List<? extends OrderAttachmentModel> orderAttachments = orderAttachmentController.getAttachments(
+            OrderProcessPhase.QUOTATION_REQUEST, quotationRequest.getRequestId());
+        assertEquals(1, orderAttachments.size());
+        final OrderAttachmentModel copiedAttachment = orderAttachments.get(0);
+        assertEquals(TicketingTestData.ATTACHMENT_FILE_PATH_1, copiedAttachment.getFileName());
+        assertEquals(TicketingTestData.ATTACHMENT_FILE_TYPE_1, copiedAttachment.getContentType());
+        assertEquals(TENANT_USER.getId(), copiedAttachment.getUploaderId());
+        assertNotEquals(TicketingTestData.ATTACHMENT_ID_1, copiedAttachment.getAttachmentId());
+
+        final List<ContractorTimelineEntity> contractorTimeline =
+            contractorTimelineController.getTimelineEntries(issueId, organizationId);
+        final ContractorTimelineEntity answerEntry = contractorTimeline.stream()
+            .filter(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose())
+                && UserContext.TENANT.equals(e.getSenderRole()))
+            .findFirst().orElseThrow();
+        assertEquals(List.of(copiedAttachment.getAttachmentId()), answerEntry.getAttachmentIds());
+
+        final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
+        final List<TenantTimelineEntity> tenantTimeline =
+            tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId);
+        final TenantTimelineEntity tenantAnswerEntry = tenantTimeline.stream()
+            .filter(e -> "Hier das Foto".equals(e.getMessage()))
+            .findFirst().orElseThrow();
+        assertEquals(List.of(TicketingTestData.ATTACHMENT_ID_1), tenantAnswerEntry.getAttachmentIds());
     }
 
     @Test
