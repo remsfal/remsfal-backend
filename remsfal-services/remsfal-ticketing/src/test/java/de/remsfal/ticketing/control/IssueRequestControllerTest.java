@@ -181,12 +181,10 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
                 && "Termin bestaetigt".equals(e.getMessage())
                 && UserContext.TENANT.equals(e.getSenderRole())));
 
-        // The tenant timeline also holds the REQUEST_CREATED entry that was mirrored when the
-        // request was created (the issue is visible to the tenant), in addition to the answer itself.
         final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
         final List<TenantTimelineEntity> tenantTimeline =
             tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId);
-        assertEquals(2, tenantTimeline.size());
+        assertEquals(1, tenantTimeline.size());
         final TenantTimelineEntity tenantAnswerEntry = tenantTimeline.stream()
             .filter(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose()))
             .findFirst().orElseThrow();

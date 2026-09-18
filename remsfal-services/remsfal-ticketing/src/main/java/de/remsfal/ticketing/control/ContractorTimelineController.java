@@ -7,7 +7,6 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineKey;
-import de.remsfal.ticketing.entity.dto.IssueEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,12 +26,6 @@ public class ContractorTimelineController {
 
     @Inject
     ContractorTimelineRepository contractorTimelineRepository;
-
-    @Inject
-    IssueController issueController;
-
-    @Inject
-    TenantTimelineController tenantTimelineController;
 
     public List<ContractorTimelineEntity> getTimelineEntries(final UUID issueId, final UUID organizationId) {
         logger.infov("Retrieving contractor timeline entries (issueId={0}, organizationId={1})",
@@ -64,23 +57,7 @@ public class ContractorTimelineController {
         entity.setCreatedAt(now);
         entity.setModifiedAt(now);
 
-        final ContractorTimelineEntity created = contractorTimelineRepository.insert(entity);
-
-        if (Boolean.TRUE.equals(entry.getMessageToTenant())) {
-            copyToTenantTimeline(issueId, sender, entry);
-        }
-
-        return created;
-    }
-
-    private void copyToTenantTimeline(final UUID issueId, final UserModel sender,
-        final ContractorTimelineJson entry) {
-        final IssueEntity issue = issueController.getIssue(issueId);
-        if (issue.getAgreementId() != null && Boolean.TRUE.equals(issue.isVisibleToTenants())) {
-            logger.infov("Copying contractor timeline entry to tenant timeline (issueId={0})", issueId);
-            tenantTimelineController.createTimelineEntry(issue.getAgreementId(), issueId, issue.getProjectId(),
-                sender, entry.getPurpose(), entry.getMessage());
-        }
+        return contractorTimelineRepository.insert(entity);
     }
 
 }
