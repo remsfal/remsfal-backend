@@ -1,5 +1,6 @@
 package de.remsfal.core.api.ticketing.tenant;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -52,6 +53,6 @@ public interface TenantIssueRequestEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the request", required = true)
         @PathParam("issueRequestId") @NotNull UUID issueRequestId,
-        @NotNull IssueRequestJson response);
+        @Valid @NotNull IssueRequestJson response);
 
 }

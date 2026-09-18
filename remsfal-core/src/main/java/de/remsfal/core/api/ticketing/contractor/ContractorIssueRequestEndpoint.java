@@ -1,5 +1,6 @@
 package de.remsfal.core.api.ticketing.contractor;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -53,7 +54,7 @@ public interface ContractorIssueRequestEndpoint {
     IssueRequestJson createRequest(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
-        @NotNull IssueRequestJson request);
+        @Valid @NotNull IssueRequestJson request);
 
     @DELETE
     @Path("/{issueRequestId}")

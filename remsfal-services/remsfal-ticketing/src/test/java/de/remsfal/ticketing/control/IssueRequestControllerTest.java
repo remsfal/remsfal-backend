@@ -30,6 +30,7 @@ import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 @QuarkusTest
@@ -57,6 +58,10 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
     TenantTimelineController tenantTimelineController;
 
     private UUID createIssue(final UUID agreementId) {
+        return createIssue(agreementId, true);
+    }
+
+    private UUID createIssue(final UUID agreementId, final boolean visibleToTenants) {
         final UUID issueId = UUID.randomUUID();
 
         final IssueKey key = new IssueKey();
@@ -66,6 +71,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final IssueEntity issue = new IssueEntity();
         issue.setKey(key);
         issue.setAgreementId(agreementId);
+        issue.isVisibleToTenants(visibleToTenants);
 
         issueRepository.insert(issue);
         return issueId;
@@ -171,16 +177,20 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             contractorTimelineController.getTimelineEntries(issueId, organizationId);
         assertEquals(2, contractorTimeline.size());
         assertTrue(contractorTimeline.stream()
-            .anyMatch(e -> MessagePurpose.MESSAGE_SENT.equals(e.getPurpose())
+            .anyMatch(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose())
                 && "Termin bestaetigt".equals(e.getMessage())
                 && UserContext.TENANT.equals(e.getSenderRole())));
 
+        // The tenant timeline also holds the REQUEST_CREATED entry that was mirrored when the
+        // request was created (the issue is visible to the tenant), in addition to the answer itself.
         final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
         final List<TenantTimelineEntity> tenantTimeline =
             tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId);
-        assertEquals(1, tenantTimeline.size());
-        assertEquals(MessagePurpose.MESSAGE_SENT, tenantTimeline.get(0).getPurpose());
-        assertEquals("Termin bestaetigt", tenantTimeline.get(0).getMessage());
+        assertEquals(2, tenantTimeline.size());
+        final TenantTimelineEntity tenantAnswerEntry = tenantTimeline.stream()
+            .filter(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose()))
+            .findFirst().orElseThrow();
+        assertEquals("Termin bestaetigt", tenantAnswerEntry.getMessage());
     }
 
     @Test
@@ -192,5 +202,27 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
 
         assertThrows(NotFoundException.class,
             () -> controller.answerRequest(issueId, UUID.randomUUID(), TENANT_USER, response));
+    }
+
+    @Test
+    void testCreateRequest_issueNotVisibleToTenant_throwsBadRequest() {
+        final UUID issueId = createIssue(UUID.randomUUID(), false);
+        final IssueRequestJson request = ImmutableIssueRequestJson.builder()
+            .message("Termin?")
+            .build();
+
+        assertThrows(BadRequestException.class,
+            () -> controller.createRequest(issueId, UUID.randomUUID(), CONTRACTOR_USER, request));
+    }
+
+    @Test
+    void testCreateRequest_issueWithoutAgreement_throwsBadRequest() {
+        final UUID issueId = createIssue(null, true);
+        final IssueRequestJson request = ImmutableIssueRequestJson.builder()
+            .message("Termin?")
+            .build();
+
+        assertThrows(BadRequestException.class,
+            () -> controller.createRequest(issueId, UUID.randomUUID(), CONTRACTOR_USER, request));
     }
 }

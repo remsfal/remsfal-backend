@@ -42,6 +42,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
     static final UUID AGREEMENT_ID = UUID.randomUUID();
     static final UUID ISSUE_ID_WITH_AGREEMENT = UUID.randomUUID();
     static final UUID ISSUE_ID_WITHOUT_AGREEMENT = UUID.randomUUID();
+    static final UUID ISSUE_ID_OTHER_WITH_AGREEMENT = UUID.randomUUID();
 
     @Inject
     IssueRequestController issueRequestController;
@@ -60,6 +61,9 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
         insertIssue(PROJECT_ID, ISSUE_ID_WITHOUT_AGREEMENT,
             "Tenant issue without agreement", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
             UUID.randomUUID(), null, null, "Issue without an agreement");
+        insertIssue(PROJECT_ID, ISSUE_ID_OTHER_WITH_AGREEMENT,
+            "Other tenant issue", IssueType.TASK, IssueStatus.OPEN, IssuePriority.MEDIUM,
+            UUID.randomUUID(), UUID.randomUUID(), null, "A different issue, also visible to a tenant");
     }
 
     private io.restassured.http.Cookie tenantCookie() {
@@ -73,7 +77,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             ImmutableIssueRequestJson.builder().message("Nachricht Firma A").build());
         issueRequestController.createRequest(ISSUE_ID_WITH_AGREEMENT, UUID.randomUUID(), CONTRACTOR_USER,
             ImmutableIssueRequestJson.builder().message("Nachricht Firma B").build());
-        issueRequestController.createRequest(ISSUE_ID_WITHOUT_AGREEMENT, UUID.randomUUID(), CONTRACTOR_USER,
+        issueRequestController.createRequest(ISSUE_ID_OTHER_WITH_AGREEMENT, UUID.randomUUID(), CONTRACTOR_USER,
             ImmutableIssueRequestJson.builder().message("Anderes Issue").build());
 
         given()
@@ -122,7 +126,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
 
         assertEquals(2, tenantTimeline.size());
         final Map<String, Object> answerEntry = tenantTimeline.stream()
-            .filter(t -> "MESSAGE_SENT".equals(t.get("purpose")))
+            .filter(t -> "REQUEST_ANSWERED".equals(t.get("purpose")))
             .findFirst().orElseThrow();
         assertEquals("Termin bestaetigt", answerEntry.get("message"));
 
@@ -130,10 +134,26 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             contractorTimelineController.getTimelineEntries(ISSUE_ID_WITH_AGREEMENT, organizationId);
         assertEquals(2, contractorTimeline.size());
         final ContractorTimelineEntity contractorAnswerEntry = contractorTimeline.stream()
-            .filter(e -> MessagePurpose.MESSAGE_SENT.equals(e.getPurpose()))
+            .filter(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose()))
             .findFirst().orElseThrow();
         assertEquals("Termin bestaetigt", contractorAnswerEntry.getMessage());
         assertEquals(UserContext.TENANT, contractorAnswerEntry.getSenderRole());
+    }
+
+    @Test
+    void answerRequest_FAILED_missingMessageField_returns400() {
+        final IssueRequestEntity created = issueRequestController.createRequest(ISSUE_ID_WITH_AGREEMENT,
+            UUID.randomUUID(), CONTRACTOR_USER, ImmutableIssueRequestJson.builder().message("Termin?").build());
+
+        given()
+            .when()
+            .cookie(tenantCookie())
+            .contentType(ContentType.JSON)
+            .body("{ }")
+            .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT,
+                created.getIssueRequestId())
+            .then()
+            .statusCode(400);
     }
 
     @Test
