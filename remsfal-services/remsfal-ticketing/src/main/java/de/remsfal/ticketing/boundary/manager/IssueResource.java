@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,13 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
             rentalUnitType, rentalUnitId, type, status, isVisibleToTenants);
         final List<? extends IssueModel> issues = issueController.getProjectIssues(filter, cursor, limit);
         return IssueListJson.valueOfProjectIssues(issues, nextCursorOf(issues, limit));
+    }
+
+    @Override
+    public IssueListJson getLatestIssues(final Integer limit, final List<IssueStatus> status) {
+        final Set<UUID> projectIds = principal.getProjectRoles().keySet();
+        final List<? extends IssueModel> issues = issueController.getLatestIssues(projectIds, status, limit);
+        return IssueListJson.valueOfProjectIssues(issues, null);
     }
 
     @Override

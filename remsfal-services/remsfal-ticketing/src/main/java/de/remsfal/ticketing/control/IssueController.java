@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @RequestScoped
@@ -129,6 +130,25 @@ public class IssueController {
             final IssueFilter filter = new IssueFilter(projectId, null, agreementId, null, null, null, null,
                 Boolean.TRUE);
             merged.addAll(issueRepository.findByQuery(filter, cursor, limit));
+        }
+        merged.sort(Comparator.comparing(IssueEntity::getId, Comparator.reverseOrder()));
+        return merged.size() > limit ? merged.subList(0, limit) : merged;
+    }
+
+    /**
+     * Fetches the latest issues across the given projects, newest first. Same approach as
+     * {@link #getTenancyIssues}: one single-partition query per project (at most {@code limit} rows
+     * each, already sorted by {@code issue_id} descending), merged and cut to {@code limit} here.
+     */
+    public List<? extends IssueModel> getLatestIssues(final Set<UUID> projectIds,
+        final List<IssueStatus> status, final Integer limit) {
+        if (projectIds.isEmpty()) {
+            return List.of();
+        }
+        final List<IssueEntity> merged = new ArrayList<>();
+        for (final UUID projectId : projectIds) {
+            final IssueFilter filter = new IssueFilter(projectId, null, null, null, null, null, status, null);
+            merged.addAll(issueRepository.findByQuery(filter, null, limit));
         }
         merged.sort(Comparator.comparing(IssueEntity::getId, Comparator.reverseOrder()));
         return merged.size() > limit ? merged.subList(0, limit) : merged;

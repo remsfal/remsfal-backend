@@ -1,6 +1,7 @@
 package de.remsfal.ticketing.boundary.manager;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -17,6 +18,10 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -166,6 +171,136 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("issues", hasSize(1))
             .body("issues[0].title", equalTo(TicketingTestData.ISSUE_TITLE_1));
+    }
+
+    // --- Latest Issues ---
+
+    private UUID insertLatestIssue(final UUID projectId, final String title, final IssueStatus status)
+        throws InterruptedException {
+        // UUIDv7 ids are only ordered across milliseconds
+        Thread.sleep(2);
+        final UUID issueId = UUIDv7.randomUUID();
+        insertIssue(projectId, issueId, title, IssueType.TASK, status, IssuePriority.MEDIUM,
+            TicketingTestData.USER_ID_1, null, null, null);
+        return issueId;
+    }
+
+    @Test
+    void getLatestIssues_FAILED_noAuthentication() {
+        given()
+            .when()
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_emptyListWhenNoIssues() {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("issues", hasSize(0))
+            .body("nextCursor", nullValue())
+            .body("size", equalTo(0));
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_emptyListWithoutProjectRoles() throws InterruptedException {
+        insertLatestIssue(TicketingTestData.PROJECT_ID_1, "A", IssueStatus.OPEN);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(Map.of()))
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .body("issues", hasSize(0));
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_newestFirstAcrossProjects() throws InterruptedException {
+        final UUID first = insertLatestIssue(TicketingTestData.PROJECT_ID_1, "first", IssueStatus.OPEN);
+        final UUID second = insertLatestIssue(TicketingTestData.PROJECT_ID_2, "second", IssueStatus.OPEN);
+        final UUID third = insertLatestIssue(TicketingTestData.PROJECT_ID_1, "third", IssueStatus.OPEN);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("size", equalTo(3))
+            .body("nextCursor", nullValue())
+            .body("issues.id", contains(third.toString(), second.toString(), first.toString()))
+            .body("issues.projectId", contains(TicketingTestData.PROJECT_ID_1.toString(),
+                TicketingTestData.PROJECT_ID_2.toString(), TicketingTestData.PROJECT_ID_1.toString()));
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_limitIsApplied() throws InterruptedException {
+        insertLatestIssue(TicketingTestData.PROJECT_ID_1, "first", IssueStatus.OPEN);
+        final UUID second = insertLatestIssue(TicketingTestData.PROJECT_ID_2, "second", IssueStatus.OPEN);
+        final UUID third = insertLatestIssue(TicketingTestData.PROJECT_ID_1, "third", IssueStatus.OPEN);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("limit", 2)
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .body("size", equalTo(2))
+            .body("issues.id", contains(third.toString(), second.toString()));
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_projectWithoutRoleIsExcluded() throws InterruptedException {
+        insertLatestIssue(UUID.randomUUID(), "foreign", IssueStatus.OPEN);
+        final UUID own = insertLatestIssue(TicketingTestData.PROJECT_ID_1, "own", IssueStatus.OPEN);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .body("issues", hasSize(1))
+            .body("issues[0].id", equalTo(own.toString()));
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_filterByStatus() throws InterruptedException {
+        insertLatestIssue(TicketingTestData.PROJECT_ID_1, "closed", IssueStatus.CLOSED);
+        final UUID open = insertLatestIssue(TicketingTestData.PROJECT_ID_2, "open", IssueStatus.OPEN);
+        final UUID inProgress = insertLatestIssue(TicketingTestData.PROJECT_ID_1, "progress",
+            IssueStatus.IN_PROGRESS);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("status", "OPEN", "IN_PROGRESS")
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .body("issues.id", contains(inProgress.toString(), open.toString()));
+    }
+
+    @Test
+    void getLatestIssues_FAILED_invalidLimit() {
+        for (final int limit : new int[] { 0, 51 }) {
+            given()
+                .when()
+                .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+                .queryParam("limit", limit)
+                .get(BASE_PATH + "/latest")
+                .then()
+                .statusCode(400);
+        }
     }
 
     // --- Create Project Issue ---
