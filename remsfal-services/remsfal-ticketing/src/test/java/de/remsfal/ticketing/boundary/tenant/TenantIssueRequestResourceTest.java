@@ -1,9 +1,9 @@
 package de.remsfal.ticketing.boundary.tenant;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +24,7 @@ import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.control.ContractorTimelineController;
 import de.remsfal.ticketing.control.IssueRequestController;
+import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.IssueRequestEntity;
 import de.remsfal.core.json.ticketing.ImmutableIssueRequestJson;
@@ -31,6 +32,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -49,6 +51,9 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
 
     @Inject
     ContractorTimelineController contractorTimelineController;
+
+    @Inject
+    IssueAttachmentRepository attachmentRepository;
 
     private static final UserModel CONTRACTOR_USER = TicketingTestData.userModel(
         UUID.randomUUID(), "Contractor");
@@ -101,8 +106,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(tenantCookie())
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT,
                 created.getIssueRequestId())
             .then()
@@ -148,12 +152,34 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(tenantCookie())
-            .contentType(ContentType.JSON)
-            .body("{ }")
+            .multiPart("response", "{ }", MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT,
                 created.getIssueRequestId())
             .then()
             .statusCode(400);
+    }
+
+    @Test
+    void answerRequest_FAILED_noMatchingQuotationRequest_rollsBackUploadedAttachment() {
+        // No QuotationRequestEntity exists for this organization, so the order-copy step inside
+        // answerRequest fails and the attachment uploaded during this call must not be left behind.
+        final UUID organizationId = UUID.randomUUID();
+        final IssueRequestEntity created = issueRequestController.createRequest(ISSUE_ID_WITH_AGREEMENT,
+            organizationId, CONTRACTOR_USER, ImmutableIssueRequestJson.builder().message("Foto bitte").build());
+
+        final String responseJson = "{ \"message\":\"Hier das Foto\" }";
+
+        given()
+            .when()
+            .cookie(tenantCookie())
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .multiPart("attachment", "photo.jpg", "fake-image-bytes".getBytes(), "image/jpeg")
+            .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT,
+                created.getIssueRequestId())
+            .then()
+            .statusCode(404);
+
+        assertTrue(attachmentRepository.findByIssueId(ISSUE_ID_WITH_AGREEMENT).isEmpty());
     }
 
     @Test
@@ -163,8 +189,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(tenantCookie())
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT, UUID.randomUUID())
             .then()
             .statusCode(404);
@@ -178,8 +203,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(UUID.randomUUID(), "tenant@example.com", "Tenant", Map.of(), Map.of(),
                 Map.of()))
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITHOUT_AGREEMENT, UUID.randomUUID())
             .then()
             .statusCode(403);
@@ -191,8 +215,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
 
         given()
             .when()
-            .contentType(ContentType.JSON)
-            .body(responseJson)
+            .multiPart("response", responseJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
             .post(REQUESTS_PATH + "/{issueRequestId}/response", ISSUE_ID_WITH_AGREEMENT, UUID.randomUUID())
             .then()
             .statusCode(401);
