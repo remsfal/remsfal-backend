@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
@@ -52,6 +53,7 @@ public abstract class IssueRequestJson implements IssueRequestModel {
     public abstract UUID getAgreementId();
 
     @NotNull
+    @NotBlank
     @Nullable
     @Override
     public abstract String getMessage();
