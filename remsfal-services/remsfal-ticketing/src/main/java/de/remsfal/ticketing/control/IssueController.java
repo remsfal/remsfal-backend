@@ -135,11 +135,6 @@ public class IssueController {
         return merged.size() > limit ? merged.subList(0, limit) : merged;
     }
 
-    /**
-     * Fetches the latest issues across the given projects, newest first. Same approach as
-     * {@link #getTenancyIssues}: one single-partition query per project (at most {@code limit} rows
-     * each, already sorted by {@code issue_id} descending), merged and cut to {@code limit} here.
-     */
     public List<? extends IssueModel> getLatestIssues(final Set<UUID> projectIds,
         final List<IssueStatus> status, final Integer limit) {
         if (projectIds.isEmpty()) {
