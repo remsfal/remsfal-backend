@@ -40,11 +40,6 @@ public class OrderAttachmentRepository extends AbstractRepository<OrderAttachmen
             .result();
     }
 
-    /**
-     * Finds attachments for several processes of the same phase in a single query.
-     * {@code process_id} is the trailing component of the table's partition key, so an
-     * {@code IN} query is a plain multi-partition read and needs no secondary index.
-     */
     public List<OrderAttachmentEntity> findByProcess(String processPhase, List<UUID> processIds) {
         if (processIds.isEmpty()) {
             return List.of();
