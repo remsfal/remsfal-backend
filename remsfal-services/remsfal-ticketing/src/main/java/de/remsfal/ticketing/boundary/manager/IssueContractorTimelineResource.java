@@ -1,7 +1,6 @@
 package de.remsfal.ticketing.boundary.manager;
 
 import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
-import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractContractorTimelineResource;
@@ -15,10 +14,8 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
@@ -33,13 +30,8 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
     @Override
     public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
         checkProjectIssueAccessPermissions(issueId);
-        final Map<UUID, List<QuotationRequestEntity>> requestsByOrganization = orderManagementController
-            .getRequestsForQuotation(issueId).stream()
-            .collect(Collectors.groupingBy(QuotationRequestEntity::getOrganizationId));
-        final List<ContractorTimelineJson> entries = requestsByOrganization.values().stream()
-            .flatMap(requests -> super.getTimelineEntries(requests).getTimelines().stream())
-            .toList();
-        return ContractorTimelineListJson.valueOf(entries);
+        final List<QuotationRequestEntity> requests = orderManagementController.getRequestsForQuotation(issueId);
+        return super.getTimelineEntries(issueId, requests);
     }
 
     @Override

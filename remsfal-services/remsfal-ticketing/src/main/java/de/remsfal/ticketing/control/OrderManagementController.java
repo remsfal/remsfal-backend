@@ -118,7 +118,7 @@ public class OrderManagementController {
         final QuotationRequestEntity inserted = quotationRequestRepository.insert(request);
         issueEventProducer.sendQuotationRequestCreated(issue, QuotationRequestJson.valueOf(inserted), user);
         writeContractorTimelineEntry(issue.getId(), inserted.getOrganizationId(), user, UserContext.MANAGER,
-            MessagePurpose.QUOTATION_REQUESTED, "");
+            MessagePurpose.QUOTATION_REQUESTED, scopeOfWork != null ? scopeOfWork : "");
         return inserted;
     }
 

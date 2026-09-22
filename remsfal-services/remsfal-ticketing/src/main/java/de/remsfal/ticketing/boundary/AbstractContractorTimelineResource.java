@@ -35,18 +35,23 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
     OrderAttachmentController orderAttachmentController;
 
     protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request) {
-        return getTimelineEntries(List.of(request));
-    }
-
-    protected ContractorTimelineListJson getTimelineEntries(final List<QuotationRequestEntity> requests) {
-        final QuotationRequestEntity representative = requests.get(0);
-        final List<OrderAttachmentJson> requestAttachments = requests.stream()
-            .flatMap(request -> fetchRequestAttachments(request.getRequestId()).stream())
-            .toList();
+        final List<OrderAttachmentJson> requestAttachments =
+            fetchRequestAttachments(List.of(request.getRequestId()));
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
-                representative.getIssueId(), representative.getOrganizationId()).stream()
+                request.getIssueId(), request.getOrganizationId()).stream()
+                .map(entry -> withAttachments(entry, requestAttachments))
+                .toList());
+    }
+
+    protected ContractorTimelineListJson getTimelineEntries(final UUID issueId,
+        final List<QuotationRequestEntity> requests) {
+        final List<UUID> requestIds = requests.stream().map(QuotationRequestEntity::getRequestId).toList();
+        final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(requestIds);
+
+        return ContractorTimelineListJson.valueOf(
+            contractorTimelineController.getTimelineEntries(issueId).stream()
                 .map(entry -> withAttachments(entry, requestAttachments))
                 .toList());
     }
@@ -74,8 +79,8 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             .build();
     }
 
-    private List<OrderAttachmentJson> fetchRequestAttachments(final UUID requestId) {
-        return orderAttachmentController.getAttachments(OrderProcessPhase.QUOTATION_REQUEST, requestId).stream()
+    private List<OrderAttachmentJson> fetchRequestAttachments(final List<UUID> requestIds) {
+        return orderAttachmentController.getAttachments(OrderProcessPhase.QUOTATION_REQUEST, requestIds).stream()
             .map(OrderAttachmentJson::valueOf)
             .toList();
     }
