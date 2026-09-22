@@ -11,7 +11,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,9 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
 
     @Override
     public Response createIssueWithAttachments(final MultipartFormDataInput input) {
-        final TenantIssueJson issue = extractIssueJson(input);
+        final TenantIssueJson issue = MultipartAttachmentProcessor.extractJsonPart(
+            input, "issue", TenantIssueJson.class);
+        validateIssue(issue);
         final UUID projectId = checkTenancyIssueCreatePermissions(issue.getAgreementId());
         if (projectId == null) {
             throw new ForbiddenException("User does not have permission to create issues in this tenancy");
@@ -101,37 +102,13 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
             .build();
     }
 
-    private TenantIssueJson extractIssueJson(final MultipartFormDataInput input) {
-        try {
-            final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-            final List<InputPart> issueParts = formDataMap.get("issue");
-            if (issueParts == null || issueParts.isEmpty()) {
-                throw new BadRequestException("Missing 'issue' part in multipart request");
-            }
-            if (issueParts.size() > 1) {
-                throw new BadRequestException("Multiple 'issue' parts found in multipart request");
-            }
-            if (issueParts.get(0) == null) {
-                throw new BadRequestException("Issue part is null");
-            }
-            if (issueParts.get(0).getMediaType() == null
-                || !issueParts.get(0).getMediaType().isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
-                throw new BadRequestException("Issue part must be of type application/json");
-            }
-            final TenantIssueJson issue = issueParts.get(0).getBody(TenantIssueJson.class, TenantIssueJson.class);
-            if (issue == null) {
-                throw new BadRequestException("Unable to parse issue data from request");
-            }
-            final Set<ConstraintViolation<TenantIssueJson>> violations = validator.validate(issue);
-            if (!violations.isEmpty()) {
-                final String errorMessages = violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining("; "));
-                throw new BadRequestException("Invalid issue data provided: " + errorMessages);
-            }
-            return issue;
-        } catch (IOException e) {
-            throw new BadRequestException("Failed to parse issue data", e);
+    private void validateIssue(final TenantIssueJson issue) {
+        final Set<ConstraintViolation<TenantIssueJson>> violations = validator.validate(issue);
+        if (!violations.isEmpty()) {
+            final String errorMessages = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining("; "));
+            throw new BadRequestException("Invalid issue data provided: " + errorMessages);
         }
     }
 
