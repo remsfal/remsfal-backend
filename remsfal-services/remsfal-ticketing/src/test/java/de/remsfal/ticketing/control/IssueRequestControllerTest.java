@@ -180,7 +180,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             ImmutableIssueRequestJson.builder().message("Termin?").build());
 
         controller.answerRequest(issueId, created.getIssueRequestId(), TENANT_USER,
-            ImmutableIssueRequestJson.builder().message("Termin bestaetigt").build());
+            ImmutableIssueRequestJson.builder().message("Termin bestaetigt").build(), null);
 
         assertTrue(repository.findByIssueAndRequestId(issueId, created.getIssueRequestId()).isEmpty());
 
@@ -226,10 +226,10 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
 
         final IssueRequestJson response = ImmutableIssueRequestJson.builder()
             .message("Hier das Foto")
-            .attachmentIds(List.of(TicketingTestData.ATTACHMENT_ID_1))
             .build();
+        final List<UUID> attachmentIds = List.of(TicketingTestData.ATTACHMENT_ID_1);
 
-        controller.answerRequest(issueId, created.getIssueRequestId(), TENANT_USER, response);
+        controller.answerRequest(issueId, created.getIssueRequestId(), TENANT_USER, response, attachmentIds);
 
         final List<? extends OrderAttachmentModel> orderAttachments = orderAttachmentController.getAttachments(
             OrderProcessPhase.QUOTATION_REQUEST, quotationRequest.getRequestId());
@@ -265,7 +265,41 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             .build();
 
         assertThrows(NotFoundException.class,
-            () -> controller.answerRequest(issueId, UUID.randomUUID(), TENANT_USER, response));
+            () -> controller.answerRequest(issueId, UUID.randomUUID(), TENANT_USER, response, null));
+    }
+
+    @Test
+    void testAnswerRequest_noMatchingQuotationRequest_leavesRequestAnswerableAgain() throws Exception {
+        final UUID agreementId = UUID.randomUUID();
+        final UUID issueId = createIssue(agreementId);
+        final UUID organizationId = UUID.randomUUID();
+
+        final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
+            ImmutableIssueRequestJson.builder().message("Bitte Foto vom Schaden").build());
+
+        final String objectName = "/issues/" + issueId + "/attachments/"
+            + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1;
+        uploadTestFile(TicketingTestData.ATTACHMENT_FILE_PATH_1, TicketingTestData.ATTACHMENT_FILE_TYPE_1,
+            objectName);
+        insertAttachment(issueId, TicketingTestData.ATTACHMENT_ID_1, TicketingTestData.ATTACHMENT_FILE_PATH_1,
+            TicketingTestData.ATTACHMENT_FILE_TYPE_1, objectName, TENANT_USER.getId());
+
+        final IssueRequestJson response = ImmutableIssueRequestJson.builder()
+            .message("Hier das Foto")
+            .build();
+        final List<UUID> attachmentIds = List.of(TicketingTestData.ATTACHMENT_ID_1);
+
+        // No QuotationRequestEntity was inserted for (issueId, organizationId), so the order lookup
+        // inside answerRequest fails before anything is persisted or deleted.
+        assertThrows(NotFoundException.class,
+            () -> controller.answerRequest(issueId, created.getIssueRequestId(), TENANT_USER, response,
+                attachmentIds));
+
+        assertTrue(repository.findByIssueAndRequestId(issueId, created.getIssueRequestId()).isPresent());
+        final List<ContractorTimelineEntity> contractorTimeline =
+            contractorTimelineController.getTimelineEntries(issueId, organizationId);
+        assertFalse(contractorTimeline.stream()
+            .anyMatch(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose())));
     }
 
     @Test

@@ -72,7 +72,7 @@ public class FileStorage {
 
     public String uploadFile(final InputStream inputStream,
         final String fileName, final MediaType contentType) {
-        try {
+        try (inputStream) {
             final String finalFileName = generateUniqueFileName(fileName);
             logger.infov("Uploading file {0} to bucket {1}", finalFileName, bucketName);
             final byte[] bytes = inputStream.readAllBytes();

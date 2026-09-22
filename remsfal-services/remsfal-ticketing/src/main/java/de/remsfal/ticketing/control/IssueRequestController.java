@@ -128,7 +128,7 @@ public class IssueRequestController {
 
     @Transactional
     public void answerRequest(final UUID issueId, final UUID issueRequestId, final UserModel sender,
-        final IssueRequestJson response) {
+        final IssueRequestJson response, final List<UUID> attachmentIds) {
         logger.infov("Answering issue request (issueId={0}, issueRequestId={1})", issueId, issueRequestId);
 
         final IssueRequestEntity entity = issueRequestRepository.findByIssueAndRequestId(issueId, issueRequestId)
@@ -136,15 +136,17 @@ public class IssueRequestController {
         final IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
-        // Delete first: @Transactional has no effect against Cassandra/JNoSQL, so if a later step
-        // fails we only lose a timeline entry instead of leaving the request answerable again.
+        // Copy attachments first: this is the step with external I/O (order lookup, S3 download/upload)
+        // and can fail. @Transactional has no effect against Cassandra/JNoSQL, so everything after the
+        // delete below cannot be rolled back - run the fallible part first so a failure here leaves the
+        // request untouched and answerable again instead of losing the answer after the point of no return.
+        final List<UUID> copiedAttachmentIds = copyAttachmentsToOrder(
+            issueId, entity.getOrganizationId(), sender, attachmentIds);
+
         issueRequestRepository.delete(entity.getKey());
 
         tenantTimelineController.createTimelineEntry(entity.getAgreementId(), issueId, issue.getProjectId(),
-            sender, MessagePurpose.REQUEST_ANSWERED, response.getMessage(), response.getAttachmentIds());
-
-        final List<UUID> copiedAttachmentIds = copyAttachmentsToOrder(
-            issueId, entity.getOrganizationId(), sender, response.getAttachmentIds());
+            sender, MessagePurpose.REQUEST_ANSWERED, response.getMessage(), attachmentIds);
 
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
             .purpose(MessagePurpose.REQUEST_ANSWERED)
