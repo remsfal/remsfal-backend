@@ -7,6 +7,10 @@ import de.remsfal.service.entity.dto.TenantEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Establishes and re-validates the optional link between a {@link TenantEntity} and a matching
@@ -16,6 +20,9 @@ import jakarta.inject.Inject;
  */
 @ApplicationScoped
 public class TenantUserLinkController {
+
+    @Inject
+    Logger logger;
 
     @Inject
     UserRepository userRepository;
@@ -54,6 +61,38 @@ public class TenantUserLinkController {
             }
             tenant.setUser(user);
         });
+    }
+
+    /**
+     * Links any pre-existing, unlinked tenant records across all projects whose email matches the
+     * given user's email, to that user. Calls {@link #relinkByEmail} once per candidate tenant, so
+     * all the same safety checks apply per tenant. A candidate tenant whose matching would conflict
+     * with another tenant already linked to this user in the same project is skipped (logged) rather
+     * than aborting the whole operation. Intended to be called once, synchronously, right after a
+     * user account is created or reactivated.
+     *
+     * @param user the newly created/reactivated user
+     * @return the tenants that ended up linked to {@code user} as a result of this call
+     */
+    public List<TenantEntity> linkTenantsForNewUser(final UserEntity user) {
+        final String normalizedEmail = user.getEmail() == null ? null : user.getEmail().trim().toLowerCase();
+        if (normalizedEmail == null || normalizedEmail.isBlank()) {
+            return List.of();
+        }
+        final List<TenantEntity> linked = new ArrayList<>();
+        for (final TenantEntity tenant : tenantRepository.findByEmail(normalizedEmail)) {
+            try {
+                relinkByEmail(tenant, normalizedEmail);
+            } catch (AlreadyExistsException e) {
+                logger.warnv("Skipping link of tenant {0} to user {1}: {2}",
+                    tenant.getId(), user.getId(), e.getMessage());
+                continue;
+            }
+            if (tenant.getUser() != null && tenant.getUser().getId().equals(user.getId())) {
+                linked.add(tenant);
+            }
+        }
+        return linked;
     }
 
 }

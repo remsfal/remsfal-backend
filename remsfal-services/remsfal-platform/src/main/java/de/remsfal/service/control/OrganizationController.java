@@ -42,6 +42,9 @@ public class OrganizationController {
     ContractorRepository contractorRepository;
 
     @Inject
+    ContractorOrganizationLinkController contractorOrganizationLinker;
+
+    @Inject
     AddressController addressController;
 
     @Inject
@@ -112,6 +115,9 @@ public class OrganizationController {
         organizationEntity.addEmployee(userEntity, EmployeeRole.OWNER);
 
         organizationRepository.persistAndFlush(organizationEntity);
+        if (organizationEntity.getEmail() != null) {
+            contractorOrganizationLinker.linkContractorsForNewOrganization(organizationEntity);
+        }
 
         return organizationEntity;
     }
