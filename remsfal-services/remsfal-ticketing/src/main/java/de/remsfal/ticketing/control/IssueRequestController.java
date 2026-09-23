@@ -75,7 +75,7 @@ public class IssueRequestController {
 
     @Transactional
     public IssueRequestEntity createRequest(final UUID issueId, final UUID organizationId,
-        final UserModel sender, final IssueRequestJson request) {
+        final UserModel sender, final IssueRequestJson request, final List<UUID> attachmentIds) {
         logger.infov("Creating issue request (issueId={0}, organizationId={1})", issueId, organizationId);
 
         final IssueEntity issue = issueRepository.findByIssueId(issueId)
@@ -83,6 +83,9 @@ public class IssueRequestController {
         if (issue.getAgreementId() == null || !Boolean.TRUE.equals(issue.isVisibleToTenants())) {
             throw new BadRequestException("Issue is not visible to a tenant, cannot request a tenant response");
         }
+
+        final List<UUID> copiedAttachmentIds = copyAttachmentsToIssue(
+            issueId, organizationId, sender, attachmentIds);
 
         final IssueRequestKey key = new IssueRequestKey();
         key.setIssueId(issueId);
@@ -93,7 +96,7 @@ public class IssueRequestController {
         entity.setKey(key);
         entity.setAgreementId(issue.getAgreementId());
         entity.setMessage(request.getMessage());
-        entity.setAttachmentIds(request.getAttachmentIds());
+        entity.setAttachmentIds(copiedAttachmentIds.isEmpty() ? null : copiedAttachmentIds);
 
         final Instant now = Instant.now();
         entity.setCreatedAt(now);
@@ -106,7 +109,10 @@ public class IssueRequestController {
             .message(request.getMessage())
             .build();
         contractorTimelineController.createTimelineEntry(issueId, organizationId, sender,
-            UserContext.CONTRACTOR, entry, inserted.getAttachmentIds());
+            UserContext.CONTRACTOR, entry, attachmentIds);
+
+        tenantTimelineController.createTimelineEntry(issue.getAgreementId(), issueId, issue.getProjectId(),
+            sender, MessagePurpose.REQUEST_CREATED, request.getMessage(), inserted.getAttachmentIds());
 
         return inserted;
     }
@@ -175,6 +181,34 @@ public class IssueRequestController {
             final OrderAttachmentEntity copy = orderAttachmentController.addAttachment(sender,
                 OrderProcessPhase.QUOTATION_REQUEST, request.getRequestId(), fileData);
             copiedAttachmentIds.add(copy.getAttachmentId());
+        }
+        return copiedAttachmentIds;
+    }
+
+    private List<UUID> copyAttachmentsToIssue(final UUID issueId, final UUID organizationId,
+        final UserModel sender, final List<UUID> attachmentIds) {
+        if (attachmentIds == null || attachmentIds.isEmpty()) {
+            return List.of();
+        }
+
+        final QuotationRequestEntity request = orderManagementController
+            .getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
+
+        final List<UUID> copiedAttachmentIds = new ArrayList<>();
+        try {
+            for (final UUID attachmentId : attachmentIds) {
+                final OrderAttachmentEntity source = orderAttachmentController.getAttachment(
+                    OrderProcessPhase.QUOTATION_REQUEST, request.getRequestId(), attachmentId);
+                final InputStream inputStream = orderAttachmentController.downloadAttachment(source.getObjectName());
+                final FileUploadData fileData = new FileUploadData(inputStream, source.getFileName(),
+                    source.getMediaType());
+
+                final IssueAttachmentEntity copy = attachmentController.addAttachment(sender, issueId, fileData);
+                copiedAttachmentIds.add(copy.getAttachmentId());
+            }
+        } catch (final RuntimeException e) {
+            copiedAttachmentIds.forEach(id -> attachmentController.deleteAttachment(issueId, id));
+            throw e;
         }
         return copiedAttachmentIds;
     }
