@@ -60,6 +60,13 @@ public class OrderAttachmentController {
         return attachmentRepository.findByProcess(processPhase.name(), processId);
     }
 
+    public List<? extends OrderAttachmentModel> getAttachments(final OrderProcessPhase processPhase,
+        final List<UUID> processIds) {
+        logger.infov("Retrieving attachments (processPhase={0}, processIdCount={1})",
+            processPhase, processIds.size());
+        return attachmentRepository.findByProcess(processPhase.name(), processIds);
+    }
+
     public OrderAttachmentEntity getAttachment(final OrderProcessPhase processPhase, final UUID processId,
         final UUID attachmentId) {
         logger.infov("Retrieving attachment (processPhase={0}, processId={1}, attachmentId={2})",

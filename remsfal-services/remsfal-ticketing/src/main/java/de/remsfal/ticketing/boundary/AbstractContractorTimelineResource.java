@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -34,7 +35,8 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
     OrderAttachmentController orderAttachmentController;
 
     protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request) {
-        final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(request.getRequestId());
+        final List<OrderAttachmentJson> requestAttachments =
+            fetchRequestAttachments(List.of(request.getRequestId()));
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
@@ -43,10 +45,23 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
                 .toList());
     }
 
-    protected Response createTimelineEntryWithAttachments(final QuotationRequestEntity request,
+    protected ContractorTimelineListJson getTimelineEntries(final UUID issueId,
+        final List<QuotationRequestEntity> requests) {
+        final List<UUID> requestIds = requests.stream().map(QuotationRequestEntity::getRequestId).toList();
+        final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(requestIds);
+
+        return ContractorTimelineListJson.valueOf(
+            contractorTimelineController.getTimelineEntries(issueId).stream()
+                .map(entry -> withAttachments(entry, requestAttachments))
+                .toList());
+    }
+
+    protected Response createTimelineEntryWithAttachments(
+        final Function<UUID, QuotationRequestEntity> requestResolver,
         final UserContext senderRole, final MultipartFormDataInput input) {
         final ContractorTimelineJson timeline = MultipartAttachmentProcessor.extractJsonPart(
             input, "timeline", ContractorTimelineJson.class);
+        final QuotationRequestEntity request = requestResolver.apply(timeline.getOrganizationId());
         final List<OrderAttachmentJson> uploadedAttachments = collectAttachments(request.getRequestId(), input);
         final List<UUID> attachmentIds = uploadedAttachments.stream()
             .map(OrderAttachmentJson::getAttachmentId)
@@ -64,8 +79,8 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             .build();
     }
 
-    private List<OrderAttachmentJson> fetchRequestAttachments(final UUID requestId) {
-        return orderAttachmentController.getAttachments(OrderProcessPhase.QUOTATION_REQUEST, requestId).stream()
+    private List<OrderAttachmentJson> fetchRequestAttachments(final List<UUID> requestIds) {
+        return orderAttachmentController.getAttachments(OrderProcessPhase.QUOTATION_REQUEST, requestIds).stream()
             .map(OrderAttachmentJson::valueOf)
             .toList();
     }

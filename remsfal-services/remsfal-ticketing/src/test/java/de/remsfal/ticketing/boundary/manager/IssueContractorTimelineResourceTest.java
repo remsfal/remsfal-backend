@@ -4,7 +4,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -68,7 +70,7 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void getTimelineEntries_SUCCESS_returnsEmptyListInitially() {
+    void getTimelineEntries_SUCCESS_containsQuotationRequestedEntriesInitially() {
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -76,7 +78,10 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("timelines", hasSize(0));
+            .body("timelines", hasSize(2))
+            .body("timelines.purpose", containsInAnyOrder("QUOTATION_REQUESTED", "QUOTATION_REQUESTED"))
+            .body("timelines.organizationId", containsInAnyOrder(
+                firstOrganizationId.toString(), secondOrganizationId.toString()));
     }
 
     @Test
@@ -93,6 +98,7 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void createTimelineEntry_SUCCESS_targetsSelectedOrganization() {
         final String timelineJson = "{"
+            + "\"organizationId\":\"" + firstOrganizationId + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Bauservice GmbH\""
             + "}";
@@ -101,7 +107,6 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", firstOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201)
@@ -130,6 +135,7 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void createTimelineEntry_FAILED_unknownOrganization() {
         final String timelineJson = "{"
+            + "\"organizationId\":\"" + UUID.randomUUID() + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Bauservice GmbH\""
             + "}";
@@ -138,7 +144,6 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", timelineJson, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", UUID.randomUUID())
             .post(timelinePath())
             .then()
             .statusCode(404);
@@ -147,10 +152,12 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     @Test
     void getTimelineEntries_SUCCESS_aggregatesEntriesFromBothContractors() {
         final String firstMessage = "{"
+            + "\"organizationId\":\"" + firstOrganizationId + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Bauservice GmbH\""
             + "}";
         final String secondMessage = "{"
+            + "\"organizationId\":\"" + secondOrganizationId + "\","
             + "\"purpose\":\"MESSAGE_SENT\","
             + "\"message\":\"An Elektro Schmidt\""
             + "}";
@@ -159,7 +166,6 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", firstMessage, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", firstOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201);
@@ -168,20 +174,29 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("timeline", secondMessage, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
-            .queryParam("organizationId", secondOrganizationId)
             .post(timelinePath())
             .then()
             .statusCode(201);
 
-        given()
+        final List<Map<String, Object>> timelines = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .get(timelinePath())
             .then()
             .statusCode(200)
-            .body("timelines", hasSize(2))
-            .body("timelines.organizationId", containsInAnyOrder(
-                firstOrganizationId.toString(), secondOrganizationId.toString()));
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(4, timelines.size());
+        final List<Map<String, Object>> messagesSent = timelines.stream()
+            .filter(t -> "MESSAGE_SENT".equals(t.get("purpose")))
+            .toList();
+        assertEquals(2, messagesSent.size());
+        final List<String> messageSentOrgIds = messagesSent.stream()
+            .map(t -> (String) t.get("organizationId"))
+            .sorted()
+            .toList();
+        assertEquals(List.of(firstOrganizationId, secondOrganizationId).stream()
+            .map(UUID::toString).sorted().toList(), messageSentOrgIds);
     }
 
 }

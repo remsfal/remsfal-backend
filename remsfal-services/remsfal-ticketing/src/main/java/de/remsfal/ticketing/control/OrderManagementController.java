@@ -9,10 +9,14 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ticketing.ContractorTimelineJson;
+import de.remsfal.core.json.ticketing.ImmutableContractorTimelineJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.UserModel;
@@ -69,6 +73,9 @@ public class OrderManagementController {
     @Inject
     IssueEventProducer issueEventProducer;
 
+    @Inject
+    ContractorTimelineController contractorTimelineController;
+
     private IssueModel findIssue(final UUID issueId) {
         return issueRepository.findByIssueId(issueId).orElse(null);
     }
@@ -110,6 +117,8 @@ public class OrderManagementController {
         request.setStatus(RequestStatus.REQUESTED);
         final QuotationRequestEntity inserted = quotationRequestRepository.insert(request);
         issueEventProducer.sendQuotationRequestCreated(issue, QuotationRequestJson.valueOf(inserted), user);
+        writeContractorTimelineEntry(issue.getId(), inserted.getOrganizationId(), user, UserContext.MANAGER,
+            MessagePurpose.QUOTATION_REQUESTED, scopeOfWork != null ? scopeOfWork : "");
         return inserted;
     }
 
@@ -130,6 +139,10 @@ public class OrderManagementController {
         final QuotationRequestEntity updated = quotationRequestRepository.update(entity);
         issueEventProducer.sendQuotationRequestStatusChanged(findIssue(entity.getIssueId()),
             QuotationRequestJson.valueOf(updated), principal);
+        if (body.getStatus() != null) {
+            writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), principal,
+                UserContext.MANAGER, MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
+        }
         return updated;
     }
 
@@ -153,6 +166,8 @@ public class OrderManagementController {
         final QuotationRequestEntity updated = quotationRequestRepository.update(entity);
         issueEventProducer.sendQuotationRequestStatusChanged(findIssue(entity.getIssueId()),
             QuotationRequestJson.valueOf(updated), principal);
+        writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), principal,
+            UserContext.CONTRACTOR, MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
         return updated;
     }
 
@@ -198,6 +213,10 @@ public class OrderManagementController {
             buildOrderPlacement(issueId, quotationId, quotation));
         issueEventProducer.sendOrderPlaced(findIssue(issueId), OrderPlacementJson.valueOf(inserted),
             principal);
+
+        writeContractorTimelineEntry(issueId, quotation.getOrganizationId(), principal, UserContext.MANAGER,
+            MessagePurpose.ORDER_PLACED, "");
+
         return inserted;
     }
 
@@ -229,6 +248,8 @@ public class OrderManagementController {
         final OrderPlacementEntity updated = orderPlacementRepository.update(placement);
         issueEventProducer.sendOrderPlacementWithdrawn(findIssue(issueId), OrderPlacementJson.valueOf(updated),
             principal);
+        writeContractorTimelineEntry(issueId, updated.getOrganizationId(), principal, UserContext.MANAGER,
+            MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
     }
 
     public List<QuotationEntity> getQuotationsByOrganizationIds(final Set<UUID> organizationIds) {
@@ -268,6 +289,8 @@ public class OrderManagementController {
         final OrderPlacementEntity updated = orderPlacementRepository.update(placement);
         issueEventProducer.sendOrderPlacementStatusChangedByContractor(findIssue(placement.getIssueId()),
             OrderPlacementJson.valueOf(updated), principal);
+        writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), principal,
+            UserContext.CONTRACTOR, MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
         return updated;
     }
 
@@ -281,6 +304,8 @@ public class OrderManagementController {
                 quotationRequestRepository.update(oldRequest);
                 issueEventProducer.sendQuotationRequestStatusChanged(issue,
                     QuotationRequestJson.valueOf(oldRequest), user);
+                writeContractorTimelineEntry(issue.getId(), oldRequest.getOrganizationId(), user,
+                    UserContext.MANAGER, MessagePurpose.STATUS_CHANGED, RequestStatus.WITHDRAWN.name());
             });
     }
 
@@ -373,6 +398,19 @@ public class OrderManagementController {
         if (!allowedStatuses.contains(status)) {
             throw new BadRequestException(message);
         }
+    }
+
+    private void writeContractorTimelineEntry(final UUID issueId, final UUID organizationId,
+        final UserModel sender, final UserContext senderRole,
+        final MessagePurpose purpose, final String message) {
+        if (organizationId == null) {
+            return;
+        }
+        final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
+            .purpose(purpose)
+            .message(message)
+            .build();
+        contractorTimelineController.createTimelineEntry(issueId, organizationId, sender, senderRole, entry, null);
     }
 
 }

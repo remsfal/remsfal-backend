@@ -26,9 +26,10 @@ import java.util.UUID;
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ContractorTimelineJson extends AbstractTimelineJson implements ContractorTimelineModel {
 
-    @Null
     @Nullable
-    @Schema(readOnly = true)
+    @Schema(description = "ID of the contractor organization to address; required only when creating"
+        + " via the issue-level combined view, ignored by the contractor's own mount which already"
+        + " knows its own organization")
     @Override
     public abstract UUID getOrganizationId();
 

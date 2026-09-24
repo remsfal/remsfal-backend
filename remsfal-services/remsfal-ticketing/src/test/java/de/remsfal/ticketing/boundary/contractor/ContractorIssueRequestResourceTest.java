@@ -124,10 +124,11 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .get(ORDER_MANAGEMENT_PATH + "/" + issueId + "/timeline")
             .then()
             .statusCode(200)
-            .body("timelines", hasSize(1))
-            .body("timelines[0].purpose", equalTo("REQUEST_CREATED"))
-            .body("timelines[0].message", equalTo("Bitte um Rueckmeldung"))
-            .body("timelines[0].senderRole", equalTo("CONTRACTOR"));
+            .body("timelines", hasSize(2))
+            .body("timelines[0].purpose", equalTo("QUOTATION_REQUESTED"))
+            .body("timelines[1].purpose", equalTo("REQUEST_CREATED"))
+            .body("timelines[1].message", equalTo("Bitte um Rueckmeldung"))
+            .body("timelines[1].senderRole", equalTo("CONTRACTOR"));
     }
 
     @Test

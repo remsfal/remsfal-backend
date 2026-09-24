@@ -63,4 +63,15 @@ public class TenantRepository extends AbstractRepository<TenantEntity> {
             Map.of("email", normalizedEmail, PARAM_PROJECT_ID, projectId))
                 .list();
     }
+
+    /**
+     * Find all tenants with a specific email address, across all projects.
+     *
+     * @param email the email address
+     * @return list of tenants
+     */
+    public List<TenantEntity> findByEmail(final String email) {
+        final String normalizedEmail = email == null ? null : email.trim().toLowerCase();
+        return find("email", normalizedEmail).list();
+    }
 }
