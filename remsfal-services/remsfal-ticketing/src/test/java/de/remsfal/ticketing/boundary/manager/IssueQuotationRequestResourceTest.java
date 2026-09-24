@@ -336,6 +336,112 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         assertEquals("SUBMITTED", firstRequestStatus);
     }
 
+    @Test
+    void createRequestsForQuotation_SUCCESS_writesQuotationRequestedContractorTimelineEntry() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/contractor-timeline")
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(1))
+            .body("timelines[0].purpose", equalTo("QUOTATION_REQUESTED"))
+            .body("timelines[0].organizationId", equalTo(organizationId.toString()))
+            .body("timelines[0].senderRole", equalTo("MANAGER"));
+    }
+
+    @Test
+    void createRequestsForQuotation_SUCCESS_writesStatusChangedEntryForWithdrawnPreviousRequest() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final List<Map<String, Object>> timelines = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/contractor-timeline")
+            .then()
+            .statusCode(200)
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(3, timelines.size());
+        final List<String> purposes = timelines.stream()
+            .map(t -> (String) t.get("purpose"))
+            .sorted()
+            .toList();
+        assertEquals(List.of("QUOTATION_REQUESTED", "QUOTATION_REQUESTED", "STATUS_CHANGED"), purposes);
+
+        final Map<String, Object> statusChanged = timelines.stream()
+            .filter(t -> "STATUS_CHANGED".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals("WITHDRAWN", statusChanged.get("message"));
+        assertEquals(organizationId.toString(), statusChanged.get("organizationId"));
+        assertEquals("MANAGER", statusChanged.get("senderRole"));
+    }
+
     // --- Get Quotation Requests ---
 
     @Test
@@ -547,6 +653,70 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .patch(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
             .then()
             .statusCode(400);
+    }
+
+    @Test
+    void updateRequestForQuotation_SUCCESS_writesStatusChangedContractorTimelineEntry() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"name\":\"Test GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        final String requestId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(200)
+            .extract().path("items[0].id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"WITHDRAWN\" }")
+            .patch(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
+            .then()
+            .statusCode(200);
+
+        final List<Map<String, Object>> timelines = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId + "/contractor-timeline")
+            .then()
+            .statusCode(200)
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(2, timelines.size());
+        final Map<String, Object> statusChanged = timelines.stream()
+            .filter(t -> "STATUS_CHANGED".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals("WITHDRAWN", statusChanged.get("message"));
+        assertEquals(organizationId.toString(), statusChanged.get("organizationId"));
+        assertEquals("MANAGER", statusChanged.get("senderRole"));
     }
 
     @Test

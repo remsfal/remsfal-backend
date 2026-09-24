@@ -378,6 +378,49 @@ class ContractorControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void createOrganization_SUCCESS_linksPreexistingUnlinkedContractor() {
+        ContractorJson contractorJson = ImmutableContractorJson.builder()
+            .name(COMPANY_NAME_1)
+            .email(TestData.USER_EMAIL)
+            .build();
+        ContractorModel contractor = contractorController.createContractor(user, projectId, contractorJson);
+        assertNull(contractor.getOrganizationId(), "No organization exists yet, so the contractor stays unlinked.");
+
+        OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
+            ImmutableOrganizationJson.builder().name("Test Org").email(TestData.USER_EMAIL).build(), user);
+
+        ContractorModel linked = contractorController.getContractor(user, projectId, contractor.getId());
+        assertEquals(org.getId(), linked.getOrganizationId(),
+            "A contractor created before the matching organization must be linked once the organization is created.");
+    }
+
+    @Test
+    void createOrganization_SUCCESS_linksContractorsAcrossMultipleProjects() {
+        ProjectEntity project2 = (ProjectEntity) projectController.createProject(user,
+            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_2).build());
+
+        ContractorJson contractorJson1 = ImmutableContractorJson.builder()
+            .name(COMPANY_NAME_1)
+            .email(TestData.USER_EMAIL)
+            .build();
+        ContractorModel c1 = contractorController.createContractor(user, projectId, contractorJson1);
+
+        ContractorJson contractorJson2 = ImmutableContractorJson.builder()
+            .name(COMPANY_NAME_2)
+            .email(TestData.USER_EMAIL)
+            .build();
+        ContractorModel c2 = contractorController.createContractor(user, project2.getId(), contractorJson2);
+
+        OrganizationEntity org = (OrganizationEntity) organizationController.createOrganization(
+            ImmutableOrganizationJson.builder().name("Test Org").email(TestData.USER_EMAIL).build(), user);
+
+        assertEquals(org.getId(),
+            contractorController.getContractor(user, projectId, c1.getId()).getOrganizationId());
+        assertEquals(org.getId(),
+            contractorController.getContractor(user, project2.getId(), c2.getId()).getOrganizationId());
+    }
+
+    @Test
     void isContractorEmployee_SUCCESS_trueWhenUserBelongsToLinkedOrganization() {
         final UUID organizationId = UUID.randomUUID();
         insertOrganization(organizationId, "Test Organization", null, "test-organization@test.de", null, null);

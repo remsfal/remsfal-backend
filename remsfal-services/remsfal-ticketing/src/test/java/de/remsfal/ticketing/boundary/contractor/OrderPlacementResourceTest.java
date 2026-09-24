@@ -4,7 +4,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,7 +28,15 @@ class OrderPlacementResourceTest extends AbstractTicketingTest {
     static final String QUOTATION_REQUEST_PATH = "/ticketing/v1/order-management/quotation-requests";
     static final String ORDER_PLACEMENT_PATH = "/ticketing/v1/order-management/order-placements";
 
+    private record IssuePlacement(String issueId, String placementId) {
+    }
+
     private String createIssueAndPlaceOrder(final UUID contractorId, final UUID organizationId,
+        final UUID contractorUserId) {
+        return createIssueAndPlaceOrderWithIssueId(contractorId, organizationId, contractorUserId).placementId();
+    }
+
+    private IssuePlacement createIssueAndPlaceOrderWithIssueId(final UUID contractorId, final UUID organizationId,
         final UUID contractorUserId) {
         final String issueId = given()
             .when()
@@ -79,7 +89,7 @@ class OrderPlacementResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(201);
 
-        return given()
+        final String placementId = given()
             .when()
             .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor",
                 Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
@@ -88,6 +98,7 @@ class OrderPlacementResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("items", hasSize(1))
             .extract().path("items[0].id");
+        return new IssuePlacement(issueId, placementId);
     }
 
     // --- GET order placements ---
@@ -259,6 +270,42 @@ class OrderPlacementResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("status", equalTo("REJECTED"));
+    }
+
+    @Test
+    void updateOrderPlacement_SUCCESS_writesStatusChangedContractorTimelineEntry() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+        final UUID contractorUserId = UUID.randomUUID();
+
+        final IssuePlacement issuePlacement =
+            createIssueAndPlaceOrderWithIssueId(contractorId, organizationId, contractorUserId);
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"CONFIRMED\" }")
+            .patch(ORDER_PLACEMENT_PATH + "/" + issuePlacement.placementId())
+            .then()
+            .statusCode(200);
+
+        final List<Map<String, Object>> timelines = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(ISSUE_BASE_PATH + "/" + issuePlacement.issueId() + "/contractor-timeline")
+            .then()
+            .statusCode(200)
+            .extract().jsonPath().getList("timelines");
+
+        assertEquals(3, timelines.size());
+        final Map<String, Object> statusChanged = timelines.stream()
+            .filter(t -> "STATUS_CHANGED".equals(t.get("purpose")))
+            .findFirst().orElseThrow();
+        assertEquals("CONFIRMED", statusChanged.get("message"));
+        assertEquals(organizationId.toString(), statusChanged.get("organizationId"));
+        assertEquals("CONTRACTOR", statusChanged.get("senderRole"));
     }
 
 }

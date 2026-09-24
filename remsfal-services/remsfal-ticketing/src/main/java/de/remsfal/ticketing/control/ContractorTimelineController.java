@@ -33,6 +33,11 @@ public class ContractorTimelineController {
         return contractorTimelineRepository.findByIssue(issueId, organizationId);
     }
 
+    public List<ContractorTimelineEntity> getTimelineEntries(final UUID issueId) {
+        logger.infov("Retrieving contractor timeline entries (issueId={0})", issueId);
+        return contractorTimelineRepository.findByIssueIdOnly(issueId);
+    }
+
     @Transactional
     public ContractorTimelineEntity createTimelineEntry(final UUID issueId,
         final UUID organizationId, final UserModel sender,

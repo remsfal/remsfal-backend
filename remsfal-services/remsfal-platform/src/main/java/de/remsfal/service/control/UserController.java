@@ -48,6 +48,9 @@ public class UserController {
     TenantRepository tenantRepository;
 
     @Inject
+    TenantUserLinkController tenantUserLinker;
+
+    @Inject
     AdditionalEmailRepository additionalEmailRepository;
     
     @Inject
@@ -88,6 +91,7 @@ public class UserController {
             existing.setLocale(resolvedLocale);
             existing.setAuthenticatedAt(LocalDateTime.now());
             final UserEntity reclaimed = repository.mergeAndFlush(existing);
+            tenantUserLinker.linkTenantsForNewUser(reclaimed);
             notificationController.informUserAboutRegistration(reclaimed);
             return reclaimed;
         }
@@ -101,6 +105,7 @@ public class UserController {
         entity.setAuthenticatedAt(LocalDateTime.now());
         try {
             repository.persistAndFlush(entity);
+            tenantUserLinker.linkTenantsForNewUser(entity);
             notificationController.informUserAboutRegistration(entity);
             return entity;
         } catch (PersistenceException e) {
