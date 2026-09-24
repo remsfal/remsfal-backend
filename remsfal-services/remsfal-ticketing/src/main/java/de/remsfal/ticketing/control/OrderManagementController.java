@@ -36,6 +36,7 @@ import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -140,6 +141,21 @@ public class OrderManagementController {
         logger.infov("Retrieving quotation request (issueId={0}, requestId={1})", issueId, requestId);
         return quotationRequestRepository.findById(requestKey(issueId, requestId))
             .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
+    }
+
+    public void storeTenantContacts(final UUID issueId, final UUID requestId, final List<String> tenants) {
+        final Optional<QuotationRequestEntity> request =
+            quotationRequestRepository.findById(requestKey(issueId, requestId));
+        if (request.isEmpty()) {
+            logger.warnv("Cannot store tenant contacts, quotation request not found (issueId={0}, requestId={1})",
+                issueId, requestId);
+            return;
+        }
+        logger.infov("Storing {0} tenant contacts on quotation request (issueId={1}, requestId={2})",
+            tenants.size(), issueId, requestId);
+        final QuotationRequestEntity entity = request.get();
+        entity.setTenants(tenants);
+        quotationRequestRepository.update(entity);
     }
 
     public QuotationRequestEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,

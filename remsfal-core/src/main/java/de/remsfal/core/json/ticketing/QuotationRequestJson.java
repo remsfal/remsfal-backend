@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -76,6 +77,11 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
     @Override
     public abstract String getRentalUnitTitle();
 
+    @Nullable
+    @Schema(readOnly = true, description = "Contact details of the tenants of the issue's rental agreement")
+    @Override
+    public abstract List<String> getTenants();
+
     public static QuotationRequestJson valueOf(final QuotationRequestModel model) {
         return ImmutableQuotationRequestJson.builder()
             .id(model.getId())
@@ -99,6 +105,7 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
             .placeOfPerformanceRentalUnit(model.getPlaceOfPerformanceRentalUnit())
             .rentalUnitType(model.getRentalUnitType())
             .rentalUnitTitle(model.getRentalUnitTitle())
+            .tenants(model.getTenants())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();

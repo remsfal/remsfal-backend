@@ -25,6 +25,7 @@
                 place_of_performance_rentalunit TEXT,
                 rentalunit_type TEXT,
                 rentalunit_title TEXT,
+                tenants LIST&lt;TEXT&gt;,
                 initiator_id UUID,
                 initiated_by TEXT,
                 contractor_id UUID,

@@ -330,6 +330,53 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void getQuotationRequests_SUCCESS_includesTenantContacts() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        final String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
+        final String requestId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201)
+            .extract().path("items[0].id");
+
+        cqlSession.execute("UPDATE remsfal.quotation_requests SET tenants = ? WHERE issue_id = ? AND request_id = ?",
+            List.of("Max Mustermann, Tel. 0170 1234567, max@example.de"),
+            UUID.fromString(issueId), UUID.fromString(requestId));
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .get(QUOTATION_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1))
+            .body("items[0].tenants", hasSize(1))
+            .body("items[0].tenants[0]", equalTo("Max Mustermann, Tel. 0170 1234567, max@example.de"));
+    }
+
+    @Test
     void getQuotationRequests_SUCCESS_includesPlaceOfPerformanceFields() {
         final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
         final UUID contractorId = UUID.randomUUID();

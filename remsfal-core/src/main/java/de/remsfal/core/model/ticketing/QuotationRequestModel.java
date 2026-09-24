@@ -3,6 +3,7 @@ package de.remsfal.core.model.ticketing;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import jakarta.annotation.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -45,5 +46,8 @@ public interface QuotationRequestModel extends OrderProcessModel {
 
     @Nullable
     String getRentalUnitTitle();
+
+    @Nullable
+    List<String> getTenants();
 
 }

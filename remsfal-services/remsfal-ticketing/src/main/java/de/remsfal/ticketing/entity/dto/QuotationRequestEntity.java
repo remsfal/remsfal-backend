@@ -7,6 +7,7 @@ import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -72,6 +73,9 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     @Column("rentalunit_title")
     private String rentalUnitTitle;
+
+    @Column("tenants")
+    private List<String> tenants;
 
     @Override
     public UUID getId() {
@@ -288,6 +292,15 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     public void setRentalUnitTitle(String rentalUnitTitle) {
         this.rentalUnitTitle = rentalUnitTitle;
+    }
+
+    @Override
+    public List<String> getTenants() {
+        return tenants;
+    }
+
+    public void setTenants(List<String> tenants) {
+        this.tenants = tenants;
     }
 
 }
