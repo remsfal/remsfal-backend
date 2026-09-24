@@ -1,6 +1,7 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
@@ -53,6 +54,24 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     @Column("scope_of_work")
     private String scopeOfWork;
+
+    @Column("place_of_performance_1")
+    private String placeOfPerformance1;
+
+    @Column("place_of_performance_2")
+    private String placeOfPerformance2;
+
+    @Column("place_of_performance_3")
+    private String placeOfPerformance3;
+
+    @Column("place_of_performance_rentalunit")
+    private String placeOfPerformanceRentalUnit;
+
+    @Column("rentalunit_type")
+    private String rentalUnitType;
+
+    @Column("rentalunit_title")
+    private String rentalUnitTitle;
 
     @Override
     public UUID getId() {
@@ -211,6 +230,64 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     public void setScopeOfWork(String scopeOfWork) {
         this.scopeOfWork = scopeOfWork;
+    }
+
+    @Override
+    public String getPlaceOfPerformance1() {
+        return placeOfPerformance1;
+    }
+
+    public void setPlaceOfPerformance1(String placeOfPerformance1) {
+        this.placeOfPerformance1 = placeOfPerformance1;
+    }
+
+    @Override
+    public String getPlaceOfPerformance2() {
+        return placeOfPerformance2;
+    }
+
+    public void setPlaceOfPerformance2(String placeOfPerformance2) {
+        this.placeOfPerformance2 = placeOfPerformance2;
+    }
+
+    @Override
+    public String getPlaceOfPerformance3() {
+        return placeOfPerformance3;
+    }
+
+    public void setPlaceOfPerformance3(String placeOfPerformance3) {
+        this.placeOfPerformance3 = placeOfPerformance3;
+    }
+
+    @Override
+    public String getPlaceOfPerformanceRentalUnit() {
+        return placeOfPerformanceRentalUnit;
+    }
+
+    public void setPlaceOfPerformanceRentalUnit(String placeOfPerformanceRentalUnit) {
+        this.placeOfPerformanceRentalUnit = placeOfPerformanceRentalUnit;
+    }
+
+    @Override
+    public UnitType getRentalUnitType() {
+        return rentalUnitType != null ? UnitType.valueOf(rentalUnitType) : null;
+    }
+
+    public void setRentalUnitType(UnitType rentalUnitType) {
+        this.rentalUnitType = rentalUnitType != null ? rentalUnitType.name() : null;
+    }
+
+    public void setRentalUnitType(String rentalUnitType) {
+        this.rentalUnitType = rentalUnitType;
+    }
+
+    @Override
+    public String getRentalUnitTitle() {
+        return rentalUnitTitle;
+    }
+
+    public void setRentalUnitTitle(String rentalUnitTitle) {
+        this.rentalUnitTitle = rentalUnitTitle;
     }
 
 }

@@ -10,6 +10,7 @@ import org.jboss.logging.Logger;
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
+import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.json.ticketing.ImmutableContractorTimelineJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
@@ -81,21 +82,21 @@ public class OrderManagementController {
     }
 
     public List<QuotationRequestEntity> createRequestsForQuotation(final UserModel user, final UUID issueId,
-        final List<ContractorJson> contractors, final String scopeOfWork,
-        final String projectOwner, final String projectCareOf, final AddressModel billingAddress) {
+        final CreateQuotationRequestJson createRequest) {
         IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException("Issue not found"));
         final List<QuotationRequestEntity> existingRequests = quotationRequestRepository.findByIssueId(issueId);
-        return contractors.stream().distinct()
-            .map(contractor -> createRequestForQuotation(issue, existingRequests, contractor, user,
-                scopeOfWork, projectOwner, projectCareOf, billingAddress))
+        return createRequest.getContractors().stream().distinct()
+            .map(contractor -> createRequestForQuotation(issue, existingRequests, contractor, user, createRequest))
             .toList();
     }
 
     private QuotationRequestEntity createRequestForQuotation(final IssueEntity issue,
         final List<QuotationRequestEntity> existingRequests, final ContractorJson contractor, final UserModel user,
-        final String scopeOfWork, final String projectOwner, final String projectCareOf,
-        final AddressModel billingAddress) {
+        final CreateQuotationRequestJson createRequest) {
+        final String scopeOfWork = createRequest.getScopeOfWork();
+        final AddressModel billingAddress = createRequest.getBillingAddress();
+        final AddressModel placeOfPerformance = createRequest.getPlaceOfPerformance();
         withdrawOpenRequests(issue, existingRequests, contractor, user);
         QuotationRequestEntity request = new QuotationRequestEntity();
         request.generateId();
@@ -107,13 +108,21 @@ public class OrderManagementController {
         request.setOrganizationId(contractor.getOrganizationId());
         request.setContractorName(contractor.getName());
         request.setScopeOfWork(scopeOfWork);
-        request.setProjectOwner(projectOwner);
-        request.setProjectCareOf(projectCareOf);
+        request.setProjectOwner(createRequest.getProjectOwner());
+        request.setProjectCareOf(createRequest.getProjectCareOf());
         if (billingAddress != null) {
             request.setProjectBillingAddress1(billingAddress.getAddressLine1());
             request.setProjectBillingAddress2(billingAddress.getAddressLine2());
             request.setProjectBillingAddress3(billingAddress.getAddressLine3());
         }
+        if (placeOfPerformance != null) {
+            request.setPlaceOfPerformance1(placeOfPerformance.getAddressLine1());
+            request.setPlaceOfPerformance2(placeOfPerformance.getAddressLine2());
+            request.setPlaceOfPerformance3(placeOfPerformance.getAddressLine3());
+        }
+        request.setPlaceOfPerformanceRentalUnit(createRequest.getRentalUnitLocation());
+        request.setRentalUnitType(issue.getRentalUnitType());
+        request.setRentalUnitTitle(createRequest.getRentalUnitTitle());
         request.setStatus(RequestStatus.REQUESTED);
         final QuotationRequestEntity inserted = quotationRequestRepository.insert(request);
         issueEventProducer.sendQuotationRequestCreated(issue, QuotationRequestJson.valueOf(inserted), user);

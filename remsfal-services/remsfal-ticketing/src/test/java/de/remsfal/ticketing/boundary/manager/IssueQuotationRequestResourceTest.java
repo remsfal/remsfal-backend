@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -141,6 +142,110 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         assertEquals("Musterstraße 1", rows.get(0).getString("project_billing_address_1"));
         assertEquals("10115 Berlin", rows.get(0).getString("project_billing_address_2"));
         assertEquals("Berlin, DE", rows.get(0).getString("project_billing_address_3"));
+    }
+
+    @Test
+    void createRequestsForQuotation_SUCCESS_storesPlaceOfPerformance() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"rentalUnitId\":\"" + UUID.randomUUID() + "\","
+            + "\"rentalUnitType\":\"APARTMENT\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        UUID contractorId = UUID.randomUUID();
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"name\":\"Bauservice GmbH\"}],"
+            + "\"rentalUnitTitle\":\"Wohnung 3.2\","
+            + "\"rentalUnitLocation\":\"3. OG links\","
+            + "\"placeOfPerformance\":{"
+            + "\"street\":\"Hauptstraße 5\","
+            + "\"city\":\"Potsdam\","
+            + "\"province\":\"Brandenburg\","
+            + "\"zip\":\"14467\","
+            + "\"countryCode\":\"DE\""
+            + "}}";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201)
+            .body("items[0].placeOfPerformance1", equalTo("Hauptstraße 5"))
+            .body("items[0].rentalUnitType", equalTo("APARTMENT"));
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT place_of_performance_1, place_of_performance_2, place_of_performance_3,"
+                + " place_of_performance_rentalunit, rentalunit_type, rentalunit_title"
+                + " FROM remsfal.quotation_requests WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .all();
+
+        assertEquals(1, rows.size());
+        assertEquals("Hauptstraße 5", rows.get(0).getString("place_of_performance_1"));
+        assertEquals("14467 Potsdam", rows.get(0).getString("place_of_performance_2"));
+        assertEquals("Brandenburg, DE", rows.get(0).getString("place_of_performance_3"));
+        assertEquals("3. OG links", rows.get(0).getString("place_of_performance_rentalunit"));
+        assertEquals("APARTMENT", rows.get(0).getString("rentalunit_type"));
+        assertEquals("Wohnung 3.2", rows.get(0).getString("rentalunit_title"));
+    }
+
+    @Test
+    void createRequestsForQuotation_SUCCESS_withoutPlaceOfPerformance_leavesFieldsEmpty() {
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
+            + "\",\"name\":\"Bauservice GmbH\"}] }";
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        List<Row> rows = cqlSession.execute(
+            "SELECT place_of_performance_1, place_of_performance_2, place_of_performance_3,"
+                + " place_of_performance_rentalunit, rentalunit_type, rentalunit_title"
+                + " FROM remsfal.quotation_requests WHERE issue_id = ?",
+            UUID.fromString(issueId))
+            .all();
+
+        assertEquals(1, rows.size());
+        assertNull(rows.get(0).getString("place_of_performance_1"));
+        assertNull(rows.get(0).getString("place_of_performance_2"));
+        assertNull(rows.get(0).getString("place_of_performance_3"));
+        assertNull(rows.get(0).getString("place_of_performance_rentalunit"));
+        assertNull(rows.get(0).getString("rentalunit_type"));
+        assertNull(rows.get(0).getString("rentalunit_title"));
     }
 
     @Test

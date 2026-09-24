@@ -41,4 +41,18 @@ public abstract class CreateQuotationRequestJson {
     @Nullable
     public abstract AddressJson getBillingAddress();
 
+    @Nullable
+    @Schema(description = "Address of the building or site where the work is performed")
+    public abstract AddressJson getPlaceOfPerformance();
+
+    @Nullable
+    @Size(max = 255)
+    @Schema(description = "Title of the rental unit the issue refers to")
+    public abstract String getRentalUnitTitle();
+
+    @Nullable
+    @Size(max = 255)
+    @Schema(description = "Location of the rental unit within the place of performance")
+    public abstract String getRentalUnitLocation();
+
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Size;
@@ -45,6 +46,36 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
     @Override
     public abstract String getScopeOfWork();
 
+    @Nullable
+    @Schema(readOnly = true, description = "First place of performance address line (street)")
+    @Override
+    public abstract String getPlaceOfPerformance1();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Second place of performance address line (zip and city)")
+    @Override
+    public abstract String getPlaceOfPerformance2();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Third place of performance address line (province and country)")
+    @Override
+    public abstract String getPlaceOfPerformance3();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Location of the rental unit within the place of performance")
+    @Override
+    public abstract String getPlaceOfPerformanceRentalUnit();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Type of the rental unit the issue refers to")
+    @Override
+    public abstract UnitType getRentalUnitType();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Title of the rental unit the issue refers to")
+    @Override
+    public abstract String getRentalUnitTitle();
+
     public static QuotationRequestJson valueOf(final QuotationRequestModel model) {
         return ImmutableQuotationRequestJson.builder()
             .id(model.getId())
@@ -62,6 +93,12 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
             .organizationId(model.getOrganizationId())
             .status(model.getStatus())
             .scopeOfWork(model.getScopeOfWork())
+            .placeOfPerformance1(model.getPlaceOfPerformance1())
+            .placeOfPerformance2(model.getPlaceOfPerformance2())
+            .placeOfPerformance3(model.getPlaceOfPerformance3())
+            .placeOfPerformanceRentalUnit(model.getPlaceOfPerformanceRentalUnit())
+            .rentalUnitType(model.getRentalUnitType())
+            .rentalUnitTitle(model.getRentalUnitTitle())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();
