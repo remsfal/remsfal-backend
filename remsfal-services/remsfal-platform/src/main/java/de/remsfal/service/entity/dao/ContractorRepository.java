@@ -27,6 +27,17 @@ public class ContractorRepository extends AbstractRepository<ContractorEntity> {
     }
 
     /**
+     * Find all contractors with a specific email address, across all projects.
+     *
+     * @param email the email address
+     * @return list of contractors
+     */
+    public List<ContractorEntity> findByEmail(final String email) {
+        final String normalizedEmail = email == null ? null : email.trim().toLowerCase();
+        return find("email", normalizedEmail).list();
+    }
+
+    /**
      * Delete a contractor by ID.
      *
      * @param id the contractor ID

@@ -6,7 +6,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -71,10 +70,6 @@ public interface ContractorTimelineEndpoint {
     Response createTimelineEntryWithAttachments(
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
-        @Parameter(description = "ID of the contractor organization to address; required only when"
-            + " creating via the issue-level combined view, ignored by the contractor's own mount"
-            + " which already knows its own organization")
-        @QueryParam("organizationId") UUID organizationId,
         @Parameter(hidden = true) MultipartFormDataInput input);
 
 }

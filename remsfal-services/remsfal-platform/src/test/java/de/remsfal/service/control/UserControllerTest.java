@@ -119,6 +119,80 @@ class UserControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void createUser_SUCCESS_linksPreexistingUnlinkedTenant() {
+        insertProject(TestData.PROJECT_ID_1, TestData.PROJECT_TITLE_1);
+        insertRentalAgreement(TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1);
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.USER_EMAIL);
+
+        final UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        final UUID linkedUserId = entityManager
+            .createQuery("SELECT t.user.id FROM TenantEntity t WHERE t.id = :tenantId", UUID.class)
+            .setParameter("tenantId", TestData.TENANT_ID_1)
+            .getSingleResult();
+        assertEquals(user.getId(), linkedUserId,
+            "A tenant created before the matching user registers must be linked once the user is created.");
+    }
+
+    @Test
+    void createUser_SUCCESS_linksTenantsAcrossMultipleProjects() {
+        insertProject(TestData.PROJECT_ID_1, TestData.PROJECT_TITLE_1);
+        insertRentalAgreement(TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1);
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.USER_EMAIL);
+
+        insertProject(TestData.PROJECT_ID_2, TestData.PROJECT_TITLE_2);
+        insertRentalAgreement(TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_2);
+        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_2,
+            TestData.TENANT_FIRST_NAME_2, TestData.TENANT_LAST_NAME_2, TestData.USER_EMAIL);
+
+        final UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        final List<UUID> linkedUserIds = entityManager
+            .createQuery("SELECT t.user.id FROM TenantEntity t WHERE t.id IN (:t1, :t2)", UUID.class)
+            .setParameter("t1", TestData.TENANT_ID_1)
+            .setParameter("t2", TestData.TENANT_ID_2)
+            .getResultList();
+
+        assertEquals(2, linkedUserIds.size());
+        assertTrue(linkedUserIds.stream().allMatch(id -> id.equals(user.getId())),
+            "Unlinked tenants across all projects matching the new user's email must all be linked.");
+    }
+
+    @Test
+    void createUser_SUCCESS_skipsConflictingTenantWithoutFailingRegistration() {
+        final UserEntity placeholder = runInTransaction(() ->
+            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build()));
+        final UUID placeholderId = placeholder.getId();
+
+        insertProject(TestData.PROJECT_ID_1, TestData.PROJECT_TITLE_1);
+        insertRentalAgreement(TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1);
+
+        // Already linked to the placeholder, but with a different email (respects the unique index).
+        insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            placeholderId, TestData.TENANT_FIRST_NAME_2, TestData.TENANT_LAST_NAME_2, "other@example.org");
+        // Unlinked, matches the new user's email, same project as the tenant already linked above.
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.USER_EMAIL);
+
+        final UserModel reclaimed = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        assertEquals(placeholderId, reclaimed.getId());
+
+        final UUID t1UserId = entityManager
+            .createQuery("SELECT t.user.id FROM TenantEntity t WHERE t.id = :tenantId", UUID.class)
+            .setParameter("tenantId", TestData.TENANT_ID_1)
+            .getSingleResult();
+        assertNull(t1UserId, "Conflicting tenant must remain unlinked rather than fail the registration.");
+
+        final UUID t2UserId = entityManager
+            .createQuery("SELECT t.user.id FROM TenantEntity t WHERE t.id = :tenantId", UUID.class)
+            .setParameter("tenantId", TestData.TENANT_ID_2)
+            .getSingleResult();
+        assertEquals(placeholderId, t2UserId, "Pre-existing link must remain untouched.");
+    }
+
+    @Test
     void getUser_SUCCESS_retrieveUser() {
         final UUID userId = UUID.randomUUID();
         runInTransaction(() -> entityManager

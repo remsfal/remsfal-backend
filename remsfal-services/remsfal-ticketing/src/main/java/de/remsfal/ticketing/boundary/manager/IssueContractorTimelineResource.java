@@ -1,7 +1,6 @@
 package de.remsfal.ticketing.boundary.manager;
 
 import de.remsfal.core.api.ticketing.ContractorTimelineEndpoint;
-import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractContractorTimelineResource;
@@ -14,7 +13,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -32,25 +30,19 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
     @Override
     public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
         checkProjectIssueAccessPermissions(issueId);
-        final List<ContractorTimelineJson> entries = orderManagementController
-            .getRequestsForQuotation(issueId).stream()
-            .filter(request -> request.getOrganizationId() != null)
-            .flatMap(request -> super.getTimelineEntries(request).getTimelines().stream())
-            .sorted(Comparator.comparing(ContractorTimelineJson::getTimelineId))
-            .toList();
-        return ContractorTimelineListJson.valueOf(entries);
+        final List<QuotationRequestEntity> requests = orderManagementController.getRequestsForQuotation(issueId);
+        return super.getTimelineEntries(issueId, requests);
     }
 
     @Override
-    public Response createTimelineEntryWithAttachments(final UUID issueId, final UUID organizationId,
-        final MultipartFormDataInput input) {
+    public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
         checkProjectIssueAccessPermissions(issueId);
-        if (organizationId == null) {
-            throw new BadRequestException("organizationId is required to address a specific contractor");
-        }
-        final QuotationRequestEntity request = orderManagementController
-            .getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
-        return super.createTimelineEntryWithAttachments(request, UserContext.MANAGER, input);
+        return super.createTimelineEntryWithAttachments(organizationId -> {
+            if (organizationId == null) {
+                throw new BadRequestException("organizationId is required to address a specific contractor");
+            }
+            return orderManagementController.getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
+        }, UserContext.MANAGER, input);
     }
 
 }
