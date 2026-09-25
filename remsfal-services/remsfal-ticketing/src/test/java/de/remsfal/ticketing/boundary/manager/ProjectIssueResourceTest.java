@@ -17,6 +17,10 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
+import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
+import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.ticketing.AbstractTicketingTest;
 import de.remsfal.ticketing.TicketingTestData;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -166,6 +170,79 @@ class ProjectIssueResourceTest extends AbstractTicketingTest {
             .contentType(ContentType.JSON)
             .body("issues", hasSize(1))
             .body("issues[0].title", equalTo(TicketingTestData.ISSUE_TITLE_1));
+    }
+
+    // --- Latest Issues ---
+
+    private UUID insertLatestIssue(final UUID projectId, final String title, final IssueStatus status) {
+        final UUID issueId = UUIDv7.randomUUID();
+        insertIssue(projectId, issueId, title, IssueType.TASK, status, IssuePriority.MEDIUM,
+            TicketingTestData.USER_ID_1, null, null, null);
+        return issueId;
+    }
+
+    @Test
+    void getLatestIssues_FAILED_noAuthentication() {
+        given()
+            .when()
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(401);
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_emptyListWhenNoIssues() {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("issues", hasSize(0))
+            .body("nextCursor", nullValue())
+            .body("size", equalTo(0));
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_emptyListWithoutProjectRoles() {
+        insertLatestIssue(TicketingTestData.PROJECT_ID_1, "A", IssueStatus.OPEN);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(Map.of()))
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .body("issues", hasSize(0));
+    }
+
+    @Test
+    void getLatestIssues_SUCCESS_projectWithoutRoleIsExcluded() {
+        insertLatestIssue(UUID.randomUUID(), "foreign", IssueStatus.OPEN);
+        final UUID own = insertLatestIssue(TicketingTestData.PROJECT_ID_1, "own", IssueStatus.OPEN);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/latest")
+            .then()
+            .statusCode(200)
+            .body("issues", hasSize(1))
+            .body("issues[0].id", equalTo(own.toString()));
+    }
+
+    @Test
+    void getLatestIssues_FAILED_invalidLimit() {
+        for (final int limit : new int[] { 0, 51 }) {
+            given()
+                .when()
+                .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+                .queryParam("limit", limit)
+                .get(BASE_PATH + "/latest")
+                .then()
+                .statusCode(400);
+        }
     }
 
     // --- Create Project Issue ---
