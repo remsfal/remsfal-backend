@@ -84,6 +84,23 @@ public interface IssueEndpoint {
         @Parameter(description = "Maximum number of issues to return")
         @QueryParam("limit") @DefaultValue("50") @NotNull @Positive @Max(500) Integer limit);
 
+    @GET
+    @Path("/latest")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Retrieve the latest issues across all projects of the user.",
+        description = "Returns the most recently created issues of all projects the authenticated user is a"
+        + " member of, newest first. This method is intended solely for use by a property manager, e.g. for"
+        + " a cross-project dashboard. Use the project-scoped issues endpoint for complete, paginated lists.")
+    @APIResponse(responseCode = "200", description = "Latest issues retrieved successfully")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    IssueListJson getLatestIssues(
+        @Parameter(description = "Maximum number of issues to return")
+        @QueryParam("limit") @DefaultValue("5") @NotNull @Positive @Max(50) Integer limit,
+        @Parameter(description = "Filter to return only issues matching one of the given statuses "
+            + "(repeat the parameter for multiple values, e.g. status=OPEN&status=IN_PROGRESS); "
+            + "omit to return issues of all statuses")
+        @QueryParam("status") List<IssueStatus> status);
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
