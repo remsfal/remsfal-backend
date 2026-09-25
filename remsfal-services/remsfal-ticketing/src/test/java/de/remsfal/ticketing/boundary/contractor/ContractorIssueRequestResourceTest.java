@@ -3,7 +3,9 @@ package de.remsfal.ticketing.boundary.contractor;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Cookie;
+import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -25,6 +28,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
 
     static final String ISSUE_BASE_PATH = "/ticketing/v1/issues";
     static final String ORDER_MANAGEMENT_PATH = "/ticketing/v1/order-management";
+    static final String JSON_PART = MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString();
 
     final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
     final UUID contractorUserId = UUID.randomUUID();
@@ -87,8 +91,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(200);
@@ -110,8 +113,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(200);
@@ -130,13 +132,54 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void createRequest_SUCCESS_withAttachment_isVisibleInBothTimelines() {
+        final String requestJson = "{ \"message\":\"Bitte Plan pruefen\" }";
+        final List<String> attachmentIds = given()
+            .when()
+            .cookie(contractorCookie())
+            .multiPart("request", requestJson, JSON_PART)
+            .multiPart("attachment", "plan.pdf", "fake-pdf-bytes".getBytes(), "application/pdf")
+            .post(requestsPath())
+            .then()
+            .statusCode(200)
+            .body("attachmentIds", hasSize(1))
+            .extract().path("attachmentIds");
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(ORDER_MANAGEMENT_PATH + "/" + issueId + "/timeline")
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(2))
+            .body("timelines[0].purpose", equalTo("QUOTATION_REQUESTED"))
+            .body("timelines[1].purpose", equalTo("REQUEST_CREATED"))
+            .body("timelines[1].attachments", hasSize(1))
+            .body("timelines[1].attachments[0].fileName", equalTo("plan.pdf"))
+            .body("timelines[1].attachments[0].attachmentId", not(equalTo(attachmentIds.get(0))));
+    }
+
+    @Test
+    void createRequest_FAILED_attachmentIdsInRequestJson_returns400() {
+        final String requestJson = "{ \"message\":\"Bitte Plan pruefen\","
+            + " \"attachmentIds\":[\"" + UUID.randomUUID() + "\"] }";
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .multiPart("request", requestJson, JSON_PART)
+            .post(requestsPath())
+            .then()
+            .statusCode(400);
+    }
+
+    @Test
     void deleteRequest_SUCCESS_removesRequest() {
         final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
         final String issueRequestId = given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(200)
@@ -174,8 +217,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
         final String issueRequestId = given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(200)
@@ -217,8 +259,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(400);
@@ -232,19 +273,18 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(ORDER_MANAGEMENT_PATH + "/" + notVisibleIssueId + "/requests")
             .then()
             .statusCode(400);
     }
 
     @Test
-    void createRequest_FAILED_missingBody() {
+    void createRequest_FAILED_missingRequestPart_returns400() {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
+            .multiPart("attachment", "plan.pdf", "fake-pdf-bytes".getBytes(), "application/pdf")
             .post(requestsPath())
             .then()
             .statusCode(400);
@@ -269,8 +309,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor Staff",
                 Map.of(), Map.of(organizationId.toString(), "STAFF"), Map.of()))
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(403);
@@ -295,8 +334,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(UUID.randomUUID(), "other@test.com", "Other Contractor",
                 Map.of(), Map.of(UUID.randomUUID().toString(), "MANAGER"), Map.of()))
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(404);
@@ -317,8 +355,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
 
         given()
             .when()
-            .contentType(ContentType.JSON)
-            .body(requestJson)
+            .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(401);
@@ -330,8 +367,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
         given()
             .when()
             .cookie(contractorCookie())
-            .contentType(ContentType.JSON)
-            .body(ownRequestJson)
+            .multiPart("request", ownRequestJson, JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(200);
@@ -351,8 +387,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .when()
             .cookie(buildCookie(UUID.randomUUID(), "other@test.com", "Other Contractor",
                 Map.of(), Map.of(otherOrganizationId.toString(), "MANAGER"), Map.of()))
-            .contentType(ContentType.JSON)
-            .body("{ \"message\":\"Fremde Anfrage\" }")
+            .multiPart("request", "{ \"message\":\"Fremde Anfrage\" }", JSON_PART)
             .post(requestsPath())
             .then()
             .statusCode(200);

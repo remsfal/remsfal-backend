@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,6 +20,7 @@ import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.MessagePurpose;
+import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.OrderAttachmentModel;
 import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.AbstractTicketingTest;
@@ -66,6 +68,9 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
     OrderAttachmentController orderAttachmentController;
 
     @Inject
+    AttachmentController attachmentController;
+
+    @Inject
     QuotationRequestRepository quotationRequestRepository;
 
     private UUID createIssue(final UUID agreementId) {
@@ -93,22 +98,19 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final UUID agreementId = UUID.randomUUID();
         final UUID issueId = createIssue(agreementId);
         final UUID organizationId = UUID.randomUUID();
-        final List<UUID> attachmentIds = List.of(UUID.randomUUID());
-
         final IssueRequestJson request = ImmutableIssueRequestJson.builder()
             .message("Bitte um Rueckmeldung")
-            .attachmentIds(attachmentIds)
             .build();
 
         final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
-            request);
+            request, null);
 
         assertNotNull(created.getIssueRequestId());
         assertEquals(issueId, created.getIssueId());
         assertEquals(organizationId, created.getOrganizationId());
         assertEquals(agreementId, created.getAgreementId());
         assertEquals("Bitte um Rueckmeldung", created.getMessage());
-        assertEquals(attachmentIds, created.getAttachmentIds());
+        assertNull(created.getAttachmentIds());
         assertNotNull(created.getCreatedAt());
         assertEquals(created.getCreatedAt(), created.getModifiedAt());
 
@@ -123,7 +125,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final UUID organizationId = UUID.randomUUID();
 
         controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Termin?").build());
+            ImmutableIssueRequestJson.builder().message("Termin?").build(), null);
 
         final List<ContractorTimelineEntity> timeline =
             contractorTimelineController.getTimelineEntries(issueId, organizationId);
@@ -134,15 +136,93 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
     }
 
     @Test
+    void testCreateRequest_writesRequestCreatedTenantTimelineEntry() {
+        final UUID agreementId = UUID.randomUUID();
+        final UUID issueId = createIssue(agreementId);
+
+        controller.createRequest(issueId, UUID.randomUUID(), CONTRACTOR_USER,
+            ImmutableIssueRequestJson.builder().message("Termin?").build(), null);
+
+        final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
+        final List<TenantTimelineEntity> tenantTimeline =
+            tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId);
+        assertEquals(1, tenantTimeline.size());
+        assertEquals(MessagePurpose.REQUEST_CREATED, tenantTimeline.get(0).getPurpose());
+        assertEquals("Termin?", tenantTimeline.get(0).getMessage());
+        assertEquals(CONTRACTOR_USER.getId(), tenantTimeline.get(0).getSenderId());
+    }
+
+    @Test
+    void testCreateRequest_copiesContractorAttachmentsIntoIssueAttachmentStore() throws Exception {
+        final UUID agreementId = UUID.randomUUID();
+        final UUID issueId = createIssue(agreementId);
+        final UUID organizationId = UUID.randomUUID();
+
+        final QuotationRequestEntity quotationRequest = new QuotationRequestEntity();
+        quotationRequest.generateId();
+        quotationRequest.setIssueId(issueId);
+        quotationRequest.setOrganizationId(organizationId);
+        quotationRequestRepository.insert(quotationRequest);
+
+        final String objectName = "/order-management/quotation_request/" + quotationRequest.getRequestId()
+            + "/attachments/" + TicketingTestData.ATTACHMENT_ID_2 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_2;
+        uploadTestFile(TicketingTestData.ATTACHMENT_FILE_PATH_2, TicketingTestData.ATTACHMENT_FILE_TYPE_2,
+            objectName);
+        insertOrderAttachment(OrderProcessPhase.QUOTATION_REQUEST.name(), quotationRequest.getRequestId(),
+            TicketingTestData.ATTACHMENT_ID_2, TicketingTestData.ATTACHMENT_FILE_PATH_2,
+            TicketingTestData.ATTACHMENT_FILE_TYPE_2, objectName, CONTRACTOR_USER.getId());
+
+        final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
+            ImmutableIssueRequestJson.builder().message("Bitte Plan pruefen").build(),
+            List.of(TicketingTestData.ATTACHMENT_ID_2));
+
+        final List<? extends IssueAttachmentModel> issueAttachments = attachmentController.getAttachments(issueId);
+        assertEquals(1, issueAttachments.size());
+        final IssueAttachmentModel copiedAttachment = issueAttachments.get(0);
+        assertEquals(TicketingTestData.ATTACHMENT_FILE_PATH_2, copiedAttachment.getFileName());
+        assertEquals(CONTRACTOR_USER.getId(), copiedAttachment.getUploaderId());
+        assertNotEquals(TicketingTestData.ATTACHMENT_ID_2, copiedAttachment.getAttachmentId());
+
+        assertEquals(List.of(copiedAttachment.getAttachmentId()), created.getAttachmentIds());
+
+        final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
+        assertTrue(tenantTimelineController.getVisibleAttachmentIds(agreementId, issueId, projectId)
+            .contains(copiedAttachment.getAttachmentId()));
+
+        final ContractorTimelineEntity contractorEntry =
+            contractorTimelineController.getTimelineEntries(issueId, organizationId).get(0);
+        assertEquals(List.of(TicketingTestData.ATTACHMENT_ID_2), contractorEntry.getAttachmentIds());
+    }
+
+    @Test
+    void testCreateRequest_noMatchingQuotationRequest_persistsNothing() {
+        final UUID agreementId = UUID.randomUUID();
+        final UUID issueId = createIssue(agreementId);
+        final UUID organizationId = UUID.randomUUID();
+        final IssueRequestJson request = ImmutableIssueRequestJson.builder()
+            .message("Bitte Plan pruefen")
+            .build();
+        final List<UUID> attachmentIds = List.of(UUID.randomUUID());
+
+        assertThrows(NotFoundException.class,
+            () -> controller.createRequest(issueId, organizationId, CONTRACTOR_USER, request, attachmentIds));
+
+        assertTrue(repository.findByIssue(issueId, organizationId).isEmpty());
+        assertTrue(contractorTimelineController.getTimelineEntries(issueId, organizationId).isEmpty());
+        final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
+        assertTrue(tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
+    }
+
+    @Test
     void testGetRequestsForContractor_returnsOnlyMatchingOrganization() {
         final UUID issueId = createIssue(UUID.randomUUID());
         final UUID organizationA = UUID.randomUUID();
         final UUID organizationB = UUID.randomUUID();
 
         controller.createRequest(issueId, organizationA, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Nachricht A").build());
+            ImmutableIssueRequestJson.builder().message("Nachricht A").build(), null);
         controller.createRequest(issueId, organizationB, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Nachricht B").build());
+            ImmutableIssueRequestJson.builder().message("Nachricht B").build(), null);
 
         final List<IssueRequestEntity> result = controller.getRequestsForContractor(issueId, organizationA);
 
@@ -157,9 +237,9 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final UUID organizationB = UUID.randomUUID();
 
         controller.createRequest(issueId, organizationA, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Nachricht A").build());
+            ImmutableIssueRequestJson.builder().message("Nachricht A").build(), null);
         controller.createRequest(issueId, organizationB, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Nachricht B").build());
+            ImmutableIssueRequestJson.builder().message("Nachricht B").build(), null);
 
         final List<IssueRequestEntity> result = controller.getRequestsForTenant(issueId);
 
@@ -177,7 +257,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final UUID organizationId = UUID.randomUUID();
 
         final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Termin?").build());
+            ImmutableIssueRequestJson.builder().message("Termin?").build(), null);
 
         controller.answerRequest(issueId, created.getIssueRequestId(), TENANT_USER,
             ImmutableIssueRequestJson.builder().message("Termin bestaetigt").build(), null);
@@ -195,7 +275,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
         final List<TenantTimelineEntity> tenantTimeline =
             tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId);
-        assertEquals(1, tenantTimeline.size());
+        assertEquals(2, tenantTimeline.size());
         final TenantTimelineEntity tenantAnswerEntry = tenantTimeline.stream()
             .filter(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose()))
             .findFirst().orElseThrow();
@@ -209,7 +289,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final UUID organizationId = UUID.randomUUID();
 
         final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Bitte Foto vom Schaden").build());
+            ImmutableIssueRequestJson.builder().message("Bitte Foto vom Schaden").build(), null);
 
         final QuotationRequestEntity quotationRequest = new QuotationRequestEntity();
         quotationRequest.generateId();
@@ -275,7 +355,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         final UUID organizationId = UUID.randomUUID();
 
         final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
-            ImmutableIssueRequestJson.builder().message("Bitte Foto vom Schaden").build());
+            ImmutableIssueRequestJson.builder().message("Bitte Foto vom Schaden").build(), null);
 
         final String objectName = "/issues/" + issueId + "/attachments/"
             + TicketingTestData.ATTACHMENT_ID_1 + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1;
@@ -310,7 +390,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             .build();
 
         assertThrows(BadRequestException.class,
-            () -> controller.createRequest(issueId, UUID.randomUUID(), CONTRACTOR_USER, request));
+            () -> controller.createRequest(issueId, UUID.randomUUID(), CONTRACTOR_USER, request, null));
     }
 
     @Test
@@ -321,6 +401,6 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             .build();
 
         assertThrows(BadRequestException.class,
-            () -> controller.createRequest(issueId, UUID.randomUUID(), CONTRACTOR_USER, request));
+            () -> controller.createRequest(issueId, UUID.randomUUID(), CONTRACTOR_USER, request, null));
     }
 }
