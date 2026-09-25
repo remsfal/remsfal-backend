@@ -58,8 +58,9 @@ public abstract class IssueRequestJson implements IssueRequestModel {
     @Override
     public abstract String getMessage();
 
+    @Null
     @Nullable
-    @Schema(description = "IDs of attachments the contractor is referring to or requesting the tenant to provide")
+    @Schema(readOnly = true, description = "IDs of the issue attachments the contractor has sent with this request")
     @Override
     public abstract List<UUID> getAttachmentIds();
 
