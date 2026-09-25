@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
 import jakarta.annotation.Nullable;
@@ -12,6 +13,7 @@ import jakarta.validation.constraints.Size;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -49,22 +51,17 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
     @Nullable
     @Schema(readOnly = true, description = "First place of performance address line (street)")
     @Override
-    public abstract String getPlaceOfPerformance1();
+    public abstract String getPlaceOfPerformanceAddress1();
 
     @Nullable
     @Schema(readOnly = true, description = "Second place of performance address line (zip and city)")
     @Override
-    public abstract String getPlaceOfPerformance2();
+    public abstract String getPlaceOfPerformanceAddress2();
 
     @Nullable
     @Schema(readOnly = true, description = "Third place of performance address line (province and country)")
     @Override
-    public abstract String getPlaceOfPerformance3();
-
-    @Nullable
-    @Schema(readOnly = true, description = "Location of the rental unit within the place of performance")
-    @Override
-    public abstract String getPlaceOfPerformanceRentalUnit();
+    public abstract String getPlaceOfPerformanceAddress3();
 
     @Nullable
     @Schema(readOnly = true, description = "Type of the rental unit the issue refers to")
@@ -75,6 +72,16 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
     @Schema(readOnly = true, description = "Title of the rental unit the issue refers to")
     @Override
     public abstract String getRentalUnitTitle();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Location of the rental unit within the place of performance")
+    @Override
+    public abstract String getRentalUnitLocation();
+
+    @Nullable
+    @Schema(readOnly = true, description = "Tenants of the rental unit the issue refers to")
+    @Override
+    public abstract List<UserJson> getTenants();
 
     public static QuotationRequestJson valueOf(final QuotationRequestModel model) {
         return ImmutableQuotationRequestJson.builder()
@@ -93,12 +100,13 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
             .organizationId(model.getOrganizationId())
             .status(model.getStatus())
             .scopeOfWork(model.getScopeOfWork())
-            .placeOfPerformance1(model.getPlaceOfPerformance1())
-            .placeOfPerformance2(model.getPlaceOfPerformance2())
-            .placeOfPerformance3(model.getPlaceOfPerformance3())
-            .placeOfPerformanceRentalUnit(model.getPlaceOfPerformanceRentalUnit())
+            .placeOfPerformanceAddress1(model.getPlaceOfPerformanceAddress1())
+            .placeOfPerformanceAddress2(model.getPlaceOfPerformanceAddress2())
+            .placeOfPerformanceAddress3(model.getPlaceOfPerformanceAddress3())
             .rentalUnitType(model.getRentalUnitType())
             .rentalUnitTitle(model.getRentalUnitTitle())
+            .rentalUnitLocation(model.getRentalUnitLocation())
+            .tenants(model.getTenants())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();

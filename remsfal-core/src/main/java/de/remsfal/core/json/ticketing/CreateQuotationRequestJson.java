@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.UserJson;
 import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -54,5 +56,9 @@ public abstract class CreateQuotationRequestJson {
     @Size(max = 255)
     @Schema(description = "Location of the rental unit within the place of performance")
     public abstract String getRentalUnitLocation();
+
+    @Nullable
+    @Schema(description = "Tenants of the rental unit the issue refers to")
+    public abstract List<@Valid @NotNull UserJson> getTenants();
 
 }

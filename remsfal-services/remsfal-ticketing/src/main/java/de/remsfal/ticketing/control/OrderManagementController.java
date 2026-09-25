@@ -116,13 +116,14 @@ public class OrderManagementController {
             request.setProjectBillingAddress3(billingAddress.getAddressLine3());
         }
         if (placeOfPerformance != null) {
-            request.setPlaceOfPerformance1(placeOfPerformance.getAddressLine1());
-            request.setPlaceOfPerformance2(placeOfPerformance.getAddressLine2());
-            request.setPlaceOfPerformance3(placeOfPerformance.getAddressLine3());
+            request.setPlaceOfPerformanceAddress1(placeOfPerformance.getAddressLine1());
+            request.setPlaceOfPerformanceAddress2(placeOfPerformance.getAddressLine2());
+            request.setPlaceOfPerformanceAddress3(placeOfPerformance.getAddressLine3());
         }
-        request.setPlaceOfPerformanceRentalUnit(createRequest.getRentalUnitLocation());
         request.setRentalUnitType(issue.getRentalUnitType());
         request.setRentalUnitTitle(createRequest.getRentalUnitTitle());
+        request.setRentalUnitLocation(createRequest.getRentalUnitLocation());
+        request.setTenants(createRequest.getTenants());
         request.setStatus(RequestStatus.REQUESTED);
         final QuotationRequestEntity inserted = quotationRequestRepository.insert(request);
         issueEventProducer.sendQuotationRequestCreated(issue, QuotationRequestJson.valueOf(inserted), user);

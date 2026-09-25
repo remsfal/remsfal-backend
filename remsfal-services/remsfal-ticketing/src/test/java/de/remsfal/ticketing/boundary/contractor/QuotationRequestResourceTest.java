@@ -355,6 +355,8 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
             + "\"rentalUnitTitle\":\"Wohnung 3.2\","
             + "\"rentalUnitLocation\":\"3. OG links\","
+            + "\"tenants\":[{\"firstName\":\"Erika\",\"lastName\":\"Musterfrau\","
+            + "\"email\":\"erika@example.com\"}],"
             + "\"placeOfPerformance\":{"
             + "\"street\":\"Hauptstraße 5\","
             + "\"city\":\"Potsdam\","
@@ -379,12 +381,16 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("items", hasSize(1))
-            .body("items[0].placeOfPerformance1", equalTo("Hauptstraße 5"))
-            .body("items[0].placeOfPerformance2", equalTo("14467 Potsdam"))
-            .body("items[0].placeOfPerformance3", equalTo("Brandenburg, DE"))
-            .body("items[0].placeOfPerformanceRentalUnit", equalTo("3. OG links"))
+            .body("items[0].placeOfPerformanceAddress1", equalTo("Hauptstraße 5"))
+            .body("items[0].placeOfPerformanceAddress2", equalTo("14467 Potsdam"))
+            .body("items[0].placeOfPerformanceAddress3", equalTo("Brandenburg, DE"))
             .body("items[0].rentalUnitType", equalTo("APARTMENT"))
-            .body("items[0].rentalUnitTitle", equalTo("Wohnung 3.2"));
+            .body("items[0].rentalUnitTitle", equalTo("Wohnung 3.2"))
+            .body("items[0].rentalUnitLocation", equalTo("3. OG links"))
+            .body("items[0].tenants", hasSize(1))
+            .body("items[0].tenants[0].firstName", equalTo("Erika"))
+            .body("items[0].tenants[0].lastName", equalTo("Musterfrau"))
+            .body("items[0].tenants[0].email", equalTo("erika@example.com"));
     }
 
     @Test
