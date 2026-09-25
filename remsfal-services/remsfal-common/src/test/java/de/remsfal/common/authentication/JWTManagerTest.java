@@ -12,12 +12,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPublicKey;
 
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
+
+import org.junit.jupiter.api.io.TempDir;
+
+import io.quarkus.runtime.LaunchMode;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -117,6 +124,74 @@ class JWTManagerTest extends AbstractTest {
                 () -> verifierOnly.createAccessToken(user, Map.of(), Map.of(), Map.of(), 60));
 
         assertTrue(exception.getMessage().contains("issuer mode"), exception.getMessage());
+    }
+
+    @Test
+    void testInit_verifierModeWhenSigningDisabled() throws Exception {
+        final JWTManager manager = newManager(false, Optional.of("privateKey.pem"), ".dev-keys");
+        manager.init(LaunchMode.NORMAL);
+
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> manager.createRefreshToken(TestData.USER_ID_1, TestData.USER_EMAIL_1, "r-1", 60));
+        assertTrue(exception.getMessage().contains("issuer mode"), exception.getMessage());
+    }
+
+    @Test
+    void testInit_loadsConfiguredKeyAndDerivesPublicKey() throws Exception {
+        final JWTManager manager = newManager(true, Optional.of("classpath:privateKey.pem"), ".dev-keys");
+        manager.init(LaunchMode.NORMAL);
+
+        assertEquals(KeyLoader.loadPublicKey("publicKey.pem"), manager.getPublicJwk().toPublicKey());
+        assertNotNull(manager.createRefreshToken(TestData.USER_ID_1, TestData.USER_EMAIL_1, "r-1", 60));
+    }
+
+    @Test
+    void testInit_failsWithoutKeyInProduction(@TempDir final Path directory) throws Exception {
+        final JWTManager manager = newManager(true, Optional.empty(), directory.toString());
+
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> manager.init(LaunchMode.NORMAL));
+        assertTrue(exception.getMessage().contains("private-key-location"), exception.getMessage());
+        assertFalse(Files.exists(directory.resolve(KeyLoader.PRIVATE_KEY_FILE_NAME)));
+    }
+
+    @Test
+    void testInit_failsWithInvalidKeyLocation() throws Exception {
+        final JWTManager manager = newManager(true, Optional.of("file:/does/not/exist.pem"), ".dev-keys");
+
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> manager.init(LaunchMode.NORMAL));
+        assertTrue(exception.getMessage().contains("/does/not/exist.pem"), exception.getMessage());
+    }
+
+    @Test
+    void testInit_generatesAndReusesDevKey(@TempDir final Path directory) throws Exception {
+        final Path keyDirectory = directory.resolve(".dev-keys");
+        final JWTManager first = newManager(true, Optional.empty(), keyDirectory.toString());
+        first.init(LaunchMode.DEVELOPMENT);
+        assertTrue(Files.exists(keyDirectory.resolve(KeyLoader.PRIVATE_KEY_FILE_NAME)));
+
+        final JWTManager second = newManager(true, Optional.empty(), keyDirectory.toString());
+        second.init(LaunchMode.DEVELOPMENT);
+
+        assertEquals(first.getPublicJwk().toPublicKey(), second.getPublicJwk().toPublicKey());
+    }
+
+    private static JWTManager newManager(final boolean signingEnabled, final Optional<String> location,
+        final String devKeyDirectory) throws Exception {
+        final JWTManager manager = new JWTManager();
+        setField(manager, "signingEnabled", signingEnabled);
+        setField(manager, "privateKeyLocation", location);
+        setField(manager, "devKeyDirectory", devKeyDirectory);
+        setField(manager, "keyId", "unit-test-kid");
+        setField(manager, "issuer", "REMSFAL");
+        return manager;
+    }
+
+    private static void setField(final JWTManager manager, final String name, final Object value) throws Exception {
+        final Field field = JWTManager.class.getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(manager, value);
     }
 
     @SuppressWarnings("unchecked")

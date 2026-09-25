@@ -1,0 +1,13 @@
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    restart: unless-stopped
+    ports:
+      - "2525:1025" # SMTP (host port 2525, as 1025 is often taken, e.g. by Google Drive)
+      - "8025:8025" # Web UI
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+    networks:
+      - remsfal

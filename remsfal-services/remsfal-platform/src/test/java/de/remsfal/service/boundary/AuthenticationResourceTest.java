@@ -6,13 +6,18 @@ import io.restassured.matcher.RestAssuredMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.common.authentication.KeyLoader;
 import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import jakarta.ws.rs.core.Response.Status;
 
+import java.math.BigInteger;
+import java.security.interfaces.RSAPublicKey;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.UUID;
 
 @QuarkusTest
@@ -80,6 +85,24 @@ class AuthenticationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void token_FAILED_notImplemented() {
+        given()
+            .formParam("app_id", "any-app")
+            .formParam("dev_services", "true")
+            .when().post(BASE_PATH + "/token")
+            .then()
+            .statusCode(Status.NOT_IMPLEMENTED.getStatusCode());
+    }
+
+    @Test
+    void devLogin_FAILED_disabledByDefault() {
+        given()
+            .when().get(BASE_PATH + "/dev-login")
+            .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
     void login_FAILED_parentDirectoryRelativePath() {
         given()
             .when().get(BASE_PATH + "/login/../../user")
@@ -114,6 +137,27 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .body("keys[0].kty", Matchers.equalTo("RSA"))
             .body("keys[0].kid", Matchers.equalTo("remsfal-platform-key"))
             .body("keys[0].alg", Matchers.equalTo("RS256"));
+    }
+
+    @Test
+    void jwks_SUCCESS_publishesDerivedPublicKey() throws Exception {
+        final RSAPublicKey expected = (RSAPublicKey) KeyLoader.loadPublicKey("test-keys/publicKey.pem");
+        final String modulus = Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(toUnsignedBytes(expected.getModulus()));
+
+        given()
+            .when().get(BASE_PATH + "/jwks")
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("keys", Matchers.hasSize(1))
+            .body("keys[0].n", Matchers.equalTo(modulus))
+            .body("keys[0].use", Matchers.equalTo("sig"))
+            .body("keys[0]", Matchers.not(Matchers.hasKey("d")));
+    }
+
+    private static byte[] toUnsignedBytes(final BigInteger value) {
+        final byte[] bytes = value.toByteArray();
+        return bytes[0] == 0 ? Arrays.copyOfRange(bytes, 1, bytes.length) : bytes;
     }
 
     @Test

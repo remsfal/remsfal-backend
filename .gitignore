@@ -10,6 +10,11 @@
 # environment files
 .env
 
+# keys: never commit keys, only the fixed test keys in src/test/resources are allowed
+.dev-keys/
+*.pem
+!**/src/test/resources/**/*.pem
+
 # IDE files
 *.ctxt
 .project

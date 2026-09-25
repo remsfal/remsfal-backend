@@ -9,49 +9,31 @@ import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.api.AuthenticationEndpoint;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.service.boundary.authentication.AbstractAuthenticationResource;
+import de.remsfal.service.boundary.authentication.DevLoginResource;
 import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 import de.remsfal.service.boundary.authentication.SessionManager;
 import de.remsfal.service.control.AuthorizationController;
 import de.remsfal.service.control.UserController;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Cookie;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import io.micrometer.core.annotation.Timed;
-import org.jboss.logging.Logger;
 
 import java.net.URI;
-import java.util.Locale;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public class AuthenticationResource implements AuthenticationEndpoint {
+public class AuthenticationResource extends AbstractAuthenticationResource implements AuthenticationEndpoint {
 
-    // fix of issue https://github.com/quarkusio/quarkus/pull/8316
-    @ConfigProperty(name = "quarkus.http.proxy.enable-forwarded-host", defaultValue = "false")
-    public boolean enableForwardedHost;
-
-    @ConfigProperty(name = "de.remsfal.auth.devservices.enabled", defaultValue = "false")
-    public boolean devServicesEnabled;
-
-    @Context
-    UriInfo uri;
-
-    @Context
-    HttpHeaders headers;
+    @ConfigProperty(name = "de.remsfal.auth.dev-login.enabled", defaultValue = "false")
+    public boolean devLoginEnabled;
 
     @Inject
     GoogleAuthenticator authenticator;
-
-    @Inject
-    SessionManager sessionManager;
 
     @Inject
     JWTManager jwtManager;
@@ -62,15 +44,16 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     @Inject
     UserController userController;
 
-    @Inject
-    Logger logger;
-
-    @Inject
-    HttpHeaders httpHeaders;
-
     @Override
     @Timed("checks_timer_login")
     public Response login(final String route) {
+        if (devLoginEnabled) {
+            final URI devLoginUrl = getAbsoluteUriBuilder()
+                .replacePath(DevLoginResource.PATH)
+                .queryParam("route", route)
+                .build();
+            return redirect(devLoginUrl).build();
+        }
         final String redirectUri = getAbsoluteUri().toASCIIString().replace("/login", "/session");
         final URI redirectUrl = authenticator.getAuthorizationCodeURI(redirectUri, route);
         return redirect(redirectUrl).build();
@@ -95,33 +78,16 @@ public class AuthenticationResource implements AuthenticationEndpoint {
         return createSession(user, state);
     }
 
-    private Response createSession(final UserModel user, final String route) {
-        final URI redirectUri = getAbsoluteUriBuilder().replacePath(route).build();
-        final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
-        final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
-        return redirect(redirectUri).cookie(accessToken, refreshToken).build();
-    }
-
     @Override
     public Response token(final String appId, final String appToken, final Boolean devService) {
-        if (devServicesEnabled && devService) {
-            logger.warn("Dev Services for Authentication are enabled!");
-            final String devToken = "dev-token";
-            final String devEmail = "dev@remsfal.de";
-            final UserModel user = controller.authenticateUser(devToken, devEmail, resolveLocale());
-            final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
-            final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
-            return Response.noContent().cookie(accessToken, refreshToken).build();
-        } else {
-            return Response.status(Response.Status.NOT_IMPLEMENTED).build();
-        }
+        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 
     @Timed("checks_timer_logout")
     @Override
     public Response logout() {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath("/").build();
-        sessionManager.logout(httpHeaders.getCookies());
+        sessionManager.logout(headers.getCookies());
         return redirect(redirectUri)
             .cookie(sessionManager.removalCookie(SessionManager.ACCESS_COOKIE_NAME),
                 sessionManager.removalCookie(SessionManager.REFRESH_COOKIE_NAME))
@@ -152,47 +118,6 @@ public class AuthenticationResource implements AuthenticationEndpoint {
     public Response verifyAdditionalEmail(final String token) {
         userController.verifyAdditionalEmail(token);
         return Response.noContent().build();
-    }
-
-    private String resolveLocale() {
-        for (final Locale locale : httpHeaders.getAcceptableLanguages()) {
-            final String language = locale.getLanguage();
-            if (language != null && !language.isBlank() && !language.equals("*")) {
-                return language.toLowerCase();
-            }
-        }
-        return null;
-    }
-
-    private Response.ResponseBuilder redirect(final URI redirectUrl) {
-        return Response.status(302).header("location", redirectUrl);
-    }
-
-    private URI getAbsoluteUri() {
-        return getAbsoluteUriBuilder().build();
-    }
-
-    private UriBuilder getAbsoluteUriBuilder() {
-        final String forwardedHostHeader = headers.getHeaderString("X-Forwarded-Host");
-        if (enableForwardedHost && forwardedHostHeader != null) {
-            logger.infov("Proxy is enabled. X-Forwarded-Host: {0}", forwardedHostHeader);
-            final UriBuilder builder = uri.getAbsolutePathBuilder();
-            final String[] parts = forwardedHostHeader.split(":");
-            if (parts.length > 0) {
-                logger.debugv("Host: {0}", parts[0]);
-                builder.host(parts[0]);
-            }
-            if (parts.length > 1) {
-                try {
-                    logger.debugv("Port: {0}", parts[1]);
-                    builder.port(Integer.parseUnsignedInt(parts[1]));
-                } catch (NumberFormatException e) {
-                    logger.errorv("Invalid port in X-Forwarded-Host header {0}", parts[1], e);
-                }
-            }
-            return builder;
-        }
-        return uri.getAbsolutePathBuilder();
     }
 
 }

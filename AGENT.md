@@ -28,10 +28,11 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 
 ### Authentication & Security
 
-- **JWT Authentication**: Platform service generates tokens, other services validate using JWKS endpoint
+- **JWT Authentication**: Platform service signs tokens (`de.remsfal.auth.jwt.signing.enabled=true`), all services — including the platform itself — validate using the JWKS endpoint. The signing key is never in the repo or image: provided at runtime via `DE_REMSFAL_AUTH_JWT_PRIVATE_KEY_LOCATION=file:…`, auto-generated in dev mode (`.dev-keys/`), fixed test pair in `remsfal-platform/src/test/resources/test-keys/`
 - **Cookie-based sessions**: Access/refresh token pattern using `SessionManager`
 - **Principal injection**: Use `RemsfalPrincipal` (implements `UserModel`) for authenticated user context
-- **Google OAuth**: Integrated via `GoogleAuthenticator` for social login
+- **Google OAuth**: Integrated via `GoogleAuthenticator` for social login; client secret comes from `GOOGLE_CLIENT_SECRET` — never commit secrets to `application.properties`
+- **Dev login**: In dev mode `/login` redirects to `DevLoginResource` (`/api/v1/authentication/dev-login`) instead of Google; `DevDataSeedController` seeds linked sample data (`verwalter@`, `mieter@`, `handwerker@remsfal.dev`). Both are build-time switches (`@IfBuildProperty`), dev profile only
 - Use `@Authenticated` annotation on JAX-RS resources requiring login
 
 ## Essential Commands
@@ -39,9 +40,11 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 ### Initial Setup
 
 ```bash
-# Start infrastructure (PostgreSQL, Kafka, Cassandra, LocalStack (S3), Grafana)
+# Start infrastructure (PostgreSQL, Kafka, Cassandra, LocalStack (S3), Grafana, Mailpit)
 docker compose up -d
 ```
+
+In dev mode all emails go to Mailpit (UI: http://localhost:8025, SMTP: localhost:2525); no Google or SMTP credentials are needed.
 
 **Note**: Requires newer Docker Compose version with `include:` directive support.
 
