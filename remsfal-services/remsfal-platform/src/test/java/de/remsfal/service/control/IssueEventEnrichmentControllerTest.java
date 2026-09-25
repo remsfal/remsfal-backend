@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -26,15 +27,23 @@ import de.remsfal.core.json.project.ImmutableProjectJson;
 import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
 import de.remsfal.core.json.ticketing.ImmutableIssueJson;
 import de.remsfal.core.json.ticketing.IssueJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.service.entity.dao.ApartmentRepository;
+import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
+import de.remsfal.service.entity.dao.SiteRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.AddressEntity;
+import de.remsfal.service.entity.dto.ApartmentEntity;
+import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
+import de.remsfal.service.entity.dto.SiteEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -56,6 +65,15 @@ class IssueEventEnrichmentControllerTest {
 
     @InjectMock
     RentalAgreementRepository rentalAgreementRepository;
+
+    @InjectMock
+    ApartmentRepository apartmentRepository;
+
+    @InjectMock
+    BuildingRepository buildingRepository;
+
+    @InjectMock
+    SiteRepository siteRepository;
 
     @Inject
     IssueEventEnrichmentController controller;
@@ -519,4 +537,93 @@ class IssueEventEnrichmentControllerTest {
         verifyNoInteractions(userRepository);
         verifyNoInteractions(projectRepository);
     }
+    @Test
+    void enrich_apartment_enrichesRentalUnitAndBuildingAddressAsPlaceOfPerformance() {
+        UUID apartmentId = UUID.randomUUID();
+        UUID buildingId = UUID.randomUUID();
+
+        ApartmentEntity apartment = new ApartmentEntity();
+        apartment.setId(apartmentId);
+        apartment.setBuildingId(buildingId);
+        apartment.setTitle("Wohnung 3.2");
+        apartment.setLocation("3. OG links");
+        when(apartmentRepository.findByIdOptional(apartmentId)).thenReturn(Optional.of(apartment));
+
+        BuildingEntity building = new BuildingEntity();
+        building.setId(buildingId);
+        building.setAddress(address("Hauptstraße 5", "14467", "Potsdam", "Brandenburg"));
+        when(buildingRepository.findByIdOptional(buildingId)).thenReturn(Optional.of(building));
+
+        IssueEventJson enriched = controller.enrich(eventForRentalUnit(apartmentId, UnitType.APARTMENT));
+
+        assertNotNull(enriched.getRentalUnit());
+        assertEquals(apartmentId, enriched.getRentalUnit().getId());
+        assertEquals(UnitType.APARTMENT, enriched.getRentalUnit().getType());
+        assertEquals("Wohnung 3.2", enriched.getRentalUnit().getTitle());
+        assertEquals("3. OG links", enriched.getRentalUnit().getLocation());
+        assertNotNull(enriched.getPlaceOfPerformance());
+        assertEquals("Hauptstraße 5", enriched.getPlaceOfPerformance().getStreet());
+        assertEquals("14467", enriched.getPlaceOfPerformance().getZip());
+        assertEquals("Potsdam", enriched.getPlaceOfPerformance().getCity());
+    }
+
+    @Test
+    void enrich_site_usesOwnAddressAsPlaceOfPerformance() {
+        UUID siteId = UUID.randomUUID();
+
+        SiteEntity site = new SiteEntity();
+        site.setId(siteId);
+        site.setTitle("Garten");
+        site.setAddress(address("Gartenweg 1", "10115", "Berlin", "Berlin"));
+        when(siteRepository.findByIdOptional(siteId)).thenReturn(Optional.of(site));
+
+        IssueEventJson enriched = controller.enrich(eventForRentalUnit(siteId, UnitType.SITE));
+
+        assertEquals("Garten", enriched.getRentalUnit().getTitle());
+        assertEquals("Gartenweg 1", enriched.getPlaceOfPerformance().getStreet());
+        verifyNoInteractions(buildingRepository);
+    }
+
+    @Test
+    void enrich_missingRentalUnitId_skipsRentalUnitLookup() {
+        IssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.QUOTATION_REQUEST_CREATED)
+            .issueId(UUID.randomUUID())
+            .issue(ImmutableIssueJson.builder()
+                .projectId(UUID.randomUUID())
+                .title("Issue without rental unit")
+                .build())
+            .build();
+
+        IssueEventJson enriched = controller.enrich(event);
+
+        assertNull(enriched.getRentalUnit());
+        assertNull(enriched.getPlaceOfPerformance());
+        verifyNoInteractions(apartmentRepository, buildingRepository, siteRepository);
+    }
+
+    private IssueEventJson eventForRentalUnit(final UUID rentalUnitId, final UnitType rentalUnitType) {
+        return ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventType.QUOTATION_REQUEST_CREATED)
+            .issueId(UUID.randomUUID())
+            .issue(ImmutableIssueJson.builder()
+                .projectId(UUID.randomUUID())
+                .title("Wasserschaden")
+                .rentalUnitId(rentalUnitId)
+                .rentalUnitType(rentalUnitType)
+                .build())
+            .build();
+    }
+
+    private AddressEntity address(final String street, final String zip, final String city,
+        final String province) {
+        AddressEntity address = new AddressEntity();
+        address.setStreet(street);
+        address.setZip(zip);
+        address.setCity(city);
+        address.setProvince(province);
+        address.setCountry(Locale.GERMANY);
+        return address;
+    }
+
 }

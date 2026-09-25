@@ -225,6 +225,20 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         return activityId;
     }
 
+    /**
+     * Simulates the enrichment of all quotation requests of an issue with project data, which in
+     * production is applied asynchronously from the enriched {@code QUOTATION_REQUEST_CREATED} event.
+     */
+    protected void enrichQuotationRequestsWithProjectData(final UUID issueId) {
+        cqlSession.execute("SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?", issueId)
+            .forEach(row -> cqlSession.execute("UPDATE remsfal.quotation_requests"
+                    + " SET project_owner = ?, project_care_of = ?, project_billing_address_1 = ?,"
+                    + " project_billing_address_2 = ?, project_billing_address_3 = ?"
+                    + " WHERE issue_id = ? AND request_id = ?",
+                "Mustermann Verwaltung GmbH", "Max Mustermann", "Musterstraße 1", "10115 Berlin", "Berlin, DE",
+                issueId, row.getUuid("request_id")));
+    }
+
     protected void insertChatMessage(UUID projectId, UUID issueId, UUID messageId, UUID senderId,
             String senderName, String message) {
         String insertChatMessageCql = "INSERT INTO remsfal.issue_chat_messages "

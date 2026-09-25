@@ -91,7 +91,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createRequestsForQuotation_SUCCESS_storesBillingAddress() {
+    void createRequestsForQuotation_SUCCESS_copiesIssueAttachments() throws Exception {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\","
@@ -107,50 +107,48 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        UUID contractorId = UUID.randomUUID();
-        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"name\":\"Bauservice GmbH\"}],"
-            + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
-            + "\"projectCareOf\":\"Max Mustermann\","
-            + "\"billingAddress\":{"
-            + "\"street\":\"Musterstraße 1\","
-            + "\"city\":\"Berlin\","
-            + "\"province\":\"Berlin\","
-            + "\"zip\":\"10115\","
-            + "\"countryCode\":\"DE\""
-            + "}}";
+        final UUID attachmentId = UUID.randomUUID();
+        final String objectName = "/issues/" + issueId + "/attachments/" + attachmentId + "/"
+            + TicketingTestData.ATTACHMENT_FILE_PATH_1;
+        uploadTestFile(TicketingTestData.ATTACHMENT_FILE_PATH_1, TicketingTestData.ATTACHMENT_FILE_TYPE_1,
+            objectName);
+        insertAttachment(UUID.fromString(issueId), attachmentId, TicketingTestData.ATTACHMENT_FILE_PATH_1,
+            TicketingTestData.ATTACHMENT_FILE_TYPE_1, objectName, TicketingTestData.USER_ID);
 
-        given()
+        String requestJson = "{ \"contractors\":["
+            + "{\"id\":\"" + UUID.randomUUID() + "\",\"name\":\"Contractor A\"},"
+            + "{\"id\":\"" + UUID.randomUUID() + "\",\"name\":\"Contractor B\"}"
+            + "],\"attachmentIds\":[\"" + attachmentId + "\"] }";
+
+        final List<String> requestIds = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body(requestJson)
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
-            .statusCode(201);
+            .statusCode(201)
+            .extract().jsonPath().getList("items.id");
 
-        List<Row> rows = cqlSession.execute(
-            "SELECT project_owner, project_care_of, project_billing_address_1,"
-                + " project_billing_address_2, project_billing_address_3"
-                + " FROM remsfal.quotation_requests WHERE issue_id = ?",
-            UUID.fromString(issueId))
-            .all();
-
-        assertEquals(1, rows.size());
-        assertEquals("Mustermann Verwaltung GmbH", rows.get(0).getString("project_owner"));
-        assertEquals("Max Mustermann", rows.get(0).getString("project_care_of"));
-        assertEquals("Musterstraße 1", rows.get(0).getString("project_billing_address_1"));
-        assertEquals("10115 Berlin", rows.get(0).getString("project_billing_address_2"));
-        assertEquals("Berlin, DE", rows.get(0).getString("project_billing_address_3"));
+        assertEquals(2, requestIds.size());
+        for (final String requestId : requestIds) {
+            given()
+                .when()
+                .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+                .get(BASE_PATH + "/" + issueId + "/quotation-request/" + requestId)
+                .then()
+                .statusCode(200)
+                .body("attachments", hasSize(1))
+                .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1))
+                .body("attachments[0].processId", equalTo(requestId));
+        }
     }
 
     @Test
-    void createRequestsForQuotation_SUCCESS_storesPlaceOfPerformance() {
+    void createRequestsForQuotation_FAILED_unknownAttachment() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\","
-            + "\"rentalUnitId\":\"" + UUID.randomUUID() + "\","
-            + "\"rentalUnitType\":\"APARTMENT\","
             + "\"visibleToTenants\":false"
             + "}";
         final String issueId = given()
@@ -163,20 +161,9 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(201)
             .extract().path("id");
 
-        UUID contractorId = UUID.randomUUID();
-        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + UUID.randomUUID()
             + "\",\"name\":\"Bauservice GmbH\"}],"
-            + "\"rentalUnitTitle\":\"Wohnung 3.2\","
-            + "\"rentalUnitLocation\":\"3. OG links\","
-            + "\"tenants\":[{\"firstName\":\"Erika\",\"lastName\":\"Musterfrau\","
-            + "\"email\":\"erika@example.com\"}],"
-            + "\"placeOfPerformance\":{"
-            + "\"street\":\"Hauptstraße 5\","
-            + "\"city\":\"Potsdam\","
-            + "\"province\":\"Brandenburg\","
-            + "\"zip\":\"14467\","
-            + "\"countryCode\":\"DE\""
-            + "}}";
+            + "\"attachmentIds\":[\"" + UUID.randomUUID() + "\"] }";
 
         given()
             .when()
@@ -185,34 +172,15 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .body(requestJson)
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
-            .statusCode(201)
-            .body("items[0].placeOfPerformanceAddress1", equalTo("Hauptstraße 5"))
-            .body("items[0].rentalUnitType", equalTo("APARTMENT"))
-            .body("items[0].tenants", hasSize(1))
-            .body("items[0].tenants[0].lastName", equalTo("Musterfrau"));
+            .statusCode(404);
 
-        List<Row> rows = cqlSession.execute(
-            "SELECT place_of_performance_address_1, place_of_performance_address_2,"
-                + " place_of_performance_address_3, rental_unit_type, rental_unit_title,"
-                + " rental_unit_location, tenants"
-                + " FROM remsfal.quotation_requests WHERE issue_id = ?",
-            UUID.fromString(issueId))
-            .all();
-
-        assertEquals(1, rows.size());
-        assertEquals("Hauptstraße 5", rows.get(0).getString("place_of_performance_address_1"));
-        assertEquals("14467 Potsdam", rows.get(0).getString("place_of_performance_address_2"));
-        assertEquals("Brandenburg, DE", rows.get(0).getString("place_of_performance_address_3"));
-        assertEquals("APARTMENT", rows.get(0).getString("rental_unit_type"));
-        assertEquals("Wohnung 3.2", rows.get(0).getString("rental_unit_title"));
-        assertEquals("3. OG links", rows.get(0).getString("rental_unit_location"));
-        final List<String> tenants = rows.get(0).getList("tenants", String.class);
-        assertEquals(1, tenants.size());
-        assertTrue(tenants.get(0).contains("\"lastName\":\"Musterfrau\""));
+        assertEquals(0, cqlSession.execute(
+            "SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?",
+            UUID.fromString(issueId)).all().size());
     }
 
     @Test
-    void createRequestsForQuotation_SUCCESS_withoutPlaceOfPerformance_leavesFieldsEmpty() {
+    void createRequestsForQuotation_SUCCESS_leavesEnrichedFieldsEmpty() {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\","

@@ -295,16 +295,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .extract().path("id");
 
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
-            + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
-            + "\"projectCareOf\":\"Max Mustermann\","
-            + "\"billingAddress\":{"
-            + "\"street\":\"Musterstraße 1\","
-            + "\"city\":\"Berlin\","
-            + "\"province\":\"Berlin\","
-            + "\"zip\":\"10115\","
-            + "\"countryCode\":\"DE\""
-            + "}}";
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -313,6 +304,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
+        enrichQuotationRequestsWithProjectData(UUID.fromString(issueId));
 
         given()
             .when()
@@ -352,18 +344,7 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .extract().path("id");
 
         String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
-            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
-            + "\"rentalUnitTitle\":\"Wohnung 3.2\","
-            + "\"rentalUnitLocation\":\"3. OG links\","
-            + "\"tenants\":[{\"firstName\":\"Erika\",\"lastName\":\"Musterfrau\","
-            + "\"email\":\"erika@example.com\"}],"
-            + "\"placeOfPerformance\":{"
-            + "\"street\":\"Hauptstraße 5\","
-            + "\"city\":\"Potsdam\","
-            + "\"province\":\"Brandenburg\","
-            + "\"zip\":\"14467\","
-            + "\"countryCode\":\"DE\""
-            + "}}";
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}] }";
         given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
@@ -372,6 +353,18 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
+
+        // simulate the enrichment applied from the enriched QUOTATION_REQUEST_CREATED event
+        final UUID requestId = cqlSession.execute(
+            "SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?", UUID.fromString(issueId))
+            .one().getUuid("request_id");
+        cqlSession.execute("UPDATE remsfal.quotation_requests SET place_of_performance_address_1 = ?,"
+                + " place_of_performance_address_2 = ?, place_of_performance_address_3 = ?,"
+                + " rental_unit_title = ?, rental_unit_location = ?, tenants = ?"
+                + " WHERE issue_id = ? AND request_id = ?",
+            "Hauptstraße 5", "14467 Potsdam", "Brandenburg, DE", "Wohnung 3.2", "3. OG links",
+            List.of("{\"firstName\":\"Erika\",\"lastName\":\"Musterfrau\",\"email\":\"erika@example.com\"}"),
+            UUID.fromString(issueId), requestId);
 
         given()
             .when()

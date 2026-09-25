@@ -9,6 +9,10 @@ import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.eventing.IssueEventJson;
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.json.ticketing.ImmutableContractorTimelineJson;
@@ -18,6 +22,7 @@ import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
+import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.UserModel;
@@ -28,6 +33,7 @@ import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.OrderPlacementRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
+import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
 import de.remsfal.ticketing.entity.dto.QuotationEntity;
@@ -77,6 +83,12 @@ public class OrderManagementController {
     @Inject
     ContractorTimelineController contractorTimelineController;
 
+    @Inject
+    AttachmentController attachmentController;
+
+    @Inject
+    OrderAttachmentController orderAttachmentController;
+
     private IssueModel findIssue(final UUID issueId) {
         return issueRepository.findByIssueId(issueId).orElse(null);
     }
@@ -85,18 +97,21 @@ public class OrderManagementController {
         final CreateQuotationRequestJson createRequest) {
         IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException("Issue not found"));
+        // resolve all attachments up front so an unknown ID fails before any request is created
+        final List<IssueAttachmentEntity> attachments = createRequest.getAttachmentIds() == null ? List.of()
+            : createRequest.getAttachmentIds().stream().distinct()
+                .map(attachmentId -> attachmentController.getAttachment(issueId, attachmentId))
+                .toList();
         final List<QuotationRequestEntity> existingRequests = quotationRequestRepository.findByIssueId(issueId);
         return createRequest.getContractors().stream().distinct()
-            .map(contractor -> createRequestForQuotation(issue, existingRequests, contractor, user, createRequest))
+            .map(contractor -> createRequestForQuotation(issue, existingRequests, contractor, user,
+                createRequest.getScopeOfWork(), attachments))
             .toList();
     }
 
     private QuotationRequestEntity createRequestForQuotation(final IssueEntity issue,
         final List<QuotationRequestEntity> existingRequests, final ContractorJson contractor, final UserModel user,
-        final CreateQuotationRequestJson createRequest) {
-        final String scopeOfWork = createRequest.getScopeOfWork();
-        final AddressModel billingAddress = createRequest.getBillingAddress();
-        final AddressModel placeOfPerformance = createRequest.getPlaceOfPerformance();
+        final String scopeOfWork, final List<IssueAttachmentEntity> attachments) {
         withdrawOpenRequests(issue, existingRequests, contractor, user);
         QuotationRequestEntity request = new QuotationRequestEntity();
         request.generateId();
@@ -108,28 +123,62 @@ public class OrderManagementController {
         request.setOrganizationId(contractor.getOrganizationId());
         request.setContractorName(contractor.getName());
         request.setScopeOfWork(scopeOfWork);
-        request.setProjectOwner(createRequest.getProjectOwner());
-        request.setProjectCareOf(createRequest.getProjectCareOf());
-        if (billingAddress != null) {
-            request.setProjectBillingAddress1(billingAddress.getAddressLine1());
-            request.setProjectBillingAddress2(billingAddress.getAddressLine2());
-            request.setProjectBillingAddress3(billingAddress.getAddressLine3());
-        }
-        if (placeOfPerformance != null) {
-            request.setPlaceOfPerformanceAddress1(placeOfPerformance.getAddressLine1());
-            request.setPlaceOfPerformanceAddress2(placeOfPerformance.getAddressLine2());
-            request.setPlaceOfPerformanceAddress3(placeOfPerformance.getAddressLine3());
-        }
         request.setRentalUnitType(issue.getRentalUnitType());
-        request.setRentalUnitTitle(createRequest.getRentalUnitTitle());
-        request.setRentalUnitLocation(createRequest.getRentalUnitLocation());
-        request.setTenants(createRequest.getTenants());
         request.setStatus(RequestStatus.REQUESTED);
         final QuotationRequestEntity inserted = quotationRequestRepository.insert(request);
+        orderAttachmentController.copyIssueAttachments(user, OrderProcessPhase.QUOTATION_REQUEST,
+            inserted.getRequestId(), attachments);
         issueEventProducer.sendQuotationRequestCreated(issue, QuotationRequestJson.valueOf(inserted), user);
         writeContractorTimelineEntry(issue.getId(), inserted.getOrganizationId(), user, UserContext.MANAGER,
             MessagePurpose.QUOTATION_REQUESTED, scopeOfWork != null ? scopeOfWork : "");
         return inserted;
+    }
+
+    /**
+     * Completes a freshly created quotation request with the project, rental unit and tenant data
+     * that the platform service added to the {@code QUOTATION_REQUEST_CREATED} event.
+     */
+    public void enrichRequestForQuotation(final IssueEventJson event) {
+        final UUID requestId = event.getQuotationRequest() != null ? event.getQuotationRequest().getId() : null;
+        if (requestId == null) {
+            logger.warnv("Skipping quotation request enrichment without request (issueId={0})",
+                event.getIssueId());
+            return;
+        }
+        final QuotationRequestEntity entity = quotationRequestRepository
+            .findById(requestKey(event.getIssueId(), requestId)).orElse(null);
+        if (entity == null) {
+            logger.warnv("Skipping enrichment of unknown quotation request (issueId={0}, requestId={1})",
+                event.getIssueId(), requestId);
+            return;
+        }
+        if (event.getProject() != null) {
+            entity.setProjectOwner(event.getProject().getOwner());
+            entity.setProjectCareOf(event.getProject().getCareOf());
+            final AddressModel billingAddress = event.getProject().getBillingAddress();
+            if (billingAddress != null) {
+                entity.setProjectBillingAddress1(billingAddress.getAddressLine1());
+                entity.setProjectBillingAddress2(billingAddress.getAddressLine2());
+                entity.setProjectBillingAddress3(billingAddress.getAddressLine3());
+            }
+        }
+        final AddressModel placeOfPerformance = event.getPlaceOfPerformance();
+        if (placeOfPerformance != null) {
+            entity.setPlaceOfPerformanceAddress1(placeOfPerformance.getAddressLine1());
+            entity.setPlaceOfPerformanceAddress2(placeOfPerformance.getAddressLine2());
+            entity.setPlaceOfPerformanceAddress3(placeOfPerformance.getAddressLine3());
+        }
+        if (event.getRentalUnit() != null) {
+            entity.setRentalUnitTitle(event.getRentalUnit().getTitle());
+            entity.setRentalUnitLocation(event.getRentalUnit().getLocation());
+        }
+        if (event.getRentalAgreement() != null && event.getRentalAgreement().getTenants() != null) {
+            entity.setTenants(event.getRentalAgreement().getTenants().stream()
+                .map(this::toUserJson)
+                .toList());
+        }
+        quotationRequestRepository.update(entity);
+        logger.infov("Enriched quotation request (issueId={0}, requestId={1})", event.getIssueId(), requestId);
     }
 
     public List<QuotationRequestEntity> getRequestsForQuotation(final UUID issueId) {
@@ -331,6 +380,18 @@ public class OrderManagementController {
             entity.setStatus(body.getStatus());
         }
         return entity;
+    }
+
+    private UserJson toUserJson(final TenantJson tenant) {
+        return ImmutableUserJson.builder()
+            .id(tenant.getUserId())
+            .firstName(tenant.getFirstName())
+            .lastName(tenant.getLastName())
+            .email(tenant.getEmail())
+            .mobilePhoneNumber(tenant.getMobilePhoneNumber())
+            .businessPhoneNumber(tenant.getBusinessPhoneNumber())
+            .privatePhoneNumber(tenant.getPrivatePhoneNumber())
+            .build();
     }
 
     private QuotationRequestKey requestKey(final UUID issueId, final UUID requestId) {

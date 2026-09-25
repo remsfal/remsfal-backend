@@ -171,18 +171,11 @@ public class IssueRequestController {
         final QuotationRequestEntity request = orderManagementController
             .getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
 
-        final List<UUID> copiedAttachmentIds = new ArrayList<>();
-        for (final UUID attachmentId : attachmentIds) {
-            final IssueAttachmentEntity source = attachmentController.getAttachment(issueId, attachmentId);
-            final InputStream inputStream = attachmentController.downloadAttachment(source.getObjectName());
-            final FileUploadData fileData = new FileUploadData(inputStream, source.getFileName(),
-                source.getMediaType());
-
-            final OrderAttachmentEntity copy = orderAttachmentController.addAttachment(sender,
-                OrderProcessPhase.QUOTATION_REQUEST, request.getRequestId(), fileData);
-            copiedAttachmentIds.add(copy.getAttachmentId());
-        }
-        return copiedAttachmentIds;
+        final List<IssueAttachmentEntity> sources = attachmentIds.stream()
+            .map(attachmentId -> attachmentController.getAttachment(issueId, attachmentId))
+            .toList();
+        return orderAttachmentController.copyIssueAttachments(sender,
+            OrderProcessPhase.QUOTATION_REQUEST, request.getRequestId(), sources);
     }
 
     private List<UUID> copyAttachmentsToIssue(final UUID issueId, final UUID organizationId,

@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
@@ -13,11 +14,26 @@ import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.eventing.ImmutableIssueEventJson;
 import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.core.json.project.RentalUnitNodeDataJson;
+import de.remsfal.core.json.ticketing.IssueJson;
+import de.remsfal.service.entity.dao.ApartmentRepository;
+import de.remsfal.service.entity.dao.BuildingRepository;
+import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
+import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
+import de.remsfal.service.entity.dao.SiteRepository;
+import de.remsfal.service.entity.dao.StorageRepository;
+import de.remsfal.service.entity.dto.AddressEntity;
+import de.remsfal.service.entity.dto.ApartmentEntity;
+import de.remsfal.service.entity.dto.BuildingEntity;
+import de.remsfal.service.entity.dto.CommercialEntity;
+import de.remsfal.service.entity.dto.SiteEntity;
+import de.remsfal.service.entity.dto.StorageEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.entity.dto.superclass.RentalUnitEntity;
 import jakarta.transaction.Transactional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -44,16 +60,38 @@ public class IssueEventEnrichmentController {
     @Inject
     RentalAgreementRepository rentalAgreementRepository;
 
+    @Inject
+    PropertyRepository propertyRepository;
+
+    @Inject
+    SiteRepository siteRepository;
+
+    @Inject
+    BuildingRepository buildingRepository;
+
+    @Inject
+    ApartmentRepository apartmentRepository;
+
+    @Inject
+    StorageRepository storageRepository;
+
+    @Inject
+    CommercialRepository commercialRepository;
+
     @Transactional
     public IssueEventJson enrich(final IssueEventJson event) {
         ProjectJson project = enrichProject(event);
         RentalAgreementJson rentalAgreement = enrichRentalAgreement(event);
+        RentalUnitEntity rentalUnit = findRentalUnit(event.getIssue());
         IssueEventJson enrichedEvent = ImmutableIssueEventJson.builder()
             .issueEventType(event.getIssueEventType())
             .issueId(event.getIssueId())
             .issue(event.getIssue())
             .project(project)
             .rentalAgreement(rentalAgreement)
+            .rentalUnit(rentalUnit != null ? RentalUnitNodeDataJson.valueOf(rentalUnit) : event.getRentalUnit())
+            .placeOfPerformance(rentalUnit != null ? findPlaceOfPerformance(rentalUnit)
+                : event.getPlaceOfPerformance())
             .link(buildIssueLink(event))
             .principal(enrichUser(event.getPrincipal()))
             .assignee(enrichUser(event.getAssignee()))
@@ -97,6 +135,49 @@ public class IssueEventEnrichmentController {
         return rentalAgreementRepository.findByIdOptional(agreementId)
             .map(RentalAgreementJson::valueOf)
             .orElse(event.getRentalAgreement());
+    }
+
+    private RentalUnitEntity findRentalUnit(final IssueJson issue) {
+        if (issue == null || issue.getRentalUnitId() == null || issue.getRentalUnitType() == null) {
+            return null;
+        }
+        final UUID unitId = issue.getRentalUnitId();
+        final Optional<? extends RentalUnitEntity> unit = switch (issue.getRentalUnitType()) {
+            case PROPERTY -> propertyRepository.findByIdOptional(unitId);
+            case SITE -> siteRepository.findByIdOptional(unitId);
+            case BUILDING -> buildingRepository.findByIdOptional(unitId);
+            case APARTMENT -> apartmentRepository.findByIdOptional(unitId);
+            case STORAGE -> storageRepository.findByIdOptional(unitId);
+            case COMMERCIAL -> commercialRepository.findByIdOptional(unitId);
+        };
+        return unit.orElse(null);
+    }
+
+    private AddressJson findPlaceOfPerformance(final RentalUnitEntity unit) {
+        final AddressEntity address;
+        if (unit instanceof SiteEntity site) {
+            address = site.getAddress();
+        } else if (unit instanceof BuildingEntity building) {
+            address = building.getAddress();
+        } else if (unit instanceof ApartmentEntity apartment) {
+            address = findBuildingAddress(apartment.getBuildingId());
+        } else if (unit instanceof StorageEntity storage) {
+            address = findBuildingAddress(storage.getBuildingId());
+        } else if (unit instanceof CommercialEntity commercial) {
+            address = findBuildingAddress(commercial.getBuildingId());
+        } else {
+            address = null;
+        }
+        return address != null ? AddressJson.valueOf(address) : null;
+    }
+
+    private AddressEntity findBuildingAddress(final UUID buildingId) {
+        if (buildingId == null) {
+            return null;
+        }
+        return buildingRepository.findByIdOptional(buildingId)
+            .map(BuildingEntity::getAddress)
+            .orElse(null);
     }
 
     private UserJson enrichUser(final UserJson user) {
