@@ -32,18 +32,24 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
+import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.ContractorRepository;
+import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.SiteRepository;
+import de.remsfal.service.entity.dao.StorageRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.ApartmentEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
+import de.remsfal.service.entity.dto.CommercialEntity;
 import de.remsfal.service.entity.dto.ContractorEntity;
+import de.remsfal.service.entity.dto.PropertyEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.SiteEntity;
+import de.remsfal.service.entity.dto.StorageEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -74,6 +80,15 @@ class IssueEventEnrichmentControllerTest {
 
     @InjectMock
     SiteRepository siteRepository;
+
+    @InjectMock
+    PropertyRepository propertyRepository;
+
+    @InjectMock
+    StorageRepository storageRepository;
+
+    @InjectMock
+    CommercialRepository commercialRepository;
 
     @Inject
     IssueEventEnrichmentController controller;
@@ -600,6 +615,68 @@ class IssueEventEnrichmentControllerTest {
         assertNull(enriched.getRentalUnit());
         assertNull(enriched.getPlaceOfPerformance());
         verifyNoInteractions(apartmentRepository, buildingRepository, siteRepository);
+    }
+
+    @Test
+    void enrich_property_enrichesRentalUnitWithoutPlaceOfPerformance() {
+        UUID propertyId = UUID.randomUUID();
+
+        PropertyEntity property = new PropertyEntity();
+        property.setId(propertyId);
+        property.setTitle("Hinterhaus");
+        when(propertyRepository.findByIdOptional(propertyId)).thenReturn(Optional.of(property));
+
+        IssueEventJson enriched = controller.enrich(eventForRentalUnit(propertyId, UnitType.PROPERTY));
+
+        assertNotNull(enriched.getRentalUnit());
+        assertEquals(propertyId, enriched.getRentalUnit().getId());
+        assertEquals(UnitType.PROPERTY, enriched.getRentalUnit().getType());
+        assertEquals("Hinterhaus", enriched.getRentalUnit().getTitle());
+        assertNull(enriched.getPlaceOfPerformance());
+        verifyNoInteractions(buildingRepository);
+    }
+
+    @Test
+    void enrich_storageWithoutBuilding_keepsPlaceOfPerformanceNull() {
+        UUID storageId = UUID.randomUUID();
+
+        StorageEntity storage = new StorageEntity();
+        storage.setId(storageId);
+        storage.setTitle("Keller 7");
+        when(storageRepository.findByIdOptional(storageId)).thenReturn(Optional.of(storage));
+
+        IssueEventJson enriched = controller.enrich(eventForRentalUnit(storageId, UnitType.STORAGE));
+
+        assertNotNull(enriched.getRentalUnit());
+        assertEquals("Keller 7", enriched.getRentalUnit().getTitle());
+        assertNull(enriched.getPlaceOfPerformance());
+        verifyNoInteractions(buildingRepository);
+    }
+
+    @Test
+    void enrich_commercial_usesBuildingAddressAsPlaceOfPerformance() {
+        UUID commercialId = UUID.randomUUID();
+        UUID buildingId = UUID.randomUUID();
+
+        CommercialEntity commercial = new CommercialEntity();
+        commercial.setId(commercialId);
+        commercial.setBuildingId(buildingId);
+        commercial.setTitle("Ladenfläche");
+        when(commercialRepository.findByIdOptional(commercialId)).thenReturn(Optional.of(commercial));
+
+        BuildingEntity building = new BuildingEntity();
+        building.setId(buildingId);
+        building.setAddress(address("Marktplatz 2", "04109", "Leipzig", "Sachsen"));
+        when(buildingRepository.findByIdOptional(buildingId)).thenReturn(Optional.of(building));
+
+        IssueEventJson enriched = controller.enrich(eventForRentalUnit(commercialId, UnitType.COMMERCIAL));
+
+        assertNotNull(enriched.getRentalUnit());
+        assertEquals("Ladenfläche", enriched.getRentalUnit().getTitle());
+        assertNotNull(enriched.getPlaceOfPerformance());
+        assertEquals("Marktplatz 2", enriched.getPlaceOfPerformance().getStreet());
+        assertEquals("04109", enriched.getPlaceOfPerformance().getZip());
+        assertEquals("Leipzig", enriched.getPlaceOfPerformance().getCity());
     }
 
     private IssueEventJson eventForRentalUnit(final UUID rentalUnitId, final UnitType rentalUnitType) {
