@@ -26,6 +26,13 @@
                 organization_id UUID,
                 status TEXT,
                 scope_of_work TEXT,
+                place_of_performance_address_1 TEXT,
+                place_of_performance_address_2 TEXT,
+                place_of_performance_address_3 TEXT,
+                rental_unit_type TEXT,
+                rental_unit_title TEXT,
+                rental_unit_location TEXT,
+                tenants LIST&lt;TEXT&gt;,
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 PRIMARY KEY (issue_id, request_id)

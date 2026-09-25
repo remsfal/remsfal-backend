@@ -330,6 +330,70 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void getQuotationRequests_SUCCESS_includesPlaceOfPerformanceFields() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorId = UUID.randomUUID();
+
+        final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
+            + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
+            + "\"type\":\"TASK\","
+            + "\"rentalUnitId\":\"" + UUID.randomUUID() + "\","
+            + "\"rentalUnitType\":\"APARTMENT\","
+            + "\"visibleToTenants\":false"
+            + "}";
+        final String issueId = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(issueJson)
+            .post(BASE_PATH)
+            .then()
+            .statusCode(201)
+            .extract().path("id");
+
+        String requestJson = "{ \"contractors\":[{\"id\":\"" + contractorId
+            + "\",\"name\":\"Bauservice GmbH\",\"organizationId\":\"" + organizationId + "\"}],"
+            + "\"rentalUnitTitle\":\"Wohnung 3.2\","
+            + "\"rentalUnitLocation\":\"3. OG links\","
+            + "\"tenants\":[{\"firstName\":\"Erika\",\"lastName\":\"Musterfrau\","
+            + "\"email\":\"erika@example.com\"}],"
+            + "\"placeOfPerformance\":{"
+            + "\"street\":\"Hauptstraße 5\","
+            + "\"city\":\"Potsdam\","
+            + "\"province\":\"Brandenburg\","
+            + "\"zip\":\"14467\","
+            + "\"countryCode\":\"DE\""
+            + "}}";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .contentType(ContentType.JSON)
+            .body(requestJson)
+            .post(BASE_PATH + "/" + issueId + "/quotation-request")
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildCookie(UUID.randomUUID(), "contractor@test.com", "Contractor Manager",
+                Map.of(), Map.of(organizationId.toString(), "MANAGER"), Map.of()))
+            .get(QUOTATION_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1))
+            .body("items[0].placeOfPerformanceAddress1", equalTo("Hauptstraße 5"))
+            .body("items[0].placeOfPerformanceAddress2", equalTo("14467 Potsdam"))
+            .body("items[0].placeOfPerformanceAddress3", equalTo("Brandenburg, DE"))
+            .body("items[0].rentalUnitType", equalTo("APARTMENT"))
+            .body("items[0].rentalUnitTitle", equalTo("Wohnung 3.2"))
+            .body("items[0].rentalUnitLocation", equalTo("3. OG links"))
+            .body("items[0].tenants", hasSize(1))
+            .body("items[0].tenants[0].firstName", equalTo("Erika"))
+            .body("items[0].tenants[0].lastName", equalTo("Musterfrau"))
+            .body("items[0].tenants[0].email", equalTo("erika@example.com"));
+    }
+
+    @Test
     void getQuotationRequests_SUCCESS_ownerOrgRoleAlsoAllowed() {
         final UUID organizationId = TicketingTestData.ORGANIZATION_ID_2;
         final UUID contractorId = UUID.randomUUID();

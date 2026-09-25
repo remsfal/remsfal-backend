@@ -42,9 +42,8 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
     @Override
     public Response createRequestsForQuotation(final UUID issueId, final CreateQuotationRequestJson request) {
         checkProjectIssueOrderPermissions(issueId);
-        final List<QuotationRequestEntity> created = orderManagementController.createRequestsForQuotation(
-            principal, issueId, request.getContractors(), request.getScopeOfWork(),
-            request.getProjectOwner(), request.getProjectCareOf(), request.getBillingAddress());
+        final List<QuotationRequestEntity> created =
+            orderManagementController.createRequestsForQuotation(principal, issueId, request);
         return Response.status(Response.Status.CREATED)
             .type(MediaType.APPLICATION_JSON)
             .entity(QuotationRequestListJson.valueOf(created))

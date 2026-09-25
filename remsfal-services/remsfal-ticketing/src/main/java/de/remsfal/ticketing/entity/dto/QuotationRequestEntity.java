@@ -1,16 +1,29 @@
 package de.remsfal.ticketing.entity.dto;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import de.remsfal.common.util.UUIDv7;
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.ticketing.QuotationRequestModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Entity("quotation_requests")
 public class QuotationRequestEntity extends AbstractEntity implements QuotationRequestModel {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Id
     private QuotationRequestKey key;
@@ -53,6 +66,27 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     @Column("scope_of_work")
     private String scopeOfWork;
+
+    @Column("place_of_performance_address_1")
+    private String placeOfPerformanceAddress1;
+
+    @Column("place_of_performance_address_2")
+    private String placeOfPerformanceAddress2;
+
+    @Column("place_of_performance_address_3")
+    private String placeOfPerformanceAddress3;
+
+    @Column("rental_unit_type")
+    private String rentalUnitType;
+
+    @Column("rental_unit_title")
+    private String rentalUnitTitle;
+
+    @Column("rental_unit_location")
+    private String rentalUnitLocation;
+
+    @Column("tenants")
+    private List<String> tenantsJson;
 
     @Override
     public UUID getId() {
@@ -211,6 +245,104 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
 
     public void setScopeOfWork(String scopeOfWork) {
         this.scopeOfWork = scopeOfWork;
+    }
+
+    @Override
+    public String getPlaceOfPerformanceAddress1() {
+        return placeOfPerformanceAddress1;
+    }
+
+    public void setPlaceOfPerformanceAddress1(String placeOfPerformanceAddress1) {
+        this.placeOfPerformanceAddress1 = placeOfPerformanceAddress1;
+    }
+
+    @Override
+    public String getPlaceOfPerformanceAddress2() {
+        return placeOfPerformanceAddress2;
+    }
+
+    public void setPlaceOfPerformanceAddress2(String placeOfPerformanceAddress2) {
+        this.placeOfPerformanceAddress2 = placeOfPerformanceAddress2;
+    }
+
+    @Override
+    public String getPlaceOfPerformanceAddress3() {
+        return placeOfPerformanceAddress3;
+    }
+
+    public void setPlaceOfPerformanceAddress3(String placeOfPerformanceAddress3) {
+        this.placeOfPerformanceAddress3 = placeOfPerformanceAddress3;
+    }
+
+    @Override
+    public UnitType getRentalUnitType() {
+        return rentalUnitType != null ? UnitType.valueOf(rentalUnitType) : null;
+    }
+
+    public void setRentalUnitType(UnitType rentalUnitType) {
+        this.rentalUnitType = rentalUnitType != null ? rentalUnitType.name() : null;
+    }
+
+    public void setRentalUnitType(String rentalUnitType) {
+        this.rentalUnitType = rentalUnitType;
+    }
+
+    @Override
+    public String getRentalUnitTitle() {
+        return rentalUnitTitle;
+    }
+
+    public void setRentalUnitTitle(String rentalUnitTitle) {
+        this.rentalUnitTitle = rentalUnitTitle;
+    }
+
+    @Override
+    public String getRentalUnitLocation() {
+        return rentalUnitLocation;
+    }
+
+    public void setRentalUnitLocation(String rentalUnitLocation) {
+        this.rentalUnitLocation = rentalUnitLocation;
+    }
+
+    public List<String> getTenantsJson() {
+        return tenantsJson;
+    }
+
+    public void setTenantsJson(final List<String> tenantsJson) {
+        this.tenantsJson = tenantsJson;
+    }
+
+    @Override
+    public List<UserJson> getTenants() {
+        if (tenantsJson == null) {
+            return null;
+        }
+        try {
+            final List<UserJson> result = new ArrayList<>(tenantsJson.size());
+            for (final String tenant : tenantsJson) {
+                result.add(OBJECT_MAPPER.readValue(tenant, UserJson.class));
+            }
+            return result;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Invalid JSON stored in tenants column", e);
+        }
+    }
+
+    public void setTenants(final List<? extends UserJson> tenants) {
+        if (tenants == null) {
+            this.tenantsJson = null;
+            return;
+        }
+        try {
+            final List<String> result = new ArrayList<>(tenants.size());
+            for (final UserJson tenant : tenants) {
+                result.add(OBJECT_MAPPER.writeValueAsString(tenant));
+            }
+            this.tenantsJson = result;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize tenants", e);
+        }
     }
 
 }
