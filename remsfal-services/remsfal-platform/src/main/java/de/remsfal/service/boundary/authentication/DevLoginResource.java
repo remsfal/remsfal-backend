@@ -1,9 +1,9 @@
 package de.remsfal.service.boundary.authentication;
 
-import java.util.regex.Pattern;
-
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
@@ -39,12 +39,6 @@ public class DevLoginResource extends AbstractAuthenticationResource {
 
     public static final String PATH = "/" + AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION
         + "/" + AuthenticationEndpoint.SERVICE + "/dev-login";
-
-    private static final int MAX_EMAIL_LENGTH = 254;
-
-    // domain labels exclude the dot, so the pattern is unambiguous and cannot backtrack polynomially (ReDoS)
-    private static final Pattern EMAIL_PATTERN =
-        Pattern.compile("^[^\\s@<>\"']+@[^\\s@<>\"'.]+(\\.[^\\s@<>\"'.]+)+$");
 
     @ConfigProperty(name = ENABLED_PROPERTY, defaultValue = "false")
     boolean devLoginEnabled;
@@ -112,12 +106,9 @@ public class DevLoginResource extends AbstractAuthenticationResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response login(@FormParam("email") final String email,
+    public Response login(@FormParam("email") @NotBlank @Email @Size(max = 254) final String email,
         @DefaultValue("/") @QueryParam("route") final String route) {
         checkEnabled();
-        if (email == null || email.length() > MAX_EMAIL_LENGTH || !EMAIL_PATTERN.matcher(email.trim()).matches()) {
-            throw new BadRequestException("Invalid email address");
-        }
         final String normalizedEmail = email.trim().toLowerCase();
         logger.warnv("Dev login used for {0} - this must never happen in production!", normalizedEmail);
         final UserModel user = controller.authenticateUser(

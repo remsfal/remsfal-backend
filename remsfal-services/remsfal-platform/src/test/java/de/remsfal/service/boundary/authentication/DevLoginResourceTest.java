@@ -138,9 +138,9 @@ class DevLoginResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void login_FAILED_emailWithoutDomainDot() {
+    void login_FAILED_blankEmail() {
         given()
-            .formParam("email", "someone@localhost")
+            .formParam("email", " ")
             .redirects().follow(false)
             .when().post(DevLoginResource.PATH)
             .then()
