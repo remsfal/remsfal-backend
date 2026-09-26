@@ -11,11 +11,13 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.OrderAttachmentModel;
 import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.entity.dao.OrderAttachmentRepository;
+import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.OrderAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.OrderAttachmentKey;
 
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +54,18 @@ public class OrderAttachmentController {
         attachment.setObjectName(objectFileName);
 
         return attachmentRepository.insert(attachment);
+    }
+
+    public List<UUID> copyIssueAttachments(final UserModel user, final OrderProcessPhase processPhase,
+        final UUID processId, final List<IssueAttachmentEntity> sources) {
+        final List<UUID> copiedAttachmentIds = new ArrayList<>();
+        for (final IssueAttachmentEntity source : sources) {
+            final InputStream inputStream = fileStorageController.downloadFile(source.getObjectName());
+            final FileUploadData fileData = new FileUploadData(inputStream, source.getFileName(),
+                source.getMediaType());
+            copiedAttachmentIds.add(addAttachment(user, processPhase, processId, fileData).getAttachmentId());
+        }
+        return copiedAttachmentIds;
     }
 
     public List<? extends OrderAttachmentModel> getAttachments(final OrderProcessPhase processPhase,

@@ -50,19 +50,11 @@ class IssueOrderPlacementResourceTest extends AbstractTicketingTest {
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .contentType(ContentType.JSON)
             .body("{ \"contractors\":[{\"id\":\"" + contractorId
-                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}],"
-                + "\"projectOwner\":\"Mustermann Verwaltung GmbH\","
-                + "\"projectCareOf\":\"Max Mustermann\","
-                + "\"billingAddress\":{"
-                + "\"street\":\"Musterstraße 1\","
-                + "\"city\":\"Berlin\","
-                + "\"province\":\"Berlin\","
-                + "\"zip\":\"10115\","
-                + "\"countryCode\":\"DE\""
-                + "}}")
+                + "\",\"name\":\"Test Betrieb\",\"organizationId\":\"" + organizationId + "\"}] }")
             .post(BASE_PATH + "/" + issueId + "/quotation-request")
             .then()
             .statusCode(201);
+        enrichQuotationRequestsWithProjectData(UUID.fromString(issueId));
 
         final String requestId = given()
             .when()

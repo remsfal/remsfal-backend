@@ -9,10 +9,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.core.json.project.RentalUnitNodeDataJson;
 import de.remsfal.core.json.ticketing.ChatMessageJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
@@ -24,8 +26,6 @@ import jakarta.annotation.Nullable;
 /**
  * Enriched issue event schema for Kafka messaging between microservices.
  *
- * <h3>Schema Version: 2.0.1</h3>
- *
  * This interface defines the public contract for issue events exchanged between:
  * <ul>
  *   <li>ticketing-service: Producer of basic issue events (ISSUE_CREATED, ISSUE_UPDATED,
@@ -35,25 +35,6 @@ import jakarta.annotation.Nullable;
  *   <li>notification-service / ticketing-service: Consumers of enriched events (send email
  *   notifications, record activity feed entries)</li>
  * </ul>
- *
- * <p>Instead of a single free-text {@code activityText} and a generic {@code user} actor, each
- * activity event carries the full domain object it relates to ({@link #getChatMessage()},
- * {@link #getQuotationRequest()}, ...) plus the specific role(s) that apply to it, so consumers
- * can build detailed, localizable messages instead of relying on a pre-baked string.
- *
- * <h3>Versioning Guidelines</h3>
- * When modifying this schema:
- * <ul>
- *   <li>MINOR changes (new optional fields): Increment patch version (e.g., 1.0 →
- *   1.0.1)</li>
- *   <li>MAJOR changes (remove/rename fields, change types): Increment minor version (e.g.,
- *   1.0 → 1.1)</li>
- *   <li>Breaking changes: Increment major version (e.g., 1.0 → 2.0) and coordinate across
- *   all services</li>
- * </ul>
- *
- * @see <a href="https://github.com/remsfal/remsfal-backend/issues/593">Issue #593: Ticket
- *      notification Kafka consumer</a>
  */
 @Immutable
 @ImmutableStyle
@@ -102,6 +83,19 @@ public interface IssueEventJson {
      */
     @Nullable
     RentalAgreementJson getRentalAgreement();
+
+    /**
+     * Optional enriched rental unit details. When present (i.e. the issue refers to a rental
+     * unit via {@code issue.getRentalUnitId()}), provides the unit's title and location.
+     */
+    @Nullable
+    RentalUnitNodeDataJson getRentalUnit();
+
+    /**
+     * Optional enriched address of the building or site the issue's rental unit belongs to.
+     */
+    @Nullable
+    AddressJson getPlaceOfPerformance();
 
     /**
      * Frontend link to the issue detail/edit view.
