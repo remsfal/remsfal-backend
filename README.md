@@ -48,7 +48,8 @@ To develop or start this project locally, you need
 
 ## How to get started
 
-For ease of use its recommended to run postgresql using the provided [docker-compose.yml](docker-compose.yml).
+For ease of use its recommended to run the infrastructure (PostgreSQL, Kafka, Cassandra, LocalStack, OCR, Grafana, Mailpit)
+using the provided [docker-compose.yml](docker-compose.yml).
 
 ```sh
 docker compose up -d
@@ -56,6 +57,37 @@ docker compose up -d
 
 **Important:** The [`docker-compose.yml`](docker-compose.yml) file uses the `include:` directive, which is only supported in
 newer versions of Docker Compose. Please make sure your Docker Desktop or Docker Compose CLI is up to date.
+
+| Container   | Port(s)                     | Purpose                                     |
+|-------------|-----------------------------|---------------------------------------------|
+| postgres    | 5432                        | Database of the platform service            |
+| cassandra   | 9042                        | Database of the ticketing service           |
+| kafka-broker / kafka-ui | 39092 / [8090](http://localhost:8090) | Event streaming           |
+| localstack  | 9000                        | S3 compatible file storage                  |
+| ocr         | &ndash;                     | OCR service used by the ticketing service   |
+| otel-lgtm   | [3000](http://localhost:3000) | Grafana (logs, metrics, traces)           |
+| mailpit     | 2525 (SMTP) / [8025](http://localhost:8025) (UI) | Catches all emails in dev mode |
+
+### Local setup without credentials
+
+You do **not** need Google OAuth credentials or an SMTP account to develop locally:
+
+- **Login:** in dev mode the platform service replaces the Google login with a dev login page. Choose one of
+  the seed users or enter any email address.
+- **Seed data:** on the first start the platform service creates a sample project with linked users:
+
+  | User                     | Role                                                        |
+  |--------------------------|-------------------------------------------------------------|
+  | `verwalter@remsfal.dev`  | Property manager, proprietor of project *Musterhaus Berlin* |
+  | `mieter@remsfal.dev`     | Tenant of apartment *WE 01*                                 |
+  | `handwerker@remsfal.dev` | Owner of the contractor *Sanitär Handwerk GmbH*             |
+
+  Use a private window or a second browser profile to be logged in as several users at the same time.
+- **Emails:** all emails are caught by Mailpit at [http://localhost:8025](http://localhost:8025).
+
+Details: [platform service](remsfal-services/remsfal-platform/README.md#dev-login--seed-data) (dev login, seed data,
+Google OAuth for production) and [notification service](remsfal-services/remsfal-notification/README.md)
+(Mailpit, sending real emails, SMTP for production).
 
 ### CI/CD
 
@@ -65,14 +97,19 @@ mandatory to pass the specified **Quality Gates** before a pull request can be m
 
 ### Start in dev mode
 
-At first you will need to start the db as described in [Prerequisites](#prerequisites).
+At first you will need to start the infrastructure as described in [How to get started](#how-to-get-started).
 
-Next run the project using the following command:
+Next build the project and start the services you need (each in its own terminal):
 
 ```sh
 ./mvnw clean install
-./mvnw compile quarkus:dev -pl remsfal-services/remsfal-platform
+./mvnw compile quarkus:dev -pl remsfal-services/remsfal-platform      # port 8080
+./mvnw compile quarkus:dev -pl remsfal-services/remsfal-ticketing     # port 8081
+./mvnw compile quarkus:dev -pl remsfal-services/remsfal-notification  # port 8082
 ```
+
+Then start the [frontend](https://github.com/remsfal/remsfal-frontend) and click *Login* &ndash; you will see
+the dev login page described in [Local setup without credentials](#local-setup-without-credentials).
 
 It will automatically recompile when you change something.
 

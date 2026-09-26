@@ -1,6 +1,7 @@
 include:
   - remsfal-ticketing/docker-compose.yml
   - remsfal-platform/docker-compose.yml
+  - remsfal-notification/docker-compose.yml
 services:
   kafka-broker:
     image: apache/kafka:latest
