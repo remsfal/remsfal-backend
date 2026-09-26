@@ -23,6 +23,7 @@ import io.quarkus.test.junit.TestProfile;
 class DevLoginResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/authentication";
+    static final String DEV_LOGIN_PATH = BASE_PATH + "/dev-login";
 
     public static class DevLoginProfile implements QuarkusTestProfile {
 
@@ -41,7 +42,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
             .when().get(BASE_PATH + "/login")
             .then()
             .statusCode(Status.FOUND.getStatusCode())
-            .header("location", Matchers.containsString(DevLoginResource.PATH + "?route="))
+            .header("location", Matchers.containsString(DEV_LOGIN_PATH + "?route="))
             .header("location", Matchers.containsString("projects"));
     }
 
@@ -49,7 +50,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
     void loginPage_SUCCESS_listsSeedUsers() {
         given()
             .queryParam("route", "/projects")
-            .when().get(DevLoginResource.PATH)
+            .when().get(DEV_LOGIN_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .contentType(Matchers.startsWith("text/html"))
@@ -62,7 +63,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
     void loginPage_SUCCESS_doesNotReflectRoute() {
         given()
             .queryParam("route", "/\"><script>alert(1)</script>")
-            .when().get(DevLoginResource.PATH)
+            .when().get(DEV_LOGIN_PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
             .body(Matchers.not(Matchers.containsString("alert(1)")))
@@ -77,7 +78,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
             .formParam("email", email)
             .queryParam("route", "/projects")
             .redirects().follow(false)
-            .when().post(DevLoginResource.PATH)
+            .when().post(DEV_LOGIN_PATH)
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.endsWith("/projects"))
@@ -98,7 +99,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
             given()
                 .formParam("email", email)
                 .redirects().follow(false)
-                .when().post(DevLoginResource.PATH)
+                .when().post(DEV_LOGIN_PATH)
                 .then()
                 .statusCode(Status.FOUND.getStatusCode());
         }
@@ -116,7 +117,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
             .formParam("email", "someone@remsfal.dev")
             .queryParam("route", "//evil.example.org/path")
             .redirects().follow(false)
-            .when().post(DevLoginResource.PATH)
+            .when().post(DEV_LOGIN_PATH)
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.not(Matchers.containsString("evil.example.org")));
@@ -130,7 +131,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
         given()
             .formParam("email", malicious)
             .redirects().follow(false)
-            .when().post(DevLoginResource.PATH)
+            .when().post(DEV_LOGIN_PATH)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
 
@@ -142,7 +143,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
         given()
             .formParam("email", " ")
             .redirects().follow(false)
-            .when().post(DevLoginResource.PATH)
+            .when().post(DEV_LOGIN_PATH)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
@@ -152,7 +153,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
         given()
             .formParam("email", "not-an-email")
             .redirects().follow(false)
-            .when().post(DevLoginResource.PATH)
+            .when().post(DEV_LOGIN_PATH)
             .then()
             .statusCode(Status.BAD_REQUEST.getStatusCode());
     }

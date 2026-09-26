@@ -49,7 +49,8 @@ public class AuthenticationResource extends AbstractAuthenticationResource imple
     public Response login(final String route) {
         if (devLoginEnabled) {
             final URI devLoginUrl = getAbsoluteUriBuilder()
-                .replacePath(DevLoginResource.PATH)
+                .replacePath(null)
+                .path(DevLoginResource.class)
                 .queryParam("route", route)
                 .build();
             return redirect(devLoginUrl).build();

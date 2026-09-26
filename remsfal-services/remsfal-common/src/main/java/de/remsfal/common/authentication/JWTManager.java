@@ -16,8 +16,10 @@ import jakarta.enterprise.inject.Default;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -80,15 +82,14 @@ public class JWTManager {
                     + "file:/run/secrets/remsfal_jwt_private_key). " + DOCUMENTATION_HINT);
             }
             publicKey = KeyLoader.derivePublicKey(privateKey);
-        } catch (IllegalStateException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException | GeneralSecurityException | IllegalArgumentException e) {
             throw new IllegalStateException("Unable to load JWT signing key: " + e.getMessage()
                 + ". " + DOCUMENTATION_HINT, e);
         }
     }
 
-    private static PrivateKey loadOrGenerateDevKey(final Path directory) throws Exception {
+    private static PrivateKey loadOrGenerateDevKey(final Path directory)
+        throws IOException, GeneralSecurityException {
         final Path keyFile = directory.resolve(KeyLoader.PRIVATE_KEY_FILE_NAME).toAbsolutePath();
         if (Files.exists(keyFile)) {
             LOG.infov("JWTManager initialized in issuer mode (dev key loaded from {0})", keyFile);
