@@ -2,7 +2,9 @@ package de.remsfal.service.boundary.authentication;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.util.Map;
 
 import jakarta.ws.rs.core.Response.Status;
@@ -53,18 +55,18 @@ class DevLoginResourceTest extends AbstractResourceTest {
             .contentType(Matchers.startsWith("text/html"))
             .body(Matchers.containsString(DevDataSeedController.MANAGER.email()))
             .body(Matchers.containsString(DevDataSeedController.TENANT.email()))
-            .body(Matchers.containsString(DevDataSeedController.CONTRACTOR.email()))
-            .body(Matchers.containsString("value=\"/projects\""));
+            .body(Matchers.containsString(DevDataSeedController.CONTRACTOR.email()));
     }
 
     @Test
-    void loginPage_SUCCESS_escapesRoute() {
+    void loginPage_SUCCESS_doesNotReflectRoute() {
         given()
-            .queryParam("route", "/\"><script>")
+            .queryParam("route", "/\"><script>alert(1)</script>")
             .when().get(DevLoginResource.PATH)
             .then()
             .statusCode(Status.OK.getStatusCode())
-            .body(Matchers.not(Matchers.containsString("<script>")));
+            .body(Matchers.not(Matchers.containsString("alert(1)")))
+            .body(Matchers.not(Matchers.containsString("action=")));
     }
 
     @Test
@@ -73,7 +75,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
 
         given()
             .formParam("email", email)
-            .formParam("route", "/projects")
+            .queryParam("route", "/projects")
             .redirects().follow(false)
             .when().post(DevLoginResource.PATH)
             .then()
@@ -112,12 +114,37 @@ class DevLoginResourceTest extends AbstractResourceTest {
     void login_SUCCESS_foreignRouteIsIgnored() {
         given()
             .formParam("email", "someone@remsfal.dev")
-            .formParam("route", "//evil.example.org/path")
+            .queryParam("route", "//evil.example.org/path")
             .redirects().follow(false)
             .when().post(DevLoginResource.PATH)
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.not(Matchers.containsString("evil.example.org")));
+    }
+
+    @Test
+    void login_FAILED_regexDenialOfServiceInputIsRejectedFast() {
+        final String malicious = "!@!." + "!.".repeat(20_000) + "@";
+        final long start = System.nanoTime();
+
+        given()
+            .formParam("email", malicious)
+            .redirects().follow(false)
+            .when().post(DevLoginResource.PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+
+        assertTrue(Duration.ofNanos(System.nanoTime() - start).toSeconds() < 5);
+    }
+
+    @Test
+    void login_FAILED_emailWithoutDomainDot() {
+        given()
+            .formParam("email", "someone@localhost")
+            .redirects().follow(false)
+            .when().post(DevLoginResource.PATH)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test

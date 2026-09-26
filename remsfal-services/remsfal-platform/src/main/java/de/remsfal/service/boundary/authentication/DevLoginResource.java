@@ -40,7 +40,11 @@ public class DevLoginResource extends AbstractAuthenticationResource {
     public static final String PATH = "/" + AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION
         + "/" + AuthenticationEndpoint.SERVICE + "/dev-login";
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@<>\"']+@[^\\s@<>\"']+\\.[^\\s@<>\"']+$");
+    private static final int MAX_EMAIL_LENGTH = 254;
+
+    // domain labels exclude the dot, so the pattern is unambiguous and cannot backtrack polynomially (ReDoS)
+    private static final Pattern EMAIL_PATTERN =
+        Pattern.compile("^[^\\s@<>\"']+@[^\\s@<>\"'.]+(\\.[^\\s@<>\"'.]+)+$");
 
     @ConfigProperty(name = ENABLED_PROPERTY, defaultValue = "false")
     boolean devLoginEnabled;
@@ -50,7 +54,7 @@ public class DevLoginResource extends AbstractAuthenticationResource {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public String loginPage(@DefaultValue("/") @QueryParam("route") final String route) {
+    public String loginPage() {
         checkEnabled();
         final StringBuilder users = new StringBuilder();
         for (final SeedUser seedUser : DevDataSeedController.SEED_USERS) {
@@ -91,29 +95,27 @@ public class DevLoginResource extends AbstractAuthenticationResource {
               <main>
                 <h1>REMSFAL Dev Login</h1>
                 <p>Development only &ndash; replaces the Google login. Emails are delivered to Mailpit.</p>
+                <!-- no action attribute: the form is posted to the current URL including ?route=... -->
                 <form method="post">
-                  <input type="hidden" name="route" value="%s">
                   %s
                 </form>
                 <hr>
                 <form method="post">
-                  <input type="hidden" name="route" value="%s">
                   <input type="email" name="email" required placeholder="any address, e.g. someone@%s">
                   <button type="submit" class="free">Login</button>
                 </form>
               </main>
             </body>
             </html>
-            """.formatted(escape(sanitizeRoute(route)), users, escape(sanitizeRoute(route)),
-            DevDataSeedController.DEV_DOMAIN);
+            """.formatted(users, DevDataSeedController.DEV_DOMAIN);
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response login(@FormParam("email") final String email,
-        @DefaultValue("/") @FormParam("route") final String route) {
+        @DefaultValue("/") @QueryParam("route") final String route) {
         checkEnabled();
-        if (email == null || !EMAIL_PATTERN.matcher(email.trim()).matches()) {
+        if (email == null || email.length() > MAX_EMAIL_LENGTH || !EMAIL_PATTERN.matcher(email.trim()).matches()) {
             throw new BadRequestException("Invalid email address");
         }
         final String normalizedEmail = email.trim().toLowerCase();
