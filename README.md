@@ -6,11 +6,45 @@
 [![License](https://img.shields.io/github/license/remsfal/remsfal-backend)](https://github.com/remsfal/remsfal-backend/blob/main/LICENSE)
 ![Contributors](https://img.shields.io/github/contributors/remsfal/remsfal-backend)
 
-# Open Source Facility Management Software (Backend)
+# REMSFAL – Open Source Real Estate & Facility Management (Backend)
 
-`remsfal-backend` is a backend service built using Java and Quarkus framework to manage real estate projects.
-It works together with the [`remsfal-frontend`](https://github.com/remsfal/remsfal-frontend) repository.  
-You can see a live version at https://remsfal.online.
+**REMSFAL** is an open source platform for the management of residential and commercial real estate.
+It connects the three parties involved in day-to-day property operations – **property managers**, **tenants**
+and **contractors** – in a single system and replaces scattered emails, phone calls and spreadsheets with
+structured, traceable workflows.
+
+This repository contains the backend: a set of cloud-native microservices built with **Java** and
+**[Quarkus](https://quarkus.io)** that provide the REST APIs for the
+[`remsfal-frontend`](https://github.com/remsfal/remsfal-frontend) web application.
+A live version is available at **[remsfal.online](https://remsfal.online)**.
+
+### Key Features
+
+- **Property portfolio management** – model properties, sites, buildings, apartments, commercial units and
+  storage rooms as a hierarchical structure within projects.
+- **Tenancy management** – rental agreements with independent tenant records, optionally linked to user
+  accounts, so tenants can access their own data through a self-service portal.
+- **Issue & maintenance ticketing** – tenants report damages and requests; property managers triage, discuss
+  and track them with attachments, chat and a complete activity timeline.
+- **Contractor workflows** – request quotations, place orders and collaborate with contractors on
+  maintenance work, including support for the GAEB DA XML standard used in the German construction industry.
+- **Organizations & roles** – project memberships, organizations and employees with role-based access control
+  (see [Authorization.md](Authorization.md)).
+- **Document processing & notifications** – S3-compatible document storage, OCR-based text extraction and
+  event-driven email notifications.
+
+### Technology Stack
+
+| Area              | Technology                                                                     |
+|-------------------|--------------------------------------------------------------------------------|
+| Runtime           | Java 17+, Quarkus                                                              |
+| APIs              | JAX-RS (REST), OpenAPI via SmallRye                                            |
+| Persistence       | PostgreSQL (platform), Apache Cassandra (ticketing), Liquibase migrations      |
+| Messaging         | Apache Kafka for asynchronous service-to-service communication                 |
+| Storage           | S3-compatible object storage                                                   |
+| Security          | OAuth 2.0 / OpenID Connect (Google), JWT with JWKS validation, cookie sessions |
+| Observability     | OpenTelemetry, Grafana LGTM stack                                              |
+| Quality           | JUnit, JaCoCo, Checkstyle, SonarCloud                                          |
 
 
 ## Architecture

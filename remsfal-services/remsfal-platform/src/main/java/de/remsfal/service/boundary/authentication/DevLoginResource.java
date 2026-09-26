@@ -32,13 +32,11 @@ import io.quarkus.arc.properties.IfBuildProperty;
  * Only included in builds with {@code de.remsfal.auth.dev-login.enabled=true} (dev profile).
  */
 @IfBuildProperty(name = DevLoginResource.ENABLED_PROPERTY, stringValue = "true")
-@Path(DevLoginResource.PATH)
+@Path(AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION + "/"
+    + AuthenticationEndpoint.SERVICE + "/dev-login")
 public class DevLoginResource extends AbstractAuthenticationResource {
 
     public static final String ENABLED_PROPERTY = "de.remsfal.auth.dev-login.enabled";
-
-    public static final String PATH = "/" + AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION
-        + "/" + AuthenticationEndpoint.SERVICE + "/dev-login";
 
     @ConfigProperty(name = ENABLED_PROPERTY, defaultValue = "false")
     boolean devLoginEnabled;

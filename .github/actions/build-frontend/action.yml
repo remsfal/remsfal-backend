@@ -10,12 +10,12 @@ runs:
   using: composite
   steps:
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: 'lts/*'
     - name: Cache node modules
       id: cache-npm
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       env:
         cache-name: cache-node-modules
       with:
@@ -26,7 +26,7 @@ runs:
     - name: Install dependencies
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: npm ci
+      run: npm ci --ignore-scripts
     - name: Generate Client
       shell: bash
       working-directory: ${{ inputs.working-directory }}
